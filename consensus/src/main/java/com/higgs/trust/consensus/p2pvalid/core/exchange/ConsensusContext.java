@@ -97,6 +97,8 @@ public class ConsensusContext {
                 //gc
                 if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
                     sendStorage.addGCSet(key);
+                }else{
+                    sendStorage.addDelayQueue(key);
                 }
             } catch (Exception e) {
                 log.error("{}", e);
