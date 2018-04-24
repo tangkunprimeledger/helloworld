@@ -16,9 +16,11 @@ public class SendCommandStatistics extends Closeable {
 
     private ValidCommandWrap validCommandWrap;
     private Set<String> ackNodeNameSet;
+    private Set<String> sendNodeNameSet;
 
     private SendCommandStatistics(ValidCommandWrap validCommandWrap) {
         this.validCommandWrap = validCommandWrap;
+        this.sendNodeNameSet = validCommandWrap.getToNodeNames();
         this.ackNodeNameSet = new HashSet<>();
     }
 
@@ -34,7 +36,9 @@ public class SendCommandStatistics extends Closeable {
         return validCommandWrap;
     }
 
-    public Set<String> getAckNodeName() {
+    public Set<String> getAckNodeNames() {
         return ackNodeNameSet;
     }
+
+    public Set<String> getSendNodeNames() {return sendNodeNameSet;}
 }

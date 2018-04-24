@@ -16,40 +16,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+//TODO lichengcai 记得修改真正的client名
 @FeignClient("${higgs.trust.prefix}") public interface BlockChainClient {
     /**
      * get the block headers
-     *
      * @param nodeNameReg node name regex
      * @param startHeight
      * @param size
      * @return
+     *
      */
-    @RequestMapping(value = "/block/header/get", method = RequestMethod.GET) List<BlockHeader> getBlockHeaders(
+    @RequestMapping(value = "/getBlockHeaders", method = RequestMethod.GET) List<BlockHeader> getBlockHeaders(
         @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg,
         @RequestParam(value = "startHeight") long startHeight, @RequestParam(value = "size") int size);
 
     /**
      * get the blocks
-     *
      * @param nodeNameReg node name regex
      * @param startHeight
      * @param size
      * @return
      */
-    @RequestMapping(value = "/block/get", method = RequestMethod.GET) List<Block> getBlocks(
+    @RequestMapping(value = "/getBlocks", method = RequestMethod.GET) List<Block> getBlocks(
         @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg,
         @RequestParam(value = "startHeight") long startHeight, @RequestParam(value = "size") int size);
 
     /**
      * submit transaction
-     *
-     * @param nodeNameReg  node name regex
+     * @param nodeNameReg node name regex
      * @param transactions
      * @return submit failed transaction list
      */
-    @RequestMapping(value = "/block/transaction/submit", method = RequestMethod.POST)
-    List<TransactionVO> submitTransaction(@RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg,
+    @RequestMapping(value = "/block/transaction/submit", method = RequestMethod.POST) List<TransactionVO> submitTransaction(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg,
         @RequestParam(value = "transactions") List<SignedTransaction> transactions);
+
 
 }

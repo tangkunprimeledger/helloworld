@@ -1,12 +1,14 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
+import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
+import com.higgs.trust.consensus.p2pvalid.core.exception.ReceiveException;
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ConsensusContext;
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommandStatistics;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.reflect.*;
@@ -41,47 +43,74 @@ public abstract class ValidConsensus {
         if (!file.exists()) {
             file.mkdirs();
         }
-        consensusContext = new ConsensusContext(this, p2pConsensusClient, baseDir.concat("sendDB"), baseDir.concat("receiveDB"));
+        consensusContext = new ConsensusContext(this, p2pConsensusClient, baseDir, clusterInfo.faultNodeNum());
     }
 
     public final void submit(ValidCommand<?> command) {
-        String fromNode = clusterInfo.myNodeName();
-        String messageDigest = command.messageDigest();
-        String sign = fromNode + "_" + messageDigest;
-        ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
-                .fromNodeName(fromNode)
-                .messageDigest(messageDigest)
-                .addToNodeNames(clusterInfo.clusterNodeNames())
-                .sign(sign);
-        consensusContext.submit(validCommandWrap);
+        try{
+            String fromNode = clusterInfo.myNodeName();
+            String messageDigest = command.messageDigest();
+            String sign = fromNode + "_" + messageDigest;
+            ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
+                    .fromNodeName(fromNode)
+                    .messageDigest(messageDigest)
+                    .addToNodeNames(clusterInfo.clusterNodeNames())
+                    .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
+            consensusContext.submit(validCommandWrap);
+        }catch (Exception e){
+            throw  new RuntimeException(e);
+        }
     }
 
     public final void submit(ValidCommand<?> command, String toNodeName) {
-        String fromNode = clusterInfo.myNodeName();
-        String messageDigest = command.messageDigest();
-        String sign = fromNode + "_" + messageDigest;
-        ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
-                .fromNodeName(fromNode)
-                .messageDigest(messageDigest)
-                .addToNodeName(toNodeName)
-                .sign(sign);
+        try{
 
-        consensusContext.submit(validCommandWrap);
+            String fromNode = clusterInfo.myNodeName();
+            String messageDigest = command.messageDigest();
+            String sign = fromNode + "_" + messageDigest;
+            ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
+                    .fromNodeName(fromNode)
+                    .messageDigest(messageDigest)
+                    .addToNodeName(toNodeName)
+                    .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
+            consensusContext.submit(validCommandWrap);
+        }catch (Exception e){
+            throw  new RuntimeException(e);
+        }
     }
 
     public final void submit(ValidCommand<?> command, Collection<String> toNodeNames) {
-        String fromNode = clusterInfo.myNodeName();
-        String messageDigest = command.messageDigest();
-        String sign = fromNode + "_" + messageDigest;
-        ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
-                .fromNodeName(fromNode)
-                .messageDigest(messageDigest)
-                .addToNodeNames(toNodeNames)
-                .sign(sign);
-        consensusContext.submit(validCommandWrap);
+        try{
+            String fromNode = clusterInfo.myNodeName();
+            String messageDigest = command.messageDigest();
+            String sign = fromNode + "_" + messageDigest;
+            ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
+                    .fromNodeName(fromNode)
+                    .messageDigest(messageDigest)
+                    .addToNodeNames(toNodeNames)
+                    .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
+            consensusContext.submit(validCommandWrap);
+        }catch (Exception e){
+            throw  new RuntimeException(e);
+        }
     }
 
-    public void receive(ValidCommandWrap validCommandWrap){
+    public void receive(ValidCommandWrap validCommandWrap) throws ReceiveException {
+
+        if(StringUtils.isEmpty(validCommandWrap.getFromNodeName())){
+            throw new ReceiveException("from node name can not be null");
+        }
+        String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNodeName());
+        if(StringUtils.isEmpty(pubKey)){
+            throw new ReceiveException(String.format("unknown pubKey for node %s", validCommandWrap.getFromNodeName()));
+        }
+        try {
+            if(!SignUtils.verify(validCommandWrap.getMessageDigest(), validCommandWrap.getSign(), pubKey)){
+                throw new Exception(String.format("check sign failed for node %s", validCommandWrap.getFromNodeName()));
+            }
+        }catch (Exception e){
+            throw new ReceiveException(String.format("invalid command from node %s", validCommandWrap.getFromNodeName()));
+        }
         consensusContext.receive(validCommandWrap);
     }
 

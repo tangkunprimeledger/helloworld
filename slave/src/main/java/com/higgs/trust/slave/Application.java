@@ -1,4 +1,4 @@
-package com.higgs.trust;
+package com.higgs.trust.slave;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -26,7 +27,8 @@ import java.util.List;
  * @author young001
  */
 @SpringBootApplication @EnableTransactionManagement @EnableAspectJAutoProxy @Slf4j @EnableFeignClients
-public class Application extends WebMvcConfigurerAdapter {
+@ComponentScan({"com.higgs.trust.slave", "com.higgs.trust.consensus"}) public class Application
+    extends WebMvcConfigurerAdapter {
 
     @Override public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         super.configureMessageConverters(converters);
@@ -43,14 +45,12 @@ public class Application extends WebMvcConfigurerAdapter {
     public TransactionTemplate txRequired(PlatformTransactionManager platformTransactionManager) {
         return new TransactionTemplate(platformTransactionManager);
     }
-
     @Bean(name = "txNested")
     public TransactionTemplate txNested(PlatformTransactionManager platformTransactionManager) {
         TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
         tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NESTED);
         return tx;
     }
-
     @Bean(name = "txRequiresNew")
     public TransactionTemplate txRequiresNew(PlatformTransactionManager platformTransactionManager) {
         TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);

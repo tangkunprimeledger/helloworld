@@ -8,6 +8,12 @@ import java.util.List;
 public interface ClusterInfo {
 
     /**
+     * get faultNode num
+     * @return
+     */
+    Integer faultNodeNum();
+
+    /**
      * get self node name
      *
      * @return

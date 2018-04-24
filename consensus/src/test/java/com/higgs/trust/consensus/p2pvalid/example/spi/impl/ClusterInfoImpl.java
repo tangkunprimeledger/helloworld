@@ -12,6 +12,7 @@ public class ClusterInfoImpl implements ClusterInfo {
     private List<String> clusterNodeNames;
     private String pubKey;
     private String privateKey;
+    private Integer faultNodeNum;
 
     private ClusterInfoImpl(){}
 
@@ -39,6 +40,15 @@ public class ClusterInfoImpl implements ClusterInfo {
         return this;
     }
 
+    public ClusterInfoImpl setFaultNodeNum(Integer faultNodeNum){
+        this.faultNodeNum = faultNodeNum;
+        return this;
+    }
+
+    @Override
+    public Integer faultNodeNum() {
+        return faultNodeNum;
+    }
 
     @Override
     public String myNodeName() {

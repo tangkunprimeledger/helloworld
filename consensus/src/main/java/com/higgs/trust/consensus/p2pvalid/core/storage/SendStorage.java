@@ -1,6 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
+import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommandStatistics;
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.SendCommandStatistics;
 import lombok.extern.slf4j.Slf4j;
 import org.mapdb.*;
@@ -23,7 +24,7 @@ public class SendStorage {
     private static final String COMMAND_SUBMIT_MAP = "command_submit_queue";
     private static final String COMMAND_SEND_QUEUE = "command_send_queue";
     private static final String COMMAND_GC_QUEUE = "command_gc_queue";
-    private static final String RECEIVE_DELAY_QUEUE = "_delay_queue";
+    private static final String COMMAND_DELAY_QUEUE = "command_delay_queue";
 
     private DB sendDB;
 
@@ -45,6 +46,15 @@ public class SendStorage {
     }
 
     private void initThreadPool() {
+        new ScheduledThreadPoolExecutor(1, (r) -> {
+            Thread thread = new Thread(r);
+            thread.setName("send trans delay to send thread");
+            thread.setDaemon(true);
+            return thread;
+        }).scheduleWithFixedDelay(() -> {
+            transFromDelayToSendQueue();
+        }, 2, 2, TimeUnit.SECONDS);
+
         new ScheduledThreadPoolExecutor(1, (r) -> {
             Thread thread = new Thread(r);
             thread.setName("send storage gc thread");
@@ -119,6 +129,40 @@ public class SendStorage {
         }
     }
 
+    public void addDelayQueue(String key) {
+        try {
+            BTreeMap<Long, String> delayQueue = getSendDelayQueue();
+
+            Map.Entry<Long, String> lastEntry = delayQueue.lastEntry();
+            if (null == lastEntry) {
+                delayQueue.put(0L, key);
+            } else {
+                delayQueue.put(lastEntry.getKey() + 1, key);
+            }
+            sendDB.commit();
+        } catch (Exception e) {
+            sendDB.rollback();
+            log.error("{}", e);
+        }
+    }
+
+    public void transFromDelayToSendQueue() {
+        try {
+            BTreeMap<Long, String> delayQueue = getSendDelayQueue();
+            Map.Entry<Long, String> entry = delayQueue.firstEntry();
+            while (null == entry) {
+                return;
+            }
+            delayQueue.remove(entry.getKey());
+            addSendQueue(entry.getValue());
+            log.info("trans {} from delay to send queue", entry.getValue());
+            sendDB.commit();
+        } catch (Exception e) {
+            sendDB.rollback();
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public void gc() {
         try {
@@ -137,6 +181,17 @@ public class SendStorage {
             }
 
             gcSet.removeAll(deleteKeys);
+            sendDB.commit();
+        } catch (Exception e) {
+            sendDB.rollback();
+            log.error("{}", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void updateSendCommandStatics(String key, SendCommandStatistics sendCommandStatistics) {
+        try {
+            getSubmitMap(sendDB).put(key,sendCommandStatistics);
             sendDB.commit();
         } catch (Exception e) {
             sendDB.rollback();
@@ -169,6 +224,14 @@ public class SendStorage {
         return mapDB.treeMap(COMMAND_SEND_QUEUE)
                 .keySerializer(Serializer.LONG)
                 .valueSerializer(Serializer.STRING)
+                .createOrOpen();
+    }
+
+    @SuppressWarnings("unchecked")
+    private BTreeMap<Long, String> getSendDelayQueue() {
+        return sendDB.treeMap(COMMAND_DELAY_QUEUE)
+                .keySerializer(Serializer.LONG)
+                .valueSerializer(Serializer.JAVA)
                 .createOrOpen();
     }
 

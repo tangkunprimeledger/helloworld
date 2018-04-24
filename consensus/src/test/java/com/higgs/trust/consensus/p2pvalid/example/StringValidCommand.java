@@ -1,10 +1,14 @@
 package com.higgs.trust.consensus.p2pvalid.example;
 
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author cwy
  */
+@Getter
+@Setter
 public class StringValidCommand extends ValidCommand<String> {
     private static final long serialVersionUID = -1L;
 

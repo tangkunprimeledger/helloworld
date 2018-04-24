@@ -7,6 +7,7 @@ import com.higgs.trust.consensus.p2pvalid.core.storage.SendStorage;
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommandStatistics;
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.SendCommandStatistics;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,28 +21,30 @@ import java.util.concurrent.TimeUnit;
     private ReceiveStorage receiveStorage;
     private ValidConsensus validConsensus;
     private P2pConsensusClient p2pConsensusClient;
+    private Integer applyThreshold;
 
-    public ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String sendDBDir, String receiveDBDir) {
+    public ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum) {
         this.validConsensus = validConsensus;
-        sendStorage = new SendStorage(sendDBDir);
-        receiveStorage = new ReceiveStorage(receiveDBDir);
+        sendStorage = new SendStorage(baseDir.concat("sendDB"));
+        receiveStorage = new ReceiveStorage(baseDir.concat("receiveDB"));
         this.p2pConsensusClient = p2pConsensusClient;
+        this.applyThreshold = 2*fautNodeNum + 1;
         initExecutor();
     }
 
     private void initExecutor() {
-        new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), (r) -> {
+        new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), (r) -> {
             Thread thread = new Thread(r);
-            thread.setName("valid command send thread");
+            thread.setName("command send thread");
             thread.setDaemon(true);
             return thread;
         }).execute(() -> {
             send();
         });
 
-        new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), (r) -> {
+        new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), (r) -> {
             Thread thread = new Thread(r);
-            thread.setName("valid command send thread");
+            thread.setName("command apply thread");
             thread.setDaemon(true);
             return thread;
         }).execute(() -> {
@@ -60,8 +63,7 @@ import java.util.concurrent.TimeUnit;
      * @param validCommandWrap
      */
     public void receive(ValidCommandWrap validCommandWrap) {
-        String key = receiveStorage.add(validCommandWrap);
-        receiveStorage.addApplyQueue(key);
+        receiveStorage.add(validCommandWrap, applyThreshold);
     }
 
     public void send() {
@@ -71,27 +73,38 @@ import java.util.concurrent.TimeUnit;
                 key = sendStorage.takeFromSendQueue();
                 if (null == key) {
                     log.warn("key is null");
-                    return;
+                    continue;
                 }
                 SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
                 log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
-                //send
-                sendCommandStatistics.getValidCommandWrap().getToNodeNames().forEach((nodeName)->{
+                for(String nodeName : sendCommandStatistics.getSendNodeNames()){
                     try{
                         if(log.isTraceEnabled()){
                             log.trace("nodeName is {}", nodeName);
                         }
-                        p2pConsensusClient.receiveCommand(nodeName,sendCommandStatistics.getValidCommandWrap());
+
+                        if(sendCommandStatistics.getAckNodeNames().contains(nodeName)){
+                            continue;
+                        }
+
+                        String result = p2pConsensusClient.receiveCommand(nodeName,sendCommandStatistics.getValidCommandWrap());
+                        if(StringUtils.equals("SUCCESS", result)){
+                            sendCommandStatistics.addAckNodeName(nodeName);
+                            sendStorage.updateSendCommandStatics(key,sendCommandStatistics);
+                        }
+                        log.info("result is {}", result);
                     }catch (Exception e){
                         log.error("{}", e);
                     }
-                });
+                }
                 //gc
-                sendStorage.addGCSet(key);
+                if(sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()){
+                    sendStorage.addGCSet(key);
+                }
             } catch (Exception e) {
                 log.error("{}", e);
                 if (null != key) {
-                    sendStorage.addSendQueue(key);
+                    sendStorage.addDelayQueue(key);
                 }
             }
         }
@@ -104,14 +117,14 @@ import java.util.concurrent.TimeUnit;
                 key = receiveStorage.takeFromApplyQueue();
                 if (null == key) {
                     log.warn("key is null");
-                    return;
+                    continue;
                 }
                 ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.getReceiveCommandStatistics(key);
 
                 log.info("schedule apply receiveCommandStatistics {}", receiveCommandStatistics);
                 if (null == receiveCommandStatistics || receiveCommandStatistics.isClosed()) {
                     log.warn("receiveCommandStatistics {} is invalid, key is {}", receiveCommandStatistics, key);
-                    return;
+                    continue;
                 }
                 validConsensus.apply(receiveCommandStatistics);
                 if (receiveCommandStatistics.isClosed()) {

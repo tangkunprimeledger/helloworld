@@ -59,16 +59,21 @@ public class ReceiveStorage {
     private void initThreadPool() {
         new ScheduledThreadPoolExecutor(1, (r) -> {
             Thread thread = new Thread(r);
-            thread.setName("receive storage gc thread");
+            thread.setName("receive trans delay to apply thread");
             thread.setDaemon(true);
             return thread;
         }).scheduleWithFixedDelay(() -> {
             transFromDelayToApplyQueue();
-        }, 1, 1, TimeUnit.SECONDS);
+        }, 2, 2, TimeUnit.SECONDS);
 
-        new ScheduledThreadPoolExecutor(1).scheduleWithFixedDelay(() -> {
+        new ScheduledThreadPoolExecutor(1, (r) -> {
+            Thread thread = new Thread(r);
+            thread.setName("receive storage gc thread");
+            thread.setDaemon(true);
+            return thread;
+        }).scheduleWithFixedDelay(() -> {
             gc();
-        }, 1, 1, TimeUnit.SECONDS);
+        }, 2, 2, TimeUnit.SECONDS);
     }
 
     /**
@@ -77,7 +82,7 @@ public class ReceiveStorage {
      * @param validCommandWrap
      * @return
      */
-    public String add(ValidCommandWrap validCommandWrap) {
+    public String add(ValidCommandWrap validCommandWrap, Integer threshold) {
         try {
             ValidCommand<?> validCommand = validCommandWrap.getValidCommand();
             String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
@@ -85,6 +90,10 @@ public class ReceiveStorage {
             ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.of(validCommand));
             receiveCommandStatistics.addFromNode(validCommandWrap.getFromNodeName());
             receiveStatisticsMap.put(key, receiveCommandStatistics);
+            if(receiveCommandStatistics.getFromNodeNameSet().size() >= threshold){
+                log.info("from node set size {} > threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), threshold);
+                addApplyQueue(key);
+            }
             receiveDB.commit();
             return key;
         } catch (Exception e) {

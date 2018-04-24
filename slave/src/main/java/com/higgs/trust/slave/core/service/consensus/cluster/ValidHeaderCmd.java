@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.slave.model.bo.consensus;
+package com.higgs.trust.slave.core.service.consensus.cluster;
 
 import com.higgs.trust.slave.model.bo.BlockHeader;
 
@@ -9,13 +9,11 @@ import com.higgs.trust.slave.model.bo.BlockHeader;
  * @author suimi
  * @date 2018/4/17
  */
-public class ValidBlockHeaderCmd extends IdValidCommand<Boolean> {
-
-    private static final long serialVersionUID = 1644770444682750035L;
+public class ValidHeaderCmd extends IdValidCommand<Boolean> {
 
     private BlockHeader header;
 
-    public ValidBlockHeaderCmd(BlockHeader header, Boolean valid) {
+    public ValidHeaderCmd(BlockHeader header, Boolean valid) {
         super(header.getBlockHash(), valid);
         this.header = header;
     }

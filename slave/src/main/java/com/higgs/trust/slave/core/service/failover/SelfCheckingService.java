@@ -24,14 +24,12 @@ import org.springframework.stereotype.Service;
     public boolean check() {
         nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
         boolean selfChecked = selfCheck();
-        log.info("self checked result:{}", selfChecked);
         if (!selfChecked) {
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
             return false;
         }
         if (nodeState.isMaster()) {
             boolean masterChecked = masterCheck();
-            log.info("master checked result:{}", masterChecked);
             if (masterChecked) {
                 nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Running);
             } else {
@@ -48,23 +46,10 @@ import org.springframework.stereotype.Service;
      * @return
      */
     public boolean selfCheck() {
-        log.info("Starting self checking ...");
         Long maxHeight = blockService.getMaxHeight();
         Block block = blockRepository.getBlock(maxHeight);
         if (blockSyncService.validating(block)) {
-            int tryTimes = 10;
-            do {
-                Boolean result = blockSyncService.bftValidating(block.getBlockHeader());
-                if (result != null) {
-                    return result;
-                }
-                try {
-                    Thread.sleep(30 * 1000);
-                } catch (InterruptedException e) {
-                    log.warn("self check error.", e);
-                }
-
-            } while (--tryTimes > 0);
+            return blockSyncService.bftValidating(block.getBlockHeader());
         }
         return false;
     }
@@ -75,7 +60,6 @@ import org.springframework.stereotype.Service;
      * @return
      */
     public boolean masterCheck() {
-        log.info("Starting master checking ...");
         //todo:suimi 发送空包，获取最新高度比较
         return false;
     }

@@ -82,32 +82,6 @@ public class MerkleServiceImplTest extends BaseTest {
     @Autowired
     private MerkleService merkleService;
 
-    @Test
-    public void initAdd(){
-        merkleService.truncateMerkle();
-        List tempTxList = new LinkedList();
-        tempTxList.add("a");
-        tempTxList.add("b");
-        tempTxList.add("c");
-        tempTxList.add("d");
-        MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
-    }
-
-    @Test
-    public void initUpdate(){
-        merkleService.truncateMerkle();
-        List tempTxList = new LinkedList();
-        tempTxList.add("a");
-        tempTxList.add("b");
-        tempTxList.add("c");
-        tempTxList.add("d");
-        tempTxList.add("e");
-        tempTxList.add("m");
-        MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
-    }
-
     @Test(dataProvider = "provideBuildData")
     public void testBuild(Map<?, ?> param) throws InterruptedException {
         merkleService.truncateMerkle();
@@ -148,9 +122,19 @@ public class MerkleServiceImplTest extends BaseTest {
         }
     }
 
-    @Test(dataProvider = "provideUpdateData",dependsOnMethods = { "initUpdate" })
+    @Test(dataProvider = "provideUpdateData")
     public void testUpdate(Map<?, ?> param) throws InterruptedException {
-        MerkleTree merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
+        merkleService.truncateMerkle();
+        List tempTxList = new LinkedList();
+        tempTxList.add("a");
+        tempTxList.add("b");
+        tempTxList.add("c");
+        tempTxList.add("d");
+        tempTxList.add("e");
+        tempTxList.add("m");
+        MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
+        merkleService.flush(merkleTree);
+        merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
         JSONObject bodyObj = JSON.parseObject(param.get("body").toString());
         Map<String, String> map =
             JSONObject.parseObject(bodyObj.toJSONString(), new TypeReference<Map<String, String>>() {
@@ -160,10 +144,20 @@ public class MerkleServiceImplTest extends BaseTest {
         merkleService.flush(merkleTree);
     }
 
-    @Test(dataProvider = "provideUpdateExceptionData",dependsOnMethods = { "initUpdate" })
+    @Test(dataProvider = "provideUpdateExceptionData")
     public void testUpdateException(Map<?, ?> param) throws InterruptedException {
         try {
-            MerkleTree merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
+            merkleService.truncateMerkle();
+            List tempTxList = new LinkedList();
+            tempTxList.add("a");
+            tempTxList.add("b");
+            tempTxList.add("c");
+            tempTxList.add("d");
+            tempTxList.add("e");
+            tempTxList.add("m");
+            MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
+            merkleService.flush(merkleTree);
+            merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
             JSONObject bodyObj = JSON.parseObject(param.get("body").toString());
             Map<String, String> map =
                 JSONObject.parseObject(bodyObj.toJSONString(), new TypeReference<Map<String, String>>() {
@@ -175,19 +169,37 @@ public class MerkleServiceImplTest extends BaseTest {
         }
     }
 
-    @Test(dataProvider = "provideAddData",dependsOnMethods = { "initAdd" })
+    @Test(dataProvider = "provideAddData")
     public void testAdd(Map<?, ?> param) throws InterruptedException {
-        MerkleTree merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
+        merkleService.truncateMerkle();
+        List tempTxList = new LinkedList();
+        tempTxList.add("a");
+        tempTxList.add("b");
+        tempTxList.add("c");
+        tempTxList.add("d");
+        tempTxList.add("e");
+        MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
+        merkleService.flush(merkleTree);
+        merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
         Object obj = param.get("body");
         merkleService.add(merkleTree,obj);
         assertEquals(merkleTree.getRootHash(), param.get("assert").toString());
         merkleService.flush(merkleTree);
     }
 
-    @Test(dataProvider = "provideAddExceptionData",dependsOnMethods = { "initAdd" })
+    @Test(dataProvider = "provideAddExceptionData")
     public void testAddException(Map<?, ?> param) throws InterruptedException {
         try {
-            MerkleTree merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
+            merkleService.truncateMerkle();
+            List tempTxList = new LinkedList();
+            tempTxList.add("a");
+            tempTxList.add("b");
+            tempTxList.add("c");
+            tempTxList.add("d");
+            tempTxList.add("e");
+            MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
+            merkleService.flush(merkleTree);
+            merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
             Object obj = param.get("body");
             merkleService.add(merkleTree,obj);
             fail("Expected an slave merkle param not valid exception to be thrown");

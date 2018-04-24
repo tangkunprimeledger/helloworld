@@ -42,9 +42,6 @@ import java.util.List;
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
-        if (log.isDebugEnabled()) {
-            log.debug("failover starting ...");
-        }
         int size = 0;
         try {
             do {
@@ -124,9 +121,6 @@ import java.util.List;
      * @return
      */
     private boolean checkAndInsert(long height) {
-        if (log.isDebugEnabled()) {
-            log.debug("check and instert package:{} for failover", height);
-        }
         Long minHeight =
             packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode()));
         if (minHeight == null || minHeight <= height) {
@@ -147,9 +141,6 @@ import java.util.List;
      * @return
      */
     private boolean insertFailoverPackage(long height) {
-        if (log.isDebugEnabled()) {
-            log.debug("insert failover package:{}", height);
-        }
         Package pack = new Package();
         pack.setPackageTime(System.currentTimeMillis());
         pack.setHeight(height);
@@ -170,7 +161,6 @@ import java.util.List;
      * @return 同步结果
      */
     public boolean failoverBlock(Block block) {
-        log.info("failover block:{}", block);
         BlockHeader blockHeader = block.getBlockHeader();
         Package pack = new Package();
         pack.setPackageTime(blockHeader.getBlockTime());

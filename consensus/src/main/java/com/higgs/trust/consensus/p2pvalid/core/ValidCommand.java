@@ -1,11 +1,16 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 
 /**
  * @author cwy
  */
-public abstract class ValidCommand<T> implements Serializable {
+@Setter
+@Getter
+public abstract class ValidCommand<T extends Serializable> implements Serializable {
 
     private static final long serialVersionUID = -1L;
 
@@ -20,6 +25,7 @@ public abstract class ValidCommand<T> implements Serializable {
     public T get() {
         return t;
     }
+
 
     public Class<?> type() {
         return t.getClass();

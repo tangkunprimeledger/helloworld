@@ -9,5 +9,5 @@ import org.springframework.web.bind.annotation.*;
 public interface P2pConsensusClient {
     @RequestMapping(value = "/consensus/p2p/receive_command", method = RequestMethod.POST)
     @ResponseBody
-    Object receiveCommand(@RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody ValidCommandWrap validCommandWrap);
+    String receiveCommand(@RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody ValidCommandWrap validCommandWrap);
 }

@@ -1,6 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.api.controller;
-import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
+import com.higgs.trust.consensus.p2pvalid.core.exception.ReceiveException;
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -26,7 +26,7 @@ public class P2pConsensusController implements ApplicationContextAware{
 
     @RequestMapping(value = "/receive_command", method = RequestMethod.POST)
     @ResponseBody
-    public Object receiveCommand(@RequestBody ValidCommandWrap validCommandWrap) {
+    public String receiveCommand(@RequestBody ValidCommandWrap validCommandWrap){
         ValidConsensus validConsensus = validConsensusRegistry.get(validCommandWrap.getCommandClass());
         if(null == validConsensus){
             throw new RuntimeException(String.format("no validConsensus mapping to the validCommandClass %s", validCommandWrap.getCommandClass().getSimpleName()));
