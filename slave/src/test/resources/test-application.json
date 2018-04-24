@@ -20,7 +20,7 @@
     "server": {
       "address": "127.0.0.1:8800",
       "cluster": "127.0.0.1:8800",
-      "stateMachineClass": "logReplicateHandlerImpl"
+      "stateMachineClass": "com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandlerImpl"
     }
   },
   "eureka": {
