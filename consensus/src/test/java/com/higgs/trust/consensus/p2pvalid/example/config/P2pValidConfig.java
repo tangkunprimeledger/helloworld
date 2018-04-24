@@ -1,4 +1,5 @@
 package com.higgs.trust.consensus.p2pvalid.example.config;
+
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
@@ -30,7 +31,7 @@ public class P2pValidConfig {
     private String myNodeName;
 
     @Bean
-    public HttpMessageConverters HttpMessageConverters(){
+    public HttpMessageConverters HttpMessageConverters() {
         FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverter();
         FastJsonConfig fastJsonConfig = new FastJsonConfig();
         fastJsonConfig.setSerializerFeatures(SerializerFeature.DisableCircularReferenceDetect,
@@ -45,7 +46,7 @@ public class P2pValidConfig {
     }
 
     @Bean
-    public ValidConsensus validConsensus(){
+    public ValidConsensus validConsensus() {
         String pubKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDT3gcMfUYTHCyRQ6t89oVC1ZwS" +
                 "bjj045VZOPDyqFlcfJK2ZAdw3qw1Io/A47BmtHw0XNS1DsltiA/Kgdl2UKeej73a" +
                 "tNNccfTuZE89GRtN5Fp983Wa1Fr9gPHooljUdp2+QldbjaoQ/pZGX33wkkwK77Ac" +
@@ -65,7 +66,7 @@ public class P2pValidConfig {
                 "oALVO8HSexrjXnq5KTZlwLBo8mbjNvepYhSSUzweWWAF01wb2RE6iEKVi/eAbdxf" +
                 "y1z4W6gwd0LJEg==";
 
-        if(StringUtils.isEmpty(myNodeName)){
+        if (StringUtils.isEmpty(myNodeName)) {
             myNodeName = "";
         }
         myNodeName = myNodeName.toUpperCase();
@@ -73,9 +74,11 @@ public class P2pValidConfig {
                 .setPubKey(pubKey)
                 .setPrivateKey(privateKey)
                 .setMyNodeName(myNodeName)
-                .setClusterNodeNames(new ArrayList<String>(){{add(myNodeName);}})
+                .setClusterNodeNames(new ArrayList<String>() {{
+                    add(myNodeName);
+                }})
                 .setFaultNodeNum(0);
-        ValidConsensus validConsensus = new StringValidConsensus(clusterInfo, p2pConsensusClient,"D:/temp/1/2/3/testTheValidFile");
+        ValidConsensus validConsensus = new StringValidConsensus(clusterInfo, p2pConsensusClient, "D:/temp/1/2/3/testTheValidFile");
         log.info("{}", validConsensus);
         return validConsensus;
     }

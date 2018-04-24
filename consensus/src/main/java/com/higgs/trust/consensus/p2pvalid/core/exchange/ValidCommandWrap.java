@@ -26,7 +26,8 @@ public class ValidCommandWrap implements Serializable {
     private Class<? extends ValidCommand> commandClass;
     private Set<String> toNodeNames;
 
-    public ValidCommandWrap(){}
+    public ValidCommandWrap() {
+    }
 
     private ValidCommandWrap(ValidCommand<?> validCommand) {
         toNodeNames = new HashSet<>();

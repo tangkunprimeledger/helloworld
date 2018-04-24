@@ -62,24 +62,20 @@ public class ReceiveStorage {
             thread.setName("receive trans delay to apply thread");
             thread.setDaemon(true);
             return thread;
-        }).scheduleWithFixedDelay(() -> {
-            transFromDelayToApplyQueue();
-        }, 2, 2, TimeUnit.SECONDS);
+        }).scheduleWithFixedDelay(this::transFromDelayToApplyQueue, 2, 2, TimeUnit.SECONDS);
 
         new ScheduledThreadPoolExecutor(1, (r) -> {
             Thread thread = new Thread(r);
             thread.setName("receive storage gc thread");
             thread.setDaemon(true);
             return thread;
-        }).scheduleWithFixedDelay(() -> {
-            gc();
-        }, 2, 2, TimeUnit.SECONDS);
+        }).scheduleWithFixedDelay(this::gc, 2, 2, TimeUnit.SECONDS);
     }
 
     /**
      * add commandWrap and return the key
-     *
      * @param validCommandWrap
+     * @param threshold
      * @return
      */
     public String add(ValidCommandWrap validCommandWrap, Integer threshold) {
@@ -90,7 +86,7 @@ public class ReceiveStorage {
             ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.of(validCommand));
             receiveCommandStatistics.addFromNode(validCommandWrap.getFromNodeName());
             receiveStatisticsMap.put(key, receiveCommandStatistics);
-            if(receiveCommandStatistics.getFromNodeNameSet().size() >= threshold){
+            if (receiveCommandStatistics.getFromNodeNameSet().size() >= threshold) {
                 log.info("from node set size {} > threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), threshold);
                 addApplyQueue(key);
             }
@@ -117,7 +113,6 @@ public class ReceiveStorage {
 
     /**
      * get commandStatistics by key
-     *
      * @param key
      * @return
      */
@@ -131,7 +126,7 @@ public class ReceiveStorage {
         }
     }
 
-    public void addApplyQueue(String key) {
+    private void addApplyQueue(String key) {
         applyQueueLock.lock();
         try {
             BTreeMap<Long, String> applyQueue = getReceiveApplyQueue();
@@ -189,11 +184,11 @@ public class ReceiveStorage {
         }
     }
 
-    public void transFromDelayToApplyQueue() {
+    private void transFromDelayToApplyQueue() {
         try {
             BTreeMap<Long, String> delayQueue = getReceiveDelayQueue();
             Map.Entry<Long, String> entry = delayQueue.firstEntry();
-            while (null == entry) {
+            if (null == entry) {
                 return;
             }
             delayQueue.remove(entry.getKey());
@@ -206,7 +201,7 @@ public class ReceiveStorage {
         }
     }
 
-    public void gc() {
+    private void gc() {
         try {
             HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
             NavigableSet<String> gcSet = getReceiveGCSet();

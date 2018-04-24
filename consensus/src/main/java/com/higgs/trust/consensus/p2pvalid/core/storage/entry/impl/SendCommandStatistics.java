@@ -40,5 +40,7 @@ public class SendCommandStatistics extends Closeable {
         return ackNodeNameSet;
     }
 
-    public Set<String> getSendNodeNames() {return sendNodeNameSet;}
+    public Set<String> getSendNodeNames() {
+        return sendNodeNameSet;
+    }
 }

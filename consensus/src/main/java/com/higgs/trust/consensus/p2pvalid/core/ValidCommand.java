@@ -16,7 +16,8 @@ public abstract class ValidCommand<T extends Serializable> implements Serializab
 
     private T t;
 
-    public ValidCommand(){}
+    public ValidCommand() {
+    }
 
     public ValidCommand(T t) {
         this.t = t;

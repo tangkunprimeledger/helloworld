@@ -1,6 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.example.spi.impl;
 
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+
 import java.util.List;
 
 /**
@@ -14,33 +15,34 @@ public class ClusterInfoImpl implements ClusterInfo {
     private String privateKey;
     private Integer faultNodeNum;
 
-    private ClusterInfoImpl(){}
+    private ClusterInfoImpl() {
+    }
 
-    public static ClusterInfoImpl of(){
+    public static ClusterInfoImpl of() {
         return new ClusterInfoImpl();
     }
 
-    public ClusterInfoImpl setMyNodeName(String myNodeName){
+    public ClusterInfoImpl setMyNodeName(String myNodeName) {
         this.myNodeName = myNodeName;
         return this;
     }
 
-    public ClusterInfoImpl setPubKey(String pubKey){
+    public ClusterInfoImpl setPubKey(String pubKey) {
         this.pubKey = pubKey;
         return this;
     }
 
-    public ClusterInfoImpl setPrivateKey(String privateKey){
+    public ClusterInfoImpl setPrivateKey(String privateKey) {
         this.privateKey = privateKey;
         return this;
     }
 
-    public ClusterInfoImpl setClusterNodeNames(List<String> clusterNodeNames){
+    public ClusterInfoImpl setClusterNodeNames(List<String> clusterNodeNames) {
         this.clusterNodeNames = clusterNodeNames;
         return this;
     }
 
-    public ClusterInfoImpl setFaultNodeNum(Integer faultNodeNum){
+    public ClusterInfoImpl setFaultNodeNum(Integer faultNodeNum) {
         this.faultNodeNum = faultNodeNum;
         return this;
     }

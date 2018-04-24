@@ -4,7 +4,7 @@
       "address": "127.0.0.1:8800",
       "cluster": "127.0.0.1:8800, 127.0.0.1:8900, 127.0.0.1:9000, 127.0.0.1:9100",
       "stateMachineClass": "com.higgs.trust.consensus.bft.example.StringStateMachine",
-      "logDir":""
+      "logDir": ""
     },
     "client": {
       "server": "127.0.0.1:8800, 127.0.0.1:8900, 127.0.0.1:9000, 127.0.0.1:9100"

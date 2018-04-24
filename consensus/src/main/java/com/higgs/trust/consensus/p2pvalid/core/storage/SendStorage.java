@@ -1,7 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
-import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommandStatistics;
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.SendCommandStatistics;
 import lombok.extern.slf4j.Slf4j;
 import org.mapdb.*;
@@ -51,18 +50,14 @@ public class SendStorage {
             thread.setName("send trans delay to send thread");
             thread.setDaemon(true);
             return thread;
-        }).scheduleWithFixedDelay(() -> {
-            transFromDelayToSendQueue();
-        }, 2, 2, TimeUnit.SECONDS);
+        }).scheduleWithFixedDelay(this::transFromDelayToSendQueue, 2, 2, TimeUnit.SECONDS);
 
         new ScheduledThreadPoolExecutor(1, (r) -> {
             Thread thread = new Thread(r);
             thread.setName("send storage gc thread");
             thread.setDaemon(true);
             return new Thread(r);
-        }).scheduleWithFixedDelay(() -> {
-            gc();
-        }, 1, 1, TimeUnit.SECONDS);
+        }).scheduleWithFixedDelay(this::gc, 1, 1, TimeUnit.SECONDS);
     }
 
     public synchronized String submit(ValidCommandWrap validCommandWrap) {
@@ -146,11 +141,11 @@ public class SendStorage {
         }
     }
 
-    public void transFromDelayToSendQueue() {
+    private void transFromDelayToSendQueue() {
         try {
             BTreeMap<Long, String> delayQueue = getSendDelayQueue();
             Map.Entry<Long, String> entry = delayQueue.firstEntry();
-            while (null == entry) {
+            if (null == entry) {
                 return;
             }
             delayQueue.remove(entry.getKey());
@@ -164,7 +159,7 @@ public class SendStorage {
     }
 
 
-    public void gc() {
+    private void gc() {
         try {
             NavigableSet<String> gcSet = getGCSet(sendDB);
             HTreeMap<String, SendCommandStatistics> submitMap = getSubmitMap(sendDB);
@@ -191,7 +186,7 @@ public class SendStorage {
 
     public void updateSendCommandStatics(String key, SendCommandStatistics sendCommandStatistics) {
         try {
-            getSubmitMap(sendDB).put(key,sendCommandStatistics);
+            getSubmitMap(sendDB).put(key, sendCommandStatistics);
             sendDB.commit();
         } catch (Exception e) {
             sendDB.rollback();

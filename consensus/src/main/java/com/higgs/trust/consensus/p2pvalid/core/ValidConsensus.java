@@ -47,7 +47,7 @@ public abstract class ValidConsensus {
     }
 
     public final void submit(ValidCommand<?> command) {
-        try{
+        try {
             String fromNode = clusterInfo.myNodeName();
             String messageDigest = command.messageDigest();
             String sign = fromNode + "_" + messageDigest;
@@ -57,13 +57,13 @@ public abstract class ValidConsensus {
                     .addToNodeNames(clusterInfo.clusterNodeNames())
                     .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
             consensusContext.submit(validCommandWrap);
-        }catch (Exception e){
-            throw  new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     public final void submit(ValidCommand<?> command, String toNodeName) {
-        try{
+        try {
 
             String fromNode = clusterInfo.myNodeName();
             String messageDigest = command.messageDigest();
@@ -74,13 +74,13 @@ public abstract class ValidConsensus {
                     .addToNodeName(toNodeName)
                     .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
             consensusContext.submit(validCommandWrap);
-        }catch (Exception e){
-            throw  new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     public final void submit(ValidCommand<?> command, Collection<String> toNodeNames) {
-        try{
+        try {
             String fromNode = clusterInfo.myNodeName();
             String messageDigest = command.messageDigest();
             String sign = fromNode + "_" + messageDigest;
@@ -90,25 +90,25 @@ public abstract class ValidConsensus {
                     .addToNodeNames(toNodeNames)
                     .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
             consensusContext.submit(validCommandWrap);
-        }catch (Exception e){
-            throw  new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     public void receive(ValidCommandWrap validCommandWrap) throws ReceiveException {
 
-        if(StringUtils.isEmpty(validCommandWrap.getFromNodeName())){
+        if (StringUtils.isEmpty(validCommandWrap.getFromNodeName())) {
             throw new ReceiveException("from node name can not be null");
         }
         String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNodeName());
-        if(StringUtils.isEmpty(pubKey)){
+        if (StringUtils.isEmpty(pubKey)) {
             throw new ReceiveException(String.format("unknown pubKey for node %s", validCommandWrap.getFromNodeName()));
         }
         try {
-            if(!SignUtils.verify(validCommandWrap.getMessageDigest(), validCommandWrap.getSign(), pubKey)){
+            if (!SignUtils.verify(validCommandWrap.getMessageDigest(), validCommandWrap.getSign(), pubKey)) {
                 throw new Exception(String.format("check sign failed for node %s", validCommandWrap.getFromNodeName()));
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ReceiveException(String.format("invalid command from node %s", validCommandWrap.getFromNodeName()));
         }
         consensusContext.receive(validCommandWrap);
@@ -119,7 +119,7 @@ public abstract class ValidConsensus {
         executor.excute(validCommit);
     }
 
-    public ValidExecutor getValidExecutor(){
+    public ValidExecutor getValidExecutor() {
         return executor;
     }
 

@@ -18,12 +18,12 @@ public class ValidExecutor {
         registry.put(type, function);
     }
 
-    public Set<Class<?>> getKeySet(){
-        return  registry.keySet();
+    public Set<Class<?>> getKeySet() {
+        return registry.keySet();
     }
 
     public <T extends ValidCommand<U>, U extends Serializable> void register(Class<T> type,
-                                                        Consumer<ValidCommit> consumer) {
+                                                                             Consumer<ValidCommit> consumer) {
         registry.put(type, (Function<ValidCommit, Void>) commit -> {
             consumer.accept(commit);
             return null;

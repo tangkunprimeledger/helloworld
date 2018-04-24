@@ -16,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author cwy
  */
-@Slf4j public class ConsensusContext {
+@Slf4j
+public class ConsensusContext {
     private SendStorage sendStorage;
     private ReceiveStorage receiveStorage;
     private ValidConsensus validConsensus;
@@ -28,7 +29,7 @@ import java.util.concurrent.TimeUnit;
         sendStorage = new SendStorage(baseDir.concat("sendDB"));
         receiveStorage = new ReceiveStorage(baseDir.concat("receiveDB"));
         this.p2pConsensusClient = p2pConsensusClient;
-        this.applyThreshold = 2*fautNodeNum + 1;
+        this.applyThreshold = 2 * fautNodeNum + 1;
         initExecutor();
     }
 
@@ -38,18 +39,14 @@ import java.util.concurrent.TimeUnit;
             thread.setName("command send thread");
             thread.setDaemon(true);
             return thread;
-        }).execute(() -> {
-            send();
-        });
+        }).execute(this::send);
 
         new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("command apply thread");
             thread.setDaemon(true);
             return thread;
-        }).execute(() -> {
-            apply();
-        });
+        }).execute(this::apply);
     }
 
     public void submit(ValidCommandWrap validCommandWrap) {
@@ -66,8 +63,8 @@ import java.util.concurrent.TimeUnit;
         receiveStorage.add(validCommandWrap, applyThreshold);
     }
 
-    public void send() {
-        for (; ; ) {
+    private void send() {
+        while (true) {
             String key = null;
             try {
                 key = sendStorage.takeFromSendQueue();
@@ -77,28 +74,28 @@ import java.util.concurrent.TimeUnit;
                 }
                 SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
                 log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
-                for(String nodeName : sendCommandStatistics.getSendNodeNames()){
-                    try{
-                        if(log.isTraceEnabled()){
+                for (String nodeName : sendCommandStatistics.getSendNodeNames()) {
+                    try {
+                        if (log.isTraceEnabled()) {
                             log.trace("nodeName is {}", nodeName);
                         }
 
-                        if(sendCommandStatistics.getAckNodeNames().contains(nodeName)){
+                        if (sendCommandStatistics.getAckNodeNames().contains(nodeName)) {
                             continue;
                         }
 
-                        String result = p2pConsensusClient.receiveCommand(nodeName,sendCommandStatistics.getValidCommandWrap());
-                        if(StringUtils.equals("SUCCESS", result)){
+                        String result = p2pConsensusClient.receiveCommand(nodeName, sendCommandStatistics.getValidCommandWrap());
+                        if (StringUtils.equals("SUCCESS", result)) {
                             sendCommandStatistics.addAckNodeName(nodeName);
-                            sendStorage.updateSendCommandStatics(key,sendCommandStatistics);
+                            sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
                         }
                         log.info("result is {}", result);
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         log.error("{}", e);
                     }
                 }
                 //gc
-                if(sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()){
+                if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
                     sendStorage.addGCSet(key);
                 }
             } catch (Exception e) {
@@ -110,8 +107,8 @@ import java.util.concurrent.TimeUnit;
         }
     }
 
-    public void apply() {
-        for (; ; ) {
+    private void apply() {
+        while (true) {
             String key = null;
             try {
                 key = receiveStorage.takeFromApplyQueue();
@@ -128,7 +125,7 @@ import java.util.concurrent.TimeUnit;
                 }
                 validConsensus.apply(receiveCommandStatistics);
                 if (receiveCommandStatistics.isClosed()) {
-                    if (receiveCommandStatistics.getFromNodeNameSet().size() >= 0) {
+                    if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
                         receiveStorage.addGCSet(key);
                     }
                     receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);

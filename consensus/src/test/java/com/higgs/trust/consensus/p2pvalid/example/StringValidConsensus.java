@@ -11,7 +11,7 @@ import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 public class StringValidConsensus extends ValidConsensus {
 
     public StringValidConsensus(ClusterInfo clusterInfo, P2pConsensusClient p2pConsensusClient, String baseDir) {
-        super(clusterInfo,p2pConsensusClient, baseDir);
+        super(clusterInfo, p2pConsensusClient, baseDir);
     }
 
     public void testStringValid(ValidCommit<StringValidCommand> commit) {

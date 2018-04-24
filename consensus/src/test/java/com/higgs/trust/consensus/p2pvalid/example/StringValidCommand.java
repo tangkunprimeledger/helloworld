@@ -12,7 +12,7 @@ import lombok.Setter;
 public class StringValidCommand extends ValidCommand<String> {
     private static final long serialVersionUID = -1L;
 
-    public StringValidCommand(){
+    public StringValidCommand() {
         super();
     }
 
