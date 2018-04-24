@@ -1,4 +1,4 @@
-package com.higgs.trust.slave;
+package com.higgs.trust;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
@@ -27,8 +27,7 @@ import java.util.List;
  * @author young001
  */
 @SpringBootApplication @EnableTransactionManagement @EnableAspectJAutoProxy @Slf4j @EnableFeignClients
-@ComponentScan({"com.higgs.trust.slave", "com.higgs.trust.consensus"}) public class Application
-    extends WebMvcConfigurerAdapter {
+public class Application extends WebMvcConfigurerAdapter {
 
     @Override public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         super.configureMessageConverters(converters);
@@ -45,12 +44,14 @@ import java.util.List;
     public TransactionTemplate txRequired(PlatformTransactionManager platformTransactionManager) {
         return new TransactionTemplate(platformTransactionManager);
     }
+
     @Bean(name = "txNested")
     public TransactionTemplate txNested(PlatformTransactionManager platformTransactionManager) {
         TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
         tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NESTED);
         return tx;
     }
+
     @Bean(name = "txRequiresNew")
     public TransactionTemplate txRequiresNew(PlatformTransactionManager platformTransactionManager) {
         TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
