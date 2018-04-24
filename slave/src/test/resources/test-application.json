@@ -9,17 +9,8 @@
       "data": {
         "dir": "./data/p2p"
       },
-      "cluster": {
-        "node1": {
-          "pubKey": "abc"
-        },
-        "node2": {
-          "pubKey": "abd"
-        },
-        "node3": {
-          "pubKey": "abe"
-        }
-      }
+      "cluster": "{\"node1\":{\"pubKey\":\"abc\"},\"node2\":{\"pubKey\":\"abd\"},\"node3\":{\"pubKey\":\"abe\"}}",
+      "faultNodeNum": 1
     }
   },
   "copycat": {

@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
@@ -18,6 +19,17 @@ import java.util.List;
     @Autowired NodeState nodeState;
 
     @Autowired RsPubKeyRepository rsPubKeyRepository;
+
+    @Autowired PropertiesConfig propertiesConfig;
+
+    /**
+     * get faultNode num
+     *
+     * @return
+     */
+    @Override public Integer faultNodeNum() {
+        return propertiesConfig.getP2pFaultNodeNum();
+    }
 
     @Override public String myNodeName() {
         return nodeState.getNodeName();

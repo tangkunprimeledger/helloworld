@@ -12,6 +12,8 @@ import javax.validation.constraints.NotNull;
 @Configuration @Setter @Getter public class PropertiesConfig implements InitializingBean {
     @NotNull @Value("${consensus.p2p.data.dir}") private String p2pDataDir;
 
+    @NotNull @Value("${consensus.p2p.faultNodeNum}") private Integer p2pFaultNodeNum;
+
     @Override public void afterPropertiesSet() throws Exception {
         BeanValidator.validate(this).failThrow();
     }
