@@ -26,6 +26,7 @@ import java.util.List;
 
     private List<StateChangeListener> stateListeners = new ArrayList<>();
 
+    //todo:suimi change to  Starting
     @Getter private NodeStateEnum state = NodeStateEnum.Running;
 
     /**

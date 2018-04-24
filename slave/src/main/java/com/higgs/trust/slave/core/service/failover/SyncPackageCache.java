@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 @Component @Slf4j public class SyncPackageCache implements StateChangeListener, InitializingBean {
 
     @Autowired private FailoverProperties properties;
-    
+
     @Autowired private NodeState nodeState;
 
     public static final long INIT_HEIGHT = -1L;
@@ -46,6 +46,9 @@ import java.util.function.Predicate;
     public synchronized void receive(Package pack) {
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("sync cache received package:{}", pack);
         }
         long currentHeight = pack.getHeight();
         if (latestHeight == INIT_HEIGHT) {

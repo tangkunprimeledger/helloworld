@@ -71,7 +71,7 @@ import java.util.Locale;
         }
     }
 
-    //todo:suimi
+    //todo:suimi 如果需要则重写
     @Override public List<InstanceInfo> getInstancesByVipAddressAndAppName(String vipAddress, String appName,
         boolean secure) {
         return super.getInstancesByVipAddressAndAppName(vipAddress, appName, secure);

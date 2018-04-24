@@ -55,8 +55,8 @@ import java.util.concurrent.TimeUnit;
      */
     public Boolean bftValidating(BlockHeader blockHeader) {
         Boolean aBoolean = clusterService.validatingHeader(blockHeader, nodeState.getConsensusWaitTime());
-        if (log.isTraceEnabled()) {
-            log.trace("the blockheader:{} validated result by bft :{}", blockHeader.getHeight(), aBoolean);
+        if (log.isDebugEnabled()) {
+            log.debug("the blockheader:{} validated result by bft :{}", blockHeader.getHeight(), aBoolean);
         }
         return aBoolean;
     }
@@ -67,8 +67,8 @@ import java.util.concurrent.TimeUnit;
      */
     public Long getClusterHeight() {
         Long clusterHeight = clusterService.getClusterHeight(3, nodeState.getConsensusWaitTime());
-        if (log.isTraceEnabled()) {
-            log.trace("get the cluster height:{}", clusterHeight);
+        if (log.isDebugEnabled()) {
+            log.debug("get the cluster height:{}", clusterHeight);
         }
         return clusterHeight;
     }

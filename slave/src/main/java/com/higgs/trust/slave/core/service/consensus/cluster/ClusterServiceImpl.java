@@ -10,8 +10,8 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.model.bo.consensus.*;
 import com.higgs.trust.slave.model.bo.BlockHeader;
-import com.netflix.discovery.converters.Auto;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +67,7 @@ import java.util.concurrent.TimeUnit;
      *
      * @param commit
      */
-    public void handleValidHeader(ValidCommit<ValidHeaderCmd> commit) {
+    public void handleValidHeader(ValidCommit<ValidBlockHeaderCmd> commit) {
         handleResult(commit);
     }
 

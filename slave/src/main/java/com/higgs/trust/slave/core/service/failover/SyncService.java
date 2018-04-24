@@ -36,10 +36,21 @@ import java.util.List;
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
+        log.info("auto sync starting ...");
         cache.clean();
         try {
             Long currentHeight = blockService.getMaxHeight();
-            Long latestHeight = blockSyncService.getClusterHeight();
+            Long latestHeight = null;
+            int tryTimes = 3;
+            do {
+                latestHeight = blockSyncService.getClusterHeight();
+                if (latestHeight != null) {
+                    break;
+                }
+            } while (--tryTimes > 0);
+            if (latestHeight == null) {
+                throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
+            }
             if (latestHeight < currentHeight + properties.getThreshold()) {
                 nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
                 return;
@@ -72,6 +83,7 @@ import java.util.List;
         if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
         }
+        log.info("starting to sync the block, start height:{}, size:{}", startHeight, size);
         Assert.isTrue(size > 0, "the size of sync block must > 0");
         long currentHeight = blockService.getMaxHeight();
         if (currentHeight != startHeight - 1) {
@@ -92,11 +104,11 @@ import java.util.List;
                 continue;
             }
             headerValidated = blockSyncService.bftValidating(headers.get(headers.size() - 1));
-            if (!headerValidated) {
+            if (headerValidated == null || !headerValidated) {
                 continue;
             }
-        } while (!headerValidated && ++tryTimes < properties.getTryTimes());
-        if (!headerValidated) {
+        } while ((headerValidated == null || !headerValidated) && ++tryTimes < properties.getTryTimes());
+        if (headerValidated == null || !headerValidated) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_HEADERS_FAILED);
         }
         int headerSize = headers.size();
