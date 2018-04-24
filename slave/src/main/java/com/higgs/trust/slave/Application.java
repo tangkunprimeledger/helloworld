@@ -26,8 +26,8 @@ import java.util.List;
 /**
  * @author young001
  */
-@SpringBootApplication @EnableTransactionManagement @EnableAspectJAutoProxy @Slf4j @EnableFeignClients
-@ComponentScan({"com.higgs.trust.slave", "com.higgs.trust.consensus"}) public class Application
+@SpringBootApplication @EnableTransactionManagement @EnableAspectJAutoProxy @Slf4j @EnableFeignClients(basePackages = {"com.higgs.trust"})
+@ComponentScan({ "com.higgs.trust.common","com.higgs.trust.consensus","com.higgs.trust.slave"}) public class Application
     extends WebMvcConfigurerAdapter {
 
     @Override public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
