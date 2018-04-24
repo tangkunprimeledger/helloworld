@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.transaction.TransactionDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
+        <result column="tx_id" property="txId"/>
+        <result column="biz_model" property="bizModel"/>
+        <result column="policy_id" property="policyId"/>
+        <result column="lock_time" property="lockTime"/>
+        <result column="version" property="version"/>
+        <result column="block_height" property="blockHeight"/>
+        <result column="block_time" property="blockTime"/>
+        <result column="sender" property="sender"/>
+        <result column="sign_datas" property="signDatas"/>
+    </resultMap>
+    <!-- transaction table all fields -->
+    <sql id="baseColumnList">
+        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas
+    </sql>
+    <!-- query  conditions -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="txId != null and txId != ''">
+                and tx_id=#{txId}
+            </if>
+            <if test="bizModel != null">
+                and biz_model=#{bizModel}
+            </if>
+            <if test="policyId != null and policyId != ''">
+                and policy_id=#{policyId}
+            </if>
+            <if test="lockTime != null">
+                and lock_time=#{lockTime}
+            </if>
+            <if test="version != null and version != ''">
+                and version=#{version}
+            </if>
+            <if test="blockHeight != null">
+                and block_height=#{blockHeight}
+            </if>
+            <if test="blockTime != null">
+                and block_time=#{blockTime}
+            </if>
+            <if test="sender != null">
+                and sender=#{sender}
+            </if>
+            <if test="signDatas != null">
+                and sign_datas=#{signDatas}
+            </if>
+        </trim>
+    </sql>
+    <!-- insert row -->
+    <insert id="add" parameterType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
+        insert into
+        transaction(tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas)
+        values(#{txId},#{bizModel},#{policyId},#{lockTime},#{version},#{blockHeight},#{blockTime},#{sender},#{signDatas})
+    </insert>
+    <!-- 列表总数 -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
+        select count(1) from transaction
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 查询列表 -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
+        select
+        <include refid="baseColumnList"/>
+        from transaction
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- below are auto create -->
+
+    <select id="queryByTxId" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from transaction where tx_id=#{txId}
+    </select>
+
+    <!--batch insert-->
+    <insert id ="batchInsert" parameterType="java.util.List" >
+        insert into transaction
+        (tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas)
+        values
+         <foreach collection ="list" item="item" index= "index" separator =",">
+         (#{item.txId},#{item.bizModel},#{item.policyId},#{item.lockTime},#{item.version},#{item.blockHeight},#{item.blockTime},#{item.sender},#{item.signDatas})
+         </foreach>
+    </insert>
+    <!--query by block height-->
+    <select id="queryByBlockHeight" resultType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
+        select
+        <include refid="baseColumnList"/>
+        from transaction
+       where block_height=#{blockHeight}
+    </select>
+</mapper>

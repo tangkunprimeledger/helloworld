@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.account.AccountDetailDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.account.AccountDetailPO">
+        <result column="id" property="id"/>
+        <result column="biz_flow_no" property="bizFlowNo"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="block_height" property="blockHeight"/>
+        <result column="detail_no" property="detailNo"/>
+        <result column="change_direction" property="changeDirection"/>
+        <result column="amount" property="amount"/>
+        <result column="before_amount" property="beforeAmount"/>
+        <result column="after_amount" property="afterAmount"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+    <!-- account_detail table all fields -->
+    <sql id="baseColumnList">
+		id,biz_flow_no,account_no,block_height,detail_no,change_direction,amount,before_amount,after_amount,remark,create_time
+	</sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="id != null">
+                and id=#{id}
+            </if>
+            <if test="bizFlowNo != null and bizFlowNo != ''">
+                and biz_flow_no=#{bizFlowNo}
+            </if>
+            <if test="accountNo != null and accountNo != ''">
+                and account_no=#{accountNo}
+            </if>
+            <if test="blockHeight != null">
+                and block_height=#{blockHeight}
+            </if>
+            <if test="detailNo != null">
+                and detail_no=#{detailNo}
+            </if>
+            <if test="changeDirection != null and changeDirection != ''">
+                and change_direction=#{changeDirection}
+            </if>
+            <if test="amount != null">
+                and amount=#{amount}
+            </if>
+            <if test="beforeAmount != null">
+                and before_amount=#{beforeAmount}
+            </if>
+            <if test="afterAmount != null">
+                and after_amount=#{afterAmount}
+            </if>
+            <if test="remark != null and remark != ''">
+                and remark=#{remark}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="Object">
+		insert into
+		account_detail(id,biz_flow_no,account_no,block_height,detail_no,change_direction,amount,before_amount,after_amount,remark,create_time)
+		values(#{id},#{bizFlowNo},#{accountNo},#{blockHeight},#{detailNo},#{changeDirection},#{amount},#{beforeAmount},#{afterAmount},#{remark},now())
+	</insert>
+    <!-- 删除记录 -->
+    <delete id="delete" parameterType="Object">
+		delete from account_detail where
+		id=#{id}
+	</delete>
+    <!-- 根据id查询 -->
+    <select id="queryById" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from account_detail where id=#{id}
+    </select>
+    <!-- 列表总数 -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="Object">
+        select count(1) from account_detail
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 查询列表 -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from account_detail
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 以上为工具自动生成 -->
+
+
+</mapper>

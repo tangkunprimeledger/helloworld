@@ -1,0 +1,17 @@
+{
+  "测试ID": 7,
+  "body": {
+    "1": "a",
+    "2": "b",
+    "3": "c",
+    "4": "d",
+    "5": "e",
+    "6": "f",
+    "7": "g",
+    "8": "h",
+    "9": "i"
+  },
+  "type": "RS",
+  "assert": "7a331066a5e7784b9a22d53850e4a5f552deb880fe3c30efe5eb48e279ad88b9",
+  "comment": "merkle树build方法，9个merkleNode测试"
+}

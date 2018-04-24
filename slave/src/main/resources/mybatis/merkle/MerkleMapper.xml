@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.merkle.MerkleDao">
+
+	<!--insert or update-->
+    <insert id="insertMerkleTree" parameterType="com.higgs.trust.slave.dao.po.merkle.MerkleTreePO">
+		INSERT INTO merkle_tree(root_hash,
+								total_level,
+								max_index,
+								tree_type,
+								create_time,
+								update_time)
+					  VALUES (#{rootHash},
+					  			#{totalLevel},
+					  			#{maxIndex},
+					  			#{treeType},
+					  			now(3),
+					  			now(3))
+					  ON DUPLICATE KEY UPDATE
+					  			root_hash=#{rootHash},
+					  			total_level=#{totalLevel},
+					  			max_index=#{maxIndex},
+					  			update_time=now(3)
+	</insert>
+
+
+	<select id="queryMerkleTree" parameterType="com.higgs.trust.slave.dao.po.merkle.MerkleTreePO" resultType="com.higgs.trust.slave.dao.po.merkle.MerkleTreePO">
+		SELECT root_hash as rootHash,
+				total_level as totalLevel,
+				max_index as maxIndex,
+				tree_type as treeType,
+				create_time as createTime,
+				update_time as updateTime
+		FROM merkle_tree
+		where tree_type=#{treeType}
+	</select>
+
+
+	<insert id="batchInsertMerkleNode" parameterType="java.util.List">
+		INSERT INTO merkle_node(uuid,
+								node_hash,
+								`index`,
+								`level`,
+								parent,
+								tree_type,
+								create_time,
+								update_time)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.uuid},#{item.nodeHash},#{item.index},#{item.level},#{item.parent},#{item.treeType},now(3),now(3))
+		</foreach>
+	</insert>
+
+
+	<update id="batchUpdateMerkleNode" parameterType="java.util.List">
+
+		UPDATE merkle_node
+		<trim prefix="SET" suffixOverrides=",">
+			<trim prefix="`node_hash` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `level` = #{item.level} and tree_type = #{item.treeType} and `index` = #{item.index}
+					THEN #{item.nodeHash}
+				</foreach>
+				ELSE `node_hash`
+			</trim>
+			<trim prefix="`parent` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `level` = #{item.level} and tree_type = #{item.treeType} and `index` = #{item.index}
+					THEN #{item.parent}
+				</foreach>
+				ELSE `parent`
+			</trim>
+			<trim prefix="`update_time` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `level` = #{item.level} and tree_type = #{item.treeType} and `index` = #{item.index}
+					THEN now(3)
+				</foreach>
+				ELSE `update_time`
+			</trim>
+		</trim>
+
+		<where>
+			<foreach collection="list" item="item" separator="or">
+				(`level` = #{item.level} and `tree_type` = #{item.treeType} and `index` = #{item.index})
+			</foreach>
+		</where>
+	</update>
+
+
+	<select id="queryMerkleNodeByIndex" parameterType="com.higgs.trust.slave.dao.po.merkle.MerkleNodePO" resultType="com.higgs.trust.slave.dao.po.merkle.MerkleNodePO">
+		SELECT uuid as uuid,
+				node_hash as nodeHash,
+				`index` as `index`,
+				`level` as `level`,
+				parent as parent,
+				tree_type as treeType,
+				create_time as createTime,
+				update_time as updateTime
+		FROM merkle_node
+		where `level`=#{level} and tree_type=#{treeType} and `index`=#{index}
+	</select>
+
+
+	<select id="queryMerkleNodeByHash" parameterType="com.higgs.trust.slave.dao.po.merkle.MerkleNodePO" resultType="com.higgs.trust.slave.dao.po.merkle.MerkleNodePO">
+		SELECT uuid as uuid,
+				node_hash as nodeHash,
+				`index` as `index`,
+				`level` as `level`,
+				parent as parent,
+				tree_type as treeType,
+				create_time as createTime,
+				update_time as updateTime
+		FROM merkle_node
+		where `level`=#{level} and tree_type=#{treeType} and node_hash = #{nodeHash}
+	</select>
+
+	<delete id="trucateMerkleNode">
+		truncate table merkle_node
+	</delete>
+
+	<delete id="trucateMerkleTree">
+		truncate table merkle_tree
+	</delete>
+
+</mapper>

@@ -1,0 +1,105 @@
+{
+  "TRUST": {
+    "ribbon": {
+      "NFLoadBalancerRuleClassName": "com.higgs.trust.slave.common.feign.RequestHeaderRoundRobinRule"
+    }
+  },
+  "consensus": {
+    "p2p": {
+      "data": {
+        "dir": "./data/p2p"
+      },
+      "cluster": {
+        "node1": {
+          "pubKey": "abc"
+        },
+        "node2": {
+          "pubKey": "abd"
+        },
+        "node3": {
+          "pubKey": "abe"
+        }
+      }
+    }
+  },
+  "copycat": {
+    "client": {
+      "server": "127.0.0.1:8800"
+    },
+    "server": {
+      "address": "127.0.0.1:8800",
+      "cluster": "127.0.0.1:8800",
+      "stateMachineClass": "logReplicateHandlerImpl"
+    }
+  },
+  "eureka": {
+    "client": {
+      "enabled": false,
+      "serviceUrl": {
+        "defaultZone": "http://localhost:8761/eureka/"
+      }
+    }
+  },
+  "higgs": {
+    "trust": {
+      "masterName": "rs-test1",
+      "nodeName": "rs-test1",
+      "prefix": "rs-test1",
+      "privateKey": "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBALhZZQEKaaZOsD4z+m1AoBlVnSZFD9mafaRAt9PVHtgkFJViV8a3s+2bFEkxVIxLSqdyWVCqZCOm1+6jbWmk4pN5yY4AaZBCPM6kHkzl/o5ctGXqkIf9s8WxFAmKpMEi7qP6SCitaoMy1sC+IS/vcOphzJZ3NbP3kG0FyCR5EvGdAgMBAAECgYAf7HMeRARZpWTF0NB8HOXcnUPSfcEp6KP7Tq3GxDBMM6tQ1y/mHKfO7L0Nk7pVdTBfYODwpCElP15DWA+5bLFDl2GzCY3gBoMrgrpIaaD672Qf12ikcVf6q/FSNJAvvDPSpLQKYJKG4Aa8/0mFZB9JU1KM2+wDl4Fgf/Lf+vM/zQJBAN1X5nvjy4nwTXlHWvtB+PG9ptAsGo9baEtGW2UrDhPYObghJpk4Slxo+r7l4fWNnwEP6kMGBlFMH41oxNezYLcCQQDVNqiBJBVUgIVGaLSb3ksyXerOf9w1g7JTpSoZmf6SOMAZQ3kqky9Ik4LGwnlFaolUEA/fcTev2rC8iBFt00RLAkB09I5H5jzVXRFCxQ5w9xIYghKTqso5952rMLj4QwDEQZt2DKY9jb3VCG990TBNNJDQ2dz5n0RVTrjZWoOwSgsPAkBvFcArMIKQeTl22pymzOV+w2HP3tv7YbcqT1Yk6o+w3TJwty/M18x90qUDK1WFriEIlCnA77rku1rzjy0NfFILAkBnbOFY4ECXdFysok3n5AgrdHBr8bRSRvzBpdjUL9eH0Cs/37aqwZynwCg6DX5/I2gIwX78ysnujB4mY6lFOG5f"
+    }
+  },
+  "management": {
+    "security": {
+      "enabled": false
+    }
+  },
+  "mybatis": {
+    "configLocation": "classpath:mybatis-config.xml",
+    "mapper-locations": "classpath:mybatis/**/*Mapper.xml"
+  },
+  "primeJob": {
+    "scheduler": {
+      "instanceName": "slave"
+    }
+  },
+  "server": {
+    "port": 7070
+  },
+  "spring": {
+    "application": {
+      "name": "slave"
+    },
+    "datasource": {
+      "druid": {
+        "driver-class-name": "com.mysql.jdbc.Driver",
+        "initialSize": 1,
+        "maxActive": 20,
+        "maxWait": 60000,
+        "min-evictable-idle-time-millis": 300000,
+        "minIdle": 1,
+        "password": "root",
+        "time-between-eviction-runs-millis": 60000,
+        "url": "jdbc:mysql://localhost:3306/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
+        "username": "root"
+      },
+      "type": "com.alibaba.druid.pool.DruidDataSource"
+    }
+  },
+  "trust": {
+    "batch": {
+      "tx": {
+        "limit": 200
+      }
+    },
+    "schedule": {
+      "package": {
+        "create": 50,
+        "process": 100,
+        "submit": 1000
+      }
+    }
+  },
+  "logging": {
+    "config": "classpath:logback-dev.xml"
+  }
+}

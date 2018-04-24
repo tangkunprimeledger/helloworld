@@ -1,0 +1,84 @@
+package com.higgs.trust.slave.core.service.failover;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.Labels;
+import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.slave.common.enums.NodeStateEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.core.managment.listener.StateChangeListener;
+import com.higgs.trust.slave.model.bo.Package;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+
+@Component @Slf4j public class SyncPackageCache implements StateChangeListener, InitializingBean {
+
+    @Autowired private FailoverProperties properties;
+    
+    @Autowired private NodeState nodeState;
+
+    public static final long INIT_HEIGHT = -1L;
+
+    /**
+     * package最新高度
+     */
+    @Getter private long latestHeight = INIT_HEIGHT;
+
+    @Getter private long minHeight = INIT_HEIGHT;
+
+    /**
+     * 接收package
+     * 1.验证package
+     * 2.高度是否连续，不连续丢弃之前package
+     * 3.更新高度
+     * 4.是否超过阈值，超过阈值保留部分
+     *
+     * @param pack package
+     */
+    public synchronized void receive(Package pack) {
+        if (!nodeState.isState(NodeStateEnum.AutoSync)) {
+            return;
+        }
+        long currentHeight = pack.getHeight();
+        if (latestHeight == INIT_HEIGHT) {
+            latestHeight = currentHeight;
+            minHeight = currentHeight;
+        } else {
+            if (currentHeight == latestHeight + 1) {
+                latestHeight = currentHeight;
+                if (latestHeight - minHeight >= properties.getThreshold()) {
+                    minHeight = currentHeight - properties.getKeepSize();
+                }
+            } else if (currentHeight > latestHeight + 1) {
+                latestHeight = currentHeight;
+                minHeight = currentHeight;
+            }
+        }
+    }
+
+    /**
+     * 清空缓存package
+     */
+    public void clean() {
+        latestHeight = INIT_HEIGHT;
+        minHeight = INIT_HEIGHT;
+    }
+
+    @Override public void stateChanged(NodeStateEnum from, NodeStateEnum to) {
+        if (NodeStateEnum.AutoSync == from) {
+            this.clean();
+        }
+    }
+
+    @Override public void afterPropertiesSet() throws Exception {
+        nodeState.registerStateListener(this);
+    }
+}

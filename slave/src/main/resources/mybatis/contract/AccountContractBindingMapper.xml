@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.contract.AccountContractBindingDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.contract.AccountContractBindingPO">
+        <result column="id" property="id"/>
+        <result column="hash" property="hash" />
+        <result column="block_height" property="blockHeight" />
+        <result column="tx_id" property="txId" />
+        <result column="action_index" property="actionIndex" />
+        <result column="account_no" property="accountNo"/>
+        <result column="contract_address" property="contractAddress"/>
+        <result column="args" property="args" />
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- all fields -->
+    <sql id="baseColumnList">
+        id,hash,block_height,tx_id,action_index,account_no,contract_address,args,create_time
+    </sql>
+
+    <!-- add -->
+    <insert id="add" parameterType="com.higgs.trust.slave.dao.po.contract.AccountContractBindingPO">
+        INSERT INTO account_contract_binding (hash,block_height,tx_id,action_index,account_no,contract_address,args,create_time)
+        VALUES (#{hash}, #{blockHeight}, #{txId}, #{actionIndex}, #{accountNo}, #{contractAddress}, #{args}, now())
+    </insert>
+
+    <!-- delete -->
+    <delete id="delete" parameterType="java.lang.String">
+        DELETE FROM account_contract_binding WHERE id=#{id}
+    </delete>
+
+    <!-- query by contract address -->
+    <select id="queryListByAccountNo" resultMap="baseResultMap" parameterType="java.lang.String">
+        SELECT
+        <include refid="baseColumnList"/>
+        FROM account_contract_binding WHERE account_no=#{accountNo}
+    </select>
+
+
+</mapper>

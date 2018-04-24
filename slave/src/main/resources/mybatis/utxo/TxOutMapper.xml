@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.utxo.TxOutDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.utxo.TxOutPO">
+        <result column="tx_id" property="txId"/>
+        <result column="index" property="index"/>
+        <result column="action_index" property="actionIndex"/>
+        <result column="identity" property="identity"/>
+        <result column="state_class" property="stateClass"/>
+        <result column="state" property="state"/>
+        <result column="contract" property="contract"/>
+        <result column="status" property="status"/>
+        <result column="s_tx_id" property="sTxId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <!-- tx_out table all fields -->
+    <sql id="baseColumnList">
+        tx_id,`index`,action_index,identity,state_class,`state`,contract,status,s_tx_id,create_time,update_time
+    </sql>
+    <!-- query  conditions -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="txId != null and txId != ''">
+                and tx_id=#{txId}
+            </if>
+            <if test="index != null">
+                and `index`=#{index}
+            </if>
+            <if test="actionIndex != null">
+                and action_index=#{actionIndex}
+            </if>
+            <if test="identity != null and identity != ''">
+                and identity=#{identity}
+            </if>
+            <if test="stateClass != null and stateClass != ''">
+                and state_class=#{stateClass}
+            </if>
+            <if test="status != null and status != ''">
+                and status=#{status}
+            </if>
+            <if test="sTxId != null and sTxId != ''">
+                and s_tx_id=#{sTxId}
+            </if>
+        </trim>
+    </sql>
+    <!-- insert row -->
+    <insert id="add" parameterType="com.higgs.trust.slave.dao.po.utxo.TxOutPO">
+        insert into
+        tx_out(tx_id,`index`,action_index,identity,state_class,`state`,contract,status,create_time,update_time)
+        values(#{txId},#{index},#{actionIndex},#{identity},#{stateClass},#{state},#{contract},#{status},now(3),now(3))
+    </insert>
+    <!-- queryByCount -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="com.higgs.trust.slave.dao.po.utxo.TxOutPO">
+        select count(1) from tx_out
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- queryByList -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="com.higgs.trust.slave.dao.po.utxo.TxOutPO">
+        select
+        <include refid="baseColumnList"/>
+        from tx_out
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- below are auto create -->
+
+    <select id="queryTxOut" resultMap="baseResultMap"
+            parameterType="com.higgs.trust.slave.dao.po.utxo.TxOutPO">
+        select
+        <include refid="baseColumnList"/>
+        from tx_out
+        where
+        tx_id = #{txId} and `index` = #{index} and action_index = #{actionIndex}
+    </select>
+
+    <!-- batch insert -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO
+        tx_out(tx_id,`index`,action_index,identity,state_class,`state`,contract,status,create_time,update_time)
+        VALUES
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (#{item.txId},#{item.index},#{item.actionIndex},#{item.identity},#{item.stateClass},#{item.state},#{item.contract},#{item.status},now(3),now(3))
+        </foreach>
+    </insert>
+
+    <!-- batch update -->
+    <update id="batchUpdate" parameterType="java.util.List">
+        UPDATE tx_out
+        <trim prefix="SET" suffixOverrides=",">
+            <!-- set s_tx_id -->
+            <trim prefix="`s_tx_id` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `tx_id` = #{item.txId} AND `index` = #{item.index} AND `action_index` = #{item.actionIndex}
+                    THEN #{item.sTxId}
+                </foreach>
+                ELSE `s_tx_id`
+            </trim>
+            <!-- set status -->
+            <trim prefix="`status` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `tx_id` = #{item.txId} AND `index` = #{item.index} AND `action_index` = #{item.actionIndex} AND
+                    `status`="UNSPENT"
+                    THEN #{item.status}
+                </foreach>
+                ELSE `status`
+            </trim>
+            <!-- set update_time -->
+            <trim prefix="`update_time` = CASE" suffix="END">
+                <foreach collection="list" item="item">
+                    WHEN `tx_id` = #{item.txId} AND `index` = #{item.index} AND `action_index` = #{item.actionIndex}
+                    THEN now(3)
+                </foreach>
+                ELSE `update_time`
+            </trim>
+        </trim>
+        <where>
+        <foreach collection="list" item="item" separator="or" open="(" close=")">
+            `tx_id`= #{item.txId}  AND `index`= #{item.index}  AND `action_index`= #{item.actionIndex} AND `status`="UNSPENT"
+        </foreach>
+        </where>
+    </update>
+</mapper>

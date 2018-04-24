@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.account.AccountFreezeRecordDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.account.AccountFreezeRecordPO">
+        <result column="id" property="id"/>
+        <result column="biz_flow_no" property="bizFlowNo"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="block_height" property="blockHeight"/>
+        <result column="contract_addr" property="contractAddr"/>
+        <result column="amount" property="amount"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <!-- account_freeze_record table all fields -->
+    <sql id="baseColumnList">
+		id,biz_flow_no,account_no,block_height,contract_addr,amount,create_time,update_time
+	</sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="id != null">
+                and id=#{id}
+            </if>
+            <if test="bizFlowNo != null and bizFlowNo != ''">
+                and biz_flow_no=#{bizFlowNo}
+            </if>
+            <if test="accountNo != null and accountNo != ''">
+                and account_no=#{accountNo}
+            </if>
+            <if test="blockHeight != null">
+                and block_height=#{blockHeight}
+            </if>
+            <if test="contractAddr != null and contractAddr != ''">
+                and contract_addr=#{contractAddr}
+            </if>
+            <if test="amount != null">
+                and amount=#{amount}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="Object">
+		insert into
+		account_freeze_record(id,biz_flow_no,account_no,block_height,contract_addr,amount,create_time)
+		values(#{id},#{bizFlowNo},#{accountNo},#{blockHeight},#{contractAddr},#{amount},now(3))
+	</insert>
+    <!-- 删除记录 -->
+    <delete id="delete" parameterType="Object">
+		delete from account_freeze_record where
+		id=#{id}
+	</delete>
+    <!-- 根据id查询 -->
+    <select id="queryById" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from account_freeze_record where id=#{id}
+    </select>
+    <!-- 列表总数 -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="Object">
+        select count(1) from account_freeze_record
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 查询列表 -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from account_freeze_record
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 以上为工具自动生成 -->
+
+    <!--query by flowNo and accountNo,return entity-->
+    <select id="queryByFlowNoAndAccountNo" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from account_freeze_record where biz_flow_no=#{bizFlowNo} and account_no=#{accountNo}
+    </select>
+
+    <!--decrease amount by data id-->
+    <update id="decreaseAmount" parameterType="Object">
+		update account_freeze_record
+		set amount=amount-#{amount},update_time=now(3)
+		where id=#{id} and amount - #{amount} >= 0
+	</update>
+</mapper>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.pack.PackageDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.pack.PackagePO">
+        <result column="height" property="height"/>
+        <result column="status" property="status"/>
+        <result column="callbacked" property="callbacked"/>
+        <result column="package_time" property="packageTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <!-- package table all fields -->
+    <sql id="baseColumnList">
+        height,status,package_time,create_time,update_time
+    </sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="height != null">
+                and height=#{height}
+            </if>
+            <if test="status != null and status != ''">
+                and status=#{status}
+            </if>
+            <if test="callbacked != null and callbacked != ''">
+                and is_callbacked=#{isCallbacked}
+            </if>
+            <if test="packageTime != null">
+                and package_time=#{packageTime}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time=#{updateTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="object">
+        insert into
+        package(height,status,package_time,create_time)
+        values(#{height},#{status},#{packageTime},now(3))
+    </insert>
+
+    <!-- 删除记录 -->
+    <delete id="delete" parameterType="object">
+        delete from package where
+        height=#{height}
+    </delete>
+    <!-- 根据id查询 -->
+    <select id="queryByHeight" resultMap="baseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="baseColumnList"/>
+        from package where height=#{height}
+    </select>
+    <!-- 列表总数 -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="object">
+        select count(1) from package
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 查询列表 -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from package
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 以上为工具自动生成 -->
+
+    <select id="getMaxHeight" resultType="java.lang.Long">
+        select max(height) from package
+    </select>
+
+    <select id="queryByStatus" resultMap="baseResultMap" parameterType="string">
+        select
+        <include refid="baseColumnList"/>
+        from package where status=#{status} order by height asc
+    </select>
+
+    <select id="queryHeightListByStatus" resultType="java.lang.Long" parameterType="string">
+        select
+          height
+        from package where status=#{status} order by height asc
+    </select>
+
+    <select id="getMinHeightWithStatus" resultType="java.lang.Long" parameterType="object">
+        select min(height) from package
+        where status in
+          <foreach collection="statusSet" index="index" item="item" open="(" separator="," close=")">
+              #{item}
+          </foreach>
+    </select>
+
+    <select id="getMinHeightWithHeightAndStatus" resultType="java.lang.Long" parameterType="object">
+        select min(height) from package
+        where status in
+        <foreach collection="statusSet" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND height > #{startHeight}
+    </select>
+
+    <select id="countWithStatus" resultType="java.lang.Long" parameterType="object">
+        select count(1) from package
+        where status in
+        <foreach collection="statusSet" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="queryByHeightForUpdate" resultMap="baseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="baseColumnList"/>
+        from package where height=#{height} for update;
+    </select>
+
+    <select id="getHeightListForProcess" resultType="java.lang.Long">
+        select height from package
+        where status IN ('RECEIVED', 'VALIDATING', 'VALIDATED', 'PERSISTING', 'WAIT_VALIDATE_CONSENSUS', 'WAIT_PERSIST_CONSENSUS')
+        AND height > #{maxBlockHeight}
+        ORDER BY height asc
+        limit #{limit}
+    </select>
+
+    <update id="updateStatus" parameterType="object">
+        update package set status=#{to}, update_time=now(3)
+        where height=#{height} and status=#{from}
+    </update>
+</mapper>

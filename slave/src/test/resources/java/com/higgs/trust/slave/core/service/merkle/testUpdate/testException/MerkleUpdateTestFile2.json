@@ -1,0 +1,10 @@
+{
+  "测试ID": 0,
+  "body": {
+    "old": null,
+    "new": null
+  },
+  "type": "RS",
+  "assert": "slave merkle param not valid exception[SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION]",
+  "comment": "merkle树update方法，newObj和oldObj均为空测试"
+}

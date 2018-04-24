@@ -1,0 +1,7 @@
+{
+  "测试ID": 0,
+  "body": "a",
+  "type": "",
+  "assert": "slave merkle param not valid exception[SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION]",
+  "comment": "merkle树add方法，入参为空异常测试"
+}

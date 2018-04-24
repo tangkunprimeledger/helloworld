@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.contract.ContractDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.contract.ContractPO">
+        <result column="id" property="id"/>
+        <result column="address" property="address"/>
+        <result column="language" property="language"/>
+        <result column="code" property="code" />
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- contract table all fields -->
+    <sql id="baseColumnList">
+        id,address,language,code,create_time
+    </sql>
+
+    <!-- add -->
+    <insert id="add" parameterType="com.higgs.trust.slave.dao.po.contract.ContractPO">
+        INSERT INTO contract (address, language, code, create_time)
+        VALUES (#{address}, #{language}, #{code}, now())
+    </insert>
+
+    <!-- delete -->
+    <delete id="delete" parameterType="java.lang.String">
+        DELETE FROM contract WHERE id=#{id}
+    </delete>
+
+    <!-- query by contract address -->
+    <select id="queryByAddress" resultMap="baseResultMap" parameterType="java.lang.String">
+        SELECT
+            <include refid="baseColumnList"/>
+        FROM contract WHERE address=#{address}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.pack.PendingTransactionDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.pack.PendingTransactionPO">
+        <result column="tx_id" property="txId"/>
+        <result column="tx_data" property="txData"/>
+        <result column="status" property="status"/>
+        <result column="height" property="height"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <!-- pending_transaction table all fields -->
+    <sql id="baseColumnList">
+        tx_id,tx_data,status,height,create_time,update_time
+    </sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="txId != null and txId != ''">
+                and tx_id=#{txId}
+            </if>
+            <if test="txData != null and txData != ''">
+                and tx_data=#{txData}
+            </if>
+            <if test="status != null and status != ''">
+                and status=#{status}
+            </if>
+            <if test="height != null">
+                and height=#{height}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time=#{updateTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="java.lang.Object">
+        insert into
+        pending_transaction(tx_id,tx_data,status,height,create_time, update_time)
+        values(#{txId},#{txData},#{status},#{height},now(3), now(3))
+    </insert>
+    <!-- 删除记录 -->
+    <delete id="delete" parameterType="object">
+        delete from pending_transaction where
+        id=#{id}
+    </delete>
+    <!-- 根据id查询 -->
+    <select id="queryById" resultMap="baseResultMap" parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from pending_transaction where id=#{id}
+    </select>
+    <!-- 列表总数 -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="object">
+        select count(1) from pending_transaction
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 查询列表 -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from pending_transaction
+        <include refid="baseWhereClause"/>
+    </select>
+
+    <select id="queryByStatus" resultType="com.higgs.trust.slave.dao.po.pack.PendingTransactionPO">
+        select
+        <include refid="baseColumnList"/>
+        from pending_transaction
+        where status=#{status}  order by create_time asc limit #{limit}
+    </select>
+    <!-- 以上为工具自动生成 -->
+
+    <select id="queryByTxId" resultMap="baseResultMap" parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from pending_transaction where tx_id=#{txId}
+    </select>
+
+    <update id="updateStatus" parameterType="com.higgs.trust.slave.dao.po.pack.PendingTransactionPO">
+        update pending_transaction
+        set status=#{toStatus}, height=#{height}, update_time=now(3)
+        where
+        tx_id=#{txId}
+        and status=#{fromStatus}
+        and (height is null or height=null)
+    </update>
+
+    <select id="queryByHeight" resultMap="baseResultMap" parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from pending_transaction where height=#{height} order by tx_id asc
+    </select>
+
+
+</mapper>

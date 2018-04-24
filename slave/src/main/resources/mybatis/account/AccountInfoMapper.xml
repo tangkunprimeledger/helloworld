@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.account.AccountInfoDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.account.AccountInfoPO">
+        <result column="id" property="id"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="currency" property="currency"/>
+        <result column="balance" property="balance"/>
+        <result column="freeze_amount" property="freezeAmount"/>
+        <result column="fund_direction" property="fundDirection"/>
+        <result column="detail_no" property="detailNo"/>
+        <result column="detail_freeze_no" property="detailFreezeNo"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <!-- account_info table all fields -->
+    <sql id="baseColumnList">
+		id,account_no,currency,balance,freeze_amount,fund_direction,detail_no,detail_freeze_no,status,create_time,update_time
+	</sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="id != null">
+                and id=#{id}
+            </if>
+            <if test="accountNo != null and accountNo != ''">
+                and account_no=#{accountNo}
+            </if>
+            <if test="currency != null and currency != ''">
+                and currency=#{currency}
+            </if>
+            <if test="balance != null">
+                and balance=#{balance}
+            </if>
+            <if test="freezeAmount != null">
+                and freeze_amount=#{freezeAmount}
+            </if>
+            <if test="fundDirection != null and fundDirection != ''">
+                and fund_direction=#{fundDirection}
+            </if>
+            <if test="detailNo != null">
+                and detail_no=#{detailNo}
+            </if>
+            <if test="detailFreezeNo != null">
+                and detail_freeze_no=#{detailFreezeNo}
+            </if>
+            <if test="status != null and status != ''">
+                and status=#{status}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time=#{updateTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="Object">
+		insert into
+		account_info(id,account_no,currency,balance,freeze_amount,fund_direction,detail_no,detail_freeze_no,status,create_time,update_time)
+		values(#{id},#{accountNo},#{currency},#{balance},#{freezeAmount},#{fundDirection},#{detailNo},#{detailFreezeNo},#{status},now(),now(3))
+	</insert>
+    <!-- 删除记录 -->
+    <delete id="delete" parameterType="Object">
+		delete from account_info where
+		id=#{id}
+	</delete>
+    <!-- 根据id查询 -->
+    <select id="queryById" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from account_info where id=#{id}
+    </select>
+    <!-- 列表总数 -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="Object">
+        select count(1) from account_info
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 查询列表 -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from account_info
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 以上为工具自动生成 -->
+
+    <!-- queryByAccountNo -->
+    <select id="queryByAccountNo" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList"/>
+        from account_info where account_no=#{accountNo}
+        <if test="forUpdate == true">
+            for update
+        </if>
+    </select>
+
+    <!-- increase balance for account -->
+    <update id="increaseBalance" parameterType="Object">
+		update account_info
+		set balance=balance+#{amount},detail_no=detail_no+1,update_time=now(3)
+		where account_no=#{accountNo} and (balance - freeze_amount + #{amount}) >= 0
+	</update>
+
+    <!-- decrease balance for account -->
+    <update id="decreaseBalance" parameterType="Object">
+		update account_info
+		set balance=balance-#{amount},detail_no=detail_no+1,update_time=now(3)
+		where account_no=#{accountNo} and (balance - freeze_amount - #{amount}) >= 0
+	</update>
+
+    <!--freeze account balance-->
+    <update id="freeze" parameterType="Object">
+		update account_info
+		set freeze_amount=freeze_amount+#{amount},detail_freeze_no=detail_freeze_no+1,update_time=now(3)
+		where account_no=#{accountNo} and freeze_amount + #{amount} >= 0 and balance - #{amount} >= 0
+	</update>
+
+    <!--unfreeze account balance-->
+    <update id="unfreeze" parameterType="Object">
+		update account_info
+		set freeze_amount=freeze_amount-#{amount},detail_freeze_no=detail_freeze_no+1,update_time=now(3)
+		where account_no=#{accountNo} and freeze_amount - #{amount} >= 0
+	</update>
+</mapper>

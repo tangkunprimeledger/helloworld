@@ -1,0 +1,10 @@
+{
+  "测试ID": 4,
+  "body": {
+    "1": "a",
+    "2": "b"
+  },
+  "type": "RS",
+  "assert": "ad3bbd0236cee779a7b660177b3e7cffb90e915fbc0305e50ccfc64c1f445e47",
+  "comment": "merkle树build方法，2个merkleNode测试"
+}

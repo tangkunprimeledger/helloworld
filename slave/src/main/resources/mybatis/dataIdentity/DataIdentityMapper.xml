@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.DataIdentityDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.DataIdentityPO">
+        <result column="id" property="id"/>
+        <result column="identity" property="identity"/>
+        <result column="chain_owner" property="chainOwner"/>
+        <result column="data_owner" property="dataOwner"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+    <!-- data_identity table all fields -->
+    <sql id="baseColumnList">
+		identity,chain_owner,data_owner,create_time
+	</sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="identity != null and identity != ''">
+                and `identity`=#{identity}
+            </if>
+            <if test="chainOwner != null and chainOwner != ''">
+                and chain_owner=#{chainOwner}
+            </if>
+            <if test="dataOwner != null and dataOwner != ''">
+                and data_owner=#{dataOwner}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="com.higgs.trust.slave.dao.po.DataIdentityPO">
+		insert into
+		data_identity(`identity`,chain_owner,data_owner,create_time)
+		values(#{identity},#{chainOwner},#{dataOwner},now(3))
+	</insert>
+    <!-- 列表总数 -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="com.higgs.trust.slave.dao.po.DataIdentityPO">
+        select count(1) from data_identity
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 查询列表 -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="com.higgs.trust.slave.dao.po.DataIdentityPO">
+        select
+        <include refid="baseColumnList"/>
+        from data_identity
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 以上为工具自动生成 -->
+
+    <!--queryByIdentity-->
+    <select id="queryByIdentity" resultMap="baseResultMap" parameterType="java.lang.String">
+        select
+        <include refid="baseColumnList"/>
+        from data_identity where `identity`=#{identity}
+    </select>
+
+</mapper>

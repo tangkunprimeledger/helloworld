@@ -1,0 +1,7 @@
+{
+  "测试ID": 0,
+  "body": "a",
+  "type": "RS",
+  "assert": "slave merkle already exist exception[SLAVE_MERKLE_ALREADY_EXIST_EXCEPTION]",
+  "comment": "merkle树add方法，重复元素add异常测试"
+}

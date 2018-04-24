@@ -1,0 +1,10 @@
+{
+  "测试ID": 0,
+  "body": {
+    "old": "c",
+    "new": "x"
+  },
+  "type": "RS",
+  "assert": "a8e5205e51d351f023ace95c18decb4696d7e3267a83586e5eca55cab2c833e5",
+  "comment": "merkle树update方法，oldObj存在于原merkle树测试"
+}
