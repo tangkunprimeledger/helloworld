@@ -1,4 +1,4 @@
-package com.higgs.trust.slave;
+package com.higgs.trust;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -26,9 +25,8 @@ import java.util.List;
 /**
  * @author young001
  */
-@SpringBootApplication @EnableTransactionManagement @EnableAspectJAutoProxy @Slf4j @EnableFeignClients(basePackages = {"com.higgs.trust"})
-@ComponentScan({ "com.higgs.trust.common","com.higgs.trust.consensus","com.higgs.trust.slave"}) public class Application
-    extends WebMvcConfigurerAdapter {
+@SpringBootApplication @EnableTransactionManagement @EnableAspectJAutoProxy @Slf4j @EnableFeignClients
+public class Application extends WebMvcConfigurerAdapter {
 
     @Override public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         super.configureMessageConverters(converters);
@@ -45,12 +43,14 @@ import java.util.List;
     public TransactionTemplate txRequired(PlatformTransactionManager platformTransactionManager) {
         return new TransactionTemplate(platformTransactionManager);
     }
+
     @Bean(name = "txNested")
     public TransactionTemplate txNested(PlatformTransactionManager platformTransactionManager) {
         TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
         tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NESTED);
         return tx;
     }
+
     @Bean(name = "txRequiresNew")
     public TransactionTemplate txRequiresNew(PlatformTransactionManager platformTransactionManager) {
         TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
