@@ -25,6 +25,7 @@ public enum SlaveErrorEnum {
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         查询相关[300-399]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
+    SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT("301", "get the consensus result time out.", true),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         Failover相关[400-499]                           //
@@ -35,6 +36,8 @@ public enum SlaveErrorEnum {
     SLAVE_FAILOVER_GET_BLOCKS_FAILED("411", "get the blocks from other node failed", false),
     SLAVE_FAILOVER_GET_HEADERS_FAILED("412", "get the block headers from other node failed", false),
     SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED("413", "the package of block validating failed when sync block.", false),
+    SLAVE_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID("414", "the package of block persist result invalid after sync block.", false),
+    SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID("415", "the package of block persist result invalid after failover block.", false),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         内部处理相关[500-699]                            //

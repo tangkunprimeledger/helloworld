@@ -19,6 +19,10 @@ import java.util.List;
 
     @Autowired RsPubKeyRepository rsPubKeyRepository;
 
+    @Override public Integer faultNodeNum() {
+        return null;
+    }
+
     @Override public String myNodeName() {
         return nodeState.getNodeName();
     }

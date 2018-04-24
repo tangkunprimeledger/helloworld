@@ -11,9 +11,9 @@ import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
-import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -36,10 +36,21 @@ import java.util.List;
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
+        log.info("auto sync starting ...");
         cache.clean();
         try {
             Long currentHeight = blockService.getMaxHeight();
-            Long latestHeight = blockSyncService.getClusterHeight();
+            Long latestHeight = null;
+            int tryTimes = 3;
+            do {
+                latestHeight = blockSyncService.getClusterHeight();
+                if (latestHeight != null) {
+                    break;
+                }
+            } while (--tryTimes > 0);
+            if (latestHeight == null) {
+                throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
+            }
             if (latestHeight < currentHeight + properties.getThreshold()) {
                 nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
                 return;
@@ -72,8 +83,10 @@ import java.util.List;
         if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
         }
+        log.info("starting to sync the block, start height:{}, size:{}", startHeight, size);
         Assert.isTrue(size > 0, "the size of sync block must > 0");
         long currentHeight = blockService.getMaxHeight();
+        log.info("local current block height:{}", currentHeight);
         if (currentHeight != startHeight - 1) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_START_HEIGHT_ERROR);
         }
@@ -87,16 +100,22 @@ import java.util.List;
             if (headers.isEmpty()) {
                 continue;
             }
+            if (log.isDebugEnabled()) {
+                log.debug("get the block headers from other node:{}", ToStringBuilder.reflectionToString(headers));
+            }
             headerValidated = blockSyncService.validating(currentHeader.getBlockHash(), headers);
+            if (log.isDebugEnabled()) {
+                log.debug("the block headers local valid result:{}", headerValidated);
+            }
             if (!headerValidated) {
                 continue;
             }
             headerValidated = blockSyncService.bftValidating(headers.get(headers.size() - 1));
-            if (!headerValidated) {
+            if (headerValidated == null || !headerValidated) {
                 continue;
             }
-        } while (!headerValidated && ++tryTimes < properties.getTryTimes());
-        if (!headerValidated) {
+        } while ((headerValidated == null || !headerValidated) && ++tryTimes < properties.getTryTimes());
+        if (headerValidated == null || !headerValidated) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_HEADERS_FAILED);
         }
         int headerSize = headers.size();
@@ -171,12 +190,17 @@ import java.util.List;
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
         packageService.validating(packContext);
-        BlockHeader tempHeader = blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.TEMP_TYPE);
-        boolean validated = blockService.compareBlockHeader(tempHeader, block.getBlockHeader());
+        boolean validated =
+            blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
         if (!validated) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
         }
         packContext = packageService.createPackContext(pack);
         packageService.persisting(packContext);
+        boolean persistValid =
+            blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
+        if (!persistValid) {
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID);
+        }
     }
 }
