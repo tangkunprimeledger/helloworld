@@ -20,7 +20,7 @@ public class UTXOSnapshotAgentTest extends BaseTest {
     private SnapshotService snapshotService;
     @Test
     public void testQueryTxOut() throws Exception {
-        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryTxOut("123123", 0, 0));
+        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryUTXO("123", 0, 0));
 
 
     }
@@ -63,9 +63,9 @@ public class UTXOSnapshotAgentTest extends BaseTest {
         txOutPOList.add(txOutPO2);
         snapshotService.startTransaction();
         utxoSnapshotAgent.batchInsertTxOut(txOutPOList);
-        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryTxOut(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));
+        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryUTXO(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));
         snapshotService.commit();
-        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryTxOut(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));
+        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryUTXO(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));
         snapshotService.destroy();
     }
 
@@ -107,9 +107,9 @@ public class UTXOSnapshotAgentTest extends BaseTest {
         txOutPOList.add(txOutPO2);
         snapshotService.startTransaction();
         utxoSnapshotAgent.bachUpdateTxOut(txOutPOList);
-        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryTxOut(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));
+        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryUTXO(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));
         snapshotService.commit();
-        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryTxOut(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));
+        System.out.println("queryTxOut :" + utxoSnapshotAgent.queryUTXO(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));
         snapshotService.destroy();
     }
 

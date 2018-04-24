@@ -11,6 +11,7 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.service.contract.SmartContractUtil;
+import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.UTXOSmartContract;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
@@ -210,45 +211,45 @@ public class UTXOActionServiceTest extends BaseTest {
         outputList.add(txOut);
         outputList.add(txOut1);
 
-        String code ="function verify() {\n" + "    var action = ctx.getAction();\n" + "\tvar actionType = action.utxoActionType;\n" + "\tvar issueActionType = ctx.getUTXOActionType('ISSUE');\n" + "\tvar normalActionType = ctx.getUTXOActionType('NORMAL');\n" + "\tvar destructionActionType = ctx.getUTXOActionType('DESTRUCTION');\n" + "\t\n" + "\t//issue utxo  action\n" + "\tif(actionType == issueActionType){\n" + "\t\treturn true;\n" + "\t}\n" + "\t\n" + "    //notmal utxo  action\n" + "    if(actionType == normalActionType){\n" + "\t  if(action.inputList.length == 0 || action.getOutputList().length == 0){\n" + "\t \treturn false;\n" + "\t  }\n" + "\tvar utxoList = ctx.queryTxOutList(action.inputList);\n" + "\tvar inputsAmount = 0;\n" + "\tvar outputsAmount = 0;\n" + "\tutxoList.forEach(function (input) {inputsAmount += JSON.parse(input.getState()).amount;});\n" + "\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\n" + "\treturn inputsAmount == outputsAmount;\n" + "\t}\n" + "\t\n" + "\t //destruction utxo  action\n" + "\tif(actionType == destructionActionType){\n" + "\t\treturn true;\n" + "\t}\n" + "   \n" + "\treturn false;\n" + "}";
-                //execute contract
+        String code ="function verify() {\n" + "    var action = ctx.getAction();\n" + "\tvar actionType = action.utxoActionType;\n" + "\tvar issueActionType = ctx.getUTXOActionType('ISSUE');\n" + "\tvar normalActionType = ctx.getUTXOActionType('NORMAL');\n" + "\tvar destructionActionType = ctx.getUTXOActionType('DESTRUCTION');\n" + "\n" + "\t//issue utxo  action\n" + "\tif(actionType == issueActionType){\n" + "\t\treturn true;\n" + "\t}\n" + "\n" + "    //notmal utxo  action\n" + "    if(actionType == normalActionType){\n" + "\t  if(action.inputList.length == 0 || action.getOutputList().length == 0){\n" + "\t \treturn false;\n" + "\t  }\n" + "\tvar utxoList = ctx.queryUTXOList(action.inputList);\n" + "\tvar inputsAmount = 0;\n" + "\tvar outputsAmount = 0;\n" + "\tutxoList.forEach(function (input) {inputsAmount += input.getState().amount;});\n" + "\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\n" + "\treturn inputsAmount == outputsAmount;\n" + "\t}\n" + "\n" + "\t //destruction utxo  action\n" + "\tif(actionType == destructionActionType){\n" + "\n" + "\t\treturn true;\n" + "\t}\n" + "\n" + "\treturn false;\n" + "}";
+        //execute contract
         utxoAction.setContract(code);
         utxoAction.setOutputList(outputList);
         utxoAction.setInputList(new ArrayList<>());
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.ISSUE);
-        ExecuteContextData data = SmartContractUtil.newContextData().put("Action", utxoAction);
+        ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
         boolean contractIssueProcessSuccess = utxoSmartContract.execute(utxoAction.getContract(), data, TxProcessTypeEnum.VALIDATE);
 
         System.out.println("Issue true==============================="+contractIssueProcessSuccess);
 
 
 
-        utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
+     /*   utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
         utxoAction.setInputList(new ArrayList<>());
         utxoAction.setOutputList(outputList);
-        ExecuteContextData data1 = SmartContractUtil.newContextData().put("Action", utxoAction);
+        ExecuteContextData data1 =new UTXOExecuteContextData().setAction(utxoAction);
         boolean contractNormalProcessSuccess = utxoSmartContract.execute(utxoAction.getContract(), data1, TxProcessTypeEnum.VALIDATE);
 
         System.out.println("Normal false==============================="+contractNormalProcessSuccess);
-
+*/
 
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
         utxoAction.setInputList(inputList);
         utxoAction.setOutputList(outputList);
-        ExecuteContextData data2 = SmartContractUtil.newContextData().put("Action", utxoAction);
+        ExecuteContextData data2 = new UTXOExecuteContextData().setAction(utxoAction);
         boolean contractNormalProcessSuccess2 = utxoSmartContract.execute(utxoAction.getContract(), data2, TxProcessTypeEnum.VALIDATE);
 
         System.out.println("Normal true==============================="+contractNormalProcessSuccess2);
 
 
-        utxoAction.setUtxoActionType(UTXOActionTypeEnum.DESTRUCTION);
+    /*    utxoAction.setUtxoActionType(UTXOActionTypeEnum.DESTRUCTION);
         utxoAction.setInputList(inputList);
         utxoAction.setOutputList(new ArrayList<>());
-        ExecuteContextData data3 = SmartContractUtil.newContextData().put("Action", utxoAction);
-        boolean contractDESTRUCTIONProcessSuccess2 = utxoSmartContract.execute(utxoAction.getContract(), data2, TxProcessTypeEnum.VALIDATE);
+        ExecuteContextData data3 =  new UTXOExecuteContextData().setAction(utxoAction);
+        boolean contractDESTRUCTIONProcessSuccess2 = utxoSmartContract.execute(utxoAction.getContract(), data3, TxProcessTypeEnum.VALIDATE);
 
         System.out.println("destoy true==============================="+contractDESTRUCTIONProcessSuccess2);
-
+*/
     }
 
     @Test

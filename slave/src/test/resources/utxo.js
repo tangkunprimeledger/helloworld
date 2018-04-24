@@ -15,10 +15,10 @@ function verify() {
 	  if(action.inputList.length == 0 || action.getOutputList().length == 0){
 	 	return false;
 	  }
-	var utxoList = ctx.queryTxOutList(action.inputList);
+	var utxoList = ctx.queryUTXOList(action.inputList);
 	var inputsAmount = 0;
 	var outputsAmount = 0;
-	utxoList.forEach(function (input) {inputsAmount += JSON.parse(input.getState()).amount;});
+	utxoList.forEach(function (input) {inputsAmount += input.getState().amount;});
 	action.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});
 	return inputsAmount == outputsAmount;
 	}

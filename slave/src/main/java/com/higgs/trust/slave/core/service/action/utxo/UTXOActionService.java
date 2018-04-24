@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.core.service.action.utxo;
 
+import com.alibaba.fastjson.JSON;
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -29,6 +31,7 @@ import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import com.higgs.trust.slave.model.convert.UTXOConvert;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -296,14 +299,14 @@ public class UTXOActionService {
             return;
         }
         for (TxIn txIn : inputList) {
-            TxOutPO txOutPO = utxoHandler.queryTxOut(txIn.getTxId(), txIn.getIndex(), txIn.getActionIndex());
-            if (null == txOutPO) {
-                log.error("Validate identity fail! The input: {} is not existed in txOutPO", txIn);
+            UTXO utxo = utxoHandler.queryUTXO(txIn.getTxId(), txIn.getIndex(), txIn.getActionIndex());
+            if (null == utxo) {
+                log.error("Validate identity fail! The input: {} is not existed in UTXO s", txIn);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_TX_OUT_NOT_EXISTS_ERROR);
             }
-            DataIdentity dataIdentity = dataIdentityHandler.getDataIdentity(txOutPO.getIdentity());
+            DataIdentity dataIdentity = dataIdentityHandler.getDataIdentity(utxo.getIdentity());
             if (null == dataIdentity) {
-                log.error("Validate identity fail! The input's identityId : {} for dataidentity  is not existed!", txOutPO.getIdentity());
+                log.error("Validate identity fail! The input's identityId : {} for dataidentity  is not existed!", utxo.getIdentity());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_DATA_IDENTITY_NOT_EXISTS_ERROR);
             }
             dataIdentityList.add(dataIdentity);
@@ -364,13 +367,13 @@ public class UTXOActionService {
 
             //check whether txIn is double spend in the all the txOut
             log.info("check whether txIn is double spend in the all the txOut");
-            TxOutPO txOutPO = utxoHandler.queryTxOut(txIn.getTxId(), txIn.getIndex(), txIn.getActionIndex());
-            if (null == txOutPO) {
+            UTXO utxo = utxoHandler.queryUTXO(txIn.getTxId(), txIn.getIndex(), txIn.getActionIndex());
+            if (null == utxo) {
                 log.error("Validate identity fail! The input: {} is not existed in txOutPO", txIn);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_TX_OUT_NOT_EXISTS_ERROR);
             }
-            if (StringUtils.equals(txOutPO.getStatus(), UTXOStatusEnum.SPENT.getCode())) {
-                log.error("TxIn is double spend. txIn: {}, STXO: {}", txIn, txOutPO);
+            if (StringUtils.equals(utxo.getStatus(), UTXOStatusEnum.SPENT.getCode())) {
+                log.error("TxIn is double spend. txIn: {}, STXO: {}", txIn, utxo);
                 return true;
             }
         }
@@ -454,7 +457,6 @@ public class UTXOActionService {
      *
      * @param actionData
      */
-    //TODO 检查更新返回值是被更新条数还是匹配条数！！！！！！！！！！
     private void batchUpdateSTXO(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
         log.info("Start to bachUpdate STXO");
         UTXOAction utxoAction = (UTXOAction) actionData.getCurrentAction();
@@ -504,9 +506,11 @@ public class UTXOActionService {
      * @return
      */
     private TxOutPO STXOBuilder(TxIn txIn, ActionData actionData) {
-        TxOutPO txOutPO = utxoSnapshotHandler.queryTxOut(txIn.getTxId(), txIn.getIndex(), txIn.getActionIndex());
+        UTXO utxo = utxoSnapshotHandler.queryUTXO(txIn.getTxId(), txIn.getIndex(), txIn.getActionIndex());
+        TxOutPO txOutPO = BeanConvertor.convertBean(utxo, TxOutPO.class);
         txOutPO.setSTxId(actionData.getCurrentTransaction().getCoreTx().getTxId());
         txOutPO.setStatus(UTXOStatusEnum.SPENT.getCode());
+        txOutPO.setState(utxo.getState().toJSONString());
         txOutPO.setUpdateTime(new Date());
         return txOutPO;
     }

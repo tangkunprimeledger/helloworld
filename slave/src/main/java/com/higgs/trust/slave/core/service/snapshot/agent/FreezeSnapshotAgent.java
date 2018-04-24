@@ -4,10 +4,11 @@ import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.repository.account.FreezeRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
-import com.higgs.trust.slave.model.bo.snapshot.CacheKey;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,7 @@ import org.springframework.stereotype.Component;
     /**
      * the cache key of freeze info
      */
-    @Getter @Setter @AllArgsConstructor public class FreezeCacheKey extends CacheKey {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class FreezeCacheKey extends BaseBO {
         private String bizFlowNo;
         private String accountNo;
     }

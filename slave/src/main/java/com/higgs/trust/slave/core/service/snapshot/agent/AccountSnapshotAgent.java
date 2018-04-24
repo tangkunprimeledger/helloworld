@@ -5,15 +5,16 @@ import com.higgs.trust.slave.core.repository.account.AccountRepository;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.DataIdentity;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
 import com.higgs.trust.slave.model.bo.account.IssueCurrency;
 import com.higgs.trust.slave.model.bo.account.OpenAccount;
-import com.higgs.trust.slave.model.bo.snapshot.CacheKey;
 import com.higgs.trust.slave.model.convert.DataIdentityConvert;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,14 +116,14 @@ import org.springframework.stereotype.Component;
     /**
      * the cache key of account info
      */
-    @Getter @Setter @AllArgsConstructor public class AccountCacheKey extends CacheKey {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class AccountCacheKey extends BaseBO {
         private String accountNo;
     }
 
     /**
      * the cache key of currency info
      */
-    @Getter @Setter @AllArgsConstructor public class CurrencyInfoCacheKey extends CacheKey {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class CurrencyInfoCacheKey extends BaseBO {
         private String currency;
     }
 }

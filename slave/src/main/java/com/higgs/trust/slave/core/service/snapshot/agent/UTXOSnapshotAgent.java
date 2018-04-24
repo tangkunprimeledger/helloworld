@@ -1,13 +1,17 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
+import com.alibaba.fastjson.JSON;
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
-import com.higgs.trust.slave.model.bo.snapshot.CacheKey;
+import com.higgs.trust.slave.model.bo.BaseBO;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,21 +54,26 @@ public class UTXOSnapshotAgent implements CacheLoader{
         snapshot.put(SnapshotBizKeyEnum.UTXO, key, object);
     }
 
-    /**
-     * query txOut by txId, index and actionIndex
+    /**     * add data into snapshot
+
+     * query UTXO by txId, index and actionIndex
      *
      * @param txId
      * @param index
      * @param actionIndex
      * @return
      */
-    public TxOutPO queryTxOut(String txId, Integer index, Integer actionIndex) {
+    public UTXO queryUTXO(String txId, Integer index, Integer actionIndex) {
         TxOutCacheKey txOutCacheKey = new TxOutCacheKey(txId, index, actionIndex);
-        return get(txOutCacheKey);
+        TxOutPO txOutPO = get(txOutCacheKey);
+        UTXO utxo = BeanConvertor.convertBean(txOutPO, UTXO.class);
+        if (null != txOutPO){
+            utxo.setState(JSON.parseObject(txOutPO.getState()));
+        }
+        return utxo;
     }
 
     /**
-     * add data into snapshot
      * @param txOutPOList
      */
     public boolean batchInsertTxOut(List<TxOutPO> txOutPOList){
@@ -72,7 +81,6 @@ public class UTXOSnapshotAgent implements CacheLoader{
             TxOutCacheKey txOutCacheKey = new TxOutCacheKey(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex());
             put(txOutCacheKey, txOutPO);
         }
-        //TODO lingchao may be it is not good to write like this
         return true;
     }
 
@@ -85,7 +93,6 @@ public class UTXOSnapshotAgent implements CacheLoader{
             TxOutCacheKey txOutCacheKey = new TxOutCacheKey(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex());
             put(txOutCacheKey, txOutPO);
         }
-        //TODO lingchao may be it is not good to write like this
         return true;
     }
 
@@ -100,23 +107,30 @@ public class UTXOSnapshotAgent implements CacheLoader{
             return txOutRepository.queryTxOut(txOutCacheKey.getTxId(), txOutCacheKey.getIndex(), txOutCacheKey.getActionIndex());
     }
 
-   @Getter
-   @Setter
-   @AllArgsConstructor
-    public class TxOutCacheKey extends CacheKey {
-       /**
-        * transaction id
-        */
-       private String txId;
-       /**
-        * index for the out in the transaction
-        */
-       private Integer index;
-       /**
-        * index for the action of the out in the transaction
-        */
-       private Integer actionIndex;
-   }
+    /**
+     * TxOutCacheKey
+     *
+     */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TxOutCacheKey extends BaseBO {
+
+        /**
+         * transaction id
+         */
+        private String txId;
+        /**
+         * index for the out in the transaction
+         */
+        private Integer index;
+        /**
+         * index for the action of the out in the transaction
+         */
+        private Integer actionIndex;
+    }
+
 
 
 }

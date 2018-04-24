@@ -24,7 +24,7 @@ public class UTXODBHandlerTest extends BaseTest{
         txIn2.setActionIndex(0);
         inputList.add(txIn);
         inputList.add(txIn2);
-        System.out.println(utxodbHandler.queryTxOutList(inputList));
+        System.out.println(utxodbHandler.queryUTXOList(inputList));
 
 
     }

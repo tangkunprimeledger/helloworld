@@ -4,10 +4,11 @@ import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.DataIdentity;
-import com.higgs.trust.slave.model.bo.snapshot.CacheKey;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +63,7 @@ import org.springframework.stereotype.Component;
     /**
      * the cache key of data identity
      */
-    @Getter @Setter @AllArgsConstructor public class DataIdentityCachKey extends CacheKey {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class DataIdentityCachKey extends BaseBO {
        private String identity;
     }
 }

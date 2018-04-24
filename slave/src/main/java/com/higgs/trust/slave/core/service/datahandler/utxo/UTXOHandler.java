@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.service.datahandler.utxo;
 
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 
 import java.util.List;
 
@@ -14,14 +15,14 @@ import java.util.List;
 public interface UTXOHandler {
 
     /**
-     * query txOut by txId, index and actionIndex
+     * query UTXO by txId, index and actionIndex
      *
      * @param txId
      * @param index
      * @param actionIndex
      * @return
      */
-    TxOutPO queryTxOut(String txId, Integer index, Integer actionIndex);
+    UTXO queryUTXO(String txId, Integer index, Integer actionIndex);
 
 
     /**
@@ -30,7 +31,7 @@ public interface UTXOHandler {
      * @param inputList
      * @return
      */
-    List<TxOutPO> queryTxOutList(List<TxIn> inputList);
+    List<UTXO> queryUTXOList(List<TxIn> inputList);
 
     /**
      * batch insert

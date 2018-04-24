@@ -103,8 +103,7 @@
             <!-- set status -->
             <trim prefix="`status` = CASE" suffix="END,">
                 <foreach collection="list" item="item">
-                    WHEN `tx_id` = #{item.txId} AND `index` = #{item.index} AND `action_index` = #{item.actionIndex} AND
-                    `status`="UNSPENT"
+                    WHEN `tx_id` = #{item.txId} AND `index` = #{item.index} AND `action_index` = #{item.actionIndex}
                     THEN #{item.status}
                 </foreach>
                 ELSE `status`

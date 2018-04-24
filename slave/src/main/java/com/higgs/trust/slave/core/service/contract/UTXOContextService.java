@@ -8,6 +8,7 @@ import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ import java.util.List;
      * @param inputList
      * @return
      */
-   public List<TxOutPO> queryTxOutList(List<TxIn> inputList){
+   public List<UTXO> queryUTXOList(List<TxIn> inputList){
         log.info("When process UTXO contract  querying queryTxOutList by inputList:{}", inputList);
         UTXOHandler utxoHandler;
         if (getContext().isValidateStage()) {
@@ -50,6 +51,6 @@ import java.util.List;
             // form db
             utxoHandler = utxoDBHandler;
         }
-        return utxoHandler.queryTxOutList(inputList);
+        return utxoHandler.queryUTXOList(inputList);
     }
 }

@@ -4,10 +4,11 @@ import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.Contract;
-import com.higgs.trust.slave.model.bo.snapshot.CacheKey;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +36,8 @@ import org.springframework.stereotype.Component;
         return contractRepository.queryByAddress(key.getAddress());
     }
 
-    @Getter @Setter @AllArgsConstructor
-    public class ContractCacheKey extends CacheKey {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ContractCacheKey extends BaseBO {
         private String address;
     }
 }

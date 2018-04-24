@@ -8,7 +8,6 @@ import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.service.snapshot.agent.*;
-import com.higgs.trust.slave.model.bo.snapshot.CacheKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +29,10 @@ public class SnapshotServiceImpl implements SnapshotService {
      * tag whether  the snapshot is in  transaction
      */
     private static boolean isOpenTransaction = false;
+
+    private static final int  MAXIMUN_SIZE =  10000;
+
+    private static final int  REFRESH_TIME = 365;
 
     @Autowired
     private UTXOSnapshotAgent utxoSnapshotAgent;
@@ -58,12 +61,10 @@ public class SnapshotServiceImpl implements SnapshotService {
     /**
      * cache  for package
      */
-    //TODO lignchao  检查是否可以使用static 和 final 修饰
     private ConcurrentHashMap<SnapshotBizKeyEnum, LoadingCache<String, Object>> packageCache = new ConcurrentHashMap<>();
     /**
      * cache for transaction
      */
-    //TODO lignchao  检查是否可以使用static 和 final 修饰
     private ConcurrentHashMap<SnapshotBizKeyEnum, ConcurrentHashMap<String, Object>> txCache = new ConcurrentHashMap<>();
 
     /**
@@ -140,8 +141,7 @@ public class SnapshotServiceImpl implements SnapshotService {
     public void destroy() {
         log.info("Start to destroy snapshot");
 
-        //TODO lingchao 检查开始关闭内存事务是否合理
-        //close transaction first
+        //close transaction first,if not there may be some data put into cache after clearing data
         closeTransaction();
 
         //clear txCache
@@ -176,7 +176,6 @@ public class SnapshotServiceImpl implements SnapshotService {
     @Override
     public Object get(SnapshotBizKeyEnum key1, Object key2) {
         log.info("Start to get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
-        //TODO lingchao  考虑下，这里可能需要先检查 package cache 是否存在 key1
         //get data from txCache
         Object value = getDataFromTxCache(key1, key2);
         if (null != value) {
@@ -245,8 +244,7 @@ public class SnapshotServiceImpl implements SnapshotService {
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
         }
 
-        //TODO lingchao 检查开始关闭内存事务是否合理
-        //close transaction first
+        //close transaction first,if not there may be some data put into cache after clearing data
         closeTransaction();
 
         //check whether snapshot txCache is empty.
@@ -276,8 +274,8 @@ public class SnapshotServiceImpl implements SnapshotService {
             log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
         }
-        //TODO lingchao 检查开始关闭内存事务是否合理  ！ 可能是合理的，因为先清理了内存，再关闭事务，可能存在再往内存数据的情况。关了事务就没有数据能写入了
-        //close transaction
+
+        //close transaction,if not there may be some data put into cache after clearing data
         closeTransaction();
 
         //clear txCache
@@ -291,18 +289,15 @@ public class SnapshotServiceImpl implements SnapshotService {
      * 1.register  loading cache method  to guavaCache
      * 2.add guavaCache to packageCache
      */
-    //TODO lingchao 调整过期时间，最大数据量，并发数等配置
-    //TODO 区分db异常！！！！！   测试db 异常是否会被抛出
-    //TODO 添加最大数据量限制，添加缓存清理时间限制，添加是否达到最大条数，达到则抛异常报警
+    //TODO lingchao make MAXIMUN_SIZE  config in the config file
     private void registerBizLoadingCache(SnapshotBizKeyEnum snapshotBizKeyEnum, CacheLoader cacheLoader) {
         log.info("Start to register core loadingCache to packageCache for snapshotBizKeyEnum:{}", snapshotBizKeyEnum);
-        LoadingCache<String, Object> bizCache = CacheBuilder.newBuilder().initialCapacity(10).maximumSize(500).refreshAfterWrite(60, TimeUnit.MINUTES).build(new com.google.common.cache.CacheLoader<String, Object>() {
+        LoadingCache<String, Object> bizCache = CacheBuilder.newBuilder().initialCapacity(10).maximumSize(MAXIMUN_SIZE).refreshAfterWrite(REFRESH_TIME, TimeUnit.DAYS).build(new com.google.common.cache.CacheLoader<String, Object>() {
             @Override
             public Object load(String bo) throws Exception {
                 log.info("There is no data for  bizKey： {}  by snapshotBizKeyEnum： {} in packageCache ,try to get data from DB", bo, snapshotBizKeyEnum);
                 //just want to get Clazz
-                CacheKey cacheKey = JSON.parseObject(bo, CacheKey.class);
-                Object object = JSON.parseObject(bo, cacheKey.getClazz());
+                Object object = JSON.parse(bo);
                 return cacheLoader.query(object);
             }
         });
@@ -396,9 +391,15 @@ public class SnapshotServiceImpl implements SnapshotService {
             }
 
             // foreach inner map to copy data
+            LoadingCache<String, Object> innerCache = packageCache.get(snapshotBizKeyEnum);
             for (Map.Entry<String, Object> innerEntry : innerMap.entrySet()) {
+                //check  cache size
+                if (innerCache.size() >= MAXIMUN_SIZE){
+                    log.error("Cache size  : {} for key:{} in packageCache is equal or bigger than {}!", innerCache.size(),  snapshotBizKeyEnum, MAXIMUN_SIZE);
+                    //TODO lingchao 加监控
+                    throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_CACHE_SIZE_NOT_ENOUGH_EXCEPTION);
+                }
                 log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into packageCache", snapshotBizKeyEnum, innerEntry.getKey(), innerEntry.getValue());
-                LoadingCache<String, Object> innerCache = packageCache.get(snapshotBizKeyEnum);
                 innerCache.put(innerEntry.getKey(), innerEntry.getValue());
             }
         }

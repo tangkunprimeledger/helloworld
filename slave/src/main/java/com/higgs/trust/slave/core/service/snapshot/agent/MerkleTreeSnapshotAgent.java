@@ -5,10 +5,11 @@ import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.service.merkle.MerkleService;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
-import com.higgs.trust.slave.model.bo.snapshot.CacheKey;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ import java.util.Arrays;
      * @return
      */
     public MerkleTree getMerkleTree(MerkleTypeEnum typeEnum) {
-        return get(new MerkleTreeChachKey(typeEnum));
+        return get(new MerkleTreeCacheKey(typeEnum));
     }
 
     /**
@@ -51,7 +52,7 @@ import java.util.Arrays;
      */
     public MerkleTree buildMerleTree(MerkleTypeEnum typeEnum,Object[] datas){
         MerkleTree merkleTree = merkleService.build(typeEnum, Arrays.asList(datas));
-        put(new MerkleTreeChachKey(typeEnum),merkleTree);
+        put(new MerkleTreeCacheKey(typeEnum),merkleTree);
         return merkleTree;
     }
 
@@ -63,7 +64,7 @@ import java.util.Arrays;
      */
     public void appendChild(MerkleTree merkleTree,Object _new){
         merkleService.add(merkleTree,_new);
-        put(new MerkleTreeChachKey(merkleTree.getTreeType()),merkleTree);
+        put(new MerkleTreeCacheKey(merkleTree.getTreeType()),merkleTree);
     }
 
     /**
@@ -75,15 +76,15 @@ import java.util.Arrays;
      */
     public void modifyMerkleTree(MerkleTree merkleTree,Object _old,Object _new){
         merkleService.update(merkleTree,_old,_new);
-        put(new MerkleTreeChachKey(merkleTree.getTreeType()),merkleTree);
+        put(new MerkleTreeCacheKey(merkleTree.getTreeType()),merkleTree);
     }
 
     /**
      * when cache is not exists,load from db
      */
     @Override public Object query(Object object) {
-        if (object instanceof MerkleTreeChachKey) {
-            MerkleTreeChachKey key = (MerkleTreeChachKey)object;
+        if (object instanceof MerkleTreeCacheKey) {
+            MerkleTreeCacheKey key = (MerkleTreeCacheKey)object;
             return merkleService.queryMerkleTree(key.getMerkleTypeEnum());
         }
         log.error("not found load function for cache key:{}", object);
@@ -93,7 +94,7 @@ import java.util.Arrays;
     /**
      * the cache key of merkle tree
      */
-    @Getter @Setter @AllArgsConstructor public class MerkleTreeChachKey extends CacheKey {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class MerkleTreeCacheKey extends BaseBO {
         private MerkleTypeEnum merkleTypeEnum;
     }
 }

@@ -5,13 +5,14 @@ import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
-import com.higgs.trust.slave.model.bo.snapshot.CacheKey;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,14 +73,14 @@ public class ManageSnapshotAgent implements CacheLoader {
     /**
      * the cache key of policy
      */
-    @Getter @Setter @AllArgsConstructor public class PolicyCacheKey extends CacheKey {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class PolicyCacheKey extends BaseBO {
         private String policyId;
     }
 
     /**
      * the cache key of rsPubKey
      */
-    @Getter @Setter @AllArgsConstructor public class RsPubKeyCacheKey extends CacheKey {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class RsPubKeyCacheKey extends BaseBO {
         private String rsId;
     }
 }
