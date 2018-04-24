@@ -42,6 +42,9 @@ import java.util.List;
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
+        if (log.isDebugEnabled()) {
+            log.debug("failover starting ...");
+        }
         int size = 0;
         try {
             do {
@@ -56,6 +59,9 @@ import java.util.List;
                 }
             } while (++size < properties.getFailoverStep());
         } catch (SlaveException e) {
+            if (e.getCode() == SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID) {
+                nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
+            }
             log.error("failover block error：{}", e.getCode().getDescription(), e);
         } catch (Exception e) {
             log.error("failover error", e);
@@ -121,6 +127,9 @@ import java.util.List;
      * @return
      */
     private boolean checkAndInsert(long height) {
+        if (log.isDebugEnabled()) {
+            log.debug("check and instert package:{} for failover", height);
+        }
         Long minHeight =
             packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode()));
         if (minHeight == null || minHeight <= height) {
@@ -141,6 +150,9 @@ import java.util.List;
      * @return
      */
     private boolean insertFailoverPackage(long height) {
+        if (log.isDebugEnabled()) {
+            log.debug("insert failover package:{}", height);
+        }
         Package pack = new Package();
         pack.setPackageTime(System.currentTimeMillis());
         pack.setHeight(height);
@@ -161,6 +173,7 @@ import java.util.List;
      * @return 同步结果
      */
     public boolean failoverBlock(Block block) {
+        log.info("failover block:{}", block);
         BlockHeader blockHeader = block.getBlockHeader();
         Package pack = new Package();
         pack.setPackageTime(blockHeader.getBlockTime());
@@ -169,16 +182,28 @@ import java.util.List;
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
         packageService.validating(packContext);
-        BlockHeader tempHeader = blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.TEMP_TYPE);
         BlockHeader consensusHeader =
             blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
         if (consensusHeader == null) {
             return false;
         }
-        boolean validated = blockService.compareBlockHeader(tempHeader, consensusHeader);
+        boolean validated =
+            blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), consensusHeader);
         if (validated) {
+            BlockHeader persistHeader =
+                blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE);
+            if (persistHeader == null) {
+                return false;
+            }
             packContext = packageService.createPackContext(pack);
             packageService.persisting(packContext);
+            boolean persistValid =
+                blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), persistHeader);
+            if (!persistValid) {
+                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID);
+            } else {
+                return true;
+            }
         }
         return false;
     }

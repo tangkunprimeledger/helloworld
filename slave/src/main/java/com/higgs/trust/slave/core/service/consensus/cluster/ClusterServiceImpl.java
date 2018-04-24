@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -146,7 +147,7 @@ import java.util.concurrent.TimeUnit;
         return (T)result;
     }
 
-    private <T, C extends IdValidCommand<T>> void handleResult(ValidCommit<C> commit) {
+    private <T extends Serializable, C extends IdValidCommand<T>> void handleResult(ValidCommit<C> commit) {
         if (log.isDebugEnabled()) {
             log.debug("handle consensus result:{}", ToStringBuilder.reflectionToString(commit));
         }
