@@ -255,7 +255,7 @@
                                     <artifactId>slave</artifactId>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
-                                    <destFileName>slave.jar</destFileName>
+                                    <destFileName>trust.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>../target/</outputDirectory>
