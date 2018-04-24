@@ -13,18 +13,23 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
+import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.core.service.consensus.cluster.ClusterServiceImpl;
 import com.higgs.trust.slave.core.service.failover.SyncPackageCache;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
-import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
+import com.higgs.trust.slave.model.bo.consensus.*;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.convert.PackageConvert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -50,6 +55,12 @@ import java.util.concurrent.ExecutorService;
     @Autowired private NodeState nodeState;
 
     @Autowired private SyncPackageCache syncPackageCache;
+
+    @Autowired private ClusterServiceImpl consensus;
+
+    @Autowired private BlockRepository blockRepository;
+
+    @Autowired private BlockService blockService;
 
     /**
      * replicate sorted package to the cluster
@@ -151,6 +162,50 @@ import java.util.concurrent.ExecutorService;
             } catch (Throwable e) {
                 log.error("package's async process failed after package replicated", e);
             }
+        }
+    }
+
+
+    /**
+     * handle the commit and submit p2p consensus for cluster height
+     *
+     * @return
+     */
+    public void getClusterHeight(ConsensusCommit<ClusterHeightCmd> commit) {
+        try {
+            ClusterHeightCmd operation = commit.operation();
+            List<Long> maxHeights = blockRepository.getMaxHeight(operation.get());
+            maxHeights.forEach(height -> {
+                try {
+                    consensus
+                        .submit(new ValidClusterHeightCmd(operation.getRequestId(), height), operation.getNodeName());
+                } catch (Exception e) {
+                    log.error("consensus submit error:", e);
+                }
+            });
+        } finally {
+            commit.close();
+        }
+    }
+
+    /**
+     * handle the commit and submit p2p consensus for the result of validating block header
+     *
+     * @return
+     */
+    public void validHeader(ConsensusCommit<BlockHeaderCmd> commit) {
+        try {
+            BlockHeaderCmd operation = commit.operation();
+            BlockHeader header = operation.get();
+            BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
+            boolean result = blockService.compareBlockHeader(header, blockHeader);
+            try {
+                consensus.submit(new ValidBlockHeaderCmd(header, result), operation.getNodeName());
+            } catch (Exception e) {
+                log.error("consensus submit error:", e);
+            }
+        } finally {
+            commit.close();
         }
     }
 

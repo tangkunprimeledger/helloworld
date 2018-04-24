@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.slave.core.service.consensus.cluster;
+package com.higgs.trust.slave.model.bo.consensus;
 
 import com.higgs.trust.consensus.bft.core.template.AbstractConsensusCommand;
 import lombok.Getter;
@@ -10,7 +10,9 @@ import lombok.Getter;
  * @author suimi
  * @date 2018/4/24
  */
-public class IdConsensusCommand<T> extends AbstractConsensusCommand<T> {
+public abstract class IdConsensusCommand<T> extends AbstractConsensusCommand<T> {
+
+    private static final long serialVersionUID = 8804669091634076151L;
 
     @Getter private String requestId;
 

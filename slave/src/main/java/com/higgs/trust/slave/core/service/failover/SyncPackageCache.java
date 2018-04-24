@@ -47,6 +47,9 @@ import java.util.function.Predicate;
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
+        if (log.isDebugEnabled()) {
+            log.debug("sync cache received package:{}", pack);
+        }
         long currentHeight = pack.getHeight();
         if (latestHeight == INIT_HEIGHT) {
             latestHeight = currentHeight;
