@@ -1,8 +1,6 @@
 package com.higgs.trust.consensus.bft.core;
 
-import com.higgs.trust.consensus.bft.example.StringCommand;
 import com.higgs.trust.consensus.bft.example.StringStateMachine;
-import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.copycat.client.ConnectionStrategies;
@@ -13,37 +11,23 @@ import io.atomix.copycat.server.CopycatServer;
 import io.atomix.copycat.server.storage.Storage;
 import io.atomix.copycat.server.storage.StorageLevel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.Test;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class ConsensusClientTest {
-    @Autowired
-    private ValidConsensus validConsensus;
+public class ConsensusClientMain {
 
-    List<Address> clusterAddress = new ArrayList<Address>() {{
-        add(new Address("192.168.194.128:8800"));
-        add(new Address("192.168.192.35:8800"));
-    }};
-
-    @Test
-    public void testRaft() throws InterruptedException {
-        startServer(new Address("192.168.194.128:8800"), clusterAddress);
-        Thread.sleep(200000);
+    public static void main(String[] args){
+        List<Address> cluster = new ArrayList<>();
+        for (String addressStr : args){
+            cluster.add(new Address(addressStr));
+        }
+        startServer(new Address(args[0]), cluster);
     }
 
-    @Test
-    private void testClientConnection() throws InterruptedException {
-        CopycatClient copycatClient = startClient(clusterAddress);
-        copycatClient.submit(new StringCommand("test string command"));
-        Thread.sleep(20000);
-    }
-
-    private CopycatClient startClient(List<Address> clusterAddress){
+    private static CopycatClient startClient(List<Address> clusterAddress){
         CopycatClient client = CopycatClient.builder().withTransport(new NettyTransport())
                 .withConnectionStrategy(ConnectionStrategies.FIBONACCI_BACKOFF)
                 .withRecoveryStrategy(RecoveryStrategies.CLOSE)
@@ -52,13 +36,12 @@ public class ConsensusClientTest {
         return client;
     }
 
-    private void startServer(Address address, List<Address> clusterAddress){
+    private static void startServer(Address address, List<Address> clusterAddress){
         Address addressT = address;
         CopycatServer.Builder builder = CopycatServer.builder(addressT);
         builder.withStateMachine(StringStateMachine::new);
 
         builder.withTransport(NettyTransport.builder().withThreads(4).build());
-
         Storage storage = Storage.builder().withStorageLevel(StorageLevel.DISK).withDirectory("D:/temp/copycat"+address.port())
                 .withMinorCompactionInterval(Duration.ofMillis(1000))
                 .withEntryBufferSize(1000).withCompactionThreads(1)
@@ -67,9 +50,8 @@ public class ConsensusClientTest {
                 .withCompactionThreshold(0.1).build();
 
         builder.withStorage(storage);
-        CopycatServer server = builder.build();
         log.info("copycat cluster start ...");
+        CopycatServer server = builder.build();
         server.bootstrap(clusterAddress).join();
     }
-
 }
