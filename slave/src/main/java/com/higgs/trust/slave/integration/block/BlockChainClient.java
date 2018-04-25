@@ -48,7 +48,7 @@ import java.util.List;
      * @param transactions
      * @return submit failed transaction list
      */
-    @RequestMapping(value = "/block/transaction/submit", method = RequestMethod.POST)
+    @RequestMapping(value = "/transaction/submit", method = RequestMethod.POST)
     List<TransactionVO> submitTransaction(@RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg,
         @RequestParam(value = "transactions") List<SignedTransaction> transactions);
 
