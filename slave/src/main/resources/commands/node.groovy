@@ -23,14 +23,12 @@ class node {
     def info(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
-        nodeState.nodeName
-        out << "node name:  " << magenta << nodeState.nodeName << reset << "\n"
-        out << "master name:    " << magenta << nodeState.masterName << reset << "\n"
-        out << "is master:    " << magenta << nodeState.master << reset << "\n"
-        out << "node state:   " << magenta << nodeState.state << reset << "\n"
-        out << "block height:   "
         def blockService = beans.getBean(BlockService.class)
-        out.println(blockService.getMaxHeight().toString(), magenta)
+        context.provide([name: "Name", value: nodeState.nodeName])
+        context.provide([name: "Master", value: nodeState.masterName])
+        context.provide([name: "isMaster", value: nodeState.master])
+        context.provide([name: "State", value: nodeState.state])
+        context.provide([name: "Height", value: blockService.getMaxHeight().toString()])
     }
 
     @Usage('show the current state of node')
@@ -43,12 +41,19 @@ class node {
 
     @Usage('show the current height of node')
     @Command
-    def height(InvocationContext context, @Usage("will show the cluster height")
-    @Required(false) @Option(names = ["c", "cluster"]) boolean isCluster) {
+    def height(InvocationContext context,
+               @Usage("will show the cluster height")
+               @Option(names = ["c", "cluster"]) Boolean isCluster = false,
+               @Usage("set the waiting time in milliseconds for consensus")
+               @Option(names = ["t", "waiting"]) Integer time) {
+
         BeanFactory beans = context.attributes['spring.beanfactory']
         if (isCluster) {
             def clusterService = beans.getBean(ClusterService.class)
-            def height = clusterService.getClusterHeight(1, 2000)
+            if (time == null) {
+                time = 2000
+            }
+            def height = clusterService.getClusterHeight(1, time)
             if (height == null) {
                 return null
             }
@@ -60,7 +65,7 @@ class node {
         }
     }
 
-    @Usage('self check')
+    @Usage('check the current block of node')
     @Command
     def selfCheck(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']

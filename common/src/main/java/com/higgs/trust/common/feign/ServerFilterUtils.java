@@ -15,7 +15,7 @@ import java.util.Locale;
  * @author suimi
  * @date 2018/4/25
  */
-public class ServerFilterUtils {
+class ServerFilterUtils {
 
     static List<Server> chooseServers(List<Server> servers, Object key) {
         if (key == null) {

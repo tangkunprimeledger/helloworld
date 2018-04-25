@@ -118,9 +118,10 @@ import java.util.concurrent.TimeUnit;
     }
 
     private <T> T registerAndGetResult(String requestId, long time) {
-        ResultListen resultListen = register(requestId, properties.getConsensusKeepTime());
+        long keepTime = properties.getConsensusKeepTime();
+        ResultListen resultListen = register(requestId, keepTime);
         try {
-            resultListen.getLatch().await(time, TimeUnit.MILLISECONDS);
+            resultListen.getLatch().await(time > keepTime ? keepTime : time, TimeUnit.MILLISECONDS);
             return getResult(requestId);
         } catch (InterruptedException e) {
             log.warn("waiting the consensus result failed", e);
