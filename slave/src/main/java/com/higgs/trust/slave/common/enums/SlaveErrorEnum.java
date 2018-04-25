@@ -106,6 +106,7 @@ public enum SlaveErrorEnum {
     SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT("829", "current package height is not suitable", false),
     SLAVE_AMOUNT_ILLEGAL("830", "amount is illegal", false),
     SLAVE_ACCOUNT_CURRENCY_ALREADY_EXISTS_ERROR("831", "currency is already exists", false),
+    SLAVE_CONTRACT_NOT_EXIST_ERROR("832", "contract is not exist", false),
     ;
     //@formatter:on
 

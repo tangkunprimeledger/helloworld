@@ -24,6 +24,7 @@ import com.higgs.trust.slave.core.service.snapshot.agent.AccountContractBindingS
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.account.AccountFreeze;
 import com.higgs.trust.slave.model.bo.account.AccountOperation;
+import com.higgs.trust.slave.model.bo.account.AccountTradeInfo;
 import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
@@ -38,9 +39,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author WangQuanzhou
@@ -98,7 +97,7 @@ import java.util.List;
                 actionHandler.persist(transactionData.getActionData());
             }
             //execute contract
-            exeContract(action,processTypeEnum,transactionData.getActionData());
+            exeContract(action, processTypeEnum, transactionData.getActionData());
         }
     }
 
@@ -146,42 +145,57 @@ import java.util.List;
             "[getHandlerByType] action type not exist exception");
     }
 
-    private void exeContract(Action action,TxProcessTypeEnum processTypeEnum,ActionData actionData){
-        String accountNo = null;
+    private void exeContract(Action action, TxProcessTypeEnum processTypeEnum, ActionData actionData) {
+        List<String> accountNos = new ArrayList<>();
         switch (action.getType()) {
             case FREEZE:
                 AccountFreeze accountFreeze = (AccountFreeze)action;
-                accountNo = accountFreeze.getAccountNo();
+                accountNos.add(accountFreeze.getAccountNo());
                 break;
             case UNFREEZE:
                 AccountUnFreeze accountUnFreeze = (AccountUnFreeze)action;
-                accountNo = accountUnFreeze.getAccountNo();
+                accountNos.add(accountUnFreeze.getAccountNo());
                 break;
             case ACCOUNTING:
                 AccountOperation accountOperation = (AccountOperation)action;
-//                accountNo = accountOperation.
+                List<AccountTradeInfo> debitTradeInfo = accountOperation.getDebitTradeInfo();
+                Map<String, Object> map = new HashMap<>();
+                if (!CollectionUtils.isEmpty(debitTradeInfo)) {
+                    for (AccountTradeInfo accountTradeInfo : debitTradeInfo) {
+                        map.put(accountTradeInfo.getAccountNo(), accountTradeInfo);
+                    }
+                }
+                List<AccountTradeInfo> creditTradeInfo = accountOperation.getCreditTradeInfo();
+                if (!CollectionUtils.isEmpty(creditTradeInfo)) {
+                    for (AccountTradeInfo accountTradeInfo : creditTradeInfo) {
+                        map.put(accountTradeInfo.getAccountNo(), accountTradeInfo);
+                    }
+                }
+                accountNos.addAll(map.keySet());
                 break;
             default:
         }
-        if(StringUtils.isEmpty(accountNo)){
-            log.info("[exeContract]accountNo is empty");
+        if (CollectionUtils.isEmpty(accountNos)) {
+            log.info("[exeContract]accountNos is empty");
             return;
         }
-        List<AccountContractBinding> bindingList = null;
-        if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-            bindingList = accountContractBindingSnapshotAgent.get(accountNo);
-        } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-            bindingList = accountContractBindingRepository.queryListByAccountNo(accountNo);
-        }
-        if(CollectionUtils.isEmpty(bindingList)){
-            return;
-        }
-        //execute contracts
-        for(AccountContractBinding binding : bindingList){
-            StandardExecuteContextData standardExecuteContextData = new StandardExecuteContextData();
-            standardExecuteContextData.setAction(actionData);
-            //execute
-            standardSmartContract.execute(binding,standardExecuteContextData,processTypeEnum);
+        for (String accountNo : accountNos) {
+            List<AccountContractBinding> bindingList = null;
+            if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
+                bindingList = accountContractBindingSnapshotAgent.get(accountNo);
+            } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
+                bindingList = accountContractBindingRepository.queryListByAccountNo(accountNo);
+            }
+            if (CollectionUtils.isEmpty(bindingList)) {
+                continue;
+            }
+            //execute contracts
+            for (AccountContractBinding binding : bindingList) {
+                StandardExecuteContextData standardExecuteContextData = new StandardExecuteContextData();
+                standardExecuteContextData.setAction(actionData);
+                //execute
+                standardSmartContract.execute(binding, standardExecuteContextData, processTypeEnum);
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.contract;
 
 import com.higgs.trust.contract.ContractApiService;
+import com.higgs.trust.contract.ExecuteContext;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.service.action.account.AccountUnFreezeHandler;
@@ -22,6 +23,10 @@ import java.math.BigDecimal;
 @Slf4j @Service public class StandardContractContextService extends ContractApiService {
     @Autowired AccountUnFreezeHandler accountUnFreezeHandler;
 
+    @Override
+    public ExecuteContext getContext() {
+        return super.getContext();
+    }
     /**
      * execute unfreeze by js
      *

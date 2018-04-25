@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.contract;
 
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.service.merkle.MerkleService;
@@ -65,7 +66,13 @@ import org.springframework.stereotype.Service;
         ExecuteEngineManager manager = getExceuteEngineManager();
         ExecuteContext context = ExecuteContext.newContext(data);
         context.setInstanceAddress(instanceId);
+
+        ContractEntity contractEntity = new ContractEntity();
+        contractEntity.setAddress(contract.getAddress());
+
+        context.setContract(contractEntity);
         context.setValidateStage(processType == TxProcessTypeEnum.VALIDATE);
+
         ExecuteEngine engine = manager.getExceuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
         Object result = engine.execute("main", args);
         return result;
