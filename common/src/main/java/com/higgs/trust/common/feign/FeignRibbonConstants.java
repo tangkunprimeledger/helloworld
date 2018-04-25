@@ -10,4 +10,6 @@ package com.higgs.trust.common.feign;
 public interface FeignRibbonConstants {
 
     String NODE_NAME_REG = "nodeNameReg";
+
+    String NODE_NAME = "nodeName";
 }

@@ -9,61 +9,128 @@
 
     <property name="COMMON_LOG_PATTERN"
               value="%d [%t] %-5p %c{0} - %m [%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]%n"/>
-    <!--<property name="MONITOR_LOG_PATTERN" value="%d [%t] %-5p %c{0} - %m,[%X{X-B3-TraceId:-}]%n"/>-->
-
-    <property name="MONITOR_LOG_PATTERN"
-              value=" [%thread] %highlight(%-5level) %cyan(%logger{15}) - %highlight(%msg) %n"/>
+    <property name="MONITOR_LOG_PATTERN" value="%d [%t] %-5p %c{0} - %m,[%X{X-B3-TraceId:-}]%n"/>
 
     <!-- 项目名称 -->
-    <property name="APP_NAME" value="SpringCloudDemo"/>​
+    <property name="APP_NAME" value="slave"/>​
     <!-- 日志文件目录 -->
-    <property name="LOG_PATH" value="/data/home/admin/${APP_NAME}/log"/>​
+    <property name="LOG_PATH" value="/data/home/admin/trust/log"/>​
     <!-- 归档文件保留的时间，即只保留几天前的归档文件，单位与fileNamePattern中配置的最小时间单位相同 -->
     <property name="MAX_HISTORY" value="7"/>
-    <!-- 当前日志文件达到maxFileSize后则归档 -->
-    <property name="MAX_FILE_SIZE" value="1GB"/>
-    <!-- 每一类日志的所有归档文件达到totalSizeCap后会异步删除最老的归档文件，比如common-error.log为一类，xxx-core.log为一类 -->
-    <property name="TOTAL_SIZE_CAP" value="10GB"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <!-- Minimum logging level to be presented in the console logs-->
-            <level>DEBUG</level>
-
-        </filter>
+    <appender name="BIZ-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder>
-            <!--<pattern>${COMMON_LOG_PATTERN}</pattern>-->
-            <pattern>%d [%thread] %highlight(%-5level) %cyan(%logger{15}) - %highlight(%msg)
-                [%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]%n
-            </pattern>
-            <charset>utf8</charset>
+            <pattern>${COMMON_LOG_PATTERN}</pattern>
         </encoder>
+        <file>${LOG_PATH}/${APP_NAME}-biz.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-biz.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>-->
+        </rollingPolicy>
     </appender>
 
+    <appender name="DEFAULT-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${COMMON_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/${APP_NAME}-default.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-default.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>-->
+        </rollingPolicy>
+    </appender>
 
-    <logger name="MonitorLog" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
+    <appender name="MONITOR-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/${APP_NAME}-monitor.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-monitor.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>-->
+        </rollingPolicy>
+    </appender>
+
+    <appender name="PERF-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/${APP_NAME}-perf.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-perf.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>-->
+        </rollingPolicy>
+    </appender>
+
+    <appender name="SERVICE-DIGEST-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/${APP_NAME}-digest.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-digest.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>-->
+        </rollingPolicy>
+    </appender>
+
+    <appender name="MANAGE-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${COMMON_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/${APP_NAME}-manage.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-manage.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>-->
+        </rollingPolicy>
+    </appender>
+
+    <appender name="ERROR-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>${COMMON_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/common-error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/common-error.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!--<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>-->
+        </rollingPolicy>
+    </appender>
+
+    <logger name="MonitorLog" level="TRACE" additivity="false">
+        <appender-ref ref="MONITOR-APPENDER"/>
     </logger>
 
-    <logger name="ManageLog" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
+    <logger name="ManageLog" level="TRACE" additivity="false">
+        <appender-ref ref="MANAGE-APPENDER"/>
     </logger>
 
-    <Logger name="SERVICE-DIGEST" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
+    <Logger name="SERVICE-DIGEST" level="TRACE" additivity="false">
+        <appender-ref ref="SERVICE-DIGEST-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <Logger name="PERF" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
+    <Logger name="PERF" level="TRACE" additivity="false">
+        <appender-ref ref="PERF-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <logger name="com.higgs.trust" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
+    <logger name="com.higgs.trust" level="TRACE" additivity="false">
+        <appender-ref ref="BIZ-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
     </logger>
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-
+    <root level="TRACE">
+        <appender-ref ref="DEFAULT-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
     </root>
 
 </configuration>

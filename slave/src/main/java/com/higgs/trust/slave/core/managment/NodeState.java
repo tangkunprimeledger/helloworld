@@ -17,6 +17,7 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Component @Scope("singleton") @Slf4j public class NodeState implements InitializingBean {
 
@@ -26,6 +27,7 @@ import java.util.List;
 
     private List<StateChangeListener> stateListeners = new ArrayList<>();
 
+    //todo:suimi change state to Starting
     @Getter private NodeStateEnum state = NodeStateEnum.Running;
 
     /**
@@ -180,7 +182,7 @@ import java.util.List;
      * @return
      */
     public String notMeNodeNameReg() {
-        return "(?!" + this.nodeName + ")" + this.prefix + "(\\S)*";
+        return "(?!" + this.nodeName.toUpperCase(Locale.ROOT) + ")" + this.prefix.toUpperCase(Locale.ROOT) + "(\\S)*";
     }
 
 }

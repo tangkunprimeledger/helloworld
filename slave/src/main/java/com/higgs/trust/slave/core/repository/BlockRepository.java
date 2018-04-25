@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +32,7 @@ import java.util.List;
     @Autowired BlockDao blockDao;
     @Autowired BlockHeaderDao blockHeaderDao;
     @Autowired TransactionRepository transactionRepository;
+
     /**
      * get max height of block
      *
@@ -56,14 +59,14 @@ import java.util.List;
      */
     public Block getBlock(Long height) {
         BlockPO blockPO = blockDao.queryByHeight(height);
-        if(blockPO == null){
+        if (blockPO == null) {
             return null;
         }
         Block block = new Block();
         BlockHeader blockHeader = new BlockHeader();
         blockHeader.setHeight(blockPO.getHeight());
         blockHeader.setBlockHash(blockPO.getBlockHash());
-        blockHeader.setBlockTime(blockPO.getBlockTime()!=null?blockPO.getBlockTime().getTime():null);
+        blockHeader.setBlockTime(blockPO.getBlockTime() != null ? blockPO.getBlockTime().getTime() : null);
         blockHeader.setPreviousHash(blockPO.getPreviousHash());
         blockHeader.setVersion(blockPO.getVersion());
         StateRootHash rootHash = new StateRootHash();
@@ -75,12 +78,87 @@ import java.util.List;
         rootHash.setAccountRootHash(blockPO.getAccountRootHash());
         blockHeader.setStateRootHash(rootHash);
         block.setBlockHeader(blockHeader);
-        if(height == 1) {
+        if (height == 1) {
             block.setGenesis(true);
         }
         //txs
         block.setSignedTxList(transactionRepository.queryTransactions(height));
         return block;
+    }
+
+    /**
+     * list the blocks
+     *
+     * @param startHeight start height
+     * @param size        size
+     * @return
+     */
+    public List<Block> listBlocks(long startHeight, int size) {
+        List<BlockPO> blockPOs = blockDao.queryBlocks(startHeight, size);
+        if (blockPOs == null || blockPOs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Block> blocks = new ArrayList<>();
+        blockPOs.forEach(blockPO -> {
+            Block block = new Block();
+            BlockHeader blockHeader = new BlockHeader();
+            blockHeader.setHeight(blockPO.getHeight());
+            blockHeader.setBlockHash(blockPO.getBlockHash());
+            blockHeader.setBlockTime(blockPO.getBlockTime() != null ? blockPO.getBlockTime().getTime() : null);
+            blockHeader.setPreviousHash(blockPO.getPreviousHash());
+            blockHeader.setVersion(blockPO.getVersion());
+            StateRootHash rootHash = new StateRootHash();
+            rootHash.setRsRootHash(blockPO.getRsRootHash());
+            rootHash.setTxRootHash(blockPO.getTxRootHash());
+            rootHash.setTxReceiptRootHash(blockPO.getTxReceiptRootHash());
+            rootHash.setPolicyRootHash(blockPO.getPolicyRootHash());
+            rootHash.setContractRootHash(blockPO.getContractRootHash());
+            rootHash.setAccountRootHash(blockPO.getAccountRootHash());
+            blockHeader.setStateRootHash(rootHash);
+            block.setBlockHeader(blockHeader);
+            if (blockPO.getHeight() == 1) {
+                block.setGenesis(true);
+            }
+            //txs
+            block.setSignedTxList(transactionRepository.queryTransactions(blockPO.getHeight()));
+            blocks.add(block);
+        });
+
+        return blocks;
+    }
+
+    /**
+     * list the block headers
+     *
+     * @param startHeight start height
+     * @param size        size
+     * @return
+     */
+    public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
+        List<BlockPO> blockPOs = blockDao.queryBlocks(startHeight, size);
+        if (blockPOs == null || blockPOs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<BlockHeader> headers = new ArrayList<>();
+        blockPOs.forEach(blockPO -> {
+            BlockHeader blockHeader = new BlockHeader();
+            blockHeader.setHeight(blockPO.getHeight());
+            blockHeader.setBlockHash(blockPO.getBlockHash());
+            blockHeader.setBlockTime(blockPO.getBlockTime() != null ? blockPO.getBlockTime().getTime() : null);
+            blockHeader.setPreviousHash(blockPO.getPreviousHash());
+            blockHeader.setVersion(blockPO.getVersion());
+            StateRootHash rootHash = new StateRootHash();
+            rootHash.setRsRootHash(blockPO.getRsRootHash());
+            rootHash.setTxRootHash(blockPO.getTxRootHash());
+            rootHash.setTxReceiptRootHash(blockPO.getTxReceiptRootHash());
+            rootHash.setPolicyRootHash(blockPO.getPolicyRootHash());
+            rootHash.setContractRootHash(blockPO.getContractRootHash());
+            rootHash.setAccountRootHash(blockPO.getAccountRootHash());
+            blockHeader.setStateRootHash(rootHash);
+            headers.add(blockHeader);
+        });
+
+        return headers;
     }
 
     /**
@@ -161,7 +239,7 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
         //save transactions
-        transactionRepository.batchSaveTransaction(blockHeader.getHeight(),blockTime,txs);
+        transactionRepository.batchSaveTransaction(blockHeader.getHeight(), blockTime, txs);
     }
 
 }

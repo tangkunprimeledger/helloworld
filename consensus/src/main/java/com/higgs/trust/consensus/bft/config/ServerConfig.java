@@ -114,7 +114,7 @@ public class ServerConfig
         for (String addressStr : clusterList) {
             clusterAddress.add(new Address(addressStr));
         }
-
+        log.info("copycat cluster start ...");
         server.bootstrap(clusterAddress).join();
     }
 

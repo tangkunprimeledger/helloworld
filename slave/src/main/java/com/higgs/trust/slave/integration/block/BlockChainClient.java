@@ -9,10 +9,7 @@ import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -44,12 +41,12 @@ import java.util.List;
     /**
      * submit transaction
      *
-     * @param nodeNameReg  node name regex
+     * @param nodeName  node name
      * @param transactions
      * @return submit failed transaction list
      */
-    @RequestMapping(value = "/block/transaction/submit", method = RequestMethod.POST)
-    List<TransactionVO> submitTransaction(@RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg,
-        @RequestParam(value = "transactions") List<SignedTransaction> transactions);
+    @RequestMapping(value = "/transaction/submit", method = RequestMethod.POST) List<TransactionVO> submitTransaction(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName,
+        @RequestBody List<SignedTransaction> transactions);
 
 }
