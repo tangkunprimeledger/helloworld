@@ -96,6 +96,9 @@ public class ServerConfig
         });
 
         builder.withTransport(NettyTransport.builder().withThreads(nettyThreadNum).build());
+        builder.withHeartbeatInterval(Duration.ofMillis(1000))
+                .withElectionTimeout(Duration.ofMillis(2000))
+                .withSessionTimeout(Duration.ofMillis(4000));
 
         Storage storage = Storage.builder().withStorageLevel(StorageLevel.DISK).withDirectory(logDir)
                 .withMinorCompactionInterval(Duration.ofMillis(minorCompactionInterval))
@@ -111,7 +114,8 @@ public class ServerConfig
         for (String addressStr : clusterList) {
             clusterAddress.add(new Address(addressStr));
         }
-        server.bootstrap(clusterAddress);
+
+        server.bootstrap(clusterAddress).join();
     }
 
     @Override
