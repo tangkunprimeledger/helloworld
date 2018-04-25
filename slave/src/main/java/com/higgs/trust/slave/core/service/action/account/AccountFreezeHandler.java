@@ -1,33 +1,29 @@
 package com.higgs.trust.slave.core.service.action.account;
 
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
-import com.higgs.trust.slave.core.repository.contract.AccountContractBindingRepository;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.contract.StandardContractContextService;
-import com.higgs.trust.slave.core.service.contract.StandardExecuteContextData;
+import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
-import com.higgs.trust.slave.core.service.snapshot.agent.AccountContractBindingSnapshotAgent;
 import com.higgs.trust.slave.model.bo.Contract;
 import com.higgs.trust.slave.model.bo.account.AccountFreeze;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.context.ActionData;
-import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
+import com.higgs.trust.slave.model.bo.contract.AccountContractBindingAction;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * @author liuyu
@@ -37,8 +33,7 @@ import java.util.List;
 @Slf4j @Component public class AccountFreezeHandler implements ActionHandler {
     @Autowired AccountSnapshotHandler accountSnapshotHandler;
     @Autowired AccountDBHandler accountDBHandler;
-    @Autowired AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
-    @Autowired AccountContractBindingRepository accountContractBindingRepository;
+    @Autowired AccountContractBindingHandler accountContractBindingHandler;
     @Autowired ContractRepository contractRepository;
 
 
@@ -90,8 +85,8 @@ import java.util.List;
             log.error("[accountFreeze.validate] balance is not enough by accountNo:{}", bo.getAccountNo());
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
         }
-        //check contract address
-        checkContract(bo.getContractAddr(),bo.getAccountNo(),processTypeEnum);
+        //bind contract address
+        bindContract(actionData,bo,processTypeEnum);
         //check record is already exists
         AccountFreezeRecord freezeRecord =
             accountHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
@@ -105,42 +100,32 @@ import java.util.List;
     }
 
     /**
-     * check contract address
+     * bind contract address
      *
-     * @param contractAddr
-     * @param accountNo
+     * @param accountFreeze
      * @param processTypeEnum
      */
-    private void checkContract(String contractAddr,String accountNo,TxProcessTypeEnum processTypeEnum){
-        if (StringUtils.isEmpty(contractAddr)) {
+    private void bindContract(ActionData actionData,AccountFreeze accountFreeze,TxProcessTypeEnum processTypeEnum){
+        if (StringUtils.isEmpty(accountFreeze.getContractAddr())) {
             return;
         }
-        Contract contract = contractRepository.queryByAddress(contractAddr);
+        Contract contract = contractRepository.queryByAddress(accountFreeze.getContractAddr());
         if(contract == null){
             log.error("[accountFreeze.checkContract] contractAddr is not exist");
             throw new SlaveException(SlaveErrorEnum.SLAVE_CONTRACT_NOT_EXIST_ERROR);
         }
-        //TODO:liuyu 冻结时的合约 约定规范1.冻结时绑定2.绑定后冻结3.冻结后绑定
-        List<AccountContractBinding> bindingList = null;
-        if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-            bindingList = accountContractBindingSnapshotAgent.get(accountNo);
-        } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-            bindingList = accountContractBindingRepository.queryListByAccountNo(accountNo);
-        }
-        if (CollectionUtils.isEmpty(bindingList)) {
-            log.error("[accountFreeze.checkContract] bindingList is not exist");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_CONTRACT_NOT_EXIST_ERROR);
-        }
-        boolean hasAddr = false;
-        for (AccountContractBinding binding : bindingList) {
-            if(StringUtils.equals(binding.getContractAddress(),contractAddr)){
-                hasAddr = true;
-                break;
-            }
-        }
-        if(!hasAddr){
-            log.error("[accountFreeze.checkContract] contractAddr is not exist");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_CONTRACT_NOT_EXIST_ERROR);
-        }
+        AccountContractBindingAction action = new AccountContractBindingAction();
+        action.setType(ActionTypeEnum.BIND_CONTRACT);
+        action.setIndex(accountFreeze.getIndex());
+        action.setAccountNo(accountFreeze.getAccountNo());
+        action.setContractAddress(contract.getAddress());
+        action.setArgs(accountFreeze.getContractArgs());
+        long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
+        String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
+        log.info("[accountFreeze.bindContract] blockHeight:{},txId:{}",blockHeight,txId);
+        log.info("[accountFreeze.bindContract] contractAddr:{}",contract.getAddress());
+        log.info("[accountFreeze.bindContract] contractArgs:{}",accountFreeze.getContractArgs());
+        //bind contract
+        accountContractBindingHandler.process(action,blockHeight,txId,processTypeEnum);
     }
 }
