@@ -36,32 +36,34 @@ class node {
     def state(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
-        return nodeState.state
+        out.println("Node is $nodeState.state")
     }
 
     @Usage('show the current height of node')
     @Command
     def height(InvocationContext context,
                @Usage("will show the cluster height")
-               @Option(names = ["c", "cluster"]) Boolean isCluster = false,
+               @Option(names = ["c", "cluster"]) Boolean isCluster,
                @Usage("set the waiting time in milliseconds for consensus")
                @Option(names = ["t", "waiting"]) Integer time) {
 
         BeanFactory beans = context.attributes['spring.beanfactory']
+        def height
         if (isCluster) {
             def clusterService = beans.getBean(ClusterService.class)
             if (time == null) {
                 time = 2000
             }
-            def height = clusterService.getClusterHeight(1, time)
+            height = clusterService.getClusterHeight(1, time)
             if (height == null) {
-                return null
+                out.println("Failed to get cluster height, please try again")
+                return
             }
-            return height.toString()
+            out.println("The cluster block height is $height")
         } else {
             def blockService = beans.getBean(BlockService.class)
-            return blockService.getMaxHeight().toString()
-
+            height = blockService.getMaxHeight().toString()
+            out.println("The block height is $height")
         }
     }
 
@@ -70,7 +72,8 @@ class node {
     def selfCheck(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def selfCheckService = beans.getBean(SelfCheckingService.class)
-        return selfCheckService.selfCheck()
+        def result = selfCheckService.selfCheck()
+        out.println("Self check result: $result)")
     }
 
     @Usage('change the state of node')
@@ -79,7 +82,8 @@ class node {
     @Required @Argument NodeStateEnum from, @Usage("to state") @Required @Argument NodeStateEnum to) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
-        return nodeState.changeState(from, to)
+        nodeState.changeState(from, to)
+        out.println("State changed to $nodeState.state")
     }
 
     @Usage('change master')
@@ -88,7 +92,8 @@ class node {
                      @Usage("the name of new master") @Required @Argument String masterName) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
-        return nodeState.changeMaster(masterName)
+        nodeState.changeMaster(masterName)
+        out.println("Master changed to $nodeState.masterName")
     }
 
 }
