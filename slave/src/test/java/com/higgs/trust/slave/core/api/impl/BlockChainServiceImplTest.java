@@ -64,35 +64,12 @@ public class BlockChainServiceImplTest {
         //toJSONString的时候记录Class的name
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
 
-        SignedTransaction signedTx1 = new SignedTransaction();
 
-        CoreTransaction coreTx1 = new CoreTransaction();
-
-        coreTx1.setTxId("pending-tx-test-1");
-        //test registerPolicy
-        //        coreTx1.setActionList(registerPolicyList);
-        //        coreTx1.setPolicyId("000000");
-
-        // test openAccount
-        coreTx1.setActionList(initPoilicy());
-        coreTx1.setPolicyId("000000");
-        coreTx1.setLockTime(new Date());
-        coreTx1.setBizModel(new JSONObject());
-        coreTx1.setSender("TRUST-TEST1");
-        coreTx1.setVersion("1.0.0");
-
-        System.out.println(JSON.toJSONString(coreTx1));
-
-        String sign1 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey1);
-        //        String sign2 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey2);
-        List<String> signList = new ArrayList<>();
-        signList.add(sign1);
-        //        signList.add(sign2);
-        signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList);
-
-        signedTxList.add(signedTx1);
     }
+
+
+
+
 
     private List<Action> initAccount() {
         OpenAccount accountBO1 = new OpenAccount();
@@ -128,7 +105,7 @@ public class BlockChainServiceImplTest {
         registerPolicy.setPolicyName("测试注册policy-1");
 
         Set<String> rsIds = new HashSet<>();
-        rsIds.add("TRUST-TEST1");
+        rsIds.add("TRUST-NODE97");
         registerPolicy.setRsIdSet(rsIds);
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);
@@ -150,6 +127,40 @@ public class BlockChainServiceImplTest {
         registerRSList.add(registerRS);
         return registerRSList;
     }
+
+
+    @Test
+    public void createPolicyTx() throws Exception {
+
+
+
+        SignedTransaction signedTx1 = new SignedTransaction();
+
+        CoreTransaction coreTx1 = new CoreTransaction();
+
+        coreTx1.setTxId("pending-tx-test-1");
+        coreTx1.setActionList(initPoilicy());
+        coreTx1.setPolicyId("000000");
+        coreTx1.setLockTime(new Date());
+        coreTx1.setBizModel(new JSONObject());
+        coreTx1.setSender("TRUST-NODE97");
+        coreTx1.setVersion("1.0.0");
+
+        System.out.println(JSON.toJSONString(coreTx1));
+
+        String sign1 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey1);
+        //        String sign2 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey2);
+        List<String> signList = new ArrayList<>();
+        signList.add(sign1);
+        //        signList.add(sign2);
+        signedTx1.setCoreTx(coreTx1);
+        signedTx1.setSignatureList(signList);
+
+        signedTxList.add(signedTx1);
+
+        System.out.println("create  Policy tx:"+ JSONObject.toJSONString(signedTxList));
+    }
+
 
     @Test
     public void createIdentityTx() throws Exception {
