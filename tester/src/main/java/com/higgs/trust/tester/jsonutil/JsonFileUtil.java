@@ -172,25 +172,30 @@ public class JsonFileUtil {
         List parList = new ArrayList();
         List<String> list = new LinkedList<>();
         parList = JsonFileUtil.readJsonFile(list, filepath);
-        HashMap<String, String>[][] arrmap = new HashMap[parList.size()][1];
+        HashMap<String, Object>[][] arrmap = new HashMap[parList.size()][1];
         if (parList.size() > 0) {
             for (int i = 0; i < parList.size(); i++) {
                 arrmap[i][0] = new HashMap<>();
             }
         } else {
-            log.info("no data in test file");
+            System.out.println("no data in test file");
         }
         for (int j = 0; j < parList.size(); j++) {
             String jsonstr = parList.get(j).toString().replaceAll("null","\"--\"");
             LinkedHashMap<String, Object> jsonMap = JSON.parseObject(jsonstr, new TypeReference<LinkedHashMap<String, Object>>(){});
             for (Map.Entry<String, Object> entry : jsonMap.entrySet()) {
+                String X =entry.getValue().toString();
                 String tmp = entry.getValue().toString().replaceAll("\"--\"","null");
                 entry.setValue(tmp);
-                arrmap[j][0].put(entry.getKey().toString(), entry.getValue().toString());
+                if (entry.getValue().equals("--")){
+                    entry.setValue(null);
+                }
+                arrmap[j][0].put(entry.getKey().toString(), entry.getValue());
             }
         }
         return arrmap;
     }
+
 
 }
 

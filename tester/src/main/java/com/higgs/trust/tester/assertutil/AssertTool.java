@@ -122,7 +122,7 @@ public class AssertTool extends Assert{
         if(null == expect) {
             fail("expected a null JsonObject, but not null found. ");
         }
-        if(null == actual) {
+        if(null == actual || actual.size() == 0) {
             fail("expected not null JsonObject, but null found. ");
         }
         if (AssertTool.containsExpect(expect,actual)){
@@ -207,7 +207,7 @@ public class AssertTool extends Assert{
         if(null == expect) {
             fail("expected a null JsonObject, but not null found. ");
         }
-        if(null == actual) {
+        if(null == actual || actual.size() == 0) {
             fail("expected not null JsonObject, but null found. ");
         }
         if (AssertTool.containsExpectJsonNode(expect,actual)){
@@ -226,6 +226,9 @@ public class AssertTool extends Assert{
     private static boolean containsExpectJsonNode(String expect, String dburl, String sql){
         DataBaseManager dataBaseManager = new DataBaseManager();
         JSONArray array = dataBaseManager.executeSingleQuery(sql,dburl);
+        if(array.size() == 0) {
+            fail("expected not null JsonObject, but null found. ");
+        }
         for (int i = 0; i<array.size();i++){
             log.info(array.get(i).toString());
         }
@@ -261,6 +264,12 @@ public class AssertTool extends Assert{
      * @param actual
      **/
     public static void isContainsExpect(String expect, String actual){
+        if(null == expect) {
+            fail("expected a null JsonObject, but not null found. ");
+        }
+        if(null == actual) {
+            fail("expected not null JsonObject, but null found. ");
+        }
         if (AssertTool.containsExpect(expect,actual)){
             log.info("assert true");
         }else {
@@ -277,6 +286,9 @@ public class AssertTool extends Assert{
     private static boolean containsExpect(String expect, String dburl, String sql){
         DataBaseManager dataBaseManager = new DataBaseManager();
         JSONArray array = dataBaseManager.executeSingleQuery(sql,dburl);
+        if(array == null || array.size() == 0) {
+            fail("expected not null JsonObject, but null found. ");
+        }
         for (int i = 0; i<array.size();i++){
             log.info(array.get(i).toString());
         }
@@ -299,7 +311,6 @@ public class AssertTool extends Assert{
             fail(format(" ", expect, "assert failed"));
         }
     }
-
     /**
      * @desc 判断实际json不包含期望json方法
      * @param expect
@@ -308,20 +319,43 @@ public class AssertTool extends Assert{
     private static boolean notContainsExpect(JSONObject expect, JSONObject actual) {
         HashMap<String, Object> exmap = new HashMap<>();
         HashMap<String, Object> acmap = new HashMap<>();
-        exmap = JsonFileUtil.jsonNodeToMap(expect, exmap);
-        acmap = JsonFileUtil.jsonNodeToMap(actual, acmap);
+        exmap = JsonFileUtil.jsonToMap(expect, exmap);
+        acmap = JsonFileUtil.jsonToMap(actual, acmap);
         int sum = 0;
         for (String key : exmap.keySet()) {
             if (acmap.keySet().contains(key) && exmap.get(key).equals(acmap.get(key))) {
                 sum += 1;
             }
         }
-        if (sum == 0) {
+        if (sum != exmap.size()) {
             return true;
         } else {
             return false;
         }
     }
+    /**
+     * @desc 判断实际jsonnode不包含期望json方法
+     * @param expect
+     * @param actual
+     **/
+    private static boolean notContainsExpectNode(JSONObject expect, JSONObject actual) {
+        HashMap<String, Object> exmap = new HashMap<>();
+        HashMap<String, Object> acmap = new HashMap<>();
+        exmap = JsonFileUtil.jsonNodeToMap(expect, exmap);
+        acmap = JsonFileUtil.jsonNodeToMap(actual, acmap);
+        int sum = 0;
+        for (String key : exmap.keySet()) {
+            if (acmap.keySet().contains(key) && exmap.get(key).equals(acmap.get(key))) {
+                sum =sum + 1;
+            }
+        }
+        if (sum != exmap.size()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * @desc 判断实际json不包含期望json断言
@@ -329,7 +363,32 @@ public class AssertTool extends Assert{
      * @param actual
      **/
     public static void isNotContainsExpect(JSONObject expect, JSONObject actual){
+        if(null == expect) {
+            fail("expected is a null JsonObject ");
+        }
+        if(null == actual) {
+            fail("actual is a null JsonObject");
+        }
         if (AssertTool.notContainsExpect(expect,actual)){
+            log.info("assert true");
+        }else {
+            failSame(actual,expect,"assert failed");
+        }
+    }
+
+    /**
+     * @desc 判断实际json不包含期望jsonNODE断言
+     * @param expect
+     * @param actual
+     **/
+    public static void isNotContainsExpectJsonNode(JSONObject expect, JSONObject actual){
+        if(null == expect) {
+            fail("expected is a null JsonObject ");
+        }
+        if(null == actual) {
+            fail("actual is a null JsonObject");
+        }
+        if (AssertTool.notContainsExpectNode(expect,actual)){
             log.info("assert true");
         }else {
             failSame(actual,expect,"assert failed");
@@ -342,16 +401,43 @@ public class AssertTool extends Assert{
      * @param actual
      **/
     private static boolean notContainsExpect(JSONObject expect, JSONArray actual){
-        boolean result = true;
+        int sum = 0;
         if (actual.size()> 0){
             for (int i = 0; i< actual.size();i++){
                 JSONObject object = actual.getJSONObject(i);
                 if (notContainsExpect(expect, object)){
-                    result = false;
+                    sum +=1;
                 }
             }
         }
-        return result;
+        if (sum == actual.size()){
+            return true;
+        }else {
+            return false;
+        }
+
+    }
+
+    /**
+     * @desc 判断实际jsonarry不包含期望jsonNODE方法
+     * @param expect
+     * @param actual
+     **/
+    private static boolean notContainsExpectNode(JSONObject expect, JSONArray actual){
+        int sum = 0;
+        if (actual.size()> 0){
+            for (int i = 0; i< actual.size();i++){
+                JSONObject object = actual.getJSONObject(i);
+                if (notContainsExpectNode(expect, object)){
+                    sum +=1;
+                }
+            }
+        }
+        if (sum == actual.size()){
+            return true;
+        }else {
+            return false;
+        }
     }
 
     /**
@@ -360,7 +446,33 @@ public class AssertTool extends Assert{
      * @param actual
      **/
     public static void isNotContainsExpect(JSONObject expect, JSONArray actual){
+        if(null == expect) {
+            fail("expected is a null JsonObject ");
+        }
+        if(null == actual) {
+            fail("actual is a null JsonObject");
+        }
         if (AssertTool.notContainsExpect(expect,actual)){
+            log.info("assert true");
+        }else {
+            failSame(actual,expect,"assert failed");
+        }
+    }
+
+
+    /**
+     * @desc 判断实际jsonarry不包含期望json
+     * @param expect
+     * @param actual
+     **/
+    public static void isNotContainsExpectJsonNode(JSONObject expect, JSONArray actual){
+        if(null == expect) {
+            fail("expected is a null JsonObject ");
+        }
+        if(null == actual || actual.size() == 0) {
+            fail("actual is a null JsonObject");
+        }
+        if (AssertTool.notContainsExpectNode(expect,actual)){
             log.info("assert true");
         }else {
             failSame(actual,expect,"assert failed");
@@ -376,11 +488,33 @@ public class AssertTool extends Assert{
     private static boolean notContainsExpect(String expect,String dburl, String sql){
         DataBaseManager dataBaseManager = new DataBaseManager();
         JSONArray array = dataBaseManager.executeSingleQuery(sql,dburl);
+        if(null == array || array.size() == 0) {
+            fail("actual is a null JsonObject");
+        }
         for (int i = 0; i<array.size();i++){
             log.info(array.get(i).toString());
         }
         JSONObject expjson = JSON.parseObject(expect);
         return notContainsExpect(expjson, array);
+    }
+
+    /**
+     * @desc 判断数据库中是否不包含预期jsonnode方法
+     * @param expect
+     * @param dburl
+     * @param sql
+     **/
+    private static boolean notContainsExpectNode(String expect,String dburl, String sql){
+        DataBaseManager dataBaseManager = new DataBaseManager();
+        JSONArray array = dataBaseManager.executeSingleQuery(sql,dburl);
+        if(null == array || array.size() == 0) {
+            fail("actual is a null JsonObject");
+        }
+        for (int i = 0; i<array.size();i++){
+            log.info(array.get(i).toString());
+        }
+        JSONObject expjson = JSON.parseObject(expect);
+        return notContainsExpectNode(expjson, array);
     }
 
     /**
@@ -390,7 +524,22 @@ public class AssertTool extends Assert{
      * @param sql
      **/
     public static void isNotContainsExpect(String expect,String dburl, String sql){
+
         if (AssertTool.notContainsExpect(expect,dburl,sql)){
+            log.info("assert true");
+        }else {
+            fail("assert failed");
+        }
+    }
+
+    /**
+     * @desc 判断数据库中是否不包含预期jsonnode断言
+     * @param expect
+     * @param dburl
+     * @param sql
+     **/
+    public static void isNotContainsExpectJsonNode(String expect,String dburl, String sql){
+        if (AssertTool.notContainsExpectNode(expect,dburl,sql)){
             log.info("assert true");
         }else {
             fail("assert failed");
@@ -418,5 +567,4 @@ public class AssertTool extends Assert{
         }
         fail(formatted + ASSERT_LEFT2 + expected + ASSERT_MIDDLE + actual + ASSERT_RIGHT);
     }
-
 }
