@@ -60,8 +60,8 @@ import java.util.concurrent.atomic.AtomicInteger;
                 log.trace("All servers:{}", ToStringBuilder.reflectionToString(allServers));
                 log.trace("All reachable servers:{}", ToStringBuilder.reflectionToString(reachableServers));
             }
-            reachableServers = choose(reachableServers, key);
-            allServers = choose(allServers, key);
+            reachableServers = ServerFilterUtils.chooseServers(reachableServers, key);
+            allServers = ServerFilterUtils.chooseServers(allServers, key);
             if (log.isTraceEnabled()) {
                 log.trace("All servers:{}", ToStringBuilder.reflectionToString(allServers));
                 log.trace("All reachable servers:{}", ToStringBuilder.reflectionToString(reachableServers));
@@ -106,32 +106,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     @Override public void setLoadBalancer(ILoadBalancer lb) {
         super.setLoadBalancer(lb);
-    }
-
-    private List<Server> choose(List<Server> servers, Object key) {
-        if (key == null) {
-            return servers;
-        }
-        if (key instanceof HttpHeaders) {
-            HttpHeaders headers = (HttpHeaders)key;
-            if (headers.containsKey(FeignRibbonConstants.NODE_NAME_REG)) {
-                String reg = headers.getFirst(FeignRibbonConstants.NODE_NAME_REG);
-                if (StringUtils.isNotBlank(reg)) {
-                    List<Server> matchedServers = new ArrayList<>();
-                    servers.forEach(server -> {
-                        String appName = server.getMetaInfo().getAppName().toUpperCase(Locale.ROOT);
-                        if (log.isDebugEnabled()) {
-                            log.debug("appName:{}, reg：{}", appName, reg);
-                        }
-                        if (appName.matches(reg)) {
-                            matchedServers.add(server);
-                        }
-                    });
-                    return matchedServers;
-                }
-            }
-        }
-        return servers;
     }
 
     /**

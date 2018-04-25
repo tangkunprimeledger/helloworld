@@ -103,6 +103,13 @@
         from block where height=#{height}
     </select>
 
+    <select id="queryBlocks" resultMap="baseResultMap"
+            parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from block where height >= #{height} order by height asc limit #{limit}
+    </select>
+
     <select id="getMaxHeight" resultType="java.lang.Long">
         select max(height) from block
     </select>

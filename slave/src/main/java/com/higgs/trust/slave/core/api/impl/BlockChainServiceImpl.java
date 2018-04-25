@@ -5,8 +5,11 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
+import com.higgs.trust.slave.model.bo.Block;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,8 @@ import java.util.List;
     @Autowired
     private BlockChainClient blockChainClient;
 
+    @Autowired private BlockRepository blockRepository;
+
     @Override public RespData submitTransaction(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
         List<TransactionVO> transactionVOList = new ArrayList<>();
@@ -49,4 +54,13 @@ import java.util.List;
         respData.setData(transactionVOList);
         return respData;
     }
+
+    public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
+       return blockRepository.listBlockHeaders(startHeight, size);
+    }
+
+    public List<Block> listBlocks(long startHeight, int size) {
+        return blockRepository.listBlocks(startHeight, size);
+    }
+
 }
