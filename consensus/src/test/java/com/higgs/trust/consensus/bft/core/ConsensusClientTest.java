@@ -13,11 +13,13 @@ import io.atomix.copycat.server.CopycatServer;
 import io.atomix.copycat.server.storage.Storage;
 import io.atomix.copycat.server.storage.StorageLevel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -41,6 +43,13 @@ public class ConsensusClientTest {
         CopycatClient copycatClient = startClient(clusterAddress);
         copycatClient.submit(new StringCommand("test string command"));
         Thread.sleep(20000);
+    }
+
+    @Test
+    private void testSplit(){
+        String src = "192.168.0.1, 192.168.0.2, 192.168.0.1";
+        List<String> list  =new ArrayList<String>(Arrays.asList(src.split("\\s*,\\s*")));
+        list.stream().forEach((s)->{System.out.print(s);});
     }
 
     private CopycatClient startClient(List<Address> clusterAddress){
