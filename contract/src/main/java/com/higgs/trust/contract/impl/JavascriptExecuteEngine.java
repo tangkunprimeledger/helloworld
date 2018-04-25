@@ -1,14 +1,16 @@
 package com.higgs.trust.contract.impl;
 
-import com.higgs.trust.contract.ContractStateStore;
-import com.higgs.trust.contract.ExecuteContext;
-import com.higgs.trust.contract.ExecuteEngine;
-import com.higgs.trust.contract.StateManager;
+import com.higgs.trust.contract.*;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.script.*;
 
-public class JavascriptExecuteEngine implements ExecuteEngine {
+/**
+ * @author duhongming
+ * @date 2018/04/25
+ */
+@Slf4j public class JavascriptExecuteEngine implements ExecuteEngine {
 
     private static final String dbStateKeyName = "db";
 
@@ -43,8 +45,8 @@ public class JavascriptExecuteEngine implements ExecuteEngine {
             compiledScript.eval(bindings);
             ScriptObjectMirror method = (ScriptObjectMirror) bindings.get(methodName);
             if (null == method) {
-                System.out.println("method " + methodName + " not find");
-                // TODO [duhongming] no method find
+                log.error("method: {} not found", methodName);
+                throw new SmartContractException(String.format("method: %s not found"));
             }
 
             Object result = method.call(null, bizArgs);
@@ -54,9 +56,9 @@ public class JavascriptExecuteEngine implements ExecuteEngine {
             }
             return result;
         } catch (ScriptException ex) {
-            // TODO duhongming to handle ScriptException
             ex.printStackTrace();
-            return null;
+            log.error("ScriptException", ex);
+            throw new SmartContractException(ex.getMessage());
         } finally {
             ExecuteContext.Clear();
         }

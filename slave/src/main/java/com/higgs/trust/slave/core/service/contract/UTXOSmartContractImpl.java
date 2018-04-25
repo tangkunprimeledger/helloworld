@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
         ExecuteEngineManager manager = getExceuteEngineManager();
         ExecuteContext context = ExecuteContext.newContext(data);
         context.setValidateStage(processType == TxProcessTypeEnum.VALIDATE);
-        ExecuteEngine engine = manager.getExceuteEngine(code, ExecuteEngine.JAVASCRIPT);
+        ExecuteEngine engine = manager.getExecuteEngine(code, ExecuteEngine.JAVASCRIPT);
         Object result = engine.execute("verify", args);
         return (Boolean)result;
     }

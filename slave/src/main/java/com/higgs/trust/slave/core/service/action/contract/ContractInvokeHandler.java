@@ -5,7 +5,6 @@ import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.contract.SmartContractUtil;
 import com.higgs.trust.slave.core.service.contract.StandardExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
 import com.higgs.trust.slave.model.bo.context.ActionData;

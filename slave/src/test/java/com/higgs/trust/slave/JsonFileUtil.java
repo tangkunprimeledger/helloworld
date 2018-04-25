@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import lombok.extern.java.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,6 +18,7 @@ import java.util.*;
  * @author shenqingyan
  * @create 2018年04月10日16:53
  */
+@Log
 public class JsonFileUtil {
     //将文件内容返回为list
     public static List<String> readJsonFile(List<String> list, String filepath) {
@@ -35,8 +37,10 @@ public class JsonFileUtil {
                 }
                 return list;
             }
-        } else {
+        } else if (file.exists()){
             list.add(bufferedReader(file.toString()));
+        } else{
+            log.info("no such file");
         }
         return list;
     }
@@ -79,6 +83,20 @@ public class JsonFileUtil {
             listobj.add(stringToJsonObject(it.next().toString()));
         }
         return listobj;
+    }
+
+    public static String findJsonFile(String url){
+        String pathProj = "./src/test/resources/"+url;
+        String clazzPath = "./test-classes/"+url;
+        File fileProj = new File(pathProj);
+        File fileClazz = new File(clazzPath);
+        if (fileProj.exists()){
+            return pathProj;
+        }else if(fileClazz.exists()){
+            return clazzPath;
+        }else {
+            return null;
+        }
     }
 
     //Json文件转为Object[][]

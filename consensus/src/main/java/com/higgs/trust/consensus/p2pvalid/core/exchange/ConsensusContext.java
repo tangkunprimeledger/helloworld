@@ -24,13 +24,30 @@ public class ConsensusContext {
     private P2pConsensusClient p2pConsensusClient;
     private Integer applyThreshold;
 
-    public ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum) {
+    private ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum) {
         this.validConsensus = validConsensus;
-        sendStorage = new SendStorage(baseDir.concat("sendDB"));
-        receiveStorage = new ReceiveStorage(baseDir.concat("receiveDB"));
+        sendStorage = SendStorage.createFileStorage(baseDir.concat("sendDB"));
+        receiveStorage = ReceiveStorage.createFileStorage(baseDir.concat("receiveDB"));
         this.p2pConsensusClient = p2pConsensusClient;
         this.applyThreshold = 2 * fautNodeNum + 1;
         initExecutor();
+    }
+
+    private ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, Integer fautNodeNum) {
+        this.validConsensus = validConsensus;
+        sendStorage = SendStorage.createMemoryStorage();
+        receiveStorage = ReceiveStorage.createMemoryStorage();
+        this.p2pConsensusClient = p2pConsensusClient;
+        this.applyThreshold = 2 * fautNodeNum + 1;
+        initExecutor();
+    }
+
+    public static ConsensusContext create(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum){
+        return  new ConsensusContext(validConsensus, p2pConsensusClient, baseDir, fautNodeNum);
+    }
+
+    public static ConsensusContext createInMemory(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, Integer fautNodeNum){
+        return  new ConsensusContext(validConsensus, p2pConsensusClient, fautNodeNum);
     }
 
     private void initExecutor() {

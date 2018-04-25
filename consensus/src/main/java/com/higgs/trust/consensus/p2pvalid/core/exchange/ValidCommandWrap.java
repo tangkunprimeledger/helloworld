@@ -24,15 +24,15 @@ public class ValidCommandWrap implements Serializable {
     private String messageDigest;
     private String sign;
     private Class<? extends ValidCommand> commandClass;
-    private Set<String> toNodeNames;
+    private Set<String> toNodeNames = new HashSet<>();
 
     public ValidCommandWrap() {
     }
 
     private ValidCommandWrap(ValidCommand<?> validCommand) {
-        toNodeNames = new HashSet<>();
         this.validCommand = validCommand;
         this.commandClass = validCommand.getClass();
+        this.messageDigest = validCommand.messageDigest();
     }
 
     public static ValidCommandWrap of(ValidCommand<?> validCommand) {
@@ -42,11 +42,6 @@ public class ValidCommandWrap implements Serializable {
 
     public ValidCommandWrap fromNodeName(String fromNodeName) {
         this.fromNodeName = fromNodeName;
-        return this;
-    }
-
-    public ValidCommandWrap messageDigest(String messageDigest) {
-        this.messageDigest = messageDigest;
         return this;
     }
 

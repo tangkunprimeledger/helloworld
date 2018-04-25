@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -18,7 +19,7 @@ import org.testng.annotations.BeforeSuite;
 //@RunWith(MockitoJUnitRunner.class)
 //@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE) public abstract class BaseTest
-    extends AbstractTestNGSpringContextTests {
+    extends AbstractTestNGSpringContextTests{
 
     @Autowired
     SnapshotService snapshotService;

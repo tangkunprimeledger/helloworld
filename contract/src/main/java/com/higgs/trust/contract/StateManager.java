@@ -32,7 +32,6 @@ public class StateManager {
 
     public StateManager put(String name, Object value) {
         this.state.put(name, JSON.parse(JSON.toJSONString(value)));
-        //this.state.put(name, org.apache.commons.lang3.SerializationUtils.clone(value));
         return this;
     }
 

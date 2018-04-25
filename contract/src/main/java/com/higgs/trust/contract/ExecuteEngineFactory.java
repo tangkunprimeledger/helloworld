@@ -2,7 +2,7 @@ package com.higgs.trust.contract;
 
 import java.util.Map;
 
-public interface ExceuteEngineFactory {
+public interface ExecuteEngineFactory {
     /**
      * Returns the full  name of the <code>ExceuteEngine</code>.
      *
@@ -17,5 +17,5 @@ public interface ExceuteEngineFactory {
      * @param variables
      * @return
      */
-    public ExecuteEngine getExceuteEngine(String code, Map<String, Object> variables);
+    public ExecuteEngine getExecuteEngine(String code, Map<String, Object> variables);
 }

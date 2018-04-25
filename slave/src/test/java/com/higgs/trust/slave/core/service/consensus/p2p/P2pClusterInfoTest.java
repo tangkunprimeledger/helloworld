@@ -25,7 +25,7 @@ import java.util.List;
     }
 
     @Test public void testPubKey() throws Exception {
-        String pubKey = p2pClusterInfo.pubKey("rs001");
+        String pubKey = p2pClusterInfo.pubKey("TRUST-node97");
         log.info("get node pub key : {}", pubKey);
         Assert.assertNotNull(pubKey);
     }
