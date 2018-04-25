@@ -22,7 +22,7 @@ public class ReceiveCommandStatistics extends Closeable {
         this.fromNodeNameSet = new HashSet<>();
     }
 
-    public static ReceiveCommandStatistics of(ValidCommand<?> validCommand) {
+    public static ReceiveCommandStatistics create(ValidCommand<?> validCommand) {
         return new ReceiveCommandStatistics(validCommand);
     }
 

@@ -29,7 +29,7 @@ public interface ClusterInfo {
     List<String> clusterNodeNames();
 
     /**
-     * get public key of the given nodeName
+     * get public key create the given nodeName
      *
      * @param nodeName
      * @return

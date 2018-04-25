@@ -31,7 +31,7 @@ public class SendStorage {
 
     private Condition sendQueueCondition;
 
-    public SendStorage(String sendDBDir) {
+    private SendStorage(String sendDBDir) {
         this.sendDB = DBMaker
                 .fileDB(sendDBDir)
                 .fileMmapEnable()
@@ -42,6 +42,26 @@ public class SendStorage {
         sendQueueLock = new ReentrantLock();
         sendQueueCondition = sendQueueLock.newCondition();
         initThreadPool();
+    }
+
+    private SendStorage() {
+        this.sendDB = DBMaker
+                .memoryDB()
+                .closeOnJvmShutdown()
+                .cleanerHackEnable()
+                .transactionEnable()
+                .make();
+        sendQueueLock = new ReentrantLock();
+        sendQueueCondition = sendQueueLock.newCondition();
+        initThreadPool();
+    }
+
+    public static SendStorage createFileStorage(String sendDBDir){
+        return new SendStorage(sendDBDir);
+    }
+
+    public static SendStorage createMemoryStorage(){
+        return new SendStorage();
     }
 
     private void initThreadPool() {

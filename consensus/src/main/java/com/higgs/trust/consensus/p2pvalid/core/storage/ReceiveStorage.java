@@ -6,7 +6,6 @@ import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommand
 import lombok.extern.slf4j.Slf4j;
 import org.mapdb.*;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -39,11 +38,7 @@ public class ReceiveStorage {
 
     private Condition applyQueueCondition;
 
-    public ReceiveStorage(String receiveDBDir) {
-        File file = new File(receiveDBDir);
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
+    private ReceiveStorage(String receiveDBDir) {
         this.receiveDB = DBMaker
                 .fileDB(receiveDBDir)
                 .fileMmapEnable()
@@ -54,6 +49,26 @@ public class ReceiveStorage {
         applyQueueLock = new ReentrantLock();
         applyQueueCondition = applyQueueLock.newCondition();
         initThreadPool();
+    }
+
+    private ReceiveStorage() {
+        this.receiveDB = DBMaker
+                .memoryDB()
+                .closeOnJvmShutdown()
+                .cleanerHackEnable()
+                .transactionEnable()
+                .make();
+        applyQueueLock = new ReentrantLock();
+        applyQueueCondition = applyQueueLock.newCondition();
+        initThreadPool();
+    }
+
+    public static ReceiveStorage createFileStorage(String receiveDBDir){
+        return new ReceiveStorage(receiveDBDir);
+    }
+
+    public static  ReceiveStorage createMemoryStorage(){
+        return new ReceiveStorage();
     }
 
     private void initThreadPool() {
@@ -83,7 +98,7 @@ public class ReceiveStorage {
             ValidCommand<?> validCommand = validCommandWrap.getValidCommand();
             String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
             HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
-            ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.of(validCommand));
+            ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.create(validCommand));
             receiveCommandStatistics.addFromNode(validCommandWrap.getFromNodeName());
             receiveStatisticsMap.put(key, receiveCommandStatistics);
             if (receiveCommandStatistics.getFromNodeNameSet().size() >= threshold) {
