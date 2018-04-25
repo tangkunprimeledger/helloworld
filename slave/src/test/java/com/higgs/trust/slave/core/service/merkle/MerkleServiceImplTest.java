@@ -35,11 +35,11 @@ import static org.testng.AssertJUnit.fail;
  * @date 2018/4/12 16:53
  */
 public class MerkleServiceImplTest extends BaseTest {
-
     //数据驱动
     @DataProvider public Object[][] provideBuildData(Method method) {
+        String filepath = JsonFileUtil.findJsonFile("java/com/higgs/trust/slave/core/service/merkle/testBuild/testRegular");
         HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil
-            .jsonFileToArry("./src/test/resources/java/com/higgs/trust/slave/core/service/merkle/testBuild/testRegular");
+            .jsonFileToArry(filepath);
         return arrmap;
     }
 
