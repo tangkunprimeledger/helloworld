@@ -17,6 +17,15 @@ import java.util.List;
     BlockPO queryByHeight(@Param("height") Long height);
 
     /**
+     * query blocks by block height
+     *
+     * @param startHeight start height
+     * @param size size of blocks
+     * @return
+     */
+    List<BlockPO> queryBlocks(@Param("startHeight") Long startHeight, @Param("limit") int size);
+
+    /**
      * get max height of block
      *
      * @return
