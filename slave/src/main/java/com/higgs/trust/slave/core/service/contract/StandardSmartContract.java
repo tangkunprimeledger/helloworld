@@ -1,9 +1,9 @@
 package com.higgs.trust.slave.core.service.contract;
 
-import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
-import com.higgs.trust.slave.core.service.merkle.MerkleService;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
 import com.higgs.trust.slave.model.bo.Contract;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 
     private ExecuteEngineManager engineManager;
 
-    private ExecuteEngineManager getExceuteEngineManager() {
+    private ExecuteEngineManager getExecuteEngineManager() {
         if (null != engineManager) {
             return engineManager;
         }
@@ -60,10 +60,9 @@ import org.springframework.stereotype.Service;
         Contract contract = snapshotAgent.get(address);
         if (null == contract) {
             log.error("contract not fond: {}", address);
-            // TODO [duhongming] throws Exception
-            return null;
+            throw new ContractException(SlaveErrorEnum.SLAVE_CONTRACT_NOT_EXIST_ERROR, String.format("contract not fond: %s", address));
         }
-        ExecuteEngineManager manager = getExceuteEngineManager();
+        ExecuteEngineManager manager = getExecuteEngineManager();
         ExecuteContext context = ExecuteContext.newContext(data);
         context.setInstanceAddress(instanceId);
 
@@ -73,7 +72,7 @@ import org.springframework.stereotype.Service;
         context.setContract(contractEntity);
         context.setValidateStage(processType == TxProcessTypeEnum.VALIDATE);
 
-        ExecuteEngine engine = manager.getExceuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
+        ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
         Object result = engine.execute("main", args);
         return result;
     }
@@ -84,7 +83,8 @@ import org.springframework.stereotype.Service;
 
     public Object execute(AccountContractBinding binding, ExecuteContextData data, TxProcessTypeEnum processType) {
         if (binding == null) {
-            log.error("binding is null");
+            log.warn("binding is null");
+            return null;
         }
         Object args = com.alibaba.fastjson.JSON.parse(binding.getArgs());
         return execute(binding.getContractAddress(), binding.getHash(), data, processType, args);

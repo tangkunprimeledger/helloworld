@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.utxo;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
@@ -12,7 +11,6 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityService;
-import com.higgs.trust.slave.core.service.contract.SmartContractUtil;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.UTXOSmartContract;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityDBHandler;
@@ -38,9 +36,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Date;

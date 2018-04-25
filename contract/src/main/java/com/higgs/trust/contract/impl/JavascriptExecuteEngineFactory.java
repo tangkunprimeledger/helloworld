@@ -1,8 +1,8 @@
 package com.higgs.trust.contract.impl;
 
 import com.higgs.trust.contract.ExecuteContext;
-import com.higgs.trust.contract.ExceuteEngineFactory;
 import com.higgs.trust.contract.ExecuteEngine;
+import com.higgs.trust.contract.ExecuteEngineFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class JavascriptExecuteEngineFactory implements ExceuteEngineFactory {
+/**
+ * @author duhongming
+ */
+public class JavascriptExecuteEngineFactory implements ExecuteEngineFactory {
 
     private static final String engineName = "javascript";
 
@@ -34,7 +37,7 @@ public class JavascriptExecuteEngineFactory implements ExceuteEngineFactory {
     private Bindings createBindings(Map<String, Object> services) {
         ExecuteContext context = ExecuteContext.getCurrent();
         List<ResolverFactory> factories = new ArrayList();
-        factories.add(new BeansResolverFactory(services));
+        factories.add(new ServicesResolverFactory(services));
         Bindings bindings = new ScriptBindingsFactory(factories).createBindings(context);
         return bindings;
     }
@@ -43,7 +46,7 @@ public class JavascriptExecuteEngineFactory implements ExceuteEngineFactory {
         return engineName;
     }
 
-    @Override public ExecuteEngine getExceuteEngine(String code, Map<String, Object> variables) {
+    @Override public ExecuteEngine getExecuteEngine(String code, Map<String, Object> variables) {
         JavascriptExecuteEngine engine = new JavascriptExecuteEngine(newScriptEngine(variables), code);
         return engine;
     }
