@@ -98,11 +98,7 @@ public class ExecuteEngineManager {
     }
 
     public ExecuteEngine getExceuteEngine(String code, String language) {
-        ContractEntity contractEntity = new ContractEntity();
-        contractEntity.setScript(code);
-
         ExecuteContext context = ExecuteContext.getCurrent();
-        context.setContract(contractEntity);
         context.setDbStateStore(this.stateStore);
 
         ExceuteEngineFactory factory = getExceuteEngineByLanguage(language);
