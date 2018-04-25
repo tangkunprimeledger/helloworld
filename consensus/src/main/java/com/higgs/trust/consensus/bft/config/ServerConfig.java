@@ -6,6 +6,7 @@ import io.atomix.copycat.server.CopycatServer;
 import io.atomix.copycat.server.StateMachine;
 import io.atomix.copycat.server.storage.Storage;
 import io.atomix.copycat.server.storage.StorageLevel;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -112,10 +113,10 @@ public class ServerConfig
         List<String> clusterList = Arrays.asList(cluster.split(","));
         List<Address> clusterAddress = new ArrayList<>();
         for (String addressStr : clusterList) {
-            clusterAddress.add(new Address(addressStr));
+            clusterAddress.add(new Address(StringUtils.trim(addressStr)));
         }
         log.info("copycat cluster start ...");
-        server.bootstrap(clusterAddress);
+        server.bootstrap(clusterAddress).join();
     }
 
     @Override
