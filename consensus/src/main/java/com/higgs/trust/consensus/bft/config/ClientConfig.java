@@ -2,6 +2,7 @@ package com.higgs.trust.consensus.bft.config;
 
 import com.higgs.trust.consensus.bft.adapter.CopycatClientAdapter;
 import com.higgs.trust.consensus.bft.core.ConsensusClient;
+import com.higgs.trust.consensus.bft.core.ConsensusStateMachine;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.copycat.client.ConnectionStrategies;
@@ -23,7 +24,7 @@ import java.util.List;
 
 @Configuration
 @ConditionalOnExpression("!'${copycat.client.server:}'.isEmpty()")
-@ConditionalOnBean(ServerConfig.class)
+@ConditionalOnBean(ConsensusStateMachine.class)
 public class ClientConfig {
     private static final Logger log = LoggerFactory.getLogger(ClientConfig.class);
 
