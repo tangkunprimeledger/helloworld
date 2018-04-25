@@ -115,7 +115,7 @@ public class ServerConfig
             clusterAddress.add(new Address(addressStr));
         }
         log.info("copycat cluster start ...");
-        server.bootstrap(clusterAddress).join();
+        server.bootstrap(clusterAddress);
     }
 
     @Override
