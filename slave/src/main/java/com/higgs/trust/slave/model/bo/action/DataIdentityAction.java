@@ -3,6 +3,7 @@ package com.higgs.trust.slave.model.bo.action;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
 
@@ -16,13 +17,13 @@ import javax.validation.constraints.NotNull;
     /**
      * identity of data
      */
-    @NotNull @Length(max = 64) private String identity;
+    @NotBlank @Length(max = 64) private String identity;
     /**
      * chain of owner
      */
-    @NotNull @Length(max = 24) private String chainOwner;
+    @NotBlank @Length(max = 24) private String chainOwner;
     /**
      * data owner
      */
-    @NotNull @Length(max = 24) private String dataOwner;
+    @NotBlank @Length(max = 24) private String dataOwner;
 }
