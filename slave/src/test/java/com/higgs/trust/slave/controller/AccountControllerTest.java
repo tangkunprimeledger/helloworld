@@ -83,7 +83,7 @@ public class AccountControllerTest {
 
         CoreTransaction coreTx1 = new CoreTransaction();
 
-        coreTx1.setTxId("pending-tx-test-1");
+        coreTx1.setTxId("pending-tx-test-222");
         coreTx1.setActionList(initPoilicy());
         coreTx1.setPolicyId("000000");
         coreTx1.setLockTime(new Date());
