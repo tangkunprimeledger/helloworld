@@ -14,6 +14,8 @@ import javax.validation.constraints.NotNull;
 
     @NotNull @Value("${consensus.p2p.faultNodeNum}") private Integer p2pFaultNodeNum;
 
+    @NotNull @Value("${consensus.p2p.cluster}") private String p2pClusterJson;
+
     @Override public void afterPropertiesSet() throws Exception {
         BeanValidator.validate(this).failThrow();
     }

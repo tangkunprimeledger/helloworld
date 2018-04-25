@@ -68,7 +68,7 @@ public class BlockChainServiceImplTest {
 
         CoreTransaction coreTx1 = new CoreTransaction();
 
-        coreTx1.setTxId("pending-tx-test-12");
+        coreTx1.setTxId("pending-tx-test-1");
         //test registerPolicy
         //        coreTx1.setActionList(registerPolicyList);
         //        coreTx1.setPolicyId("000000");
@@ -78,7 +78,7 @@ public class BlockChainServiceImplTest {
         coreTx1.setPolicyId("000000");
         coreTx1.setLockTime(new Date());
         coreTx1.setBizModel(new JSONObject());
-        coreTx1.setSender("rs-test1");
+        coreTx1.setSender("TRUST-TEST1");
         coreTx1.setVersion("1.0.0");
 
         System.out.println(JSON.toJSONString(coreTx1));
@@ -128,7 +128,7 @@ public class BlockChainServiceImplTest {
         registerPolicy.setPolicyName("测试注册policy-1");
 
         Set<String> rsIds = new HashSet<>();
-        rsIds.add("rs-test1");
+        rsIds.add("TRUST-TEST1");
         registerPolicy.setRsIdSet(rsIds);
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);

@@ -2,9 +2,9 @@
   "测试ID": 0,
   "body": {
     "old": "a",
-    "new": "x"
+    "new": "y"
   },
   "type": "RS",
-  "assert": "e87c53758e3313ad824ecdb644f4bdbd53e80bc410522ce87f8cd77ced19592e",
+  "assert": "24f2e733ccc804d143c449b103da4d568f9e22e000c424092e03880d817c0a76",
   "comment": "merkle树update方法，oldObj存在于原merkle树测试"
 }

@@ -1,7 +1,7 @@
 {
   "TRUST": {
     "ribbon": {
-      "NFLoadBalancerRuleClassName": "com.higgs.trust.slave.common.feign.RequestHeaderRoundRobinRule"
+      "NFLoadBalancerRuleClassName": "com.higgs.trust.common.feign.RequestHeaderRoundRobinRule"
     }
   },
   "consensus": {
@@ -9,8 +9,8 @@
       "data": {
         "dir": "./data/p2p"
       },
-      "cluster": "{\"node1\":{\"pubKey\":\"abc\"},\"node2\":{\"pubKey\":\"abd\"},\"node3\":{\"pubKey\":\"abe\"}}",
-      "faultNodeNum": 1
+      "cluster": "{\"TRUST-TEST1\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4WWUBCmmmTrA+M/ptQKAZVZ0mRQ/Zmn2kQLfT1R7YJBSVYlfGt7PtmxRJMVSMS0qncllQqmQjptfuo21ppOKTecmOAGmQQjzOpB5M5f6OXLRl6pCH/bPFsRQJiqTBIu6j+kgorWqDMtbAviEv73DqYcyWdzWz95BtBcgkeRLxnQIDAQAB\"}",
+      "faultNodeNum": 0
     }
   },
   "copycat": {
@@ -25,7 +25,7 @@
   },
   "eureka": {
     "client": {
-      "enabled": false,
+      "enabled": true,
       "serviceUrl": {
         "defaultZone": "http://localhost:8761/eureka/"
       }

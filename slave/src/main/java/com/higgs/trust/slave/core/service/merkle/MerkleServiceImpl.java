@@ -132,7 +132,7 @@ import java.util.concurrent.ConcurrentHashMap;
             log.error(
                 "[update] update merkleTree error, hash(objOld) doesn't exist in merkleTree, hash(objOld)={}, type={},merkleRootHash={}",
                 oldHash, type, merkleTree.getRootHash());
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_ADD_EXCEPTION,
+            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_UPDATE_EXCEPTION,
                 "[update] update merkleTree error, hash(objOld) doesn't exist in merkleTree");
         }
         // check existence of merkleNode with newHash, it must not be in nodeMap before update
@@ -141,7 +141,7 @@ import java.util.concurrent.ConcurrentHashMap;
             log.error(
                 "[update] update merkleTree error, hash(objNew) already exist in merkleTree, hash(objNew)={}, type={},merkleRootHash={}",
                 newHash, type, merkleTree.getRootHash());
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_ADD_EXCEPTION,
+            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_UPDATE_EXCEPTION,
                 "[update] update merkleTree error, hash(objNew) already exist in merkleTree");
         }
 

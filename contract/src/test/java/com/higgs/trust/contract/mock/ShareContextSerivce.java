@@ -21,7 +21,6 @@ public class ShareContextSerivce extends ContractApiService {
     }
 
     public String sayHello(String name) {
-        return "Hello " + name + "  " + Thread.currentThread().getName() + " address:" + getContext().getContract()
-            .getAddress();
+        return "Hello " + name + "  " + Thread.currentThread().getName();
     }
 }

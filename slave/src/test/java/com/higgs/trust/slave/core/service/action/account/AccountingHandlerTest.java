@@ -100,8 +100,8 @@ public class AccountingHandlerTest extends IntegrateBaseTest {
         action.setType(ActionTypeEnum.FREEZE);
         action.setIndex(1);
         action.setBizFlowNo("freeze_flow_no_001_" + System.currentTimeMillis());
-        action.setAccountNo("account_no_006");
-        action.setAmount(new BigDecimal("0.5"));
+        action.setAccountNo("account_no_005_1");
+        action.setAmount(new BigDecimal("0.01"));
         action.setContractAddr(null);
 
         List<Action> actions = new ArrayList<>();
@@ -139,8 +139,8 @@ public class AccountingHandlerTest extends IntegrateBaseTest {
         action.setType(ActionTypeEnum.UNFREEZE);
         action.setIndex(1);
         action.setBizFlowNo("freeze_flow_no_001_1524025059765");
-        action.setAccountNo("account_no_006");
-        action.setAmount(new BigDecimal("0.05"));
+        action.setAccountNo("account_no_005_1");
+        action.setAmount(new BigDecimal("0.01"));
 
         packContext.setCurrentAction(action);
 

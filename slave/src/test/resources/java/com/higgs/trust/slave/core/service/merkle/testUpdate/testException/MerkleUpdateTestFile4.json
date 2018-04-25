@@ -5,6 +5,6 @@
     "new": "a"
   },
   "type": "RS",
-  "assert": "slave merkle node add exception[SLAVE_MERKLE_NODE_ADD_EXCEPTION]",
+  "assert": "slave merkle node update exception[SLAVE_MERKLE_NODE_UPDATE_EXCEPTION]",
   "comment": "merkle树update方法，更新后包含重复元素测试"
 }

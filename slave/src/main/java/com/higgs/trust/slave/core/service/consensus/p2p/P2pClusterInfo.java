@@ -1,14 +1,17 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.google.common.collect.Lists;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: the p2p cluster info maintained by slave
@@ -16,11 +19,19 @@ import java.util.List;
  **/
 @Service public class P2pClusterInfo implements ClusterInfo {
 
+    private Map<String, String> p2pCluster;
+
+    private Integer faultNodeNum;
+
     @Autowired NodeState nodeState;
 
     @Autowired RsPubKeyRepository rsPubKeyRepository;
 
-    @Autowired PropertiesConfig propertiesConfig;
+    @Autowired P2pClusterInfo(PropertiesConfig propertiesConfig) {
+        p2pCluster = JSON.parseObject(propertiesConfig.getP2pClusterJson(), new TypeReference<Map<String, String>>() {
+        });
+        faultNodeNum = propertiesConfig.getP2pFaultNodeNum();
+    }
 
     /**
      * get faultNode num
@@ -28,7 +39,7 @@ import java.util.List;
      * @return
      */
     @Override public Integer faultNodeNum() {
-        return propertiesConfig.getP2pFaultNodeNum();
+        return faultNodeNum;
     }
 
     @Override public String myNodeName() {
@@ -36,12 +47,11 @@ import java.util.List;
     }
 
     @Override public List<String> clusterNodeNames() {
-        return rsPubKeyRepository.queryAllRsId();
+        return Lists.newArrayList(p2pCluster.keySet());
     }
 
     @Override public String pubKey(String nodeName) {
-        RsPubKey rsPubKey = rsPubKeyRepository.queryByRsId(nodeName);
-        return rsPubKey.getPubKey();
+        return p2pCluster.get(nodeName);
     }
 
     @Override public String privateKey() {
