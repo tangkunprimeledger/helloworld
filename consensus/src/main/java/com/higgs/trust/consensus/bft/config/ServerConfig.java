@@ -46,7 +46,7 @@ public class ServerConfig
     private String
             stateMachineClass;
 
-    @Value("${copycat.server.nettyThreadNum:4}")
+    @Value("${copycat.server.nettyThreadNum:10}")
     private Integer nettyThreadNum;
 
     @Value("${copycat.server.logDir:copycat/logs}")
