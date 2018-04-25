@@ -43,7 +43,7 @@ public class ClientConfig {
                 .withConnectionStrategy(ConnectionStrategies.FIBONACCI_BACKOFF)
                 .withRecoveryStrategy(RecoveryStrategies.CLOSE)
                 .withServerSelectionStrategy(ServerSelectionStrategies.LEADER).build();
-        client.connect(addressList).join();
+        client.connect(addressList);
         return new CopycatClientAdapter(client);
     }
 }
