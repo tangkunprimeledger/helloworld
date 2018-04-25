@@ -2,6 +2,8 @@
   "测试ID": 0,
   "body": "x",
   "type": "RS",
-  "assert": "debbb82f7c944b8b6582b83f4c3a7e1d09b288ac2fa2dc9ce0becc90f505a405",
+  "assert": "9929cc70988fca517474f71cebdad056bca6879a4285e7744c6aee4ec0938c50",
+  "assert1": "debbb82f7c944b8b6582b83f4c3a7e1d09b288ac2fa2dc9ce0becc90f505a405",
+  "assert2": "57f90663bd4c2f778687750ed31a166252f15e68363fab36d7fe7ed3cb716222",
   "comment": "merkle树add方法，尾部插入测试"
 }
