@@ -96,8 +96,8 @@ public class ServerConfig
         });
 
         builder.withTransport(NettyTransport.builder().withThreads(nettyThreadNum).build());
-        builder.withHeartbeatInterval(Duration.ofMillis(500))
-                .withElectionTimeout(Duration.ofMillis(1500))
+        builder.withElectionTimeout(Duration.ofMillis(1500))
+                .withHeartbeatInterval(Duration.ofMillis(500))
                 .withSessionTimeout(Duration.ofMillis(5000));
 
         Storage storage = Storage.builder().withStorageLevel(StorageLevel.DISK).withDirectory(logDir)
