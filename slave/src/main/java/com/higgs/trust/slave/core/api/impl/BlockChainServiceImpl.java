@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,11 +32,17 @@ import java.util.List;
 
     @Override public RespData submitTransaction(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
-        List<TransactionVO> transactionVOList;
-        if (nodeState.isState(NodeStateEnum.Running)) {
-            transactionVOList = pendingState.addPendingTransactions(transactions);
-        } else {
+        List<TransactionVO> transactionVOList = new ArrayList<>();
+        // when master is running , then add txs into local pending txs
+        if (nodeState.isMaster() && nodeState.isState(NodeStateEnum.Running)) {
+                log.info("The node is master and it is running , add txs:{} into pending txs", transactions);
+                transactionVOList = pendingState.addPendingTransactions(transactions);
+        }
+
+        //when it is not master ,then send txs to master node
+        if(!nodeState.isMaster()) {
             //TODO test
+            log.info("this node is not  master  , send txs:{} to master node", transactions);
             transactionVOList = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
         }
 
