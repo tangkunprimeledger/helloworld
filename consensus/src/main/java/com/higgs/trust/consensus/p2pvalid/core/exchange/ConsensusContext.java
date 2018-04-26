@@ -90,7 +90,7 @@ public class ConsensusContext {
         ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
 
         if (receiveCommandStatistics.isClosed()) {
-            log.info("receiveCommandStatistics {} from node {} is apply and closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
+            log.info("receiveCommandStatistics {} from node {} is closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
             if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
                 log.info("add receiveCommandStatistics {} to gc set", receiveCommandStatistics);
                 receiveStorage.addGCSet(key);
@@ -98,9 +98,10 @@ public class ConsensusContext {
         } else if (receiveCommandStatistics.isApply()) {
             log.info("receiveCommandStatistics {} has applied", receiveCommandStatistics);
         } else if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
-            log.info("from node set size {} >= threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
             receiveStorage.addApplyQueue(key);
             receiveCommandStatistics.apply();
+            receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
+            log.info("from node set size {} >= threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
         }
     }
 
