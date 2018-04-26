@@ -108,7 +108,7 @@ public abstract class ValidConsensus {
         }
         try {
             if (!SignUtils.verify(validCommandWrap.getMessageDigest(), validCommandWrap.getSign(), pubKey)) {
-                throw new Exception(String.format("check sign failed for node %s", validCommandWrap.getFromNodeName()));
+                throw new Exception(String.format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNodeName(), validCommandWrap, pubKey));
             }
         } catch (Exception e) {
             throw new ReceiveException(String.format("invalid command from node %s", validCommandWrap.getFromNodeName()), e);
