@@ -153,7 +153,7 @@ public class ConsensusContext {
                     receiveStorage.addDelayQueue(key);
                 }
             } catch (Exception e) {
-                log.error("apply log failed!", e);
+                log.error("apply log failed! {}", e);
                 if (null != key) {
                     log.info("apply exception, add key {} to delay queue", key);
                     receiveStorage.addDelayQueue(key);
