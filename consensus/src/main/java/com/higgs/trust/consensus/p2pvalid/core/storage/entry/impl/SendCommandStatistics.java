@@ -1,9 +1,9 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl;
 
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
-import com.higgs.trust.consensus.p2pvalid.core.storage.entry.Closeable;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,12 +11,13 @@ import java.util.Set;
  * @author cwy
  */
 @ToString
-public class SendCommandStatistics extends Closeable {
+public class SendCommandStatistics implements Serializable{
     private static final long serialVersionUID = -1L;
 
     private ValidCommandWrap validCommandWrap;
     private Set<String> ackNodeNameSet;
     private Set<String> sendNodeNameSet;
+    private boolean send;
 
     private SendCommandStatistics(ValidCommandWrap validCommandWrap) {
         this.validCommandWrap = validCommandWrap;
@@ -42,5 +43,13 @@ public class SendCommandStatistics extends Closeable {
 
     public Set<String> getSendNodeNames() {
         return sendNodeNameSet;
+    }
+
+    public boolean isSend() {
+        return send;
+    }
+
+    public void setSend() {
+        send = true;
     }
 }

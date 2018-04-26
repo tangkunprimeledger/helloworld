@@ -120,10 +120,10 @@ import java.util.List;
     /**
      * check contract
      *
-     * @param contractAddrOfRecord
+     * @param contractBindHashOfRecord
      */
-    private void checkContract(String contractAddrOfRecord){
-        if (StringUtils.isEmpty(contractAddrOfRecord)) {
+    private void checkContract(String contractBindHashOfRecord){
+        if (StringUtils.isEmpty(contractBindHashOfRecord)) {
             return;
         }
         ExecuteContext executeContext = ExecuteContext.getCurrent();
@@ -136,10 +136,10 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_CONTRACT_NOT_EXIST_ERROR);
         }
         //current execute contract addr
-        String contratAddr = executeContext.getContract().getAddress();
-        //compare to addr of freeze record
-        if(!StringUtils.equals(contractAddrOfRecord,contratAddr)){
-            log.error("[accountUnFreeze.checkContract] contractAddrOfRecord is unequals contratAddr");
+        String bindHash = executeContext.getInstanceAddress();
+        //compare to bindHash of freeze record
+        if(!StringUtils.equals(contractBindHashOfRecord,bindHash)){
+            log.error("[accountUnFreeze.checkContract] contractBindHashOfRecord is unequals bindHash");
             throw new SlaveException(SlaveErrorEnum.SLAVE_CONTRACT_NOT_EXIST_ERROR);
         }
     }

@@ -55,6 +55,9 @@ import org.springframework.stereotype.Service;
             int tryTimes = 10;
             do {
                 Boolean result = blockSyncService.bftValidating(block.getBlockHeader());
+                if (log.isDebugEnabled()) {
+                    log.debug("bft validating header result:{}", result);
+                }
                 if (result != null) {
                     return result;
                 }
