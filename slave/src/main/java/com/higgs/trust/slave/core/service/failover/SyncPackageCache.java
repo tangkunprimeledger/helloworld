@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 @Component @Slf4j public class SyncPackageCache implements StateChangeListener, InitializingBean {
 
     @Autowired private FailoverProperties properties;
-    
+
     @Autowired private NodeState nodeState;
 
     public static final long INIT_HEIGHT = -1L;
@@ -54,16 +54,20 @@ import java.util.function.Predicate;
         if (latestHeight == INIT_HEIGHT) {
             latestHeight = currentHeight;
             minHeight = currentHeight;
-        } else {
-            if (currentHeight == latestHeight + 1) {
-                latestHeight = currentHeight;
-                if (latestHeight - minHeight >= properties.getThreshold()) {
+            return;
+        }
+        if (currentHeight == latestHeight + 1) {
+            latestHeight = currentHeight;
+            if (latestHeight - minHeight >= properties.getThreshold()) {
+                if (properties.getKeepSize() > properties.getThreshold()) {
+                    minHeight = currentHeight;
+                } else {
                     minHeight = currentHeight - properties.getKeepSize();
                 }
-            } else if (currentHeight > latestHeight + 1) {
-                latestHeight = currentHeight;
-                minHeight = currentHeight;
             }
+        } else if (currentHeight > latestHeight + 1) {
+            latestHeight = currentHeight;
+            minHeight = currentHeight;
         }
     }
 
@@ -81,7 +85,7 @@ import java.util.function.Predicate;
         }
     }
 
-    @Override public void afterPropertiesSet() throws Exception {
+    @Override public void afterPropertiesSet() {
         nodeState.registerStateListener(this);
     }
 }
