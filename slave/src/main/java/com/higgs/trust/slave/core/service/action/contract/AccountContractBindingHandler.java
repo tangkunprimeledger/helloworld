@@ -91,9 +91,12 @@ import java.util.Date;
     /**
      * process account contract binding
      * @param action
+     * @param blockHeight
+     * @param txId
      * @param processType
+     * @return
      */
-    public void process(AccountContractBindingAction action, long blockHeight, String txId, TxProcessTypeEnum processType) {
+    public AccountContractBinding process(final AccountContractBindingAction action, long blockHeight, String txId, final TxProcessTypeEnum processType) {
         if (action == null) {
             log.error("action is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, "action is null");
@@ -105,12 +108,11 @@ import java.util.Date;
         }
 
         if (processType == TxProcessTypeEnum.VALIDATE) {
-            snapshotAgent.put(action.getAccountNo(), contractBinding);
-            snapshotAgent.putBinding(contractBinding);
-            return;
+            snapshotAgent.put(contractBinding);
+        } else {
+            repository.add(contractBinding);
         }
-        repository.add(contractBinding);
-        snapshotAgent.putBinding(contractBinding);
+        return contractBinding;
     }
 
     @Override public void validate(ActionData actionData) {
