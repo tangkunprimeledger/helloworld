@@ -153,10 +153,16 @@ public class ConsensusContext {
                 ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.getReceiveCommandStatistics(key);
 
                 log.info("schedule apply receiveCommandStatistics {}", receiveCommandStatistics);
-                if (null == receiveCommandStatistics || receiveCommandStatistics.isClosed()) {
-                    log.warn("receiveCommandStatistics {} is invalid, key is {}", receiveCommandStatistics, key);
+                if (null == receiveCommandStatistics) {
+                    log.warn("receiveCommandStatistics is null, key is {}", key);
                     continue;
                 }
+
+                if(receiveCommandStatistics.isClosed()){
+                    log.warn("receiveCommandStatistics {} is closed, key is {}", receiveCommandStatistics, key);
+                    continue;
+                }
+
                 validConsensus.apply(receiveCommandStatistics);
                 if (receiveCommandStatistics.isClosed()) {
                     if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
