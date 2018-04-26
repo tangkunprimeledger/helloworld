@@ -1,15 +1,12 @@
 package commands
 
-import com.higgs.trust.slave.core.managment.NodeState
 import com.higgs.trust.slave.core.scheduler.FailoverSchedule
 import com.higgs.trust.slave.core.service.failover.SyncService
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Argument
 import org.crsh.cli.Command
-import org.crsh.cli.Named
 import org.crsh.cli.Required
 import org.crsh.cli.Usage
-import org.crsh.command.BaseCommand
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
 
