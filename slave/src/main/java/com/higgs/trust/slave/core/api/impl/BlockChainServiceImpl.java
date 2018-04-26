@@ -47,14 +47,14 @@ import java.util.List;
                 log.info("The node is master but the status is not running, cannot receive txs: {}", transactions);
                 transactionVOList = buildTxVOList(transactions);
             }
+            respData.setData(transactionVOList);
         } else {
             //when it is not master ,then send txs to master node
             //TODO test
             log.info("this node is not  master, send txs:{} to master node", transactions);
-            transactionVOList = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
+            respData = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
         }
 
-        respData.setData(transactionVOList);
         return respData;
     }
 

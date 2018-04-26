@@ -336,8 +336,9 @@ import java.util.concurrent.ConcurrentHashMap;
     @Override public MerkleTree queryMerkleTree(MerkleTypeEnum treeType) {
         // validate param
         if (null == treeType) {
-            log.info("[queryMerkleTree] treeType is null");
-            return null;
+            log.error("[queryMerkleTree] treeType is null");
+            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
+                "[queryMerkleTree] treeType is null");
         }
         log.info("[queryMerkleTree] start to queryMerkleTree, type={}", treeType);
 
