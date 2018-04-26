@@ -48,7 +48,7 @@ import static org.testng.Assert.assertEquals;
             issueCurrencyHandler.persist(makePackContext(issueCurrency, 1L));
         }catch (Exception e){
             log.info("has error:{}",e.getMessage());
-            assertEquals("x" +e.getMessage(),assertData);
+            assertEquals(e.getMessage(),assertData);
         }
     }
 }
