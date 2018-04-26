@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 
     @Autowired private PackageLock packageLock;
 
-    @Autowired private final static boolean isMaster = true;
-
     /**
      * package process logic
      *
