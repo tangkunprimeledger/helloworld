@@ -21,7 +21,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
     private ContractInvokeAction createContractInvokeAction() {
         ContractInvokeAction action = new ContractInvokeAction();
         action.setAddress("895321051547e82e2018a204abe510e1b0e9a0843fd1ad4483a307d48bfe9754");
-        action.setMethod("main");
+        //action.setMethod("main");
         action.setIndex(1);
         action.setType(ActionTypeEnum.REGISTER_CONTRACT);
         return action;
