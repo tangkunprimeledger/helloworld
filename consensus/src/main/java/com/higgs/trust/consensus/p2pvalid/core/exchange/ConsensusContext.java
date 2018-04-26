@@ -23,31 +23,34 @@ public class ConsensusContext {
     private ValidConsensus validConsensus;
     private P2pConsensusClient p2pConsensusClient;
     private Integer applyThreshold;
+    private Integer totalNodeNum;
 
-    private ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum) {
+    private ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum, Integer totalNodeNum) {
         this.validConsensus = validConsensus;
         sendStorage = SendStorage.createFileStorage(baseDir.concat("sendDB"));
         receiveStorage = ReceiveStorage.createFileStorage(baseDir.concat("receiveDB"));
         this.p2pConsensusClient = p2pConsensusClient;
         this.applyThreshold = 2 * fautNodeNum + 1;
+        this.totalNodeNum = totalNodeNum;
         initExecutor();
     }
 
-    private ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, Integer fautNodeNum) {
+    private ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, Integer fautNodeNum, Integer totalNodeNum) {
         this.validConsensus = validConsensus;
         sendStorage = SendStorage.createMemoryStorage();
         receiveStorage = ReceiveStorage.createMemoryStorage();
         this.p2pConsensusClient = p2pConsensusClient;
         this.applyThreshold = 2 * fautNodeNum + 1;
+        this.totalNodeNum = totalNodeNum;
         initExecutor();
     }
 
-    public static ConsensusContext create(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum){
-        return  new ConsensusContext(validConsensus, p2pConsensusClient, baseDir, fautNodeNum);
+    public static ConsensusContext create(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum, Integer totalNodeNum){
+        return  new ConsensusContext(validConsensus, p2pConsensusClient, baseDir, fautNodeNum, totalNodeNum);
     }
 
-    public static ConsensusContext createInMemory(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, Integer fautNodeNum){
-        return  new ConsensusContext(validConsensus, p2pConsensusClient, fautNodeNum);
+    public static ConsensusContext createInMemory(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, Integer fautNodeNum, Integer totalNodeNum){
+        return  new ConsensusContext(validConsensus, p2pConsensusClient, fautNodeNum, totalNodeNum);
     }
 
     private void initExecutor() {
@@ -77,7 +80,19 @@ public class ConsensusContext {
      * @param validCommandWrap
      */
     public void receive(ValidCommandWrap validCommandWrap) {
-        receiveStorage.add(validCommandWrap, applyThreshold);
+        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
+        ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
+
+        if(receiveCommandStatistics.isClosed()){
+            log.info("receiveCommandStatistics {} from node {} is apply and closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
+            if(receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum){
+                log.info("add receiveCommandStatistics {} to gc set", receiveCommandStatistics);
+                receiveStorage.addGCSet(key);
+            }
+        }else if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
+            log.info("from node set size {} > threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
+            receiveStorage.addApplyQueue(key);
+        }
     }
 
     private void send() {
@@ -144,12 +159,13 @@ public class ConsensusContext {
                 }
                 validConsensus.apply(receiveCommandStatistics);
                 if (receiveCommandStatistics.isClosed()) {
-                    if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
+                    if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
+                        log.info("gather all the nodes {} command", receiveCommandStatistics.getFromNodeNameSet());
                         receiveStorage.addGCSet(key);
                     }
                     receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
                 } else {
-                    log.info("apply not close, add key {} to delay queue", key);
+                    log.info("apply {} not close, add key {} to delay queue", receiveCommandStatistics.getValidCommand(), key);
                     receiveStorage.addDelayQueue(key);
                 }
             } catch (Exception e) {

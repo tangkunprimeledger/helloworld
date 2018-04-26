@@ -89,24 +89,25 @@ public class ReceiveStorage {
 
     /**
      * add commandWrap and return the key
-     * @param validCommandWrap
-     * @param threshold
-     * @return
+     * @param key key of the command
+     * @param validCommandWrap wrap of command
+     * @return ReceiveCommandStatistics
      */
-    public String add(ValidCommandWrap validCommandWrap, Integer threshold) {
+    public ReceiveCommandStatistics add(String key, ValidCommandWrap validCommandWrap) {
         try {
             ValidCommand<?> validCommand = validCommandWrap.getValidCommand();
-            String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
             HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
             ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.create(validCommand));
+
+            if(receiveCommandStatistics.getFromNodeNameSet().contains(validCommandWrap.getFromNodeName())){
+                log.info("duplicate fromNodeName {} in fromNodeNameSet {}", validCommandWrap.getFromNodeName(), receiveCommandStatistics.getFromNodeNameSet());
+                return receiveCommandStatistics;
+            }
+
             receiveCommandStatistics.addFromNode(validCommandWrap.getFromNodeName());
             receiveStatisticsMap.put(key, receiveCommandStatistics);
-            if (receiveCommandStatistics.getFromNodeNameSet().size() >= threshold) {
-                log.info("from node set size {} > threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), threshold);
-                addApplyQueue(key);
-            }
             receiveDB.commit();
-            return key;
+            return receiveCommandStatistics;
         } catch (Exception e) {
             receiveDB.rollback();
             log.error("{}", e);
@@ -114,6 +115,11 @@ public class ReceiveStorage {
         }
     }
 
+    /**
+     *  update receiveCommandStatistics
+     * @param key key of receiveCommandStatistics
+     * @param receiveCommandStatistics receiveCommandStatistics
+     */
     public void updateReceiveCommandStatistics(String key, ReceiveCommandStatistics receiveCommandStatistics) {
         try {
             HTreeMap<String, ReceiveCommandStatistics> commandStatisticsMap = getReceiveStatisticsHTreeMap();
@@ -128,8 +134,8 @@ public class ReceiveStorage {
 
     /**
      * get commandStatistics by key
-     * @param key
-     * @return
+     * @param key key of receiveCommandStatistics
+     * @return ReceiveCommandStatistics
      */
     public ReceiveCommandStatistics getReceiveCommandStatistics(String key) {
         try {
@@ -141,7 +147,11 @@ public class ReceiveStorage {
         }
     }
 
-    private void addApplyQueue(String key) {
+    /**
+     * add the key to the apply queue
+     * @param key
+     */
+    public void addApplyQueue(String key) {
         applyQueueLock.lock();
         try {
             BTreeMap<Long, String> applyQueue = getReceiveApplyQueue();
@@ -152,8 +162,8 @@ public class ReceiveStorage {
             } else {
                 applyQueue.put(lastEntry.getKey() + 1, key);
             }
-            applyQueueCondition.signal();
             receiveDB.commit();
+            applyQueueCondition.signal();
         } catch (Exception e) {
             receiveDB.rollback();
             log.error("{}", e);

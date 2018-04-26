@@ -23,34 +23,40 @@ public class ReceiveStorageTest {
 
     @Test
     public void testAdd(){
-        String key = receiveStorage.add(validCommandWrap,applyThreshold);
-        assertNotNull(key);
+        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
+        ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
+        assertNotNull(receiveCommandStatistics);
     }
 
     @Test
     public void testGetReceiveCommandStatistics(){
-        String key = receiveStorage.add(validCommandWrap,applyThreshold);
+        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
+        receiveStorage.add(key, validCommandWrap);
         assertNotNull(receiveStorage.getReceiveCommandStatistics(key));
     }
 
     @Test
     public void testUpdateReceiveCommandStatistics(){
-        String key = receiveStorage.add(validCommandWrap,applyThreshold);
+        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
         assertNotNull(key);
+        receiveStorage.add(key, validCommandWrap);
         ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.getReceiveCommandStatistics(key);
         receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
     }
 
     @Test
     public void testFromApplyQueue(){
-        receiveStorage.add(validCommandWrap,applyThreshold);
-        String key = receiveStorage.takeFromApplyQueue();
+        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
+        receiveStorage.add(key, validCommandWrap);
+        receiveStorage.addApplyQueue(key);
+        key = receiveStorage.takeFromApplyQueue();
         assertNotNull(key);
     }
 
     @Test
     public void testAddDelayAndTrans(){
-        String key = receiveStorage.add(validCommandWrap,applyThreshold);
+        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
+        receiveStorage.add(key, validCommandWrap);
         receiveStorage.addDelayQueue(key);
         key = receiveStorage.takeFromApplyQueue();
         assertNotNull(key);
@@ -58,7 +64,8 @@ public class ReceiveStorageTest {
 
     @Test
     public void testGC() throws InterruptedException {
-        String key = receiveStorage.add(validCommandWrap,applyThreshold);
+        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
+        receiveStorage.add(key, validCommandWrap);
         receiveStorage.addGCSet(key);
         Thread.sleep(5000);
     }

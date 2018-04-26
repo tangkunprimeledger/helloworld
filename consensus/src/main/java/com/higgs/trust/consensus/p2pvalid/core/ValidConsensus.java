@@ -51,21 +51,19 @@ public abstract class ValidConsensus {
             if (!file.exists()) {
                 file.mkdirs();
             }
-            consensusContext = ConsensusContext.create(this, p2pConsensusClient, baseDir, clusterInfo.faultNodeNum());
+            consensusContext = ConsensusContext.create(this, p2pConsensusClient, baseDir, clusterInfo.faultNodeNum(), clusterInfo.clusterNodeNames().size());
         }else{
-            consensusContext = ConsensusContext.createInMemory(this, p2pConsensusClient, clusterInfo.faultNodeNum());
+            consensusContext = ConsensusContext.createInMemory(this, p2pConsensusClient, clusterInfo.faultNodeNum(), clusterInfo.clusterNodeNames().size());
         }
     }
 
     public final void submit(ValidCommand<?> command) {
         try {
             String fromNode = clusterInfo.myNodeName();
-            String messageDigest = command.messageDigest();
-            String sign = fromNode + "_" + messageDigest;
             ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
                     .fromNodeName(fromNode)
                     .addToNodeNames(clusterInfo.clusterNodeNames())
-                    .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
+                    .sign(SignUtils.sign(command.messageDigest(), clusterInfo.privateKey()));
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -76,12 +74,10 @@ public abstract class ValidConsensus {
         try {
 
             String fromNode = clusterInfo.myNodeName();
-            String messageDigest = command.messageDigest();
-            String sign = fromNode + "_" + messageDigest;
             ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
                     .fromNodeName(fromNode)
                     .addToNodeName(toNodeName)
-                    .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
+                    .sign(SignUtils.sign(command.messageDigest(), clusterInfo.privateKey()));
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -91,12 +87,10 @@ public abstract class ValidConsensus {
     public final void submit(ValidCommand<?> command, Collection<String> toNodeNames) {
         try {
             String fromNode = clusterInfo.myNodeName();
-            String messageDigest = command.messageDigest();
-            String sign = fromNode + "_" + messageDigest;
             ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
                     .fromNodeName(fromNode)
                     .addToNodeNames(toNodeNames)
-                    .sign(SignUtils.sign(messageDigest, clusterInfo.privateKey()));
+                    .sign(SignUtils.sign(command.messageDigest(), clusterInfo.privateKey()));
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);
