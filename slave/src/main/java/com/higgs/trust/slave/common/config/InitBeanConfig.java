@@ -24,7 +24,7 @@ import java.util.concurrent.*;
     @Autowired BeanFactory beanFactory;
 
     @Bean public ExecutorService packageThreadPool() {
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("package-pool-$d").build();
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("package-pool-%d").build();
         ExecutorService packageExecutor =
             new ThreadPoolExecutor(1, 1, 0L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1024), namedThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
