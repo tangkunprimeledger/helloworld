@@ -10,8 +10,6 @@ public class StringStateMachine extends AbstractConsensusStateMachine {
 
     /**
      * apply method for your command
-     *
-     * @param comm it
      * @return
      */
     public String stringApply(ConsensusCommit<StringCommand> commit) {

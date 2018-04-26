@@ -61,7 +61,8 @@ import java.util.concurrent.ConcurrentHashMap;
                 "[build] param validate failed");
         }
 
-        log.info("[build] start to build merkle tree, treeType={}, dataList size={}", type.getCode(), dataList.size());
+        log.info("[build] start to build merkle tree, treeType={}, dataList size={}, dataList={}", type.getCode(),
+            dataList.size(), JSON.toJSONString(dataList));
 
         // merkleTree
         MerkleTree merkleTree = new MerkleTree();
@@ -122,7 +123,8 @@ import java.util.concurrent.ConcurrentHashMap;
         String newHash = getSHA2HexValue(JSON.toJSONString(objNew));
         long leafIndex = -1L;
 
-        log.info("[update] start to udpate merkleTree, type={}, oldHash={}, newHash={}", type, oldHash, newHash);
+        log.info("[update] start to udpate merkleTree, type={}, oldHash={}, objOld={}, newHash={}, objNew={}", type,
+            oldHash, JSON.toJSONString(objOld), newHash, JSON.toJSONString(objNew));
 
         // acquire nodeMap stored in merkleTree
         Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
@@ -144,7 +146,6 @@ import java.util.concurrent.ConcurrentHashMap;
             throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_UPDATE_EXCEPTION,
                 "[update] update merkleTree error, hash(objNew) already exist in merkleTree");
         }
-
 
         leafIndex = merkleNode.getIndex();
         // leafIndex must not be greater than maxIndex
@@ -192,7 +193,8 @@ import java.util.concurrent.ConcurrentHashMap;
         Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
         String hash = getSHA2HexValue(JSON.toJSONString(obj));
         String type = merkleTree.getTreeType().getCode();
-        log.info("[add] start to add hash(obj) to merkleTree, hash(obj)={},type={}", hash, type);
+        log.info("[add] start to add hash(obj) to merkleTree, hash(obj)={}, obj={},type={}", hash,
+            JSON.toJSONString(obj), type);
 
         // check existence of merkleNode with exact nodeHash, it must not be in nodeMap before add
         MerkleNode merkleNode = getMerkleNodeByHash(merkleTree, hash);
@@ -334,9 +336,11 @@ import java.util.concurrent.ConcurrentHashMap;
     @Override public MerkleTree queryMerkleTree(MerkleTypeEnum treeType) {
         // validate param
         if (null == treeType) {
-            log.info("[queryMerkleTree] treeType is null");
-            return null;
+            log.error("[queryMerkleTree] treeType is null");
+            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
+                "[queryMerkleTree] treeType is null");
         }
+        log.info("[queryMerkleTree] start to queryMerkleTree, type={}", treeType);
 
         MerkleTree merkleTree = merkleRepository.queryMerkleTree(treeType.getCode());
         if (null == merkleTree) {
@@ -345,7 +349,7 @@ import java.util.concurrent.ConcurrentHashMap;
         }
         Map<String, MerkleNode> nodeMap = new ConcurrentHashMap<>(INIT_CAPACITY);
         merkleTree.setNodeMap(nodeMap);
-        log.info("[queryMerkleTree] type={}", treeType);
+        log.info("[queryMerkleTree] end queryMerkleTree, type={}, rootHash={}", treeType, merkleTree.getRootHash());
         return merkleTree;
     }
 

@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.slave.integration.block;
 
+import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.common.feign.FeignRibbonConstants;
 import com.higgs.trust.slave.model.bo.Block;
@@ -45,7 +46,7 @@ import java.util.List;
      * @param transactions
      * @return submit failed transaction list
      */
-    @RequestMapping(value = "/transaction/submit", method = RequestMethod.POST) List<TransactionVO> submitTransaction(
+    @RequestMapping(value = "/transaction/submit", method = RequestMethod.POST) RespData submitTransaction(
         @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName,
         @RequestBody List<SignedTransaction> transactions);
 

@@ -33,8 +33,14 @@
     <!-- query by contract address -->
     <select id="queryListByAccountNo" resultMap="baseResultMap" parameterType="java.lang.String">
         SELECT
-        <include refid="baseColumnList"/>
+          <include refid="baseColumnList"/>
         FROM account_contract_binding WHERE account_no=#{accountNo}
+    </select>
+
+    <select id="queryByHash" resultMap="baseResultMap" parameterType="java.lang.String">
+        SELECT
+          <include refid="baseColumnList"/>
+        FROM account_contract_binding WHERE hash=#{hash}
     </select>
 
 

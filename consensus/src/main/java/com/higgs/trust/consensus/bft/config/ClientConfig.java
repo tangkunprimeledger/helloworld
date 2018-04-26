@@ -2,12 +2,14 @@ package com.higgs.trust.consensus.bft.config;
 
 import com.higgs.trust.consensus.bft.adapter.CopycatClientAdapter;
 import com.higgs.trust.consensus.bft.core.ConsensusClient;
+import com.higgs.trust.consensus.bft.core.ConsensusStateMachine;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.copycat.client.ConnectionStrategies;
 import io.atomix.copycat.client.CopycatClient;
 import io.atomix.copycat.client.RecoveryStrategies;
 import io.atomix.copycat.client.ServerSelectionStrategies;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +24,7 @@ import java.util.List;
 
 @Configuration
 @ConditionalOnExpression("!'${copycat.client.server:}'.isEmpty()")
-@ConditionalOnBean(ServerConfig.class)
+@ConditionalOnBean(ConsensusStateMachine.class)
 public class ClientConfig {
     private static final Logger log = LoggerFactory.getLogger(ClientConfig.class);
 
@@ -35,7 +37,7 @@ public class ClientConfig {
 
         List<Address> addressList = new ArrayList<>();
         for (String addressStr : Arrays.asList(server.split(","))) {
-            addressList.add(new Address(addressStr));
+            addressList.add(new Address(StringUtils.trim(addressStr)));
         }
         CopycatClient client = CopycatClient.builder().withTransport(new NettyTransport())
                 .withConnectionStrategy(ConnectionStrategies.FIBONACCI_BACKOFF)

@@ -38,43 +38,42 @@ public class MerkleServiceImplTest extends BaseTest {
     //数据驱动
     @DataProvider public Object[][] provideBuildData(Method method) {
         String filepath = JsonFileUtil.findJsonFile("java/com/higgs/trust/slave/core/service/merkle/testBuild/testRegular");
-        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil
-            .jsonFileToArry(filepath);
+        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil.jsonFileToArry(filepath);
         return arrmap;
     }
 
     //数据驱动
     @DataProvider public Object[][] provideBuildExceptionData(Method method) {
-        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil
-            .jsonFileToArry("./src/test/resources/java/com/higgs/trust/slave/core/service/merkle/testBuild/testException");
+        String filepath = JsonFileUtil.findJsonFile("java/com/higgs/trust/slave/core/service/merkle/testBuild/testException");
+        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil.jsonFileToArry(filepath);
         return arrmap;
     }
 
     //数据驱动
     @DataProvider public Object[][] provideUpdateData(Method method) {
-        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil
-            .jsonFileToArry("./src/test/resources/java/com/higgs/trust/slave/core/service/merkle/testUpdate/testRegular");
+        String filepath = JsonFileUtil.findJsonFile("java/com/higgs/trust/slave/core/service/merkle/testUpdate/testRegular");
+        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil.jsonFileToArry(filepath);
         return arrmap;
     }
 
     //数据驱动
     @DataProvider public Object[][] provideUpdateExceptionData(Method method) {
-        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil
-            .jsonFileToArry("./src/test/resources/java/com/higgs/trust/slave/core/service/merkle/testUpdate/testException");
+        String filepath = JsonFileUtil.findJsonFile("java/com/higgs/trust/slave/core/service/merkle/testUpdate/testException");
+        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil.jsonFileToArry(filepath);
         return arrmap;
     }
 
     //数据驱动
     @DataProvider public Object[][] provideAddData(Method method) {
-        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil
-            .jsonFileToArry("./src/test/resources/java/com/higgs/trust/slave/core/service/merkle/testAdd/testRegular");
+        String filepath = JsonFileUtil.findJsonFile("java/com/higgs/trust/slave/core/service/merkle/testAdd/testRegular");
+        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil.jsonFileToArry(filepath);
         return arrmap;
     }
 
     //数据驱动
     @DataProvider public Object[][] provideAddExceptionData(Method method) {
-        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil
-            .jsonFileToArry("./src/test/resources/java/com/higgs/trust/slave/core/service/merkle/testAdd/testException");
+        String filepath = JsonFileUtil.findJsonFile("java/com/higgs/trust/slave/core/service/merkle/testAdd/testException");
+        HashMap<String, String>[][] arrmap = (HashMap<String, String>[][])JsonFileUtil.jsonFileToArry(filepath);
         return arrmap;
     }
 

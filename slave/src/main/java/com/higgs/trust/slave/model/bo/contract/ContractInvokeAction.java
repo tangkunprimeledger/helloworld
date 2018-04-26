@@ -12,7 +12,6 @@ import lombok.Setter;
 @Getter @Setter public class ContractInvokeAction extends Action {
 
     private String address;
-    private String method;
     private Object[] args;
 
 }
