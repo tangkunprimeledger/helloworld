@@ -24,6 +24,7 @@ import java.util.*;
     }
 
     private void initEngines() {
+        log.debug("initEngines from ServiceLoader");
         ServiceLoader<ExecuteEngineFactory> sl = ServiceLoader.load(ExecuteEngineFactory.class);
         Iterator<ExecuteEngineFactory> itr = sl.iterator();
         try {
@@ -48,7 +49,8 @@ import java.util.*;
                 return fact;
             }
         }
-        return null;
+        log.error("ExecuteEngineFactory not found language: {}", language);
+        throw new SmartContractException("ExecuteEngineFactory not found");
     }
 
     public void setDbStateStore(ContractStateStore stateStore) {

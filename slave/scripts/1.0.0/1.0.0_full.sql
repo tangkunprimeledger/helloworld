@@ -308,4 +308,4 @@ IF NOT EXISTS `tx_out` (
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create tx out';
 
 INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)
-VALUE (1, '1.0.0', '0', 'Genesis-Block', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', now(3), now(3));
+VALUE (1, '1.0.0', '0', 'bc54b592c468ad6d437a0993ccca5b9d44217276dc4b782e0d5d6d491ebea86e', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', now(3), now(3));

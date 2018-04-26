@@ -41,12 +41,12 @@ import java.util.List;
     /**
      * submit transaction
      *
-     * @param nodeNameReg  node name regex
+     * @param nodeName  node name
      * @param transactions
      * @return submit failed transaction list
      */
-    @RequestMapping(value = "/transaction/submit", method = RequestMethod.POST)
-    List<TransactionVO> submitTransaction(@RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg,
+    @RequestMapping(value = "/transaction/submit", method = RequestMethod.POST) List<TransactionVO> submitTransaction(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName,
         @RequestBody List<SignedTransaction> transactions);
 
 }

@@ -31,6 +31,10 @@ import java.math.BigDecimal;
      */
     private String contractAddr;
     /**
+     * contract args
+     */
+    private String contractArgs;
+    /**
      * remark
      */
     private String remark;

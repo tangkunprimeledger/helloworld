@@ -96,6 +96,9 @@ public class ServerConfig
         });
 
         builder.withTransport(NettyTransport.builder().withThreads(nettyThreadNum).build());
+        builder.withElectionTimeout(Duration.ofMillis(1500))
+                .withHeartbeatInterval(Duration.ofMillis(500))
+                .withSessionTimeout(Duration.ofMillis(5000));
 
         Storage storage = Storage.builder().withStorageLevel(StorageLevel.DISK).withDirectory(logDir)
                 .withMinorCompactionInterval(Duration.ofMillis(minorCompactionInterval))
@@ -111,7 +114,8 @@ public class ServerConfig
         for (String addressStr : clusterList) {
             clusterAddress.add(new Address(addressStr));
         }
-        server.bootstrap(clusterAddress);
+        log.info("copycat cluster start ...");
+        server.bootstrap(clusterAddress).join();
     }
 
     @Override

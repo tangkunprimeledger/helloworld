@@ -51,14 +51,14 @@ import java.util.Random;
             List<Server> upList = lb.getReachableServers();
             List<Server> allList = lb.getAllServers();
             if (log.isTraceEnabled()) {
-                log.trace("All servers:{}",ToStringBuilder.reflectionToString(allList));
-                log.trace("All up servers:{}",ToStringBuilder.reflectionToString(upList));
+                log.trace("All servers:{}", ToStringBuilder.reflectionToString(allList));
+                log.trace("All up servers:{}", ToStringBuilder.reflectionToString(upList));
             }
-            upList = choose(upList, key);
-            allList = choose(allList, key);
+            upList = ServerFilterUtils.chooseServers(upList, key);
+            allList = ServerFilterUtils.chooseServers(allList, key);
             if (log.isTraceEnabled()) {
-                log.trace("All choosed servers:{}",ToStringBuilder.reflectionToString(allList));
-                log.trace("All choosed up servers:{}",ToStringBuilder.reflectionToString(upList));
+                log.trace("All choosed servers:{}", ToStringBuilder.reflectionToString(allList));
+                log.trace("All choosed up servers:{}", ToStringBuilder.reflectionToString(upList));
             }
             int serverCount = allList.size();
             if (serverCount == 0) {
@@ -97,7 +97,7 @@ import java.util.Random;
 
     @Override public Server choose(Object key) {
         Server server = choose(getLoadBalancer(), key);
-        log.info("Choosed server:{}",server);
+        log.info("Choosed server:{}", server);
         return server;
     }
 
@@ -105,26 +105,4 @@ import java.util.Random;
         // TODO Auto-generated method stub
     }
 
-    private List<Server> choose(List<Server> servers, Object key) {
-        if (key == null) {
-            return servers;
-        }
-        if (key instanceof HttpHeaders) {
-            HttpHeaders headers = (HttpHeaders)key;
-            if (headers.containsKey(FeignRibbonConstants.NODE_NAME_REG)) {
-                String reg = headers.getFirst(FeignRibbonConstants.NODE_NAME_REG);
-                if (StringUtils.isNotBlank(reg)) {
-                    List<Server> matchedServers = new ArrayList<>();
-                    servers.forEach(server -> {
-                        String appName = server.getMetaInfo().getAppName().toUpperCase(Locale.ROOT);
-                        if (appName.matches(reg)) {
-                            matchedServers.add(server);
-                        }
-                    });
-                    return matchedServers;
-                }
-            }
-        }
-        return servers;
-    }
 }

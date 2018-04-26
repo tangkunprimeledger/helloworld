@@ -17,7 +17,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -42,11 +41,12 @@ import java.util.concurrent.TimeUnit;
 
     private static final String DEFAULT_CLUSTER_HEIGHT_ID = "cluster_height_id";
 
+    @Autowired
     public ClusterServiceImpl(ClusterInfo clusterInfo, P2pConsensusClient client, NodeProperties properties) {
         super(clusterInfo, client, properties.getConsensusDir());
     }
 
-    @Scheduled(fixedDelay = 30000) public void releaseResult() {
+    public void releaseResult() {
         for (Map.Entry<String, ResultListen> entry : resultListenMap.entrySet()) {
             if (entry.getValue().isTimeout()) {
                 resultListenMap.remove(entry.getKey());
@@ -118,9 +118,10 @@ import java.util.concurrent.TimeUnit;
     }
 
     private <T> T registerAndGetResult(String requestId, long time) {
-        ResultListen resultListen = register(requestId, properties.getConsensusKeepTime());
+        long keepTime = properties.getConsensusKeepTime();
+        ResultListen resultListen = register(requestId, keepTime);
         try {
-            resultListen.getLatch().await(time, TimeUnit.MILLISECONDS);
+            resultListen.getLatch().await(time > keepTime ? keepTime : time, TimeUnit.MILLISECONDS);
             return getResult(requestId);
         } catch (InterruptedException e) {
             log.warn("waiting the consensus result failed", e);

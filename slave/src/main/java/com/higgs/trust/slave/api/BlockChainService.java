@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.api;
 
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.Block;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 
 import java.util.List;
@@ -19,4 +21,8 @@ public interface BlockChainService {
      * @return
      */
     RespData submitTransaction(List<SignedTransaction> transactions);
+
+    List<BlockHeader> listBlockHeaders(long startHeight, int size);
+
+    List<Block> listBlocks(long startHeight, int size);
 }
