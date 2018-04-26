@@ -29,4 +29,9 @@ import java.util.List;
         List<AccountContractBinding> bindings = BeanConvertor.convertList(list, AccountContractBinding.class);
         return bindings;
     }
+
+    public AccountContractBinding queryByHash(String hash) {
+        AccountContractBindingPO po = dao.queryByHash(hash);
+        return BeanConvertor.convertBean(po, AccountContractBinding.class);
+    }
 }

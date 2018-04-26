@@ -26,12 +26,12 @@ import org.springframework.stereotype.Service;
         return engineManager;
     }
 
-    @Override public boolean execute(String code, ExecuteContextData data, TxProcessTypeEnum processType, Object... args) {
+    @Override public boolean execute(String code, ExecuteContextData data, TxProcessTypeEnum processType) {
         ExecuteEngineManager manager = getExceuteEngineManager();
         ExecuteContext context = ExecuteContext.newContext(data);
         context.setValidateStage(processType == TxProcessTypeEnum.VALIDATE);
         ExecuteEngine engine = manager.getExecuteEngine(code, ExecuteEngine.JAVASCRIPT);
-        Object result = engine.execute("verify", args);
+        Object result = engine.execute("verify", null);
         return (Boolean)result;
     }
 }

@@ -4,5 +4,5 @@ import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 
 public interface UTXOSmartContract {
-    boolean execute(String code, ExecuteContextData data, TxProcessTypeEnum processType, Object... args);
+    boolean execute(String code, ExecuteContextData data, TxProcessTypeEnum processType);
 }
