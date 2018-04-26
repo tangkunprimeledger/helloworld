@@ -39,15 +39,18 @@ import java.util.List;
         RespData respData = new RespData();
         List<TransactionVO> transactionVOList = new ArrayList<>();
         // when master is running , then add txs into local pending txs
-        if (nodeState.isMaster() && nodeState.isState(NodeStateEnum.Running)) {
+        if (nodeState.isMaster()) {
+            if(nodeState.isState(NodeStateEnum.Running)) {
                 log.info("The node is master and it is running , add txs:{} into pending txs", transactions);
                 transactionVOList = pendingState.addPendingTransactions(transactions);
-        }
-
-        //when it is not master ,then send txs to master node
-        if(!nodeState.isMaster()) {
+            } else {
+                log.info("The node is master but the status is not running, cannot receive txs: {}", transactions);
+                transactionVOList = buildTxVOList(transactions);
+            }
+        } else {
+            //when it is not master ,then send txs to master node
             //TODO test
-            log.info("this node is not  master  , send txs:{} to master node", transactions);
+            log.info("this node is not  master, send txs:{} to master node", transactions);
             transactionVOList = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
         }
 
@@ -55,11 +58,24 @@ import java.util.List;
         return respData;
     }
 
-    public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
+    private List<TransactionVO> buildTxVOList(List<SignedTransaction> transactions) {
+        List<TransactionVO> transactionVOList = new ArrayList<>();
+        transactions.forEach(signedTx -> {
+            TransactionVO txVO = new TransactionVO();
+            txVO.setErrMsg("master node status is not running. cannot receive tx");
+            txVO.setTxId(signedTx.getCoreTx().getTxId());
+            txVO.setRetry(true);
+            transactionVOList.add(txVO);
+        });
+
+        return transactionVOList;
+    }
+
+    @Override public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
        return blockRepository.listBlockHeaders(startHeight, size);
     }
 
-    public List<Block> listBlocks(long startHeight, int size) {
+    @Override public List<Block> listBlocks(long startHeight, int size) {
         return blockRepository.listBlocks(startHeight, size);
     }
 
