@@ -1,5 +1,8 @@
 package com.higgs.trust.consensus.p2pvalid.core.exchange;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,7 +35,9 @@ public class ValidCommandWrap implements Serializable {
     private ValidCommandWrap(ValidCommand<?> validCommand) {
         this.validCommand = validCommand;
         this.commandClass = validCommand.getClass();
-        this.messageDigest = validCommand.messageDigest();
+        HashFunction function = Hashing.sha256();
+        String hash = function.hashString(validCommand.messageDigest(), Charsets.UTF_8).toString();
+        this.messageDigest = hash;
     }
 
     public static ValidCommandWrap of(ValidCommand<?> validCommand) {
