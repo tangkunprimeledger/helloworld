@@ -172,7 +172,7 @@ import java.util.List;
      * @param block 区块
      * @return 同步结果
      */
-    public boolean failoverBlock(Block block) {
+    private boolean failoverBlock(Block block) {
         log.info("failover block:{}", block);
         BlockHeader blockHeader = block.getBlockHeader();
         Package pack = new Package();

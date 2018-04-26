@@ -180,7 +180,7 @@ import java.util.List;
      * @param block 区块
      * @return 同步结果
      */
-    public void syncBlock(Block block) {
+    private void syncBlock(Block block) {
         BlockHeader blockHeader = block.getBlockHeader();
         log.info("Sync block:{}", blockHeader.getHeight());
         Package pack = new Package();

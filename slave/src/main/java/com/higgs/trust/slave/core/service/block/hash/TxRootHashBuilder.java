@@ -45,13 +45,13 @@ import java.util.List;
         }
         Collections.sort(txs, new Comparator<SignedTransaction>() {
             @Override public int compare(SignedTransaction o1, SignedTransaction o2) {
-                return o1.equals(o2) ? 1 : 0;
+                return o1.getCoreTx().getTxId().equals(o2.getCoreTx().getTxId()) ? 1 : 0;
             }
         });
         //by merkle tree
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.TX, Arrays.asList(txs));
         if (merkleTree == null) {
-            return DEFAULT_HASH_FLAG;
+            return null;
         }
         return merkleTree.getRootHash();
     }
@@ -68,13 +68,13 @@ import java.util.List;
         }
         Collections.sort(receipts, new Comparator<TransactionReceipt>() {
             @Override public int compare(TransactionReceipt o1, TransactionReceipt o2) {
-                return o1.equals(o2) ? 1 : 0;
+                return o1.getTxId().equals(o2.getTxId()) ? 1 : 0;
             }
         });
         //by merkle tree
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.TX_RECEIEPT, Arrays.asList(receipts));
         if (merkleTree == null) {
-            return DEFAULT_HASH_FLAG;
+            return null;
         }
         return merkleTree.getRootHash();
     }
