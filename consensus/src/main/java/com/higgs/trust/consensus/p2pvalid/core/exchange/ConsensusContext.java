@@ -9,9 +9,7 @@ import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.SendCommandSta
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * @author cwy
@@ -24,6 +22,7 @@ public class ConsensusContext {
     private P2pConsensusClient p2pConsensusClient;
     private Integer applyThreshold;
     private Integer totalNodeNum;
+    private ExecutorService sendExecutorService;
 
     private ConsensusContext(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum, Integer totalNodeNum) {
         this.validConsensus = validConsensus;
@@ -54,6 +53,13 @@ public class ConsensusContext {
     }
 
     private void initExecutor() {
+        sendExecutorService = new ThreadPoolExecutor(1, 4, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),(r)->{
+            Thread thread = new Thread(r);
+            thread.setName("sending command thread");
+            thread.setDaemon(true);
+            return thread;
+        });
+
         new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("command send thread");
@@ -100,35 +106,43 @@ public class ConsensusContext {
 
     private void send() {
         while (true) {
-            String key = null;
+            String key = sendStorage.takeFromSendQueue();
             try {
-                key = sendStorage.takeFromSendQueue();
                 if (null == key) {
                     log.warn("key is null");
                     continue;
                 }
                 SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
                 log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
+
+                // set the countDownLatch
+                CountDownLatch countDownLatch = new CountDownLatch(sendCommandStatistics.getSendNodeNames().size());
+
                 for (String nodeName : sendCommandStatistics.getSendNodeNames()) {
-                    try {
-                        if (log.isTraceEnabled()) {
-                            log.trace("nodeName is {}", nodeName);
-                        }
-
-                        if (sendCommandStatistics.getAckNodeNames().contains(nodeName)) {
-                            continue;
-                        }
-
-                        String result = p2pConsensusClient.receiveCommand(nodeName, sendCommandStatistics.getValidCommandWrap());
-                        if (StringUtils.equals("SUCCESS", result)) {
-                            sendCommandStatistics.addAckNodeName(nodeName);
-                            sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
-                        }
-                        log.info("result is {}", result);
-                    } catch (Exception e) {
-                        log.error("{}", e);
+                    if (log.isTraceEnabled()) {
+                        log.trace("nodeName is {}", nodeName);
                     }
+
+                    if (sendCommandStatistics.getAckNodeNames().contains(nodeName)) {
+                        countDownLatch.countDown();
+                        continue;
+                    }
+                    sendExecutorService.submit(()->{
+                        try{
+
+                            String result = p2pConsensusClient.receiveCommand(nodeName, sendCommandStatistics.getValidCommandWrap());
+                            if (StringUtils.equals("SUCCESS", result)) {
+                                sendCommandStatistics.addAckNodeName(nodeName);
+                                sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
+                            }
+                            log.info("result is {}", result);
+                        }finally {
+                            countDownLatch.countDown();
+                        }
+                    });
                 }
+                countDownLatch.await();
+
                 //gc
                 if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
                     sendStorage.addGCSet(key);
