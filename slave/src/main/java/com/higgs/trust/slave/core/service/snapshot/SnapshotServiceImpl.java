@@ -56,6 +56,9 @@ public class SnapshotServiceImpl implements SnapshotService {
     private ContractSnapshotAgent contractSnapshotAgent;
 
     @Autowired
+    private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
+
+    @Autowired
     private ContractStateSnapshotAgent contractStateSnapshotAgent;
 
     /**
@@ -103,6 +106,10 @@ public class SnapshotServiceImpl implements SnapshotService {
         //register CONTRACT cache loader
         log.info("Register CONTRACT cache loader");
         registerBizLoadingCache(SnapshotBizKeyEnum.CONTRACT, contractSnapshotAgent);
+
+        //register ACCOUNT_CONTRACT_BIND cache loader
+        log.info("Register ACCOUNT_CONTRACT_BIND cache loader");
+        registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, accountContractBindingSnapshotAgent);
 
         //register CONTRACT STATE cache loader
         log.info("Register CONTRACT STATE cache loader");

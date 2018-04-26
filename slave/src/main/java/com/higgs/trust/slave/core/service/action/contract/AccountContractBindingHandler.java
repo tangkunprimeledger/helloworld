@@ -81,6 +81,13 @@ import java.util.Date;
         process(action, blockHeight, txId, processType);
     }
 
+    private boolean exist(String hash, TxProcessTypeEnum processType) {
+        if (processType == TxProcessTypeEnum.VALIDATE) {
+            return snapshotAgent.getBinding(hash) != null;
+        }
+        return repository.queryByHash(hash) != null;
+    }
+
     /**
      * process account contract binding
      * @param action
@@ -93,12 +100,17 @@ import java.util.Date;
         }
 
         AccountContractBinding contractBinding = getAccountContractBinding(action, blockHeight, txId);
+        if (this.exist(contractBinding.getHash(), processType)) {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("AccountContractBinding already exist: %s", contractBinding));
+        }
 
         if (processType == TxProcessTypeEnum.VALIDATE) {
             snapshotAgent.put(action.getAccountNo(), contractBinding);
+            snapshotAgent.putBinding(contractBinding);
             return;
         }
         repository.add(contractBinding);
+        snapshotAgent.putBinding(contractBinding);
     }
 
     @Override public void validate(ActionData actionData) {

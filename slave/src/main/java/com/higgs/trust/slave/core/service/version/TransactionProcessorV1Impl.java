@@ -182,7 +182,7 @@ import java.util.*;
         for (String accountNo : accountNos) {
             List<AccountContractBinding> bindingList = null;
             if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-                bindingList = accountContractBindingSnapshotAgent.get(accountNo);
+                bindingList = accountContractBindingSnapshotAgent.getListByAccount(accountNo);
             } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
                 bindingList = accountContractBindingRepository.queryListByAccountNo(accountNo);
             }

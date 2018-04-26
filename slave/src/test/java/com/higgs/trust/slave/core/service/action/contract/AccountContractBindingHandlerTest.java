@@ -39,13 +39,14 @@ public class AccountContractBindingHandlerTest extends IntegrateBaseTest {
         PackContext packContext = ActionDataMockBuilder.getBuilder()
                 .createSignedTransaction(InitPolicyEnum.REGISTER)
                 .addAction(action)
-                .setTxId("000000000")
-                .signature("kdkdkdk")
+                .setTxId("00000000002")
+                .signature("0x0000000000000000000000000")
                 .makeBlockHeader()
                 .build();
 
 
         snapshot.startTransaction();
+        actionHandler.validate(packContext);
         actionHandler.validate(packContext);
         snapshot.commit();
     }
