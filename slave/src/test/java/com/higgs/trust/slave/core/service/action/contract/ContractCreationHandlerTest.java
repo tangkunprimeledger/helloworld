@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -22,10 +23,10 @@ public class ContractCreationHandlerTest extends IntegrateBaseTest {
 
     private ContractCreationAction createContractCreationAction() {
         ContractCreationAction action = new ContractCreationAction();
-        action.setCode("function main() { print('>>>>>>>> hello world 11<<<<<<<<<'); }");
+        action.setCode("function main() { db.put('name', 'trust'); print('>>>>>>>> hello world 11<<<<<<<<<'); }");
         action.setLanguage("javascript");
         action.setVersion("1");
-        action.setIndex(1);
+        action.setIndex(0);
         action.setType(ActionTypeEnum.REGISTER_CONTRACT);
         return action;
     }
@@ -36,15 +37,16 @@ public class ContractCreationHandlerTest extends IntegrateBaseTest {
         PackContext packContext = ActionDataMockBuilder.getBuilder()
                 .createSignedTransaction(InitPolicyEnum.REGISTER)
                 .addAction(action)
-                .setTxId("000000000")
-                .signature("kdkdkdk")
+                .setTxId("0000000000")
+                .signature(ActionDataMockBuilder.privateKey1)
+                .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
 
 
         snapshot.startTransaction();
         creationHandler.validate(packContext);
-        Contract contract = agent.get("a4155dddbbe5cb832404006eafd2fa3e46fef74f96b4c8a16239036d3b862aa7");
+        Contract contract = agent.get("e6f21e41de78458a509abde3ead213502e365adfc7c3c217d428878fc1ff37a6");
         snapshot.commit();
         Assert.isTrue(contract != null);
     }
@@ -56,10 +58,17 @@ public class ContractCreationHandlerTest extends IntegrateBaseTest {
                 .createSignedTransaction(InitPolicyEnum.REGISTER)
                 .addAction(action)
                 .setTxId("0000000000")
-                .signature("0x0000000000000000000000000")
+                .signature(ActionDataMockBuilder.privateKey1)
+                .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
 
+        System.out.println(JSON.toJSONString(packContext.getCurrentTransaction()));
         creationHandler.persist(packContext);
+        try {
+            creationHandler.persist(packContext);
+            Assert.isTrue(false);
+        } catch (Exception ex) {
+        }
     }
 }
