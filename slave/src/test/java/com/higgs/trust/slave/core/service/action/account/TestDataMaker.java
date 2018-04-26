@@ -110,7 +110,7 @@ public class TestDataMaker {
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setActionList(actions == null ? new ArrayList<>():actions);
         coreTx.setBizModel(bizModel);
-        coreTx.setSender("rs-test1");
+        coreTx.setSender("TRUST-NODE97");
         coreTx.setLockTime(new Date());
         return coreTx;
     }

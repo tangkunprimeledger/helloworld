@@ -54,7 +54,7 @@ public class AccountControllerTest {
 // issue currency
 //        List<SignedTransaction> txs = makeCurrencyTxs();
         //open account
-    //     List<SignedTransaction> txs = makeOpenAccountTxs();
+        List<SignedTransaction> txs = makeOpenAccountTxs();
         // transfer
        // List<SignedTransaction> txs = makeAccountingTxs();
         // freeze
@@ -63,8 +63,8 @@ public class AccountControllerTest {
         // unfreeze
       //  List<SignedTransaction> txs = makeUnFreezeTxs();
 
-        // utxo issue and  transfer
-         List<SignedTransaction> txs = makeCurrencyTxs();
+        // utxo issue and transfer
+        // List<SignedTransaction> txs = makeCurrencyTxs();
 
         String params = JSON.toJSONString(txs);
 
@@ -146,7 +146,7 @@ public class AccountControllerTest {
     private List<SignedTransaction> makeOpenAccountTxs() throws Exception {
         List<SignedTransaction> txs = new ArrayList<>();
         List<Action> actions = new ArrayList<>();
-        Action action = TestDataMaker.makeOpenAccountAction("account_no_2_2", FundDirectionEnum.DEBIT);
+        Action action = TestDataMaker.makeOpenAccountAction("chao", FundDirectionEnum.CREDIT);
         actions.add(action);
 
         JSONObject bizModel = new JSONObject();
