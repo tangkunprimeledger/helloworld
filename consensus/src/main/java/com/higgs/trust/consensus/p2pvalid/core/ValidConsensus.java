@@ -63,7 +63,7 @@ public abstract class ValidConsensus {
             ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
                     .fromNodeName(fromNode)
                     .addToNodeNames(clusterInfo.clusterNodeNames())
-                    .sign(SignUtils.sign(command.messageDigest(), clusterInfo.privateKey()));
+                    .sign(clusterInfo.privateKey());
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -77,7 +77,7 @@ public abstract class ValidConsensus {
             ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
                     .fromNodeName(fromNode)
                     .addToNodeName(toNodeName)
-                    .sign(SignUtils.sign(command.messageDigest(), clusterInfo.privateKey()));
+                    .sign(clusterInfo.privateKey());
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -90,7 +90,7 @@ public abstract class ValidConsensus {
             ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
                     .fromNodeName(fromNode)
                     .addToNodeNames(toNodeNames)
-                    .sign(SignUtils.sign(command.messageDigest(), clusterInfo.privateKey()));
+                    .sign(clusterInfo.privateKey());
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -111,6 +111,7 @@ public abstract class ValidConsensus {
                 throw new Exception(String.format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNodeName(), validCommandWrap, pubKey));
             }
         } catch (Exception e) {
+            log.error("{}", e);
             throw new ReceiveException(String.format("invalid command from node %s", validCommandWrap.getFromNodeName()), e);
         }
         consensusContext.receive(validCommandWrap);
