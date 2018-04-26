@@ -49,13 +49,14 @@ import java.util.List;
         snapshot.put(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, new AccountContractBindingCacheKey(accountNo), bindings);
     }
 
-    public void put(String accountNo, AccountContractBinding binding) {
-        List<AccountContractBinding> list = this.getListByAccount(accountNo);
+    public void put(AccountContractBinding binding) {
+        this.putBinding(binding);
+        List<AccountContractBinding> list = this.getListByAccount(binding.getAccountNo());
         if (null == list) {
             list = new ArrayList<>();
         }
         list.add(binding);
-        this.put(accountNo, list);
+        this.put(binding.getAccountNo(), list);
     }
 
     @Override public Object query(Object object) {
