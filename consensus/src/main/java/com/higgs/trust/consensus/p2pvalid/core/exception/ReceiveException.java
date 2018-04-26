@@ -9,4 +9,8 @@ public class ReceiveException extends RuntimeException {
     public ReceiveException(String message) {
         super(message);
     }
+
+    public ReceiveException(String message, Throwable e) {
+        super(message, e);
+    }
 }

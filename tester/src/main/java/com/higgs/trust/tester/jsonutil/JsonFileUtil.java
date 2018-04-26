@@ -123,19 +123,24 @@ public class JsonFileUtil {
     public static HashMap<String, Object> jsonToMap(JSONObject json, HashMap<String, Object> map){
 
         for (Map.Entry<String, Object> entry : json.entrySet()){
-            String str = entry.getValue().getClass().getTypeName();
-            if (str == "com.alibaba.fastjson.JSONObject"){
+            if (entry.getValue() == null){
                 map.put(entry.getKey(),entry.getValue());
-                jsonToMap((JSONObject)entry.getValue(), map);
-            }else if(str == "com.alibaba.fastjson.JSONArray"){
-                JSONArray ja = (JSONArray)entry.getValue();
-                for (Object o : ja){
-                    JSONObject jo = (JSONObject)o;
-                    jsonToMap(jo,map);
+            }else {
+                String str = entry.getValue().getClass().getTypeName();
+                if (str == "com.alibaba.fastjson.JSONObject"){
+                    map.put(entry.getKey(),entry.getValue());
+                    jsonToMap((JSONObject)entry.getValue(), map);
+                }else if(str == "com.alibaba.fastjson.JSONArray"){
+                    JSONArray ja = (JSONArray)entry.getValue();
+                    for (Object o : ja){
+                        JSONObject jo = (JSONObject)o;
+                        jsonToMap(jo,map);
+                    }
+                }else{
+                    map.put(entry.getKey(),entry.getValue());
                 }
-            }else{
-                map.put(entry.getKey(),entry.getValue());
             }
+
         }
         log.info("jsonobj translate to map successfully");
         return map;
@@ -148,18 +153,23 @@ public class JsonFileUtil {
     public static HashMap<String, Object> jsonNodeToMap(JSONObject json, HashMap<String, Object> map){
 
         for (Map.Entry<String, Object> entry : json.entrySet()){
-            String str = entry.getValue().getClass().getTypeName();
-            if (str == "com.alibaba.fastjson.JSONObject"){
-                jsonToMap((JSONObject)entry.getValue(), map);
-            }else if(str == "com.alibaba.fastjson.JSONArray"){
-                JSONArray ja = (JSONArray)entry.getValue();
-                for (Object o : ja){
-                    JSONObject jo = (JSONObject)o;
-                    jsonToMap(jo,map);
-                }
-            }else {
+            if (entry.getValue() == null){
                 map.put(entry.getKey(),entry.getValue());
+            }else{
+                String str = entry.getValue().getClass().getTypeName();
+                if (str == "com.alibaba.fastjson.JSONObject"){
+                    jsonToMap((JSONObject)entry.getValue(), map);
+                }else if(str == "com.alibaba.fastjson.JSONArray"){
+                    JSONArray ja = (JSONArray)entry.getValue();
+                    for (Object o : ja){
+                        JSONObject jo = (JSONObject)o;
+                        jsonToMap(jo,map);
+                    }
+                }else {
+                    map.put(entry.getKey(),entry.getValue());
+                }
             }
+
         }
         log.info("jsonobj translate to map successfully");
         return map;

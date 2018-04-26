@@ -117,7 +117,7 @@ public abstract class ValidConsensus {
                 throw new Exception(String.format("check sign failed for node %s", validCommandWrap.getFromNodeName()));
             }
         } catch (Exception e) {
-            throw new ReceiveException(String.format("invalid command from node %s", validCommandWrap.getFromNodeName()));
+            throw new ReceiveException(String.format("invalid command from node %s", validCommandWrap.getFromNodeName()), e);
         }
         consensusContext.receive(validCommandWrap);
     }
