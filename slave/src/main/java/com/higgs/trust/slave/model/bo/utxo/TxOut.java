@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave.model.bo.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
@@ -26,7 +27,7 @@ import javax.validation.constraints.NotNull;
     /**
      * identityId
      */
-    @NotBlank private String identity;
+    @NotBlank @Length(max = 64) private String identity;
     /**
      * sate data
      */

@@ -27,28 +27,18 @@ public class ConsensusClientTest {
     private ValidConsensus validConsensus;
 
     List<Address> clusterAddress = new ArrayList<Address>() {{
-        add(new Address("192.168.194.128:8800"));
-        add(new Address("192.168.192.35:8800"));
+        add(new Address("127.0.0.1:9800"));
+        add(new Address("127.0.0.1:9900"));
     }};
 
     @Test
-    public void testRaft() throws InterruptedException {
-        startServer(new Address("192.168.194.128:8800"), clusterAddress);
-        Thread.sleep(200000);
-    }
-
-    @Test
-    private void testClientConnection() throws InterruptedException {
+    public void testRaftServerAndClient() throws InterruptedException {
+        for (Address address : clusterAddress){
+            new Thread(()-> startServer(address, clusterAddress)).start();
+        }
         CopycatClient copycatClient = startClient(clusterAddress);
         copycatClient.submit(new StringCommand("test string command"));
-        Thread.sleep(20000);
-    }
-
-    @Test
-    private void testSplit(){
-        String src = "192.168.0.1, 192.168.0.2, 192.168.0.1";
-        List<String> list  =new ArrayList<String>(Arrays.asList(src.split("\\s*,\\s*")));
-        list.stream().forEach((s)->{System.out.print(s);});
+        Thread.sleep(6000);
     }
 
     private CopycatClient startClient(List<Address> clusterAddress){
@@ -77,7 +67,7 @@ public class ConsensusClientTest {
         builder.withStorage(storage);
         CopycatServer server = builder.build();
         log.info("copycat cluster start ...");
-        server.bootstrap(clusterAddress).join();
+        server.bootstrap(clusterAddress);
     }
 
 }

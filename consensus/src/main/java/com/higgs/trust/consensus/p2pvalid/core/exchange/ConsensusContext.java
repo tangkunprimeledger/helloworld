@@ -45,12 +45,12 @@ public class ConsensusContext {
         initExecutor();
     }
 
-    public static ConsensusContext create(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum, Integer totalNodeNum){
-        return  new ConsensusContext(validConsensus, p2pConsensusClient, baseDir, fautNodeNum, totalNodeNum);
+    public static ConsensusContext create(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, String baseDir, Integer fautNodeNum, Integer totalNodeNum) {
+        return new ConsensusContext(validConsensus, p2pConsensusClient, baseDir, fautNodeNum, totalNodeNum);
     }
 
-    public static ConsensusContext createInMemory(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, Integer fautNodeNum, Integer totalNodeNum){
-        return  new ConsensusContext(validConsensus, p2pConsensusClient, fautNodeNum, totalNodeNum);
+    public static ConsensusContext createInMemory(ValidConsensus validConsensus, P2pConsensusClient p2pConsensusClient, Integer fautNodeNum, Integer totalNodeNum) {
+        return new ConsensusContext(validConsensus, p2pConsensusClient, fautNodeNum, totalNodeNum);
     }
 
     private void initExecutor() {
@@ -79,19 +79,22 @@ public class ConsensusContext {
      *
      * @param validCommandWrap
      */
-    public void receive(ValidCommandWrap validCommandWrap) {
+    public synchronized void receive(ValidCommandWrap validCommandWrap) {
         String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
         ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
 
-        if(receiveCommandStatistics.isClosed()){
+        if (receiveCommandStatistics.isClosed()) {
             log.info("receiveCommandStatistics {} from node {} is apply and closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
-            if(receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum){
+            if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
                 log.info("add receiveCommandStatistics {} to gc set", receiveCommandStatistics);
                 receiveStorage.addGCSet(key);
             }
-        }else if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
-            log.info("from node set size {} > threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
+        } else if (receiveCommandStatistics.isApply()) {
+            log.info("receiveCommandStatistics {} has applied", receiveCommandStatistics);
+        } else if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
+            log.info("from node set size {} >= threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
             receiveStorage.addApplyQueue(key);
+            receiveCommandStatistics.apply();
         }
     }
 
@@ -129,7 +132,7 @@ public class ConsensusContext {
                 //gc
                 if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
                     sendStorage.addGCSet(key);
-                }else{
+                } else {
                     sendStorage.addDelayQueue(key);
                 }
             } catch (Exception e) {
@@ -158,7 +161,7 @@ public class ConsensusContext {
                     continue;
                 }
 
-                if(receiveCommandStatistics.isClosed()){
+                if (receiveCommandStatistics.isClosed()) {
                     log.warn("receiveCommandStatistics {} is closed, key is {}", receiveCommandStatistics, key);
                     continue;
                 }

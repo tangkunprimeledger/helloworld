@@ -94,7 +94,6 @@ public class ReceiveStorage {
      * @return ReceiveCommandStatistics
      */
     public ReceiveCommandStatistics add(String key, ValidCommandWrap validCommandWrap) {
-        applyQueueLock.lock();
         try {
             ValidCommand<?> validCommand = validCommandWrap.getValidCommand();
             HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
@@ -113,8 +112,6 @@ public class ReceiveStorage {
             receiveDB.rollback();
             log.error("{}", e);
             throw new RuntimeException(e);
-        }finally {
-            applyQueueLock.unlock();
         }
     }
 
