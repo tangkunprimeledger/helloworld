@@ -36,7 +36,7 @@ import java.util.List;
      */
     public String buildTxs(List<SignedTransaction> txs) {
         if (CollectionUtils.isEmpty(txs)) {
-            return null;
+            return DEFAULT_HASH_FLAG;
         }
         for (SignedTransaction tx : txs) {
             List<String> signDatas = tx.getSignatureList();
@@ -51,7 +51,7 @@ import java.util.List;
         //by merkle tree
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.TX, Arrays.asList(txs));
         if (merkleTree == null) {
-            return null;
+            return DEFAULT_HASH_FLAG;
         }
         return merkleTree.getRootHash();
     }
@@ -64,7 +64,7 @@ import java.util.List;
      */
     public String buildReceipts(List<TransactionReceipt> receipts) {
         if (CollectionUtils.isEmpty(receipts)) {
-            return null;
+            return DEFAULT_HASH_FLAG;
         }
         Collections.sort(receipts, new Comparator<TransactionReceipt>() {
             @Override public int compare(TransactionReceipt o1, TransactionReceipt o2) {
@@ -74,7 +74,7 @@ import java.util.List;
         //by merkle tree
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.TX_RECEIEPT, Arrays.asList(receipts));
         if (merkleTree == null) {
-            return null;
+            return DEFAULT_HASH_FLAG;
         }
         return merkleTree.getRootHash();
     }
