@@ -180,9 +180,13 @@ import java.util.Set;
     @Override public void receive(Package pack) {
         log.info("receive package from consensus, pack: {}", pack);
 
-        if (null == pack || CollectionUtils.isEmpty(pack.getSignedTxList()) || !checkTransactions(
-            pack.getSignedTxList())) {
+        if (null == pack || CollectionUtils.isEmpty(pack.getSignedTxList())) {
             log.error("package is null or transaction list is empty.");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        if (!checkTransactions(pack.getSignedTxList())) {
+            log.error("transaction list is not order by txId asc.");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 

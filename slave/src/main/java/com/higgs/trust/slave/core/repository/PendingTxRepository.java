@@ -150,6 +150,13 @@ import java.util.List;
             }
         });
 
+        // sort signedTransactions by txId asc
+        Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
+            @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+                return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
+            }
+        });
+
         return signedTransactions;
     }
 
