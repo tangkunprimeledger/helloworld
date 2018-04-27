@@ -91,13 +91,14 @@ import java.util.*;
                 log.error("[process] get action handler is null by action type:{}", action.getType());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACTION_HANDLER_IS_NOT_EXISTS_EXCEPTION);
             }
+            //execute contract
+            exeContract(action, processTypeEnum, transactionData.getActionData());
+            //execute action
             if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
                 actionHandler.validate(transactionData.getActionData());
             } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
                 actionHandler.persist(transactionData.getActionData());
             }
-            //execute contract
-            exeContract(action, processTypeEnum, transactionData.getActionData());
         }
     }
 
