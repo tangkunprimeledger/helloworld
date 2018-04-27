@@ -146,6 +146,8 @@ public class SnapshotServiceImpl implements SnapshotService {
      */
     @Override
     public void destroy() {
+
+        //TODO  是否加个标记，不允许其他操作
         log.info("Start to destroy snapshot");
 
         //close transaction first,if not there may be some data put into cache after clearing data
