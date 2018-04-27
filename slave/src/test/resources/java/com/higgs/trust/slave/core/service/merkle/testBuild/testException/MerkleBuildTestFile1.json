@@ -3,7 +3,7 @@
   "body": {
     "1": "a"
   },
-  "type": {},
+  "type": "",
   "assert": "slave merkle param not valid exception[SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION]",
   "comment": "merkle树build方法，入参为空异常测试"
 }

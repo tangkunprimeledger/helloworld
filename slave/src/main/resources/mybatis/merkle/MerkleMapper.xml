@@ -114,12 +114,4 @@
 		where `level`=#{level} and tree_type=#{treeType} and node_hash = #{nodeHash}
 	</select>
 
-	<delete id="trucateMerkleNode">
-		truncate table merkle_node
-	</delete>
-
-	<delete id="trucateMerkleTree">
-		truncate table merkle_tree
-	</delete>
-
 </mapper>

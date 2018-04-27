@@ -60,11 +60,4 @@ import java.util.List;
      */
     public MerkleNodePO queryMerkleNodeByHash(MerkleNodePO merkleNodePO);
 
-    /**
-     * truncate table merkle_node and merkle_tree, just for test case
-     *
-     */
-    public void trucateMerkleNode();
-    public void trucateMerkleTree();
-
 }

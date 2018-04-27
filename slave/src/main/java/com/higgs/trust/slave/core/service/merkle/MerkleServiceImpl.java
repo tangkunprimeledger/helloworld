@@ -656,11 +656,4 @@ import java.util.concurrent.ConcurrentHashMap;
         }
     }
 
-    /**
-     * truncate merkle tree , just for test case
-     */
-    @Override public void truncateMerkle() {
-        merkleRepository.truncateMerkle();
-    }
-
 }
