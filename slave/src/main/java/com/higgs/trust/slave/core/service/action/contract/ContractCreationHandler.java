@@ -1,7 +1,9 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
@@ -54,8 +56,17 @@ import java.util.Date;
         return getHash(data);
     }
 
+    private void checkPolicy(ActionData actionData) {
+        String policyId = actionData.getCurrentTransaction().getCoreTx().getPolicyId();
+        if (InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId) != InitPolicyEnum.CONTRACT_ISSUE) {
+            log.error("policyId error: {}", policyId);
+            throw new ContractException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("policyId error: %s", policyId));
+        }
+    }
+
     @Override public void validate(ActionData actionData) {
         log.trace("validate... start process contract creation");
+        checkPolicy(actionData);
         ContractCreationAction creationAction = (ContractCreationAction) actionData.getCurrentAction();
         if (creationAction == null) {
             log.error("[ContractCreation.validate] convert action to ContractCreationAction is error");
@@ -83,6 +94,7 @@ import java.util.Date;
 
     @Override public void persist(ActionData actionData) {
         log.debug("persist... start process contract creation");
+        checkPolicy(actionData);
         ContractCreationAction creationAction = (ContractCreationAction) actionData.getCurrentAction();
         if (creationAction == null) {
             log.error("[ContractCreation.validate] convert action to ContractCreationAction is error");
