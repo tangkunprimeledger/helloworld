@@ -88,8 +88,8 @@ import java.util.Set;
             return null;
         }
 
-        log.info("[PackageScheduler.createPackage] start create package, txSize: {}, txList: {}",
-            signedTransactions.size(), signedTransactions);
+        log.info("[PackageScheduler.createPackage] start create package, txSize: {}, txList: {}, package.height: {}",
+            signedTransactions.size(), signedTransactions, height + 1);
 
         /**
          * initial package

@@ -85,7 +85,7 @@ import java.util.concurrent.ExecutorService;
 
         BeanValidateResult result = BeanValidator.validate(header);
         if (!result.isSuccess()) {
-            log.error("[P2pReceiver.sendPersisting]param validate failed, cause: " + result.getFirstMsg());
+            log.error("[P2pReceiver.sendPersisting]param validate failed, cause: {}", result.getFirstMsg());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 

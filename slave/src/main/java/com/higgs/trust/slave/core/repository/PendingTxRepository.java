@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.repository;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.pack.PendingTransactionDao;
@@ -12,8 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -157,19 +156,16 @@ import java.util.List;
     private PendingTransactionPO convertSignedTxToPendingTxPO(SignedTransaction signedTransaction) {
         PendingTransactionPO pendingTransactionPO = new PendingTransactionPO();
         pendingTransactionPO.setTxId(signedTransaction.getCoreTx().getTxId());
-        pendingTransactionPO.setTxData(signedTransaction);
+        pendingTransactionPO.setTxData(JSON.toJSONString(signedTransaction));
         return pendingTransactionPO;
     }
 
     private SignedTransaction convertPendingTxPOToSignedTx(PendingTransactionPO pendingTransactionPO) {
         SignedTransaction signedTransaction;
         try {
-            // parse SignedTransaction from db 'tx_data'
-            byte[] txData = (byte[])pendingTransactionPO.getTxData();
-            ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(txData));
-            signedTransaction = (SignedTransaction)in.readObject();
+            signedTransaction = JSON.parseObject(pendingTransactionPO.getTxData(), SignedTransaction.class);
         } catch (Throwable e) {
-            log.error("signedTransaction parse exception. ", e);
+            log.error("signedTransaction json parse exception. ", e);
             return null;
         }
         return signedTransaction;
