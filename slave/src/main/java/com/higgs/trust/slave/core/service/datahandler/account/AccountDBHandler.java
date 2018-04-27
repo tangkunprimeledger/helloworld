@@ -148,7 +148,7 @@ import java.util.*;
         //DEBIT trade
         for (AccountTradeInfo info : debitTradeInfo) {
             //lock this account info
-            AccountInfo accountInfo = accountRepository.queryAccountInfo(info.getAccountNo(), true);
+            AccountInfo accountInfo = accountRepository.queryAccountInfo(info.getAccountNo(), false);
             if (accountInfo == null) {
                 log.error("[persistForOperation] account info is not exists by accountNo:{}",
                     info.getAccountNo());
@@ -160,7 +160,7 @@ import java.util.*;
         //CREDIT trade
         for (AccountTradeInfo info : creditTradeInfo) {
             //lock this account info
-            AccountInfo accountInfo = accountRepository.queryAccountInfo(info.getAccountNo(), true);
+            AccountInfo accountInfo = accountRepository.queryAccountInfo(info.getAccountNo(), false);
             if (accountInfo == null) {
                 log.error("[persistForOperation] account info is not exists by accountNo:{}",
                     info.getAccountNo());
