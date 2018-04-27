@@ -5,10 +5,7 @@ import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.core.service.action.account.TestDataMaker;
 import com.higgs.trust.slave.core.service.block.BlockService;
-import com.higgs.trust.slave.model.bo.Block;
-import com.higgs.trust.slave.model.bo.BlockHeader;
-import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import org.junit.Test;
@@ -59,7 +56,13 @@ public class BlockServiceTest extends IntegrateBaseTest {
         BlockHeader blockHeader = TestDataMaker.makeBlockHeader();
         block.setBlockHeader(blockHeader);
         block.setSignedTxList(txs);
-        blockService.persistBlock(block);
+        List<TransactionReceipt> txReceipts = new ArrayList<>();
+        TransactionReceipt receipt = new TransactionReceipt();
+        receipt.setTxId(txs.get(0).getCoreTx().getTxId());
+        receipt.setResult(false);
+        receipt.setErrorCode("xxxxxxxxx");
+        txReceipts.add(receipt);
+        blockService.persistBlock(block,txReceipts);
     }
 
     @Test public void testQueryBlock() {

@@ -260,7 +260,6 @@ IF NOT EXISTS `rs_pub_key` (
 	UNIQUE KEY `uniq_rs` (`rs_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the related between rs and public key';
 
--- utxo init
 CREATE TABLE
 IF NOT EXISTS `transaction` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -272,22 +271,13 @@ IF NOT EXISTS `transaction` (
 	`version` VARCHAR (32) NOT NULL COMMENT 'the version create the tx',
 	`block_height` BIGINT (20) NOT NULL COMMENT 'the block height create the tx',
 	`block_time` datetime (3) NOT NULL COMMENT 'the create time create the block for the tx',
-	`sign_datas` MEDIUMTEXT DEFAULT NULL COMMENT 'the signatures by json',
+	`action_datas` varchar(4096) DEFAULT NULL COMMENT 'the action list by json',
+	`sign_datas` varchar(4096) DEFAULT NULL COMMENT 'the signatures by json',
+	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
+	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_tx_id` (`tx_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create transaction';
-
-CREATE TABLE
-IF NOT EXISTS `action` (
-	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-	`tx_id` VARCHAR (64) NOT NULL COMMENT 'transaction id',
-	`type` VARCHAR (32) NOT NULL COMMENT 'action type',
-	`index` INT (10) NOT NULL COMMENT 'action index in the transaction',
-	`data` MEDIUMTEXT NOT NULL COMMENT 'The actual action . it is storted as a json data',
-	`create_time` datetime (3) NOT NULL DEFAULT CURRENT_TIMESTAMP (3) COMMENT 'create time',
-	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_tx_id_type_index` (`tx_id`, `type`, `index`)
-) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create action';
 
 CREATE TABLE
 IF NOT EXISTS `tx_out` (
