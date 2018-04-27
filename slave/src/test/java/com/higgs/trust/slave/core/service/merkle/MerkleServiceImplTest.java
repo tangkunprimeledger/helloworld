@@ -6,28 +6,23 @@ import com.alibaba.fastjson.TypeReference;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.JsonFileUtil;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.MerkleException;
-import com.higgs.trust.slave.model.bo.merkle.MerkleNode;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
-import org.apache.commons.codec.binary.Hex;
+import com.higgs.trust.tester.dbunit.DataBaseManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
-import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
 import static org.testng.AssertJUnit.fail;
+
+import com.higgs.trust.tester.*;
 
 /**
  * @author WangQuanzhou
@@ -35,6 +30,11 @@ import static org.testng.AssertJUnit.fail;
  * @date 2018/4/12 16:53
  */
 public class MerkleServiceImplTest extends BaseTest {
+
+    DataBaseManager dataBaseManager = new DataBaseManager();
+    String url="jdbc:mysql://localhost:3306/trust?user=root&password=root&useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true";
+    String sql = "truncate table merkle_node;truncate table merkle_tree;";
+
     //数据驱动
     @DataProvider public Object[][] provideBuildData(Method method) {
         String filepath = JsonFileUtil.findJsonFile("java/com/higgs/trust/slave/core/service/merkle/testBuild/testRegular");
@@ -82,7 +82,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(dataProvider = "provideBuildData",priority = 0)
     public void testBuild(Map<?, ?> param) throws InterruptedException {
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         JSONObject bodyObj = JSON.parseObject(param.get("body").toString());
         Map<String, String> map =
             JSONObject.parseObject(bodyObj.toJSONString(), new TypeReference<Map<String, String>>() {
@@ -101,7 +101,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(dataProvider = "provideBuildExceptionData",priority = 10)
     public void testBuildException(Map<?, ?> param) throws InterruptedException {
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         JSONObject bodyObj = JSON.parseObject(param.get("body").toString());
         Map<String, String> map =
             JSONObject.parseObject(bodyObj.toJSONString(), new TypeReference<Map<String, String>>() {
@@ -122,7 +122,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(priority = 20)
     public void initUpdate(){
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         List tempTxList = new LinkedList();
         tempTxList.add("a");
         tempTxList.add("b");
@@ -147,7 +147,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(priority = 40)
     public void initUpdate1(){
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         List tempTxList = new LinkedList();
         tempTxList.add("a");
         tempTxList.add("b");
@@ -175,7 +175,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(priority = 60)
     public void initAdd(){
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         List tempTxList = new LinkedList();
         tempTxList.add("a");
         tempTxList.add("b");
@@ -196,7 +196,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(priority = 80)
     public void initAdd1(){
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         List tempTxList = new LinkedList();
         tempTxList.add("a");
         tempTxList.add("b");
@@ -218,7 +218,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(priority = 100)
     public void initAdd2(){
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         List tempTxList = new LinkedList();
         tempTxList.add("a");
         tempTxList.add("b");
@@ -241,7 +241,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(priority = 120)
     public void initAdd3(){
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         List tempTxList = new LinkedList();
         tempTxList.add("a");
         tempTxList.add("b");
@@ -265,7 +265,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(priority = 140)
     public void testFlush() {
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         List tempTxList = new LinkedList();
         tempTxList.add("a");
         tempTxList.add("b");
@@ -295,13 +295,16 @@ public class MerkleServiceImplTest extends BaseTest {
 
     @Test(priority = 160)
     public void testQueryMerkleTreeException(){
+        try{
             MerkleTree tree = merkleService.queryMerkleTree(null);
-            assertEquals(tree,null);
+        }catch (MerkleException e){
+            assertEquals(e.getMessage(),"slave merkle param not valid exception[SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION]");
+        }
     }
 
     @Test
     public void verify(){
-        merkleService.truncateMerkle();
+        dataBaseManager.executeSingleDelete(sql,url);
         List tempTxList = new LinkedList();
         tempTxList.add("a");
         tempTxList.add("b");
@@ -321,5 +324,34 @@ public class MerkleServiceImplTest extends BaseTest {
         MerkleTree merkleTree1 = merkleService.build(MerkleTypeEnum.RS, tempTxList);
         System.out.println("===========   "+merkleTree1.getRootHash());
         assertEquals(merkleTree1.getRootHash(),merkleTree.getRootHash());
+    }
+
+    @Test
+    public void verify1(){
+        dataBaseManager.executeSingleDelete(sql,url);
+        try{
+            List tempTxList = new LinkedList();
+            tempTxList.add("a");
+            tempTxList.add("b");
+            MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
+            String tempSql = "INSERT INTO `merkle_node` VALUES (1, '439431967390302209', 'ad3bbd0236cee779a7b660177b3e7cffb90e915fbc0305e50ccfc64c1f445e47', 0, 2, NULL, 'RS', '2018-4-27 14:25:45', '2018-4-27 14:25:45');";
+            dataBaseManager.executeSingleInsert(tempSql,url);
+            merkleService.flush(merkleTree);
+        }catch (MerkleException e){
+            assertEquals(e.getMessage(), "slave merkle node add idempotent exception[SLAVE_MERKLE_NODE_ADD_IDEMPOTENT_EXCEPTION]");
+        }
+    }
+
+    @Test
+    public void verify2(){
+        dataBaseManager.executeSingleDelete(sql,url);
+        try{
+            List tempTxList = new LinkedList();
+            tempTxList.add("a");
+            tempTxList.add("a");
+            MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
+        }catch (MerkleException e){
+            assertEquals(e.getMessage(), "slave merkle node build duplicate exception[SLAVE_MERKLE_NODE_BUILD_DUPLICATE_EXCEPTION]");
+        }
     }
 }
