@@ -65,7 +65,7 @@ import java.util.Set;
      * @param statusSet
      * @return
      */
-    Long getMinHeightWithStatus(@Param("statusSet") Set<String> statusSet);
+    long getMinHeightWithStatus(@Param("statusSet") Set<String> statusSet);
 
     /**
      * query min package height with status and start height
@@ -82,7 +82,7 @@ import java.util.Set;
      * @param statusSet
      * @return
      */
-    Long countWithStatus(@Param("statusSet") Set<String> statusSet);
+    long countWithStatus(@Param("statusSet") Set<String> statusSet);
 
     /**
      * get height list for process
