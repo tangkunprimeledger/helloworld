@@ -55,6 +55,7 @@ import java.util.Date;
     }
 
     @Override public void validate(ActionData actionData) {
+        log.trace("validate... start process contract creation");
         ContractCreationAction creationAction = (ContractCreationAction) actionData.getCurrentAction();
         if (creationAction == null) {
             log.error("[ContractCreation.validate] convert action to ContractCreationAction is error");
@@ -81,6 +82,7 @@ import java.util.Date;
     }
 
     @Override public void persist(ActionData actionData) {
+        log.trace("persist... start process contract creation");
         ContractCreationAction creationAction = (ContractCreationAction) actionData.getCurrentAction();
         if (creationAction == null) {
             log.error("[ContractCreation.validate] convert action to ContractCreationAction is error");
