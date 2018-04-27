@@ -1,9 +1,11 @@
 package com.higgs.trust.consensus.p2pvalid.api.controller;
 
+import cn.primeledger.stability.trace.PrimeTraceUtil;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.cloud.sleuth.Span;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +30,23 @@ public class P2pConsensusController implements ApplicationContextAware {
     @RequestMapping(value = "/receive_command", method = RequestMethod.POST)
     @ResponseBody
     public String receiveCommand(@RequestBody ValidCommandWrap validCommandWrap) {
-        ValidConsensus validConsensus = validConsensusRegistry.get(validCommandWrap.getCommandClass());
-        if (null == validConsensus) {
-            throw new RuntimeException(String.format("no validConsensus mapping to the validCommandClass %s", validCommandWrap.getCommandClass().getSimpleName()));
+        Span span = null;
+        if(null != validCommandWrap.getTraceId()){
+            span = PrimeTraceUtil.openNewTracer(validCommandWrap.getTraceId());
         }
-        validConsensus.receive(validCommandWrap);
-        return "SUCCESS";
+
+       try {
+           ValidConsensus validConsensus = validConsensusRegistry.get(validCommandWrap.getCommandClass());
+           if (null == validConsensus) {
+               throw new RuntimeException(String.format("no validConsensus mapping to the validCommandClass %s", validCommandWrap.getCommandClass().getSimpleName()));
+           }
+           validConsensus.receive(validCommandWrap);
+           return "SUCCESS";
+       }finally {
+            if(null != span){
+                PrimeTraceUtil.closeSpan(span);
+            }
+       }
     }
 
 

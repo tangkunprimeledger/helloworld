@@ -1,5 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.exchange;
 
+import cn.primeledger.stability.trace.PrimeTraceUtil;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.storage.ReceiveStorage;
@@ -8,6 +9,7 @@ import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommand
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.SendCommandStatistics;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.sleuth.Span;
 
 import java.util.concurrent.*;
 
@@ -86,6 +88,7 @@ public class ConsensusContext {
      * @param validCommandWrap
      */
     public synchronized void receive(ValidCommandWrap validCommandWrap) {
+
         String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
         ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
 
@@ -103,19 +106,20 @@ public class ConsensusContext {
             receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
             log.info("from node set size {} >= threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
         }
+
     }
 
     private void send() {
         while (true) {
             String key = sendStorage.takeFromSendQueue();
-            try {
-                if (null == key) {
-                    log.warn("key is null");
-                    continue;
-                }
-                SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
-                log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
+            if (null == key) {
+                log.warn("key is null");
+                continue;
+            }
+            SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
+            log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
 
+            try {
                 // set the countDownLatch
                 CountDownLatch countDownLatch = new CountDownLatch(sendCommandStatistics.getSendNodeNames().size());
 
@@ -129,9 +133,14 @@ public class ConsensusContext {
                         continue;
                     }
                     sendExecutorService.submit(()->{
+                        ValidCommandWrap validCommandWrap = sendCommandStatistics.getValidCommandWrap();
+                        //trace
+                        Span span = null;
+                        if(null != validCommandWrap.getTraceId()){
+                            span = PrimeTraceUtil.openNewTracer(validCommandWrap.getTraceId());
+                        }
                         try{
-
-                            String result = p2pConsensusClient.receiveCommand(nodeName, sendCommandStatistics.getValidCommandWrap());
+                            String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             if (StringUtils.equals("SUCCESS", result)) {
                                 sendCommandStatistics.addAckNodeName(nodeName);
                                 sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
@@ -139,6 +148,9 @@ public class ConsensusContext {
                             log.info("result is {}", result);
                         }finally {
                             countDownLatch.countDown();
+                            if(null != span){
+                                PrimeTraceUtil.closeSpan(span);
+                            }
                         }
                     });
                 }

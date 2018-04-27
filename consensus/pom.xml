@@ -154,5 +154,11 @@
             <artifactId>spring-aspects</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>cn.primeledger.seg</groupId>
+            <artifactId>stability-spring-boot-starter</artifactId>
+        </dependency>
+
+
     </dependencies>
 </project>
