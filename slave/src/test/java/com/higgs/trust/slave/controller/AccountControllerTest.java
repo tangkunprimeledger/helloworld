@@ -52,7 +52,7 @@ public class AccountControllerTest {
     public void test() throws Exception {
         String url = "http://10.200.172.97:7070/transaction/submit";
 // issue currency
-//        List<SignedTransaction> txs = makeCurrencyTxs();
+      // List<SignedTransaction> txs = makeCurrencyTxs();
         //open account
         List<SignedTransaction> txs = makeOpenAccountTxs();
         // transfer
@@ -146,7 +146,7 @@ public class AccountControllerTest {
     private List<SignedTransaction> makeOpenAccountTxs() throws Exception {
         List<SignedTransaction> txs = new ArrayList<>();
         List<Action> actions = new ArrayList<>();
-        Action action = TestDataMaker.makeOpenAccountAction("chao", FundDirectionEnum.CREDIT);
+        Action action = TestDataMaker.makeOpenAccountAction("chao", FundDirectionEnum.DEBIT);
         actions.add(action);
 
         JSONObject bizModel = new JSONObject();

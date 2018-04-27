@@ -37,8 +37,8 @@ public class TestDataMaker {
         action.setType(ActionTypeEnum.OPEN_ACCOUNT);
         action.setIndex(0);
         action.setAccountNo(accountNo);
-        action.setChainOwner("chain_owner");
-        action.setDataOwner("rs-test1");
+        action.setChainOwner("TRUST");
+        action.setDataOwner("TRUST-NODE97");
         action.setCurrency("CNY");
         action.setFundDirection(fundDirectionEnum);
         return action;

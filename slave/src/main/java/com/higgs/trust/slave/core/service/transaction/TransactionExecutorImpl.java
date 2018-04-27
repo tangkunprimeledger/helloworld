@@ -99,7 +99,7 @@ import org.springframework.transaction.support.TransactionTemplate;
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
         }
 
-        log.info("[persist]is end");
+        log.info("[persist]tail  end");
         return receipt;
     }
 

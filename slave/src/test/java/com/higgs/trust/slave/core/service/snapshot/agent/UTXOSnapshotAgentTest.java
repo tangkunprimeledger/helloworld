@@ -1,10 +1,17 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.parser.ParserConfig;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.utxo.UTXOStatusEnum;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -13,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class UTXOSnapshotAgentTest extends BaseTest {
+public class UTXOSnapshotAgentTest {
     @Autowired
     private UTXOSnapshotAgent utxoSnapshotAgent;
     @Autowired
@@ -23,6 +30,26 @@ public class UTXOSnapshotAgentTest extends BaseTest {
         System.out.println("queryTxOut :" + utxoSnapshotAgent.queryUTXO("123", 0, 0));
 
 
+    }
+
+    @Test
+    public  void  testJson(){
+      //  System.setProperty("spring.config.location", "classpath:test-application.json");
+        //JSON auto detect class type
+        ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
+        //JSON不做循环引用检测
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
+        //JSON输出NULL属性
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteMapNullValue.getMask();
+        //toJSONString的时候对一级key进行按照字母排序
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.SortField.getMask();
+        //toJSONString的时候对嵌套结果进行按照字母排序
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
+        //toJSONString的时候记录Class的name
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
+        String jsonStr ="[{\"coreTx\":{\"actionList\":[{\"chainOwner\":\"TRUST\",\"dataOwner\":\"TRUST-NODE97\",\"identity\":\"lingChao1524754278113\",\"index\":0,\"type\":\"CREATE_DATA_IDENTITY\"}],\"bizModel\":{\"data\":{\"$ref\":\"$[0].coreTx.actionList[0]\"}},\"lockTime\":1524754278127,\"policyId\":\"test-policy-1\",\"sender\":\"TRUST-NODE97\",\"txId\":\"tx_id_CREATE_DATA_IDENTITY_0_1524754278126\",\"version\":\"1.0.0\"},\"signatureList\":[\"drvx6HPqQoCt71Cwshtx9zA1YBXf2oyMBZmLnw+XbVG/5ayQ01EXeFc6ydy1CVeAzbH2duWVoCZ6jatH28D6gL8vzOsK32+g2vGdAfwCCeQ0DZq9qwAaDAt/fx/bQPDOk9Q+fjq1is6aYJQmh5m+GaAtriVqOcMB1sJQ+lY/IVs=\",\"D4f2RrSavGRY5bnUScLQ8PzNrVtyHjbE/E+3/aRDtNL0cKQhS6aBBdzW8qhGsGk9OncRYPxvVxqV40JvgW166LWRvMkp6nXPMFHXNzPhAYBirQv0XREy8tYza9hWtnUNTsMUQvNNlZIK1CHENrJxdBpdGmkLVgOpmSiiDWQj1hs=\"]}]";
+              //  JSONObject json = JSON.parseArray(jsonStr);
+        System.out.println();
     }
 
     @Test

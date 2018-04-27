@@ -62,7 +62,7 @@ public class DataIdentityService {
         //validate idempotent
         DataIdentity dataIdentity = dataIdentityHandler.getDataIdentity(dataIdentityAction.getIdentity());
         if (null != dataIdentity) {
-            log.error("DataIdentity idempotent exception ");
+            log.error("DataIdentity：{} idempotent exception for identity:{}", dataIdentity, dataIdentityAction.getIdentity());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
 
