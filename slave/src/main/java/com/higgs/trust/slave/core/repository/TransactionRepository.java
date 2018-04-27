@@ -95,14 +95,16 @@ import java.util.List;
             po.setSignDatas(JSON.toJSONString(tx.getSignatureList()));
             txPOs.add(po);
             List<Action> actions = coreTx.getActionList();
-            for(Action action : actions){
-                ActionPO actionPO = new ActionPO();
-                actionPO.setTxId(coreTx.getTxId());
-                actionPO.setType(action.getType().getCode());
-                actionPO.setIndex(action.getIndex());
-                actionPO.setCreateTime(new Date());
-                actionPO.setData(JSON.toJSONString(action));
-                actionPOs.add(actionPO);
+            if(!CollectionUtils.isEmpty(actions)){
+                for(Action action : actions){
+                    ActionPO actionPO = new ActionPO();
+                    actionPO.setTxId(coreTx.getTxId());
+                    actionPO.setType(action.getType().getCode());
+                    actionPO.setIndex(action.getIndex());
+                    actionPO.setCreateTime(new Date());
+                    actionPO.setData(JSON.toJSONString(action));
+                    actionPOs.add(actionPO);
+                }
             }
         }
         try {
@@ -111,10 +113,12 @@ import java.util.List;
                 log.error("[batchSaveTransaction]batch insert txs has eror");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
-            r = actionDao.batchInsert(actionPOs);
-            if(r != actionPOs.size()){
-                log.error("[batchSaveTransaction]batch insert action has eror");
-                throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
+            if(!CollectionUtils.isEmpty(actionPOs)){
+                r = actionDao.batchInsert(actionPOs);
+                if(r != actionPOs.size()){
+                    log.error("[batchSaveTransaction]batch insert action has eror");
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
+                }
             }
         }catch (DuplicateKeyException e){
             log.error("[batchSaveTransaction] is idempotent", e);

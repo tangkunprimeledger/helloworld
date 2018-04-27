@@ -1,8 +1,11 @@
 package com.higgs.trust.slave.dao.pack;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.utils.SignUtils;
-import com.higgs.trust.slave.IntegrateBaseTest;
+import com.higgs.trust.slave.BaseTest;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.dao.po.pack.PendingTransactionPO;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -23,7 +26,7 @@ import java.util.*;
  * @date 2018/4/14
  *
  */
-public class PendingTransactionDaoTest extends IntegrateBaseTest {
+public class PendingTransactionDaoTest extends BaseTest {
 
     @Autowired
     private PendingTransactionDao pendingTransactionDao;
@@ -40,11 +43,11 @@ public class PendingTransactionDaoTest extends IntegrateBaseTest {
 
     @BeforeMethod public void setUp() throws Exception {
         pendingTransactionPO = new PendingTransactionPO();
-        pendingTransactionPO.setTxId("pending-tx-test-4");
+        pendingTransactionPO.setTxId("pending-tx-test-1");
         pendingTransactionPO.setStatus(PendingTxStatusEnum.INIT.getCode());
 
         signedTransaction = initTx();
-        pendingTransactionPO.setTxData(signedTransaction);
+        pendingTransactionPO.setTxData(JSON.toJSONString(signedTransaction));
 //        pendingTransactionPO.setTxData(null);
     }
 
@@ -54,6 +57,8 @@ public class PendingTransactionDaoTest extends IntegrateBaseTest {
         RegisterPolicy registerPolicy = new RegisterPolicy();
         registerPolicy.setPolicyId("test-policy-1");
         registerPolicy.setPolicyName("测试注册policy-1");
+        registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
+        registerPolicy.setIndex(0);
 
         Set<String> rsIds = new HashSet<>();
         rsIds.add("rs-test1");
@@ -63,11 +68,11 @@ public class PendingTransactionDaoTest extends IntegrateBaseTest {
         List<Action> registerPolicyList = new ArrayList<>();
         registerPolicyList.add(registerPolicy);
 
-        coreTx1.setTxId("pending-tx-test-4");
+        coreTx1.setTxId("pending-tx-test-1");
         coreTx1.setActionList(registerPolicyList);
         coreTx1.setLockTime(new Date());
-        coreTx1.setBizModel(null);
-        coreTx1.setVersion("1.0.0");
+        coreTx1.setBizModel(new JSONObject());
+        coreTx1.setVersion(VersionEnum.V1.getCode());
         coreTx1.setPolicyId("000000");
 
         String sign1 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey1);
@@ -91,7 +96,7 @@ public class PendingTransactionDaoTest extends IntegrateBaseTest {
     @Test public void queryByStatus() {
         List<PendingTransactionPO> poList = pendingTransactionDao.queryByStatus(PendingTxStatusEnum.INIT.getCode(), 20);
         poList.forEach(pendingTx -> {
-            SignedTransaction signedTx = (SignedTransaction)pendingTx.getTxData();
+            SignedTransaction signedTx = JSON.parseObject(pendingTx.getTxData(), SignedTransaction.class);
             System.out.println(signedTx);
 
         });
@@ -101,8 +106,8 @@ public class PendingTransactionDaoTest extends IntegrateBaseTest {
     }
 
     @Test public void queryByTxId() {
-        PendingTransactionPO po = pendingTransactionDao.queryByTxId("pending-tx-test-0");
-        SignedTransaction signedTx = (SignedTransaction)po.getTxData();
+        PendingTransactionPO po = pendingTransactionDao.queryByTxId("pending-tx-test-1");
+        SignedTransaction signedTx = JSON.parseObject(po.getTxData(), SignedTransaction.class);
 
         System.out.println(signedTx);
     }

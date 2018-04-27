@@ -103,7 +103,7 @@ public class PendingTxRepositoryTest extends BaseTest {
     }
 
     @Test public void getTransactionsByStatus() {
-        List<SignedTransaction> signedTransactionList = pendingTxRepository.getTransactionsByStatus(PendingTxStatusEnum.INIT.getCode(), 4);
+        List<SignedTransaction> signedTransactionList = pendingTxRepository.getTransactionsByStatus(PendingTxStatusEnum.PACKAGED.getCode(), 4);
 
         Assert.assertEquals(4, signedTransactionList.size());
 
