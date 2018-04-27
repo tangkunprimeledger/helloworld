@@ -62,9 +62,9 @@ import java.util.*;
     @Autowired private ContractCreationHandler contractCreationHandler;
     @Autowired private ContractInvokeHandler contractInvokeHandler;
     @Autowired private AccountContractBindingHandler accountContractBindingHandler;
-    @Autowired AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
-    @Autowired AccountContractBindingRepository accountContractBindingRepository;
-    @Autowired StandardSmartContract standardSmartContract;
+    @Autowired private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
+    @Autowired private AccountContractBindingRepository accountContractBindingRepository;
+    @Autowired private StandardSmartContract standardSmartContract;
 
     @Override public void afterPropertiesSet() throws Exception {
         txProcessorHolder.registVerisonProcessor(VersionEnum.V1, this);
@@ -133,11 +133,11 @@ import java.util.*;
             case CREATE_DATA_IDENTITY:
                 return dataIdentityActionHandler;
             case BIND_CONTRACT:
-                return contractCreationHandler;
+                return accountContractBindingHandler;
             case TRIGGER_CONTRACT:
                 return contractInvokeHandler;
             case REGISTER_CONTRACT:
-                return accountContractBindingHandler;
+                return contractCreationHandler;
             default:
         }
         log.error("[getHandlerByType] action type not exist exception, actionType={}", JSON.toJSONString(typeEnum));

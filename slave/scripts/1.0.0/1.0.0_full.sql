@@ -116,7 +116,7 @@ CREATE TABLE
 IF NOT EXISTS `pending_transaction` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`tx_id` VARCHAR (64) NOT NULL COMMENT 'transaction id',
-	`tx_data` BLOB NOT NULL COMMENT 'transaction data',
+	`tx_data` VARCHAR (4096) NOT NULL COMMENT 'transaction data',
 	`status` VARCHAR (32) NOT NULL COMMENT 'transaction handle status',
 	`height` BIGINT (20) DEFAULT NULL COMMENT 'block height',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
@@ -308,4 +308,4 @@ IF NOT EXISTS `tx_out` (
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create tx out';
 
 INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)
-VALUE (1, '1.0.0', '0', 'bc54b592c468ad6d437a0993ccca5b9d44217276dc4b782e0d5d6d491ebea86e', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', now(3), now(3));
+VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3));
