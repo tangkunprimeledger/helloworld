@@ -78,7 +78,7 @@ import java.util.List;
     public void batchSaveTransaction(Long blockHeight,Date blockTime,List<SignedTransaction> txs, List<TransactionReceipt> txReceipts){
         log.info("[TransactionRepository.batchSaveTransaction] is start");
         if(CollectionUtils.isEmpty(txs)){
-            log.warn("[batchSaveTransaction] txs is empty");
+            log.info("[batchSaveTransaction] txs is empty");
             return;
         }
         List<TransactionPO> txPOs = new ArrayList<>();
@@ -102,7 +102,7 @@ import java.util.List;
         try {
             int r = transactionDao.batchInsert(txPOs);
             if(r != txPOs.size()){
-                log.error("[batchSaveTransaction]batch insert txs has eror");
+                log.error("[batchSaveTransaction]batch insert txs has error");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
         }catch (DuplicateKeyException e){

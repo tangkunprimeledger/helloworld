@@ -271,7 +271,7 @@ IF NOT EXISTS `transaction` (
 	`version` VARCHAR (32) NOT NULL COMMENT 'the version create the tx',
 	`block_height` BIGINT (20) NOT NULL COMMENT 'the block height create the tx',
 	`block_time` datetime (3) NOT NULL COMMENT 'the create time create the block for the tx',
-	`action_datas` varchar(4096) DEFAULT NULL COMMENT 'the action list by json',
+	`action_datas` MEDIUMTEXT DEFAULT NULL COMMENT 'the action list by json',
 	`sign_datas` varchar(4096) DEFAULT NULL COMMENT 'the signatures by json',
 	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
