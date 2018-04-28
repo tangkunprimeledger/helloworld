@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class UTXOSnapshotAgentTest {
+public class UTXOSnapshotAgentTest extends  BaseTest{
     @Autowired
     private UTXOSnapshotAgent utxoSnapshotAgent;
     @Autowired
@@ -54,6 +54,8 @@ public class UTXOSnapshotAgentTest {
 
     @Test
     public void testBatchInsertTxOut() throws Exception {
+        JSONObject state = new JSONObject();
+        state.put("amount", "100");
         List<TxOutPO> txOutPOList = new ArrayList<>();
         TxOutPO txOutPO = new TxOutPO();
         txOutPO.setTxId("123123"+ new Date());
@@ -61,7 +63,7 @@ public class UTXOSnapshotAgentTest {
         txOutPO.setActionIndex(0);
         txOutPO.setIndex(0);
         txOutPO.setContract("12321"+ new Date());
-        txOutPO.setState("12321");
+        txOutPO.setState(state.toJSONString());
         txOutPO.setStateClass("afdaf");
         txOutPO.setIdentity("12312312");
 
@@ -71,7 +73,7 @@ public class UTXOSnapshotAgentTest {
         txOutPO1.setActionIndex(0);
         txOutPO1.setIndex(1);
         txOutPO1.setContract("12321");
-        txOutPO1.setState("12321");
+        txOutPO1.setState(state.toJSONString());
         txOutPO1.setStateClass("afdaf");
         txOutPO1.setIdentity("12312312");
 
@@ -81,7 +83,7 @@ public class UTXOSnapshotAgentTest {
         txOutPO2.setActionIndex(0);
         txOutPO2.setIndex(2);
         txOutPO2.setContract("12321");
-        txOutPO2.setState("12321");
+        txOutPO2.setState(state.toJSONString());
         txOutPO2.setStateClass("afdaf");
         txOutPO2.setIdentity("12312312");
 

@@ -52,7 +52,7 @@ public class AccountControllerTest {
     public void test() throws Exception {
         String url = "http://10.200.172.97:7070/transaction/submit";
 // issue currency
-      // List<SignedTransaction> txs = makeCurrencyTxs();
+    //  List<SignedTransaction> txs = makeCurrencyTxs();
         //open account
         List<SignedTransaction> txs = makeOpenAccountTxs();
         // transfer
