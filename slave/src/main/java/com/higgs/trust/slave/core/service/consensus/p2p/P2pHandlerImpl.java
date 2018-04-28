@@ -147,14 +147,13 @@ import java.util.concurrent.ExecutorService;
         try {
             // store the validated header result
             blockService.storeTempHeader(header, headerType);
-            commit.close();
         } catch (SlaveException e) {
             //idempotent as success, other exceptions make the consensus layer retry
             if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {
                 throw e;
             }
         }
-
+        commit.close();
         //async start process, multi thread and lock
         try {
             packageThreadPool.execute(new AsyncPackageProcess(header.getHeight()));
