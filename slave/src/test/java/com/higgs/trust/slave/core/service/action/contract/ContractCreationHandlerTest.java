@@ -23,7 +23,7 @@ public class ContractCreationHandlerTest extends IntegrateBaseTest {
 
     private ContractCreationAction createContractCreationAction() {
         ContractCreationAction action = new ContractCreationAction();
-        action.setCode("function main() { db.put('name', 'trust'); print('>>>>>>>> hello world 11<<<<<<<<<'); }");
+        action.setCode("function main() { db.put('name', 'higgs trust'); print('>>>>>>>> hello world <<<<<<<<<'); }");
         action.setLanguage("javascript");
         action.setVersion("1");
         action.setIndex(0);
@@ -35,9 +35,9 @@ public class ContractCreationHandlerTest extends IntegrateBaseTest {
     public void testValidate() throws Exception {
         Action action = createContractCreationAction();
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER)
+                .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
-                .setTxId("0000000000")
+                .setTxId("00000000000")
                 .signature(ActionDataMockBuilder.privateKey1)
                 .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
@@ -55,9 +55,9 @@ public class ContractCreationHandlerTest extends IntegrateBaseTest {
     public void testPersist() throws Exception {
         Action action = createContractCreationAction();
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER)
+                .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
-                .setTxId("0000000000")
+                .setTxId("tx_00000000001")
                 .signature(ActionDataMockBuilder.privateKey1)
                 .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()

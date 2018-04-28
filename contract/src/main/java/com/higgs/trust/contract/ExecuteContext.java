@@ -1,13 +1,15 @@
 package com.higgs.trust.contract;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 
 /**
  * contract runtime Context
  *
  * @author duhongming
  */
-public final class ExecuteContext {
+@Slf4j public final class ExecuteContext {
 
     private static final ThreadLocal<ExecuteContext> currentExceuteContext = new ThreadLocal();
 
@@ -85,5 +87,19 @@ public final class ExecuteContext {
 
     public void setValidateStage(boolean validateStage) {
         this.validateStage = validateStage;
+    }
+
+    public static void require(Object self, Boolean isRequired, String message){
+        if (!isRequired) {
+            throw new SmartContractException(message);
+        }
+    }
+
+    public static void exception(Object self, String message) {
+        throw new SmartContractException(message);
+    }
+
+    public static Logger getLogger() {
+        return log;
     }
 }
