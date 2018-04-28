@@ -58,7 +58,7 @@ import java.util.List;
             if (latestHeight == null) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
             }
-            if (latestHeight < currentHeight + properties.getThreshold()) {
+            if (latestHeight <= currentHeight + properties.getThreshold()) {
                 nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
                 return;
             }
@@ -104,7 +104,7 @@ import java.util.List;
         //批量拉取header并验证
         do {
             headers = blockSyncService.getHeaders(startHeight, size);
-            if (headers.isEmpty()) {
+            if (headers == null || headers.isEmpty()) {
                 continue;
             }
             if (log.isDebugEnabled()) {
@@ -167,7 +167,7 @@ import java.util.List;
         boolean blockValidated = false;
         do {
             blocks = blockSyncService.getBlocks(startHeight, size);
-            if (blocks.isEmpty()) {
+            if (blocks == null || blocks.isEmpty()) {
                 continue;
             }
             blockValidated = blockSyncService.validatingBlocks(preHeader.getBlockHash(), blocks);
@@ -176,7 +176,7 @@ import java.util.List;
             }
         } while (!blockValidated && ++tryTimes < properties.getTryTimes());
         if (!blockValidated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED);
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
         }
         return blocks;
     }
