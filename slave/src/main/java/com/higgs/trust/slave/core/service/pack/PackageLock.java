@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
@@ -82,6 +83,14 @@ import org.springframework.transaction.support.TransactionTemplate;
                 // if package status is not 'RECEIVED', return directly.
                 if (PackageStatusEnum.RECEIVED != pack.getStatus()) {
                     return;
+                }
+
+                if (Constant.GENESIS_HEIGHT != height - 1) {
+                    Package lastPack = packageRepository.load(height - 1);
+                    if (PackageStatusEnum.PERSISTED != lastPack.getStatus()) {
+                        log.info("last package is not persisted, waiting!");
+                        throw new SlaveException(SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH);
+                    }
                 }
 
                 // check next package height

@@ -45,31 +45,19 @@ import java.util.Map;
 
     @Test(dataProvider = "defaultProvider", priority = 1) public void paramValidate(Map<?, ?> param){
         log.info("[paramValidate]param:{}", param);
-        IssueCurrency issueCurrency = getBodyData(param,IssueCurrency.class);
-        if(issueCurrency!=null) {
-            issueCurrency.setType(ActionTypeEnum.ISSUE_CURRENCY);
-            issueCurrency.setIndex(1);
-        }
+        IssueCurrency issueCurrency = getAction(param,IssueCurrency.class,ActionTypeEnum.ISSUE_CURRENCY);
         executeActionHandler(param,issueCurrencyHandler,issueCurrency);
     }
 
     @Test(dataProvider = "defaultProvider", priority = 2) public void testRegular(Map<?, ?> param){
         log.info("[testRegular]param:{}", param);
-        IssueCurrency issueCurrency = getBodyData(param,IssueCurrency.class);
-        if(issueCurrency!=null) {
-            issueCurrency.setType(ActionTypeEnum.ISSUE_CURRENCY);
-            issueCurrency.setIndex(1);
-        }
+        IssueCurrency issueCurrency = getAction(param,IssueCurrency.class,ActionTypeEnum.ISSUE_CURRENCY);
         executeActionHandler(param,issueCurrencyHandler,issueCurrency);
     }
 
     @Test(dataProvider = "defaultProvider", priority = 3) public void testException(Map<?, ?> param){
         log.info("[testException]param:{}", param);
-        IssueCurrency issueCurrency = getBodyData(param,IssueCurrency.class);
-        if(issueCurrency!=null) {
-            issueCurrency.setType(ActionTypeEnum.ISSUE_CURRENCY);
-            issueCurrency.setIndex(1);
-        }
+        IssueCurrency issueCurrency = getAction(param,IssueCurrency.class,ActionTypeEnum.ISSUE_CURRENCY);
         executeActionHandler(param,issueCurrencyHandler,issueCurrency);
     }
 

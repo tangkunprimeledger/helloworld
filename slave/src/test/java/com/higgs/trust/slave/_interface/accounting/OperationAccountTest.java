@@ -3,6 +3,7 @@ package com.higgs.trust.slave._interface.accounting;
 import com.higgs.trust.slave._interface.InterfaceCommonTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.core.service.action.account.AccountOperationHandler;
+import com.higgs.trust.slave.model.bo.account.AccountOperation;
 import com.higgs.trust.slave.model.bo.account.IssueCurrency;
 import com.higgs.trust.tester.dbunit.DataBaseManager;
 import lombok.extern.slf4j.Slf4j;
@@ -34,32 +35,20 @@ import java.util.Map;
 
     @Test(dataProvider = "defaultProvider", priority = 1) public void paramValidate(Map<?, ?> param){
         log.info("[paramValidate]param:{}", param);
-        IssueCurrency issueCurrency = getBodyData(param,IssueCurrency.class);
-        if(issueCurrency!=null) {
-            issueCurrency.setType(ActionTypeEnum.ISSUE_CURRENCY);
-            issueCurrency.setIndex(1);
-        }
-        executeActionHandler(param,accountOperationHandler,issueCurrency);
+        AccountOperation action = getAction(param,AccountOperation.class,ActionTypeEnum.ACCOUNTING);
+        executeActionHandler(param,accountOperationHandler,action);
     }
 
     @Test(dataProvider = "defaultProvider", priority = 2) public void testRegular(Map<?, ?> param){
         log.info("[testRegular]param:{}", param);
-        IssueCurrency issueCurrency = getBodyData(param,IssueCurrency.class);
-        if(issueCurrency!=null) {
-            issueCurrency.setType(ActionTypeEnum.ISSUE_CURRENCY);
-            issueCurrency.setIndex(1);
-        }
-        executeActionHandler(param,accountOperationHandler,issueCurrency);
+        AccountOperation action = getAction(param,AccountOperation.class,ActionTypeEnum.ACCOUNTING);
+        executeActionHandler(param,accountOperationHandler,action);
     }
 
     @Test(dataProvider = "defaultProvider", priority = 3) public void testException(Map<?, ?> param){
         log.info("[testException]param:{}", param);
-        IssueCurrency issueCurrency = getBodyData(param,IssueCurrency.class);
-        if(issueCurrency!=null) {
-            issueCurrency.setType(ActionTypeEnum.ISSUE_CURRENCY);
-            issueCurrency.setIndex(1);
-        }
-        executeActionHandler(param,accountOperationHandler,issueCurrency);
+        AccountOperation action = getAction(param,AccountOperation.class,ActionTypeEnum.ACCOUNTING);
+        executeActionHandler(param,accountOperationHandler,action);
     }
 
 }

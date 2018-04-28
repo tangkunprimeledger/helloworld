@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.JsonFileUtil;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.account.TestDataMaker;
@@ -103,8 +104,26 @@ import static org.testng.Assert.assertEquals;
         if (StringUtils.isEmpty(body) || "null".equals(body)) {
             return null;
         }
-        body = body.replaceAll(JSONObject.class.getCanonicalName(), clazz.getCanonicalName());
+        body = body.replaceAll("\"@type\":\"com.alibaba.fastjson.JSONObject\",","");
         return JSON.parseObject(body, clazz);
+    }
+
+    /**
+     * 从body中获取action对象实体,同时设置actionType
+
+     * @param param
+     * @param actionTypeEnum
+     * @return
+     */
+    protected <T> T getAction(Map<?, ?> param, Class<T> clazz,ActionTypeEnum actionTypeEnum) {
+        T data = getBodyData(param,clazz);
+        if(data == null){
+            return null;
+        }
+        Action action = (Action)data;
+        action.setType(actionTypeEnum);
+        action.setIndex(1);
+        return (T)action;
     }
 
     /**
