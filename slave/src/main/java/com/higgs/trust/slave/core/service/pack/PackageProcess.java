@@ -35,19 +35,20 @@ import org.springframework.stereotype.Service;
             packageFSM(pack);
         } catch (SlaveException e) {
             if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR == e.getCode()
-                || SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT == e.getCode()) {
+                || SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT == e.getCode()
+                || SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH == e.getCode()) {
                 return;
             }
 
             log.error("slave exception. ", e);
         } catch (Throwable e) {
-          if (e instanceof CannotAcquireLockException) {
-              log.warn("cannot acquire package lock, height={}", height);
-          } else {
-              log.error("package process exception. ", e);
-              //terminal recycle
-              throw e;
-          }
+            if (e instanceof CannotAcquireLockException) {
+                log.warn("cannot acquire package lock, height={}", height);
+            } else {
+                log.error("package process exception. ", e);
+                //terminal recycle
+                throw e;
+            }
         }
     }
 
