@@ -1,11 +1,13 @@
 package com.higgs.trust.slave.core.service.snapshot;
 
+
 import cn.primeledger.stability.log.TraceMonitor;
 import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.service.snapshot.agent.*;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * memory SnapshotServiceImpl
@@ -22,7 +26,9 @@ import java.util.concurrent.TimeUnit;
  * @author lingchao
  * @create 2018年04月09日22:09
  */
-@Slf4j @Service public class SnapshotServiceImpl implements SnapshotService {
+@Slf4j
+@Service
+public class SnapshotServiceImpl implements SnapshotService {
     /**
      * tag whether  the snapshot is in  transaction
      */
@@ -32,78 +38,99 @@ import java.util.concurrent.TimeUnit;
 
     private static final int REFRESH_TIME = 365;
 
-    @Autowired private UTXOSnapshotAgent utxoSnapshotAgent;
+    private Lock lock = new ReentrantLock();
 
-    @Autowired private MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
+    @Autowired
+    private UTXOSnapshotAgent utxoSnapshotAgent;
 
-    @Autowired private ManageSnapshotAgent manageSnapshotAgent;
+    @Autowired
+    private MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
 
-    @Autowired private DataIdentitySnapshotAgent dataIdentitySnapshotAgent;
+    @Autowired
+    private ManageSnapshotAgent manageSnapshotAgent;
 
-    @Autowired private AccountSnapshotAgent accountSnapshotAgent;
+    @Autowired
+    private DataIdentitySnapshotAgent dataIdentitySnapshotAgent;
 
-    @Autowired private FreezeSnapshotAgent freezeSnapshotAgent;
+    @Autowired
+    private AccountSnapshotAgent accountSnapshotAgent;
 
-    @Autowired private ContractSnapshotAgent contractSnapshotAgent;
+    @Autowired
+    private FreezeSnapshotAgent freezeSnapshotAgent;
 
-    @Autowired private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
+    @Autowired
+    private ContractSnapshotAgent contractSnapshotAgent;
 
-    @Autowired private ContractStateSnapshotAgent contractStateSnapshotAgent;
+    @Autowired
+    private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
+
+    @Autowired
+    private ContractStateSnapshotAgent contractStateSnapshotAgent;
 
     /**
      * cache  for package
      */
-    private ConcurrentHashMap<SnapshotBizKeyEnum, LoadingCache<String, Object>> packageCache =
-        new ConcurrentHashMap<>();
+    private ConcurrentHashMap<SnapshotBizKeyEnum, LoadingCache<String, Object>> packageCache = new ConcurrentHashMap<>();
     /**
      * cache for transaction
      */
-    private ConcurrentHashMap<SnapshotBizKeyEnum, ConcurrentHashMap<String, Object>> txCache =
-        new ConcurrentHashMap<>();
+    private ConcurrentHashMap<SnapshotBizKeyEnum, ConcurrentHashMap<String, Object>> txCache = new ConcurrentHashMap<>();
 
     /**
      * register all the caches to packageSnapshot,only run when the application is starting.
      */
-    @Override public void init() {
-        log.info("Start to register cache loader");
-        log.info(("Clear txCache and packageCache first"));
-        txCache.clear();
-        packageCache.clear();
-        //register UTXO cache loader
-        log.info("Register UTXO cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.UTXO, utxoSnapshotAgent);
+    @Override
+    public void init() {
+        log.info("Start to register cache loader, get lock for it");
+        boolean isLocked = lock.tryLock();
+        if (!isLocked) {
+            log.info("Get lock failed, stop to init snapshot!");
+            return;
+        }
+        try {
+            log.info("Get lock success, go init cache!");
+            log.info(("Clear txCache and packageCache first"));
+            txCache.clear();
+            packageCache.clear();
+            //register UTXO cache loader
+            log.info("Register UTXO cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.UTXO, utxoSnapshotAgent);
 
-        //register MERKLE_TREE cache loader
-        log.info("Register MERKLE_TREE cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.MERKLE_TREE, merkleTreeSnapshotAgent);
+            //register MERKLE_TREE cache loader
+            log.info("Register MERKLE_TREE cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.MERKLE_TREE, merkleTreeSnapshotAgent);
 
-        //register MANAGE cache loader
-        log.info("Register MANAGE cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.MANAGE, manageSnapshotAgent);
+            //register MANAGE cache loader
+            log.info("Register MANAGE cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.MANAGE, manageSnapshotAgent);
 
-        //register DATA_IDENTITY cache loader
-        log.info("Register DATA_IDENTITY cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.DATA_IDENTITY, dataIdentitySnapshotAgent);
+            //register DATA_IDENTITY cache loader
+            log.info("Register DATA_IDENTITY cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.DATA_IDENTITY, dataIdentitySnapshotAgent);
 
-        //register ACCOUNT cache loader
-        log.info("Register ACCOUNT cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT, accountSnapshotAgent);
+            //register ACCOUNT cache loader
+            log.info("Register ACCOUNT cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT, accountSnapshotAgent);
 
-        //register ACCOUNT cache loader
-        log.info("Register FREEZE cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.FREEZE, freezeSnapshotAgent);
+            //register ACCOUNT cache loader
+            log.info("Register FREEZE cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.FREEZE, freezeSnapshotAgent);
 
-        //register CONTRACT cache loader
-        log.info("Register CONTRACT cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.CONTRACT, contractSnapshotAgent);
+            //register CONTRACT cache loader
+            log.info("Register CONTRACT cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.CONTRACT, contractSnapshotAgent);
 
-        //register ACCOUNT_CONTRACT_BIND cache loader
-        log.info("Register ACCOUNT_CONTRACT_BIND cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, accountContractBindingSnapshotAgent);
+            //register ACCOUNT_CONTRACT_BIND cache loader
+            log.info("Register ACCOUNT_CONTRACT_BIND cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, accountContractBindingSnapshotAgent);
 
-        //register CONTRACT STATE cache loader
-        log.info("Register CONTRACT STATE cache loader");
-        registerBizLoadingCache(SnapshotBizKeyEnum.CONTRACT_SATE, contractStateSnapshotAgent);
+            //register CONTRACT STATE cache loader
+            log.info("Register CONTRACT STATE cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.CONTRACT_SATE, contractStateSnapshotAgent);
+        } finally {
+            log.info("unlock lock  for init snapshot");
+            lock.unlock();
+        }
 
         log.info("End of register cache loader");
     }
@@ -111,21 +138,33 @@ import java.util.concurrent.TimeUnit;
     /**
      * start the snapshot transaction.Tag isOpenTransaction to be true.
      */
-    @Override public void startTransaction() {
-        log.info("Start to start snapshot transaction");
+    @Override
+    public void startTransaction() {
+        log.info("Start to start snapshot transaction, and get lock for it");
 
-        //check whether snapshot transaction has been started.
-        if (true == isOpenTransaction) {
-            log.info("The snapshot transaction has been started ! Please don't start it again!");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_HAS_STARTED_EXCEPTION);
+        boolean isLocked = lock.tryLock();
+        if (!isLocked) {
+            log.info("Get lock failed, stop to startTransaction!");
+            return;
         }
+        try {
+            log.info("Get lock success, go to start transaction!");
+            //check whether snapshot transaction has been started.
+            if (isOpenTransaction) {
+                log.info("The snapshot transaction has been started ! Please don't start it again!");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_HAS_STARTED_EXCEPTION);
+            }
 
-        //clear txCache
-        log.info("Clear txCache");
-        txCache.clear();
+            //clear txCache
+            log.info("Clear txCache");
+            txCache.clear();
 
-        //sign it as in transaction
-        isOpenTransaction = true;
+            //sign it as in transaction
+            isOpenTransaction = true;
+        } finally {
+            log.info("unlock lock for startTransaction");
+            lock.unlock();
+        }
 
         log.info("End of start snapshot transaction");
     }
@@ -133,31 +172,42 @@ import java.util.concurrent.TimeUnit;
     /**
      * clear packageCache and txCache
      */
-    @TraceMonitor(printParameters = true) @Override public void destroy() {
+    @TraceMonitor(printParameters = true) @Override
+    public void destroy() {
+
         //TODO  是否加个标记，不允许其他操作
         log.info("Start to destroy snapshot");
-
-        //close transaction first,if not there may be some data put into cache after clearing data
-        closeTransaction();
-
-        //clear txCache
-        log.info("Clear txCache");
-        txCache.clear();
-
-        //check whether there is data in the packageCache
-        log.info("Clear packageCache");
-        if (packageCache.isEmpty()) {
-            log.error("There snapshot have not init");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NOT_INIT_EXCEPTION);
+        boolean isLocked = lock.tryLock();
+        if (!isLocked) {
+            log.info("Get lock failed, stop to destroy snapshot!");
+            return;
         }
+        try {
+            log.info("Get lock success, go to destroy snapshot!");
+            //close transaction first,if not there may be some data put into cache after clearing data
+            closeTransaction();
 
-        //clear packageCache inner cache
-        for (Map.Entry<SnapshotBizKeyEnum, LoadingCache<String, Object>> outerEntry : packageCache.entrySet()) {
-            log.info("Clear snapshotBizKeyEnum: {}  from  packageCache", outerEntry.getKey());
-            LoadingCache<String, Object> innerMap = outerEntry.getValue();
-            innerMap.invalidateAll();
+            //clear txCache
+            log.info("Clear txCache");
+            txCache.clear();
+
+            //check whether there is data in the packageCache
+            log.info("Clear packageCache");
+            if (packageCache.isEmpty()) {
+                log.error("There snapshot have not init");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NOT_INIT_EXCEPTION);
+            }
+
+            //clear packageCache inner cache
+            for (Map.Entry<SnapshotBizKeyEnum, LoadingCache<String, Object>> outerEntry : packageCache.entrySet()) {
+                log.info("Clear snapshotBizKeyEnum: {}  from  packageCache", outerEntry.getKey());
+                LoadingCache<String, Object> innerMap = outerEntry.getValue();
+                innerMap.invalidateAll();
+            }
+        } finally {
+            log.info("Unlock lock for destroy snapshot!");
+            lock.unlock();
         }
-
         log.info("End of destroy snapshot");
     }
 
@@ -169,13 +219,19 @@ import java.util.concurrent.TimeUnit;
      * @param key2
      * @return
      */
-    @Override public Object get(SnapshotBizKeyEnum key1, Object key2) {
+    @Override
+    public Object get(SnapshotBizKeyEnum key1, Object key2) {
         log.info("Start to get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
+        //Check null
+        if (null == key1 || null == key2) {
+            log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}", key1, key2);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION, "Put data into snapshot key1 and key2 can not be null!");
+        }
+
         //get data from txCache
         Object value = getDataFromTxCache(key1, key2);
         if (null != value) {
-            log.info("Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is in the txCache",
-                key1, key2, value);
+            log.info("Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is in the txCache", key1, key2, value);
             return transferValue(value);
         }
 
@@ -195,17 +251,22 @@ import java.util.concurrent.TimeUnit;
      * @param key1
      * @param key2
      */
-    @Override public void put(SnapshotBizKeyEnum key1, Object key2, Object value) {
+    @Override
+    public void put(SnapshotBizKeyEnum key1, Object key2, Object value) {
         log.info("Start to put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
+        //Check null
+        if (null == key1 || null == key2) {
+            log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}", key1, key2);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION);
+        }
 
         if (null == value) {
             log.error("The put data cant't be null");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION,
-                "The value putted into snapshot  is null pointed exception");
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION, "The value putted into snapshot  is null pointed exception");
         }
 
         //check whether snapshot transaction has been started.
-        if (false == isOpenTransaction) {
+        if (!isOpenTransaction) {
             log.info("The snapshot transaction has not been started ! So we can't deal with put data operation");
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
         }
@@ -224,34 +285,45 @@ import java.util.concurrent.TimeUnit;
         log.info("End of put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
     }
 
+
     /**
      * 1. copy the txCache to packageCache
      * 2.clear txCache
      * 3.tag the isOpenTransaction to be false
      */
-    @Override public void commit() {
+    @TraceMonitor(printParameters = true) @Override
+    public void commit() {
         log.info("Start to commit");
-
-        //check whether snapshot transaction has been started.
-        if (false == isOpenTransaction) {
-            log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-        }
-
-        //close transaction first,if not there may be some data put into cache after clearing data
-        closeTransaction();
-
-        //check whether snapshot txCache is empty.
-        if (txCache.isEmpty()) {
+        boolean isLocked = lock.tryLock();
+        if (!isLocked) {
+            log.info("Get lock failed, stop to commit!");
             return;
         }
+        try {
+            log.info("Get lock success, go to commit!");
+            //check whether snapshot transaction has been started.
+            if (!isOpenTransaction) {
+                log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
+            }
 
-        //copy data from txCache to packageCache
-        copyDataToPackageCache();
+            //close transaction first,if not there may be some data put into cache after clearing data
+            closeTransaction();
 
-        //clear txCache
-        txCache.clear();
+            //check whether snapshot txCache is empty.
+            if (txCache.isEmpty()) {
+                return;
+            }
 
+            //copy data from txCache to packageCache
+            copyDataToPackageCache();
+
+            //clear txCache
+            txCache.clear();
+        } finally {
+            log.info("Unlock lock for commit!");
+            lock.unlock();
+        }
         log.info("End of commit ");
     }
 
@@ -259,23 +331,34 @@ import java.util.concurrent.TimeUnit;
      * 1.clear txCache
      * 2.tag the isOpenTransaction to be false
      */
-    @Override public void rollback() {
+    @Override
+    public void rollback() {
         log.info("Start to rollback");
-
-        //check whether snapshot transaction has been started.
-        if (false == isOpenTransaction) {
-            log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
+        boolean isLocked = lock.tryLock();
+        if (!isLocked) {
+            log.info("Get lock failed, stop to commit!");
+            return;
         }
+        try {
+            log.info("Get lock success, go to rollback!");
+            //check whether snapshot transaction has been started.
+            if (!isOpenTransaction) {
+                log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
+            }
 
-        //close transaction,if not there may be some data put into cache after clearing data
-        closeTransaction();
+            //close transaction,if not there may be some data put into cache after clearing data
+            closeTransaction();
 
-        //clear txCache
-        txCache.clear();
-
+            //clear txCache
+            txCache.clear();
+        } finally {
+            log.info("Unlock lock for rollback!");
+            lock.unlock();
+        }
         log.info("End of rollback");
     }
+
 
     /**
      * 1.register  loading cache method  to guavaCache
@@ -284,18 +367,15 @@ import java.util.concurrent.TimeUnit;
     //TODO lingchao make MAXIMUN_SIZE  config in the config file
     private void registerBizLoadingCache(SnapshotBizKeyEnum snapshotBizKeyEnum, CacheLoader cacheLoader) {
         log.info("Start to register core loadingCache to packageCache for snapshotBizKeyEnum:{}", snapshotBizKeyEnum);
-        LoadingCache<String, Object> bizCache = CacheBuilder.newBuilder().initialCapacity(10).maximumSize(MAXIMUN_SIZE)
-            .refreshAfterWrite(REFRESH_TIME, TimeUnit.DAYS)
-            .build(new com.google.common.cache.CacheLoader<String, Object>() {
-                @Override public Object load(String bo) throws Exception {
-                    log.info(
-                        "There is no data for  bizKey： {}  by snapshotBizKeyEnum： {} in packageCache ,try to get data from DB",
-                        bo, snapshotBizKeyEnum);
-                    //just want to get Clazz
-                    Object object = JSON.parse(bo);
-                    return cacheLoader.query(object);
-                }
-            });
+        LoadingCache<String, Object> bizCache = CacheBuilder.newBuilder().initialCapacity(10).maximumSize(MAXIMUN_SIZE).refreshAfterWrite(REFRESH_TIME, TimeUnit.DAYS).build(new com.google.common.cache.CacheLoader<String, Object>() {
+            @Override
+            public Object load(String bo) throws Exception {
+                log.info("There is no data for  bizKey： {}  by snapshotBizKeyEnum： {} in packageCache ,try to get data from DB", bo, snapshotBizKeyEnum);
+                //just want to get Clazz
+                Object object = JSON.parse(bo);
+                return cacheLoader.query(object);
+            }
+        });
         packageCache.put(snapshotBizKeyEnum, bizCache);
         log.info("End of register core loadingCache to packageCache for snapshotBizKeyEnum:{}", snapshotBizKeyEnum);
     }
@@ -307,6 +387,7 @@ import java.util.concurrent.TimeUnit;
         log.info("Close the snapshot transaction");
         isOpenTransaction = false;
     }
+
 
     /**
      * get data from txCache
@@ -351,18 +432,13 @@ import java.util.concurrent.TimeUnit;
         LoadingCache<String, Object> innerMap = packageCache.get(key1);
         try {
             value = innerMap.get(innerKey);
-            log.info(
-                "Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is from  the packageCache",
-                key1, innerKey, value);
+            log.info("Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is from  the packageCache", key1, innerKey, value);
         } catch (Throwable e) {
             if (!(e instanceof com.google.common.cache.CacheLoader.InvalidCacheLoadException)) {
-                log.error(
-                    "There is  exception happened to query data for  snapshotBizKeyEnum: {} , innerKey : {}  in  snapshot and db",
-                    key1, innerKey, e);
+                log.error("There is  exception happened to query data for  snapshotBizKeyEnum: {} , innerKey : {}  in  snapshot and db", key1, innerKey, e);
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_QUERY_EXCEPTION, e);
             }
-            log.info("There is no data for  snapshotBizKeyEnum: {} , innerKey : {}  in  snapshot and db", key1,
-                innerKey);
+            log.info("There is no data for  snapshotBizKeyEnum: {} , innerKey : {}  in  snapshot and db", key1, innerKey);
         }
         return value;
     }
@@ -385,8 +461,7 @@ import java.util.concurrent.TimeUnit;
 
             //check whether inner map is empty.
             if (outerEntry.getValue().isEmpty()) {
-                log.info("The inner map for Snapshot core key :  {}  is empty. jump to next core key",
-                    snapshotBizKeyEnum);
+                log.info("The inner map for Snapshot core key :  {}  is empty. jump to next core key", snapshotBizKeyEnum);
                 continue;
             }
 
@@ -395,13 +470,11 @@ import java.util.concurrent.TimeUnit;
             for (Map.Entry<String, Object> innerEntry : innerMap.entrySet()) {
                 //check  cache size
                 if (innerCache.size() >= MAXIMUN_SIZE) {
-                    log.error("Cache size  : {} for key:{} in packageCache is equal or bigger than {}!",
-                        innerCache.size(), snapshotBizKeyEnum, MAXIMUN_SIZE);
+                    log.error("Cache size  : {} for key:{} in packageCache is equal or bigger than {}!", innerCache.size(), snapshotBizKeyEnum, MAXIMUN_SIZE);
                     //TODO lingchao 加监控
                     throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_CACHE_SIZE_NOT_ENOUGH_EXCEPTION);
                 }
-                log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into packageCache", snapshotBizKeyEnum,
-                    innerEntry.getKey(), innerEntry.getValue());
+                log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into packageCache", snapshotBizKeyEnum, innerEntry.getKey(), innerEntry.getValue());
                 innerCache.put(innerEntry.getKey(), innerEntry.getValue());
             }
         }
