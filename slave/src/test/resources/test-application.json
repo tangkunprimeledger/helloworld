@@ -91,6 +91,6 @@
     }
   },
   "logging": {
-    "config": "classpath:logback-prod.xml"
+    "config": "classpath:logback.xml"
   }
 }
