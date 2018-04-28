@@ -1,5 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
+import com.higgs.trust.consensus.common.ConsensusAssert;
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.SendCommandStatistics;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +83,7 @@ public class SendStorage {
 
     public synchronized String submit(ValidCommandWrap validCommandWrap) {
         try {
+            ConsensusAssert.notNull(validCommandWrap);
             HTreeMap<String, SendCommandStatistics> submitMap = getSubmitMap(sendDB);
             SendCommandStatistics sendCommandStatistics = SendCommandStatistics.of(validCommandWrap);
             String key;
@@ -105,6 +107,7 @@ public class SendStorage {
     public synchronized void addSendQueue(String key) {
         sendQueueLock.lock();
         try {
+            ConsensusAssert.notNull(key);
             BTreeMap<Long, String> sendQueue = getSendQueue(sendDB);
             Map.Entry<Long, String> lastEntry = sendQueue.lastEntry();
             if (null == lastEntry) {
@@ -146,6 +149,7 @@ public class SendStorage {
 
     public void addDelayQueue(String key) {
         try {
+            ConsensusAssert.notNull(key);
             BTreeMap<Long, String> delayQueue = getSendDelayQueue();
 
             Map.Entry<Long, String> lastEntry = delayQueue.lastEntry();
@@ -206,6 +210,8 @@ public class SendStorage {
 
     public void updateSendCommandStatics(String key, SendCommandStatistics sendCommandStatistics) {
         try {
+            ConsensusAssert.notNull(key);
+            ConsensusAssert.notNull(sendCommandStatistics);
             getSubmitMap(sendDB).put(key, sendCommandStatistics);
             sendDB.commit();
         } catch (Exception e) {
@@ -217,6 +223,7 @@ public class SendStorage {
 
     public void addGCSet(String key) {
         try {
+            ConsensusAssert.notNull(key);
             NavigableSet<String> gcSet = getGCSet(sendDB);
             gcSet.add(key);
             sendDB.commit();

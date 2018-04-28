@@ -1,6 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.api.controller;
 
-import cn.primeledger.stability.trace.PrimeTraceUtil;
+import com.higgs.trust.consensus.common.TraceUtils;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +30,7 @@ public class P2pConsensusController implements ApplicationContextAware {
     @RequestMapping(value = "/receive_command", method = RequestMethod.POST)
     @ResponseBody
     public String receiveCommand(@RequestBody ValidCommandWrap validCommandWrap) {
-        Span span = null;
-        if(null != validCommandWrap.getTraceId()){
-            span = PrimeTraceUtil.openNewTracer(validCommandWrap.getTraceId());
-        }
-
+       Span span = TraceUtils.createSpan(validCommandWrap.getTraceId());
        try {
            ValidConsensus validConsensus = validConsensusRegistry.get(validCommandWrap.getCommandClass());
            if (null == validConsensus) {
@@ -43,9 +39,7 @@ public class P2pConsensusController implements ApplicationContextAware {
            validConsensus.receive(validCommandWrap);
            return "SUCCESS";
        }finally {
-            if(null != span){
-                PrimeTraceUtil.closeSpan(span);
-            }
+           TraceUtils.closeSpan(span);
        }
     }
 

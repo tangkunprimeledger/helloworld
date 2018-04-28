@@ -1,5 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
+import com.higgs.trust.consensus.common.ConsensusAssert;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommandStatistics;
@@ -99,6 +100,7 @@ public class ReceiveStorage {
             HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
             ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.create(validCommand));
 
+            receiveCommandStatistics.setTraceId(validCommandWrap.getTraceId());
             if(receiveCommandStatistics.getFromNodeNameSet().contains(validCommandWrap.getFromNodeName())){
                 log.info("duplicate fromNodeName {} in fromNodeNameSet {}", validCommandWrap.getFromNodeName(), receiveCommandStatistics.getFromNodeNameSet());
                 return receiveCommandStatistics;
@@ -122,6 +124,8 @@ public class ReceiveStorage {
      */
     public void updateReceiveCommandStatistics(String key, ReceiveCommandStatistics receiveCommandStatistics) {
         try {
+            ConsensusAssert.notNull(key);
+            ConsensusAssert.notNull(receiveCommandStatistics);
             HTreeMap<String, ReceiveCommandStatistics> commandStatisticsMap = getReceiveStatisticsHTreeMap();
             commandStatisticsMap.put(key, receiveCommandStatistics);
             receiveDB.commit();
@@ -139,6 +143,7 @@ public class ReceiveStorage {
      */
     public ReceiveCommandStatistics getReceiveCommandStatistics(String key) {
         try {
+            ConsensusAssert.notNull(key);
             HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
             return receiveStatisticsMap.get(key);
         } catch (Exception e) {
@@ -154,6 +159,7 @@ public class ReceiveStorage {
     public void addApplyQueue(String key) {
         applyQueueLock.lock();
         try {
+            ConsensusAssert.notNull(key);
             BTreeMap<Long, String> applyQueue = getReceiveApplyQueue();
 
             Map.Entry<Long, String> lastEntry = applyQueue.lastEntry();
@@ -194,6 +200,7 @@ public class ReceiveStorage {
 
     public void addDelayQueue(String key) {
         try {
+            ConsensusAssert.notNull(key);
             BTreeMap<Long, String> delayQueue = getReceiveDelayQueue();
 
             Map.Entry<Long, String> lastEntry = delayQueue.lastEntry();
@@ -250,6 +257,7 @@ public class ReceiveStorage {
 
     public void addGCSet(String key) {
         try {
+
             NavigableSet<String> gcSet = getReceiveGCSet();
             gcSet.add(key);
             receiveDB.commit();

@@ -1,6 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.exchange;
 
-import cn.primeledger.stability.trace.PrimeTraceUtil;
+import com.higgs.trust.consensus.common.TraceUtils;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.storage.ReceiveStorage;
@@ -117,6 +117,17 @@ public class ConsensusContext {
                 continue;
             }
             SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
+
+            if(null == sendCommandStatistics){
+                log.warn("key {} sendCommandStatistics is null", key);
+                continue;
+            }
+
+            if(sendCommandStatistics.isSend()){
+                log.warn("sendCommandStatistics {} has been send", sendCommandStatistics);
+                continue;
+            }
+
             log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
 
             try {
@@ -134,11 +145,6 @@ public class ConsensusContext {
                     }
                     sendExecutorService.submit(()->{
                         ValidCommandWrap validCommandWrap = sendCommandStatistics.getValidCommandWrap();
-                        //trace
-                        Span span = null;
-                        if(null != validCommandWrap.getTraceId()){
-                            span = PrimeTraceUtil.openNewTracer(validCommandWrap.getTraceId());
-                        }
                         try{
                             String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             if (StringUtils.equals("SUCCESS", result)) {
@@ -148,9 +154,6 @@ public class ConsensusContext {
                             log.info("result is {}", result);
                         }finally {
                             countDownLatch.countDown();
-                            if(null != span){
-                                PrimeTraceUtil.closeSpan(span);
-                            }
                         }
                     });
                 }
@@ -159,6 +162,8 @@ public class ConsensusContext {
                 //gc
                 if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
                     sendStorage.addGCSet(key);
+                    sendCommandStatistics.setSend();
+                    sendStorage.updateSendCommandStatics(key,sendCommandStatistics);
                 } else {
                     sendStorage.addDelayQueue(key);
                 }
@@ -173,20 +178,23 @@ public class ConsensusContext {
 
     private void apply() {
         while (true) {
-            String key = null;
+            String key = receiveStorage.takeFromApplyQueue();
+            if (null == key) {
+                log.warn("key is null");
+                continue;
+            }
+            ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.getReceiveCommandStatistics(key);
+            Span span = null;
             try {
-                key = receiveStorage.takeFromApplyQueue();
-                if (null == key) {
-                    log.warn("key is null");
-                    continue;
-                }
-                ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.getReceiveCommandStatistics(key);
 
-                log.info("schedule apply receiveCommandStatistics {}", receiveCommandStatistics);
                 if (null == receiveCommandStatistics) {
                     log.warn("receiveCommandStatistics is null, key is {}", key);
                     continue;
                 }
+
+                span = TraceUtils.createSpan(receiveCommandStatistics.getTraceId());
+
+                log.info("schedule apply receiveCommandStatistics {}", receiveCommandStatistics);
 
                 if (receiveCommandStatistics.isClosed()) {
                     log.warn("receiveCommandStatistics {} is closed, key is {}", receiveCommandStatistics, key);
@@ -210,6 +218,8 @@ public class ConsensusContext {
                     log.info("apply exception, add key {} to delay queue", key);
                     receiveStorage.addDelayQueue(key);
                 }
+            }finally {
+                TraceUtils.closeSpan(span);
             }
         }
     }

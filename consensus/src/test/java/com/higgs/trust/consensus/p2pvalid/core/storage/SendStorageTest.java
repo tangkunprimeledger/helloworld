@@ -6,7 +6,8 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class SendStorageTest {
 
@@ -39,6 +40,11 @@ public class SendStorageTest {
         assertEquals(key, sendStorage.takeFromSendQueue());
     }
 
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testAddSendQueueException(){
+        sendStorage.addSendQueue(null);
+    }
+
     @Test
     public void testAddAndTransFromDelayQueue(){
         String key = sendStorage.submit(validCommandWrap);
@@ -47,10 +53,25 @@ public class SendStorageTest {
     }
 
     @Test
+    public void testAddDelayQueueException(){
+        sendStorage.addDelayQueue(null);
+    }
+
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testUpdateSendCommandStatisticsException(){
+        sendStorage.updateSendCommandStatics(null,null);
+    }
+
+    @Test
     public void testGC() throws InterruptedException {
         String key = sendStorage.submit(validCommandWrap);
         sendStorage.addGCSet(key);
         Thread.sleep(5000);
+    }
+
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testGCException() {
+        sendStorage.addGCSet(null);
     }
 
     @AfterTest

@@ -21,24 +21,17 @@
   "spring": {
     "application": {
       "name": "TRUST-myNode"
+    }
+  },
+  "copycat": {
+    "server": {
+      "address": "127.0.0.1:9800",
+      "cluster": "127.0.0.1:9800",
+      "stateMachineClass": "com.higgs.trust.consensus.bft.example.StringStateMachine",
+      "logDir": "D:/temp/raft"
     },
-    "consensus": {
-      "p2p": {
-        "data": {
-          "dir": "./data/p2p"
-        }
-      }
-    },
-    "copycat": {
-      "server": {
-        "address": "127.0.0.1:8800",
-        "cluster": "127.0.0.1:8800",
-        "stateMachineClass": "com.higgs.trust.consensus.bft.example.StringStateMachine",
-        "logDir": "D:/temp/raft"
-      },
-      "client": {
-        "server": "127.0.0.1:8800"
-      }
+    "client": {
+      "server": "127.0.0.1:9800"
     }
   }
 }
