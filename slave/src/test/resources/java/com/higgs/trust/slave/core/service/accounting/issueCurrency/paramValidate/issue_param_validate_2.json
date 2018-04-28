@@ -1,0 +1,10 @@
+{
+  "测试ID": 0,
+  "body": {
+    "currencyName":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "remark":"test currency"
+  },
+  "type": "",
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "发币方法,[币种名称][超长]测试"
+}
