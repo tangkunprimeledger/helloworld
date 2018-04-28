@@ -5,6 +5,7 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.FailoverExecption;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
@@ -24,6 +25,7 @@ import java.util.List;
 
     @Autowired private FailoverProperties properties;
     @Autowired private SyncPackageCache cache;
+    @Autowired private BlockRepository blockRepository;
     @Autowired private BlockService blockService;
     @Autowired private BlockSyncService blockSyncService;
     @Autowired private PackageService packageService;
@@ -39,7 +41,7 @@ import java.util.List;
         log.info("auto sync starting ...");
         cache.clean();
         try {
-            Long currentHeight = blockService.getMaxHeight();
+            Long currentHeight = blockRepository.getMaxHeight();
             Long latestHeight = null;
             int tryTimes = 3;
             do {
@@ -62,7 +64,7 @@ import java.util.List;
             }
             do {
                 sync(currentHeight + 1, properties.getHeaderStep());
-                currentHeight = blockService.getMaxHeight();
+                currentHeight = blockRepository.getMaxHeight();
                 //如果没有package接收，根据latestHeight判断是否在阈值内，否则，根据cache判断
             } while (cache.getMinHeight() == SyncPackageCache.INIT_HEIGHT ?
                 latestHeight > currentHeight + properties.getThreshold() : currentHeight + 1 < cache.getMinHeight());
@@ -90,7 +92,7 @@ import java.util.List;
         }
         log.info("starting to sync the block, start height:{}, size:{}", startHeight, size);
         Assert.isTrue(size > 0, "the size of sync block must > 0");
-        long currentHeight = blockService.getMaxHeight();
+        long currentHeight = blockRepository.getMaxHeight();
         log.info("local current block height:{}", currentHeight);
         if (currentHeight != startHeight - 1) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_START_HEIGHT_ERROR);
@@ -98,7 +100,7 @@ import java.util.List;
         int tryTimes = 0;
         List<BlockHeader> headers = null;
         Boolean headerValidated = false;
-        BlockHeader currentHeader = blockService.getHeader(currentHeight);
+        BlockHeader currentHeader = blockRepository.getBlockHeader(currentHeight);
         //批量拉取header并验证
         do {
             headers = blockSyncService.getHeaders(startHeight, size);
@@ -121,7 +123,7 @@ import java.util.List;
             }
         } while ((headerValidated == null || !headerValidated) && ++tryTimes < properties.getTryTimes());
         if (headerValidated == null || !headerValidated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_HEADERS_FAILED);
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED);
         }
         int headerSize = headers.size();
         int startIndex = 0;
@@ -174,7 +176,7 @@ import java.util.List;
             }
         } while (!blockValidated && ++tryTimes < properties.getTryTimes());
         if (!blockValidated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_HEADERS_FAILED);
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED);
         }
         return blocks;
     }

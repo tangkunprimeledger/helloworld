@@ -38,6 +38,7 @@ class failover {
     @Command
     def block(InvocationContext context, @Required @Argument String height) {
         BeanFactory beans = context.attributes['spring.beanfactory']
+        def nodeState = beans.getBean(NodeState.class)
         if (!nodeState.isState(NodeStateEnum.ArtificialSync)) {
             out.println("Node state is $nodeState.state, not allowed sync block")
             return

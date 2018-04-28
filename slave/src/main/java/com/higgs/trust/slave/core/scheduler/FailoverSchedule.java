@@ -93,7 +93,7 @@ import java.util.List;
             }
         } while (!validated && ++tryTimes < properties.getTryTimes());
         if (!validated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_BLOCKS_FAILED);
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
         }
         if (!checkAndInsert(height)) {
             return false;
@@ -132,7 +132,8 @@ import java.util.List;
         }
         Long minHeight =
             packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode()));
-        if (minHeight == null) {
+        Long maxHeight = blockService.getMaxHeight();
+        if (minHeight == null || height <= maxHeight) {
             return false;
         }
         Package pack = packageRepository.load(height);
