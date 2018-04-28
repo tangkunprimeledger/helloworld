@@ -74,7 +74,7 @@ import org.springframework.transaction.support.TransactionTemplate;
     }
 
     @Override public TransactionReceipt persist(TransactionData transactionData) {
-        log.info("[persist]is start");
+        log.info("[TransactionExecutorImpl.persist]is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
 
         TransactionReceipt receipt = new TransactionReceipt();
@@ -84,28 +84,28 @@ import org.springframework.transaction.support.TransactionTemplate;
             execute(transactionData, TxProcessTypeEnum.PERSIST);
             receipt.setResult(true);
         } catch (SmartContractException e) {
-            log.error("[persist]has SmartContractException");
+            log.error("[TransactionExecutorImpl.persist]has SmartContractException");
             //should retry package process
             throw e;
         } catch (MerkleException e) {
-            log.error("[persist]has MerkleException");
+            log.error("[TransactionExecutorImpl.persist]has MerkleException");
             //should retry package process
             throw e;
         } catch (SlaveException e) {
-            log.error("[persist]has error", e);
+            log.error("[TransactionExecutorImpl.persist]has error", e);
             receipt.setErrorCode(e.getCode().getCode());
         } catch (Throwable e) {
-            log.error("[persist]has error", e);
+            log.error("[TransactionExecutorImpl.persist]has error", e);
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
         }
 
-        log.info("[persist]is end");
+        log.info("[TransactionExecutorImpl.persist]is end");
         return receipt;
     }
 
     private void execute(TransactionData transactionData, TxProcessTypeEnum processTypeEnum) {
+        log.info("[TransactionExecutorImpl.execute]is start");
         SignedTransaction signedTransaction = transactionData.getCurrentTransaction();
-
         //param validation
         if (null == signedTransaction || null == signedTransaction.getCoreTx()) {
             log.error("SignedTransaction is invalid, ", signedTransaction);
@@ -137,5 +137,6 @@ import org.springframework.transaction.support.TransactionTemplate;
                 processor.process(transactionData, processTypeEnum);
             }
         });
+        log.info("[TransactionExecutorImpl.execute]is end");
     }
 }

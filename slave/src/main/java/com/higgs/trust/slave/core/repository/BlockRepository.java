@@ -7,10 +7,7 @@ import com.higgs.trust.slave.dao.block.BlockDao;
 import com.higgs.trust.slave.dao.block.BlockHeaderDao;
 import com.higgs.trust.slave.dao.po.block.BlockHeaderPO;
 import com.higgs.trust.slave.dao.po.block.BlockPO;
-import com.higgs.trust.slave.model.bo.Block;
-import com.higgs.trust.slave.model.bo.BlockHeader;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.bo.StateRootHash;
+import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.convert.BlockConvert;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -190,7 +187,7 @@ import java.util.List;
         try {
             blockHeaderDao.add(blockHeaderPO);
         } catch (DuplicateKeyException e) {
-            log.error("[saveBlockHeader] is idempotent");
+            log.error("[saveTempHeader] is idempotent blockHeight:{}",header.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
         }
     }
@@ -213,8 +210,10 @@ import java.util.List;
      * save to db
      *
      * @param block
+     * @param txReceipts
      */
-    public void saveBlock(Block block) {
+    public void saveBlock(Block block, List<TransactionReceipt> txReceipts) {
+        log.info("[BlockRepository.saveBlock] is start");
         BlockHeader blockHeader = block.getBlockHeader();
         BlockPO blockPO = new BlockPO();
         blockPO.setHeight(blockHeader.getHeight());
@@ -235,11 +234,12 @@ import java.util.List;
         try {
             blockDao.add(blockPO);
         } catch (DuplicateKeyException e) {
-            log.error("[saveBlock] is idempotent", e);
+            log.error("[saveBlock] is idempotent blockHeight:{}", blockHeader.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
         //save transactions
-        transactionRepository.batchSaveTransaction(blockHeader.getHeight(), blockTime, txs);
+        transactionRepository.batchSaveTransaction(blockHeader.getHeight(), blockTime, txs,txReceipts);
+        log.info("[BlockRepository.saveBlock] is end");
     }
 
 }

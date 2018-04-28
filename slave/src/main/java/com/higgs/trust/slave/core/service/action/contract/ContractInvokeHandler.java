@@ -38,10 +38,12 @@ import org.springframework.util.StringUtils;
     }
 
     @Override public void validate(ActionData actionData) {
+        log.debug("start invoke contract on validate process");
         process(actionData, TxProcessTypeEnum.VALIDATE);
     }
 
     @Override public void persist(ActionData actionData) {
+        log.debug("start invoke contract on persist process");
         process(actionData, TxProcessTypeEnum.PERSIST);
     }
 }

@@ -52,5 +52,4 @@ public interface MerkleService {
      */
     MerkleTree queryMerkleTree(MerkleTypeEnum treeType);
 
-    void truncateMerkle();
 }

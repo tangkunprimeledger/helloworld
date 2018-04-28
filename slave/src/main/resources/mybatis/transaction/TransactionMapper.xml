@@ -12,10 +12,13 @@
         <result column="block_time" property="blockTime"/>
         <result column="sender" property="sender"/>
         <result column="sign_datas" property="signDatas"/>
+        <result column="action_datas" property="actionDatas"/>
+        <result column="execute_result" property="executeResult"/>
+        <result column="error_code" property="errorCode"/>
     </resultMap>
     <!-- transaction table all fields -->
     <sql id="baseColumnList">
-        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas
+        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas,action_datas
     </sql>
     <!-- query  conditions -->
     <sql id="baseWhereClause">
@@ -53,8 +56,8 @@
     <!-- insert row -->
     <insert id="add" parameterType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
         insert into
-        transaction(tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas)
-        values(#{txId},#{bizModel},#{policyId},#{lockTime},#{version},#{blockHeight},#{blockTime},#{sender},#{signDatas})
+        transaction(tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas,action_datas,execute_result,error_code)
+        values(#{txId},#{bizModel},#{policyId},#{lockTime},#{version},#{blockHeight},#{blockTime},#{sender},#{signDatas},#{actionDatas},#{executeResult},#{errorCode})
     </insert>
     <!-- 列表总数 -->
     <select id="queryByCount" resultType="java.lang.Integer"
@@ -81,10 +84,10 @@
     <!--batch insert-->
     <insert id ="batchInsert" parameterType="java.util.List" >
         insert into transaction
-        (tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas)
+        (tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas,action_datas,execute_result,error_code)
         values
          <foreach collection ="list" item="item" index= "index" separator =",">
-         (#{item.txId},#{item.bizModel},#{item.policyId},#{item.lockTime},#{item.version},#{item.blockHeight},#{item.blockTime},#{item.sender},#{item.signDatas})
+         (#{item.txId},#{item.bizModel},#{item.policyId},#{item.lockTime},#{item.version},#{item.blockHeight},#{item.blockTime},#{item.sender},#{item.signDatas},#{item.actionDatas},#{item.executeResult},#{item.errorCode})
          </foreach>
     </insert>
     <!--query by block height-->
@@ -93,5 +96,15 @@
         <include refid="baseColumnList"/>
         from transaction
        where block_height=#{blockHeight}
+    </select>
+    <!--query by tx ids-->
+    <select id="queryByTxIds" resultType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
+      select
+      <include refid="baseColumnList"/>
+      from transaction
+      where tx_id in
+        <foreach collection="txIds" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </select>
 </mapper>

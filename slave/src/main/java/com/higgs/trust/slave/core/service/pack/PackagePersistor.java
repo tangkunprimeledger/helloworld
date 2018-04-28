@@ -40,6 +40,7 @@ import java.util.List;
      * @param packageData
      */
     public void persisting(PackageData packageData) {
+        log.info("[PackagePersistor.persisting] is start");
         Package pack = packageData.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (CollectionUtils.isEmpty(txs)) {
@@ -72,7 +73,7 @@ import java.util.List;
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                     //persist block
-                    blockService.persistBlock(block);
+                    blockService.persistBlock(block,txReceipts);
                 }
             });
         } catch (Throwable e) {
@@ -82,6 +83,7 @@ import java.util.List;
             //snapshot transactions should be destroy
             snapshotService.destroy();
         }
+        log.info("[PackagePersistor.persisting] is end");
     }
 
     /**
@@ -91,8 +93,9 @@ import java.util.List;
      * @return
      */
     private List<TransactionReceipt> executeTransactions(PackageData packageData) {
+        log.info("[PackagePersistor.executeTransactions] is end");
         List<SignedTransaction> txs = packageData.getCurrentPackage().getSignedTxList();
-        List<SignedTransaction> dbTxs = transactionRepository.queryTransactions(packageData.getCurrentBlock().getBlockHeader().getHeight());
+        List<String> dbTxs = transactionRepository.queryTxIds(txs);
         List<SignedTransaction> persistedDatas = new ArrayList<>();
         List<TransactionReceipt> txReceipts = new ArrayList<>(txs.size());
         //loop validate each transaction
@@ -108,20 +111,22 @@ import java.util.List;
             txReceipts.add(receipt);
         }
         packageData.getCurrentBlock().setSignedTxList(persistedDatas);
+        log.info("[PackagePersistor.executeTransactions] is end");
         return txReceipts;
     }
     /**
      * check tx is exist by txId
+     *
      * @param txs
      * @param txId
      * @return
      */
-    private boolean hasTx(List<SignedTransaction> txs,String txId){
+    private boolean hasTx(List<String> txs,String txId){
         if(CollectionUtils.isEmpty(txs)){
             return false;
         }
-        for(SignedTransaction tx : txs){
-            if(StringUtils.equals(txId,tx.getCoreTx().getTxId())){
+        for(String mTxId : txs){
+            if(StringUtils.equals(txId,mTxId)){
                 return true;
             }
         }
@@ -140,6 +145,7 @@ import java.util.List;
          * 3.通过pendingState触发业务RS的callback操作
          * 4.提交事务
          */
+        log.info("[PackagePersistor.persisted] is start");
         //gets the block header from db
         BlockHeader consensHeader =
             blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE);
@@ -161,6 +167,7 @@ import java.util.List;
         }
 
         //TODO:call RS business
+        log.info("[PackagePersistor.persisted] is end");
     }
 }
 

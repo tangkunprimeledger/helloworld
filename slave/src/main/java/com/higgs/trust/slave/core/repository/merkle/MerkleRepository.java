@@ -139,10 +139,4 @@ import java.util.List;
         merkleNode.setTreeType(MerkleTypeEnum.getBizTypeEnumBycode(merkleNodePO.getTreeType()));
         return merkleNode;
     }
-
-
-    public void truncateMerkle(){
-        merkleDao.trucateMerkleNode();
-        merkleDao.trucateMerkleTree();
-    }
 }

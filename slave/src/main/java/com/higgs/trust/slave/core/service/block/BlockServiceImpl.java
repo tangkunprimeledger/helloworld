@@ -37,6 +37,7 @@ import java.util.List;
 
     @Override public BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
         List<TransactionReceipt> txReceipts) {
+        log.info("[BlockServiceImpl.buildHeader] is start");
         //query max height from db
         Long maxHeight = getMaxHeight();
         if (!packageData.getCurrentPackage().getHeight().equals(maxHeight + 1L)) {
@@ -67,6 +68,7 @@ import java.util.List;
         //to calculate the hash of block header
         String blockHash = buildBlockHash(blockHeader);
         blockHeader.setBlockHash(blockHash);
+        log.info("[BlockServiceImpl.buildHeader] is end");
         return blockHeader;
     }
 
@@ -111,8 +113,8 @@ import java.util.List;
         return block;
     }
 
-    @Override public void persistBlock(Block block) {
-        blockRepository.saveBlock(block);
+    @Override public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
+        blockRepository.saveBlock(block,txReceipts);
     }
 
     @Override public boolean compareBlockHeader(BlockHeader header1, BlockHeader header2) {

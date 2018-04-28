@@ -38,4 +38,12 @@ import java.util.List;
      * @return
      */
     List<TransactionPO> queryByBlockHeight(@Param("blockHeight") Long blockHeight);
+
+    /**
+     * query by tx ids
+     *
+     * @param txIds
+     * @return
+     */
+    List<TransactionPO> queryByTxIds(@Param("txIds") List<String> txIds);
 }

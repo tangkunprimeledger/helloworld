@@ -133,11 +133,7 @@ import java.util.Set;
             return maxPackHeight;
         }
 
-        if (maxBlockHeight.compareTo(maxPackHeight) > 0) {
-            log.error("block height exception");
-            //TODO 添加告警
-            return null;
-        } else {
+        if (maxBlockHeight.compareTo(maxPackHeight) < 0) {
             /**
              * get minPackHeight and count which status equals 'INIT' or 'RECEIVED' or 'SUBMIT_CONSENSUS_SUCCESS'
              */
@@ -151,16 +147,16 @@ import java.util.Set;
                 add(PackageStatusEnum.PERSISTING.getCode());
                 add(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
             }};
-            Long minPackHeight = packageRepository.getMinHeight(statusSet);
-            Long count = packageRepository.count(statusSet);
+            long minPackHeight = packageRepository.getMinHeight(statusSet);
+            long count = packageRepository.count(statusSet);
 
-            if (null != minPackHeight && null != count) {
-                Long result = count + minPackHeight - 1;
+            if (0 != minPackHeight && 0 != count) {
+                long result = count + minPackHeight - 1;
 
                 /**
                  * check block height is continuous or not
                  */
-                if (result.compareTo(maxPackHeight) != 0 || minPackHeight.compareTo(maxBlockHeight + 1) != 0) {
+                if (result != maxPackHeight || minPackHeight != (maxBlockHeight + 1)) {
                     log.error("block height is not continuous");
                     //TODO 添加告警
                     return null;
@@ -184,9 +180,13 @@ import java.util.Set;
     @Override public void receive(Package pack) {
         log.info("receive package from consensus, pack: {}", pack);
 
-        if (null == pack || CollectionUtils.isEmpty(pack.getSignedTxList()) || !checkTransactions(
-            pack.getSignedTxList())) {
+        if (null == pack || CollectionUtils.isEmpty(pack.getSignedTxList())) {
             log.error("package is null or transaction list is empty.");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        if (!checkTransactions(pack.getSignedTxList())) {
+            log.error("transaction list is not order by txId asc.");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 

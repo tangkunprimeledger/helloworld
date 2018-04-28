@@ -1,0 +1,10 @@
+{
+  "测试ID": 0,
+  "body": {
+    "currencyName":"BUC",
+    "remark":"test currency"
+  },
+  "type": "",
+  "assert": "currency is already exists[SLAVE_ACCOUNT_CURRENCY_ALREADY_EXISTS_ERROR]",
+  "comment": "发币方法,[币种名称][重复]测试"
+}

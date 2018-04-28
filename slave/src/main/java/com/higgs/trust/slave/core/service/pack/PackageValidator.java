@@ -38,8 +38,8 @@ import java.util.List;
      * @param packageData
      */
     public void validating(PackageData packageData) {
+        log.info("[PackageValidator.validating] is start");
         Package pack = packageData.getCurrentPackage();
-
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (CollectionUtils.isEmpty(txs)) {
             log.error("[package.validating]the transactions in the package is empty");
@@ -62,6 +62,7 @@ import java.util.List;
             //snapshot transactions should be destory
             snapshotService.destroy();
         }
+        log.info("[PackageValidator.validating] is end");
     }
 
     /**
@@ -71,9 +72,9 @@ import java.util.List;
      * @return
      */
     private List<TransactionReceipt> executeTransactions(PackageData packageData) {
+        log.info("[PackageValidator.executeTransactions] is start");
         List<SignedTransaction> txs = packageData.getCurrentPackage().getSignedTxList();
-        List<SignedTransaction> dbTxs = transactionRepository.queryTransactions(packageData.getCurrentBlock().getBlockHeader().getHeight());
-
+        List<String> dbTxs = transactionRepository.queryTxIds(txs);
         List<SignedTransaction> validatedDatas = new ArrayList<>();
         List<TransactionReceipt> txReceipts = new ArrayList<>(txs.size());
         //loop validate each transaction
@@ -88,6 +89,7 @@ import java.util.List;
             txReceipts.add(receipt);
         }
         packageData.getCurrentBlock().setSignedTxList(validatedDatas);
+        log.info("[PackageValidator.executeTransactions] is end");
         return txReceipts;
     }
 
@@ -97,12 +99,12 @@ import java.util.List;
      * @param txId
      * @return
      */
-    private boolean hasTx(List<SignedTransaction> txs,String txId){
+    private boolean hasTx(List<String> txs,String txId){
         if(CollectionUtils.isEmpty(txs)){
             return false;
         }
-        for(SignedTransaction tx : txs){
-            if(StringUtils.equals(txId,tx.getCoreTx().getTxId())){
+        for(String mTxId : txs){
+            if(StringUtils.equals(txId,mTxId)){
                 return true;
             }
         }
@@ -122,12 +124,13 @@ import java.util.List;
          * 3.通过pendingState通知业务RS每个交易的接收结果
          * 4.提交事务
          */
+        log.info("[PackageValidator.validated] is start");
         //gets the block header from db
         BlockHeader consensHeader =
             blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
         //check hash
         if (consensHeader == null) {
-            log.error("[package.validated] consensus header of db is null blockHeight:{}", pack.getHeight());
+            log.warn("[package.validated] consensus header of db is null blockHeight:{}", pack.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
         }
         BlockHeader tempHeader = blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.TEMP_TYPE);
@@ -143,5 +146,6 @@ import java.util.List;
         }
 
         //TODO:call RS business
+        log.info("[PackageValidator.validated] is end");
     }
 }

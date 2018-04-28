@@ -79,8 +79,9 @@ public interface BlockService {
      * persist block for final result
      *
      * @param block
+     * @param txReceipts
      */
-    void persistBlock(Block block);
+    void persistBlock(Block block, List<TransactionReceipt> txReceipts);
 
     /**
      * compare the two header datas
