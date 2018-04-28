@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.pack;
 
+import cn.primeledger.stability.log.TraceMonitor;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -37,7 +38,7 @@ import java.util.List;
      *
      * @param packageData
      */
-    public void validating(PackageData packageData) {
+    @TraceMonitor(printParameters = true) public void validating(PackageData packageData) {
         log.info("[PackageValidator.validating] is start");
         Package pack = packageData.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
@@ -80,7 +81,7 @@ import java.util.List;
         //loop validate each transaction
         for (SignedTransaction tx : txs) {
             //ignore idempotent transaction
-            if(hasTx(dbTxs,tx.getCoreTx().getTxId())){
+            if (hasTx(dbTxs, tx.getCoreTx().getTxId())) {
                 continue;
             }
             packageData.setCurrentTransaction(tx);
@@ -95,16 +96,17 @@ import java.util.List;
 
     /**
      * check tx is exist by txId
+     *
      * @param txs
      * @param txId
      * @return
      */
-    private boolean hasTx(List<String> txs,String txId){
-        if(CollectionUtils.isEmpty(txs)){
+    private boolean hasTx(List<String> txs, String txId) {
+        if (CollectionUtils.isEmpty(txs)) {
             return false;
         }
-        for(String mTxId : txs){
-            if(StringUtils.equals(txId,mTxId)){
+        for (String mTxId : txs) {
+            if (StringUtils.equals(txId, mTxId)) {
                 return true;
             }
         }

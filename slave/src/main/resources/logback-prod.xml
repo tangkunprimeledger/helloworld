@@ -14,7 +14,7 @@
     <!-- 项目名称 -->
     <property name="APP_NAME" value="slave"/>​
     <!-- 日志文件目录 -->
-    <property name="LOG_PATH" value="/data/home/admin/trust/log"/>​
+    <property name="LOG_PATH" value="./log"/>​
     <!-- 归档文件保留的时间，即只保留几天前的归档文件，单位与fileNamePattern中配置的最小时间单位相同 -->
     <property name="MAX_HISTORY" value="7"/>
 
@@ -118,7 +118,7 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <Logger name="PERF" level="INFO" additivity="false">
+    <Logger name="cn.primeledger.stability.utils.PerfLogUtil" level="INFO" additivity="false">
         <appender-ref ref="PERF-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
