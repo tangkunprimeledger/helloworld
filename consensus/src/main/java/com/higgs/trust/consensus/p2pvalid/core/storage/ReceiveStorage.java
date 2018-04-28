@@ -33,9 +33,17 @@ public class ReceiveStorage {
 
     private static final String RECEIVE_GC_QUEUE = "receive_gc_queue";
 
+    private HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap;
+
+    private BTreeMap<Long, String> receiveApplyQueue;
+
+    private BTreeMap<Long, String> receiveDelayQueue;
+
+    private NavigableSet<String> gcSet;
+
     private DB receiveDB;
 
-    private ReentrantLock applyQueueLock;
+    private ReentrantLock txLock;
 
     private Condition applyQueueCondition;
 
@@ -47,8 +55,9 @@ public class ReceiveStorage {
                 .cleanerHackEnable()
                 .transactionEnable()
                 .make();
-        applyQueueLock = new ReentrantLock();
-        applyQueueCondition = applyQueueLock.newCondition();
+        txLock = new ReentrantLock();
+        applyQueueCondition = txLock.newCondition();
+        initStorageMap();
         initThreadPool();
     }
 
@@ -59,8 +68,9 @@ public class ReceiveStorage {
                 .cleanerHackEnable()
                 .transactionEnable()
                 .make();
-        applyQueueLock = new ReentrantLock();
-        applyQueueCondition = applyQueueLock.newCondition();
+        txLock = new ReentrantLock();
+        applyQueueCondition = txLock.newCondition();
+        initStorageMap();
         initThreadPool();
     }
 
@@ -70,6 +80,52 @@ public class ReceiveStorage {
 
     public static  ReceiveStorage createMemoryStorage(){
         return new ReceiveStorage();
+    }
+
+
+    public void openTx(){
+        txLock.lock();
+    }
+
+    public void closeTx(){
+        txLock.unlock();
+    }
+
+    public void commit(){
+        receiveDB.commit();
+    }
+
+    public void rollBack(){
+        receiveDB.rollback();
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private void initStorageMap(){
+        openTx();
+        try{
+            receiveStatisticsMap = receiveDB.hashMap(RECEIVE_STATISTICS_MAP)
+                    .keySerializer(Serializer.STRING)
+                    .valueSerializer(Serializer.JAVA)
+                    .createOrOpen();
+
+            receiveApplyQueue = receiveDB.treeMap(RECEIVE_APPLY_QUEUE)
+                    .keySerializer(Serializer.LONG)
+                    .valueSerializer(Serializer.JAVA)
+                    .createOrOpen();
+
+            receiveDelayQueue = receiveDB.treeMap(RECEIVE_DELAY_QUEUE)
+                    .keySerializer(Serializer.LONG)
+                    .valueSerializer(Serializer.JAVA)
+                    .createOrOpen();
+
+            gcSet = receiveDB.treeSet(RECEIVE_GC_QUEUE)
+                    .serializer(Serializer.STRING)
+                    .createOrOpen();
+            commit();
+        }finally {
+            closeTx();
+        }
     }
 
     private void initThreadPool() {
@@ -95,26 +151,18 @@ public class ReceiveStorage {
      * @return ReceiveCommandStatistics
      */
     public ReceiveCommandStatistics add(String key, ValidCommandWrap validCommandWrap) {
-        try {
-            ValidCommand<?> validCommand = validCommandWrap.getValidCommand();
-            HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
-            ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.create(validCommand));
+        ValidCommand<?> validCommand = validCommandWrap.getValidCommand();
+        ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.create(validCommand));
 
-            receiveCommandStatistics.setTraceId(validCommandWrap.getTraceId());
-            if(receiveCommandStatistics.getFromNodeNameSet().contains(validCommandWrap.getFromNodeName())){
-                log.info("duplicate fromNodeName {} in fromNodeNameSet {}", validCommandWrap.getFromNodeName(), receiveCommandStatistics.getFromNodeNameSet());
-                return receiveCommandStatistics;
-            }
-
-            receiveCommandStatistics.addFromNode(validCommandWrap.getFromNodeName());
-            receiveStatisticsMap.put(key, receiveCommandStatistics);
-            receiveDB.commit();
+        receiveCommandStatistics.setTraceId(validCommandWrap.getTraceId());
+        if(receiveCommandStatistics.getFromNodeNameSet().contains(validCommandWrap.getFromNodeName())){
+            log.info("duplicate fromNodeName {} in fromNodeNameSet {}", validCommandWrap.getFromNodeName(), receiveCommandStatistics.getFromNodeNameSet());
             return receiveCommandStatistics;
-        } catch (Exception e) {
-            receiveDB.rollback();
-            log.error("{}", e);
-            throw new RuntimeException(e);
         }
+
+        receiveCommandStatistics.addFromNode(validCommandWrap.getFromNodeName());
+        receiveStatisticsMap.put(key, receiveCommandStatistics);
+        return receiveCommandStatistics;
     }
 
     /**
@@ -123,17 +171,9 @@ public class ReceiveStorage {
      * @param receiveCommandStatistics receiveCommandStatistics
      */
     public void updateReceiveCommandStatistics(String key, ReceiveCommandStatistics receiveCommandStatistics) {
-        try {
-            ConsensusAssert.notNull(key);
-            ConsensusAssert.notNull(receiveCommandStatistics);
-            HTreeMap<String, ReceiveCommandStatistics> commandStatisticsMap = getReceiveStatisticsHTreeMap();
-            commandStatisticsMap.put(key, receiveCommandStatistics);
-            receiveDB.commit();
-        } catch (Exception e) {
-            receiveDB.rollback();
-            log.error("{}", e);
-            throw new RuntimeException(e);
-        }
+        ConsensusAssert.notNull(key);
+        ConsensusAssert.notNull(receiveCommandStatistics);
+        receiveStatisticsMap.put(key, receiveCommandStatistics);
     }
 
     /**
@@ -142,14 +182,8 @@ public class ReceiveStorage {
      * @return ReceiveCommandStatistics
      */
     public ReceiveCommandStatistics getReceiveCommandStatistics(String key) {
-        try {
-            ConsensusAssert.notNull(key);
-            HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
-            return receiveStatisticsMap.get(key);
-        } catch (Exception e) {
-            log.error("{}", e);
-            throw new RuntimeException(e);
-        }
+        ConsensusAssert.notNull(key);
+        return receiveStatisticsMap.get(key);
     }
 
     /**
@@ -157,86 +191,64 @@ public class ReceiveStorage {
      * @param key
      */
     public void addApplyQueue(String key) {
-        applyQueueLock.lock();
-        try {
-            ConsensusAssert.notNull(key);
-            BTreeMap<Long, String> applyQueue = getReceiveApplyQueue();
-
-            Map.Entry<Long, String> lastEntry = applyQueue.lastEntry();
-            if (null == lastEntry) {
-                applyQueue.put(0L, key);
-            } else {
-                applyQueue.put(lastEntry.getKey() + 1, key);
-            }
-            receiveDB.commit();
-            applyQueueCondition.signal();
-        } catch (Exception e) {
-            receiveDB.rollback();
-            log.error("{}", e);
-        } finally {
-            applyQueueLock.unlock();
+        ConsensusAssert.notNull(key);
+        Map.Entry<Long, String> lastEntry = receiveApplyQueue.lastEntry();
+        if (null == lastEntry) {
+            receiveApplyQueue.put(0L, key);
+        } else {
+            receiveApplyQueue.put(lastEntry.getKey() + 1, key);
         }
+        receiveDB.commit();
+        applyQueueCondition.signal();
     }
 
     public String takeFromApplyQueue() {
-        applyQueueLock.lock();
         try {
-            BTreeMap<Long, String> retryQueue = getReceiveApplyQueue();
-            Map.Entry<Long, String> entry = retryQueue.firstEntry();
+            Map.Entry<Long, String> entry = receiveApplyQueue.firstEntry();
             while (null == entry) {
                 applyQueueCondition.await(5, TimeUnit.SECONDS);
-                entry = retryQueue.firstEntry();
+                entry = receiveApplyQueue.firstEntry();
             }
-            retryQueue.remove(entry.getKey());
-            receiveDB.commit();
+            receiveApplyQueue.remove(entry.getKey());
             return entry.getValue();
         } catch (Exception e) {
-            receiveDB.rollback();
             throw new RuntimeException(e);
-        } finally {
-            applyQueueLock.unlock();
         }
     }
 
     public void addDelayQueue(String key) {
-        try {
-            ConsensusAssert.notNull(key);
-            BTreeMap<Long, String> delayQueue = getReceiveDelayQueue();
-
-            Map.Entry<Long, String> lastEntry = delayQueue.lastEntry();
-            if (null == lastEntry) {
-                delayQueue.put(0L, key);
-            } else {
-                delayQueue.put(lastEntry.getKey() + 1, key);
-            }
-            receiveDB.commit();
-        } catch (Exception e) {
-            receiveDB.rollback();
-            log.error("{}", e);
+        ConsensusAssert.notNull(key);
+        Map.Entry<Long, String> lastEntry = receiveDelayQueue.lastEntry();
+        if (null == lastEntry) {
+            receiveDelayQueue.put(0L, key);
+        } else {
+            receiveDelayQueue.put(lastEntry.getKey() + 1, key);
         }
+        receiveDB.commit();
     }
 
     private void transFromDelayToApplyQueue() {
+        openTx();
         try {
-            BTreeMap<Long, String> delayQueue = getReceiveDelayQueue();
-            Map.Entry<Long, String> entry = delayQueue.firstEntry();
+            Map.Entry<Long, String> entry = receiveDelayQueue.firstEntry();
             if (null == entry) {
                 return;
             }
-            delayQueue.remove(entry.getKey());
+            receiveDelayQueue.remove(entry.getKey());
             addApplyQueue(entry.getValue());
             log.info("trans {} from delay to apply queue", entry.getValue());
-            receiveDB.commit();
+            commit();
         } catch (Exception e) {
-            receiveDB.rollback();
-            throw new RuntimeException(e);
+            log.error("{}", e);
+            rollBack();
+        }finally {
+            closeTx();
         }
     }
 
     private void gc() {
+        openTx();
         try {
-            HTreeMap<String, ReceiveCommandStatistics> receiveStatisticsMap = getReceiveStatisticsHTreeMap();
-            NavigableSet<String> gcSet = getReceiveGCSet();
             if (gcSet.size() == 0) {
                 return;
             }
@@ -248,54 +260,21 @@ public class ReceiveStorage {
                 deleteKeys.add(key);
             }
             gcSet.removeAll(deleteKeys);
-            receiveDB.commit();
+            commit();
         } catch (Exception e) {
             log.error("{}", e);
-            receiveDB.rollback();
+            rollBack();
+        }finally {
+            closeTx();
         }
     }
 
     public void addGCSet(String key) {
         try {
-
-            NavigableSet<String> gcSet = getReceiveGCSet();
             gcSet.add(key);
-            receiveDB.commit();
         } catch (Exception e) {
-            receiveDB.rollback();
             throw new RuntimeException(e);
         }
     }
 
-
-    @SuppressWarnings("unchecked")
-    private HTreeMap<String, ReceiveCommandStatistics> getReceiveStatisticsHTreeMap() {
-        return receiveDB.hashMap(RECEIVE_STATISTICS_MAP)
-                .keySerializer(Serializer.STRING)
-                .valueSerializer(Serializer.JAVA)
-                .createOrOpen();
-    }
-
-    @SuppressWarnings("unchecked")
-    private BTreeMap<Long, String> getReceiveApplyQueue() {
-        return receiveDB.treeMap(RECEIVE_APPLY_QUEUE)
-                .keySerializer(Serializer.LONG)
-                .valueSerializer(Serializer.JAVA)
-                .createOrOpen();
-    }
-
-    @SuppressWarnings("unchecked")
-    private BTreeMap<Long, String> getReceiveDelayQueue() {
-        return receiveDB.treeMap(RECEIVE_DELAY_QUEUE)
-                .keySerializer(Serializer.LONG)
-                .valueSerializer(Serializer.JAVA)
-                .createOrOpen();
-    }
-
-    @SuppressWarnings("unchecked")
-    private NavigableSet<String> getReceiveGCSet() {
-        return receiveDB.treeSet(RECEIVE_GC_QUEUE)
-                .serializer(Serializer.STRING)
-                .createOrOpen();
-    }
 }

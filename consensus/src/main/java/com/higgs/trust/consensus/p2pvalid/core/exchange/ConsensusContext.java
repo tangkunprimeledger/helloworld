@@ -55,7 +55,7 @@ public class ConsensusContext {
     }
 
     private void initExecutor() {
-        sendExecutorService = new ThreadPoolExecutor(1, 4, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),(r)->{
+        sendExecutorService = new ThreadPoolExecutor(1, 4, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("sending command thread");
             thread.setDaemon(true);
@@ -78,59 +78,80 @@ public class ConsensusContext {
     }
 
     public void submit(ValidCommandWrap validCommandWrap) {
-        String key = sendStorage.submit(validCommandWrap);
-        sendStorage.addSendQueue(key);
+        sendStorage.openTx();
+        try {
+            String key = sendStorage.submit(validCommandWrap);
+            sendStorage.addSendQueue(key);
+            sendStorage.commit();
+        }catch (Exception e){
+            sendStorage.rollBack();
+            throw new RuntimeException(e);
+        }finally {
+            sendStorage.closeTx();
+        }
     }
 
     /**
      * receive the commandWrap
-     *
-     * @param validCommandWrap
+     * @param validCommandWrap validCommandWrap
      */
     public synchronized void receive(ValidCommandWrap validCommandWrap) {
+        receiveStorage.openTx();
+        try{
+            String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
+            ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
 
-        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
-        ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
-
-        if (receiveCommandStatistics.isClosed()) {
-            log.info("receiveCommandStatistics {} from node {} is closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
-            if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
-                log.info("add receiveCommandStatistics {} to gc set", receiveCommandStatistics);
-                receiveStorage.addGCSet(key);
+            if (receiveCommandStatistics.isClosed()) {
+                log.info("receiveCommandStatistics {} from node {} is closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
+                if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
+                    log.info("add receiveCommandStatistics {} to gc set", receiveCommandStatistics);
+                    receiveStorage.addGCSet(key);
+                }
+            } else if (receiveCommandStatistics.isApply()) {
+                log.info("receiveCommandStatistics {} has applied", receiveCommandStatistics);
+            } else if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
+                receiveStorage.addApplyQueue(key);
+                receiveCommandStatistics.apply();
+                receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
+                log.info("from node set size {} >= threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
             }
-        } else if (receiveCommandStatistics.isApply()) {
-            log.info("receiveCommandStatistics {} has applied", receiveCommandStatistics);
-        } else if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
-            receiveStorage.addApplyQueue(key);
-            receiveCommandStatistics.apply();
-            receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
-            log.info("from node set size {} >= threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
+            receiveStorage.commit();
+        }catch (Exception e){
+            log.error("{}", e);
+            receiveStorage.rollBack();
+        }finally {
+            receiveStorage.closeTx();
         }
+
 
     }
 
+    /**
+     * send the validCommandWrap to server
+     */
     private void send() {
         while (true) {
+            sendStorage.openTx();
             String key = sendStorage.takeFromSendQueue();
-            if (null == key) {
-                log.warn("key is null");
-                continue;
-            }
-            SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
-
-            if(null == sendCommandStatistics){
-                log.warn("key {} sendCommandStatistics is null", key);
-                continue;
-            }
-
-            if(sendCommandStatistics.isSend()){
-                log.warn("sendCommandStatistics {} has been send", sendCommandStatistics);
-                continue;
-            }
-
-            log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
-
             try {
+                if (null == key) {
+                    log.warn("key is null");
+                    continue;
+                }
+                SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
+
+                if (null == sendCommandStatistics) {
+                    log.warn("key {} sendCommandStatistics is null", key);
+                    continue;
+                }
+
+                if (sendCommandStatistics.isSend()) {
+                    log.warn("sendCommandStatistics {} has been send", sendCommandStatistics);
+                    continue;
+                }
+
+                log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
+
                 // set the countDownLatch
                 CountDownLatch countDownLatch = new CountDownLatch(sendCommandStatistics.getSendNodeNames().size());
 
@@ -143,27 +164,28 @@ public class ConsensusContext {
                         countDownLatch.countDown();
                         continue;
                     }
-                    sendExecutorService.submit(()->{
+                    sendExecutorService.submit(() -> {
                         ValidCommandWrap validCommandWrap = sendCommandStatistics.getValidCommandWrap();
-                        try{
+                        try {
                             String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             if (StringUtils.equals("SUCCESS", result)) {
                                 sendCommandStatistics.addAckNodeName(nodeName);
                                 sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
                             }
                             log.info("result is {}", result);
-                        }finally {
+                        } catch (Exception e) {
+                            log.error("{}", e);
+                        } finally {
                             countDownLatch.countDown();
                         }
                     });
                 }
                 countDownLatch.await();
-
                 //gc
                 if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
                     sendStorage.addGCSet(key);
                     sendCommandStatistics.setSend();
-                    sendStorage.updateSendCommandStatics(key,sendCommandStatistics);
+                    sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
                 } else {
                     sendStorage.addDelayQueue(key);
                 }
@@ -172,20 +194,26 @@ public class ConsensusContext {
                 if (null != key) {
                     sendStorage.addDelayQueue(key);
                 }
+            } finally {
+                sendStorage.commit();
+                sendStorage.closeTx();
             }
         }
     }
 
     private void apply() {
         while (true) {
-            String key = receiveStorage.takeFromApplyQueue();
-            if (null == key) {
-                log.warn("key is null");
-                continue;
-            }
-            ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.getReceiveCommandStatistics(key);
+            receiveStorage.openTx();
+            String key = null;
             Span span = null;
             try {
+
+                key = receiveStorage.takeFromApplyQueue();
+                if (null == key) {
+                    log.warn("key is null");
+                    continue;
+                }
+                ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.getReceiveCommandStatistics(key);
 
                 if (null == receiveCommandStatistics) {
                     log.warn("receiveCommandStatistics is null, key is {}", key);
@@ -218,7 +246,9 @@ public class ConsensusContext {
                     log.info("apply exception, add key {} to delay queue", key);
                     receiveStorage.addDelayQueue(key);
                 }
-            }finally {
+            } finally {
+                receiveStorage.commit();
+                receiveStorage.closeTx();
                 TraceUtils.closeSpan(span);
             }
         }
