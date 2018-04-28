@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
@@ -23,11 +24,11 @@ import java.util.List;
     /**
      * debit transaction information
      */
-    @NotEmpty private List<AccountTradeInfo> debitTradeInfo;
+    @NotEmpty @Valid private List<AccountTradeInfo> debitTradeInfo;
     /**
      * credit transaction information
      */
-    @NotEmpty private List<AccountTradeInfo> creditTradeInfo;
+    @NotEmpty @Valid private List<AccountTradeInfo> creditTradeInfo;
     /**
      * account operation datetime
      */

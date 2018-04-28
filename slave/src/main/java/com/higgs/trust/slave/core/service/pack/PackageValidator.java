@@ -130,7 +130,7 @@ import java.util.List;
             blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
         //check hash
         if (consensHeader == null) {
-            log.error("[package.validated] consensus header of db is null blockHeight:{}", pack.getHeight());
+            log.warn("[package.validated] consensus header of db is null blockHeight:{}", pack.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
         }
         BlockHeader tempHeader = blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.TEMP_TYPE);

@@ -106,7 +106,7 @@ import java.util.List;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
         }catch (DuplicateKeyException e){
-            log.error("[batchSaveTransaction] is idempotent", e);
+            log.error("[batchSaveTransaction] is idempotent blockHeight:{}",blockHeight);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
         log.info("[TransactionRepository.batchSaveTransaction] is end");

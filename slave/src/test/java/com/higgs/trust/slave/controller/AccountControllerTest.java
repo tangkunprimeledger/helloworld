@@ -54,7 +54,7 @@ public class AccountControllerTest {
 // issue currency
     //  List<SignedTransaction> txs = makeCurrencyTxs();
         //open account
-        List<SignedTransaction> txs = makeOpenAccountTxs();
+//        List<SignedTransaction> txs = makeOpenAccountTxs();
         // transfer
        // List<SignedTransaction> txs = makeAccountingTxs();
         // freeze
@@ -65,6 +65,8 @@ public class AccountControllerTest {
 
         // utxo issue and transfer
         // List<SignedTransaction> txs = makeCurrencyTxs();
+        // utxo issue and  transfer
+         List<SignedTransaction> txs = makeOpenAccountTxs();
 
         String params = JSON.toJSONString(txs);
 
@@ -146,12 +148,13 @@ public class AccountControllerTest {
     private List<SignedTransaction> makeOpenAccountTxs() throws Exception {
         List<SignedTransaction> txs = new ArrayList<>();
         List<Action> actions = new ArrayList<>();
-        Action action = TestDataMaker.makeOpenAccountAction("chao", FundDirectionEnum.DEBIT);
+        Action action = TestDataMaker.makeOpenAccountAction("test1101", FundDirectionEnum.DEBIT);
         actions.add(action);
 
         JSONObject bizModel = new JSONObject();
         bizModel.put("data",action);
         CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 0, "test-policy-1",bizModel);
+        coreTransaction.setSender("TRUST-NODE97");
         SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
 
         txs.add(tx);

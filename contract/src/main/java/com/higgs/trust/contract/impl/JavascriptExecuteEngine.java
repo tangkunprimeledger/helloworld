@@ -12,7 +12,7 @@ import javax.script.*;
  */
 @Slf4j public class JavascriptExecuteEngine implements ExecuteEngine {
 
-    private static final String dbStateKeyName = "db";
+    private static final String DB_STATE_CTX_KEY_NAME = "db";
 
     private ScriptEngine scriptEngine;
     private String code;
@@ -39,7 +39,7 @@ import javax.script.*;
                 if (stateManager == null) {
                     stateManager = new StateManager();
                 }
-                bindings.put(dbStateKeyName, stateManager);
+                bindings.put(DB_STATE_CTX_KEY_NAME, stateManager);
             }
 
             compiledScript.eval(bindings);
@@ -51,7 +51,7 @@ import javax.script.*;
 
             Object result = method.call(null, bizArgs);
             if (dbStateStore != null) {
-                StateManager state = (StateManager) bindings.get(dbStateKeyName);
+                StateManager state = (StateManager) bindings.get(DB_STATE_CTX_KEY_NAME);
                 dbStateStore.put(context.getInstanceAddress(), state);
             }
             return result;

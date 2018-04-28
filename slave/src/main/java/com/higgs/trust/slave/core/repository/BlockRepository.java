@@ -187,7 +187,7 @@ import java.util.List;
         try {
             blockHeaderDao.add(blockHeaderPO);
         } catch (DuplicateKeyException e) {
-            log.error("[saveBlockHeader] is idempotent");
+            log.error("[saveTempHeader] is idempotent blockHeight:{}",header.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
         }
     }
@@ -234,7 +234,7 @@ import java.util.List;
         try {
             blockDao.add(blockPO);
         } catch (DuplicateKeyException e) {
-            log.error("[saveBlock] is idempotent", e);
+            log.error("[saveBlock] is idempotent blockHeight:{}", blockHeader.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
         //save transactions

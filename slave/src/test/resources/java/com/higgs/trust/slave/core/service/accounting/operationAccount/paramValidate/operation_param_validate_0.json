@@ -1,0 +1,7 @@
+{
+  "测试ID": 0,
+  "body": null,
+  "type": "",
+  "assert": "validate object is null",
+  "comment": "账务操作,入参为空测试"
+}
