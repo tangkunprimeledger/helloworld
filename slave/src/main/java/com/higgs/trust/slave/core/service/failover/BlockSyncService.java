@@ -4,7 +4,6 @@ import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.block.hash.TxRootHashBuilder;
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService;
-import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -15,11 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service @Slf4j public class BlockSyncService {
     @Autowired private BlockService blockService;
-    @Autowired private PackageService packageService;
     @Autowired private BlockChainClient blockChainClient;
     @Autowired private TxRootHashBuilder txRootHashBuilder;
     @Autowired private NodeState nodeState;
@@ -82,10 +79,9 @@ import java.util.concurrent.TimeUnit;
      * @return 验证结果
      */
     public boolean validatingBlocks(String previousHash, List<Block> blocks) {
-        if (blocks.isEmpty()) {
+        if (blocks == null || blocks.isEmpty() || StringUtils.isBlank(previousHash)) {
             return false;
         }
-        Assert.isTrue(StringUtils.isNotBlank(previousHash), "previous hash can't be blank");
         String preHash = previousHash;
         for (Block block : blocks) {
             BlockHeader blockHeader = block.getBlockHeader();
@@ -107,7 +103,9 @@ import java.util.concurrent.TimeUnit;
      * @return 验证结果
      */
     public boolean validating(String previousHash, Block block) {
-        Assert.isTrue(StringUtils.isNotBlank(previousHash), "previous hash can't be blank");
+        if (block == null || StringUtils.isBlank(previousHash)) {
+            return false;
+        }
         BlockHeader blockHeader = block.getBlockHeader();
         if (!previousHash.equalsIgnoreCase(blockHeader.getPreviousHash())) {
             if (log.isTraceEnabled()) {
@@ -125,6 +123,9 @@ import java.util.concurrent.TimeUnit;
      * @return 验证结果
      */
     public boolean validating(Block block) {
+        if (block == null) {
+            return false;
+        }
         BlockHeader blockHeader = block.getBlockHeader();
         if (!validating(blockHeader)) {
             return false;
@@ -146,7 +147,7 @@ import java.util.concurrent.TimeUnit;
      * @return 验证结果
      */
     public boolean validating(List<BlockHeader> blockHeaders) {
-        if (blockHeaders.isEmpty()) {
+        if (blockHeaders == null || blockHeaders.isEmpty()) {
             return false;
         }
         String preHash = blockHeaders.get(0).getPreviousHash();
@@ -161,10 +162,9 @@ import java.util.concurrent.TimeUnit;
      * @return 验证结果
      */
     public boolean validating(String previousHash, List<BlockHeader> blockHeaders) {
-        if (blockHeaders.isEmpty()) {
+        if (blockHeaders == null || blockHeaders.isEmpty() || StringUtils.isBlank(previousHash)) {
             return false;
         }
-        Assert.isTrue(StringUtils.isNotBlank(previousHash), "previous hash can't be blank");
         String preHash = previousHash;
         for (BlockHeader blockHeader : blockHeaders) {
             if (validating(preHash, blockHeader)) {
@@ -186,10 +186,9 @@ import java.util.concurrent.TimeUnit;
      * @return
      */
     public boolean validating(String previousHash, BlockHeader blockHeader) {
-        if (blockHeader == null) {
+        if (blockHeader == null || StringUtils.isBlank(previousHash)) {
             return false;
         }
-        Assert.isTrue(StringUtils.isNotBlank(previousHash), "previous hash can't be blank");
         boolean validated = previousHash.equalsIgnoreCase(blockHeader.getPreviousHash()) && validating(blockHeader);
         if (!validated && log.isDebugEnabled()) {
             log.debug("validating block chain header : {} hash failed.", blockHeader.getHeight());
@@ -216,3 +215,5 @@ import java.util.concurrent.TimeUnit;
     }
 
 }
+
+

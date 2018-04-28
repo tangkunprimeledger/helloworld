@@ -38,7 +38,7 @@ import java.util.List;
     /**
      * 自动failover，判断状态是否为NodeStateEnum.Running
      */
-    @Scheduled(fixedDelay = 3000) public void failover() {
+    @Scheduled(fixedDelay = 30000) public void failover() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
@@ -73,12 +73,9 @@ import java.util.List;
      *
      * @param height 区块高度
      */
-    public boolean failover(long height) {
+    public synchronized boolean failover(long height) {
         if (!nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
-        }
-        if (!checkAndInsert(height)) {
-            return true;
         }
         log.info("failover block:{}", height);
         BlockHeader preBlockHeader = blockRepository.getBlockHeader(height - 1);
@@ -87,7 +84,7 @@ import java.util.List;
         boolean validated = false;
         do {
             List<Block> blocks = blockSyncService.getBlocks(height, 1);
-            if (!blocks.isEmpty()) {
+            if (blocks != null && !blocks.isEmpty()) {
                 block = blocks.get(0);
                 if (log.isDebugEnabled()) {
                     log.debug("got the block:{}", block);
@@ -97,6 +94,9 @@ import java.util.List;
         } while (!validated && ++tryTimes < properties.getTryTimes());
         if (!validated) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_BLOCKS_FAILED);
+        }
+        if (!checkAndInsert(height)) {
+            return false;
         }
         return failoverBlock(block);
     }
@@ -110,7 +110,7 @@ import java.util.List;
     private boolean needFailover(long height) {
         Long minHeight =
             packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode()));
-        if (minHeight == null || minHeight <= height) {
+        if (minHeight == null) {
             return false;
         }
         Package pack = packageRepository.load(height);
@@ -132,10 +132,11 @@ import java.util.List;
         }
         Long minHeight =
             packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode()));
-        if (minHeight == null || minHeight <= height) {
+        if (minHeight == null) {
             return false;
         }
         Package pack = packageRepository.load(height);
+
         if (pack == null) {
             return insertFailoverPackage(height);
         } else {

@@ -47,6 +47,11 @@ import java.util.List;
                 if (latestHeight != null) {
                     break;
                 }
+                try {
+                    Thread.sleep(3 * 1000);
+                } catch (InterruptedException e) {
+                    log.warn("self check error.", e);
+                }
             } while (--tryTimes > 0);
             if (latestHeight == null) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
@@ -79,7 +84,7 @@ import java.util.List;
      * @param startHeight 开始高度
      * @param size        同步数量
      */
-    public void sync(long startHeight, int size) {
+    public synchronized void sync(long startHeight, int size) {
         if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
         }

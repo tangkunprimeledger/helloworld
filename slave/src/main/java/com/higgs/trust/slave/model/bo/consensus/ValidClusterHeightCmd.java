@@ -3,11 +3,15 @@
  */
 package com.higgs.trust.slave.model.bo.consensus;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 /**
  * @author suimi
  * @date 2018/4/17
  */
-public class ValidClusterHeightCmd extends IdValidCommand<Long> {
+@Getter @Setter @NoArgsConstructor public class ValidClusterHeightCmd extends IdValidCommand<Long> {
 
     private static final long serialVersionUID = -7652400642865085127L;
 
