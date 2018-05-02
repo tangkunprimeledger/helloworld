@@ -192,7 +192,7 @@ public class ConsensusContext {
                 } else {
                     sendStorage.addDelayQueue(key);
                 }
-                sendStorage.removeFromSendQueue(key);
+                sendStorage.removeFromSendQueue();
                 sendStorage.commit();
             } catch (Throwable e) {
                 log.error("{}", e);
