@@ -172,7 +172,7 @@ public class SnapshotServiceImpl implements SnapshotService {
     /**
      * clear packageCache and txCache
      */
-    @TraceMonitor(printParameters = true) @Override
+    @TraceMonitor @Override
     public void destroy() {
 
         //TODO  是否加个标记，不允许其他操作
@@ -291,7 +291,7 @@ public class SnapshotServiceImpl implements SnapshotService {
      * 2.clear txCache
      * 3.tag the isOpenTransaction to be false
      */
-    @TraceMonitor(printParameters = true) @Override
+    @TraceMonitor @Override
     public void commit() {
         log.info("Start to commit");
         boolean isLocked = lock.tryLock();

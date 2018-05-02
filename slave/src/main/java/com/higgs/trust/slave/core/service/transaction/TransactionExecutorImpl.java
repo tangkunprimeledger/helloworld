@@ -33,7 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired TxCheckHandler txCheckHandler;
     @Autowired SnapshotService snapshot;
 
-    @TraceMonitor(printParameters = true) @Override
+    @TraceMonitor @Override
     public TransactionReceipt validate(TransactionData transactionData) {
         log.info("[TransactionExecutor.validate] is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
@@ -75,7 +75,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         return receipt;
     }
 
-    @TraceMonitor(printParameters = true) @Override public TransactionReceipt persist(TransactionData transactionData) {
+    @TraceMonitor @Override public TransactionReceipt persist(TransactionData transactionData) {
         log.info("[TransactionExecutorImpl.persist]is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
 

@@ -36,7 +36,7 @@ import java.util.Set;
      *
      * @param pack
      */
-    @TraceMonitor(printParameters = true) public void save(Package pack) {
+    @TraceMonitor public void save(Package pack) {
         if (null == pack) {
             log.error("package is null");
             return;
@@ -53,8 +53,7 @@ import java.util.Set;
      * @param from
      * @param to
      */
-    @TraceMonitor(printParameters = true) public void updateStatus(Long height, PackageStatusEnum from,
-        PackageStatusEnum to) {
+    @TraceMonitor public void updateStatus(Long height, PackageStatusEnum from, PackageStatusEnum to) {
         txNested.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                 int r = packageDao.updateStatus(height, from.getCode(), to.getCode());
@@ -72,7 +71,7 @@ import java.util.Set;
      * @param height
      * @return
      */
-    @TraceMonitor(printParameters = true) public Package load(String height) {
+    @TraceMonitor public Package load(String height) {
         if (null == height) {
             log.error("load package with null height!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
@@ -87,7 +86,7 @@ import java.util.Set;
      * @param height
      * @return
      */
-    @TraceMonitor(printParameters = true) public Package load(Long height) {
+    @TraceMonitor public Package load(Long height) {
         PackagePO packagePO = packageDao.queryByHeight(height);
 
         if (null == packagePO) {
@@ -104,7 +103,7 @@ import java.util.Set;
      * @param height
      * @return
      */
-    @TraceMonitor(printParameters = true) public Package loadAndLock(Long height) {
+    @TraceMonitor public Package loadAndLock(Long height) {
 
         PackagePO packagePO = packageDao.queryByHeightForUpdate(height);
 
@@ -121,7 +120,7 @@ import java.util.Set;
      *
      * @return
      */
-    @TraceMonitor(printParameters = true) public Long getMaxHeight() {
+    @TraceMonitor public Long getMaxHeight() {
         return packageDao.getMaxHeight();
     }
 
