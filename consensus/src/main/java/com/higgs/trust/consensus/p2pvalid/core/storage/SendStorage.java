@@ -192,9 +192,9 @@ public class SendStorage {
      * must call txLock.lock before this method
      * @return String
      */
-    public void removeFromSendQueue(String key) {
+    public void removeFromSendQueue() {
         try {
-            sendQueue.remove(key);
+            sendQueue.remove(sendQueue.firstEntry().getKey());
         } catch (Exception e) {
             log.error("{}", e);
             throw new RuntimeException(e);

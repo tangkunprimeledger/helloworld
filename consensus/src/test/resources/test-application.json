@@ -33,5 +33,12 @@
     "client": {
       "server": "127.0.0.1:9800"
     }
+  },
+  "consensus": {
+    "p2p": {
+      "data": {
+        "dir": "./data/p2p"
+      }
+    }
   }
 }
