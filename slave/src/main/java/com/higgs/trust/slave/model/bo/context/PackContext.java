@@ -80,7 +80,7 @@ import javax.validation.constraints.NotNull;
      *
      * @return
      */
-    @Override public TransactionData getTransactionData() {
+    @Override public TransactionData parseTransactionData() {
         return this;
     }
 
@@ -162,7 +162,7 @@ import javax.validation.constraints.NotNull;
     /**
      * @return
      */
-    @Override public ActionData getActionData() {
+    @Override public ActionData parseActionData() {
         return this;
     }
 }

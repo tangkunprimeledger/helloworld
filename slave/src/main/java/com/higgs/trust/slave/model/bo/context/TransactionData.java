@@ -16,8 +16,10 @@ public interface TransactionData extends CommonData {
     void setCurrentAction(Action action);
 
     /**
+     * transfer to action data
+     * use parse not get for JSON
      *
      * @return
      */
-    ActionData getActionData();
+    ActionData parseActionData();
 }

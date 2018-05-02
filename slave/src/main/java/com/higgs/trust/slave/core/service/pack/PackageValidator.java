@@ -85,7 +85,7 @@ import java.util.List;
                 continue;
             }
             packageData.setCurrentTransaction(tx);
-            TransactionReceipt receipt = transactionExecutor.validate(packageData.getTransactionData());
+            TransactionReceipt receipt = transactionExecutor.validate(packageData.parseTransactionData());
             validatedDatas.add(tx);
             txReceipts.add(receipt);
         }

@@ -18,11 +18,12 @@ public interface PackageData extends CommonData {
     void setCurrentTransaction(SignedTransaction transaction);
 
     /**
-     * handle next transaction in this package processing
+     * parse context transaction data in this package processing
+     * use parse no get for JSON
      *
      * @return
      */
-    TransactionData getTransactionData();
+    TransactionData parseTransactionData();
 
     /**
      * set the package
