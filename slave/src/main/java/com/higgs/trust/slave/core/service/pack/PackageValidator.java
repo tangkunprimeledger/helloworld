@@ -57,7 +57,7 @@ import java.util.List;
             blockService.storeTempHeader(blockHeader, BlockHeaderTypeEnum.TEMP_TYPE);
             packageData.getCurrentBlock().setBlockHeader(blockHeader);
         } catch (Throwable e) {
-            log.error("[package.validating]has error", e);
+            log.error("[package.validating]has error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_VALIDATING_ERROR, e);
         } finally {
             //snapshot transactions should be destory

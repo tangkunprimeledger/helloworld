@@ -136,7 +136,11 @@ public class PackageScheduler {
             //get max block height
             maxBlockHeight = blockRepository.getMaxHeight();
             if (height .equals(maxBlockHeight) || height.equals(maxBlockHeight + 1)) {
-                packageProcess.process(height);
+                try {
+                    packageProcess.process(height);
+                } catch (Throwable e) {
+                    log.error("package scheduled execute failed", e);
+                }
             }
         }
     }
