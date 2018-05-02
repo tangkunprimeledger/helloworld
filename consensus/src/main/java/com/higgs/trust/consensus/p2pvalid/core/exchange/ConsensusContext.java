@@ -119,6 +119,7 @@ public class ConsensusContext {
         }catch (Throwable e){
             log.error("{}", e);
             receiveStorage.rollBack();
+            throw new RuntimeException("receive exception");
         }finally {
             receiveStorage.closeTx();
         }
