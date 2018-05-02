@@ -181,13 +181,26 @@ public class SendStorage {
                 sendQueueCondition.await();
                 firstEntry = sendQueue.firstEntry();
             }
-            sendQueue.remove(firstEntry.getKey());
             return firstEntry.getValue();
         } catch (Exception e) {
             log.error("{}", e);
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * must call txLock.lock before this method
+     * @return String
+     */
+    public void removeFromSendQueue(String key) {
+        try {
+            sendQueue.remove(key);
+        } catch (Exception e) {
+            log.error("{}", e);
+            throw new RuntimeException(e);
+        }
+    }
+
 
     /**
      * @param key key of sendCommandStatistics
