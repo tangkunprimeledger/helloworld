@@ -59,7 +59,7 @@ public class ServerConfig
     @Value("${copycat.server.entryBufferSize:20}")
     private Integer entryBufferSize;
 
-    @Value("${copycat.server.compactionThreads:1}")
+    @Value("${copycat.server.compactionThreads:4}")
     private Integer compactionThreads;
 
     @Value("${copycat.server.maxEntriesPerSegment:10000}")
@@ -68,8 +68,17 @@ public class ServerConfig
     @Value("${copycat.server.majorCompactionInterval:10000}")
     private Long majorCompactionInterval;
 
-    @Value("${copycat.server.compactionThreshold:0.001}")
+    @Value("${copycat.server.compactionThreshold:0.01}")
     private Double compactionThreshold;
+
+    @Value("${copycat.server.electionTimeout:2000}")
+    private Long electionTimeout;
+
+    @Value("${copycat.server.heartbeatInterval:500}")
+    private Long heartbeatInterval;
+
+    @Value("${copycat.server.sessionTimeout:5000}")
+    private Long sessionTimeout;
 
     @Override
     public String toString() {
@@ -97,9 +106,9 @@ public class ServerConfig
         });
 
         builder.withTransport(NettyTransport.builder().withThreads(nettyThreadNum).build());
-        builder.withElectionTimeout(Duration.ofMillis(1500))
-                .withHeartbeatInterval(Duration.ofMillis(500))
-                .withSessionTimeout(Duration.ofMillis(5000));
+        builder.withElectionTimeout(Duration.ofMillis(electionTimeout))
+                .withHeartbeatInterval(Duration.ofMillis(heartbeatInterval))
+                .withSessionTimeout(Duration.ofMillis(sessionTimeout));
 
         Storage storage = Storage.builder().withStorageLevel(StorageLevel.DISK).withDirectory(logDir)
                 .withMinorCompactionInterval(Duration.ofMillis(minorCompactionInterval))

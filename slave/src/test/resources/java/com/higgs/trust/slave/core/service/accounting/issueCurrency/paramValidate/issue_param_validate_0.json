@@ -1,7 +1,7 @@
 {
   "测试ID": 0,
-  "body": null,
-  "type": "",
+  "body": "null",
+  "type": "1",
   "assert": "validate object is null",
   "comment": "发币方法,入参为空测试"
 }

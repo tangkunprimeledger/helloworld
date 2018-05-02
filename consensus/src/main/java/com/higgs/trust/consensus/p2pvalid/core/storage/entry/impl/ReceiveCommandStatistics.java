@@ -17,6 +17,7 @@ public class ReceiveCommandStatistics implements Serializable{
     private boolean applied;
     private ValidCommand<?> validCommand;
     private Set<String> fromNodeNameSet;
+    private Long traceId;
 
     private ReceiveCommandStatistics(ValidCommand<?> validCommand) {
         this.validCommand = validCommand;
@@ -53,5 +54,13 @@ public class ReceiveCommandStatistics implements Serializable{
 
     public void apply() {
         applied = true;
+    }
+
+    public Long getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(Long traceId) {
+        this.traceId = traceId;
     }
 }

@@ -24,7 +24,6 @@ import java.util.List;
 
 @Configuration
 @ConditionalOnExpression("!'${copycat.client.server:}'.isEmpty()")
-@ConditionalOnBean(ConsensusStateMachine.class)
 public class ClientConfig {
     private static final Logger log = LoggerFactory.getLogger(ClientConfig.class);
 

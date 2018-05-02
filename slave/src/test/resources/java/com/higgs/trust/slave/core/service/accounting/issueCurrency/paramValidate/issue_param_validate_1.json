@@ -1,10 +1,10 @@
 {
   "测试ID": 0,
   "body": {
-    "currencyName":"",
+    "currencyName":"1",
     "remark":"test currency"
   },
   "type": "",
-  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "assert": "param validate errorSLAVE_PARAM_VALIDATE_ERROR",
   "comment": "发币方法,币种名称空字符串测试"
 }
