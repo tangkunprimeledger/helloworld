@@ -115,6 +115,7 @@ public class SendStorage {
                     .serializer(Serializer.STRING)
                     .createOrOpen();
             commit();
+            log.info("storage map init success");
         } finally {
             closeTx();
         }
@@ -134,6 +135,8 @@ public class SendStorage {
             thread.setDaemon(true);
             return new Thread(r);
         }).scheduleWithFixedDelay(this::gc, 1, 1, TimeUnit.SECONDS);
+
+        log.info("thread pool init success");
     }
 
     /**
