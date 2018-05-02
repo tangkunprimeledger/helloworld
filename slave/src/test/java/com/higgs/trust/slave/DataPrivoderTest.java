@@ -5,15 +5,22 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.tester.assertutil.AssertTool;
 import com.higgs.trust.tester.dbunit.DataBaseManager;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import com.higgs.trust.tester.*;
+import com.higgs.trust.testframework.u;
+import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.*;
 
+@Slf4j
 public class DataPrivoderTest{
 
     @Autowired
@@ -44,6 +51,15 @@ public class DataPrivoderTest{
         DataBaseManager dataBaseManager = new DataBaseManager();
         dataBaseManager.executeSingleInsert("INSERT INTO `trust`.`merkle_node` (`id`, `uuid`, `node_hash`, `index`, `level`, `parent`, `tree_type`, `create_time`, `update_time`) VALUES ('17', '438661769108389891', '3fa5834dc920d385ca9b099c9fe55dcca163a6b256a261f8f147291b0e7cf633', '13', '1', '438661769108389895', 'RS', '2018-04-25 11:25:15.704', '2018-04-25 11:25:15.704');\n","jdbc:mysql://localhost:3306/trust?user=root&password=root&useSSL=true");
         AssertTool.isContainsExpectJsonNode("{\"index\":\"13\"}","jdbc:mysql://localhost:3306/trust?user=root&password=root&useSSL=true","SELECT * from merkle_node;");
+
+
     }
 
+//    @Test
+//    public void testPath() {
+//        URL url = this.getClass().getResource("");
+//        log.info("url:{}",url);
+//        File file = new File(url.getFile(), "utxo");
+//        log.info(file.getAbsolutePath());
+//    }
 }
