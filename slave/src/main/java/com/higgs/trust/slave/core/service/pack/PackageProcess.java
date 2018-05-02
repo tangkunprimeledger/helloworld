@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.pack;
 
+import cn.primeledger.stability.log.TraceMonitor;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.PackageRepository;
@@ -35,19 +36,20 @@ import org.springframework.stereotype.Service;
             packageFSM(pack);
         } catch (SlaveException e) {
             if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR == e.getCode()
-                || SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT == e.getCode()) {
+                || SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT == e.getCode()
+                || SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH == e.getCode()) {
                 return;
             }
 
             log.error("slave exception. ", e);
         } catch (Throwable e) {
-          if (e instanceof CannotAcquireLockException) {
-              log.warn("cannot acquire package lock, height={}", height);
-          } else {
-              log.error("package process exception. ", e);
-              //terminal recycle
-              throw e;
-          }
+            if (e instanceof CannotAcquireLockException) {
+                log.warn("cannot acquire package lock, height={}", height);
+            } else {
+                log.error("package process exception. ", e);
+                //terminal recycle
+                throw e;
+            }
         }
     }
 
@@ -89,31 +91,37 @@ import org.springframework.stereotype.Service;
         }
     }
 
+    @TraceMonitor(printParameters = true)
     private void doValidate(Package pack) {
         packageLock.lockAndValidating(pack.getHeight());
         pack.setStatus(PackageStatusEnum.VALIDATING);
     }
 
+    @TraceMonitor(printParameters = true)
     private void doValidatingToConsensus(Package pack) {
         packageLock.lockValidatingAndSubmit(pack.getHeight());
         pack.setStatus(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS);
     }
 
+    @TraceMonitor(printParameters = true)
     private void doValidated(Package pack) {
         packageLock.lockAndValidated(pack.getHeight());
         pack.setStatus(PackageStatusEnum.VALIDATED);
     }
 
+    @TraceMonitor(printParameters = true)
     private void doPersist(Package pack) {
         packageLock.lockAndPersist(pack.getHeight());
         pack.setStatus(PackageStatusEnum.PERSISTING);
     }
 
+    @TraceMonitor(printParameters = true)
     private void doPersistingToConsensus(Package pack) {
         packageLock.lockPersistingAndSubmit(pack.getHeight());
         pack.setStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
     }
 
+    @TraceMonitor(printParameters = true)
     private void doPersisted(Package pack) {
         packageLock.lockAndPersisted(pack.getHeight());
         pack.setStatus(PackageStatusEnum.PERSISTED);

@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.transaction;
 
+import cn.primeledger.stability.log.TraceMonitor;
 import com.higgs.trust.contract.SmartContractException;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -32,7 +33,8 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired TxCheckHandler txCheckHandler;
     @Autowired SnapshotService snapshot;
 
-    @Override public TransactionReceipt validate(TransactionData transactionData) {
+    @TraceMonitor(printParameters = true) @Override
+    public TransactionReceipt validate(TransactionData transactionData) {
         log.info("[TransactionExecutor.validate] is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
         TransactionReceipt receipt = new TransactionReceipt();
@@ -73,7 +75,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         return receipt;
     }
 
-    @Override public TransactionReceipt persist(TransactionData transactionData) {
+    @TraceMonitor(printParameters = true) @Override public TransactionReceipt persist(TransactionData transactionData) {
         log.info("[TransactionExecutorImpl.persist]is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
 

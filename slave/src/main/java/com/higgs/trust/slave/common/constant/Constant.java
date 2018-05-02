@@ -20,4 +20,6 @@ public class Constant {
     public static final String TPS_SUFFIX = "tps";
 
     public static final String MONITOR_TEXT = "monitor_text";
+
+    public static final Long GENESIS_HEIGHT = 1L;
 }

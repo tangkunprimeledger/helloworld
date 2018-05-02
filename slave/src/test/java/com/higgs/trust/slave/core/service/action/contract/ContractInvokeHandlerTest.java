@@ -1,10 +1,16 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.parser.ParserConfig;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
+import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
 import com.higgs.trust.slave.model.bo.Contract;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.PackContext;
@@ -17,27 +23,35 @@ import reactor.core.support.Assert;
 public class ContractInvokeHandlerTest extends IntegrateBaseTest {
 
     @Autowired private ContractInvokeHandler invokeHandler;
+    @Autowired SnapshotService snapshot;
 
     private ContractInvokeAction createContractInvokeAction() {
         ContractInvokeAction action = new ContractInvokeAction();
-        action.setAddress("895321051547e82e2018a204abe510e1b0e9a0843fd1ad4483a307d48bfe9754");
+        action.setAddress("2261293c58148bea30623b8b5ce60d43b76f770c1e344eb58fbbea5ebf1fed74");
         //action.setMethod("main");
-        action.setIndex(1);
-        action.setType(ActionTypeEnum.REGISTER_CONTRACT);
+        action.setIndex(0);
+        action.setType(ActionTypeEnum.TRIGGER_CONTRACT);
         return action;
     }
 
     @Test
     public void testValidate() throws Exception {
-        Action action = createContractInvokeAction();
+        ContractInvokeAction action = createContractInvokeAction();
         PackContext packContext = ActionDataMockBuilder.getBuilder()
                 .createSignedTransaction(InitPolicyEnum.REGISTER)
                 .addAction(action)
-                .setTxId("000000000")
-                .signature("kdkdkdk")
+                .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
+                .signature(ActionDataMockBuilder.privateKey1)
+                .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
+
+        System.out.println(JSON.toJSONString(packContext.getCurrentTransaction()));
+        snapshot.startTransaction();
         invokeHandler.validate(packContext);
+        Assert.isTrue(snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE,
+                new ContractStateSnapshotAgent.ContractStateCacheKey(action.getAddress())) != null, "");
+        snapshot.commit();
     }
 
     @Test
@@ -46,11 +60,38 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
         PackContext packContext = ActionDataMockBuilder.getBuilder()
                 .createSignedTransaction(InitPolicyEnum.REGISTER)
                 .addAction(action)
-                .setTxId("000000000")
-                .signature("kdkdkdk")
+                .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
+                .signature(ActionDataMockBuilder.privateKey1)
+                .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
         invokeHandler.persist(packContext);
     }
 
+    public static void main(String[] args) {
+
+        ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
+        //JSON不做循环引用检测
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
+        //JSON输出NULL属性
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteMapNullValue.getMask();
+        //toJSONString的时候对一级key进行按照字母排序
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.SortField.getMask();
+        //toJSONString的时候对嵌套结果进行按照字母排序
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
+        //toJSONString的时候记录Class的name
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
+
+        Action action = new ContractInvokeHandlerTest().createContractInvokeAction();
+        PackContext packContext = ActionDataMockBuilder.getBuilder()
+                .createSignedTransaction(InitPolicyEnum.UTXO_DESTROY)
+                .addAction(action)
+                .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
+                .signature(ActionDataMockBuilder.privateKey1)
+                .signature(ActionDataMockBuilder.privateKey2)
+                .makeBlockHeader()
+                .build();
+
+        System.out.println(JSON.toJSONString(packContext.getCurrentTransaction()));
+    }
 }

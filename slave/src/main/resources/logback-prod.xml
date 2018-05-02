@@ -118,7 +118,7 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <Logger name="PERF" level="INFO" additivity="false">
+    <Logger name="cn.primeledger.stability.utils.PerfLogUtil" level="INFO" additivity="false">
         <appender-ref ref="PERF-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
