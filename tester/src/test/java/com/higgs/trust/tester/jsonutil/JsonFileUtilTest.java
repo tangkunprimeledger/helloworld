@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
-import com.higgs.trust.testframework.assertutil.*;
 public class JsonFileUtilTest {
 
     @Test
