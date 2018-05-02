@@ -14,17 +14,17 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -46,11 +46,11 @@ import static org.testng.Assert.*;
     long currentHeight = 1;
     @Mock BlockHeader header;
 
-    @Mock List<BlockHeader> headers;
     @Mock List<Block> blocks;
 
     @BeforeMethod public void beforeMethod() {
         MockitoAnnotations.initMocks(this);
+        reset(properties, nodeState);
         when(nodeState.isState(NodeStateEnum.AutoSync)).thenReturn(true);
         when(nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)).thenReturn(true);
         when(blockRepository.getMaxHeight()).thenReturn(currentHeight);
@@ -75,8 +75,11 @@ import static org.testng.Assert.*;
         syncService.sync();
         verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
         verify(nodeState, times(0)).isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync);
+    }
 
+    @Test public void testSyncOutThreshold() {
         when(blockSyncService.getClusterHeight()).thenReturn(102L);
+        when(properties.getThreshold()).thenReturn(100);
         syncService.sync();
         verify(nodeState, times(1)).isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync);
         verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
@@ -128,7 +131,10 @@ import static org.testng.Assert.*;
         verify(properties, times(times)).getTryTimes();
 
         //validating headers failed
-        when(blockSyncService.getHeaders(startHeight, size)).thenReturn(headers);
+        when(blockSyncService.getHeaders(anyLong(), anyInt())).thenAnswer((Answer<List<BlockHeader>>)invocation -> {
+            Object[] arguments = invocation.getArguments();
+            return mockHeaders((Long)arguments[0], (int)arguments[1]);
+        });
         when(blockSyncService.validating(anyString(), anyList())).thenReturn(false);
         try {
             syncService.sync(startHeight, size);
@@ -137,7 +143,10 @@ import static org.testng.Assert.*;
         }
 
         //bft validating failed
-        when(blockSyncService.getHeaders(startHeight, size)).thenReturn(headers);
+        when(blockSyncService.getHeaders(anyLong(), anyInt())).thenAnswer((Answer<List<BlockHeader>>)invocation -> {
+            Object[] arguments = invocation.getArguments();
+            return mockHeaders((Long)arguments[0], (int)arguments[1]);
+        });
         when(blockSyncService.validating(anyString(), anyList())).thenReturn(true);
         when(blockSyncService.bftValidating(any())).thenReturn(null, false);
         try {
@@ -241,12 +250,111 @@ import static org.testng.Assert.*;
         when(block.getBlockHeader()).thenReturn(theader);
         when(pack.getCurrentBlock()).thenReturn(block);
         when(packageService.createPackContext(any())).thenReturn(pack);
+        syncService.sync(startHeight, size);
+        verify(packageService, times(size)).persisting(any());
+    }
+
+    @Test public void testSyncBlockValidatingFailed() {
+        long startHeight = currentHeight + 1;
+        int size = 100, times = 3, blockStep = 10;
+        List<BlockHeader> headers = mockHeaders(startHeight, size);
+        when(properties.getTryTimes()).thenReturn(times);
+        when(properties.getBlockStep()).thenReturn(blockStep);
+        when(blockRepository.getBlockHeader(currentHeight)).thenReturn(header);
+        when(blockSyncService.getHeaders(startHeight, size)).thenReturn(headers);
+        when(blockSyncService.validating(anyString(), anyList())).thenReturn(true);
+        when(blockSyncService.bftValidating(any())).thenReturn(true);
+
+        when(blockSyncService.getBlocks(anyLong(), anyInt())).thenAnswer((Answer<List<Block>>)invocation -> {
+            Object[] arguments = invocation.getArguments();
+            return mockBlocks((Long)arguments[0], (int)arguments[1]);
+        });
+        when(blockSyncService.validatingBlocks(any(), any())).thenReturn(true);
+        when(blockService.compareBlockHeader(any(), any())).thenReturn(true, false);
+        PackContext pack = mock(PackContext.class);
+        Block block = mock(Block.class);
+        BlockHeader theader = mock(BlockHeader.class);
+        when(block.getBlockHeader()).thenReturn(theader);
+        when(pack.getCurrentBlock()).thenReturn(block);
+        when(packageService.createPackContext(any())).thenReturn(pack);
         try {
             syncService.sync(startHeight, size);
         } catch (SlaveException e) {
             assertEquals(e.getCode(), SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
         }
-        verify(packageService, times(size)).persisting(any());
+    }
+
+    @Test public void testSyncBlockPersistingFailed() {
+        long startHeight = currentHeight + 1;
+        int size = 100, times = 3, blockStep = 10;
+        List<BlockHeader> headers = mockHeaders(startHeight, size);
+        when(properties.getTryTimes()).thenReturn(times);
+        when(properties.getBlockStep()).thenReturn(blockStep);
+        when(blockRepository.getBlockHeader(currentHeight)).thenReturn(header);
+        when(blockSyncService.getHeaders(startHeight, size)).thenReturn(headers);
+        when(blockSyncService.validating(anyString(), anyList())).thenReturn(true);
+        when(blockSyncService.bftValidating(any())).thenReturn(true);
+
+        when(blockSyncService.getBlocks(anyLong(), anyInt())).thenAnswer((Answer<List<Block>>)invocation -> {
+            Object[] arguments = invocation.getArguments();
+            return mockBlocks((Long)arguments[0], (int)arguments[1]);
+        });
+        when(blockSyncService.validatingBlocks(any(), any())).thenReturn(true);
+        when(blockService.compareBlockHeader(any(), any())).thenReturn(true, true, false);
+        PackContext pack = mock(PackContext.class);
+        Block block = mock(Block.class);
+        BlockHeader theader = mock(BlockHeader.class);
+        when(block.getBlockHeader()).thenReturn(theader);
+        when(pack.getCurrentBlock()).thenReturn(block);
+        when(packageService.createPackContext(any())).thenReturn(pack);
+        try {
+            syncService.sync(startHeight, size);
+        } catch (SlaveException e) {
+            assertEquals(e.getCode(), SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID);
+        }
+    }
+
+    @Test public void testSync() {
+        int times = 3, headerStep = 20, blockStep = 10;
+        long clusterHeight = 100L, cacheMinHeight = 160;
+        AtomicLong blockHeight = new AtomicLong(currentHeight);
+        AtomicInteger getHeaderTime = new AtomicInteger();
+        when(blockRepository.getMaxHeight()).thenReturn(blockHeight.longValue()).thenAnswer(invocation -> {
+            return blockHeight.addAndGet(getHeaderTime.incrementAndGet() % 2 == 0 ? headerStep : 0);
+        });
+        when(properties.getThreshold()).thenReturn(50);
+        when(blockSyncService.getClusterHeight()).thenReturn(clusterHeight);
+        when(cache.getMinHeight()).thenReturn(SyncPackageCache.INIT_HEIGHT, cacheMinHeight);
+        when(properties.getTryTimes()).thenReturn(times);
+        when(properties.getBlockStep()).thenReturn(blockStep);
+        when(properties.getHeaderStep()).thenReturn(headerStep);
+        when(blockRepository.getBlockHeader(anyLong())).thenAnswer(invocation -> {
+            Object[] arguments = invocation.getArguments();
+            BlockHeader header = mock(BlockHeader.class);
+            when(header.getHeight()).thenReturn((Long)arguments[0]);
+            return header;
+        });
+        when(blockSyncService.getHeaders(anyLong(), anyInt())).thenAnswer((Answer<List<BlockHeader>>)invocation -> {
+            Object[] arguments = invocation.getArguments();
+            return mockHeaders((Long)arguments[0], (int)arguments[1]);
+        });
+        when(blockSyncService.validating(anyString(), anyList())).thenReturn(true);
+        when(blockSyncService.bftValidating(any())).thenReturn(true);
+
+        when(blockSyncService.getBlocks(anyLong(), anyInt())).thenAnswer((Answer<List<Block>>)invocation -> {
+            Object[] arguments = invocation.getArguments();
+            return mockBlocks((Long)arguments[0], (int)arguments[1]);
+        });
+        when(blockSyncService.validatingBlocks(any(), any())).thenReturn(true);
+        when(blockService.compareBlockHeader(any(), any())).thenReturn(true);
+        PackContext pack = mock(PackContext.class);
+        Block block = mock(Block.class);
+        BlockHeader theader = mock(BlockHeader.class);
+        when(block.getBlockHeader()).thenReturn(theader);
+        when(pack.getCurrentBlock()).thenReturn(block);
+        when(packageService.createPackContext(any())).thenReturn(pack);
+        syncService.sync();
+        verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
     }
 
     private List<BlockHeader> mockHeaders(long startHeight, int size) {

@@ -5,6 +5,7 @@ import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.api.enums.account.TradeDirectionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.AmountUtil;
 import com.higgs.trust.slave.core.repository.account.FreezeRepository;
 import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityService;
 import com.higgs.trust.slave.core.service.snapshot.agent.*;
@@ -68,6 +69,10 @@ import java.util.Set;
         BigDecimal creditAmounts = BigDecimal.ZERO;
         //DEBIT trade
         for (AccountTradeInfo info : debitTradeInfo) {
+            if(!AmountUtil.isLegal(String.valueOf(info.getAmount()),true)){
+                log.error("[validateForOperation] amount:{} is illegal",info.getAmount());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
             AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(info.getAccountNo());
             if (accountInfo == null) {
                 log.error("[validateForOperation] account info is not exists by accountNo:{}", info.getAccountNo());
@@ -90,6 +95,10 @@ import java.util.Set;
         }
         //CREDIT trade
         for (AccountTradeInfo info : creditTradeInfo) {
+            if(!AmountUtil.isLegal(String.valueOf(info.getAmount()),true)){
+                log.error("[validateForOperation] amount:{} is illegal",info.getAmount());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
             AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(info.getAccountNo());
             if (accountInfo == null) {
                 log.error("[validateForOperation] account info is not exists by accountNo:{}", info.getAccountNo());
