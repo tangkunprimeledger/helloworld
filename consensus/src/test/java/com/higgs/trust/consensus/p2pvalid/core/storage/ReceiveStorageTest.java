@@ -1,5 +1,5 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
-import com.higgs.trust.common.utils.SignUtils;
+
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommandStatistics;
 import com.higgs.trust.consensus.p2pvalid.example.StringValidCommand;
@@ -8,7 +8,7 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertNotNull;
 
 @Slf4j
 public class ReceiveStorageTest {

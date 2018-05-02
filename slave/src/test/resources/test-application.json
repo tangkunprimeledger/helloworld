@@ -13,16 +13,16 @@
       "faultNodeNum": 0
     }
   },
-  "copycat": {
-    "client": {
-      "server": "127.0.0.1:8800"
-    },
-    "server": {
-      "address": "127.0.0.1:8800",
-      "cluster": "127.0.0.1:8800",
-      "stateMachineClass": "com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandlerImpl"
-    }
-  },
+//  "copycat": {
+//    "client": {
+//      "server": "127.0.0.1:8800"
+//    },
+//    "server": {
+//      "address": "127.0.0.1:8800",
+//      "cluster": "127.0.0.1:8800",
+//      "stateMachineClass": "com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandlerImpl"
+//    }
+//  },
   "eureka": {
     "client": {
       "enabled": false,

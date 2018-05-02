@@ -14,11 +14,11 @@ import io.atomix.copycat.server.storage.Storage;
 import io.atomix.copycat.server.storage.StorageLevel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.testng.annotations.Test;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -26,13 +26,16 @@ public class ConsensusClientTest {
     @Autowired
     private ValidConsensus validConsensus;
 
+    @Value("${copycat.server.logDir}")
+    private String copycatServerLogDir;
+
     List<Address> clusterAddress = new ArrayList<Address>() {{
         add(new Address("127.0.0.1:9800"));
         add(new Address("127.0.0.1:9900"));
     }};
 
     @Test
-    public void testRaftServerAndClient() throws InterruptedException {
+    public void testRaftServerAndClient() throws Exception {
         for (Address address : clusterAddress){
             new Thread(()-> startServer(address, clusterAddress)).start();
         }
@@ -50,14 +53,14 @@ public class ConsensusClientTest {
         return client;
     }
 
-    private void startServer(Address address, List<Address> clusterAddress){
+    private void startServer(Address address, List<Address> clusterAddress) {
         Address addressT = address;
         CopycatServer.Builder builder = CopycatServer.builder(addressT);
         builder.withStateMachine(StringStateMachine::new);
 
         builder.withTransport(NettyTransport.builder().withThreads(4).build());
 
-        Storage storage = Storage.builder().withStorageLevel(StorageLevel.DISK).withDirectory("D:/temp/copycat"+address.port())
+        Storage storage = Storage.builder().withStorageLevel(StorageLevel.DISK).withDirectory("C:/temp/copycat"+address.port())
                 .withMinorCompactionInterval(Duration.ofMillis(1000))
                 .withEntryBufferSize(1000).withCompactionThreads(1)
                 .withMaxEntriesPerSegment(1000)
@@ -68,6 +71,13 @@ public class ConsensusClientTest {
         CopycatServer server = builder.build();
         log.info("copycat cluster start ...");
         server.bootstrap(clusterAddress);
+        try {
+            Thread.sleep(6000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        server.shutdown();
+        log.info("copycat server is shutdown ...");
     }
 
 }
