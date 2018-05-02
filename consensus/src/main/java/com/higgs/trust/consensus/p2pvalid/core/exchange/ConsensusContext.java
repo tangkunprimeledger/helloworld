@@ -139,17 +139,20 @@ public class ConsensusContext {
                 rootKey = key;
                 if (null == key) {
                     log.warn("key is null");
+                    sendStorage.removeFromSendQueue();
                     continue;
                 }
                 SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
 
                 if (null == sendCommandStatistics) {
                     log.warn("key {} sendCommandStatistics is null", key);
+                    sendStorage.removeFromSendQueue();
                     continue;
                 }
 
                 if (sendCommandStatistics.isSend()) {
                     log.warn("sendCommandStatistics {} has been send", sendCommandStatistics);
+                    sendStorage.removeFromSendQueue();
                     continue;
                 }
 
