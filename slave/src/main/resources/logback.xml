@@ -16,9 +16,8 @@
             <level>DEBUG</level>
         </filter>
         <encoder>
-            <pattern>%d [%thread] %highlight(%-5level) %cyan(%logger{15}) - %highlight(%msg) %n
+            <pattern>%d [%thread] %highlight(%-5level) %cyan(%logger{15}) - %highlight(%msg) %n%xThrowable{500, FULL, bar}
             </pattern>
-            <charset>utf8</charset>
         </encoder>
     </appender>
 
@@ -32,7 +31,7 @@
         </rollingPolicy>
         <encoder>
             <pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg [%X{X-B3-TraceId:-},%X{X-B3-SpanId:-}]
-                %n
+                %n%xThrowable{500, FULL, bar}
             </pattern>
         </encoder>
     </appender>
