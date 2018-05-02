@@ -8,7 +8,7 @@
                     converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
 
     <property name="COMMON_LOG_PATTERN"
-              value="%d [%t] %-5p %c{0} - %m [%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]%n"/>
+              value="%d [%t] %-5p %c{0} - %m [%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]%n%xThrowable{500, FULL, bar}"/>
     <property name="MONITOR_LOG_PATTERN" value="%d [%t] %-5p %c{0} - %m,[%X{X-B3-TraceId:-}]%n"/>
 
     <!-- 项目名称 -->
