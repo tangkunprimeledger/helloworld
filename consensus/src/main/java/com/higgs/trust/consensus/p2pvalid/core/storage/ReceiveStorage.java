@@ -123,6 +123,7 @@ public class ReceiveStorage {
                     .serializer(Serializer.STRING)
                     .createOrOpen();
             commit();
+            log.info("storage map init success");
         }finally {
             closeTx();
         }
@@ -142,6 +143,7 @@ public class ReceiveStorage {
             thread.setDaemon(true);
             return thread;
         }).scheduleWithFixedDelay(this::gc, 2, 2, TimeUnit.SECONDS);
+        log.info("thread pool init success");
     }
 
     /**
