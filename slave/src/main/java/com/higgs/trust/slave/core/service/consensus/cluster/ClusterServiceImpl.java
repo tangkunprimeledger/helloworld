@@ -31,9 +31,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Service @Slf4j public class ClusterServiceImpl extends ValidConsensus implements ClusterService {
 
-    @Autowired ConsensusClient client;
+    NodeProperties properties;
 
-    @Autowired NodeProperties properties;
+    @Autowired ConsensusClient client;
 
     @Autowired NodeState nodeState;
 
@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
     @Autowired
     public ClusterServiceImpl(ClusterInfo clusterInfo, P2pConsensusClient client, NodeProperties properties) {
         super(clusterInfo, client, properties.getConsensusDir());
+        this.properties = properties;
     }
 
     public void releaseResult() {
