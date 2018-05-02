@@ -1,11 +1,13 @@
 {
   "测试ID": 0,
   "body": {
-    "bizFlowNo":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxaaaaaaaaaaaaaaaaaaaaaaaaaaaaXXXXXxxxxxxxxxxx",
-    "debitTradeInfo":[{
-      "accountNo":"",
-      "amount":12
-    }],
+    "bizFlowNo":"account_biz_flow_no_001",
+    "debitTradeInfo":[
+      {
+        "accountNo":"account_no_001",
+        "amount":9999999999999999999.9999999999
+      }
+    ],
     "creditTradeInfo":[{
       "accountNo":"account_no_002",
       "amount":10
@@ -15,5 +17,5 @@
   },
   "type": "",
   "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
-  "comment": "账务操作,[bizFlowNo][字段超长]测试"
+  "comment": "账务操作,[debitTradeInfo.amount][金额边界]测试"
 }
