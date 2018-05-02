@@ -4,8 +4,8 @@ import com.higgs.trust.slave.model.bo.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -17,11 +17,11 @@ import java.math.BigDecimal;
     /**
      * number of account
      */
-    @NotEmpty @Length(min = 1, max = 64) private String accountNo;
+    @NotNull @Length(min = 1, max = 64) private String accountNo;
     /**
      * happen amount,allow the negative
      */
-    @NotEmpty private BigDecimal amount;
+    @NotNull private BigDecimal amount;
 
     public AccountTradeInfo(String accountNo, BigDecimal amount) {
         this.accountNo = accountNo;

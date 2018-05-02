@@ -107,7 +107,7 @@
             parameterType="object">
         select
         <include refid="baseColumnList"/>
-        from block where height >= #{height} order by height asc limit #{limit}
+        from block where height >= #{startHeight} order by height asc limit #{limit}
     </select>
 
     <select id="getMaxHeight" resultType="java.lang.Long">

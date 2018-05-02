@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
             }
             @Override
             public void put(String key, StateManager state) {
+                log.debug("put contract state to db, the key is {}, state size: {}", key, state.getState().size());
                 getContractStateStore().put(key, state);
             }
             @Override

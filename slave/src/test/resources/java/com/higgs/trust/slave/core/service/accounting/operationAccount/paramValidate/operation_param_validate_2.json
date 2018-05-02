@@ -1,0 +1,19 @@
+{
+  "测试ID": 0,
+  "body": {
+    "bizFlowNo":"",
+    "debitTradeInfo":[{
+      "accountNo":"",
+      "amount":12
+    }],
+    "creditTradeInfo":[{
+      "accountNo":"",
+      "amount":10
+    }],
+    "accountDate":"2018-04-06 22:05:05",
+    "remark":"test currency"
+  },
+  "type": "",
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "账务操作,[bizFlowNo][空字符串]测试"
+}

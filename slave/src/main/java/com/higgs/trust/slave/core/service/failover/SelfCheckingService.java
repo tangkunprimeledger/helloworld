@@ -38,6 +38,8 @@ import org.springframework.stereotype.Service;
                 log.error("Node master check not pass");
                 nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
             }
+        } else {
+            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
         }
         return true;
     }
@@ -52,7 +54,7 @@ import org.springframework.stereotype.Service;
         Long maxHeight = blockService.getMaxHeight();
         Block block = blockRepository.getBlock(maxHeight);
         if (blockSyncService.validating(block)) {
-            int tryTimes = 10;
+            int tryTimes = 200;
             do {
                 Boolean result = blockSyncService.bftValidating(block.getBlockHeader());
                 if (log.isDebugEnabled()) {
@@ -62,7 +64,7 @@ import org.springframework.stereotype.Service;
                     return result;
                 }
                 try {
-                    Thread.sleep(30 * 1000);
+                    Thread.sleep(3 * 1000);
                 } catch (InterruptedException e) {
                     log.warn("self check error.", e);
                 }
@@ -81,6 +83,6 @@ import org.springframework.stereotype.Service;
         log.info("Starting master checking ...");
         log.debug("need todo ....");
         //todo:suimi 发送空包，获取最新高度比较
-        return false;
+        return true;
     }
 }

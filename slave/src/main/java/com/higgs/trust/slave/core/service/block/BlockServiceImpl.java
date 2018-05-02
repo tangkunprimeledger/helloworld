@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.block;
 
+import cn.primeledger.stability.log.TraceMonitor;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -9,8 +10,10 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.hash.DBRootHashBuilder;
 import com.higgs.trust.slave.core.service.block.hash.SnapshotRootHashBuilder;
-import com.higgs.trust.slave.model.bo.*;
-import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.Block;
+import com.higgs.trust.slave.model.bo.BlockHeader;
+import com.higgs.trust.slave.model.bo.StateRootHash;
+import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import com.higgs.trust.slave.model.enums.BlockVersionEnum;
@@ -35,7 +38,8 @@ import java.util.List;
         return blockRepository.getMaxHeight();
     }
 
-    @Override public BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
+    @TraceMonitor(printParameters = true) @Override
+    public BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
         List<TransactionReceipt> txReceipts) {
         log.info("[BlockServiceImpl.buildHeader] is start");
         //query max height from db
@@ -72,11 +76,13 @@ import java.util.List;
         return blockHeader;
     }
 
-    @Override public void storeTempHeader(BlockHeader header, BlockHeaderTypeEnum headerTypeEnum) {
+    @TraceMonitor(printParameters = true) @Override
+    public void storeTempHeader(BlockHeader header, BlockHeaderTypeEnum headerTypeEnum) {
         blockRepository.saveTempHeader(header, headerTypeEnum);
     }
 
-    @Override public BlockHeader getTempHeader(Long height, BlockHeaderTypeEnum headerTypeEnum) {
+    @TraceMonitor(printParameters = true) @Override
+    public BlockHeader getTempHeader(Long height, BlockHeaderTypeEnum headerTypeEnum) {
         return blockRepository.getTempHeader(height, headerTypeEnum);
     }
 
@@ -86,8 +92,8 @@ import java.util.List;
      * @param height
      * @return
      */
-    @Override public BlockHeader getHeader(Long height) {
-        return  blockRepository.getTempHeader(height, BlockHeaderTypeEnum.TEMP_TYPE);
+    @TraceMonitor(printParameters = true) @Override public BlockHeader getHeader(Long height) {
+        return blockRepository.getTempHeader(height, BlockHeaderTypeEnum.TEMP_TYPE);
     }
 
     @Override public Block buildBlock(PackageData packageData, BlockHeader blockHeader) {
@@ -113,8 +119,9 @@ import java.util.List;
         return block;
     }
 
-    @Override public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
-        blockRepository.saveBlock(block,txReceipts);
+    @TraceMonitor(printParameters = true) @Override
+    public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
+        blockRepository.saveBlock(block, txReceipts);
     }
 
     @Override public boolean compareBlockHeader(BlockHeader header1, BlockHeader header2) {
@@ -168,8 +175,7 @@ import java.util.List;
      * @param blockHeader
      * @return
      */
-    @Override
-    public String buildBlockHash(BlockHeader blockHeader) {
+    @Override public String buildBlockHash(BlockHeader blockHeader) {
         HashFunction function = Hashing.sha256();
         StringBuilder builder = new StringBuilder();
         builder.append(function.hashLong(blockHeader.getHeight()));

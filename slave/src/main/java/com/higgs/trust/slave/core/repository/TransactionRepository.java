@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.repository;
 
+import cn.primeledger.stability.log.TraceMonitor;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.vo.TransactionVO;
@@ -47,21 +48,21 @@ import java.util.List;
      */
     public List<SignedTransaction> queryTransactions(Long blockHeight) {
         List<TransactionPO> txPOs = transactionDao.queryByBlockHeight(blockHeight);
-        if(CollectionUtils.isEmpty(txPOs)){
+        if (CollectionUtils.isEmpty(txPOs)) {
             return null;
         }
         List<SignedTransaction> txs = new ArrayList<>();
-        for(TransactionPO tx : txPOs){
+        for (TransactionPO tx : txPOs) {
             SignedTransaction signedTransaction = new SignedTransaction();
-            CoreTransaction coreTx = BeanConvertor.convertBean(tx,CoreTransaction.class);
-            if(tx.getBizModel() != null){
+            CoreTransaction coreTx = BeanConvertor.convertBean(tx, CoreTransaction.class);
+            if (tx.getBizModel() != null) {
                 coreTx.setBizModel(JSON.parseObject(String.valueOf(tx.getBizModel())));
             }
             String actionDatas = tx.getActionDatas();
-            List<Action> actions = JSON.parseArray(actionDatas,Action.class);
+            List<Action> actions = JSON.parseArray(actionDatas, Action.class);
             coreTx.setActionList(actions);
             signedTransaction.setCoreTx(coreTx);
-            List<String> signDatas = JSON.parseArray(tx.getSignDatas(),String.class);
+            List<String> signDatas = JSON.parseArray(tx.getSignDatas(), String.class);
             signedTransaction.setSignatureList(signDatas);
             txs.add(signedTransaction);
         }
@@ -75,25 +76,26 @@ import java.util.List;
      * @param txs
      * @param txReceipts
      */
-    public void batchSaveTransaction(Long blockHeight,Date blockTime,List<SignedTransaction> txs, List<TransactionReceipt> txReceipts){
+    public void batchSaveTransaction(Long blockHeight, Date blockTime, List<SignedTransaction> txs,
+        List<TransactionReceipt> txReceipts) {
         log.info("[TransactionRepository.batchSaveTransaction] is start");
-        if(CollectionUtils.isEmpty(txs)){
+        if (CollectionUtils.isEmpty(txs)) {
             log.info("[batchSaveTransaction] txs is empty");
             return;
         }
         List<TransactionPO> txPOs = new ArrayList<>();
-        for(SignedTransaction tx : txs){
+        for (SignedTransaction tx : txs) {
             CoreTransaction coreTx = tx.getCoreTx();
-            TransactionPO po = BeanConvertor.convertBean(coreTx,TransactionPO.class);
-            if(coreTx.getBizModel() != null) {
+            TransactionPO po = BeanConvertor.convertBean(coreTx, TransactionPO.class);
+            if (coreTx.getBizModel() != null) {
                 po.setBizModel(coreTx.getBizModel().toJSONString());
             }
             po.setBlockHeight(blockHeight);
             po.setBlockTime(blockTime);
             po.setSignDatas(JSON.toJSONString(tx.getSignatureList()));
             po.setActionDatas(JSON.toJSONString(coreTx.getActionList()));
-            TransactionReceipt receipt = getTxReceipt(txReceipts,coreTx.getTxId());
-            if(receipt != null){
+            TransactionReceipt receipt = getTxReceipt(txReceipts, coreTx.getTxId());
+            if (receipt != null) {
                 po.setExecuteResult(receipt.isResult() ? "1" : "0");
                 po.setErrorCode(receipt.getErrorCode());
             }
@@ -101,12 +103,12 @@ import java.util.List;
         }
         try {
             int r = transactionDao.batchInsert(txPOs);
-            if(r != txPOs.size()){
+            if (r != txPOs.size()) {
                 log.error("[batchSaveTransaction]batch insert txs has error");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
-        }catch (DuplicateKeyException e){
-            log.error("[batchSaveTransaction] is idempotent blockHeight:{}",blockHeight);
+        } catch (DuplicateKeyException e) {
+            log.error("[batchSaveTransaction] is idempotent blockHeight:{}", blockHeight);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
         log.info("[TransactionRepository.batchSaveTransaction] is end");
@@ -119,12 +121,12 @@ import java.util.List;
      * @param txId
      * @return
      */
-    private TransactionReceipt getTxReceipt(List<TransactionReceipt> txReceipts,String txId){
-        if(CollectionUtils.isEmpty(txReceipts)){
+    private TransactionReceipt getTxReceipt(List<TransactionReceipt> txReceipts, String txId) {
+        if (CollectionUtils.isEmpty(txReceipts)) {
             return null;
         }
-        for(TransactionReceipt txReceipt : txReceipts){
-            if(StringUtils.equals(txReceipt.getTxId(),txId)){
+        for (TransactionReceipt txReceipt : txReceipts) {
+            if (StringUtils.equals(txReceipt.getTxId(), txId)) {
                 return txReceipt;
             }
         }
@@ -135,23 +137,22 @@ import java.util.List;
      * return txIds from db
      *
      * @param txs
-     *
      * @return
      */
-    public List<String> queryTxIds( List<SignedTransaction> txs) {
+    @TraceMonitor(printParameters = true) public List<String> queryTxIds(List<SignedTransaction> txs) {
         List<String> datas = new ArrayList<>();
-        if(CollectionUtils.isEmpty(txs)){
+        if (CollectionUtils.isEmpty(txs)) {
             return datas;
         }
         List<String> txIds = new ArrayList<>();
-        for(SignedTransaction signedTransaction : txs){
+        for (SignedTransaction signedTransaction : txs) {
             txIds.add(signedTransaction.getCoreTx().getTxId());
         }
         List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
-        if(CollectionUtils.isEmpty(transactionPOS)){
+        if (CollectionUtils.isEmpty(transactionPOS)) {
             return datas;
         }
-        for(TransactionPO transactionPO : transactionPOS){
+        for (TransactionPO transactionPO : transactionPOS) {
             datas.add(transactionPO.getTxId());
         }
         return datas;
