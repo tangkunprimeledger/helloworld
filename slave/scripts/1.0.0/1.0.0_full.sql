@@ -262,7 +262,7 @@ IF NOT EXISTS `transaction` (
 	`tx_id` VARCHAR (64) NOT NULL COMMENT 'transaction id',
 	`biz_model` MEDIUMTEXT DEFAULT NULL COMMENT 'the save data create the biz',
 	`policy_id` VARCHAR (32) NOT NULL COMMENT 'policy id',
-	`lock_time` datetime NOT NULL COMMENT 'the lock time create the tx . use in rs and slave to deal tx',
+	`lock_time` datetime(3) NOT NULL COMMENT 'the lock time create the tx . use in rs and slave to deal tx',
 	`sender` VARCHAR (32) NOT NULL COMMENT 'the rsId if the sender  for the tx',
 	`version` VARCHAR (32) NOT NULL COMMENT 'the version create the tx',
 	`block_height` BIGINT (20) NOT NULL COMMENT 'the block height create the tx',

@@ -91,37 +91,37 @@ import org.springframework.stereotype.Service;
         }
     }
 
-    @TraceMonitor(printParameters = true)
+    @TraceMonitor
     private void doValidate(Package pack) {
         packageLock.lockAndValidating(pack.getHeight());
         pack.setStatus(PackageStatusEnum.VALIDATING);
     }
 
-    @TraceMonitor(printParameters = true)
+    @TraceMonitor
     private void doValidatingToConsensus(Package pack) {
         packageLock.lockValidatingAndSubmit(pack.getHeight());
         pack.setStatus(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS);
     }
 
-    @TraceMonitor(printParameters = true)
+    @TraceMonitor
     private void doValidated(Package pack) {
         packageLock.lockAndValidated(pack.getHeight());
         pack.setStatus(PackageStatusEnum.VALIDATED);
     }
 
-    @TraceMonitor(printParameters = true)
+    @TraceMonitor
     private void doPersist(Package pack) {
         packageLock.lockAndPersist(pack.getHeight());
         pack.setStatus(PackageStatusEnum.PERSISTING);
     }
 
-    @TraceMonitor(printParameters = true)
+    @TraceMonitor
     private void doPersistingToConsensus(Package pack) {
         packageLock.lockPersistingAndSubmit(pack.getHeight());
         pack.setStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
     }
 
-    @TraceMonitor(printParameters = true)
+    @TraceMonitor
     private void doPersisted(Package pack) {
         packageLock.lockAndPersisted(pack.getHeight());
         pack.setStatus(PackageStatusEnum.PERSISTED);

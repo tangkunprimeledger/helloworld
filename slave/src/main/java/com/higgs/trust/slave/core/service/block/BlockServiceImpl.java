@@ -38,7 +38,7 @@ import java.util.List;
         return blockRepository.getMaxHeight();
     }
 
-    @TraceMonitor(printParameters = true) @Override
+    @TraceMonitor @Override
     public BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
         List<TransactionReceipt> txReceipts) {
         log.info("[BlockServiceImpl.buildHeader] is start");
@@ -76,12 +76,12 @@ import java.util.List;
         return blockHeader;
     }
 
-    @TraceMonitor(printParameters = true) @Override
+    @TraceMonitor @Override
     public void storeTempHeader(BlockHeader header, BlockHeaderTypeEnum headerTypeEnum) {
         blockRepository.saveTempHeader(header, headerTypeEnum);
     }
 
-    @TraceMonitor(printParameters = true) @Override
+    @TraceMonitor @Override
     public BlockHeader getTempHeader(Long height, BlockHeaderTypeEnum headerTypeEnum) {
         return blockRepository.getTempHeader(height, headerTypeEnum);
     }
@@ -92,7 +92,7 @@ import java.util.List;
      * @param height
      * @return
      */
-    @TraceMonitor(printParameters = true) @Override public BlockHeader getHeader(Long height) {
+    @TraceMonitor @Override public BlockHeader getHeader(Long height) {
         return blockRepository.getTempHeader(height, BlockHeaderTypeEnum.TEMP_TYPE);
     }
 
@@ -119,7 +119,7 @@ import java.util.List;
         return block;
     }
 
-    @TraceMonitor(printParameters = true) @Override
+    @TraceMonitor @Override
     public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
         blockRepository.saveBlock(block, txReceipts);
     }

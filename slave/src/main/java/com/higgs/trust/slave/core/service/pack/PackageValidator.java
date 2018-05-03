@@ -38,7 +38,7 @@ import java.util.List;
      *
      * @param packageData
      */
-    @TraceMonitor(printParameters = true) public void validating(PackageData packageData) {
+    @TraceMonitor public void validating(PackageData packageData) {
         log.info("[PackageValidator.validating] is start");
         Package pack = packageData.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
@@ -85,7 +85,7 @@ import java.util.List;
                 continue;
             }
             packageData.setCurrentTransaction(tx);
-            TransactionReceipt receipt = transactionExecutor.validate(packageData.getTransactionData());
+            TransactionReceipt receipt = transactionExecutor.validate(packageData.parseTransactionData());
             validatedDatas.add(tx);
             txReceipts.add(receipt);
         }

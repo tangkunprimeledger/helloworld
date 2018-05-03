@@ -106,7 +106,7 @@ import java.util.List;
             }
             //set current transaction and execute
             packageData.setCurrentTransaction(tx);
-            TransactionReceipt receipt = transactionExecutor.persist(packageData.getTransactionData());
+            TransactionReceipt receipt = transactionExecutor.persist(packageData.parseTransactionData());
             persistedDatas.add(tx);
             txReceipts.add(receipt);
         }

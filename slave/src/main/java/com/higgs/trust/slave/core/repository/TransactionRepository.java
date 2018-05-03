@@ -139,7 +139,7 @@ import java.util.List;
      * @param txs
      * @return
      */
-    @TraceMonitor(printParameters = true) public List<String> queryTxIds(List<SignedTransaction> txs) {
+    @TraceMonitor public List<String> queryTxIds(List<SignedTransaction> txs) {
         List<String> datas = new ArrayList<>();
         if (CollectionUtils.isEmpty(txs)) {
             return datas;
