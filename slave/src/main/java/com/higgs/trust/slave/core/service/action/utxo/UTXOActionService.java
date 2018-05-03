@@ -277,7 +277,7 @@ public class UTXOActionService {
         addOutputIdentities(outputList, dataIdentityList, dataIdentityHandler);
 
         // validate validateIdentity
-        boolean isSuccess = dataIdentityService.validate(policy.getRsIdSet(), dataIdentityList);
+        boolean isSuccess = dataIdentityService.validate(policy.getRsIds(), dataIdentityList);
         return isSuccess;
     }
 

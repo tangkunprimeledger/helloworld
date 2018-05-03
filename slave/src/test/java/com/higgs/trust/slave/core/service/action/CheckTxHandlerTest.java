@@ -38,12 +38,12 @@ public class CheckTxHandlerTest extends BaseTest {
 
     @Test public void verifySignatures() throws Exception {
 
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("rs-test1");
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("rs-test1");
         RegisterPolicy registerPolicyAction = new RegisterPolicy();
         registerPolicyAction.setPolicyId("syc-23ndnsc-3jndcs");
         registerPolicyAction.setPolicyName("test-policy");
-        registerPolicyAction.setRsIdSet(rsIdSet);
+        registerPolicyAction.setRsIds(rsIds);
 
         List actionList = new ArrayList<>();
         actionList.add(registerPolicyAction);
@@ -75,12 +75,12 @@ public class CheckTxHandlerTest extends BaseTest {
 
     @Test
     public void checkActions() {
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("rs-test1");
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("rs-test1");
         RegisterPolicy registerPolicyAction = new RegisterPolicy();
         registerPolicyAction.setPolicyId("syc-23ndnsc-3jndcs");
         registerPolicyAction.setPolicyName("test-policy");
-        registerPolicyAction.setRsIdSet(rsIdSet);
+        registerPolicyAction.setRsIds(rsIds);
         registerPolicyAction.setIndex(5);
         registerPolicyAction.setType(ActionTypeEnum.REGISTER_POLICY);
 

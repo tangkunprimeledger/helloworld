@@ -114,9 +114,9 @@ public class AccountControllerTest {
         registerPolicy.setPolicyId("test-policy-1");
         registerPolicy.setPolicyName("测试注册policy-1");
 
-        Set<String> rsIds = new HashSet<>();
+        List<String> rsIds = new ArrayList<>();
         rsIds.add("TRUST-NODE97");
-        registerPolicy.setRsIdSet(rsIds);
+        registerPolicy.setRsIds(rsIds);
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);
 
