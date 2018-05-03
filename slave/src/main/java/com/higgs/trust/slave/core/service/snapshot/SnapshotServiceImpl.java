@@ -11,6 +11,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.service.snapshot.agent.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 @Service
-public class SnapshotServiceImpl implements SnapshotService {
+public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
     /**
      * tag whether  the snapshot is in  transaction
      */
@@ -492,4 +493,11 @@ public class SnapshotServiceImpl implements SnapshotService {
         String valueTemp = JSON.toJSONString(object);
         return JSON.parseObject(valueTemp, object.getClass());
     }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        //init all snapshot service
+        init();
+    }
+
 }
