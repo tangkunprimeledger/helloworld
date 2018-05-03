@@ -109,14 +109,21 @@ import java.util.List;
      */
     private boolean needFailover(long height) {
         Long minHeight =
-            packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode()));
+            packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode()));
         if (minHeight == null) {
             return false;
         }
-        Package pack = packageRepository.load(height);
+        //前一区块处理完成
+        Package pack = packageRepository.load(height - 1);
+        if (pack != null && pack.getStatus() != PackageStatusEnum.PERSISTED
+            && pack.getStatus() != PackageStatusEnum.FAILOVER) {
+            return false;
+        }
+        pack = packageRepository.load(height);
         if (pack == null || pack.getStatus() == PackageStatusEnum.FAILOVER) {
             return true;
         }
+
         return false;
     }
 
@@ -131,13 +138,18 @@ import java.util.List;
             log.debug("check and instert package:{} for failover", height);
         }
         Long minHeight =
-            packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode()));
+            packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode()));
         Long maxHeight = blockService.getMaxHeight();
         if (minHeight == null || height <= maxHeight) {
             return false;
         }
-        Package pack = packageRepository.load(height);
-
+        //前一区块处理完成
+        Package pack = packageRepository.load(height - 1);
+        if (pack != null && pack.getStatus() != PackageStatusEnum.PERSISTED
+            && pack.getStatus() != PackageStatusEnum.FAILOVER) {
+            return false;
+        }
+        pack = packageRepository.load(height);
         if (pack == null) {
             return insertFailoverPackage(height);
         } else {

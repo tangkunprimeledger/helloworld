@@ -27,11 +27,6 @@ import org.springframework.stereotype.Component;
     private String consensusDir = "/tmp/higgs/trust/consensus";
 
     /**
-     * keeping milliseconds of the consensus result
-     */
-    private long consensusKeepTime = 1 * 60 * 1000;
-
-    /**
      * the milliseconds for waiting the consensus result
      */
     private long consensusWaitTime = 2 * 1000;
