@@ -26,13 +26,6 @@ import java.util.Map;
         return PROVIDER_ROOT_PATH;
     }
 
-    private void clearDB(){
-        StringBuilder sql = new StringBuilder();
-        sql.append("truncate table account_info;");
-        DataBaseManager dataBaseManager = new DataBaseManager();
-        dataBaseManager.executeSingleDelete(sql.toString(),DB_URL);
-    }
-
     @Test(dataProvider = "defaultProvider", priority = 1) public void paramValidate(Map<?, ?> param){
         log.info("[paramValidate]param:{}", param);
         AccountOperation action = getAction(param,AccountOperation.class,ActionTypeEnum.ACCOUNTING);
@@ -47,8 +40,12 @@ import java.util.Map;
 
     @Test(dataProvider = "defaultProvider", priority = 3) public void testException(Map<?, ?> param){
         log.info("[testException]param:{}", param);
+        executeBeforeSql(param);
+
         AccountOperation action = getAction(param,AccountOperation.class,ActionTypeEnum.ACCOUNTING);
         executeActionHandler(param,accountOperationHandler,action);
+
+        executeAfterSql(param);
     }
 
 }

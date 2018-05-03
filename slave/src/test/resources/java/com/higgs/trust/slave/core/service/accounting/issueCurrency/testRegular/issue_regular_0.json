@@ -6,5 +6,7 @@
   },
   "type": "",
   "assert": "",
+  "beforeSql":"",
+  "afterSql":["TRUNCATE TABLE CURRENCY_INFO;"],
   "comment": "发币方法,[币种名称][正常]测试"
 }
