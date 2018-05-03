@@ -107,17 +107,13 @@
 
     <!-- application monitor log -->
     <appender name="copycatMonitor" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${copycat_log}.log</file>
+        <file>${LOG_PATH}/copycat.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${copycat_log}.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>7</maxHistory>
-            <totalSizeCap>40GB</totalSizeCap>
+            <fileNamePattern>${LOG_PATH}/copycat.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%date{HH:mm:ss.SSS},[%thread] %-5level %logger{36} - %msg,[%X{X-B3-TraceId:-},%X{X-B3-SpanId:-}]
-                %n
-            </pattern>
-            <charset>utf8</charset>
+            <pattern>${COMMON_LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
