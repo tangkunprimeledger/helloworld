@@ -104,24 +104,10 @@ public class ReceiveStorage {
     private void initStorageMap(){
         openTx();
         try{
-            receiveStatisticsMap = receiveDB.hashMap(RECEIVE_STATISTICS_MAP)
-                    .keySerializer(Serializer.STRING)
-                    .valueSerializer(Serializer.JAVA)
-                    .createOrOpen();
-
-            receiveApplyQueue = receiveDB.treeMap(RECEIVE_APPLY_QUEUE)
-                    .keySerializer(Serializer.LONG)
-                    .valueSerializer(Serializer.JAVA)
-                    .createOrOpen();
-
-            receiveDelayQueue = receiveDB.treeMap(RECEIVE_DELAY_QUEUE)
-                    .keySerializer(Serializer.LONG)
-                    .valueSerializer(Serializer.JAVA)
-                    .createOrOpen();
-
-            gcSet = receiveDB.treeSet(RECEIVE_GC_QUEUE)
-                    .serializer(Serializer.STRING)
-                    .createOrOpen();
+            receiveStatisticsMap = getReceiveStatisticsMap();
+            receiveApplyQueue = getReceiveApplyQueue();
+            receiveDelayQueue = getReceiveDelayQueue();
+            gcSet = getGcSet();
             commit();
             log.info("storage map init success");
         }finally {
@@ -153,6 +139,7 @@ public class ReceiveStorage {
      * @return ReceiveCommandStatistics
      */
     public ReceiveCommandStatistics add(String key, ValidCommandWrap validCommandWrap) {
+        receiveStatisticsMap = getReceiveStatisticsMap();
         ValidCommand<?> validCommand = validCommandWrap.getValidCommand();
         ReceiveCommandStatistics receiveCommandStatistics = receiveStatisticsMap.getOrDefault(key, ReceiveCommandStatistics.create(validCommand));
 
@@ -175,6 +162,7 @@ public class ReceiveStorage {
     public void updateReceiveCommandStatistics(String key, ReceiveCommandStatistics receiveCommandStatistics) {
         ConsensusAssert.notNull(key);
         ConsensusAssert.notNull(receiveCommandStatistics);
+        receiveStatisticsMap = getReceiveStatisticsMap();
         receiveStatisticsMap.put(key, receiveCommandStatistics);
     }
 
@@ -185,6 +173,7 @@ public class ReceiveStorage {
      */
     public ReceiveCommandStatistics getReceiveCommandStatistics(String key) {
         ConsensusAssert.notNull(key);
+        receiveStatisticsMap = getReceiveStatisticsMap();
         return receiveStatisticsMap.get(key);
     }
 
@@ -194,6 +183,7 @@ public class ReceiveStorage {
      */
     public void addApplyQueue(String key) {
         ConsensusAssert.notNull(key);
+        receiveApplyQueue = getReceiveApplyQueue();
         Map.Entry<Long, String> lastEntry = receiveApplyQueue.lastEntry();
         if (null == lastEntry) {
             receiveApplyQueue.put(0L, key);
@@ -204,22 +194,26 @@ public class ReceiveStorage {
         applyQueueCondition.signal();
     }
 
-    public String takeFromApplyQueue() {
-        try {
-            Map.Entry<Long, String> entry = receiveApplyQueue.firstEntry();
-            while (null == entry) {
-                applyQueueCondition.await(5, TimeUnit.SECONDS);
-                entry = receiveApplyQueue.firstEntry();
-            }
-            receiveApplyQueue.remove(entry.getKey());
-            return entry.getValue();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+    public String getFirstFromApplyQueue() throws InterruptedException {
+        receiveApplyQueue = getReceiveApplyQueue();
+        Map.Entry<Long, String> entry = receiveApplyQueue.firstEntry();
+        while (null == entry) {
+            applyQueueCondition.await(5, TimeUnit.SECONDS);
+            entry = receiveApplyQueue.firstEntry();
         }
+        return entry.getValue();
     }
+
+    public void deleteFirstFromApplyQueue(){
+        receiveApplyQueue = getReceiveApplyQueue();
+        receiveApplyQueue.remove(receiveApplyQueue.firstKey());
+    }
+
 
     public void addDelayQueue(String key) {
         ConsensusAssert.notNull(key);
+        receiveDelayQueue = getReceiveDelayQueue();
         Map.Entry<Long, String> lastEntry = receiveDelayQueue.lastEntry();
         if (null == lastEntry) {
             receiveDelayQueue.put(0L, key);
@@ -232,6 +226,7 @@ public class ReceiveStorage {
     private void transFromDelayToApplyQueue() {
         openTx();
         try {
+            receiveDelayQueue = getReceiveDelayQueue();
             Map.Entry<Long, String> entry = receiveDelayQueue.firstEntry();
             if (null == entry) {
                 return;
@@ -251,6 +246,8 @@ public class ReceiveStorage {
     private void gc() {
         openTx();
         try {
+            gcSet = getGcSet();
+            receiveStatisticsMap = getReceiveStatisticsMap();
             if (gcSet.size() == 0) {
                 return;
             }
@@ -273,10 +270,37 @@ public class ReceiveStorage {
 
     public void addGCSet(String key) {
         try {
+            gcSet = getGcSet();
             gcSet.add(key);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    private HTreeMap getReceiveStatisticsMap(){
+        return receiveDB.hashMap(RECEIVE_STATISTICS_MAP)
+                .keySerializer(Serializer.STRING)
+                .valueSerializer(Serializer.JAVA)
+                .createOrOpen();
+    }
+
+    private BTreeMap getReceiveApplyQueue(){
+        return receiveDB.treeMap(RECEIVE_APPLY_QUEUE)
+                .keySerializer(Serializer.LONG)
+                .valueSerializer(Serializer.JAVA)
+                .createOrOpen();
+    }
+
+    private BTreeMap getReceiveDelayQueue(){
+        return receiveDB.treeMap(RECEIVE_DELAY_QUEUE)
+                .keySerializer(Serializer.LONG)
+                .valueSerializer(Serializer.JAVA)
+                .createOrOpen();
+    }
+
+    private NavigableSet<String> getGcSet(){
+        return receiveDB.treeSet(RECEIVE_GC_QUEUE)
+                .serializer(Serializer.STRING)
+                .createOrOpen();
+    }
 }

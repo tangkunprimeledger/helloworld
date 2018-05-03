@@ -220,7 +220,7 @@ public class ConsensusContext {
             String key = null;
             Span span = null;
             try {
-                key = receiveStorage.takeFromApplyQueue();
+                key = receiveStorage.getFirstFromApplyQueue();
                 if (null == key) {
                     log.warn("key is null");
                     continue;
@@ -252,6 +252,8 @@ public class ConsensusContext {
                     log.info("apply {} not close, add key {} to delay queue", receiveCommandStatistics.getValidCommand(), key);
                     receiveStorage.addDelayQueue(key);
                 }
+
+                receiveStorage.deleteFirstFromApplyQueue();
                 receiveStorage.commit();
             } catch (Throwable e) {
                 log.error("apply log failed! {}", e);

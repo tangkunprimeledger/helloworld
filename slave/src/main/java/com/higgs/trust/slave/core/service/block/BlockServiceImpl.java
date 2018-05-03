@@ -7,6 +7,7 @@ import com.google.common.hash.Hashing;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.hash.DBRootHashBuilder;
 import com.higgs.trust.slave.core.service.block.hash.SnapshotRootHashBuilder;
@@ -41,7 +42,7 @@ import java.util.List;
     @TraceMonitor @Override
     public BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
         List<TransactionReceipt> txReceipts) {
-        log.info("[BlockServiceImpl.buildHeader] is start");
+        Profiler.enter("[getMaxHeight and getBlockHeader]");
         //query max height from db
         Long maxHeight = getMaxHeight();
         if (!packageData.getCurrentPackage().getHeight().equals(maxHeight + 1L)) {
@@ -55,12 +56,15 @@ import java.util.List;
             log.error("[buildHeader]getBlockHeader from db is null by max block height:{}", maxHeight);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_GET_BLOCK_ERROR);
         }
+        Profiler.release();
+
         //build block header bo
         BlockHeader blockHeader = new BlockHeader();
         blockHeader.setHeight(maxHeight + 1L);
         blockHeader.setPreviousHash(mBlockHeader.getBlockHash());
         blockHeader.setBlockTime(packageData.getCurrentPackage().getPackageTime());
         blockHeader.setVersion(BlockVersionEnum.V1.getCode());
+        Profiler.enter("[buildRootHash]");
         //build all root hash for block header
         StateRootHash stateRootHash = null;
         if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
@@ -68,11 +72,14 @@ import java.util.List;
         } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
             stateRootHash = dbRootHashBuilder.build(packageData, txReceipts);
         }
+        Profiler.release();
         blockHeader.setStateRootHash(stateRootHash);
         //to calculate the hash of block header
+        Profiler.enter("[buildBlockHash]");
         String blockHash = buildBlockHash(blockHeader);
+        Profiler.release();
+
         blockHeader.setBlockHash(blockHash);
-        log.info("[BlockServiceImpl.buildHeader] is end");
         return blockHeader;
     }
 

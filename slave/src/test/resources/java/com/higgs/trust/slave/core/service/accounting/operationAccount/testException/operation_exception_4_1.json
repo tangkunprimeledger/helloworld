@@ -1,0 +1,33 @@
+{
+  "测试ID": 0,
+  "body": {
+    "bizFlowNo": "account_biz_flow_no_001",
+    "debitTradeInfo": [
+      {
+        "accountNo": "account_no_1001",
+        "amount": 0.1
+      }
+    ],
+    "creditTradeInfo": [
+      {
+        "accountNo": "account_no_1002",
+        "amount": 10
+      }
+    ],
+    "accountDate": "2018-05-05 15:05:05",
+    "remark": "test "
+  },
+  "type": "",
+  "beforeSql": [
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0.8', '0.0', 'DEBIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1002', 'CNY', '0.8', '0.0', 'CREDIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
+    "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1001', 'BUC_CHAIN', 'ALL', '2018-04-25 18:21:57')",
+    "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1002', 'BUC_CHAIN', 'ALL0', '2018-04-25 18:21:57')"
+  ],
+  "afterSql": [
+    "TRUNCATE TABLE `account_info`",
+    "TRUNCATE TABLE `data_identity`"
+  ],
+  "assert": "account check data owner error[SLAVE_ACCOUNT_CHECK_DATA_OWNER_ERROR]",
+  "comment": "账务操作,[数据归属-data_owner][不一致]测试"
+}

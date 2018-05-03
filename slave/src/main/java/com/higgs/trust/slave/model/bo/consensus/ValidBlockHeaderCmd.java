@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.slave.model.bo.consensus;
 
+import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,12 +19,12 @@ import lombok.Setter;
 
     private BlockHeader header;
 
-    public ValidBlockHeaderCmd(BlockHeader header, Boolean valid) {
-        super(header.getBlockHash(), valid);
+    public ValidBlockHeaderCmd(String requestId, BlockHeader header, Boolean valid) {
+        super(requestId, valid);
         this.header = header;
     }
 
     @Override public String messageDigest() {
-        return header.getBlockHash() + this.get();
+        return getRequestId() + Constant.SPLIT_SLASH + this.get();
     }
 }

@@ -1,0 +1,29 @@
+{
+  "测试ID": 0,
+  "body": {
+    "bizFlowNo": "account_biz_flow_no_001",
+    "debitTradeInfo": [
+      {
+        "accountNo": "account_no_1001",
+        "amount": 10
+      }
+    ],
+    "creditTradeInfo": [
+      {
+        "accountNo": "account_no_002",
+        "amount": 10
+      }
+    ],
+    "accountDate": "2018-05-05 15:05:05",
+    "remark": "test "
+  },
+  "type": "",
+  "beforeSql": [
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0.8', '0.0', 'DEBIT', '1', '1', 'DESTROY','2018-05-02 05:05:05')"
+  ],
+  "afterSql": [
+    "TRUNCATE TABLE `account_info`"
+  ],
+  "assert": "account status is destroy error[SLAVE_ACCOUNT_STATUS_IS_DESTROY_ERROR]",
+  "comment": "账务操作,[账户状态][已注销]测试"
+}

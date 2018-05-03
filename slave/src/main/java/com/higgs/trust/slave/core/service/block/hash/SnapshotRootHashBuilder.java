@@ -31,7 +31,6 @@ import java.util.List;
      * @return
      */
     public StateRootHash build(PackageData packageData, List<TransactionReceipt> txReceipts) {
-        log.info("[SnapshotRootHashBuilder.build] is start");
         //hash for transactions
         String txRootHash = txRootHashBuilder.buildTxs(packageData.getCurrentBlock().getSignedTxList());
         if (StringUtils.isEmpty(txRootHash)) {
@@ -55,7 +54,6 @@ import java.util.List;
         stateRootHash.setContractRootHash(contractRootHash);
         stateRootHash.setPolicyRootHash(policyRootHash);
         stateRootHash.setRsRootHash(rsRootHash);
-        log.info("[SnapshotRootHashBuilder.build] is end");
         return stateRootHash;
     }
 }

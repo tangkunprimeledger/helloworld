@@ -16,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -27,7 +29,7 @@ import java.util.concurrent.Executors;
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.*;
 
-@Slf4j @RunWith(PowerMockRunner.class) public class ClusterServiceImplTest {
+@Slf4j @RunWith(PowerMockRunner.class) @PrepareForTest(ClusterServiceImpl.class) public class ClusterServiceImplTest {
 
     @Mock ConsensusClient client;
 
@@ -38,6 +40,7 @@ import static org.testng.Assert.*;
     @InjectMocks ClusterServiceImpl clusterService;
 
     @BeforeMethod public void before() {
+        PowerMockito.mockStatic(System.class);
         properties = mock(NodeProperties.class);
         ClusterInfo clusterInfo = mock(ClusterInfo.class);
         P2pConsensusClient p2pConsensusClient = mock(P2pConsensusClient.class);
@@ -46,14 +49,12 @@ import static org.testng.Assert.*;
     }
 
     @Test public void testReleaseResult() throws InterruptedException {
-        when(properties.getConsensusKeepTime()).thenReturn(0L);
-        clusterService.getClusterHeight(1, 0);
+        clusterService.getClusterHeight("cluster_height_id", 1, 0);
         Thread.sleep(1L);
         ConcurrentHashMap<String, ClusterServiceImpl.ResultListen> resultListenMap =
             (ConcurrentHashMap<String, ClusterServiceImpl.ResultListen>)Whitebox
                 .getInternalState(clusterService, "resultListenMap");
-        assertTrue(resultListenMap.size() == 1);
-        clusterService.releaseResult();
+        assertEquals(resultListenMap.size(), 0);
         assertTrue(resultListenMap.isEmpty());
     }
 
@@ -84,13 +85,10 @@ import static org.testng.Assert.*;
         ConcurrentHashMap<String, ClusterServiceImpl.ResultListen> resultListenMap =
             (ConcurrentHashMap<String, ClusterServiceImpl.ResultListen>)Whitebox
                 .getInternalState(clusterService, "resultListenMap");
-        assertTrue(resultListenMap.size() == 1);
-        ClusterServiceImpl.ResultListen resultListen = resultListenMap.get(blockHash);
-        assertEquals(resultListen.getResult(), cmd.get());
+        assertEquals(resultListenMap.size(), 0);
     }
 
     @Test public void testGetClusterHeight() {
-        when(properties.getConsensusKeepTime()).thenReturn(100L);
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Long height = 1L;
         executorService.submit(() -> {
@@ -103,84 +101,50 @@ import static org.testng.Assert.*;
             ValidCommit<ValidClusterHeightCmd> commit = ValidCommit.of(ReceiveCommandStatistics.create(cmd));
             clusterService.handleClusterHeight(commit);
         });
-        Long clusterHeight = clusterService.getClusterHeight(1, 100L);
+        Long clusterHeight = clusterService.getClusterHeight("cluster_height_id", 1, 100L);
         assertEquals(clusterHeight, height);
     }
 
     @Test public void testGetClusterHeightNoCache() {
-        when(properties.getConsensusKeepTime()).thenReturn(0L);
-        Long clusterHeight = clusterService.getClusterHeight(1, 0L);
+        Long clusterHeight = clusterService.getClusterHeight("cluster_height_id", 1, 0L);
         assertNull(clusterHeight);
         ConcurrentHashMap<String, ClusterServiceImpl.ResultListen> resultListenMap =
             (ConcurrentHashMap<String, ClusterServiceImpl.ResultListen>)Whitebox
                 .getInternalState(clusterService, "resultListenMap");
-        assertTrue(resultListenMap.size() == 1);
-        ClusterServiceImpl.ResultListen resultListen = resultListenMap.get("cluster_height_id");
-        assertNotNull(resultListen);
+        assertEquals(resultListenMap.size(), 0);
     }
 
     @Test public void testGetClusterHeightWithCache() {
         ConcurrentHashMap<String, ClusterServiceImpl.ResultListen> resultListenMap =
             (ConcurrentHashMap<String, ClusterServiceImpl.ResultListen>)Whitebox
                 .getInternalState(clusterService, "resultListenMap");
-        ClusterServiceImpl.ResultListen value = new ClusterServiceImpl.ResultListen(10);
+        ClusterServiceImpl.ResultListen value = new ClusterServiceImpl.ResultListen();
         Long height = new Long(1L);
         value.setResult(height);
         resultListenMap.put("cluster_height_id", value);
-        Long clusterHeight = clusterService.getClusterHeight(1, 0L);
+        Long clusterHeight = clusterService.getClusterHeight("cluster_height_id", 1, 0L);
         assertNotNull(clusterHeight);
         assertEquals(clusterHeight, height);
     }
 
     @Test public void testValidatingHeader() {
-        when(properties.getConsensusKeepTime()).thenReturn(100L);
+
+        when(System.currentTimeMillis()).thenReturn(20180503L);
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         BlockHeader header = mock(BlockHeader.class);
-        String blockHash = "blockHash";
-        when(header.getBlockHash()).thenReturn(blockHash);
+        when(header.getHeight()).thenReturn(1L);
         executorService.submit(() -> {
             try {
                 Thread.sleep(10L);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            ValidBlockHeaderCmd cmd = new ValidBlockHeaderCmd(header, false);
+            ValidBlockHeaderCmd cmd = new ValidBlockHeaderCmd("valid_block_header_1_20180503", header, false);
             ValidCommit<ValidBlockHeaderCmd> commit = ValidCommit.of(ReceiveCommandStatistics.create(cmd));
             clusterService.handleValidHeader(commit);
         });
         Boolean validateResult = clusterService.validatingHeader(header, 100L);
         assertFalse(validateResult);
-    }
-
-    @Test public void testValidatingHeaderNoCache() {
-        String blockHash = "blockHash";
-        BlockHeader header = mock(BlockHeader.class);
-        when(header.getBlockHash()).thenReturn(blockHash);
-        Boolean result = clusterService.validatingHeader(header, 0);
-        assertNull(result);
-        ConcurrentHashMap<String, ClusterServiceImpl.ResultListen> resultListenMap =
-            (ConcurrentHashMap<String, ClusterServiceImpl.ResultListen>)Whitebox
-                .getInternalState(clusterService, "resultListenMap");
-        assertTrue(resultListenMap.size() == 1);
-        ClusterServiceImpl.ResultListen resultListen = resultListenMap.get(blockHash);
-        assertNotNull(resultListen);
-    }
-
-    @Test public void testValidatingHeaderWithCache() {
-        String blockHash = "blockHash";
-        BlockHeader header = mock(BlockHeader.class);
-        when(header.getBlockHash()).thenReturn(blockHash);
-        ConcurrentHashMap<String, ClusterServiceImpl.ResultListen> resultListenMap =
-            (ConcurrentHashMap<String, ClusterServiceImpl.ResultListen>)Whitebox
-                .getInternalState(clusterService, "resultListenMap");
-        ClusterServiceImpl.ResultListen value = new ClusterServiceImpl.ResultListen(10);
-        value.setResult(Boolean.FALSE);
-        resultListenMap.put(blockHash, value);
-        Boolean result = clusterService.validatingHeader(header, 0);
-        assertFalse(result);
-        assertTrue(resultListenMap.size() == 1);
-        ClusterServiceImpl.ResultListen resultListen = resultListenMap.get(blockHash);
-        assertFalse((Boolean)resultListen.getResult());
     }
 
 }
