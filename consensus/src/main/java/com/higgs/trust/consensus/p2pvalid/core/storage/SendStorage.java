@@ -95,25 +95,10 @@ public class SendStorage {
     private void initStorageMap(){
         openTx();
         try{
-
-            submitMap = sendDB.hashMap(COMMAND_SUBMIT_MAP)
-                    .keySerializer(Serializer.STRING)
-                    .valueSerializer(Serializer.JAVA)
-                    .createOrOpen();
-
-            sendQueue = sendDB.treeMap(COMMAND_SEND_QUEUE)
-                    .keySerializer(Serializer.LONG)
-                    .valueSerializer(Serializer.STRING)
-                    .createOrOpen();
-
-            sendDelayQueue = sendDB.treeMap(COMMAND_DELAY_QUEUE)
-                    .keySerializer(Serializer.LONG)
-                    .valueSerializer(Serializer.JAVA)
-                    .createOrOpen();
-
-            gcSet = sendDB.treeSet(COMMAND_GC_QUEUE)
-                    .serializer(Serializer.STRING)
-                    .createOrOpen();
+            submitMap = getSubmitMap();
+            sendQueue = getSendQueue();
+            sendDelayQueue = getSendDelayQueue();
+            gcSet = getGcSet();
             commit();
             log.info("storage map init success");
         } finally {
@@ -144,6 +129,7 @@ public class SendStorage {
      * @return String
      */
     public String submit(ValidCommandWrap validCommandWrap) {
+        submitMap = getSubmitMap();
         ConsensusAssert.notNull(validCommandWrap);
         SendCommandStatistics sendCommandStatistics = SendCommandStatistics.of(validCommandWrap);
         String key = UUID.randomUUID().toString();
@@ -163,6 +149,7 @@ public class SendStorage {
      * @param key key of sendCommandStatistics
      */
     public void addSendQueue(String key) {
+        sendQueue = getSendQueue();
         ConsensusAssert.notNull(key);
         Map.Entry<Long, String> lastEntry = sendQueue.lastEntry();
         if (null == lastEntry) {
@@ -179,6 +166,7 @@ public class SendStorage {
      */
     public String takeFromSendQueue() {
         try {
+            sendQueue = getSendQueue();
             Map.Entry<Long, String> firstEntry = sendQueue.firstEntry();
             while (null == firstEntry) {
                 sendQueueCondition.await();
@@ -197,6 +185,7 @@ public class SendStorage {
      */
     public void removeFromSendQueue() {
         try {
+            sendQueue = getSendQueue();
             sendQueue.remove(sendQueue.firstEntry().getKey());
         } catch (Exception e) {
             log.error("{}", e);
@@ -210,6 +199,7 @@ public class SendStorage {
      */
     public void addDelayQueue(String key) {
         ConsensusAssert.notNull(key);
+        sendDelayQueue = getSendDelayQueue();
         Map.Entry<Long, String> lastEntry = sendDelayQueue.lastEntry();
         if (null == lastEntry) {
             sendDelayQueue.put(0L, key);
@@ -221,6 +211,7 @@ public class SendStorage {
     private void transFromDelayToSendQueue() {
         openTx();
         try {
+            sendDelayQueue = getSendDelayQueue();
             Map.Entry<Long, String> entry = sendDelayQueue.firstEntry();
             if (null == entry) {
                 return;
@@ -241,6 +232,7 @@ public class SendStorage {
     private void gc() {
         openTx();
         try {
+            gcSet = getGcSet();
             if (gcSet.size() == 0) {
                 return;
             }
@@ -261,6 +253,7 @@ public class SendStorage {
     }
 
     public void updateSendCommandStatics(String key, SendCommandStatistics sendCommandStatistics) {
+        submitMap = getSubmitMap();
         ConsensusAssert.notNull(key);
         ConsensusAssert.notNull(sendCommandStatistics);
         submitMap.put(key,sendCommandStatistics);
@@ -271,8 +264,36 @@ public class SendStorage {
      * @param key key of sendCommandStatistics
      */
     public void addGCSet(String key) {
+        gcSet = getGcSet();
         ConsensusAssert.notNull(key);
         gcSet.add(key);
+    }
+
+    private HTreeMap getSubmitMap(){
+        return sendDB.hashMap(COMMAND_SUBMIT_MAP)
+                .keySerializer(Serializer.STRING)
+                .valueSerializer(Serializer.JAVA)
+                .createOrOpen();
+    }
+
+    private BTreeMap<Long, String> getSendQueue(){
+        return sendDB.treeMap(COMMAND_SEND_QUEUE)
+                .keySerializer(Serializer.LONG)
+                .valueSerializer(Serializer.STRING)
+                .createOrOpen();
+    }
+
+    private BTreeMap getSendDelayQueue(){
+        return sendDB.treeMap(COMMAND_DELAY_QUEUE)
+                .keySerializer(Serializer.LONG)
+                .valueSerializer(Serializer.JAVA)
+                .createOrOpen();
+    }
+
+    private NavigableSet<String> getGcSet(){
+        return sendDB.treeSet(COMMAND_GC_QUEUE)
+                .serializer(Serializer.STRING)
+                .createOrOpen();
     }
 
 
