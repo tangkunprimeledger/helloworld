@@ -113,7 +113,7 @@ public abstract class AbstractConsensusStateMachine extends StateMachine impleme
             Span span = null;
             try {
                 if(c instanceof AbstractConsensusCommand){
-                    span = TraceUtils.createSpan(((AbstractConsensusCommand)c).getTranceId());
+                    span = TraceUtils.createSpan(((AbstractConsensusCommand)c).getTraceId());
                 }
                 ConsensusCommit<? extends Operation> consensusCommit = new CopycatCommitAdapter<>(c);
                 method.invoke(this, consensusCommit);
@@ -143,7 +143,7 @@ public abstract class AbstractConsensusStateMachine extends StateMachine impleme
             Span span = null;
             try {
                 if(c instanceof AbstractConsensusCommand){
-                    span = TraceUtils.createSpan(((AbstractConsensusCommand)c).getTranceId());
+                    span = TraceUtils.createSpan(((AbstractConsensusCommand)c).getTraceId());
                 }
                 ConsensusCommit<? extends Operation> consensusCommit = new CopycatCommitAdapter<>(c);
                 return method.invoke(this, consensusCommit);

@@ -24,7 +24,7 @@ public class CopycatClientAdapter implements ConsensusClient {
     public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
         if (command instanceof Command) {
             if(command instanceof AbstractConsensusCommand){
-                ((AbstractConsensusCommand)command).setTranceId(TraceUtils.getTraceId());
+                ((AbstractConsensusCommand)command).setTraceId(TraceUtils.getTraceId());
             }
             return copycatClient.submit((Command<T>) command);
         }

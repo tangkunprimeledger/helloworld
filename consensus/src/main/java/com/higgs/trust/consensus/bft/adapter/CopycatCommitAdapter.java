@@ -7,6 +7,9 @@ import io.atomix.copycat.server.session.ServerSession;
 
 import java.time.Instant;
 
+/**
+ * @author cwy
+ */
 public class CopycatCommitAdapter<T extends Operation> implements Commit<T>, ConsensusCommit<T> {
 
     private Commit<T> commit;
