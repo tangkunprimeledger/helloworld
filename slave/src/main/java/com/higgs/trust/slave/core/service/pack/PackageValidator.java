@@ -4,6 +4,7 @@ import cn.primeledger.stability.log.TraceMonitor;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
@@ -39,7 +40,8 @@ import java.util.List;
      * @param packageData
      */
     @TraceMonitor public void validating(PackageData packageData) {
-        log.info("[PackageValidator.validating] is start");
+        Profiler.start("[PackageValidator.validating.monitor]");
+
         Package pack = packageData.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (CollectionUtils.isEmpty(txs)) {
@@ -50,11 +52,17 @@ import java.util.List;
             //snapshot transactions should be init
             snapshotService.destroy();
             //validate all transactions
+            Profiler.enter("[execute txs]");
             List<TransactionReceipt> txReceipts = executeTransactions(packageData);
+            Profiler.release();
             //build a new block hash
+            Profiler.enter("[build block header]");
             BlockHeader blockHeader = blockService.buildHeader(TxProcessTypeEnum.VALIDATE, packageData, txReceipts);
+            Profiler.release();
             //persist block hash to tmp and context
+            Profiler.enter("[store block header]");
             blockService.storeTempHeader(blockHeader, BlockHeaderTypeEnum.TEMP_TYPE);
+            Profiler.release();
             packageData.getCurrentBlock().setBlockHeader(blockHeader);
         } catch (Throwable e) {
             log.error("[package.validating]has error");
@@ -63,7 +71,11 @@ import java.util.List;
             //snapshot transactions should be destory
             snapshotService.destroy();
         }
-        log.info("[PackageValidator.validating] is end");
+
+        Profiler.release();
+        if (Profiler.getDuration() > 0) {
+            log.info(Profiler.dump());
+        }
     }
 
     /**
@@ -73,9 +85,10 @@ import java.util.List;
      * @return
      */
     private List<TransactionReceipt> executeTransactions(PackageData packageData) {
-        log.info("[PackageValidator.executeTransactions] is start");
         List<SignedTransaction> txs = packageData.getCurrentPackage().getSignedTxList();
+        Profiler.enter("[queryTxIds]");
         List<String> dbTxs = transactionRepository.queryTxIds(txs);
+        Profiler.release();
         List<SignedTransaction> validatedDatas = new ArrayList<>();
         List<TransactionReceipt> txReceipts = new ArrayList<>(txs.size());
         //loop validate each transaction
@@ -90,7 +103,6 @@ import java.util.List;
             txReceipts.add(receipt);
         }
         packageData.getCurrentBlock().setSignedTxList(validatedDatas);
-        log.info("[PackageValidator.executeTransactions] is end");
         return txReceipts;
     }
 
@@ -126,16 +138,20 @@ import java.util.List;
          * 3.通过pendingState通知业务RS每个交易的接收结果
          * 4.提交事务
          */
-        log.info("[PackageValidator.validated] is start");
+        Profiler.start("PackageValidator.validated] is start");
         //gets the block header from db
+        Profiler.enter("[query temp header of CONSENSUS_VALIDATE_TYPE]");
         BlockHeader consensHeader =
             blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
+        Profiler.release();
         //check hash
         if (consensHeader == null) {
             log.warn("[package.validated] consensus header of db is null blockHeight:{}", pack.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
         }
+        Profiler.enter("[query temp header of TEMP_TYPE]");
         BlockHeader tempHeader = blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.TEMP_TYPE);
+        Profiler.release();
         if (tempHeader == null) {
             log.error("[package.validated] temp header of db is null blockHeight:{}", pack.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
@@ -148,6 +164,9 @@ import java.util.List;
         }
 
         //TODO:call RS business
-        log.info("[PackageValidator.validated] is end");
+        Profiler.release();
+        if (Profiler.getDuration() > 0) {
+            log.info(Profiler.dump());
+        }
     }
 }

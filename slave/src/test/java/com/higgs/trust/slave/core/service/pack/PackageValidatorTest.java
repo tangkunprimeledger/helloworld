@@ -33,9 +33,14 @@ public class PackageValidatorTest extends IntegrateBaseTest {
     }
     @Test
     public void testValidating() throws Exception {
+        test(6L);
+        test(7L);
+    }
+
+    private void test(Long height) throws Exception {
         Block block = new Block();
         Package pack = new Package();
-        pack.setHeight(4L);
+        pack.setHeight(height);
         pack.setPackageTime(System.currentTimeMillis());
         BlockHeader blockHeader = TestDataMaker.makeBlockHeader();
         block.setBlockHeader(blockHeader);
