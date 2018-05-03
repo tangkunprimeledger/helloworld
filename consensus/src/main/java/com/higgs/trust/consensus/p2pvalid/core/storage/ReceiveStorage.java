@@ -194,20 +194,22 @@ public class ReceiveStorage {
         applyQueueCondition.signal();
     }
 
-    public String takeFromApplyQueue() {
-        try {
-            receiveApplyQueue = getReceiveApplyQueue();
-            Map.Entry<Long, String> entry = receiveApplyQueue.firstEntry();
-            while (null == entry) {
-                applyQueueCondition.await(5, TimeUnit.SECONDS);
-                entry = receiveApplyQueue.firstEntry();
-            }
-            receiveApplyQueue.remove(entry.getKey());
-            return entry.getValue();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+    public String getFirstFromApplyQueue() throws InterruptedException {
+        receiveApplyQueue = getReceiveApplyQueue();
+        Map.Entry<Long, String> entry = receiveApplyQueue.firstEntry();
+        while (null == entry) {
+            applyQueueCondition.await(5, TimeUnit.SECONDS);
+            entry = receiveApplyQueue.firstEntry();
         }
+        return entry.getValue();
     }
+
+    public void deleteFirstFromApplyQueue(){
+        receiveApplyQueue = getReceiveApplyQueue();
+        receiveApplyQueue.remove(receiveApplyQueue.firstKey());
+    }
+
 
     public void addDelayQueue(String key) {
         ConsensusAssert.notNull(key);
