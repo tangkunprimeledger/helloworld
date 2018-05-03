@@ -92,8 +92,11 @@ public class ReceiveStorageTest {
             String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
             receiveStorage.add(key, validCommandWrap);
             receiveStorage.addApplyQueue(key);
-            key = receiveStorage.takeFromApplyQueue();
+            key = receiveStorage.getFirstFromApplyQueue();
+            receiveStorage.deleteFirstFromApplyQueue();
             assertNotNull(key);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             receiveStorage.rollBack();
             receiveStorage.closeTx();
@@ -107,8 +110,11 @@ public class ReceiveStorageTest {
             String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
             receiveStorage.add(key, validCommandWrap);
             receiveStorage.addDelayQueue(key);
-            key = receiveStorage.takeFromApplyQueue();
+            key = receiveStorage.getFirstFromApplyQueue();
+            receiveStorage.deleteFirstFromApplyQueue();
             assertNotNull(key);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             receiveStorage.rollBack();
             receiveStorage.closeTx();
