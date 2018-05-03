@@ -35,7 +35,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
     public void testValidating() throws Exception {
         Block block = new Block();
         Package pack = new Package();
-        pack.setHeight(6L);
+        pack.setHeight(4L);
         pack.setPackageTime(System.currentTimeMillis());
         BlockHeader blockHeader = TestDataMaker.makeBlockHeader();
         block.setBlockHeader(blockHeader);
@@ -91,7 +91,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
 
         PackContext packContext = new PackContext(pack,block);
 
-//        packageValidator.validating(packContext);
+        packageValidator.validating(packContext);
 
         packagePersistor.persisting(packContext);
 

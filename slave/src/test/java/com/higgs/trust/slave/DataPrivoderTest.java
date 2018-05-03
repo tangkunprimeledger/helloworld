@@ -2,23 +2,16 @@ package com.higgs.trust.slave;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.tester.assertutil.AssertTool;
 import com.higgs.trust.tester.dbunit.DataBaseManager;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import com.higgs.trust.tester.*;
-import com.higgs.trust.testframework.u;
-import java.io.File;
+
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class DataPrivoderTest{
