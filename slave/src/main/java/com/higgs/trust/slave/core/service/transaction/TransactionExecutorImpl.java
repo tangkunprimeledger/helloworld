@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.transaction;
 
-import cn.primeledger.stability.log.TraceMonitor;
 import com.higgs.trust.contract.SmartContractException;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -8,6 +7,7 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.MerkleException;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.version.TransactionProcessor;
 import com.higgs.trust.slave.core.service.version.TxProcessorHolder;
@@ -33,7 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired TxCheckHandler txCheckHandler;
     @Autowired SnapshotService snapshot;
 
-    @TraceMonitor @Override
+     @Override
     public TransactionReceipt validate(TransactionData transactionData) {
         log.info("[TransactionExecutor.validate] is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
@@ -75,7 +75,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         return receipt;
     }
 
-    @TraceMonitor @Override public TransactionReceipt persist(TransactionData transactionData) {
+     @Override public TransactionReceipt persist(TransactionData transactionData) {
         log.info("[TransactionExecutorImpl.persist]is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
 
@@ -106,7 +106,6 @@ import org.springframework.transaction.support.TransactionTemplate;
     }
 
     private void execute(TransactionData transactionData, TxProcessTypeEnum processTypeEnum) {
-        log.info("[TransactionExecutorImpl.execute]is start");
         SignedTransaction signedTransaction = transactionData.getCurrentTransaction();
         //param validation
         if (null == signedTransaction || null == signedTransaction.getCoreTx()) {
@@ -133,12 +132,13 @@ import org.springframework.transaction.support.TransactionTemplate;
         String version = coreTx.getVersion();
         // get exact handler based on version
         TransactionProcessor processor = processorHolder.getProcessor(VersionEnum.getBizTypeEnumBycode(version));
+        Profiler.enter("[execute actions]");
         //ensure that all actions are transactional
         txNested.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                 processor.process(transactionData, processTypeEnum);
             }
         });
-        log.info("[TransactionExecutorImpl.execute]is end");
+        Profiler.release();
     }
 }

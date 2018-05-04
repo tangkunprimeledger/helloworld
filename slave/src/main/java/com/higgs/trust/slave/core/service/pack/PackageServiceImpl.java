@@ -21,7 +21,6 @@ import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.context.PackContext;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;

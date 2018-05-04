@@ -2,7 +2,7 @@ package com.higgs.trust.slave.api.enums;
 
 /**
  * @author WangQuanzhou
- * @desc 多版本枚举对象
+ * @desc multi version enum class
  * @date 2018/3/27 11:55
  */
 public enum VersionEnum {

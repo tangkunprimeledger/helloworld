@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * @author WangQuanzhou
- * @desc service transaction class
+ * @desc core transaction class
  * @date 2018/3/26 16:59
  */
 @Getter

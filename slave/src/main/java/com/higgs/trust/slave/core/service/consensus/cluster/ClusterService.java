@@ -5,8 +5,6 @@ package com.higgs.trust.slave.core.service.consensus.cluster;
 
 import com.higgs.trust.slave.model.bo.BlockHeader;
 
-import java.util.concurrent.TimeUnit;
-
 public interface ClusterService {
 
     /**

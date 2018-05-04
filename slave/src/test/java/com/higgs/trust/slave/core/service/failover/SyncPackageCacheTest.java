@@ -29,8 +29,6 @@ import static org.testng.Assert.assertEquals;
 
     @Mock private NodeState nodeState;
 
-    @Mock private Package mockPack;
-
     @BeforeClass public void before() {
         MockitoAnnotations.initMocks(this);
     }
@@ -41,7 +39,7 @@ import static org.testng.Assert.assertEquals;
 
     @Test public void testReceiveNot() {
         when(nodeState.isState(NodeStateEnum.AutoSync)).thenReturn(false);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(1L);
         assertEquals(packageCache.getMinHeight(), SyncPackageCache.INIT_HEIGHT);
     }
 
@@ -54,32 +52,27 @@ import static org.testng.Assert.assertEquals;
         when(failoverProperties.getThreshold()).thenReturn(100);
         when(failoverProperties.getKeepSize()).thenReturn(10);
         long height = 1L;
-        when(mockPack.getHeight()).thenReturn(height);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(height);
         assertEquals(packageCache.getMinHeight(), height);
         assertEquals(packageCache.getLatestHeight(), height);
 
         height = 2L;
-        when(mockPack.getHeight()).thenReturn(height);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(height);
         assertEquals(packageCache.getMinHeight(), 1L);
         assertEquals(packageCache.getLatestHeight(), height);
 
         height = 1L;
-        when(mockPack.getHeight()).thenReturn(height);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(height);
         assertEquals(packageCache.getMinHeight(), 1L);
         assertEquals(packageCache.getLatestHeight(), 2L);
 
         height = 3L;
-        when(mockPack.getHeight()).thenReturn(height);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(height);
         assertEquals(packageCache.getMinHeight(), 1L);
         assertEquals(packageCache.getLatestHeight(), height);
 
         height = 5L;
-        when(mockPack.getHeight()).thenReturn(height);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(height);
         assertEquals(packageCache.getMinHeight(), height);
         assertEquals(packageCache.getLatestHeight(), height);
     }
@@ -92,14 +85,12 @@ import static org.testng.Assert.assertEquals;
         long height = 1L;
 
         do {
-            when(mockPack.getHeight()).thenReturn(height);
-            packageCache.receive(mockPack);
+            packageCache.receivePackageHeight(height);
             assertEquals(packageCache.getMinHeight(), 1L);
             assertEquals(packageCache.getLatestHeight(), height);
         } while (++height <= 100);
 
-        when(mockPack.getHeight()).thenReturn(101L);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(101L);
         assertEquals(packageCache.getMinHeight(), 91L);
         assertEquals(packageCache.getLatestHeight(), 101L);
     }
@@ -112,26 +103,22 @@ import static org.testng.Assert.assertEquals;
         long height = 1L;
 
         do {
-            when(mockPack.getHeight()).thenReturn(height);
-            packageCache.receive(mockPack);
+            packageCache.receivePackageHeight(height);
             assertEquals(packageCache.getMinHeight(), 1L);
             assertEquals(packageCache.getLatestHeight(), height);
         } while (++height <= 10);
 
-        when(mockPack.getHeight()).thenReturn(11L);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(11L);
         assertEquals(packageCache.getMinHeight(), 11L);
         assertEquals(packageCache.getLatestHeight(), 11L);
 
         do {
-            when(mockPack.getHeight()).thenReturn(height);
-            packageCache.receive(mockPack);
+            packageCache.receivePackageHeight(height);
             assertEquals(packageCache.getMinHeight(), 11L);
             assertEquals(packageCache.getLatestHeight(), height);
         } while (++height <= 20);
 
-        when(mockPack.getHeight()).thenReturn(21L);
-        packageCache.receive(mockPack);
+        packageCache.receivePackageHeight(21L);
         assertEquals(packageCache.getMinHeight(), 21L);
         assertEquals(packageCache.getLatestHeight(), 21L);
     }
@@ -144,8 +131,7 @@ import static org.testng.Assert.assertEquals;
         long height = 1L;
 
         do {
-            when(mockPack.getHeight()).thenReturn(height);
-            packageCache.receive(mockPack);
+            packageCache.receivePackageHeight(height);
         } while (++height <= 100);
         packageCache.clean();
         assertEquals(packageCache.getMinHeight(), SyncPackageCache.INIT_HEIGHT);
@@ -159,8 +145,7 @@ import static org.testng.Assert.assertEquals;
 
         long height = 1L;
         do {
-            when(mockPack.getHeight()).thenReturn(height);
-            packageCache.receive(mockPack);
+            packageCache.receivePackageHeight(height);
         } while (++height <= 100);
         packageCache.stateChanged(null, null);
         assertEquals(packageCache.getMinHeight(), 1L);

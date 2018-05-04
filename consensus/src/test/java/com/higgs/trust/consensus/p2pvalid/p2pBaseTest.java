@@ -3,7 +3,6 @@ package com.higgs.trust.consensus.p2pvalid;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.higgs.trust.consensus.bft.BftTestApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeSuite;

@@ -1,16 +1,14 @@
 package com.higgs.trust.slave.core.service.action.account;
 
-import java.util.Map;
-
-import com.higgs.trust.slave.model.bo.context.PackContext;
+import com.higgs.trust.slave._interface.InterfaceCommonTest;
+import com.higgs.trust.slave.model.bo.account.OpenAccount;
+import com.higgs.trust.tester.dbunit.DataBaseManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.higgs.trust.slave._interface.InterfaceCommonTest;
-import com.higgs.trust.slave.model.bo.account.OpenAccount;
-import com.higgs.trust.tester.dbunit.DataBaseManager;
+import java.util.Map;
 
 /**
  * @author hanson

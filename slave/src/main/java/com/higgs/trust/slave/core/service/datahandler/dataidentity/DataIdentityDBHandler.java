@@ -4,9 +4,6 @@ import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.model.bo.DataIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * DataIdentity DB Handler

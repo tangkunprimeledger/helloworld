@@ -14,8 +14,12 @@ import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author tangfashuang
@@ -51,6 +55,15 @@ import org.springframework.stereotype.Component;
         // validate param
         if (!BeanValidator.validate(bo).isSuccess()) {
             log.error("[RegisterPolicyHandler.process] param validate failed");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        // validate rs ids
+        Set<String> rsIdSet = new HashSet<>();
+        CollectionUtils.addAll(rsIdSet, bo.getRsIds());
+
+        if (rsIdSet.size() != bo.getRsIds().size()) {
+            log.error("[RegisterRSHandler.process] rs ids have duplicate.");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 

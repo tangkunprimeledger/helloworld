@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.repository.merkle;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.dao.merkle.MerkleDao;
 import com.higgs.trust.slave.dao.po.merkle.MerkleNodePO;

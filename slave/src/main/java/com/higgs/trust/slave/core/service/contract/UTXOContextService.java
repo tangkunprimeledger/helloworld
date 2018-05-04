@@ -5,7 +5,6 @@ import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXODBHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
-import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;

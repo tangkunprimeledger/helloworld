@@ -5,7 +5,6 @@ import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
-import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

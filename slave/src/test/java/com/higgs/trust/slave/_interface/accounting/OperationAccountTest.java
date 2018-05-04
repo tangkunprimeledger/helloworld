@@ -4,8 +4,6 @@ import com.higgs.trust.slave._interface.InterfaceCommonTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.core.service.action.account.AccountOperationHandler;
 import com.higgs.trust.slave.model.bo.account.AccountOperation;
-import com.higgs.trust.slave.model.bo.account.IssueCurrency;
-import com.higgs.trust.tester.dbunit.DataBaseManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;

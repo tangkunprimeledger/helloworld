@@ -8,8 +8,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  *
@@ -26,14 +26,14 @@ public class PolicyRepositoryTest extends BaseTest {
     private Policy policy;
 
     @BeforeMethod public void setUp() throws Exception {
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("rs-test1");
-        rsIdSet.add("rs-test3");
-        rsIdSet.add("rs-test3");
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("rs-test1");
+        rsIds.add("rs-test3");
+        rsIds.add("rs-test3");
         policy = new Policy();
         policy.setPolicyId("policy-test-1");
         policy.setPolicyName("注册policy-test-1");
-        policy.setRsIdSet(rsIdSet);
+        policy.setRsIds(rsIds);
     }
 
     @Test public void getPolicyById() {
@@ -49,17 +49,17 @@ public class PolicyRepositoryTest extends BaseTest {
         RegisterPolicy registerPolicy = new RegisterPolicy();
         registerPolicy.setPolicyId("test-0000");
         registerPolicy.setPolicyName("测试test");
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("rs-test1");
-        rsIdSet.add("rs-test2");
-        rsIdSet.add("rs-test2");
-        registerPolicy.setRsIdSet(rsIdSet);
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("rs-test1");
+        rsIds.add("rs-test2");
+        rsIds.add("rs-test2");
+        registerPolicy.setRsIds(rsIds);
 
         Policy policy = policyRepository.convertActionToPolicy(registerPolicy);
 
         Assert.assertEquals(policy.getPolicyId(), registerPolicy.getPolicyId());
         Assert.assertEquals(policy.getPolicyName(), registerPolicy.getPolicyName());
-        Assert.assertEquals(policy.getRsIdSet(), registerPolicy.getRsIdSet());
+        Assert.assertEquals(policy.getRsIds(), registerPolicy.getRsIds());
     }
 
     @Test

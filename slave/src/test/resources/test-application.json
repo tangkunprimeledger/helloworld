@@ -9,7 +9,7 @@
       "data": {
         "dir": "./data/p2p"
       },
-      "cluster": "{\"TRUST-TEST1\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4WWUBCmmmTrA+M/ptQKAZVZ0mRQ/Zmn2kQLfT1R7YJBSVYlfGt7PtmxRJMVSMS0qncllQqmQjptfuo21ppOKTecmOAGmQQjzOpB5M5f6OXLRl6pCH/bPFsRQJiqTBIu6j+kgorWqDMtbAviEv73DqYcyWdzWz95BtBcgkeRLxnQIDAQAB\"}",
+      "cluster": "{\"TRUST-TEST1\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLDDNiZKp0AAjfkVKkReFJFufF546YwPkT+JpwOLg/Sgo5SXk8b2NMhw6rLyGol6+xntEAdVQCqtMYrdgVh31VP15Ttbaivnmu2MaKHqIJbzpHXYiYmE2VDYyjOQIbbRvedD6c65nlHJfWBhGfw8CinnvvLamg1nSBBwZ6ZTuplQIDAQAB\"}",
       "faultNodeNum": 0
     }
   },
@@ -20,7 +20,8 @@
     "server": {
       "address": "127.0.0.1:8800",
       "cluster": "127.0.0.1:8800",
-      "stateMachineClass": "com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandlerImpl"
+      "stateMachineClass": "com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandlerImpl",
+      "logDir" : "./data/copycat"
     }
   },
   "eureka": {
@@ -36,7 +37,7 @@
       "masterName": "TRUST-TEST1",
       "nodeName": "TRUST-TEST1",
       "prefix": "TRUST",
-      "privateKey": "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBALhZZQEKaaZOsD4z+m1AoBlVnSZFD9mafaRAt9PVHtgkFJViV8a3s+2bFEkxVIxLSqdyWVCqZCOm1+6jbWmk4pN5yY4AaZBCPM6kHkzl/o5ctGXqkIf9s8WxFAmKpMEi7qP6SCitaoMy1sC+IS/vcOphzJZ3NbP3kG0FyCR5EvGdAgMBAAECgYAf7HMeRARZpWTF0NB8HOXcnUPSfcEp6KP7Tq3GxDBMM6tQ1y/mHKfO7L0Nk7pVdTBfYODwpCElP15DWA+5bLFDl2GzCY3gBoMrgrpIaaD672Qf12ikcVf6q/FSNJAvvDPSpLQKYJKG4Aa8/0mFZB9JU1KM2+wDl4Fgf/Lf+vM/zQJBAN1X5nvjy4nwTXlHWvtB+PG9ptAsGo9baEtGW2UrDhPYObghJpk4Slxo+r7l4fWNnwEP6kMGBlFMH41oxNezYLcCQQDVNqiBJBVUgIVGaLSb3ksyXerOf9w1g7JTpSoZmf6SOMAZQ3kqky9Ik4LGwnlFaolUEA/fcTev2rC8iBFt00RLAkB09I5H5jzVXRFCxQ5w9xIYghKTqso5952rMLj4QwDEQZt2DKY9jb3VCG990TBNNJDQ2dz5n0RVTrjZWoOwSgsPAkBvFcArMIKQeTl22pymzOV+w2HP3tv7YbcqT1Yk6o+w3TJwty/M18x90qUDK1WFriEIlCnA77rku1rzjy0NfFILAkBnbOFY4ECXdFysok3n5AgrdHBr8bRSRvzBpdjUL9eH0Cs/37aqwZynwCg6DX5/I2gIwX78ysnujB4mY6lFOG5f"
+      "privateKey": "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAIsMM2JkqnQACN+RUqRF4UkW58XnjpjA+RP4mnA4uD9KCjlJeTxvY0yHDqsvIaiXr7Ge0QB1VAKq0xit2BWHfVU/XlO1tqK+ea7YxooeoglvOkddiJiYTZUNjKM5AhttG950PpzrmeUcl9YGEZ/DwKKee+8tqaDWdIEHBnplO6mVAgMBAAECgYBtrWwCmoDRCw30uv5C0VQIgObE9gdGekB9/kRjbHn4ggBae5gDkaDzxjxNztlv0GYnZqxY/jML/46PEuE06jBzGcOlBuobQJJ38pTg0pnNVHbkTckxfUIr1MYUDhtO18tJZUZuMbYMwwgZ9K9E0N8kjKXk+rRx+BDjlbxNPds6KQJBAMLS/HCXjAfJlzSEWqkBavAKoW+bBhZlkTH+DoNk/KidASgdFBqtPUf5w3U+j8dK4nvt8R9X7zGxRAYXpDGHUucCQQC2tZlmL858suIA/+XfQVGoKOEvLlI5tGNDLXlDaKldY8UZGqxcyKaOsqEWMQnJCUy/0zTariN7kNssptYm04wjAkB3qVlt2lcizVn24rhAh+NjzlO7le8WQIn+t7m4UIWzFsQIHFwlynQSSkEYOTXcRY14avwnsT30Opm6WDj8Rs7PAkBytzqFSmbfLIFyFzmBH0Xhyyj3sqG10WixeQ+2HzSXiljqFjE6YFETL1yszkVSkCA8IKQC2Ws13hF+y5GR9yj5AkBAeUJj/a8wpdxJCufDpoaVUsB/XGK9XCqlGZvSy2TrjWLLBjZ3jiyjTlqIssfqI/IiJ4H2peocDaHXjFT0m+Av"
     }
   },
   "management": {

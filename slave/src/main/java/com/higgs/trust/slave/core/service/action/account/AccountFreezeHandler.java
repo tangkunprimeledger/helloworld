@@ -4,6 +4,7 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
@@ -67,6 +68,7 @@ import java.math.BigDecimal;
         } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
             accountHandler = accountDBHandler;
         }
+        Profiler.enter("[validateForFreeze]");
         //validate business
         AccountInfo accountInfo = accountHandler.getAccountInfo(bo.getAccountNo());
         if (accountInfo == null) {
@@ -96,8 +98,11 @@ import java.math.BigDecimal;
                 bo.getBizFlowNo(), bo.getAccountNo());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
+        Profiler.release();
         //freeze
+        Profiler.enter("[persistForFreeze]");
         accountHandler.freeze(bo, actionData.getCurrentBlock().getBlockHeader().getHeight());
+        Profiler.release();
     }
 
     /**

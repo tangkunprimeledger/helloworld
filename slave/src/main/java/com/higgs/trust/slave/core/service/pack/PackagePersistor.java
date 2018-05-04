@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.pack;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
@@ -40,7 +41,7 @@ import java.util.List;
      * @param packageData
      */
     public void persisting(PackageData packageData) {
-        log.info("[PackagePersistor.persisting] is start");
+        Profiler.start("[PackageValidator.persisting.monitor]");
         Package pack = packageData.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (CollectionUtils.isEmpty(txs)) {
@@ -50,6 +51,7 @@ import java.util.List;
         //snapshot transactions should be init
         snapshotService.destroy();
         try {
+            Profiler.enter("[query temp header of TEMP_TYPE]");
             //gets the block hash from db
             BlockHeader tempHeader = blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.TEMP_TYPE);
             //check hash
@@ -57,25 +59,31 @@ import java.util.List;
                 log.error("[package.persisting] temp hash of db is null");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
             }
+            Profiler.release();
+            Profiler.enter("[execute txs]");
             //persist all transactions
             List<TransactionReceipt> txReceipts = executeTransactions(packageData);
+            Profiler.release();
+            Profiler.enter("[build block header]");
             //build a new block hash from db datas
             BlockHeader dbHeader = blockService.buildHeader(TxProcessTypeEnum.PERSIST, packageData, txReceipts);
+            Profiler.release();
             //check dbHeader and tempHeader
             if (!StringUtils.equals(dbHeader.getBlockHash(), tempHeader.getBlockHash())) {
                 log.error("[package.persisting] blockHeader.hash is unequals");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_UNEQUAL_ERROR);
             }
+            Profiler.enter("[persist block]");
             //build block and save to context
             Block block = blockService.buildBlock(packageData, dbHeader);
             packageData.setCurrentBlock(block);
-
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                     //persist block
                     blockService.persistBlock(block,txReceipts);
                 }
             });
+            Profiler.release();
         } catch (Throwable e) {
             log.error("[package.persisting]has unknown error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_PERSISTING_ERROR, e);
@@ -83,7 +91,10 @@ import java.util.List;
             //snapshot transactions should be destroy
             snapshotService.destroy();
         }
-        log.info("[PackagePersistor.persisting] is end");
+        Profiler.release();
+        if (Profiler.getDuration() > 0) {
+            log.info(Profiler.dump());
+        }
     }
 
     /**
@@ -93,13 +104,16 @@ import java.util.List;
      * @return
      */
     private List<TransactionReceipt> executeTransactions(PackageData packageData) {
-        log.info("[PackagePersistor.executeTransactions] is end");
         List<SignedTransaction> txs = packageData.getCurrentPackage().getSignedTxList();
+        Profiler.enter("[queryTxIds]");
         List<String> dbTxs = transactionRepository.queryTxIds(txs);
+        Profiler.release();
         List<SignedTransaction> persistedDatas = new ArrayList<>();
         List<TransactionReceipt> txReceipts = new ArrayList<>(txs.size());
         //loop validate each transaction
         for (SignedTransaction tx : txs) {
+            String title = new StringBuffer("[execute tx ").append(tx.getCoreTx().getTxId()).append("]").toString();
+            Profiler.enter(title);
             //ignore idempotent transaction
             if(hasTx(dbTxs,tx.getCoreTx().getTxId())){
                 continue;
@@ -109,9 +123,9 @@ import java.util.List;
             TransactionReceipt receipt = transactionExecutor.persist(packageData.parseTransactionData());
             persistedDatas.add(tx);
             txReceipts.add(receipt);
+            Profiler.release();
         }
         packageData.getCurrentBlock().setSignedTxList(persistedDatas);
-        log.info("[PackagePersistor.executeTransactions] is end");
         return txReceipts;
     }
     /**
@@ -145,16 +159,20 @@ import java.util.List;
          * 3.通过pendingState触发业务RS的callback操作
          * 4.提交事务
          */
-        log.info("[PackagePersistor.persisted] is start");
+        Profiler.start("[PackagePersistor.persisted] is start");
+        Profiler.enter("[start query temp header of CONSENSUS_VALIDATE_TYPE]");
         //gets the block header from db
         BlockHeader consensHeader =
             blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE);
+        Profiler.release();
         //check hash
         if (consensHeader == null) {
             log.warn("[package.persisted] consensus header of db is null blockHeight:{}", pack.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
         }
+        Profiler.enter("[start query temp header of TEMP_TYPE]");
         BlockHeader tempHeader = blockService.getTempHeader(pack.getHeight(), BlockHeaderTypeEnum.TEMP_TYPE);
+        Profiler.release();
         if (tempHeader == null) {
             log.error("[package.persisted] temp header of db is null blockHeight:{}", pack.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
@@ -167,7 +185,10 @@ import java.util.List;
         }
 
         //TODO:call RS business
-        log.info("[PackagePersistor.persisted] is end");
+        Profiler.release();
+        if (Profiler.getDuration() > 0) {
+            Profiler.logDump();
+        }
     }
 }
 

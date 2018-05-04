@@ -13,8 +13,6 @@ import com.higgs.trust.slave.model.bo.context.ActionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
-
 public class DataIdentityActionHandlerTest extends BaseTest {
     @Autowired
     private DataIdentityActionHandler dataIdentityActionHandler;
