@@ -4,6 +4,7 @@ import com.higgs.trust.contract.ExecuteContext;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
@@ -65,6 +66,7 @@ import java.math.BigDecimal;
         } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
             accountHandler = accountDBHandler;
         }
+        Profiler.enter("[validateForUnFreeze]");
         //validate business
         //check record is exists
         AccountFreezeRecord freezeRecord = accountHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
@@ -101,12 +103,15 @@ import java.math.BigDecimal;
         }
         //check contract address
         checkContract(freezeRecord.getContractAddr());
+        Profiler.release();
         log.info("[accountUnFreeze.process] before-freeze-record:{}", freezeRecord.getAmount());
         log.info("[accountUnFreeze.process] after-freeze-record:{}", afterAmount);
         log.info("[accountUnFreeze.process] before-freeze-account:{}", accountInfo.getFreezeAmount());
         log.info("[accountUnFreeze.process] after-freeze-account:{}", afterOfAccount);
         //unfreeze
+        Profiler.enter("[persistForUnFreeze]");
         accountHandler.unfreeze(bo, freezeRecord, blockHeight);
+        Profiler.release();
     }
 
     /**
