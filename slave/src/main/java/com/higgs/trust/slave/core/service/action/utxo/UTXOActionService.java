@@ -8,6 +8,7 @@ import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOStatusEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityService;
@@ -107,28 +108,36 @@ public class UTXOActionService {
         }
 
         // validate data attribution
+        Profiler.enter("[UTXO.validateIdentity]");
         boolean validateIdentitySuccess = validateIdentity(utxoAction, policyId, processTypeEnum);
         if (!validateIdentitySuccess) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
+        Profiler.release();
 
         // double spend check
+        Profiler.enter("[UTXO.doubleSpendCheck]");
         boolean isDoubleSpend = doubleSpendCheck(utxoAction.getInputList(), processTypeEnum);
         if (isDoubleSpend) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_IS_DOUBLE_SPEND_ERROR);
         }
+        Profiler.release();
 
         //execute contract
         ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
 
+        Profiler.enter("[UTXO.doubleSpendCheck]");
         boolean contractProcessSuccess = utxoSmartContract.execute(utxoAction.getContract(), data, processTypeEnum);
         if (!contractProcessSuccess) {
             log.error("UTXO contract process fail!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_CONTRACT_PROCESS_FAIL_ERROR);
         }
+        Profiler.release();
 
         //persist data in memory or in DB
+        Profiler.enter("[UTXO.persistData]");
         persistData(actionData, processTypeEnum);
+        Profiler.release();
 
     }
 

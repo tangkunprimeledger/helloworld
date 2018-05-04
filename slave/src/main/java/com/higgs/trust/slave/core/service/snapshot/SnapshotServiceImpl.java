@@ -7,6 +7,7 @@ import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.agent.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -27,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 @Service
-public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
+public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     /**
      * tag whether  the snapshot is in  transaction
      */
@@ -87,47 +88,47 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
             return;
         }
         try {
-            log.info("Get lock success, go init cache!");
-            log.info(("Clear txCache and packageCache first"));
+            log.debug("Get lock success, go init cache!");
+            log.debug(("Clear txCache and packageCache first"));
             txCache.clear();
             packageCache.clear();
             //register UTXO cache loader
-            log.info("Register UTXO cache loader");
+            log.debug("Register UTXO cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.UTXO, utxoSnapshotAgent);
 
             //register MERKLE_TREE cache loader
-            log.info("Register MERKLE_TREE cache loader");
+            log.debug("Register MERKLE_TREE cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.MERKLE_TREE, merkleTreeSnapshotAgent);
 
             //register MANAGE cache loader
-            log.info("Register MANAGE cache loader");
+            log.debug("Register MANAGE cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.MANAGE, manageSnapshotAgent);
 
             //register DATA_IDENTITY cache loader
-            log.info("Register DATA_IDENTITY cache loader");
+            log.debug("Register DATA_IDENTITY cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.DATA_IDENTITY, dataIdentitySnapshotAgent);
 
             //register ACCOUNT cache loader
-            log.info("Register ACCOUNT cache loader");
+            log.debug("Register ACCOUNT cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT, accountSnapshotAgent);
 
             //register ACCOUNT cache loader
-            log.info("Register FREEZE cache loader");
+            log.debug("Register FREEZE cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.FREEZE, freezeSnapshotAgent);
 
             //register CONTRACT cache loader
-            log.info("Register CONTRACT cache loader");
+            log.debug("Register CONTRACT cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.CONTRACT, contractSnapshotAgent);
 
             //register ACCOUNT_CONTRACT_BIND cache loader
-            log.info("Register ACCOUNT_CONTRACT_BIND cache loader");
+            log.debug("Register ACCOUNT_CONTRACT_BIND cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, accountContractBindingSnapshotAgent);
 
             //register CONTRACT STATE cache loader
-            log.info("Register CONTRACT STATE cache loader");
+            log.debug("Register CONTRACT STATE cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.CONTRACT_SATE, contractStateSnapshotAgent);
         } finally {
-            log.info("unlock lock  for init snapshot");
+            log.debug("unlock lock  for init snapshot");
             lock.unlock();
         }
 
@@ -139,15 +140,15 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
      */
     @Override
     public void startTransaction() {
+        Profiler.enter("[Snapshot.startTransaction]");
         log.info("Start to start snapshot transaction, and get lock for it");
-
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
-            log.info("Get lock failed, stop to startTransaction!");
+            log.debug("Get lock failed, stop to startTransaction!");
             return;
         }
         try {
-            log.info("Get lock success, go to start transaction!");
+            log.debug("Get lock success, go to start transaction!");
             //check whether snapshot transaction has been started.
             if (isOpenTransaction) {
                 log.info("The snapshot transaction has been started ! Please don't start it again!");
@@ -155,26 +156,25 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
             }
 
             //clear txCache
-            log.info("Clear txCache");
+            log.debug("Clear txCache");
             txCache.clear();
 
             //sign it as in transaction
             isOpenTransaction = true;
         } finally {
-            log.info("unlock lock for startTransaction");
+            log.debug("unlock lock for startTransaction");
             lock.unlock();
         }
-
         log.info("End of start snapshot transaction");
+        Profiler.release();
     }
 
     /**
      * clear packageCache and txCache
      */
-     @Override
+    @Override
     public void destroy() {
-
-        //TODO  是否加个标记，不允许其他操作
+        Profiler.enter("[Snapshot.destroy]");
         log.info("Start to destroy snapshot");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -182,16 +182,16 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
             return;
         }
         try {
-            log.info("Get lock success, go to destroy snapshot!");
+            log.debug("Get lock success, go to destroy snapshot!");
             //close transaction first,if not there may be some data put into cache after clearing data
             closeTransaction();
 
             //clear txCache
-            log.info("Clear txCache");
+            log.debug("Clear txCache");
             txCache.clear();
 
             //check whether there is data in the packageCache
-            log.info("Clear packageCache");
+            log.debug("Clear packageCache");
             if (packageCache.isEmpty()) {
                 log.error("There snapshot have not init");
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NOT_INIT_EXCEPTION);
@@ -199,15 +199,16 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
 
             //clear packageCache inner cache
             for (Map.Entry<SnapshotBizKeyEnum, LoadingCache<String, Object>> outerEntry : packageCache.entrySet()) {
-                log.info("Clear snapshotBizKeyEnum: {}  from  packageCache", outerEntry.getKey());
+                log.debug("Clear snapshotBizKeyEnum: {}  from  packageCache", outerEntry.getKey());
                 LoadingCache<String, Object> innerMap = outerEntry.getValue();
                 innerMap.invalidateAll();
             }
         } finally {
-            log.info("Unlock lock for destroy snapshot!");
+            log.debug("Unlock lock for destroy snapshot!");
             lock.unlock();
         }
         log.info("End of destroy snapshot");
+        Profiler.release();
     }
 
     /**
@@ -220,6 +221,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
      */
     @Override
     public Object get(SnapshotBizKeyEnum key1, Object key2) {
+        Profiler.enter("[Snapshot.get]");
         log.info("Start to get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
         //Check null
         if (null == key1 || null == key2) {
@@ -241,6 +243,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
         if (null == value) {
             return value;
         }
+        Profiler.release();
         return transferValue(value);
     }
 
@@ -252,6 +255,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
      */
     @Override
     public void put(SnapshotBizKeyEnum key1, Object key2, Object value) {
+        Profiler.enter("[Snapshot.put]");
         log.info("Start to put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
         //Check null
         if (null == key1 || null == key2) {
@@ -276,12 +280,13 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
             txCache.put(key1, new ConcurrentHashMap<>());
         }
 
-        log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache", key1, key2, value);
+        log.debug("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache", key1, key2, value);
         String innerKey = JSON.toJSONString(key2);
         ConcurrentHashMap<String, Object> innerMap = txCache.get(key1);
         innerMap.put(innerKey, transferValue(value));
 
         log.info("End of put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
+        Profiler.release();
     }
 
 
@@ -290,8 +295,9 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
      * 2.clear txCache
      * 3.tag the isOpenTransaction to be false
      */
-     @Override
+    @Override
     public void commit() {
+        Profiler.enter("[Snapshot.commit]");
         log.info("Start to commit");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -299,7 +305,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
             return;
         }
         try {
-            log.info("Get lock success, go to commit!");
+            log.debug("Get lock success, go to commit!");
             //check whether snapshot transaction has been started.
             if (!isOpenTransaction) {
                 log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
@@ -320,10 +326,11 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
             //clear txCache
             txCache.clear();
         } finally {
-            log.info("Unlock lock for commit!");
+            log.debug("Unlock lock for commit!");
             lock.unlock();
         }
         log.info("End of commit ");
+        Profiler.release();
     }
 
     /**
@@ -332,6 +339,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
      */
     @Override
     public void rollback() {
+        Profiler.enter("[Snapshot.rollback]");
         log.info("Start to rollback");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -339,7 +347,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
             return;
         }
         try {
-            log.info("Get lock success, go to rollback!");
+            log.debug("Get lock success, go to rollback!");
             //check whether snapshot transaction has been started.
             if (!isOpenTransaction) {
                 log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
@@ -356,6 +364,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
             lock.unlock();
         }
         log.info("End of rollback");
+        Profiler.release();
     }
 
 

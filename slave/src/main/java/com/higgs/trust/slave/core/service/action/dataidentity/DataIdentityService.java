@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.action.dataidentity;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityHandler;
@@ -68,9 +69,10 @@ public class DataIdentityService {
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
 
+        Profiler.enter("[DataIdentity.save]");
         dataIdentity = DataIdentityConvert.buildDataIdentity(dataIdentityAction.getIdentity(), dataIdentityAction.getChainOwner(), dataIdentityAction.getDataOwner());
         dataIdentityHandler.saveDataIdentity(dataIdentity);
-
+        Profiler.release();
     }
 
     /**
