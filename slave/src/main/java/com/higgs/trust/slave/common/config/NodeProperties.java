@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
     /**
      * the milliseconds for waiting the consensus result
      */
-    private long consensusWaitTime = 2 * 1000;
+    private long consensusWaitTime = 30 * 1000;
 
     /**
      * the private key of node

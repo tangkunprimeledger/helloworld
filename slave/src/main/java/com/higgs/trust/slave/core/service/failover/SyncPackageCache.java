@@ -32,16 +32,15 @@ import org.springframework.stereotype.Component;
      * 3.更新高度
      * 4.是否超过阈值，超过阈值保留部分
      *
-     * @param pack package
+     * @param currentHeight package height
      */
-    public synchronized void receive(Package pack) {
+    public synchronized void receivePackageHeight(long currentHeight) {
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
         if (log.isDebugEnabled()) {
-            log.debug("sync cache received package:{}", pack);
+            log.debug("sync cache received package height:{}", currentHeight);
         }
-        long currentHeight = pack.getHeight();
         if (latestHeight == INIT_HEIGHT) {
             latestHeight = currentHeight;
             minHeight = currentHeight;
@@ -59,6 +58,9 @@ import org.springframework.stereotype.Component;
         } else if (currentHeight > latestHeight + 1) {
             latestHeight = currentHeight;
             minHeight = currentHeight;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("sync cache  minHeight:{}, latestHeight:{}", minHeight, latestHeight);
         }
     }
 
