@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.action.account;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
@@ -61,8 +62,12 @@ import org.springframework.stereotype.Component;
             accountHandler = accountDBHandler;
         }
         //validate
+        Profiler.enter("[validateForOperation]");
         accountHandler.validateForOperation(bo,actionData.getCurrentTransaction().getCoreTx().getPolicyId());
+        Profiler.release();
         //persist
+        Profiler.enter("[persistForOperation]");
         accountHandler.persistForOperation(bo,actionData.getCurrentBlock().getBlockHeader().getHeight());
+        Profiler.release();
     }
 }

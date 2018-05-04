@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.common.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.MessageFormat;
@@ -13,7 +14,7 @@ import java.util.List;
  * @author pengdi
  * @version $Id: Profiler.java 1291 2005-03-04 03:23:30Z baobao $
  */
-public final class Profiler {
+@Slf4j public final class Profiler {
     private static final ThreadLocal ENTRY_STACK = new ThreadLocal();
 
     /**
@@ -102,6 +103,13 @@ public final class Profiler {
         } else {
             return -1;
         }
+    }
+
+    /**
+     * 将dump打印到日志
+     */
+    public static void logDump() {
+        log.info(dump());
     }
 
     /**

@@ -69,11 +69,11 @@ import java.util.List;
         } finally {
             //snapshot transactions should be destory
             snapshotService.destroy();
-        }
 
-        Profiler.release();
-        if (Profiler.getDuration() > 0) {
-            log.info(Profiler.dump());
+            Profiler.release();
+            if (Profiler.getDuration() > 0) {
+                Profiler.logDump();
+            }
         }
     }
 
@@ -85,13 +85,17 @@ import java.util.List;
      */
     private List<TransactionReceipt> executeTransactions(PackageData packageData) {
         List<SignedTransaction> txs = packageData.getCurrentPackage().getSignedTxList();
+
         Profiler.enter("[queryTxIds]");
         List<String> dbTxs = transactionRepository.queryTxIds(txs);
         Profiler.release();
+
         List<SignedTransaction> validatedDatas = new ArrayList<>();
         List<TransactionReceipt> txReceipts = new ArrayList<>(txs.size());
         //loop validate each transaction
         for (SignedTransaction tx : txs) {
+            String title = new StringBuffer("[execute tx ").append(tx.getCoreTx().getTxId()).append("]").toString();
+            Profiler.enter(title);
             //ignore idempotent transaction
             if (hasTx(dbTxs, tx.getCoreTx().getTxId())) {
                 continue;
@@ -100,6 +104,7 @@ import java.util.List;
             TransactionReceipt receipt = transactionExecutor.validate(packageData.parseTransactionData());
             validatedDatas.add(tx);
             txReceipts.add(receipt);
+            Profiler.release();
         }
         packageData.getCurrentBlock().setSignedTxList(validatedDatas);
         return txReceipts;
