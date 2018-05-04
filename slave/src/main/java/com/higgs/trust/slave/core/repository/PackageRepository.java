@@ -89,7 +89,6 @@ import java.util.Set;
         PackagePO packagePO = packageDao.queryByHeight(height);
 
         if (null == packagePO) {
-            log.error("cannot get package, height={}", height);
             return null;
         }
 
@@ -107,7 +106,6 @@ import java.util.Set;
         PackagePO packagePO = packageDao.queryByHeightForUpdate(height);
 
         if (null == packagePO) {
-            log.error("cannot get package, height={}", height);
             return null;
         }
 
