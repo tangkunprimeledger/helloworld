@@ -190,7 +190,6 @@ public class ReceiveStorage {
         } else {
             receiveApplyQueue.put(lastEntry.getKey() + 1, key);
         }
-        receiveDB.commit();
         applyQueueCondition.signal();
     }
 
@@ -220,7 +219,6 @@ public class ReceiveStorage {
         } else {
             receiveDelayQueue.put(lastEntry.getKey() + 1, key);
         }
-        receiveDB.commit();
     }
 
     private void transFromDelayToApplyQueue() {
