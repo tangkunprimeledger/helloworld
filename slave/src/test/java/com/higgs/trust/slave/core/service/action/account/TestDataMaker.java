@@ -41,10 +41,10 @@ public class TestDataMaker {
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setPolicyId("test-policy-0002-" + System.currentTimeMillis());
         registerPolicy.setPolicyName("测试policy注册");
-        registerPolicy.setRsIdSet(new HashSet<String>() {{
-            add("TRUST-NODE97");
-            add("TRUST-NODE100");
-        }});
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("TRUST-NODE97");
+        rsIds.add("TRUST-NODE100");
+        registerPolicy.setRsIds(rsIds);
         return registerPolicy;
     }
 
