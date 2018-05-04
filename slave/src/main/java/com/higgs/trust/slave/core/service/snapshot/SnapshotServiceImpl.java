@@ -85,7 +85,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
             log.info("Get lock failed, stop to init snapshot!");
-            return;
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION);
         }
         try {
             log.debug("Get lock success, go init cache!");
@@ -144,8 +144,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         log.info("Start to start snapshot transaction, and get lock for it");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
-            log.debug("Get lock failed, stop to startTransaction!");
-            return;
+            log.info("Get lock failed, stop to startTransaction!");
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION);
         }
         try {
             log.debug("Get lock success, go to start transaction!");
@@ -179,7 +179,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
             log.info("Get lock failed, stop to destroy snapshot!");
-            return;
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION);
         }
         try {
             log.debug("Get lock success, go to destroy snapshot!");
@@ -226,17 +226,14 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             log.info("Start to get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
             //Check null
             if (null == key1 || null == key2) {
-                log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}",
-                    key1, key2);
-                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION,
-                    "Put data into snapshot key1 and key2 can not be null!");
+                log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}", key1, key2);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION, "Put data into snapshot key1 and key2 can not be null!");
             }
 
             //get data from txCache
             Object value = getDataFromTxCache(key1, key2);
             if (null != value) {
-                log.info("Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is in the txCache",
-                    key1, key2, value);
+                log.info("Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is in the txCache", key1, key2, value);
                 return transferValue(value);
             }
 
@@ -267,15 +264,13 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             log.info("Start to put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
             //Check null
             if (null == key1 || null == key2) {
-                log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}",
-                    key1, key2);
+                log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}", key1, key2);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION);
             }
 
             if (null == value) {
                 log.error("The put data cant't be null");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION,
-                    "The value putted into snapshot  is null pointed exception");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION, "The value putted into snapshot  is null pointed exception");
             }
 
             //check whether snapshot transaction has been started.
@@ -286,8 +281,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //check where there is key1 in txCache, if not put a inner map as the value
             if (!txCache.containsKey(key1)) {
-                log.info("There is no  snapshotBizKeyEnum: {} in the txCache, we will put a inner map into txCache",
-                    key1);
+                log.info("There is no  snapshotBizKeyEnum: {} in the txCache, we will put a inner map into txCache", key1);
                 txCache.put(key1, new ConcurrentHashMap<>());
             }
 
@@ -313,10 +307,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         Profiler.enter("[Snapshot.commit]");
         log.info("Start to commit");
         boolean isLocked = lock.tryLock();
-        //TODO lingchao 抛出异常，整个package重试
         if (!isLocked) {
             log.info("Get lock failed, stop to commit!");
-            return;
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION);
         }
         try {
             log.debug("Get lock success, go to commit!");
@@ -358,7 +351,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
             log.info("Get lock failed, stop to commit!");
-            return;
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION);
         }
         try {
             log.debug("Get lock success, go to rollback!");
