@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.slave.model.bo.consensus;
 
+import com.higgs.trust.slave.common.constant.Constant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +21,6 @@ import lombok.Setter;
     }
 
     @Override public String messageDigest() {
-        return getRequestId() + get();
+        return getRequestId() + Constant.SPLIT_SLASH + get();
     }
 }

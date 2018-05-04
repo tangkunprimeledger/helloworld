@@ -1,17 +1,13 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.utxo.UTXOStatusEnum;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -90,6 +86,12 @@ public class UTXOSnapshotAgentTest extends  BaseTest{
         txOutPOList.add(txOutPO);
         txOutPOList.add(txOutPO1);
         txOutPOList.add(txOutPO2);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                snapshotService.startTransaction();
+            }
+        }).start();
         snapshotService.startTransaction();
         utxoSnapshotAgent.batchInsertTxOut(txOutPOList);
         System.out.println("queryTxOut :" + utxoSnapshotAgent.queryUTXO(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex()));

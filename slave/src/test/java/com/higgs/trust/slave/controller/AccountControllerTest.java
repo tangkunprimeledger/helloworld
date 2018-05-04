@@ -52,9 +52,9 @@ public class AccountControllerTest {
     public void test() throws Exception {
         String url = "http://10.200.172.97:7070/transaction/submit";
 // issue currency
-    //  List<SignedTransaction> txs = makeCurrencyTxs();
+     List<SignedTransaction> txs = makeCurrencyTxs();
         //open account
-//        List<SignedTransaction> txs = makeOpenAccountTxs();
+      //  List<SignedTransaction> txs = makeOpenAccountTxs();
         // transfer
        // List<SignedTransaction> txs = makeAccountingTxs();
         // freeze
@@ -63,10 +63,6 @@ public class AccountControllerTest {
         // unfreeze
       //  List<SignedTransaction> txs = makeUnFreezeTxs();
 
-        // utxo issue and transfer
-        // List<SignedTransaction> txs = makeCurrencyTxs();
-        // utxo issue and  transfer
-         List<SignedTransaction> txs = makeOpenAccountTxs();
 
         String params = JSON.toJSONString(txs);
 
@@ -118,9 +114,9 @@ public class AccountControllerTest {
         registerPolicy.setPolicyId("test-policy-1");
         registerPolicy.setPolicyName("测试注册policy-1");
 
-        Set<String> rsIds = new HashSet<>();
+        List<String> rsIds = new ArrayList<>();
         rsIds.add("TRUST-NODE97");
-        registerPolicy.setRsIdSet(rsIds);
+        registerPolicy.setRsIds(rsIds);
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);
 
@@ -148,7 +144,7 @@ public class AccountControllerTest {
     private List<SignedTransaction> makeOpenAccountTxs() throws Exception {
         List<SignedTransaction> txs = new ArrayList<>();
         List<Action> actions = new ArrayList<>();
-        Action action = TestDataMaker.makeOpenAccountAction("test1101", FundDirectionEnum.DEBIT);
+        Action action = TestDataMaker.makeOpenAccountAction("ling", FundDirectionEnum.CREDIT);
         actions.add(action);
 
         JSONObject bizModel = new JSONObject();

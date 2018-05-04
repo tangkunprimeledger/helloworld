@@ -73,7 +73,7 @@ class node {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def selfCheckService = beans.getBean(SelfCheckingService.class)
         def result = selfCheckService.selfCheck()
-        out.println("Self check result: $result)")
+        out.println("Self check result: $result")
     }
 
     @Usage('change the state of node')

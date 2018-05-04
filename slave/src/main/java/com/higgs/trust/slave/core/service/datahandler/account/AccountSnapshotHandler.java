@@ -131,9 +131,9 @@ import java.util.Set;
             throw new SlaveException(SlaveErrorEnum.SLAVE_POLICY_IS_NOT_EXISTS_EXCEPTION);
         }
         //check data identity
-        boolean r = dataIdentityService.validate(policy.getRsIdSet(), dataIdentitys);
+        boolean r = dataIdentityService.validate(policy.getRsIds(), dataIdentitys);
         if (!r) {
-            log.error("[validateForOperation] account check data owner is error,rsIds:{}", policy.getRsIdSet());
+            log.error("[validateForOperation] account check data owner is error,rsIds:{}", policy.getRsIds());
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_CHECK_DATA_OWNER_ERROR);
         }
         //check the trial balance

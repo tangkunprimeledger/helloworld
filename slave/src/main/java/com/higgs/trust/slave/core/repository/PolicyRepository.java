@@ -18,7 +18,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author tangfashuang
@@ -75,7 +74,7 @@ import java.util.Set;
         PolicyPO policyPO = new PolicyPO();
         policyPO.setPolicyId(policy.getPolicyId());
         policyPO.setPolicyName(policy.getPolicyName());
-        policyPO.setRsIds(JSON.toJSONString(policy.getRsIdSet()));
+        policyPO.setRsIds(JSON.toJSONString(policy.getRsIds()));
         return policyPO;
     }
 
@@ -85,7 +84,7 @@ import java.util.Set;
         try {
             policy.setPolicyId(policyPO.getPolicyId());
             policy.setPolicyName(policyPO.getPolicyName());
-            policy.setRsIdSet(JSON.parseObject(policyPO.getRsIds(), new TypeReference<Set<String>>() {
+            policy.setRsIds(JSON.parseObject(policyPO.getRsIds(), new TypeReference<List<String>>() {
             }));
         } catch (Throwable e) {
             log.error("json object parse exception.", e);
@@ -98,7 +97,7 @@ import java.util.Set;
         Policy policy = new Policy();
         policy.setPolicyId(action.getPolicyId());
         policy.setPolicyName(action.getPolicyName());
-        policy.setRsIdSet(action.getRsIdSet());
+        policy.setRsIds(action.getRsIds());
         return policy;
     }
 
