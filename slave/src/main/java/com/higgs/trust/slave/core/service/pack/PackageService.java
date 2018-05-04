@@ -2,8 +2,11 @@ package com.higgs.trust.slave.core.service.pack;
 
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
+
+import java.util.List;
 
 /**
  * @Description:package services include build, validate, persist
@@ -13,9 +16,10 @@ public interface PackageService {
     /**
      * create new package from pending transactions
      *
+     * @param signedTransactions
      * @return
      */
-    Package create();
+    Package create(List<SignedTransaction> signedTransactions);
 
     /**
      * package status change function

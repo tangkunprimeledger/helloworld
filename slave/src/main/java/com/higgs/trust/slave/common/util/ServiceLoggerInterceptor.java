@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Aspect @Component public class ServiceLoggerInterceptor {
     private static final Logger SERVICE_DIGEST_LOGGER = LoggerFactory.getLogger(LoggerName.SERVICE_DIGEST_LOGGER);
 
-    @Around("execution(* com.higgs.trust.slave.api.*Service.*(..)))") public Object serviceLog(ProceedingJoinPoint pj)
+    @Around("execution(* com.higgs.trust.slave.core.service.pack.PackageService.*(..)))") public Object serviceLog(ProceedingJoinPoint pj)
         throws Throwable {
         //get the start time
         long startTime = System.currentTimeMillis();
