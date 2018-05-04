@@ -238,6 +238,7 @@ public class ConsensusContext {
 
                 if (receiveCommandStatistics.isClosed()) {
                     log.warn("receiveCommandStatistics {} is closed, key is {}", receiveCommandStatistics, key);
+                    receiveStorage.deleteFirstFromApplyQueue();
                     continue;
                 }
 
