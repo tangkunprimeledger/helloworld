@@ -103,7 +103,7 @@ public class BlockChainServiceImplTest {
         registerPolicy.setPolicyName("测试注册policy-1");
 
         List<String> rsIds = new ArrayList<>();
-        rsIds.add("TRUST-NODE31");
+        rsIds.add("TRUST-TEST1");
         registerPolicy.setRsIds(rsIds);
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);
@@ -136,7 +136,7 @@ public class BlockChainServiceImplTest {
 
         CoreTransaction coreTx1 = new CoreTransaction();
 
-        coreTx1.setTxId("pending-tx-test-1-1");
+        coreTx1.setTxId("pending-tx-test-1-2");
         coreTx1.setActionList(initPolicy());
         coreTx1.setPolicyId("000000");
         coreTx1.setLockTime(new Date());

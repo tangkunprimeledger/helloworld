@@ -38,7 +38,7 @@ import java.util.List;
      *
      * @param packageData
      */
-     public void validating(PackageData packageData) {
+    public void validating(PackageData packageData) {
         Profiler.start("[PackageValidator.validating.monitor]");
 
         Package pack = packageData.getCurrentPackage();
@@ -69,11 +69,8 @@ import java.util.List;
         } finally {
             //snapshot transactions should be destory
             snapshotService.destroy();
-
             Profiler.release();
-            if (Profiler.getDuration() > 0) {
-                Profiler.logDump();
-            }
+            Profiler.logDump();
         }
     }
 

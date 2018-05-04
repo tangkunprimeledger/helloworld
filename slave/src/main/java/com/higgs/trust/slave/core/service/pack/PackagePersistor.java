@@ -112,6 +112,8 @@ import java.util.List;
         List<TransactionReceipt> txReceipts = new ArrayList<>(txs.size());
         //loop validate each transaction
         for (SignedTransaction tx : txs) {
+            String title = new StringBuffer("[execute tx ").append(tx.getCoreTx().getTxId()).append("]").toString();
+            Profiler.enter(title);
             //ignore idempotent transaction
             if(hasTx(dbTxs,tx.getCoreTx().getTxId())){
                 continue;
@@ -121,6 +123,7 @@ import java.util.List;
             TransactionReceipt receipt = transactionExecutor.persist(packageData.parseTransactionData());
             persistedDatas.add(tx);
             txReceipts.add(receipt);
+            Profiler.release();
         }
         packageData.getCurrentBlock().setSignedTxList(persistedDatas);
         return txReceipts;
@@ -184,7 +187,7 @@ import java.util.List;
         //TODO:call RS business
         Profiler.release();
         if (Profiler.getDuration() > 0) {
-            log.info(Profiler.dump());
+            Profiler.logDump();
         }
     }
 }

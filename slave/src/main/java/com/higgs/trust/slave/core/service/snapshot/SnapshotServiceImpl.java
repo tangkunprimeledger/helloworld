@@ -222,29 +222,36 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     @Override
     public Object get(SnapshotBizKeyEnum key1, Object key2) {
         Profiler.enter("[Snapshot.get]");
-        log.info("Start to get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
-        //Check null
-        if (null == key1 || null == key2) {
-            log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}", key1, key2);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION, "Put data into snapshot key1 and key2 can not be null!");
-        }
+        try {
+            log.info("Start to get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
+            //Check null
+            if (null == key1 || null == key2) {
+                log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}",
+                    key1, key2);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION,
+                    "Put data into snapshot key1 and key2 can not be null!");
+            }
 
-        //get data from txCache
-        Object value = getDataFromTxCache(key1, key2);
-        if (null != value) {
-            log.info("Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is in the txCache", key1, key2, value);
+            //get data from txCache
+            Object value = getDataFromTxCache(key1, key2);
+            if (null != value) {
+                log.info("Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is in the txCache",
+                    key1, key2, value);
+                return transferValue(value);
+            }
+
+            //get data from packageCache
+            value = getDataFromPackageCache(key1, key2);
+
+            log.info("End of get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
+            if (null == value) {
+                return value;
+            }
+
             return transferValue(value);
+        } finally {
+            Profiler.release();
         }
-
-        //get data from packageCache
-        value = getDataFromPackageCache(key1, key2);
-
-        log.info("End of get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
-        if (null == value) {
-            return value;
-        }
-        Profiler.release();
-        return transferValue(value);
     }
 
     /**
@@ -256,37 +263,43 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     @Override
     public void put(SnapshotBizKeyEnum key1, Object key2, Object value) {
         Profiler.enter("[Snapshot.put]");
-        log.info("Start to put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
-        //Check null
-        if (null == key1 || null == key2) {
-            log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}", key1, key2);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION);
+        try {
+            log.info("Start to put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
+            //Check null
+            if (null == key1 || null == key2) {
+                log.error("Get data from snapshot ,the key1  and key2 can not be null, in fact key1 = {}, key2 = {}",
+                    key1, key2);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION);
+            }
+
+            if (null == value) {
+                log.error("The put data cant't be null");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION,
+                    "The value putted into snapshot  is null pointed exception");
+            }
+
+            //check whether snapshot transaction has been started.
+            if (!isOpenTransaction) {
+                log.info("The snapshot transaction has not been started ! So we can't deal with put data operation");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
+            }
+
+            //check where there is key1 in txCache, if not put a inner map as the value
+            if (!txCache.containsKey(key1)) {
+                log.info("There is no  snapshotBizKeyEnum: {} in the txCache, we will put a inner map into txCache",
+                    key1);
+                txCache.put(key1, new ConcurrentHashMap<>());
+            }
+
+            log.debug("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache", key1, key2, value);
+            String innerKey = JSON.toJSONString(key2);
+            ConcurrentHashMap<String, Object> innerMap = txCache.get(key1);
+            innerMap.put(innerKey, transferValue(value));
+
+            log.info("End of put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
+        } finally {
+            Profiler.release();
         }
-
-        if (null == value) {
-            log.error("The put data cant't be null");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_NULL_POINTED_EXCEPTION, "The value putted into snapshot  is null pointed exception");
-        }
-
-        //check whether snapshot transaction has been started.
-        if (!isOpenTransaction) {
-            log.info("The snapshot transaction has not been started ! So we can't deal with put data operation");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-        }
-
-        //check where there is key1 in txCache, if not put a inner map as the value
-        if (!txCache.containsKey(key1)) {
-            log.info("There is no  snapshotBizKeyEnum: {} in the txCache, we will put a inner map into txCache", key1);
-            txCache.put(key1, new ConcurrentHashMap<>());
-        }
-
-        log.debug("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache", key1, key2, value);
-        String innerKey = JSON.toJSONString(key2);
-        ConcurrentHashMap<String, Object> innerMap = txCache.get(key1);
-        innerMap.put(innerKey, transferValue(value));
-
-        log.info("End of put data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
-        Profiler.release();
     }
 
 
@@ -300,6 +313,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         Profiler.enter("[Snapshot.commit]");
         log.info("Start to commit");
         boolean isLocked = lock.tryLock();
+        //TODO lingchao 抛出异常，整个package重试
         if (!isLocked) {
             log.info("Get lock failed, stop to commit!");
             return;
@@ -328,9 +342,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         } finally {
             log.debug("Unlock lock for commit!");
             lock.unlock();
+            Profiler.release();
         }
         log.info("End of commit ");
-        Profiler.release();
     }
 
     /**
@@ -362,9 +376,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         } finally {
             log.info("Unlock lock for rollback!");
             lock.unlock();
+            Profiler.release();
         }
         log.info("End of rollback");
-        Profiler.release();
     }
 
 
