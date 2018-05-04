@@ -91,7 +91,7 @@ import java.util.List;
             //snapshot transactions should be destroy
             snapshotService.destroy();
             Profiler.release();
-            log.info(Profiler.dump());
+            Profiler.logDump();
         }
     }
 
