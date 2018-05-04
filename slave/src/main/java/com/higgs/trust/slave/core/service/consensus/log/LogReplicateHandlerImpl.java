@@ -142,10 +142,9 @@ import java.util.concurrent.ExecutorService;
         Package pack = PackageConvert.convertPackVOToPack(packageVO);
         boolean isRunning = nodeState.isState(NodeStateEnum.Running);
         try {
-            if (isRunning) {
-                packageService.receive(pack);
-            } else if (nodeState.isState(NodeStateEnum.AutoSync)) {
-                syncPackageCache.receive(pack);
+            packageService.receive(pack);
+            if (nodeState.isState(NodeStateEnum.AutoSync)) {
+                syncPackageCache.receivePackageHeight(pack.getHeight());
             }
             commit.close();
         } catch (SlaveException e) {
