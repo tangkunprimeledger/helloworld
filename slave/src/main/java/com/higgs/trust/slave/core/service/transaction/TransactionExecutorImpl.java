@@ -133,7 +133,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         String version = coreTx.getVersion();
         // get exact handler based on version
         TransactionProcessor processor = processorHolder.getProcessor(VersionEnum.getBizTypeEnumBycode(version));
-        Profiler.enter("[execute process]");
+        Profiler.enter("[execute actions]");
         //ensure that all actions are transactional
         txNested.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
