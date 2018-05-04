@@ -3,23 +3,18 @@ package com.higgs.trust.slave.core.service.action.account;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.AmountUtil;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
-import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
 import com.higgs.trust.slave.model.bo.account.IssueCurrency;
-import com.higgs.trust.slave.model.bo.account.OpenAccount;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 /**
  * @author liuyu

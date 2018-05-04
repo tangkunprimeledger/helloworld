@@ -1,6 +1,10 @@
 package com.higgs.trust.tester.jsonutil;
 
-import com.alibaba.fastjson.*;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.java.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
-import lombok.extern.java.Log;
 /**
  * JsonFileUtil
  *

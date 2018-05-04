@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.block;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
-import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;

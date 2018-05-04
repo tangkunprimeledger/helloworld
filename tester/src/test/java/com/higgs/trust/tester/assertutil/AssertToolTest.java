@@ -8,6 +8,7 @@ import lombok.extern.java.Log;
 import org.testng.Assert;
 import org.testng.Reporter;
 import org.testng.annotations.Test;
+
 import java.sql.Connection;
 @Log
 public class AssertToolTest extends Assert{

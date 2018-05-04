@@ -1,12 +1,12 @@
 package com.higgs.trust.consensus.p2pvalid.api.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.consensus.p2pvalid.p2pBaseTest;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.example.StringValidCommand;
 import com.higgs.trust.consensus.p2pvalid.example.slave.BlockHeader;
 import com.higgs.trust.consensus.p2pvalid.example.slave.ValidateCommand;
+import com.higgs.trust.consensus.p2pvalid.p2pBaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;

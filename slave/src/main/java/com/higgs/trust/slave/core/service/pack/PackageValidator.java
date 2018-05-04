@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.pack;
 
-import cn.primeledger.stability.log.TraceMonitor;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -39,7 +38,7 @@ import java.util.List;
      *
      * @param packageData
      */
-    @TraceMonitor public void validating(PackageData packageData) {
+     public void validating(PackageData packageData) {
         Profiler.start("[PackageValidator.validating.monitor]");
 
         Package pack = packageData.getCurrentPackage();

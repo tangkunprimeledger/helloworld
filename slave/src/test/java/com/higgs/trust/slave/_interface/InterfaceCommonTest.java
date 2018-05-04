@@ -1,7 +1,6 @@
 package com.higgs.trust.slave._interface;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.JsonFileUtil;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -25,7 +24,6 @@ import org.testng.annotations.DataProvider;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
 
 import static org.testng.Assert.assertEquals;

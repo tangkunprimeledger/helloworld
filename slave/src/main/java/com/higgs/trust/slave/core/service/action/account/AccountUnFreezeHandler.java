@@ -6,28 +6,20 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
-import com.higgs.trust.slave.core.repository.contract.AccountContractBindingRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.contract.StandardContractContextService;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
-import com.higgs.trust.slave.core.service.snapshot.agent.AccountContractBindingSnapshotAgent;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
 import com.higgs.trust.slave.model.bo.context.ActionData;
-import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * @author liuyu

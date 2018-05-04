@@ -2,6 +2,7 @@ package com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl;
 
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import lombok.ToString;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;

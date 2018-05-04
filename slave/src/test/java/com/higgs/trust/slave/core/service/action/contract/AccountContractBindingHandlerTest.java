@@ -1,20 +1,14 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
-import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.snapshot.agent.AccountContractBindingSnapshotAgent;
-import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBindingAction;
-import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.Test;
-
-import static org.testng.Assert.*;
 
 public class AccountContractBindingHandlerTest extends IntegrateBaseTest {
 

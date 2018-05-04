@@ -2,7 +2,6 @@ package com.higgs.trust.consensus.bft.config;
 
 import com.higgs.trust.consensus.bft.adapter.CopycatClientAdapter;
 import com.higgs.trust.consensus.bft.core.ConsensusClient;
-import com.higgs.trust.consensus.bft.core.ConsensusStateMachine;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.copycat.client.ConnectionStrategies;
@@ -13,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

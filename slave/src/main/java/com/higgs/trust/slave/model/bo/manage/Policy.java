@@ -1,9 +1,10 @@
 package com.higgs.trust.slave.model.bo.manage;
 
 import com.higgs.trust.slave.model.bo.BaseBO;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 /**
  * @author tangfashuang

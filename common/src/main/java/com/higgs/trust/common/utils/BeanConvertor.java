@@ -1,7 +1,6 @@
 package com.higgs.trust.common.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 

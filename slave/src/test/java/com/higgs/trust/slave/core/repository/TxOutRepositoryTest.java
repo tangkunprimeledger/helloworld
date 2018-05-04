@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.testng.Assert.*;
-
 public class TxOutRepositoryTest extends BaseTest{
     @Autowired
     private TxOutRepository txOutRepository;

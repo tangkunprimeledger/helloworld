@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.block;
 
-import cn.primeledger.stability.log.TraceMonitor;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -39,7 +38,7 @@ import java.util.List;
         return blockRepository.getMaxHeight();
     }
 
-    @TraceMonitor @Override
+     @Override
     public BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
         List<TransactionReceipt> txReceipts) {
         Profiler.enter("[getMaxHeight and getBlockHeader]");
@@ -83,12 +82,12 @@ import java.util.List;
         return blockHeader;
     }
 
-    @TraceMonitor @Override
+     @Override
     public void storeTempHeader(BlockHeader header, BlockHeaderTypeEnum headerTypeEnum) {
         blockRepository.saveTempHeader(header, headerTypeEnum);
     }
 
-    @TraceMonitor @Override
+     @Override
     public BlockHeader getTempHeader(Long height, BlockHeaderTypeEnum headerTypeEnum) {
         return blockRepository.getTempHeader(height, headerTypeEnum);
     }
@@ -99,7 +98,7 @@ import java.util.List;
      * @param height
      * @return
      */
-    @TraceMonitor @Override public BlockHeader getHeader(Long height) {
+     @Override public BlockHeader getHeader(Long height) {
         return blockRepository.getTempHeader(height, BlockHeaderTypeEnum.TEMP_TYPE);
     }
 
@@ -126,7 +125,7 @@ import java.util.List;
         return block;
     }
 
-    @TraceMonitor @Override
+     @Override
     public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
         blockRepository.saveBlock(block, txReceipts);
     }

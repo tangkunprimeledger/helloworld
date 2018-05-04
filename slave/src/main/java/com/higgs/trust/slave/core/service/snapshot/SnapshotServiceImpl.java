@@ -1,7 +1,5 @@
 package com.higgs.trust.slave.core.service.snapshot;
 
-
-import cn.primeledger.stability.log.TraceMonitor;
 import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
@@ -173,7 +171,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
     /**
      * clear packageCache and txCache
      */
-    @TraceMonitor @Override
+     @Override
     public void destroy() {
 
         //TODO  是否加个标记，不允许其他操作
@@ -292,7 +290,7 @@ public class SnapshotServiceImpl implements SnapshotService,InitializingBean {
      * 2.clear txCache
      * 3.tag the isOpenTransaction to be false
      */
-    @TraceMonitor @Override
+     @Override
     public void commit() {
         log.info("Start to commit");
         boolean isLocked = lock.tryLock();

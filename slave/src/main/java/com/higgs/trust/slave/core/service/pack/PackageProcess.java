@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.pack;
 
-import cn.primeledger.stability.log.TraceMonitor;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.PackageRepository;
@@ -91,37 +90,37 @@ import org.springframework.stereotype.Service;
         }
     }
 
-    @TraceMonitor
+
     private void doValidate(Package pack) {
         packageLock.lockAndValidating(pack.getHeight());
         pack.setStatus(PackageStatusEnum.VALIDATING);
     }
 
-    @TraceMonitor
+
     private void doValidatingToConsensus(Package pack) {
         packageLock.lockValidatingAndSubmit(pack.getHeight());
         pack.setStatus(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS);
     }
 
-    @TraceMonitor
+
     private void doValidated(Package pack) {
         packageLock.lockAndValidated(pack.getHeight());
         pack.setStatus(PackageStatusEnum.VALIDATED);
     }
 
-    @TraceMonitor
+
     private void doPersist(Package pack) {
         packageLock.lockAndPersist(pack.getHeight());
         pack.setStatus(PackageStatusEnum.PERSISTING);
     }
 
-    @TraceMonitor
+
     private void doPersistingToConsensus(Package pack) {
         packageLock.lockPersistingAndSubmit(pack.getHeight());
         pack.setStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
     }
 
-    @TraceMonitor
+
     private void doPersisted(Package pack) {
         packageLock.lockAndPersisted(pack.getHeight());
         pack.setStatus(PackageStatusEnum.PERSISTED);

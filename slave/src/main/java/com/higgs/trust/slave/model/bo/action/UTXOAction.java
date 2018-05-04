@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.model.bo.action;
 
-import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;

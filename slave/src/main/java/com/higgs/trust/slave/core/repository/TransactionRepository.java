@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.repository;
 
-import cn.primeledger.stability.log.TraceMonitor;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.vo.TransactionVO;
@@ -139,7 +138,7 @@ import java.util.List;
      * @param txs
      * @return
      */
-    @TraceMonitor public List<String> queryTxIds(List<SignedTransaction> txs) {
+     public List<String> queryTxIds(List<SignedTransaction> txs) {
         List<String> datas = new ArrayList<>();
         if (CollectionUtils.isEmpty(txs)) {
             return datas;

@@ -29,8 +29,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
 
 @RunWith(PowerMockRunner.class) public class SyncServiceTest {
 

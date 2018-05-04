@@ -1,7 +1,5 @@
 package com.higgs.trust.contract;
 
-import java.io.IOException;
-
 public class SmartContractException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

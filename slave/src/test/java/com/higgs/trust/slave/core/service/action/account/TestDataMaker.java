@@ -7,11 +7,12 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
-import com.higgs.trust.slave.model.bo.*;
-import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.BlockHeader;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.StateRootHash;
 import com.higgs.trust.slave.model.bo.account.*;
 import com.higgs.trust.slave.model.bo.action.Action;
-import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import com.higgs.trust.slave.model.enums.BlockVersionEnum;
 
