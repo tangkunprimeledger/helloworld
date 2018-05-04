@@ -90,6 +90,18 @@
         </rollingPolicy>
     </appender>
 
+    <!-- application monitor log -->
+    <appender name="COPYCAT-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${COMMON_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/copycat.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/copycat.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
     <appender name="ERROR-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ERROR</level>
@@ -105,20 +117,8 @@
         </rollingPolicy>
     </appender>
 
-    <!-- application monitor log -->
-    <appender name="copycatMonitor" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/copycat.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/copycat.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>${MAX_HISTORY}</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>${COMMON_LOG_PATTERN}</pattern>
-        </encoder>
-    </appender>
-
     <logger name="io.atomix.copycat" level="TRACE" additivity="false">
-        <appender-ref ref="copycatMonitor"/>
+        <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </logger>
 
@@ -136,7 +136,7 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <Logger name="cn.primeledger.stability.utils.PerfLogUtil" level="INFO" additivity="false">
+    <Logger name="com.higgs.trust.slave.common.util.Profiler" level="INFO" additivity="false">
         <appender-ref ref="PERF-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
