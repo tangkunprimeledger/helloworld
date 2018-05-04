@@ -11,8 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -95,6 +94,19 @@ public class ReceiveStorage {
         receiveDB.commit();
     }
 
+    private void compact(){
+        openTx();
+        try{
+            receiveDB.getStore().compact();
+            log.info("compact the store of the receive storage");
+        }catch (Throwable throwable){
+            log.error("{}", throwable);
+        }finally {
+            closeTx();
+        }
+
+    }
+
     public void rollBack(){
         receiveDB.rollback();
     }
@@ -128,7 +140,14 @@ public class ReceiveStorage {
             thread.setName("receive storage gc thread");
             thread.setDaemon(true);
             return thread;
-        }).scheduleWithFixedDelay(this::gc, 2, 2, TimeUnit.SECONDS);
+        }).scheduleWithFixedDelay(this::gc, 20, 20, TimeUnit.SECONDS);
+
+        new ScheduledThreadPoolExecutor(1, (r) -> {
+            Thread thread = new Thread(r);
+            thread.setName("receive storage gc thread");
+            thread.setDaemon(true);
+            return thread;
+        }).scheduleWithFixedDelay(this::compact, 60, 60, TimeUnit.SECONDS);
         log.info("thread pool init success");
     }
 
@@ -190,7 +209,6 @@ public class ReceiveStorage {
         } else {
             receiveApplyQueue.put(lastEntry.getKey() + 1, key);
         }
-        receiveDB.commit();
         applyQueueCondition.signal();
     }
 
@@ -220,7 +238,6 @@ public class ReceiveStorage {
         } else {
             receiveDelayQueue.put(lastEntry.getKey() + 1, key);
         }
-        receiveDB.commit();
     }
 
     private void transFromDelayToApplyQueue() {

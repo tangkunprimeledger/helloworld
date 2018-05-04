@@ -91,6 +91,18 @@ public class SendStorage {
         sendDB.rollback();
     }
 
+    private void compact(){
+        openTx();
+        try{
+            sendDB.getStore().compact();
+            log.info("compact the store of the receive storage");
+        }catch (Throwable throwable){
+            log.error("{}", throwable);
+        }finally {
+            closeTx();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private void initStorageMap(){
         openTx();
@@ -119,8 +131,14 @@ public class SendStorage {
             thread.setName("send storage gc thread");
             thread.setDaemon(true);
             return new Thread(r);
-        }).scheduleWithFixedDelay(this::gc, 1, 1, TimeUnit.SECONDS);
+        }).scheduleWithFixedDelay(this::gc, 20, 20, TimeUnit.SECONDS);
 
+        new ScheduledThreadPoolExecutor(1, (r) -> {
+            Thread thread = new Thread(r);
+            thread.setName("send storage gc thread");
+            thread.setDaemon(true);
+            return thread;
+        }).scheduleWithFixedDelay(this::compact, 60, 60, TimeUnit.SECONDS);
         log.info("thread pool init success");
     }
 
