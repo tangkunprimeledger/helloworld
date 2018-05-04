@@ -112,7 +112,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
         try {
             MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")), dataList);
-            fail("Expected an slave merkle param not valid exception to be thrown");
+            fail("Expected a slave merkle param not valid exception to be thrown");
         } catch (MerkleException e) {
             assertEquals(e.getMessage(), param.get("assert").toString());
         }
@@ -165,7 +165,7 @@ public class MerkleServiceImplTest extends BaseTest {
                 JSONObject.parseObject(bodyObj.toJSONString(), new TypeReference<Map<String, String>>() {
                 });
             merkleService.update(merkleTree,map.get("old"),map.get("new"));
-            fail("Expected an slave merkle param not valid exception to be thrown");
+            fail("Expected a slave merkle param not valid exception to be thrown");
         } catch (MerkleException e) {
             assertEquals(e.getMessage(), param.get("assert").toString());
         }
@@ -255,7 +255,7 @@ public class MerkleServiceImplTest extends BaseTest {
             MerkleTree merkleTree =  merkleService.queryMerkleTree(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")));
             Object obj = param.get("body");
             merkleService.add(merkleTree,obj);
-            fail("Expected an slave merkle param not valid exception to be thrown");
+            fail("Expected a slave merkle param not valid exception to be thrown");
         } catch (MerkleException e) {
             assertEquals(e.getMessage(), param.get("assert").toString());
         }
