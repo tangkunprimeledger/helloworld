@@ -42,7 +42,12 @@ public class ReceiveStorage {
 
     private DB receiveDB;
 
-    private ReentrantLock txLock;
+    private final ReentrantLock txLock;
+
+    /**
+     * isolation lock to reduce the contention
+     */
+    private final ReentrantLock applyLock;
 
     private Condition applyQueueCondition;
 
@@ -55,7 +60,8 @@ public class ReceiveStorage {
                 .transactionEnable()
                 .make();
         txLock = new ReentrantLock();
-        applyQueueCondition = txLock.newCondition();
+        applyLock = new ReentrantLock();
+        applyQueueCondition = applyLock.newCondition();
         initStorageMap();
         initThreadPool();
     }
@@ -68,7 +74,8 @@ public class ReceiveStorage {
                 .transactionEnable()
                 .make();
         txLock = new ReentrantLock();
-        applyQueueCondition = txLock.newCondition();
+        applyLock = new ReentrantLock();
+        applyQueueCondition = applyLock.newCondition();
         initStorageMap();
         initThreadPool();
     }
@@ -209,16 +216,26 @@ public class ReceiveStorage {
         } else {
             receiveApplyQueue.put(lastEntry.getKey() + 1, key);
         }
-        applyQueueCondition.signal();
+        applyLock.lock();
+        try {
+            applyQueueCondition.signal();
+        }finally {
+            applyLock.unlock();
+        }
     }
 
 
     public String getFirstFromApplyQueue() throws InterruptedException {
         receiveApplyQueue = getReceiveApplyQueue();
         Map.Entry<Long, String> entry = receiveApplyQueue.firstEntry();
-        while (null == entry) {
-            applyQueueCondition.await(5, TimeUnit.SECONDS);
-            entry = receiveApplyQueue.firstEntry();
+        applyLock.lock();
+        try {
+            while (null == entry) {
+                applyQueueCondition.await(5, TimeUnit.SECONDS);
+                entry = receiveApplyQueue.firstEntry();
+            }
+        }finally {
+            applyLock.unlock();
         }
         return entry.getValue();
     }
@@ -241,22 +258,17 @@ public class ReceiveStorage {
     }
 
     private void transFromDelayToApplyQueue() {
-        openTx();
         try {
             receiveDelayQueue = getReceiveDelayQueue();
             Map.Entry<Long, String> entry = receiveDelayQueue.firstEntry();
             if (null == entry) {
                 return;
             }
-            receiveDelayQueue.remove(entry.getKey());
             addApplyQueue(entry.getValue());
+            receiveDelayQueue.remove(entry.getKey());
             log.info("trans {} from delay to apply queue", entry.getValue());
-            commit();
         } catch (Exception e) {
             log.error("{}", e);
-            rollBack();
-        }finally {
-            closeTx();
         }
     }
 
