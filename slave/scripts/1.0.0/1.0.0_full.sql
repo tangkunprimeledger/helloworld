@@ -217,7 +217,8 @@ IF NOT EXISTS `merkle_node` (
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	`update_time` datetime (3) NOT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_idx` (`level`,`tree_type`,`index`)
+	UNIQUE KEY `uniq_idx` (`level`,`tree_type`,`index`),
+	UNIQUE KEY `idx_hash` (`node_hash`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'merkle node, this store the whole node info create merkle tree';
 
 CREATE TABLE
