@@ -20,21 +20,20 @@
   "type": "",
   "policyId":"",
   "beforeSql": [
-    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0', '0', 'DEBIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
-    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1002', 'CNY', '0', '0', 'CREDIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0.1', '0', 'DEBIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1002', 'CNY', '0.1', '0', 'DEBIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
     "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1001', 'BUC_CHAIN', 'rs-test1', '2018-04-25 18:21:57')",
     "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1002', 'BUC_CHAIN', 'rs-test2', '2018-04-25 18:21:57')",
     "INSERT INTO `currency_info` (`currency`, `create_time`) VALUES ('CNY', '2018-05-05 05:05:05')",
-    "INSERT INTO `merkle_tree` (`root_hash`, `total_level`, `max_index`, `tree_type`, `create_time`,`update_time`) VALUES ('df130eb0bfa54eab7af979b268f173c1316e82c4c7d4957418a2331065f56b73', '2', '1', 'ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
-    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017074093490176', '94698d2304692372dcaa0496429dff67573b61273eb3e2c655e8b737509c6002', '0', '1','442017493729411072','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
-    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017493729411072', 'df130eb0bfa54eab7af979b268f173c1316e82c4c7d4957418a2331065f56b73', '0', '2','','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
-    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017493741993984', '90183221c3fd5c86cd883c7b6c0bf5f5527df3fb7a34caf938f4db398ea0d056', '1', '1','442017493729411072','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
+    "INSERT INTO `merkle_tree` (`root_hash`, `total_level`, `max_index`, `tree_type`, `create_time`,`update_time`) VALUES ('5630fe5637796253634e0c65e328d5ad361a440fc7f666a021d15c7d00ddf968', '2', '1', 'ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
+    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('443078452753465344', '9ad189d24cd767562883b57f11e56f251baed11915217b26f36d7a22aaec3274', '0', '1','443078703656730624','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
+    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('443078703656730624', '5630fe5637796253634e0c65e328d5ad361a440fc7f666a021d15c7d00ddf968', '0', '2','','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
+    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('443078703669313536', 'b9e93ceb162739ca101440e33c836fd7b56de47eb680cf7c907a1ef47b39c074', '1', '1','443078703656730624','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
     "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('000000', 'register', '[\"ALL\"]', '2018-04-18 16:12:39.518')",
     "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('policy-test-1', '注册policy-test-1', 'Set[\"rs-test3\",\"rs-test1\"]', '2018-04-18 16:12:39.518')",
     "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test1', 'ccc', 'rs-test1-desc', '2018-04-18 16:12:39.518')",
     "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test2', 'ccc', 'rs-test2-desc', '2018-04-18 16:12:39.518')",
     "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test3', 'ccc', 'rs-test3-desc', '2018-04-18 16:12:39.518')"
-
   ],
   "afterSql": [
     "TRUNCATE TABLE `account_info`",
@@ -54,11 +53,11 @@
   "assert": "",
   "assertData": [
     {
-      "balance":"0.1000000000"
+      "balance":"0.2000000000"
     },
     {
-      "balance":"0.1000000000"
+      "balance":"0.0000000000"
     }
   ],
-  "comment": "账务操作,[入账]测试"
+  "comment": "账务操作,[转账]测试"
 }

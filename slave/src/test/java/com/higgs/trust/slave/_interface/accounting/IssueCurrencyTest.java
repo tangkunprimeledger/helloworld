@@ -25,13 +25,13 @@ import java.util.Map;
     }
 
     @Test(dataProvider = "defaultProvider", priority = 1) public void paramValidate(Map<?, ?> param) {
-        log.info("[paramValidate]param:{}", param);
+        log.info("[paramValidate]{}", param.get("comment"));
         IssueCurrency issueCurrency = getAction(param, IssueCurrency.class, ActionTypeEnum.ISSUE_CURRENCY);
         executeActionHandler(param, issueCurrencyHandler, issueCurrency);
     }
 
     @Test(dataProvider = "defaultProvider", priority = 2) public void testRegular(Map<?, ?> param) {
-        log.info("[testRegular]param:{}", param);
+        log.info("[testRegular]{}", param.get("comment"));
         IssueCurrency issueCurrency = getAction(param, IssueCurrency.class, ActionTypeEnum.ISSUE_CURRENCY);
         executeActionHandler(param, issueCurrencyHandler, issueCurrency);
 
@@ -39,7 +39,7 @@ import java.util.Map;
     }
 
     @Test(dataProvider = "defaultProvider", priority = 3) public void testException(Map<?, ?> param) {
-        log.info("[testException]param:{}", param);
+        log.info("[testException]{}", param.get("comment"));
         executeBeforeSql(param);
 
         IssueCurrency issueCurrency = getAction(param, IssueCurrency.class, ActionTypeEnum.ISSUE_CURRENCY);

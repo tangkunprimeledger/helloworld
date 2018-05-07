@@ -4,6 +4,7 @@ import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.ContractException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
 import com.higgs.trust.slave.model.bo.Contract;
@@ -79,15 +80,25 @@ import org.springframework.stereotype.Service;
     }
 
     public Object execute(String address, ExecuteContextData data, TxProcessTypeEnum processType, Object... args) {
-        return execute(address, address, data, processType, args);
+        try {
+            Profiler.enter(String.format("execute contract at %s", address));
+            return execute(address, address, data, processType, args);
+        } finally {
+            Profiler.release();
+        }
     }
 
     public Object execute(AccountContractBinding binding, ExecuteContextData data, TxProcessTypeEnum processType) {
-        if (binding == null) {
-            log.warn("binding is null");
-            return null;
+        Profiler.enter(String.format("execute contract at %s", binding.getContractAddress()));
+        try {
+            if (binding == null) {
+                log.warn("binding is null");
+                return null;
+            }
+            Object args = com.alibaba.fastjson.JSON.parse(binding.getArgs());
+            return execute(binding.getContractAddress(), binding.getHash(), data, processType, args);
+        } finally {
+            Profiler.release();
         }
-        Object args = com.alibaba.fastjson.JSON.parse(binding.getArgs());
-        return execute(binding.getContractAddress(), binding.getHash(), data, processType, args);
     }
 }
