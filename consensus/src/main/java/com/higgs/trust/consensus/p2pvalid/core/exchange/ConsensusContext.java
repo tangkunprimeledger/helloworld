@@ -2,6 +2,7 @@ package com.higgs.trust.consensus.p2pvalid.core.exchange;
 
 import com.higgs.trust.consensus.common.TraceUtils;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
+import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.storage.ReceiveStorage;
 import com.higgs.trust.consensus.p2pvalid.core.storage.SendStorage;
@@ -171,10 +172,15 @@ public class ConsensusContext {
                         ValidCommandWrap validCommandWrap = sendCommandStatistics.getValidCommandWrap();
                         try {
                             String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
+                            Long start = System.currentTimeMillis();
                             if (StringUtils.equals("SUCCESS", result)) {
                                 sendCommandStatistics.addAckNodeName(nodeName);
                             }
-                            log.info("result is {}", result);
+                            Long end = System.currentTimeMillis();
+                            ValidCommand<?> validCommand = sendCommandStatistics.getValidCommandWrap().getValidCommand();
+                            log.info("from {} send to {} result is {} , start time {}, end time {}, duration {}, command is {}",
+                                    sendCommandStatistics.getValidCommandWrap().getFromNodeName(), nodeName,
+                                    result, start, end, end - start, validCommand);
                         } catch (Exception e) {
                             log.error("{}", e);
                         } finally {
