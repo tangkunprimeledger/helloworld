@@ -4,6 +4,7 @@ import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.contract.StandardExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
@@ -14,18 +15,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-
+/**
+ * @author duhongming
+ * @date 2018/05/07
+ */
 @Slf4j @Component public class ContractInvokeHandler implements ActionHandler {
 
-    @Autowired private StandardSmartContract smartContract;
+    @Autowired
+    private StandardSmartContract smartContract;
 
     private void check(ContractInvokeAction action) {
         if (null == action) {
-            log.error("invokeContract validate >>  convert action to ContractInvokeAction is error");
+            log.error("invokeContract validate: convert action to ContractInvokeAction is error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (StringUtils.isEmpty(action.getAddress())) {
-            log.error("invokeContract validate >> address is empty");
+            log.error("invokeContract validate: address is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }
@@ -37,13 +42,25 @@ import org.springframework.util.StringUtils;
         smartContract.execute(invokeAction.getAddress(), data, processType, invokeAction.getArgs());
     }
 
-    @Override public void validate(ActionData actionData) {
+    @Override
+    public void validate(ActionData actionData) {
         log.debug("start invoke contract on validate process");
-        process(actionData, TxProcessTypeEnum.VALIDATE);
+        Profiler.enter("ContractInvokeHandler validate");
+        try {
+            process(actionData, TxProcessTypeEnum.VALIDATE);
+        } finally {
+            Profiler.release();
+        }
     }
 
-    @Override public void persist(ActionData actionData) {
+    @Override
+    public void persist(ActionData actionData) {
         log.debug("start invoke contract on persist process");
-        process(actionData, TxProcessTypeEnum.PERSIST);
+        Profiler.enter("ContractInvokeHandler persist");
+        try {
+            process(actionData, TxProcessTypeEnum.PERSIST);
+        } finally {
+            Profiler.release();
+        }
     }
 }

@@ -66,13 +66,24 @@
         </rollingPolicy>
     </appender>
 
+    <appender name="DAO-DIGEST-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${COMMON_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/${APP_NAME}-dao-digest.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-dao-digest.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
     <appender name="SERVICE-DIGEST-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder>
             <pattern>${MONITOR_LOG_PATTERN}</pattern>
         </encoder>
-        <file>${LOG_PATH}/${APP_NAME}-digest.log</file>
+        <file>${LOG_PATH}/${APP_NAME}-service-digest.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${APP_NAME}-digest.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-service-digest.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
             <maxHistory>${MAX_HISTORY}</maxHistory>
             <!--<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>-->
         </rollingPolicy>
@@ -97,7 +108,7 @@
         </encoder>
         <file>${LOG_PATH}/copycat.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/copycat.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${LOG_PATH}/copycat.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
             <maxHistory>${MAX_HISTORY}</maxHistory>
         </rollingPolicy>
     </appender>
@@ -130,6 +141,11 @@
     <logger name="ManageLog" level="INFO" additivity="false">
         <appender-ref ref="MANAGE-APPENDER"/>
     </logger>
+
+    <Logger name="com.higgs.trust.slave.common.util.TrustDaoDigestLogInterceptor" level="INFO" additivity="false">
+        <appender-ref ref="DAO-DIGEST-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
+    </Logger>
 
     <Logger name="SERVICE-DIGEST" level="INFO" additivity="false">
         <appender-ref ref="SERVICE-DIGEST-APPENDER"/>
