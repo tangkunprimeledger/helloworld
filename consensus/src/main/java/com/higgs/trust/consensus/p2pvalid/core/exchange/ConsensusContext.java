@@ -178,8 +178,8 @@ public class ConsensusContext {
                             }
                             Long end = System.currentTimeMillis();
                             ValidCommand<?> validCommand = sendCommandStatistics.getValidCommandWrap().getValidCommand();
-                            log.info("from {} send to {} result is {} , start time {}, end time {}, duration {}, command is {}",
-                                    sendCommandStatistics.getValidCommandWrap().getFromNodeName(), nodeName,
+                            log.info("p2p consensus {} from {} send to {} result is {} , start time {}, end time {}, duration {}, command is {}",
+                                    sendCommandStatistics.getValidCommandWrap().getFromNodeName(), nodeName, validCommand.getClass(),
                                     result, start, end, end - start, validCommand);
                         } catch (Exception e) {
                             log.error("{}", e);
