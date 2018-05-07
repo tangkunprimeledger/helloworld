@@ -202,7 +202,9 @@ public class ConsensusContext {
                 log.error("{}", e);
                 sendStorage.openTx();
                 try{
-                    sendStorage.addDelayQueue(key);
+                    if(null != key){
+                        sendStorage.addDelayQueue(key);
+                    }
                     sendStorage.removeFromSendQueue();
                     sendStorage.commit();
                 }finally {
@@ -267,7 +269,9 @@ public class ConsensusContext {
                     log.info("apply exception, add key {} to delay queue", key);
                     receiveStorage.openTx();
                     try{
-                        receiveStorage.addDelayQueue(key);
+                        if(null != key){
+                            receiveStorage.addDelayQueue(key);
+                        }
                         receiveStorage.deleteFirstFromApplyQueue();
                         receiveStorage.commit();
                     } finally {
