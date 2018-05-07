@@ -55,21 +55,21 @@ public class ConsensusContext {
     }
 
     private void initExecutor() {
-        sendExecutorService = new ThreadPoolExecutor(1, 4, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), (r) -> {
+        sendExecutorService = new ThreadPoolExecutor(5, 10, 600, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(5000), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("sending command thread");
             thread.setDaemon(true);
             return thread;
         });
 
-        new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), (r) -> {
+        new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("command send thread");
             thread.setDaemon(true);
             return thread;
         }).execute(this::send);
 
-        new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), (r) -> {
+        new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("command apply thread");
             thread.setDaemon(true);
