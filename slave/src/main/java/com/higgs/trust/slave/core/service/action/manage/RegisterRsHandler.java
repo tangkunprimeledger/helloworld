@@ -10,7 +10,6 @@ import com.higgs.trust.slave.core.service.datahandler.manage.RsDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.RsHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.RsSnapshotHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;

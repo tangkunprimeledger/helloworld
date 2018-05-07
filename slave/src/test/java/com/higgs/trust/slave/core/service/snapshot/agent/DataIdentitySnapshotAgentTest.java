@@ -6,8 +6,6 @@ import com.higgs.trust.slave.model.bo.DataIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
-
 public class DataIdentitySnapshotAgentTest extends BaseTest{
     @Autowired
     private DataIdentitySnapshotAgent dataIdentitySnapshotAgent;

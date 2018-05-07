@@ -11,10 +11,12 @@ import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.core.service.pending.PendingState;
 import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -55,6 +57,9 @@ public class PackageScheduler {
     @Autowired
     private NodeState nodeState;
 
+    @Value("${trust.batch.tx.limit}")
+    private int PENDING_COUNT;
+
     /**
      * master node create package
      */
@@ -64,7 +69,13 @@ public class PackageScheduler {
             return;
         }
 
-        Package pack = packageService.create();
+        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(PENDING_COUNT);
+
+        if (CollectionUtils.isEmpty(signedTransactions)) {
+            return;
+        }
+
+        Package pack = packageService.create(signedTransactions);
 
         if (null == pack) {
             return;
@@ -136,7 +147,11 @@ public class PackageScheduler {
             //get max block height
             maxBlockHeight = blockRepository.getMaxHeight();
             if (height .equals(maxBlockHeight) || height.equals(maxBlockHeight + 1)) {
-                packageProcess.process(height);
+                try {
+                    packageProcess.process(height);
+                } catch (Throwable e) {
+                    log.error("package scheduled execute failed", e);
+                }
             }
         }
     }

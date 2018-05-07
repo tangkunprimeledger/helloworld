@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
             } else {
                 log.error("Node master check not pass");
                 nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
+                return false;
             }
         } else {
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);

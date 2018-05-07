@@ -1,7 +1,5 @@
 package com.higgs.trust.contract;
 
-import java.util.Map;
-
 /**
  * contract state key-value db store interface
  *

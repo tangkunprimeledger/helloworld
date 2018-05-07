@@ -15,7 +15,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author tangfashuang
@@ -50,11 +53,11 @@ import java.util.*;
             if (policyEnum == null) {
                 Policy policy = policyRepository.getPolicyById(ctx.getPolicyId());
 
-                if (policy == null && CollectionUtils.isEmpty(policy.getRsIdSet())) {
+                if (policy == null && CollectionUtils.isEmpty(policy.getRsIds())) {
                     log.error("acquire policy failed. policyId={}", ctx.getPolicyId());
                     return false;
                 }
-                rsPubKeyList = getRsPubKeyList(policy.getRsIdSet());
+                rsPubKeyList = getRsPubKeyList(policy.getRsIds());
             } else {
                 // default policy
                 rsPubKeyList = rsPubKeyRepository.queryAll();
@@ -72,15 +75,15 @@ import java.util.*;
         }
     }
 
-    private List<RsPubKey> getRsPubKeyList(Set<String> rsIdSet) {
+    private List<RsPubKey> getRsPubKeyList(List<String> rsIdList) {
         try {
 
-            if (rsIdSet.size() < 1) {
+            if (rsIdList.size() < 1) {
                 return null;
             }
 
             List<RsPubKey> rsPubKeyList = new ArrayList<>();
-            for (String rsId : rsIdSet) {
+            for (String rsId : rsIdList) {
                 RsPubKey rsPubKey = rsPubKeyRepository.queryByRsId(rsId);
 
                 //if rsId cannot acquire public key, policy exception.

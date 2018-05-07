@@ -1,4 +1,4 @@
-package com.higgs.trust.consensus;
+package com.higgs.trust.consensus.p2pvalid;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
@@ -8,13 +8,13 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.BeforeTest;
 
-@SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public abstract class BaseTest
+@SpringBootTest(classes = P2pTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+public abstract class p2pBaseTest
         extends AbstractTestNGSpringContextTests {
 
     @BeforeSuite
-    public void beforeClass() throws Exception {
-        System.setProperty("spring.config.location", "classpath:application-test.json");
+    public void beforeClass() {
+        System.setProperty("spring.config.location", "classpath:test-application.json");
     }
 
     @BeforeTest

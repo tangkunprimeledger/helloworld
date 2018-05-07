@@ -3,7 +3,6 @@ package com.higgs.trust.contract.impl;
 import com.higgs.trust.contract.ExecuteContext;
 import com.higgs.trust.contract.ExecuteEngine;
 import com.higgs.trust.contract.ExecuteEngineFactory;
-import com.higgs.trust.contract.SmartContractException;
 import jdk.nashorn.internal.runtime.Context;
 import jdk.nashorn.internal.runtime.ErrorManager;
 import jdk.nashorn.internal.runtime.ScriptFunction;

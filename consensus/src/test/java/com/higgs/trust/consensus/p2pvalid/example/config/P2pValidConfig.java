@@ -27,6 +27,9 @@ public class P2pValidConfig {
     @Autowired
     private P2pConsensusClient p2pConsensusClient;
 
+    @Value("${consensus.p2p.data.dir}")
+    private String p2pBaseDir;
+
     @Value("${higgs.trust.nodeName}")
     private String myNodeName;
 
@@ -78,7 +81,7 @@ public class P2pValidConfig {
                     add(myNodeName);
                 }})
                 .setFaultNodeNum(0);
-        ValidConsensus validConsensus = new StringValidConsensus(clusterInfo, p2pConsensusClient, "D:/temp/1/2/3/testTheValidFile");
+        ValidConsensus validConsensus = new StringValidConsensus(clusterInfo, p2pConsensusClient, p2pBaseDir);
         log.info("{}", validConsensus);
         return validConsensus;
     }

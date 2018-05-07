@@ -8,11 +8,9 @@ import com.higgs.trust.slave.core.service.action.account.AccountUnFreezeHandler;
 import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**

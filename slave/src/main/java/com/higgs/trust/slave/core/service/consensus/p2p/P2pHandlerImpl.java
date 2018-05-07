@@ -4,10 +4,12 @@ import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
+import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
+import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
@@ -39,6 +41,8 @@ import java.util.concurrent.ExecutorService;
     @Autowired ExecutorService packageThreadPool;
 
     @Autowired BlockService blockService;
+
+    @Autowired NodeState nodeState;
 
     @Autowired public P2pHandlerImpl(P2pClusterInfo p2pClusterInfo, P2pConsensusClient p2pConsensusClient,
         PropertiesConfig propertiesConfig) {
@@ -154,6 +158,11 @@ import java.util.concurrent.ExecutorService;
             }
         }
         commit.close();
+
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            return;
+        }
+
         //async start process, multi thread and lock
         try {
             packageThreadPool.execute(new AsyncPackageProcess(header.getHeight()));

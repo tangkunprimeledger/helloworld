@@ -60,6 +60,7 @@ public enum SlaveErrorEnum {
     SLAVE_S_TX_OUT_NOT_EXISTS_ERROR("516", "S txOut is not exists", false),
     SLAVE_ACTION_NOT_EXISTS_EXCEPTION("517", "action not exists exception", false),
     SLAVE_SNAPSHOT_CACHE_SIZE_NOT_ENOUGH_EXCEPTION("518", "snapshot cache size not enough exception", false),
+    SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION("519", "snapshot get no lock exception", false),
 
 
     SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION("600", "slave merkle param not valid exception", false),

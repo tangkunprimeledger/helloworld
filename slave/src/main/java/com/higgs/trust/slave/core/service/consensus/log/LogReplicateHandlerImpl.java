@@ -142,10 +142,9 @@ import java.util.concurrent.ExecutorService;
         Package pack = PackageConvert.convertPackVOToPack(packageVO);
         boolean isRunning = nodeState.isState(NodeStateEnum.Running);
         try {
-            if (isRunning) {
-                packageService.receive(pack);
-            } else if (nodeState.isState(NodeStateEnum.AutoSync)) {
-                syncPackageCache.receive(pack);
+            packageService.receive(pack);
+            if (nodeState.isState(NodeStateEnum.AutoSync)) {
+                syncPackageCache.receivePackageHeight(pack.getHeight());
             }
             commit.close();
         } catch (SlaveException e) {
@@ -164,7 +163,6 @@ import java.util.concurrent.ExecutorService;
             }
         }
     }
-
 
     /**
      * handle the commit and submit p2p consensus for cluster height
@@ -198,9 +196,10 @@ import java.util.concurrent.ExecutorService;
             BlockHeaderCmd operation = commit.operation();
             BlockHeader header = operation.get();
             BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
-            boolean result = blockService.compareBlockHeader(header, blockHeader);
+            boolean result = blockHeader != null && blockService.compareBlockHeader(header, blockHeader);
             try {
-                clusterServiceImpl.submit(new ValidBlockHeaderCmd(header, result), operation.getNodeName());
+                clusterServiceImpl
+                    .submit(new ValidBlockHeaderCmd(operation.getRequestId(), header, result), operation.getNodeName());
             } catch (Exception e) {
                 log.error("consensus submit error:", e);
             }

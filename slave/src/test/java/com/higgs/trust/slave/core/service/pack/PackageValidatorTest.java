@@ -1,20 +1,16 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.higgs.trust.slave.IntegrateBaseTest;
-import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.core.service.action.account.TestDataMaker;
 import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.Package;
-import com.higgs.trust.slave.model.bo.account.AccountFreeze;
-import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeTest;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +29,14 @@ public class PackageValidatorTest extends IntegrateBaseTest {
     }
     @Test
     public void testValidating() throws Exception {
+        test(6L);
+        test(7L);
+    }
+
+    private void test(Long height) throws Exception {
         Block block = new Block();
         Package pack = new Package();
-        pack.setHeight(6L);
+        pack.setHeight(height);
         pack.setPackageTime(System.currentTimeMillis());
         BlockHeader blockHeader = TestDataMaker.makeBlockHeader();
         block.setBlockHeader(blockHeader);
@@ -91,7 +92,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
 
         PackContext packContext = new PackContext(pack,block);
 
-//        packageValidator.validating(packContext);
+        packageValidator.validating(packContext);
 
         packagePersistor.persisting(packContext);
 

@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.action.dataidentity;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityHandler;
@@ -16,7 +17,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * dataidentity repository
@@ -66,23 +69,24 @@ public class DataIdentityService {
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
 
+        Profiler.enter("[DataIdentity.save]");
         dataIdentity = DataIdentityConvert.buildDataIdentity(dataIdentityAction.getIdentity(), dataIdentityAction.getChainOwner(), dataIdentityAction.getDataOwner());
         dataIdentityHandler.saveDataIdentity(dataIdentity);
-
+        Profiler.release();
     }
 
     /**
      * validate dataIdentityPOList weather data owner and chain owner are legal
      *
-     * @param rsSet
+     * @param rsList
      * @param dataIdentityList
      * @return
      */
-    public boolean validate(Set<String> rsSet, List<DataIdentity> dataIdentityList) {
+    public boolean validate(List<String> rsList, List<DataIdentity> dataIdentityList) {
         log.info("Start to validate data attribution");
         // validate params
-        if (CollectionUtils.isEmpty(rsSet) || CollectionUtils.isEmpty(dataIdentityList)) {
-            log.error("RsList or dataIdentityPOList can not null. RsList is {} , dataIdentityPOList is ", rsSet, dataIdentityList);
+        if (CollectionUtils.isEmpty(rsList) || CollectionUtils.isEmpty(dataIdentityList)) {
+            log.error("RsList or dataIdentityPOList can not null. RsList is {} , dataIdentityPOList is ", rsList, dataIdentityList);
             return false;
         }
 
@@ -101,16 +105,16 @@ public class DataIdentityService {
         }
 
         // validate dataidentity rs can not be more than rsList
-        if (rsSet.size() < dataIdentityRsSet.size()) {
-            log.error("Chain owner  is illegal, the data owners are more than rsList .The data owners  are: {} , rsList is :{}", dataIdentityRsSet, rsSet);
+        if (rsList.size() < dataIdentityRsSet.size()) {
+            log.error("Chain owner  is illegal, the data owners are more than rsList .The data owners  are: {} , rsList is :{}", dataIdentityRsSet, rsList);
             return false;
         }
 
         // validate weather dataidentity rs in rsList，if it is not in break.
 
         for (String dataIdentityRs : dataIdentityRsSet) {
-            if (!rsSet.contains(dataIdentityRs)) {
-                log.error("Data owner  is illegal, the data owner  {} is not in  policy rs list :{}.", dataIdentityRs, rsSet);
+            if (!rsList.contains(dataIdentityRs)) {
+                log.error("Data owner  is illegal, the data owner  {} is not in  policy rs list :{}.", dataIdentityRs, rsList);
                 return false;
             }
         }

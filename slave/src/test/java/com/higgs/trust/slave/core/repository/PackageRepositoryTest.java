@@ -61,10 +61,10 @@ public class PackageRepositoryTest extends BaseTest {
         registerPolicy.setPolicyId("test-policy-3");
         registerPolicy.setPolicyName("测试注册policy-3");
 
-        Set<String> rsIds = new HashSet<>();
+        List<String> rsIds = new ArrayList<>();
         rsIds.add("rs-test2");
         rsIds.add("rs-test3");
-        registerPolicy.setRsIdSet(rsIds);
+        registerPolicy.setRsIds(rsIds);
 
         CoreTransaction coreTx1 = new CoreTransaction();
         List<Action> registerPolicyList = new ArrayList<>();

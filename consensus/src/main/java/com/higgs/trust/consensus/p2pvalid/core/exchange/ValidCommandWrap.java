@@ -29,6 +29,7 @@ public class ValidCommandWrap implements Serializable {
     private String sign;
     private Class<? extends ValidCommand> commandClass;
     private Set<String> toNodeNames = new HashSet<>();
+    private Long traceId;
 
     public ValidCommandWrap() {
     }
@@ -66,5 +67,11 @@ public class ValidCommandWrap implements Serializable {
         return this;
     }
 
+    public Long getTraceId() {
+        return traceId;
+    }
 
+    public void setTraceId(Long traceId) {
+        this.traceId = traceId;
+    }
 }

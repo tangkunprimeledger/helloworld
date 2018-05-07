@@ -1,5 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.exchange;
 
+import com.higgs.trust.consensus.common.TraceUtils;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.storage.ReceiveStorage;
@@ -8,6 +9,7 @@ import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommand
 import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.SendCommandStatistics;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.sleuth.Span;
 
 import java.util.concurrent.*;
 
@@ -53,7 +55,7 @@ public class ConsensusContext {
     }
 
     private void initExecutor() {
-        sendExecutorService = new ThreadPoolExecutor(1, 4, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),(r)->{
+        sendExecutorService = new ThreadPoolExecutor(1, 4, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("sending command thread");
             thread.setDaemon(true);
@@ -76,44 +78,84 @@ public class ConsensusContext {
     }
 
     public void submit(ValidCommandWrap validCommandWrap) {
-        String key = sendStorage.submit(validCommandWrap);
-        sendStorage.addSendQueue(key);
+        sendStorage.openTx();
+        try {
+            String key = sendStorage.submit(validCommandWrap);
+            sendStorage.addSendQueue(key);
+            sendStorage.commit();
+        }catch (Throwable e){
+            sendStorage.rollBack();
+            throw new RuntimeException(e);
+        }finally {
+            sendStorage.closeTx();
+        }
     }
 
     /**
      * receive the commandWrap
-     *
-     * @param validCommandWrap
+     * @param validCommandWrap validCommandWrap
      */
     public synchronized void receive(ValidCommandWrap validCommandWrap) {
-        String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
-        ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
+        receiveStorage.openTx();
+        try{
+            String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
+            ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
 
-        if (receiveCommandStatistics.isClosed()) {
-            log.info("receiveCommandStatistics {} from node {} is closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
-            if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
-                log.info("add receiveCommandStatistics {} to gc set", receiveCommandStatistics);
-                receiveStorage.addGCSet(key);
+            if (receiveCommandStatistics.isClosed()) {
+                log.info("receiveCommandStatistics {} from node {} is closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
+                if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
+                    log.info("add receiveCommandStatistics {} to gc set", receiveCommandStatistics);
+                    receiveStorage.addGCSet(key);
+                }
+            } else if (receiveCommandStatistics.isApply()) {
+                log.info("receiveCommandStatistics {} has applied", receiveCommandStatistics);
+            } else if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
+                receiveStorage.addApplyQueue(key);
+                receiveCommandStatistics.apply();
+                receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
+                log.info("from node set size {} >= threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
             }
-        } else if (receiveCommandStatistics.isApply()) {
-            log.info("receiveCommandStatistics {} has applied", receiveCommandStatistics);
-        } else if (receiveCommandStatistics.getFromNodeNameSet().size() >= applyThreshold) {
-            receiveStorage.addApplyQueue(key);
-            receiveCommandStatistics.apply();
-            receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
-            log.info("from node set size {} >= threshold {}, trigger apply", receiveCommandStatistics.getFromNodeNameSet().size(), applyThreshold);
+            receiveStorage.commit();
+        }catch (Throwable e){
+            log.error("{}", e);
+            receiveStorage.rollBack();
+            throw new RuntimeException("receive exception");
+        }finally {
+            receiveStorage.closeTx();
         }
+
+
     }
 
+    /**
+     * send the validCommandWrap to server
+     */
     private void send() {
         while (true) {
-            String key = sendStorage.takeFromSendQueue();
+            sendStorage.openTx();
+            String rootKey = null;
             try {
+                String key = sendStorage.takeFromSendQueue();
+                rootKey = key;
                 if (null == key) {
                     log.warn("key is null");
+                    sendStorage.removeFromSendQueue();
                     continue;
                 }
                 SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
+
+                if (null == sendCommandStatistics) {
+                    log.warn("key {} sendCommandStatistics is null", key);
+                    sendStorage.removeFromSendQueue();
+                    continue;
+                }
+
+                if (sendCommandStatistics.isSend()) {
+                    log.warn("sendCommandStatistics {} has been send", sendCommandStatistics);
+                    sendStorage.removeFromSendQueue();
+                    continue;
+                }
+
                 log.info("schedule send sendCommandStatistics {}", sendCommandStatistics);
 
                 // set the countDownLatch
@@ -128,56 +170,75 @@ public class ConsensusContext {
                         countDownLatch.countDown();
                         continue;
                     }
-                    sendExecutorService.submit(()->{
-                        try{
-
-                            String result = p2pConsensusClient.receiveCommand(nodeName, sendCommandStatistics.getValidCommandWrap());
+                    sendExecutorService.submit(() -> {
+                        ValidCommandWrap validCommandWrap = sendCommandStatistics.getValidCommandWrap();
+                        try {
+                            String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             if (StringUtils.equals("SUCCESS", result)) {
                                 sendCommandStatistics.addAckNodeName(nodeName);
                                 sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
                             }
                             log.info("result is {}", result);
-                        }finally {
+                        } catch (Exception e) {
+                            log.error("{}", e);
+                        } finally {
                             countDownLatch.countDown();
                         }
                     });
                 }
                 countDownLatch.await();
-
                 //gc
                 if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
                     sendStorage.addGCSet(key);
+                    sendCommandStatistics.setSend();
+                    sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
                 } else {
                     sendStorage.addDelayQueue(key);
                 }
-            } catch (Exception e) {
+                sendStorage.removeFromSendQueue();
+                sendStorage.commit();
+            } catch (Throwable e) {
                 log.error("{}", e);
-                if (null != key) {
-                    sendStorage.addDelayQueue(key);
+                if (null != rootKey) {
+                    try{
+                        sendStorage.addDelayQueue(rootKey);
+                        sendStorage.commit();
+                    }catch (Throwable throwable){
+                        log.error("{}", throwable);
+                        sendStorage.rollBack();
+                    }
                 }
+            } finally {
+                sendStorage.closeTx();
             }
         }
     }
 
     private void apply() {
         while (true) {
+            receiveStorage.openTx();
             String key = null;
+            Span span = null;
             try {
-                key = receiveStorage.takeFromApplyQueue();
+                key = receiveStorage.getFirstFromApplyQueue();
                 if (null == key) {
                     log.warn("key is null");
                     continue;
                 }
                 ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.getReceiveCommandStatistics(key);
 
-                log.info("schedule apply receiveCommandStatistics {}", receiveCommandStatistics);
                 if (null == receiveCommandStatistics) {
                     log.warn("receiveCommandStatistics is null, key is {}", key);
                     continue;
                 }
 
+                span = TraceUtils.createSpan(receiveCommandStatistics.getTraceId());
+
+                log.info("schedule apply receiveCommandStatistics {}", receiveCommandStatistics);
+
                 if (receiveCommandStatistics.isClosed()) {
                     log.warn("receiveCommandStatistics {} is closed, key is {}", receiveCommandStatistics, key);
+                    receiveStorage.deleteFirstFromApplyQueue();
                     continue;
                 }
 
@@ -192,12 +253,24 @@ public class ConsensusContext {
                     log.info("apply {} not close, add key {} to delay queue", receiveCommandStatistics.getValidCommand(), key);
                     receiveStorage.addDelayQueue(key);
                 }
-            } catch (Exception e) {
+
+                receiveStorage.deleteFirstFromApplyQueue();
+                receiveStorage.commit();
+            } catch (Throwable e) {
                 log.error("apply log failed! {}", e);
                 if (null != key) {
                     log.info("apply exception, add key {} to delay queue", key);
-                    receiveStorage.addDelayQueue(key);
+                    try{
+                        receiveStorage.addDelayQueue(key);
+                        receiveStorage.commit();
+                    }catch (Throwable throwable){
+                        log.error("{}", e);
+                        receiveStorage.rollBack();
+                    }
                 }
+            } finally {
+                receiveStorage.closeTx();
+                TraceUtils.closeSpan(span);
             }
         }
     }

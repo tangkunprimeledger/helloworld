@@ -4,7 +4,7 @@ import com.higgs.trust.slave.model.bo.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author tangfashuang
@@ -26,5 +26,5 @@ import java.util.Set;
     /**
      * rs ids of related to policy
      */
-    private Set<String> rsIdSet;
+    private List<String> rsIds;
 }

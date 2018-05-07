@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 /*
  *
@@ -39,16 +39,16 @@ public class RegisterPolicyHandlerTest extends BaseTest {
         Block block = blockService.buildDummyBlock(1L, new Date().getTime());
         PackContext packContext = new PackContext(pack, block);
 
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("test1");
-        rsIdSet.add("test2");
-        rsIdSet.add("test3");
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("test1");
+        rsIds.add("test2");
+        rsIds.add("test3");
         RegisterPolicy registerPolicyAction = new RegisterPolicy();
         registerPolicyAction.setIndex(1);
         registerPolicyAction.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicyAction.setPolicyId("policy-1hsdh6310-23hhs");
         registerPolicyAction.setPolicyName("test-policy");
-        registerPolicyAction.setRsIdSet(rsIdSet);
+        registerPolicyAction.setRsIds(rsIds);
 
         packContext.setCurrentAction(registerPolicyAction);
 
@@ -85,15 +85,15 @@ public class RegisterPolicyHandlerTest extends BaseTest {
         Block block = blockService.buildDummyBlock(1L, new Date().getTime());
         PackContext packContext = new PackContext(pack, block);
 
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("test1");
-        rsIdSet.add("test2");
-        rsIdSet.add("test3");
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("test1");
+        rsIds.add("test2");
+        rsIds.add("test3");
         RegisterPolicy registerPolicyAction = new RegisterPolicy();
         registerPolicyAction.setIndex(1);
         registerPolicyAction.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicyAction.setPolicyName("test-policy");
-        registerPolicyAction.setRsIdSet(rsIdSet);
+        registerPolicyAction.setRsIds(rsIds);
 
         packContext.setCurrentAction(registerPolicyAction);
         try {
@@ -110,16 +110,16 @@ public class RegisterPolicyHandlerTest extends BaseTest {
         Block block = blockService.buildDummyBlock(1L, new Date().getTime());
         PackContext packContext = new PackContext(pack, block);
 
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("test1");
-        rsIdSet.add("test2");
-        rsIdSet.add("test2");
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("test1");
+        rsIds.add("test2");
+        rsIds.add("test2");
         RegisterPolicy registerPolicyAction = new RegisterPolicy();
         registerPolicyAction.setIndex(1);
         registerPolicyAction.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicyAction.setPolicyId("policy-1hsdh6310-23hhs");
         registerPolicyAction.setPolicyName("test-policy");
-        registerPolicyAction.setRsIdSet(rsIdSet);
+        registerPolicyAction.setRsIds(rsIds);
 
         packContext.setCurrentAction(registerPolicyAction);
 
@@ -137,10 +137,11 @@ public class RegisterPolicyHandlerTest extends BaseTest {
         Block block = blockService.buildDummyBlock(1L, new Date().getTime());
         PackContext packContext = new PackContext(pack, block);
 
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("test1");
-        rsIdSet.add("test2");
-        rsIdSet.add("test3");
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("test1");
+        rsIds.add("test2");
+        rsIds.add("test3");
+//        rsIds.add("test3");
         RegisterPolicy registerPolicyAction = new RegisterPolicy();
         registerPolicyAction.setIndex(1);
         registerPolicyAction.setType(ActionTypeEnum.REGISTER_POLICY);
@@ -148,7 +149,7 @@ public class RegisterPolicyHandlerTest extends BaseTest {
         String pid = String.valueOf(random.nextInt());
         registerPolicyAction.setPolicyId(pid);
         registerPolicyAction.setPolicyName("test-policy");
-        registerPolicyAction.setRsIdSet(rsIdSet);
+        registerPolicyAction.setRsIds(rsIds);
 
         packContext.setCurrentAction(registerPolicyAction);
 
@@ -162,10 +163,10 @@ public class RegisterPolicyHandlerTest extends BaseTest {
         Block block = blockService.buildDummyBlock(1L, new Date().getTime());
         PackContext packContext = new PackContext(pack, block);
 
-        Set<String> rsIdSet = new HashSet<>();
-        rsIdSet.add("test1");
-        rsIdSet.add("test2");
-        rsIdSet.add("test3");
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("test1");
+        rsIds.add("test2");
+        rsIds.add("test3");
         RegisterPolicy registerPolicyAction = new RegisterPolicy();
         registerPolicyAction.setIndex(1);
         registerPolicyAction.setType(ActionTypeEnum.REGISTER_POLICY);
@@ -173,7 +174,7 @@ public class RegisterPolicyHandlerTest extends BaseTest {
         String pid = String.valueOf(random.nextInt());
         registerPolicyAction.setPolicyId(pid);
         registerPolicyAction.setPolicyName("test-policy");
-        registerPolicyAction.setRsIdSet(rsIdSet);
+        registerPolicyAction.setRsIds(rsIds);
 
         packContext.setCurrentAction(registerPolicyAction);
 

@@ -2,7 +2,6 @@ package com.higgs.trust.slave.model.convert;
 
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.model.bo.Package;
-import org.springframework.beans.BeanUtils;
 
 /**
  * @author tangfashuang

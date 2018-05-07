@@ -3,22 +3,25 @@ package com.higgs.trust;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
+
 /**
  * @author young001
  */
-@SpringBootApplication @EnableTransactionManagement @EnableAspectJAutoProxy @Slf4j @EnableFeignClients
+@SpringBootApplication
+@EnableTransactionManagement
+@EnableAspectJAutoProxy
+@Slf4j
+@EnableFeignClients
 public class Application {
 
     @Bean(name = "txRequired")
@@ -58,10 +61,7 @@ public class Application {
         //toJSONString的时候记录Class的name
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
 
-        ApplicationContext context = SpringApplication.run(Application.class, args);
-
-        //init all snapshot service
-        context.getBean(SnapshotService.class).init();
+        SpringApplication.run(Application.class, args);
 
         log.info("higgs.trust slave is running...");
     }

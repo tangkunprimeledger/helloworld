@@ -3,9 +3,9 @@ package com.higgs.trust.slave.dao.utxo;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.api.enums.utxo.UTXOStatusEnum;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
-import com.higgs.trust.slave.dao.utxo.TxOutDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

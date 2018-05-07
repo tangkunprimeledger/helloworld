@@ -6,6 +6,7 @@ import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.common.SnowflakeIdWorker;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.MerkleException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.merkle.MerkleRepository;
 import com.higgs.trust.slave.model.bo.merkle.MerkleNode;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
@@ -42,11 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
     @Autowired private TransactionTemplate txNested;
 
     /**
-     * merkleTree
-     */
-    private MerkleTree merkleTree;
-
-    /**
      * create a merkle tree
      *
      * @param type
@@ -54,53 +50,64 @@ import java.util.concurrent.ConcurrentHashMap;
      * @return
      */
     @Override public MerkleTree build(MerkleTypeEnum type, List<Object> dataList) {
-        // validate param
-        if (CollectionUtils.isEmpty(dataList) || null == type) {
-            log.info("[build] param validate failed");
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
-                "[build] param validate failed");
-        }
-
-        log.info("[build] start to build merkle tree, treeType={}, dataList size={}, dataList={}", type.getCode(),
-            dataList.size(), JSON.toJSONString(dataList));
-
-        // merkleTree
-        MerkleTree merkleTree = new MerkleTree();
-        // merkleNode hashMap, the key is (level,index)
-        Map<String, MerkleNode> nodeMap = new ConcurrentHashMap(INIT_CAPACITY);
-        // tempList
-        List<String> tempList = new LinkedList();
-        // current level
-        int level = 1;
-
-        // acquire the hash of the given Object list
-        List<String> leafHashList = leafHash(dataList);
-        // special handle level one
-        addToNodeMap(leafHashList, level, type, nodeMap);
-        merkleTree.setTreeType(type);
-        merkleTree.setMaxIndex((long)leafHashList.size() - 1L);
-        log.info("total merkleNode count of level {} is {}", level, leafHashList.size());
-
-        // handle the other level
-        while (leafHashList.size() != 1) {
-            //TODO  添加性能日志
-            tempList = getNewHashList(leafHashList);
-            level++;
-            log.info("total merkleNode count of level {} is {}", level, tempList.size());
-            addToNodeMap(tempList, level, type, nodeMap);
-            // update parent of sublevel
-            for (int j = 0; j < leafHashList.size(); j++) {
-                nodeMap.get(getKey(level - 1, j)).setParent(nodeMap.get(getKey(level, j / N)).getUuid());
+        Profiler.enter("[MerkleServiceImpl.build.monitor]");
+        try {
+            // validate param
+            if (CollectionUtils.isEmpty(dataList) || null == type) {
+                log.info("[build] param validate failed");
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
+                    "[build] param validate failed");
             }
-            leafHashList = tempList;
-        }
 
-        // update merkleTree's information
-        merkleTree.setRootHash(leafHashList.get(0));
-        merkleTree.setTotalLevel(level);
-        merkleTree.setNodeMap(nodeMap);
-        log.info("[build] end build merkle tree, treeType={}, dataList size={}", type.getCode(), dataList.size());
-        return merkleTree;
+            log.info("[build] start to build merkle tree, treeType={}, dataList size={}, dataList={}", type.getCode(),
+                dataList.size(), JSON.toJSONString(dataList));
+
+            // merkleTree
+            MerkleTree merkleTree = new MerkleTree();
+            // merkleNode hashMap, the key is (level,index)
+            Map<String, MerkleNode> nodeMap = new ConcurrentHashMap(INIT_CAPACITY);
+            // tempList
+            List<String> tempList = new LinkedList();
+            // current level, start with 1
+            int level = 1;
+
+            // acquire the hash of the given Object list
+            Profiler.enter("[acquire the hash of the given Object list]");
+            List<String> leafHashList = leafHash(dataList);
+            Profiler.release();
+            // special handle level one
+            Profiler.enter("[add merkleNode into nodeMap for level one]");
+            addToNodeMap(leafHashList, level, type, nodeMap);
+            Profiler.release();
+            merkleTree.setTreeType(type);
+            merkleTree.setMaxIndex((long)leafHashList.size() - 1L);
+            log.info("total merkleNode count of level {} is {}", level, leafHashList.size());
+
+            // handle the other level
+            while (leafHashList.size() != 1) {
+                Profiler.enter("[calculate node hash and add merkleNode into nodeMap]");
+                tempList = getNewHashList(leafHashList);
+                level++;
+                log.info("total merkleNode count of level {} is {}", level, tempList.size());
+                addToNodeMap(tempList, level, type, nodeMap);
+                // update parent of sublevel
+                for (int j = 0; j < leafHashList.size(); j++) {
+                    nodeMap.get(getKey(level - 1, j)).setParent(nodeMap.get(getKey(level, j / N)).getUuid());
+                }
+                leafHashList = tempList;
+                Profiler.release();
+            }
+
+            // update merkleTree's information
+            merkleTree.setRootHash(leafHashList.get(0));
+            merkleTree.setTotalLevel(level);
+            merkleTree.setNodeMap(nodeMap);
+            log.info("[build] end build merkle tree, treeType={}, dataList size={}", type.getCode(), dataList.size());
+
+            return merkleTree;
+        } finally {
+            Profiler.release();
+        }
     }
 
     /**
@@ -111,139 +118,166 @@ import java.util.concurrent.ConcurrentHashMap;
      * @param objNew
      */
     @Override public void update(MerkleTree merkleTree, Object objOld, Object objNew) {
-        // validate param
-        if (null == merkleTree || null == objOld || null == objNew || null == merkleTree.getTreeType()) {
-            log.info("[update] param is null");
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION, "[update] param is null");
-        }
+        Profiler.enter("[MerkleServiceImpl.update.monitor]");
 
-        MerkleNode merkleNode = null;
-        String type = merkleTree.getTreeType().getCode();
-        String oldHash = getSHA2HexValue(JSON.toJSONString(objOld));
-        String newHash = getSHA2HexValue(JSON.toJSONString(objNew));
-        long leafIndex = -1L;
+        try {
+            // validate param
+            if (null == merkleTree || null == objOld || null == objNew || null == merkleTree.getTreeType()
+                || null == merkleTree.getNodeMap()) {
+                log.info("[update] param is null");
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
+                    "[update] param is null");
+            }
 
-        log.info("[update] start to udpate merkleTree, type={}, oldHash={}, objOld={}, newHash={}, objNew={}", type,
-            oldHash, JSON.toJSONString(objOld), newHash, JSON.toJSONString(objNew));
+            MerkleNode merkleNode = null;
+            String type = merkleTree.getTreeType().getCode();
+            String oldHash = getSHA2HexValue(JSON.toJSONString(objOld));
+            String newHash = getSHA2HexValue(JSON.toJSONString(objNew));
+            long leafIndex = -1L;
 
-        // acquire nodeMap stored in merkleTree
-        Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
-        // check existence of merkleNode with oldHash, it must be in nodeMap before update
-        merkleNode = getMerkleNodeByHash(merkleTree, oldHash);
-        if (null == merkleNode) {
-            log.error(
-                "[update] update merkleTree error, hash(objOld) doesn't exist in merkleTree, hash(objOld)={}, type={},merkleRootHash={}",
-                oldHash, type, merkleTree.getRootHash());
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_UPDATE_EXCEPTION,
-                "[update] update merkleTree error, hash(objOld) doesn't exist in merkleTree");
-        }
-        // check existence of merkleNode with newHash, it must not be in nodeMap before update
-        MerkleNode tempNode = getMerkleNodeByHash(merkleTree, newHash);
-        if (null != tempNode) {
-            log.error(
-                "[update] update merkleTree error, hash(objNew) already exist in merkleTree, hash(objNew)={}, type={},merkleRootHash={}",
-                newHash, type, merkleTree.getRootHash());
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_UPDATE_EXCEPTION,
-                "[update] update merkleTree error, hash(objNew) already exist in merkleTree");
-        }
+            log.info("[update] start to udpate merkleTree, type={}, oldHash={}, objOld={}, newHash={}, objNew={}", type,
+                oldHash, JSON.toJSONString(objOld), newHash, JSON.toJSONString(objNew));
 
-        leafIndex = merkleNode.getIndex();
-        // leafIndex must not be greater than maxIndex
-        long maxIndex = merkleTree.getMaxIndex();
-        if (leafIndex > maxIndex) {
-            log.error("[update] calculate index error, type={},level={},leafIndex={},maxIndex={}", type, 1, leafIndex,
-                maxIndex);
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_CALCULATE_INDEX_EXCEPTION,
-                "[update] calculate index error");
-        }
+            // acquire nodeMap stored in merkleTree
+            Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
+            // check existence of merkleNode with oldHash, it must be in nodeMap before update
+            Profiler.enter("[get merkleNode by oldHash]");
+            merkleNode = getMerkleNodeByHash(merkleTree, oldHash);
+            Profiler.release();
+            if (null == merkleNode) {
+                log.error(
+                    "[update] update merkleTree error, hash(objOld) doesn't exist in merkleTree, hash(objOld)={}, type={},merkleRootHash={}",
+                    oldHash, type, merkleTree.getRootHash());
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_UPDATE_EXCEPTION,
+                    "[update] update merkleTree error, hash(objOld) doesn't exist in merkleTree");
+            }
+            // check existence of merkleNode with newHash, it must not be in nodeMap before update
+            Profiler.enter("[get merkleNode by newHash]");
+            MerkleNode tempNode = getMerkleNodeByHash(merkleTree, newHash);
+            Profiler.release();
+            if (null != tempNode) {
+                log.error(
+                    "[update] update merkleTree error, hash(objNew) already exist in merkleTree, hash(objNew)={}, type={},merkleRootHash={}",
+                    newHash, type, merkleTree.getRootHash());
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_UPDATE_EXCEPTION,
+                    "[update] update merkleTree error, hash(objNew) already exist in merkleTree");
+            }
 
-        // update the merkleNode hash of leaf level and modify to nodeMap
-        merkleNode.setNodeHash(newHash);
-        if (MerkleStatusEnum.NO_CHANGE == merkleNode.getStatus()) {
-            merkleNode.setStatus(MerkleStatusEnum.MODIFY);
-        }
-        nodeMap.put(getKey(1, leafIndex), merkleNode);
+            leafIndex = merkleNode.getIndex();
+            // leafIndex must not be greater than maxIndex
+            long maxIndex = merkleTree.getMaxIndex();
+            if (leafIndex > maxIndex) {
+                log.error("[update] calculate index error, type={},level={},leafIndex={},maxIndex={}", type, 1,
+                    leafIndex, maxIndex);
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_CALCULATE_INDEX_EXCEPTION,
+                    "[update] calculate index error");
+            }
 
-        int totalLevel = merkleTree.getTotalLevel();
-        for (int i = 1; i < totalLevel; i++) {
-            log.info("[update] start to update parentNode, leafIndex={}, maxIndex={}, currentLevel={}", leafIndex,
-                maxIndex, i);
-            updateParent(merkleTree, i, leafIndex, maxIndex);
-            // refresh the index
-            leafIndex = leafIndex / N;
-            maxIndex = maxIndex / N;
+            // update the merkleNode hash of leaf level and modify to nodeMap
+            merkleNode.setNodeHash(newHash);
+            if (MerkleStatusEnum.NO_CHANGE == merkleNode.getStatus()) {
+                merkleNode.setStatus(MerkleStatusEnum.MODIFY);
+            }
+            nodeMap.put(getKey(1, leafIndex), merkleNode);
+
+            int totalLevel = merkleTree.getTotalLevel();
+            for (int i = 1; i < totalLevel; i++) {
+                Profiler.enter("[update parentNode]");
+                log.info("[update] start to update parentNode, leafIndex={}, maxIndex={}, currentLevel={}", leafIndex,
+                    maxIndex, i);
+                updateParent(merkleTree, i, leafIndex, maxIndex);
+                // refresh the index
+                leafIndex = leafIndex / N;
+                maxIndex = maxIndex / N;
+                Profiler.release();
+            }
+            merkleTree.setRootHash(nodeMap.get(getKey(totalLevel, leafIndex)).getNodeHash());
+            log.info("[update] end udpate merkleTree, type={}, new rootHash={}", type, merkleTree.getRootHash());
+
+        } finally {
+            Profiler.release();
         }
-        merkleTree.setRootHash(nodeMap.get(getKey(totalLevel, leafIndex)).getNodeHash());
-        log.info("[update] end udpate merkleTree, type={}, new rootHash={}", type, merkleTree.getRootHash());
     }
 
     /**
-     * insert one node into a merkle tree
+     * add one node into a merkle tree
      *
      * @param merkleTree
      * @param obj
      */
     @Override public void add(MerkleTree merkleTree, Object obj) {
-        // validate param
-        if (null == merkleTree || null == obj || null == merkleTree.getTreeType()) {
-            log.info("[add] param is null");
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION, "[add] param is null");
-        }
-
-        Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
-        String hash = getSHA2HexValue(JSON.toJSONString(obj));
-        String type = merkleTree.getTreeType().getCode();
-        log.info("[add] start to add hash(obj) to merkleTree, hash(obj)={}, obj={},type={}", hash,
-            JSON.toJSONString(obj), type);
-
-        // check existence of merkleNode with exact nodeHash, it must not be in nodeMap before add
-        MerkleNode merkleNode = getMerkleNodeByHash(merkleTree, hash);
-        if (null != merkleNode) {
-            log.error("[add] add merkleTree error, hash(obj) already exist in merkleTree, type={},merkleRootHash={}",
-                type, merkleTree.getRootHash());
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_ALREADY_EXIST_EXCEPTION,
-                "[add] add merkleTree error, hash(obj) already exist in merkleTree");
-        }
-
-        int totalLevel = merkleTree.getTotalLevel();
-        long maxIndex = merkleTree.getMaxIndex();
-        long leafIndex = maxIndex + 1L;
-
-        // if (maxIndex+1) = 2^n, then totalLevel =totalLevel+1, note maxIndex starts from zero
-        if (0 == ((maxIndex + 1L) & (maxIndex))) {
-            log.info("[add] (maxIndex+1)={},is 2^n", maxIndex + 1L);
-            totalLevel++;
-            // construct a new rootNode and put it into top level of MerkleTree
-            MerkleNode rootNode = new MerkleNode(null, String.valueOf(snowflakeIdWorker.nextId()), 0L, totalLevel, null,
-                merkleTree.getTreeType(), MerkleStatusEnum.ADD);
-            // set old rootNode's  parent to new rootNode's uuid
-            MerkleNode temp = getMerkleNodeByIndex(nodeMap, getKey(merkleTree.getTotalLevel(), 0L),
-                merkleTree.getTreeType().getCode());
-            temp.setParent(rootNode.getUuid());
-            if (MerkleStatusEnum.NO_CHANGE == temp.getStatus()) {
-                temp.setStatus(MerkleStatusEnum.MODIFY);
+        Profiler.enter("[MerkleServiceImpl.add.monitor]");
+        try {
+            // validate param
+            if (null == merkleTree || null == obj || null == merkleTree.getTreeType() || null == merkleTree
+                .getNodeMap()) {
+                log.info("[add] param is null");
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION, "[add] param is null");
             }
-            // update merkleTree's totalLevel
-            merkleTree.setTotalLevel(totalLevel);
-            // put new rootNode into nodeMap
-            nodeMap.put(getKey(totalLevel, 0L), rootNode);
-        }
 
-        // construct leafNode and put it into leafLevel tail
-        MerkleNode leafNode = new MerkleNode(hash, String.valueOf(snowflakeIdWorker.nextId()), leafIndex, 1, null,
-            merkleTree.getTreeType(), MerkleStatusEnum.ADD);
-        nodeMap.put(getKey(1, leafIndex), leafNode);
-        merkleTree.setMaxIndex(leafIndex);
+            Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
+            String hash = getSHA2HexValue(JSON.toJSONString(obj));
+            String type = merkleTree.getTreeType().getCode();
+            log.info("[add] start to add hash(obj) to merkleTree, hash(obj)={}, obj={},type={}", hash,
+                JSON.toJSONString(obj), type);
 
-        // handle the other level
-        for (int i = 1; i < totalLevel; i++) {
-            updateAddParent(merkleTree, i, leafIndex, maxIndex);
-            leafIndex = leafIndex / N;
-            maxIndex = maxIndex / N;
+            // check existence of merkleNode with exact nodeHash, it must not be in nodeMap before add
+            Profiler.enter("[get merkleNode by hash]");
+            MerkleNode merkleNode = getMerkleNodeByHash(merkleTree, hash);
+            Profiler.release();
+            if (null != merkleNode) {
+                log.error(
+                    "[add] add merkleTree error, hash(obj) already exist in merkleTree, type={},merkleRootHash={}",
+                    type, merkleTree.getRootHash());
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_ALREADY_EXIST_EXCEPTION,
+                    "[add] add merkleTree error, hash(obj) already exist in merkleTree");
+            }
+
+            int totalLevel = merkleTree.getTotalLevel();
+            long maxIndex = merkleTree.getMaxIndex();
+            long leafIndex = maxIndex + 1L;
+
+            // if (maxIndex+1) = 2^n, then totalLevel =totalLevel+1, note maxIndex starts from zero
+            if (0 == ((maxIndex + 1L) & (maxIndex))) {
+                log.info("[add] (maxIndex+1)={},is 2^n", maxIndex + 1L);
+                totalLevel++;
+                // construct a new rootNode and put it into top level of MerkleTree
+                MerkleNode rootNode =
+                    new MerkleNode(null, String.valueOf(snowflakeIdWorker.nextId()), 0L, totalLevel, null,
+                        merkleTree.getTreeType(), MerkleStatusEnum.ADD);
+                // set old rootNode's  parent to new rootNode's uuid
+                MerkleNode temp = getMerkleNodeByIndex(nodeMap, getKey(merkleTree.getTotalLevel(), 0L),
+                    merkleTree.getTreeType().getCode());
+                temp.setParent(rootNode.getUuid());
+                if (MerkleStatusEnum.NO_CHANGE == temp.getStatus()) {
+                    temp.setStatus(MerkleStatusEnum.MODIFY);
+                }
+                // update merkleTree's totalLevel
+                merkleTree.setTotalLevel(totalLevel);
+                // put new rootNode into nodeMap
+                nodeMap.put(getKey(totalLevel, 0L), rootNode);
+            }
+
+            // construct leafNode and put it into leafLevel tail
+            MerkleNode leafNode = new MerkleNode(hash, String.valueOf(snowflakeIdWorker.nextId()), leafIndex, 1, null,
+                merkleTree.getTreeType(), MerkleStatusEnum.ADD);
+            nodeMap.put(getKey(1, leafIndex), leafNode);
+            merkleTree.setMaxIndex(leafIndex);
+
+            // handle the other level
+            for (int i = 1; i < totalLevel; i++) {
+                Profiler.enter("[update or add parentNode]");
+                updateAddParent(merkleTree, i, leafIndex, maxIndex);
+                leafIndex = leafIndex / N;
+                maxIndex = maxIndex / N;
+                Profiler.release();
+            }
+            merkleTree.setRootHash(nodeMap.get(getKey(totalLevel, leafIndex)).getNodeHash());
+            log.info("[add] end add hash(obj) to merkleTree, hash(obj)={},type={}, new rootHash={}", hash, type,
+                merkleTree.getRootHash());
+        } finally {
+            Profiler.release();
         }
-        merkleTree.setRootHash(nodeMap.get(getKey(totalLevel, leafIndex)).getNodeHash());
-        log.info("[add] end add hash(obj) to merkleTree, hash(obj)={},type={}, new rootHash={}", hash, type,
-            merkleTree.getRootHash());
     }
 
     /**
@@ -252,34 +286,35 @@ import java.util.concurrent.ConcurrentHashMap;
      * @param merkleTree
      */
     @Override public void flush(MerkleTree merkleTree) {
+        Profiler.enter("[MerkleServiceImpl.flush.monitor]");
         // validate param
-        if (null == merkleTree) {
-            log.error("[flush] merkleTree is null");
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
-                "[flush] merkleTree is null");
-        }
-
-        String type = merkleTree.getTreeType().getCode();
-        log.info("[flush] start to flush data into database, type={}, merkleRootHash={}", type,
-            merkleTree.getRootHash());
-        List<MerkleNode> addedList = new LinkedList<>();
-        List<MerkleNode> modifiedList = new LinkedList<>();
-        Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
-        log.info("[flush] the size of nodeMap={}", nodeMap.size());
-        for (Map.Entry<String, MerkleNode> entry : nodeMap.entrySet()) {
-            if (MerkleStatusEnum.NO_CHANGE == entry.getValue().getStatus()) {
-                continue;
-            }
-            if (MerkleStatusEnum.ADD == entry.getValue().getStatus()) {
-                addedList.add(entry.getValue());
-                continue;
-            }
-            if (MerkleStatusEnum.MODIFY == entry.getValue().getStatus()) {
-                modifiedList.add(entry.getValue());
-            }
-        }
-
         try {
+            if (null == merkleTree || null == merkleTree.getTreeType() || null == merkleTree.getNodeMap()) {
+                log.error("[flush] merkleTree is null");
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
+                    "[flush] merkleTree is null");
+            }
+
+            String type = merkleTree.getTreeType().getCode();
+            log.info("[flush] start to flush data into database, type={}, merkleRootHash={}", type,
+                merkleTree.getRootHash());
+            List<MerkleNode> addedList = new LinkedList<>();
+            List<MerkleNode> modifiedList = new LinkedList<>();
+            Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
+            log.info("[flush] the size of nodeMap={}", nodeMap.size());
+            for (Map.Entry<String, MerkleNode> entry : nodeMap.entrySet()) {
+                if (MerkleStatusEnum.NO_CHANGE == entry.getValue().getStatus()) {
+                    continue;
+                }
+                if (MerkleStatusEnum.ADD == entry.getValue().getStatus()) {
+                    addedList.add(entry.getValue());
+                    continue;
+                }
+                if (MerkleStatusEnum.MODIFY == entry.getValue().getStatus()) {
+                    modifiedList.add(entry.getValue());
+                }
+            }
+
             //开启事务
             txNested.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
@@ -291,7 +326,9 @@ import java.util.concurrent.ConcurrentHashMap;
                     // batch insert or update merkleNode
                     if (!addedList.isEmpty()) {
                         log.info("[flush] the size of addedList ={}", addedList.size());
+                        Profiler.enter("[batch insert merkleNode]");
                         int count = merkleRepository.batchInsertMerkleNode(addedList);
+                        Profiler.release();
                         if (addedList.size() != count) {
                             log.error(
                                 "[flush] batch insert merkle node error，inserted rows not equals addedList size, inserted rows={}, addedList size={}",
@@ -302,7 +339,9 @@ import java.util.concurrent.ConcurrentHashMap;
                     }
                     if (!modifiedList.isEmpty()) {
                         log.info("[flush] the size of modifiedList ={}", modifiedList.size());
+                        Profiler.enter("[batch update merkleNode]");
                         int count = merkleRepository.batchUpdateMerkleNode(modifiedList);
+                        Profiler.release();
                         if (modifiedList.size() != count) {
                             log.error(
                                 "[flush] batch update merkle node error，updated rows not equals modifiedList size, updated rows={}, modifiedList size={}",
@@ -320,11 +359,15 @@ import java.util.concurrent.ConcurrentHashMap;
                 }
             });
         } catch (DuplicateKeyException e) {
-            log.error("[flush] idempotent exception,type={},merkleRootHash={}", type, merkleTree.getRootHash(), e);
+            log.error("[flush] idempotent exception,type={},merkleRootHash={}", merkleTree.getTreeType(),
+                merkleTree.getRootHash(), e);
             throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_ADD_IDEMPOTENT_EXCEPTION,
                 "add merkleNode idempotent exception");
+        } finally {
+            Profiler.release();
         }
-        log.info("[flush] end flush data into database, type={}, merkleRootHash={}", type, merkleTree.getRootHash());
+        log.info("[flush] end flush data into database, type={}, merkleRootHash={}", merkleTree.getTreeType(),
+            merkleTree.getRootHash());
     }
 
     /**
@@ -334,23 +377,28 @@ import java.util.concurrent.ConcurrentHashMap;
      * @return
      */
     @Override public MerkleTree queryMerkleTree(MerkleTypeEnum treeType) {
-        // validate param
-        if (null == treeType) {
-            log.error("[queryMerkleTree] treeType is null");
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
-                "[queryMerkleTree] treeType is null");
-        }
-        log.info("[queryMerkleTree] start to queryMerkleTree, type={}", treeType);
+        Profiler.enter("[MerkleServiceImpl.queryMerkleTree.monitor]");
+        try {
+            // validate param
+            if (null == treeType) {
+                log.error("[queryMerkleTree] treeType is null");
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
+                    "[queryMerkleTree] treeType is null");
+            }
+            log.info("[queryMerkleTree] start to queryMerkleTree, type={}", treeType);
 
-        MerkleTree merkleTree = merkleRepository.queryMerkleTree(treeType.getCode());
-        if (null == merkleTree) {
-            log.info("[queryMerkleTree] merkleTree doesn't exist in database, type={}", treeType);
-            return null;
+            MerkleTree merkleTree = merkleRepository.queryMerkleTree(treeType.getCode());
+            if (null == merkleTree) {
+                log.info("[queryMerkleTree] merkleTree doesn't exist in database, type={}", treeType);
+                return null;
+            }
+            Map<String, MerkleNode> nodeMap = new ConcurrentHashMap<>(INIT_CAPACITY);
+            merkleTree.setNodeMap(nodeMap);
+            log.info("[queryMerkleTree] end queryMerkleTree, type={}, rootHash={}", treeType, merkleTree.getRootHash());
+            return merkleTree;
+        } finally {
+            Profiler.release();
         }
-        Map<String, MerkleNode> nodeMap = new ConcurrentHashMap<>(INIT_CAPACITY);
-        merkleTree.setNodeMap(nodeMap);
-        log.info("[queryMerkleTree] end queryMerkleTree, type={}, rootHash={}", treeType, merkleTree.getRootHash());
-        return merkleTree;
     }
 
     /**
@@ -415,7 +463,7 @@ import java.util.concurrent.ConcurrentHashMap;
             return null;
         }
         List leafHashList = new LinkedList();
-        Set leafHashSet = new HashSet();
+        Set leafHashSet = new HashSet(INIT_CAPACITY);
         for (Object temp : list) {
             String tempHash = getSHA2HexValue(JSON.toJSONString(temp));
             if (!leafHashSet.add(tempHash)) {
@@ -604,7 +652,7 @@ import java.util.concurrent.ConcurrentHashMap;
         }
 
         if (leafIndex == -1L || null == merkleNode) {
-            // this means hash(obj) doesn't exist in nodeMap, we need to find hash(obj) in merkle_node table with exact treeType
+            // this means hash(obj) doesn't exist in nodeMap, we need to find hash(obj) in table merkle_node  with exact treeType
             merkleNode = merkleRepository.queryMerkleNodeByHash(nodeHash, 1, type);
         }
         log.info("[getMerkleNodeByHash] merkleNode={}", JSON.toJSONString(merkleNode));

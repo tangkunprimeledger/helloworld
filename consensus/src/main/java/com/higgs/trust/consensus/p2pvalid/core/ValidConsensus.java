@@ -1,6 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.consensus.common.TraceUtils;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.exception.ReceiveException;
 import com.higgs.trust.consensus.p2pvalid.core.exchange.ConsensusContext;
@@ -64,6 +65,8 @@ public abstract class ValidConsensus {
                     .fromNodeName(fromNode)
                     .addToNodeNames(clusterInfo.clusterNodeNames())
                     .sign(clusterInfo.privateKey());
+            //set traceId
+            validCommandWrap.setTraceId(TraceUtils.getTraceId());
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -78,6 +81,8 @@ public abstract class ValidConsensus {
                     .fromNodeName(fromNode)
                     .addToNodeName(toNodeName)
                     .sign(clusterInfo.privateKey());
+            //set traceId
+            validCommandWrap.setTraceId(TraceUtils.getTraceId());
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -91,6 +96,8 @@ public abstract class ValidConsensus {
                     .fromNodeName(fromNode)
                     .addToNodeNames(toNodeNames)
                     .sign(clusterInfo.privateKey());
+            //set traceId
+            validCommandWrap.setTraceId(TraceUtils.getTraceId());
             consensusContext.submit(validCommandWrap);
         } catch (Exception e) {
             throw new RuntimeException(e);

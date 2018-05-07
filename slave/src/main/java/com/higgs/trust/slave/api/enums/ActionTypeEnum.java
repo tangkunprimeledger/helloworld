@@ -2,7 +2,7 @@ package com.higgs.trust.slave.api.enums;
 
 /**
  * @author WangQuanzhou
- * @desc 操作类型枚举对象
+ * @desc action type enum class
  * @date 2018/3/26 17:26
  */
 public enum ActionTypeEnum {

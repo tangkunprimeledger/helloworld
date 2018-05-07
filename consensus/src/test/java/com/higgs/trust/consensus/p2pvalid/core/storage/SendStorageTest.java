@@ -6,7 +6,8 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class SendStorageTest {
 
@@ -22,39 +23,111 @@ public class SendStorageTest {
 
     @Test
     public void testSend(){
-        String key = sendStorage.submit(validCommandWrap);
-        assertNotNull(key);
+        sendStorage.openTx();
+        try{
+            String key = sendStorage.submit(validCommandWrap);
+            assertNotNull(key);
+        }finally {
+            sendStorage.rollBack();
+            sendStorage.closeTx();
+        }
     }
 
     @Test
     public void testGetSendCommandStatistics(){
-        String key = sendStorage.submit(validCommandWrap);
-        assertNotNull(sendStorage.getSendCommandStatistics(key));
+        sendStorage.openTx();
+        try{
+            String key = sendStorage.submit(validCommandWrap);
+            assertNotNull(sendStorage.getSendCommandStatistics(key));
+        }finally {
+            sendStorage.rollBack();
+            sendStorage.closeTx();
+        }
     }
 
     @Test
     public void testAddAndTakeFromSendQueue(){
-        String key = sendStorage.submit(validCommandWrap);
-        sendStorage.addSendQueue(key);
-        assertEquals(key, sendStorage.takeFromSendQueue());
+        sendStorage.openTx();
+        try{
+            String key = sendStorage.submit(validCommandWrap);
+            sendStorage.addSendQueue(key);
+            assertEquals(key, sendStorage.takeFromSendQueue());
+        }finally {
+            sendStorage.commit();
+            sendStorage.closeTx();
+        }
+    }
+
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testAddSendQueueException(){
+        sendStorage.openTx();
+        try{
+            sendStorage.addSendQueue(null);
+        }finally {
+            sendStorage.rollBack();
+            sendStorage.closeTx();
+        }
     }
 
     @Test
     public void testAddAndTransFromDelayQueue(){
-        String key = sendStorage.submit(validCommandWrap);
-        sendStorage.addDelayQueue(key);
-        assertEquals(key, sendStorage.takeFromSendQueue());
+        sendStorage.openTx();
+        try{
+            String key = sendStorage.submit(validCommandWrap);
+            sendStorage.addDelayQueue(key);
+        }finally {
+            sendStorage.rollBack();
+            sendStorage.closeTx();
+        }
+    }
+
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testAddDelayQueueException(){
+        sendStorage.openTx();
+        try{
+            sendStorage.addDelayQueue(null);
+        }finally {
+            sendStorage.rollBack();
+            sendStorage.closeTx();
+        }
+    }
+
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testUpdateSendCommandStatisticsException(){
+        sendStorage.openTx();
+        try{
+            sendStorage.updateSendCommandStatics(null,null);
+        }finally {
+            sendStorage.rollBack();
+            sendStorage.closeTx();
+        }
     }
 
     @Test
-    public void testGC() throws InterruptedException {
-        String key = sendStorage.submit(validCommandWrap);
-        sendStorage.addGCSet(key);
-        Thread.sleep(5000);
+    public void testGC() {
+        sendStorage.openTx();
+        try{
+            String key = sendStorage.submit(validCommandWrap);
+            sendStorage.addGCSet(key);
+        }finally {
+            sendStorage.rollBack();
+            sendStorage.closeTx();
+        }
+    }
+
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testGCException() {
+        sendStorage.openTx();
+        try{
+            sendStorage.addGCSet(null);
+        }finally {
+            sendStorage.rollBack();
+            sendStorage.closeTx();
+        }
     }
 
     @AfterTest
     public void after() throws InterruptedException {
-        Thread.sleep(200);
+        Thread.sleep(1000);
     }
 }

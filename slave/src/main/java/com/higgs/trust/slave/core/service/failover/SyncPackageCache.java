@@ -1,11 +1,6 @@
 package com.higgs.trust.slave.core.service.failover;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.Labels;
-import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.managment.listener.StateChangeListener;
 import com.higgs.trust.slave.model.bo.Package;
@@ -14,10 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
 
 @Component @Slf4j public class SyncPackageCache implements StateChangeListener, InitializingBean {
 
@@ -41,16 +32,15 @@ import java.util.function.Predicate;
      * 3.更新高度
      * 4.是否超过阈值，超过阈值保留部分
      *
-     * @param pack package
+     * @param currentHeight package height
      */
-    public synchronized void receive(Package pack) {
+    public synchronized void receivePackageHeight(long currentHeight) {
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
         if (log.isDebugEnabled()) {
-            log.debug("sync cache received package:{}", pack);
+            log.debug("sync cache received package height:{}", currentHeight);
         }
-        long currentHeight = pack.getHeight();
         if (latestHeight == INIT_HEIGHT) {
             latestHeight = currentHeight;
             minHeight = currentHeight;
@@ -68,6 +58,9 @@ import java.util.function.Predicate;
         } else if (currentHeight > latestHeight + 1) {
             latestHeight = currentHeight;
             minHeight = currentHeight;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("sync cache  minHeight:{}, latestHeight:{}", minHeight, latestHeight);
         }
     }
 

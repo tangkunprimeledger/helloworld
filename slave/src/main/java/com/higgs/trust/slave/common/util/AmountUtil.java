@@ -6,8 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author lingchao
@@ -16,14 +14,16 @@ import java.util.regex.Pattern;
 @Slf4j public class AmountUtil {
     private static BigDecimal MAX_AMOUNT = new BigDecimal("999999999999999999.9999999999");
     private static BigDecimal MIN_AMOUNT = new BigDecimal("0.0000000000");
+    private static BigDecimal MIN_AMOUNT_NEGATIVE = new BigDecimal("-999999999999999999.9999999999");
 
     /**
      * check amount
      *
      * @param amount
+     * @param allowNegative
      * @return
      */
-    public static boolean isLegal(String amount) {
+    public static boolean isLegal(String amount,boolean allowNegative) {
         Preconditions.checkNotNull(amount, "amount can not be null");
         boolean isLegal = true;
         BigDecimal validAmount = null;
@@ -34,13 +34,12 @@ import java.util.regex.Pattern;
         }
 
         int max = validAmount.compareTo(MAX_AMOUNT);
-        int min = validAmount.compareTo(MIN_AMOUNT);
+        int min = validAmount.compareTo(allowNegative ? MIN_AMOUNT_NEGATIVE : MIN_AMOUNT);
         if (max == 1 || min == -1) {
             isLegal = false;
         }
         return isLegal;
     }
-
     /**
      * format amount
      *

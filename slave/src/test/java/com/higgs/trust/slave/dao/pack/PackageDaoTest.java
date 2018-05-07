@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.dao.pack;
 
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.dao.po.pack.PackagePO;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;

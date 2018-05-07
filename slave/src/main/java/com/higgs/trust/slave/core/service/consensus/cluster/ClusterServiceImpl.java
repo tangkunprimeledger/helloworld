@@ -9,6 +9,7 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.slave.common.config.NodeProperties;
+import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.consensus.*;
@@ -20,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,9 +31,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Service @Slf4j public class ClusterServiceImpl extends ValidConsensus implements ClusterService {
 
-    @Autowired ConsensusClient client;
+    NodeProperties properties;
 
-    @Autowired NodeProperties properties;
+    @Autowired ConsensusClient client;
 
     @Autowired NodeState nodeState;
 
@@ -44,14 +44,7 @@ import java.util.concurrent.TimeUnit;
     @Autowired
     public ClusterServiceImpl(ClusterInfo clusterInfo, P2pConsensusClient client, NodeProperties properties) {
         super(clusterInfo, client, properties.getConsensusDir());
-    }
-
-    public void releaseResult() {
-        for (Map.Entry<String, ResultListen> entry : resultListenMap.entrySet()) {
-            if (entry.getValue().isTimeout()) {
-                resultListenMap.remove(entry.getKey());
-            }
-        }
+        this.properties = properties;
     }
 
     /**
@@ -80,7 +73,8 @@ import java.util.concurrent.TimeUnit;
      * @return
      */
     @Override public Long getClusterHeight(int size, long time) {
-        return getClusterHeight(DEFAULT_CLUSTER_HEIGHT_ID, size, time);
+        return getClusterHeight(DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis(), size,
+            time);
     }
 
     /**
@@ -108,29 +102,26 @@ import java.util.concurrent.TimeUnit;
      * @return
      */
     @Override public Boolean validatingHeader(BlockHeader header, long time) {
-        String blockHash = header.getBlockHash();
-        ResultListen resultListen = resultListenMap.get(blockHash);
-        if (resultListen != null && resultListen.getResult() != null) {
-            return (Boolean)resultListen.getResult();
-        }
-        client.submit(new BlockHeaderCmd(nodeState.getNodeName(), header));
-        return registerAndGetResult(blockHash, time);
+        BlockHeaderCmd command = new BlockHeaderCmd(nodeState.getNodeName(), header);
+        client.submit(command);
+        return registerAndGetResult(command.getRequestId(), time);
     }
 
     private <T> T registerAndGetResult(String requestId, long time) {
-        long keepTime = properties.getConsensusKeepTime();
-        ResultListen resultListen = register(requestId, keepTime);
         try {
-            resultListen.getLatch().await(time > keepTime ? keepTime : time, TimeUnit.MILLISECONDS);
+            ResultListen resultListen = register(requestId);
+            resultListen.getLatch().await(time, TimeUnit.MILLISECONDS);
             return getResult(requestId);
         } catch (InterruptedException e) {
             log.warn("waiting the consensus result failed", e);
             return null;
+        } finally {
+            resultListenMap.remove(requestId);
         }
     }
 
-    private ResultListen register(String requestId, long time) {
-        ResultListen resultListen = resultListenMap.getOrDefault(requestId, new ResultListen(time));
+    private ResultListen register(String requestId) {
+        ResultListen resultListen = resultListenMap.getOrDefault(requestId, new ResultListen());
         resultListen.renew();
         resultListenMap.put(requestId, resultListen);
         return resultListen;
@@ -138,14 +129,8 @@ import java.util.concurrent.TimeUnit;
 
     private <T> T getResult(String id) {
         ResultListen resultListen = resultListenMap.get(id);
-        if (resultListen == null) {
-            return null;
-        }
         Object result = resultListen.getResult();
-        if (result == null) {
-            return null;
-        }
-        return (T)result;
+        return result == null ? null : (T)result;
     }
 
     private <T extends Serializable, C extends IdValidCommand<T>> void handleResult(ValidCommit<C> commit) {
@@ -166,15 +151,6 @@ import java.util.concurrent.TimeUnit;
 
     protected static class ResultListen {
 
-        /**
-         * keep time
-         */
-        private long keepTime;
-
-        /**
-         * register time
-         */
-        private long registerTime = System.currentTimeMillis();
         @Getter private CountDownLatch latch = new CountDownLatch(1);
 
         /**
@@ -182,18 +158,8 @@ import java.util.concurrent.TimeUnit;
          */
         @Getter @Setter private Object result;
 
-        protected ResultListen(long keepTime) {
-            this.keepTime = keepTime;
-        }
-
         public void renew() {
-            registerTime = System.currentTimeMillis();
             latch = new CountDownLatch(1);
         }
-
-        public boolean isTimeout() {
-            return registerTime + keepTime < System.currentTimeMillis();
-        }
-
     }
 }

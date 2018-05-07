@@ -5,7 +5,6 @@ import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.repository.contract.ContractStateRepository;
 import com.higgs.trust.slave.core.service.merkle.MerkleService;
-import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
