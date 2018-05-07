@@ -101,7 +101,6 @@ public class ConsensusContext {
         try{
             String key = validCommandWrap.getCommandClass().getName().concat("_").concat(validCommandWrap.getMessageDigest());
             ReceiveCommandStatistics receiveCommandStatistics = receiveStorage.add(key, validCommandWrap);
-
             if (receiveCommandStatistics.isClosed()) {
                 log.info("receiveCommandStatistics {} from node {} is closed", receiveCommandStatistics, validCommandWrap.getFromNodeName());
                 if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
@@ -189,17 +188,17 @@ public class ConsensusContext {
                     });
                 }
                 countDownLatch.await();
-                //gc
-                if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
-                    sendCommandStatistics.setSend();
-                    sendStorage.addGCSet(key);
-                } else {
-                    sendStorage.addDelayQueue(key);
-                }
-                sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
-                sendStorage.removeFromSendQueue();
                 sendStorage.openTx();
                 try{
+                    //gc
+                    if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
+                        sendCommandStatistics.setSend();
+                        sendStorage.addGCSet(key);
+                    } else {
+                        sendStorage.addDelayQueue(key);
+                    }
+                    sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
+                    sendStorage.removeFromSendQueue();
                     sendStorage.commit();
                 }finally {
                     sendStorage.closeTx();
@@ -245,11 +244,11 @@ public class ConsensusContext {
                 if (receiveCommandStatistics.isClosed()) {
                     log.warn("receiveCommandStatistics {} is closed, key is {}", receiveCommandStatistics, key);
                     receiveStorage.deleteFirstFromApplyQueue();
-                    receiveStorage.addGCSet(key);
                     continue;
                 }
 
                 validConsensus.apply(receiveCommandStatistics);
+
                 if (receiveCommandStatistics.isClosed()) {
                     receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
                     if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
@@ -263,7 +262,6 @@ public class ConsensusContext {
 
                 receiveStorage.deleteFirstFromApplyQueue();
                 receiveStorage.openTx();
-
                 try {
                     receiveStorage.commit();
                 } finally {

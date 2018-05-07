@@ -271,6 +271,10 @@ public class SendStorage {
             }
             Set<String> deleteKeys = new HashSet<>();
             for (String key : gcSet) {
+                if(null == key){
+                    log.warn("key is null");
+                    continue;
+                }
                 log.info("sendQueue gc {}", submitMap.get(key));
                 submitMap.remove(key);
                 deleteKeys.add(key);
@@ -307,7 +311,6 @@ public class SendStorage {
      */
     public void addGCSet(String key) {
         gcSet = getGcSet();
-        ConsensusAssert.notNull(key);
         gcSet.add(key);
     }
 
