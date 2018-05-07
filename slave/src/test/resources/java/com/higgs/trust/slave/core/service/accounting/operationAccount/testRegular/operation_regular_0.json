@@ -1,0 +1,55 @@
+{
+  "测试ID": 0,
+  "body": {
+    "bizFlowNo": "account_biz_flow_no_001",
+    "debitTradeInfo": [
+      {
+        "accountNo": "account_no_1001",
+        "amount": 0.1
+      }
+    ],
+    "creditTradeInfo": [
+      {
+        "accountNo": "account_no_1002",
+        "amount": 0.1
+      }
+    ],
+    "accountDate": "2018-05-05 15:05:05",
+    "remark": "test "
+  },
+  "type": "",
+  "policyId":"",
+  "beforeSql": [
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0', '0', 'DEBIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1002', 'CNY', '0', '0', 'CREDIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
+    "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1001', 'BUC_CHAIN', 'rs-test1', '2018-04-25 18:21:57')",
+    "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1002', 'BUC_CHAIN', 'rs-test2', '2018-04-25 18:21:57')",
+    "INSERT INTO `currency_info` (`currency`, `create_time`) VALUES ('CNY', '2018-05-05 05:05:05')",
+    "INSERT INTO `merkle_tree` (`root_hash`, `total_level`, `max_index`, `tree_type`, `create_time`,`update_time`) VALUES ('df130eb0bfa54eab7af979b268f173c1316e82c4c7d4957418a2331065f56b73', '2', '1', 'ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
+    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017074093490176', '94698d2304692372dcaa0496429dff67573b61273eb3e2c655e8b737509c6002', '0', '1','442017493729411072','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
+    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017493729411072', 'df130eb0bfa54eab7af979b268f173c1316e82c4c7d4957418a2331065f56b73', '0', '2','','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
+    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017493741993984', '90183221c3fd5c86cd883c7b6c0bf5f5527df3fb7a34caf938f4db398ea0d056', '1', '1','442017493729411072','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')"
+
+  ],
+  "querySql":[
+   "SELECT * FROM `account_info` WHERE account_no='account_no_1001'",
+   "SELECT * FROM `account_info` WHERE account_no='account_no_1002'"
+  ],
+  "afterSql": [
+    "TRUNCATE TABLE `account_info`",
+    "TRUNCATE TABLE `data_identity`",
+    "TRUNCATE TABLE `currency_info`",
+    "TRUNCATE TABLE `merkle_tree`",
+    "TRUNCATE TABLE `merkle_node`"
+  ],
+  "assert": "",
+  "assertData": [
+    {
+      "balance":"0.1000000000"
+    },
+    {
+      "balance":"0.1000000000"
+    }
+  ],
+  "comment": "账务操作,[入账]测试"
+}
