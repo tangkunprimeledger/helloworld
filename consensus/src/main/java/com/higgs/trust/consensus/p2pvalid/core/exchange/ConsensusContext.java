@@ -171,15 +171,15 @@ public class ConsensusContext {
                     sendExecutorService.submit(() -> {
                         ValidCommandWrap validCommandWrap = sendCommandStatistics.getValidCommandWrap();
                         try {
-                            String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             Long start = System.currentTimeMillis();
+                            String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             if (StringUtils.equals("SUCCESS", result)) {
                                 sendCommandStatistics.addAckNodeName(nodeName);
                             }
                             Long end = System.currentTimeMillis();
                             ValidCommand<?> validCommand = sendCommandStatistics.getValidCommandWrap().getValidCommand();
-                            log.info("from {} send to {} result is {} , start time {}, end time {}, duration {}, command is {}",
-                                    sendCommandStatistics.getValidCommandWrap().getFromNodeName(), nodeName,
+                            log.info("p2p consensus {} from {} send to {} result is {} , start time {}, end time {}, duration {}, command is {}",
+                                    sendCommandStatistics.getValidCommandWrap().getFromNodeName(), nodeName, validCommand.getClass(),
                                     result, start, end, end - start, validCommand);
                         } catch (Exception e) {
                             log.error("{}", e);
