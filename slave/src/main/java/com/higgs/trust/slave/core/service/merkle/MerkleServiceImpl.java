@@ -658,7 +658,7 @@ import java.util.concurrent.ConcurrentHashMap;
                 "[getMerkleNodeByHash] merkleNode doesn't exist in nodeMap, start to query db, nodeHash={},type={}",
                 nodeHash, type);
             // this means hash(obj) doesn't exist in nodeMap, we need to find hash(obj) in table merkle_node  with exact treeType
-            merkleNode = merkleRepository.queryMerkleNodeByHash(nodeHash, 1, type);
+            merkleNode = merkleRepository.queryMerkleNodeByHash(nodeHash);
         }
         log.info("[getMerkleNodeByHash] merkleNode={}", JSON.toJSONString(merkleNode));
         return merkleNode;

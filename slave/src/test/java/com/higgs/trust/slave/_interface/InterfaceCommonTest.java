@@ -233,17 +233,19 @@ import static org.testng.Assert.assertEquals;
         if(CollectionUtils.isEmpty(queryResult)){
             throw new RuntimeException("query data is empty");
         }
+        int index = 0;
         for(JSONArray jsonArray : queryResult){
             int size = jsonArray.size();
             if(size == 0){
                 throw new RuntimeException("query data.item is empty");
             }
+            JSONObject assertData = getAssertDataByIndex(param,index);
+            if(assertData == null){
+                throw new RuntimeException("get assertData is error");
+            }
+            index++;
             for(int i=0;i<size;i++){
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                JSONObject assertData = getAssertDataByIndex(param,i);
-                if(assertData == null){
-                    throw new RuntimeException("get assertData is error");
-                }
                 AssertTool.isContainsExpect(assertData,jsonObject);
             }
         }

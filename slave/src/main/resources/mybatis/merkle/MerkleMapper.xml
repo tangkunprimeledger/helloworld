@@ -111,7 +111,7 @@
 				create_time as createTime,
 				update_time as updateTime
 		FROM merkle_node
-		where `level`=#{level} and tree_type=#{treeType} and node_hash = #{nodeHash}
+		where node_hash = #{nodeHash}
 	</select>
 
 </mapper>

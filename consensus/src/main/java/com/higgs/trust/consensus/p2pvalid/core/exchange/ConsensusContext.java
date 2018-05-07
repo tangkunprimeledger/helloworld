@@ -132,11 +132,8 @@ public class ConsensusContext {
      */
     private void send() {
         while (true) {
-            sendStorage.openTx();
-            String rootKey = null;
+            String key = sendStorage.takeFromSendQueue();
             try {
-                String key = sendStorage.takeFromSendQueue();
-                rootKey = key;
                 if (null == key) {
                     log.warn("key is null");
                     sendStorage.removeFromSendQueue();
@@ -176,7 +173,6 @@ public class ConsensusContext {
                             String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             if (StringUtils.equals("SUCCESS", result)) {
                                 sendCommandStatistics.addAckNodeName(nodeName);
-                                sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
                             }
                             log.info("result is {}", result);
                         } catch (Exception e) {
@@ -189,34 +185,38 @@ public class ConsensusContext {
                 countDownLatch.await();
                 //gc
                 if (sendCommandStatistics.getAckNodeNames().size() == sendCommandStatistics.getSendNodeNames().size()) {
-                    sendStorage.addGCSet(key);
                     sendCommandStatistics.setSend();
-                    sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
+                    sendStorage.addGCSet(key);
                 } else {
                     sendStorage.addDelayQueue(key);
                 }
+                sendStorage.updateSendCommandStatics(key, sendCommandStatistics);
                 sendStorage.removeFromSendQueue();
-                sendStorage.commit();
+                sendStorage.openTx();
+                try{
+                    sendStorage.commit();
+                }finally {
+                    sendStorage.closeTx();
+                }
             } catch (Throwable e) {
                 log.error("{}", e);
-                if (null != rootKey) {
-                    try{
-                        sendStorage.addDelayQueue(rootKey);
-                        sendStorage.commit();
-                    }catch (Throwable throwable){
-                        log.error("{}", throwable);
-                        sendStorage.rollBack();
+                sendStorage.openTx();
+                try{
+                    if(null != key){
+                        sendStorage.addDelayQueue(key);
                     }
+                    sendStorage.removeFromSendQueue();
+                    sendStorage.commit();
+                }finally {
+                    sendStorage.closeTx();
                 }
-            } finally {
-                sendStorage.closeTx();
+
             }
         }
     }
 
     private void apply() {
         while (true) {
-            receiveStorage.openTx();
             String key = null;
             Span span = null;
             try {
@@ -239,37 +239,46 @@ public class ConsensusContext {
                 if (receiveCommandStatistics.isClosed()) {
                     log.warn("receiveCommandStatistics {} is closed, key is {}", receiveCommandStatistics, key);
                     receiveStorage.deleteFirstFromApplyQueue();
+                    receiveStorage.addGCSet(key);
                     continue;
                 }
 
                 validConsensus.apply(receiveCommandStatistics);
                 if (receiveCommandStatistics.isClosed()) {
+                    receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
                     if (receiveCommandStatistics.getFromNodeNameSet().size() == totalNodeNum) {
                         log.info("gather all the nodes {} command", receiveCommandStatistics.getFromNodeNameSet());
                         receiveStorage.addGCSet(key);
                     }
-                    receiveStorage.updateReceiveCommandStatistics(key, receiveCommandStatistics);
                 } else {
                     log.info("apply {} not close, add key {} to delay queue", receiveCommandStatistics.getValidCommand(), key);
                     receiveStorage.addDelayQueue(key);
                 }
 
                 receiveStorage.deleteFirstFromApplyQueue();
-                receiveStorage.commit();
+                receiveStorage.openTx();
+
+                try {
+                    receiveStorage.commit();
+                } finally {
+                    receiveStorage.closeTx();
+                }
             } catch (Throwable e) {
                 log.error("apply log failed! {}", e);
                 if (null != key) {
                     log.info("apply exception, add key {} to delay queue", key);
+                    receiveStorage.openTx();
                     try{
-                        receiveStorage.addDelayQueue(key);
+                        if(null != key){
+                            receiveStorage.addDelayQueue(key);
+                        }
+                        receiveStorage.deleteFirstFromApplyQueue();
                         receiveStorage.commit();
-                    }catch (Throwable throwable){
-                        log.error("{}", e);
-                        receiveStorage.rollBack();
+                    } finally {
+                        receiveStorage.closeTx();
                     }
                 }
             } finally {
-                receiveStorage.closeTx();
                 TraceUtils.closeSpan(span);
             }
         }
