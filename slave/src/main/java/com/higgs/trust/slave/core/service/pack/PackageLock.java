@@ -24,21 +24,34 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @date 2018/04/13 11:19
  * @desc package lock
  */
-@Service @Slf4j public class PackageLock {
-    @Autowired private PackageRepository packageRepository;
+@Service
+@Slf4j
+public class PackageLock {
+    @Autowired
+    private PackageRepository packageRepository;
 
-    @Autowired private TransactionTemplate txNested;
+    @Autowired
+    private TransactionTemplate txNested;
 
-    @Autowired private PackageService packageService;
+    @Autowired
+    private PackageService packageService;
 
-    @Autowired private BlockRepository blockRepository;
+    @Autowired
+    private BlockRepository blockRepository;
 
-    @Autowired private LogReplicateHandler logReplicateHandler;
+    @Autowired
+    private LogReplicateHandler logReplicateHandler;
 
+    /**
+     * lock and submit package to consensus layer
+     *
+     * @param height
+     */
     public void lockAndSubmit(Long height) {
 
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -69,9 +82,15 @@ import org.springframework.transaction.support.TransactionTemplate;
         });
     }
 
+    /**
+     * lock and validating package
+     *
+     * @param height
+     */
     public void lockAndValidating(Long height) {
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -95,8 +114,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
                 // check next package height
                 if (!pack.getHeight().equals(blockRepository.getMaxHeight() + 1)) {
-                    log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),
-                        blockRepository.getMaxHeight() + 1);
+                    log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(), blockRepository.getMaxHeight() + 1);
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
                 }
 
@@ -109,9 +127,15 @@ import org.springframework.transaction.support.TransactionTemplate;
         });
     }
 
+    /**
+     * lock and send validated results to consensus layer
+     *
+     * @param height
+     */
     public void lockValidatingAndSubmit(Long height) {
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -126,15 +150,50 @@ import org.springframework.transaction.support.TransactionTemplate;
                 }
                 packageService.validateConsensus(pack);
                 // update status
-                packageService
-                    .statusChange(pack, PackageStatusEnum.VALIDATING, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS);
+                packageService.statusChange(pack, PackageStatusEnum.VALIDATING, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS);
             }
         });
     }
 
+    /**
+     * lock and do something after validating
+     *
+     * @param height
+     */
+    public void lockAndValidated(Long height) {
+        txNested.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                Package pack = packageRepository.loadAndLock(height);
+
+                if (null == pack) {
+                    log.error("system exception, package is empty, height={}", height);
+                    //TODO 添加告警
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_IS_NOT_EXIST);
+                }
+                // if package status is not 'WAIT_VALIDATE_CONSENSUS', return directly.
+                if (PackageStatusEnum.WAIT_VALIDATE_CONSENSUS != pack.getStatus()) {
+                    return;
+                }
+
+                packageService.validated(pack);
+                // update status
+                packageService.statusChange(pack, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS, PackageStatusEnum.VALIDATED);
+
+            }
+        });
+    }
+
+
+    /**
+     * lock and persisting package
+     *
+     * @param height
+     */
     public void lockAndPersist(Long height) {
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -150,8 +209,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
                 // check next package height
                 if (!pack.getHeight().equals(blockRepository.getMaxHeight() + 1)) {
-                    log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),
-                        blockRepository.getMaxHeight() + 1);
+                    log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(), blockRepository.getMaxHeight() + 1);
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
                 }
 
@@ -164,9 +222,15 @@ import org.springframework.transaction.support.TransactionTemplate;
         });
     }
 
+    /**
+     * lock and send persisting  results to  consensus layer
+     *
+     * @param height
+     */
     public void lockPersistingAndSubmit(Long height) {
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -181,48 +245,29 @@ import org.springframework.transaction.support.TransactionTemplate;
                 }
 
                 // check package height
+                //TODO lingchao  改造 支持不等待persist 共识。就进行下一个区块处理
                 if (!pack.getHeight().equals(blockRepository.getMaxHeight())) {
-                    log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),
-                        blockRepository.getMaxHeight());
+                    log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(), blockRepository.getMaxHeight());
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
                 }
 
                 packageService.persistConsensus(pack);
                 // update status
-                packageService
-                    .statusChange(pack, PackageStatusEnum.PERSISTING, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+                packageService.statusChange(pack, PackageStatusEnum.PERSISTING, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
 
             }
         });
     }
-
-    public void lockAndValidated(Long height) {
-        txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                Package pack = packageRepository.loadAndLock(height);
-
-                if (null == pack) {
-                    log.error("system exception, package is empty, height={}", height);
-                    //TODO 添加告警
-                    throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_IS_NOT_EXIST);
-                }
-                // if package status is not 'WAIT_VALIDATE_CONSENSUS', return directly.
-                if (PackageStatusEnum.WAIT_VALIDATE_CONSENSUS != pack.getStatus()) {
-                    return;
-                }
-
-                packageService.validated(pack);
-                // update status
-                packageService
-                    .statusChange(pack, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS, PackageStatusEnum.VALIDATED);
-
-            }
-        });
-    }
-
+    
+    /**
+     * lock and do something after persisting
+     *
+     * @param height
+     */
     public void lockAndPersisted(Long height) {
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -237,16 +282,15 @@ import org.springframework.transaction.support.TransactionTemplate;
                 }
 
                 // check package height
+                //TODO lingchao  改造 支持不等待persist 共识。就进行下一个区块处理
                 if (!pack.getHeight().equals(blockRepository.getMaxHeight())) {
-                    log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),
-                        blockRepository.getMaxHeight());
+                    log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(), blockRepository.getMaxHeight());
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
                 }
 
                 packageService.persisted(pack);
                 // update status
-                packageService
-                    .statusChange(pack, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
+                packageService.statusChange(pack, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
             }
         });
     }

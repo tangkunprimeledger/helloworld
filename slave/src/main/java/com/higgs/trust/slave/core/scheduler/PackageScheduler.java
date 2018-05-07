@@ -81,7 +81,6 @@ public class PackageScheduler {
             return;
         }
 
-        pack.setStatus(PackageStatusEnum.INIT);
         txNested.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 packageRepository.save(pack);
