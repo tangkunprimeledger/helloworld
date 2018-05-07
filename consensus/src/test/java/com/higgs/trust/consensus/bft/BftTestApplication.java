@@ -1,11 +1,9 @@
-package com.higgs.trust.consensus;
+package com.higgs.trust.consensus.bft;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
@@ -17,10 +15,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableAspectJAutoProxy
 @EnableDiscoveryClient
 @EnableFeignClients
-@ComponentScan({"com.higgs.trust.consensus.p2pvalid", "com.higgs.trust.common"})
-public class TestApplication {
-
-    public static void main(String[] args) {
-        ApplicationContext context = SpringApplication.run(TestApplication.class, args);
-    }
+@ComponentScan({"com.higgs.trust.consensus.bft"})
+public class BftTestApplication {
 }

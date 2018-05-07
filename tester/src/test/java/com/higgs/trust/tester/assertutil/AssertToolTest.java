@@ -6,7 +6,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.tester.dbunit.DataBaseManager;
 import lombok.extern.java.Log;
 import org.testng.Assert;
+import org.testng.Reporter;
 import org.testng.annotations.Test;
+
 import java.sql.Connection;
 @Log
 public class AssertToolTest extends Assert{
@@ -604,12 +606,13 @@ public class AssertToolTest extends Assert{
         AssertTool.isContainsExpect(CC, dburl,sql);
     }
 
-    @Test
+    @Test(testName = "testname1111")
     //封装了数据库操作的断言，数据库包含
     public void testIsContainsExpect15()throws Exception{
         String CC = "{\"rs_ids\":\"[\\\"test2\\\",\\\"test3\\\",\\\"test1\\\"]\",\"policy_id\":\"-1497234849\",\"create_time\":\"2018-04-20 11:26:38.676\",\"policy_name\":\"test-policy\",\"id\":\"3\"}";
         String dburl = "jdbc:mysql://localhost:3306/trust?user=root&password=root&useSSL=true";
         String sql = "select * from policy where policy_name = 'test-policy'";
         AssertTool.isContainsExpect(CC, dburl,sql);
+        Reporter.log("ceshi logaaa");
     }
 }

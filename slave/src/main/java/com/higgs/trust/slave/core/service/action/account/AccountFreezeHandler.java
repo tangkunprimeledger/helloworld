@@ -4,6 +4,7 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
@@ -67,37 +68,42 @@ import java.math.BigDecimal;
         } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
             accountHandler = accountDBHandler;
         }
-        //validate business
-        AccountInfo accountInfo = accountHandler.getAccountInfo(bo.getAccountNo());
-        if (accountInfo == null) {
-            log.error("[accountFreeze.validate] account info is not exists by accountNo:{}", bo.getAccountNo());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_IS_NOT_EXISTS_ERROR);
-        }
-        //check amount
-        if (bo.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            log.error("[accountFreeze.validate] amount is check fail by amount:{}", bo.getAmount());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_FREEZE_AMOUNT_ERROR);
-        }
-        //check balance
-        BigDecimal afterAmount =
-            accountInfo.getBalance().subtract(accountInfo.getFreezeAmount()).subtract(bo.getAmount());
-        if (afterAmount.compareTo(BigDecimal.ZERO) < 0) {
-            log.error("[accountFreeze.validate] balance is not enough by accountNo:{}", bo.getAccountNo());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
-        }
-        //bind contract address
-        String contractBindHash = bindContract(actionData, bo, processTypeEnum);
-        bo.setContractAddr(contractBindHash);
+        Profiler.enter("[validateForFreeze]");
+        try {
+            //validate business
+            AccountInfo accountInfo = accountHandler.getAccountInfo(bo.getAccountNo());
+            if (accountInfo == null) {
+                log.error("[accountFreeze.validate] account info is not exists by accountNo:{}", bo.getAccountNo());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_IS_NOT_EXISTS_ERROR);
+            }
+            //check amount
+            if (bo.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                log.error("[accountFreeze.validate] amount is check fail by amount:{}", bo.getAmount());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_FREEZE_AMOUNT_ERROR);
+            }
+            //check balance
+            BigDecimal afterAmount = accountInfo.getBalance().subtract(accountInfo.getFreezeAmount()).subtract(bo.getAmount());
+            if (afterAmount.compareTo(BigDecimal.ZERO) < 0) {
+                log.error("[accountFreeze.validate] balance is not enough by accountNo:{}", bo.getAccountNo());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
+            }
+            //bind contract address
+            String contractBindHash = bindContract(actionData, bo, processTypeEnum);
+            bo.setContractAddr(contractBindHash);
 
-        //check record is already exists
-        AccountFreezeRecord freezeRecord = accountHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
-        if (freezeRecord != null) {
-            log.error("[accountFreeze.validate] freezeRecord is already exists flowNo:{},accountNo:{}",
-                bo.getBizFlowNo(), bo.getAccountNo());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+            //check record is already exists
+            AccountFreezeRecord freezeRecord = accountHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
+            if (freezeRecord != null) {
+                log.error("[accountFreeze.validate] freezeRecord is already exists flowNo:{},accountNo:{}", bo.getBizFlowNo(), bo.getAccountNo());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+            }
+        } finally {
+            Profiler.release();
         }
         //freeze
+        Profiler.enter("[persistForFreeze]");
         accountHandler.freeze(bo, actionData.getCurrentBlock().getBlockHeader().getHeight());
+        Profiler.release();
     }
 
     /**

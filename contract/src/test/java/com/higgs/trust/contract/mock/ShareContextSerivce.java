@@ -1,8 +1,6 @@
 package com.higgs.trust.contract.mock;
 
 import com.higgs.trust.contract.ContractApiService;
-import com.higgs.trust.contract.SmartContractException;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 public class ShareContextSerivce extends ContractApiService {
 

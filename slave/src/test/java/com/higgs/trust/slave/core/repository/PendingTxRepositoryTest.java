@@ -15,9 +15,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /*
  *
@@ -64,9 +62,9 @@ public class PendingTxRepositoryTest extends BaseTest {
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);
 
-        Set<String> rsIds = new HashSet<>();
+        List<String> rsIds = new ArrayList<>();
         rsIds.add("rs-test1");
-        registerPolicy.setRsIdSet(rsIds);
+        registerPolicy.setRsIds(rsIds);
 
         CoreTransaction coreTx1 = new CoreTransaction();
         List<Action> registerPolicyList = new ArrayList<>();

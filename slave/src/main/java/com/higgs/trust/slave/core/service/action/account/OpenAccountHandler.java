@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.action.account;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
@@ -53,6 +54,7 @@ import org.springframework.stereotype.Component;
         }else if(processTypeEnum == TxProcessTypeEnum.PERSIST){
             accountHandler = accountDBHandler;
         }
+        Profiler.enter("[validateForOpenAccount]");
         // validate business
         // check accountNo
         AccountInfo accountInfo = accountHandler.getAccountInfo(bo.getAccountNo());
@@ -66,8 +68,11 @@ import org.springframework.stereotype.Component;
             log.error("[openAccount.process] currency:{} is not exists", bo.getCurrency());
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_CURRENCY_NOT_EXISTS_ERROR);
         }
+        Profiler.release();
         //process business
+        Profiler.enter("[persistForOpenAccount]");
         accountHandler.openAccount(bo);
+        Profiler.release();
         log.info("[openAccount.process] is success");
     }
 }

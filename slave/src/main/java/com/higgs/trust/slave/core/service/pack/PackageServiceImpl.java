@@ -21,7 +21,6 @@ import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.context.PackContext;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
@@ -65,9 +64,6 @@ import java.util.Set;
 
     @Autowired private RsPubKeyRepository rsPubKeyRepository;
 
-    @Value("${trust.batch.tx.limit}")
-    private int count;
-
     private static final Long DEFAULT_HEIGHT = 1L;
 
     /**
@@ -75,8 +71,7 @@ import java.util.Set;
      *
      * @return
      */
-    @Override public Package create() {
-        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(count);
+    @Override public Package create(List<SignedTransaction> signedTransactions) {
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
             return null;

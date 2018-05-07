@@ -1,14 +1,11 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.dao.po.DataIdentityPO;
 import com.higgs.trust.slave.model.bo.DataIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import java.util.Date;
-
-import static org.testng.Assert.*;
 
 public class DataIdentityRepositoryTest extends BaseTest{
     @Autowired

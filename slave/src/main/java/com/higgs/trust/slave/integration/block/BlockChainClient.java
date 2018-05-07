@@ -3,9 +3,8 @@
  */
 package com.higgs.trust.slave.integration.block;
 
-import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.common.feign.FeignRibbonConstants;
+import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;

@@ -8,6 +8,7 @@ import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.api.enums.account.TradeDirectionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.AmountUtil;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.repository.account.AccountRepository;
@@ -76,6 +77,10 @@ import java.util.*;
         BigDecimal creditAmounts = BigDecimal.ZERO;
         //DEBIT trade
         for (AccountTradeInfo info : debitTradeInfo) {
+            if(!AmountUtil.isLegal(String.valueOf(info.getAmount()),true)){
+                log.error("[validateForOperation] amount:{} is illegal",info.getAmount());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
             AccountInfo accountInfo = accountRepository.queryAccountInfo(info.getAccountNo(), false);
             if (accountInfo == null) {
                 log.error("[validateForOperation] account info is not exists by accountNo:{}", info.getAccountNo());
@@ -98,6 +103,10 @@ import java.util.*;
         }
         //CREDIT trade
         for (AccountTradeInfo info : creditTradeInfo) {
+            if(!AmountUtil.isLegal(String.valueOf(info.getAmount()),true)){
+                log.error("[validateForOperation] amount:{} is illegal",info.getAmount());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
             AccountInfo accountInfo = accountRepository.queryAccountInfo(info.getAccountNo(), false);
             if (accountInfo == null) {
                 log.error("[validateForOperation] account info is not exists by accountNo:{}", info.getAccountNo());
@@ -130,9 +139,9 @@ import java.util.*;
             throw new SlaveException(SlaveErrorEnum.SLAVE_POLICY_IS_NOT_EXISTS_EXCEPTION);
         }
         //check data identity
-        boolean r = dataIdentityService.validate(policy.getRsIdSet(), dataIdentitys);
+        boolean r = dataIdentityService.validate(policy.getRsIds(), dataIdentitys);
         if (!r) {
-            log.error("[validateForOperation] account check data owner is error,rsIds:{}", policy.getRsIdSet());
+            log.error("[validateForOperation] account check data owner is error,rsIds:{}", policy.getRsIds());
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_CHECK_DATA_OWNER_ERROR);
         }
         //check the trial balance

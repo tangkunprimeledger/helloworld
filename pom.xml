@@ -225,7 +225,7 @@
             <dependency>
                 <groupId>cn.primeledger.seg</groupId>
                 <artifactId>stability-spring-boot-starter</artifactId>
-                <version>1.1.1-SNAPSHOT</version>
+                <version>1.1.2-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.springframework.amqp</groupId>
@@ -315,15 +315,15 @@
     <build>
         <plugins>
             <!--<plugin>-->
-            <!--<groupId>org.springframework.boot</groupId>-->
-            <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
+                <!--<groupId>org.springframework.boot</groupId>-->
+                <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
             <!--</plugin>-->
             <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
+            <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>

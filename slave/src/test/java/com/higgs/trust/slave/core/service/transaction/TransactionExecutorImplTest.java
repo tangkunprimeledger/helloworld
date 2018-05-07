@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.testng.Assert.*;
-
 public class TransactionExecutorImplTest extends BaseTest {
     @Autowired private TransactionExecutor transactionExecutor;
     @Test
@@ -31,7 +29,7 @@ public class TransactionExecutorImplTest extends BaseTest {
             }
 
             @Override
-            public TransactionData getTransactionData() {
+            public TransactionData parseTransactionData() {
                 return null;
             }
 
@@ -97,7 +95,7 @@ public class TransactionExecutorImplTest extends BaseTest {
         packageData.setCurrentTransaction(signedTransaction);
 
 
-        transactionExecutor.validate(packageData.getTransactionData());
+        transactionExecutor.validate(packageData.parseTransactionData());
     }
 
 }

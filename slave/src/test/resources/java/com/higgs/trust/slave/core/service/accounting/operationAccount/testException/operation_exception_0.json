@@ -1,0 +1,23 @@
+{
+  "测试ID": 0,
+  "body": {
+    "bizFlowNo": "account_biz_flow_no_001",
+    "debitTradeInfo": [
+      {
+        "accountNo": "account_no_001",
+        "amount": 10
+      }
+    ],
+    "creditTradeInfo": [
+      {
+        "accountNo": "account_no_002",
+        "amount": 10
+      }
+    ],
+    "accountDate": "2018-05-05 15:05:05",
+    "remark": "test "
+  },
+  "type": "",
+  "assert": "account is not exists error[SLAVE_ACCOUNT_IS_NOT_EXISTS_ERROR]",
+  "comment": "账务操作,[accountNo][账号不存在]测试"
+}

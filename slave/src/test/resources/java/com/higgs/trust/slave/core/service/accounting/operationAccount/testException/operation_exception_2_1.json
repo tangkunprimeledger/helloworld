@@ -1,0 +1,29 @@
+{
+  "测试ID": 0,
+  "body": {
+    "bizFlowNo": "account_biz_flow_no_001",
+    "debitTradeInfo": [
+      {
+        "accountNo": "account_no_1001",
+        "amount": 0.8
+      }
+    ],
+    "creditTradeInfo": [
+      {
+        "accountNo": "account_no_1002",
+        "amount": 0.8
+      }
+    ],
+    "accountDate": "2018-05-05 15:05:05",
+    "remark": "test "
+  },
+  "type": "",
+  "beforeSql": [
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0.8', '0.1', 'CREDIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')"
+  ],
+  "afterSql": [
+    "TRUNCATE TABLE `account_info`"
+  ],
+  "assert": "account balance is not enough error[SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR]",
+  "comment": "账务操作,[账户余额][余额不足-含冻结金额]测试"
+}

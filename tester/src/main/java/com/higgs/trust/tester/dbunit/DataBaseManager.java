@@ -1,11 +1,11 @@
 package com.higgs.trust.tester.dbunit;
 
-import java.sql.*;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.higgs.trust.tester.jsonutil.JsonFileUtil;
 import lombok.extern.java.Log;
+
+import java.sql.*;
 /**
  * @author  shenqingyan
  * @create 2018/4/16 20:23

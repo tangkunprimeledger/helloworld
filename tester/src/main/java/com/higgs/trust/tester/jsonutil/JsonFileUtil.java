@@ -1,6 +1,10 @@
 package com.higgs.trust.tester.jsonutil;
 
-import com.alibaba.fastjson.*;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.java.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
-import lombok.extern.java.Log;
 /**
  * JsonFileUtil
  *
@@ -191,16 +194,11 @@ public class JsonFileUtil {
             System.out.println("no data in test file");
         }
         for (int j = 0; j < parList.size(); j++) {
-            String jsonstr = parList.get(j).toString().replaceAll("null","\"--\"");
-            LinkedHashMap<String, Object> jsonMap = JSON.parseObject(jsonstr, new TypeReference<LinkedHashMap<String, Object>>(){});
-            for (Map.Entry<String, Object> entry : jsonMap.entrySet()) {
-                String X =entry.getValue().toString();
-                String tmp = entry.getValue().toString().replaceAll("\"--\"","null");
-                entry.setValue(tmp);
-                if (entry.getValue().equals("--")){
-                    entry.setValue(null);
-                }
-                arrmap[j][0].put(entry.getKey().toString(), entry.getValue());
+            String jsonstr = parList.get(j).toString();
+            Map<String, Object> jsonMap = JSON.parseObject(jsonstr,Map.class);
+            for(String key : jsonMap.keySet()){
+                Object value = jsonMap.get(key);
+                arrmap[j][0].put(key,value);
             }
         }
         return arrmap;

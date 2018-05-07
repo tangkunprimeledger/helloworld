@@ -7,7 +7,8 @@ import com.higgs.trust.tester.dbunit.DataBaseManager;
 import com.higgs.trust.tester.jsonutil.JsonFileUtil;
 import lombok.extern.java.Log;
 import org.testng.Assert;
-import java.util.*;
+
+import java.util.HashMap;
 
 import static org.testng.internal.EclipseInterface.*;
 

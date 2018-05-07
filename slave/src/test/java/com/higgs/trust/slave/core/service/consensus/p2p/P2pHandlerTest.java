@@ -5,8 +5,6 @@ import com.higgs.trust.slave.model.bo.BlockHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
-
 public class P2pHandlerTest extends BaseTest {
     @Autowired P2pHandler p2pHandler;
 

@@ -7,7 +7,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author tangfashuang
@@ -33,6 +33,6 @@ import java.util.Set;
      * rs ids of related to policy
      */
     @NotEmpty
-    private Set<String> rsIdSet;
+    private List<String> rsIds;
 
 }

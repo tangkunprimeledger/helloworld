@@ -1,0 +1,21 @@
+{
+  "测试ID": 11,
+  "body": {
+    "bizFlowNo":"account_biz_flow_no_001",
+    "debitTradeInfo":[
+      {
+        "accountNo":"account_no_001",
+        "amount":-9999999999999999999.9999999999
+      }
+    ],
+    "creditTradeInfo":[{
+      "accountNo":"account_no_002",
+      "amount":10
+    }],
+    "accountDate":"2018-04-06 22:05:05",
+    "remark":"test "
+  },
+  "type": "",
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "账务操作,[debitTradeInfo.amount][金额边界-负值]测试"
+}

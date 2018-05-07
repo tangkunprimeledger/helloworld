@@ -3,8 +3,10 @@ package com.higgs.trust.slave.core.service;
 import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.service.action.account.TestDataMaker;
 import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.core.service.block.hash.TxRootHashBuilder;
 import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
@@ -22,6 +24,9 @@ import java.util.List;
 public class BlockServiceTest extends IntegrateBaseTest {
 
     @Autowired BlockService blockService;
+    @Autowired TransactionRepository transactionRepository;
+    @Autowired TxRootHashBuilder txRootHashBuilder;
+
 
     @Test public void getMaxHeight() {
         Long height = blockService.getMaxHeight();
@@ -76,6 +81,12 @@ public class BlockServiceTest extends IntegrateBaseTest {
                 System.out.println(action.getType());
             }
         }
+    }
+
+    @Test public void testQueryTransaction() {
+        List<SignedTransaction> txs = transactionRepository.queryTransactions(4L);
+        String rootHash  = txRootHashBuilder.buildTxs(txs);
+        System.out.println("rootHash--->" + rootHash);
     }
 
 }

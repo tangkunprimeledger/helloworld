@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.core.service.version;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -19,7 +18,6 @@ import com.higgs.trust.slave.core.service.action.manage.RegisterRsHandler;
 import com.higgs.trust.slave.core.service.action.utxo.UTXOActionHandler;
 import com.higgs.trust.slave.core.service.contract.StandardExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
-import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
 import com.higgs.trust.slave.core.service.snapshot.agent.AccountContractBindingSnapshotAgent;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.account.AccountFreeze;
@@ -30,11 +28,8 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.context.TransactionData;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
-import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
-import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -92,12 +87,12 @@ import java.util.*;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACTION_HANDLER_IS_NOT_EXISTS_EXCEPTION);
             }
             //execute contract
-            exeContract(action, processTypeEnum, transactionData.getActionData());
+            exeContract(action, processTypeEnum, transactionData.parseActionData());
             //execute action
             if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-                actionHandler.validate(transactionData.getActionData());
+                actionHandler.validate(transactionData.parseActionData());
             } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-                actionHandler.persist(transactionData.getActionData());
+                actionHandler.persist(transactionData.parseActionData());
             }
         }
     }

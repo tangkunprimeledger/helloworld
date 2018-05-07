@@ -2,6 +2,7 @@ package com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl;
 
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import lombok.ToString;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,6 +18,7 @@ public class ReceiveCommandStatistics implements Serializable{
     private boolean applied;
     private ValidCommand<?> validCommand;
     private Set<String> fromNodeNameSet;
+    private Long traceId;
 
     private ReceiveCommandStatistics(ValidCommand<?> validCommand) {
         this.validCommand = validCommand;
@@ -53,5 +55,13 @@ public class ReceiveCommandStatistics implements Serializable{
 
     public void apply() {
         applied = true;
+    }
+
+    public Long getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(Long traceId) {
+        this.traceId = traceId;
     }
 }

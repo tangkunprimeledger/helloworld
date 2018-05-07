@@ -26,7 +26,7 @@ public class PolicyDaoTest extends IntegrateBaseTest {
 
     @Test public void queryByPolicyId() {
         Policy policy = policyRepository.getPolicyById("000000");
-        Assert.assertEquals("[ALL]", JSON.toJSONString(policy.getRsIdSet()));
+        Assert.assertEquals("[ALL]", JSON.toJSONString(policy.getRsIds()));
     }
 
     @Test public void testAdd1() {

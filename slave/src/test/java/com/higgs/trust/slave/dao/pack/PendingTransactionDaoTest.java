@@ -17,7 +17,9 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /*
  *
@@ -60,9 +62,9 @@ public class PendingTransactionDaoTest extends BaseTest {
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);
 
-        Set<String> rsIds = new HashSet<>();
+        List<String> rsIds = new ArrayList<>();
         rsIds.add("rs-test1");
-        registerPolicy.setRsIdSet(rsIds);
+        registerPolicy.setRsIds(rsIds);
 
         CoreTransaction coreTx1 = new CoreTransaction();
         List<Action> registerPolicyList = new ArrayList<>();
