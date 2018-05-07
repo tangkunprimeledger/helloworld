@@ -268,7 +268,6 @@ public class ReceiveStorage {
             if (gcSet.size() == 0) {
                 return;
             }
-
             Set<String> deleteKeys = new HashSet<>();
             for (String key : gcSet) {
                 log.info("receive gc {}", receiveStatisticsMap.get(key));
