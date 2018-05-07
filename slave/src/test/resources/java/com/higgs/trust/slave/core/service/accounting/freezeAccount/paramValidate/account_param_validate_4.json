@@ -2,9 +2,9 @@
   "测试ID": 0,
   "body": {
     "type":"FREEZE",
-    "index":0,
-    "bizFlowNo": null,
-    "accountNo":"account_no_005_1",
+    "index":-1,
+    "bizFlowNo": "freeze_flow_no_001_",
+    "accountNo":null,
     "amount":0.01,
     "contractAddr":null,
     "contractArgs":null,
