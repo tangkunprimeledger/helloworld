@@ -269,7 +269,9 @@ public class ConsensusContext {
                     log.info("apply exception, add key {} to delay queue", key);
                     receiveStorage.openTx();
                     try{
-                        receiveStorage.addDelayQueue(key);
+                        if(null != key){
+                            receiveStorage.addDelayQueue(key);
+                        }
                         receiveStorage.deleteFirstFromApplyQueue();
                         receiveStorage.commit();
                     } finally {
