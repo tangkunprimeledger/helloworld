@@ -15,7 +15,9 @@ public enum RespCodeEnum {
     PARAM_NOT_ILLEGAL("200", "000", "param is illegal"),
 
     // 系统异常
-    SYS_FAIL("500", "000", "system busy");
+    SYS_FAIL("500", "000", "system busy"),
+
+    SYS_HANDLE_TIMEOUT("500", "001", "system handle timeout");
 
     RespCodeEnum(String mainCode, String subCode, String msg) {
         this.mainCode = mainCode;

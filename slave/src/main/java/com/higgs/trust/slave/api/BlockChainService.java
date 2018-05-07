@@ -20,7 +20,9 @@ public interface BlockChainService {
      * @param transactions
      * @return
      */
-    RespData submitTransaction(List<SignedTransaction> transactions);
+    RespData submitTransactions(List<SignedTransaction> transactions);
+
+    RespData submitTransaction(SignedTransaction transaction);
 
     List<BlockHeader> listBlockHeaders(long startHeight, int size);
 

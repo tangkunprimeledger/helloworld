@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
+import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
@@ -10,6 +12,7 @@ import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.transaction.TransactionExecutor;
 import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -187,6 +190,13 @@ import java.util.List;
         }
 
         //TODO:call RS business
+        pack.getSignedTxList().forEach(signedTx -> {
+            try {
+                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
+            } catch (InterruptedException e) {
+                log.error("interrupted exception. txId={}", signedTx.getCoreTx().getTxId());
+            }
+        });
         Profiler.release();
         if (Profiler.getDuration() > 0) {
             Profiler.logDump();
