@@ -4,6 +4,7 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
@@ -61,60 +62,83 @@ import java.util.Date;
         }
     }
 
-    @Override public void validate(ActionData actionData) {
-        log.trace("validate... start process contract creation");
+    private ContractCreationAction getAndCheckAction(ActionData actionData) {
         checkPolicy(actionData);
         ContractCreationAction creationAction = (ContractCreationAction) actionData.getCurrentAction();
         if (creationAction == null) {
-            log.error("[ContractCreation.validate] convert action to ContractCreationAction is error");
+            log.error("[ContractCreation] convert action to ContractCreationAction is error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-
-        Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
-        String sender = actionData.getCurrentTransaction().getCoreTx().getSender();
-        String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
-        String address = generateAddress(blockHeight, sender, txId, creationAction);
-
-        Contract contract = snapshotAgent.get(address);
-        if (null != contract) {
-            // TODO [duhongming] custom SlaveErrorEnum
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BLOCK_HEIGHT_UNEQUAL_ERROR);
+        if (StringUtils.isEmpty(creationAction.getCode())) {
+            log.error("[ContractCreation] code is empty");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, "code is empty");
         }
 
-        contract = new Contract();
-        contract.setAddress(address);
-        contract.setLanguage(creationAction.getLanguage());
-        contract.setCode(creationAction.getCode());
-        contract.setCreateTime(new Date());
-        snapshotAgent.put(address, contract);
+        if(StringUtils.isEmpty(creationAction.getLanguage())) {
+            log.error("[ContractCreation] language is empty");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, "language is empty");
+        }
+
+        if (!"javascript".equals(creationAction.getLanguage())) {
+            log.error("[ContractCreation] language is error: {}", creationAction.getLanguage());
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("language is error: %s", creationAction.getLanguage()));
+        }
+        return creationAction;
+    }
+
+    @Override public void validate(ActionData actionData) {
+        log.trace("validate... start process contract creation");
+        Profiler.enter("ContractCreationHandler validate");
+        try {
+            ContractCreationAction creationAction = getAndCheckAction(actionData);
+            Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
+            String sender = actionData.getCurrentTransaction().getCoreTx().getSender();
+            String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
+            String address = generateAddress(blockHeight, sender, txId, creationAction);
+
+            Contract contract = snapshotAgent.get(address);
+            if (null != contract) {
+                Profiler.release();
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BLOCK_HEIGHT_UNEQUAL_ERROR);
+            }
+
+            contract = new Contract();
+            contract.setAddress(address);
+            contract.setLanguage(creationAction.getLanguage());
+            contract.setCode(creationAction.getCode());
+            contract.setCreateTime(new Date());
+            snapshotAgent.put(address, contract);
+        } finally {
+            Profiler.release();
+        }
     }
 
     @Override public void persist(ActionData actionData) {
         log.debug("persist... start process contract creation");
-        checkPolicy(actionData);
-        ContractCreationAction creationAction = (ContractCreationAction) actionData.getCurrentAction();
-        if (creationAction == null) {
-            log.error("[ContractCreation.validate] convert action to ContractCreationAction is error");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        Profiler.enter("ContractCreationHandler persist");
+        try{
+            ContractCreationAction creationAction = getAndCheckAction(actionData);
+
+            Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
+            String sender = actionData.getCurrentTransaction().getCoreTx().getSender();
+            String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
+            String address = generateAddress(blockHeight, sender, txId, creationAction);
+
+            Contract contract = contractRepository.queryByAddress(address);
+            if (null != contract) {
+                Profiler.release();
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BLOCK_HEIGHT_UNEQUAL_ERROR);
+            }
+            contract = new Contract();
+            contract.setAddress(address);
+            contract.setLanguage(creationAction.getLanguage());
+            contract.setCode(creationAction.getCode());
+            contract.setCreateTime(new Date());
+
+            contractRepository.deploy(contract);
+        } finally {
+            Profiler.release();
         }
-
-        Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
-        String sender = actionData.getCurrentTransaction().getCoreTx().getSender();
-        String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
-        String address = generateAddress(blockHeight, sender, txId, creationAction);
-
-        Contract contract = contractRepository.queryByAddress(address);
-        if (null != contract) {
-            // TODO [duhongming] custom SlaveErrorEnum
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BLOCK_HEIGHT_UNEQUAL_ERROR);
-        }
-        contract = new Contract();
-        contract.setAddress(address);
-        contract.setLanguage(creationAction.getLanguage());
-        contract.setCode(creationAction.getCode());
-        contract.setCreateTime(new Date());
-
-        contractRepository.deploy(contract);
     }
 }
 
