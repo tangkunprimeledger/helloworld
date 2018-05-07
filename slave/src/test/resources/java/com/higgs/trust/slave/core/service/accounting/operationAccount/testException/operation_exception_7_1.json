@@ -11,7 +11,11 @@
     "creditTradeInfo": [
       {
         "accountNo": "account_no_1002",
-        "amount": 10
+        "amount": 0.1
+      },
+      {
+        "accountNo": "account_no_1002",
+        "amount": 0.1
       }
     ],
     "accountDate": "2018-05-05 15:05:05",
@@ -21,7 +25,7 @@
   "policyId":"",
   "beforeSql": [
     "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0.8', '0.0', 'DEBIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
-    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1002', 'CNY', '0.8', '0.0', 'CREDIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1002', 'CNY', '0.8', '0.0', 'DEBIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
     "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1001', 'BUC_CHAIN', 'rs-test1', '2018-04-25 18:21:57')",
     "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1002', 'BUC_CHAIN', 'rs-test2', '2018-04-25 18:21:57')",
     "INSERT INTO `currency_info` (`currency`, `create_time`) VALUES ('CNY', '2018-05-05 05:05:05')"
@@ -32,5 +36,5 @@
     "TRUNCATE TABLE `currency_info`"
   ],
   "assert": "trial balance check error[SLAVE_ACCOUNT_TRIAL_BALANCE_ERROR]",
-  "comment": "账务操作,[借贷平衡][金额不一致]测试"
+  "comment": "账务操作,[借贷平衡][不一致]测试"
 }

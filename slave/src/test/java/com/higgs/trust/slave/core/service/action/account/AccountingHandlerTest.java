@@ -49,9 +49,9 @@ public class AccountingHandlerTest extends IntegrateBaseTest {
         OpenAccount accountBO = new OpenAccount();
         accountBO.setType(ActionTypeEnum.OPEN_ACCOUNT);
         accountBO.setIndex(1);
-        accountBO.setAccountNo("account_no_003");
+        accountBO.setAccountNo("account_no_1002");
         accountBO.setChainOwner("BUC_CHAIN");
-        accountBO.setDataOwner("ALL");
+        accountBO.setDataOwner("rs-test2");
         accountBO.setCurrency("CNY");
         accountBO.setFundDirection(FundDirectionEnum.CREDIT);
         PackContext packContext = new PackContext(new Package(), new Block());

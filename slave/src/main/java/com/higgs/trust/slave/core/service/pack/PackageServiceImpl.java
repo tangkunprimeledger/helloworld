@@ -64,9 +64,6 @@ import java.util.Set;
 
     @Autowired private RsPubKeyRepository rsPubKeyRepository;
 
-    @Value("${trust.batch.tx.limit}")
-    private int count;
-
     private static final Long DEFAULT_HEIGHT = 1L;
 
     /**
@@ -74,8 +71,7 @@ import java.util.Set;
      *
      * @return
      */
-    @Override public Package create() {
-        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(count);
+    @Override public Package create(List<SignedTransaction> signedTransactions) {
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
             return null;

@@ -1,6 +1,9 @@
 package com.higgs.trust.slave._interface;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.JsonFileUtil;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -13,6 +16,7 @@ import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
+import com.higgs.trust.tester.assertutil.AssertTool;
 import com.higgs.trust.tester.dbunit.DataBaseManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -105,6 +109,16 @@ import static org.testng.Assert.assertEquals;
     }
 
     /**
+     * 执行 查询sql
+     *
+     * @param param
+     * @return
+     */
+    protected List<JSONArray> executeQuerySql(Map<?, ?> param) {
+        return executeSql(getQuerySql(param));
+    }
+
+    /**
      * 执行 后置sql
      *
      * @param param
@@ -169,6 +183,17 @@ import static org.testng.Assert.assertEquals;
     }
 
     /**
+     * 获取 查询sql
+     *
+     * @param param
+     * @return
+     */
+    protected List<String> getQuerySql(Map<?, ?> param) {
+        String sql = String.valueOf(param.get("querySql"));
+        return parseSqls(sql);
+    }
+
+    /**
      * 获取 后置sql
      *
      * @param param
@@ -178,6 +203,62 @@ import static org.testng.Assert.assertEquals;
         String sql = String.valueOf(param.get("afterSql"));
         return parseSqls(sql);
     }
+
+    /**
+     * 验证操作结果
+     * 1.执行查询sql-->用例数据key:querySql
+     * 2.遍历查询结果
+     * 3.比对每一个结果集中字段值是否跟预期的结果值一致-->用例数据key:assertData
+     * 4.用例中预期数据支持多个，需确保顺序与查询结果集一致
+     * @param param
+     */
+    protected void checkResults(Map<?, ?> param){
+        List<JSONArray> queryResult = executeQuerySql(param);
+        if(CollectionUtils.isEmpty(queryResult)){
+            throw new RuntimeException("query data is empty");
+        }
+        for(JSONArray jsonArray : queryResult){
+            int size = jsonArray.size();
+            if(size == 0){
+                throw new RuntimeException("query data.item is empty");
+            }
+            for(int i=0;i<size;i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                JSONObject assertData = getAssertDataByIndex(param,i);
+                if(assertData == null){
+                    throw new RuntimeException("get assertData is error");
+                }
+                AssertTool.isContainsExpect(assertData,jsonObject);
+            }
+        }
+    }
+    /**
+     * 获取 断言数据
+     *
+     * @param param
+     * @param index
+     *
+     * @return
+     */
+    protected JSONObject getAssertDataByIndex(Map<?, ?> param,int index){
+        List<JSONObject> list = getAssertDatas(param);
+        if(CollectionUtils.isEmpty(list)){
+            return null;
+        }
+        return list.get(index);
+    }
+
+    /**
+     * 获取 断言数据
+     *
+     * @param param
+     * @return
+     */
+    protected List<JSONObject> getAssertDatas(Map<?, ?> param){
+        String sql = String.valueOf(param.get("assertData"));
+        return JSON.parseArray(sql, JSONObject.class);
+    }
+
 
     /**
      * 解析sql json
@@ -204,10 +285,11 @@ import static org.testng.Assert.assertEquals;
      *
      * @param sqls
      */
-    protected void executeSql(List<String> sqls) {
+    protected List<JSONArray> executeSql(List<String> sqls) {
         if (CollectionUtils.isEmpty(sqls)) {
-            return;
+            return null;
         }
+        List<JSONArray> queryResult = new ArrayList<>();
         DataBaseManager dataBaseManager = new DataBaseManager();
         Connection conn = dataBaseManager.getMysqlConnection(DB_URL);
         log.info("start execute sqls:{}",sqls);
@@ -219,10 +301,14 @@ import static org.testng.Assert.assertEquals;
                 dataBaseManager.executeUpdate(sql, conn);
             } else if (sql.toUpperCase().contains("DELETE") || sql.toUpperCase().contains("TRUNCATE")) {
                 dataBaseManager.executeDelete(sql, conn);
+            } else if (sql.toUpperCase().contains("SELECT")) {
+                JSONArray jsonArray = dataBaseManager.executeQuery(sql,conn);
+                queryResult.add(jsonArray);
             }
         }
         dataBaseManager.closeConnection(conn);
         log.info("end execute sqls:{}",sqls);
+        return queryResult;
     }
 
     /**

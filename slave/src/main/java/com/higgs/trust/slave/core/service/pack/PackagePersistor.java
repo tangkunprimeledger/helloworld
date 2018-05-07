@@ -90,10 +90,8 @@ import java.util.List;
         } finally {
             //snapshot transactions should be destroy
             snapshotService.destroy();
-        }
-        Profiler.release();
-        if (Profiler.getDuration() > 0) {
-            log.info(Profiler.dump());
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 
@@ -114,16 +112,20 @@ import java.util.List;
         for (SignedTransaction tx : txs) {
             String title = new StringBuffer("[execute tx ").append(tx.getCoreTx().getTxId()).append("]").toString();
             Profiler.enter(title);
-            //ignore idempotent transaction
-            if(hasTx(dbTxs,tx.getCoreTx().getTxId())){
-                continue;
+            try {
+                //ignore idempotent transaction
+                if (hasTx(dbTxs, tx.getCoreTx().getTxId())) {
+                    log.info("{} is idempotent", tx.getCoreTx().getTxId());
+                    continue;
+                }
+                //set current transaction and execute
+                packageData.setCurrentTransaction(tx);
+                TransactionReceipt receipt = transactionExecutor.persist(packageData.parseTransactionData());
+                persistedDatas.add(tx);
+                txReceipts.add(receipt);
+            } finally {
+                Profiler.release();
             }
-            //set current transaction and execute
-            packageData.setCurrentTransaction(tx);
-            TransactionReceipt receipt = transactionExecutor.persist(packageData.parseTransactionData());
-            persistedDatas.add(tx);
-            txReceipts.add(receipt);
-            Profiler.release();
         }
         packageData.getCurrentBlock().setSignedTxList(persistedDatas);
         return txReceipts;
