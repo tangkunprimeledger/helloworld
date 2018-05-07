@@ -56,13 +56,13 @@ public class ServerConfig
     @Value("${copycat.server.minorCompactionInterval:12000}")
     private Long minorCompactionInterval;
 
-    @Value("${copycat.server.entryBufferSize:20}")
+    @Value("${copycat.server.entryBufferSize:200}")
     private Integer entryBufferSize;
 
     @Value("${copycat.server.compactionThreads:4}")
     private Integer compactionThreads;
 
-    @Value("${copycat.server.maxEntriesPerSegment:120000}")
+    @Value("${copycat.server.maxEntriesPerSegment:20000}")
     private Integer maxEntriesPerSegment;
 
     @Value("${copycat.server.majorCompactionInterval:60000}")
