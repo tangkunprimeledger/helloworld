@@ -1,0 +1,44 @@
+{
+  "测试ID": 0,
+  "body": {
+    "freeze": {
+      "type": "FREEZE",
+      "index": 1,
+      "bizFlowNo": "2321321323",
+      "accountNo": "account_no_005_1",
+      "amount": 0.0,
+      "contractAddr": null,
+      "contractArgs": null,
+      "remark": null
+    },
+    "credit": {
+      "type": "OPEN_ACCOUNT",
+      "index": 1,
+      "chainOwner": "a",
+      "dataOwner": "b",
+      "accountNo": "account_no_005_1",
+      "currency": "CNY",
+      "fundDirection": "CREDIT"
+    },
+    "debit": {
+      "type": "OPEN_ACCOUNT",
+      "index": 1,
+      "chainOwner": "a",
+      "dataOwner": "b",
+      "accountNo": "account_no_005_2",
+      "currency": "CNY",
+      "fundDirection": "DEBIT"
+    },
+    "accounting":{
+      "bizFlowNo":"123",
+      "debitTradeInfo":[{"accountNo":"account_no_005_1","amount":"5"}],
+      "creditTradeInfo":[{"accountNo":"account_no_005_2","amount":"5"}],
+      "accountDate":"2018-05-03 16:13:41"
+
+    }
+  },
+  "beforeSql": "TRUNCATE table data_identity;TRUNCATE table merkle_tree;TRUNCATE TABLE  merkle_node;truncate table currency_info;TRUNCATE  table account_info;INSERT INTO currency_info (currency, remark, create_time) VALUES ('CNY','renmingbi',now());",
+  "afterSql": "TRUNCATE table data_identity;TRUNCATE table merkle_tree;TRUNCATE TABLE  merkle_node;truncate table currency_info;TRUNCATE  table account_info;",
+  "type": "RS",
+  "comment": "冻结账户单元测试"
+}
