@@ -171,8 +171,8 @@ public class ConsensusContext {
                     sendExecutorService.submit(() -> {
                         ValidCommandWrap validCommandWrap = sendCommandStatistics.getValidCommandWrap();
                         try {
-                            String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             Long start = System.currentTimeMillis();
+                            String result = p2pConsensusClient.receiveCommand(nodeName, validCommandWrap);
                             if (StringUtils.equals("SUCCESS", result)) {
                                 sendCommandStatistics.addAckNodeName(nodeName);
                             }
