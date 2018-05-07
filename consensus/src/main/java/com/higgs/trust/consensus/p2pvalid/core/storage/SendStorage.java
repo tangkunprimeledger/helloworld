@@ -113,9 +113,9 @@ public class SendStorage {
     @SuppressWarnings("unchecked")
     private void initStorageMap(){
         openTx();
+        submitMap = getSubmitMap();
+        sendQueue = getSendQueue();
         try{
-            submitMap = getSubmitMap();
-            sendQueue = getSendQueue();
             sendDelayQueue = getSendDelayQueue();
             gcSet = getGcSet();
             commit();
@@ -166,6 +166,7 @@ public class SendStorage {
     }
 
     public SendCommandStatistics getSendCommandStatistics(String key) {
+        submitMap = getSubmitMap();
         return submitMap.get(key);
     }
 
