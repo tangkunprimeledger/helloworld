@@ -36,6 +36,8 @@
     "TRUNCATE TABLE `data_identity`",
     "TRUNCATE TABLE `currency_info`",
     "TRUNCATE TABLE `policy`",
+    "TRUNCATE TABLE `rs_pub_key`",
+    "TRUNCATE TABLE `policy`",
     "TRUNCATE TABLE `rs_pub_key`"
   ],
   "assert": "account merkletree not exist error[SLAVE_ACCOUNT_MERKLE_TREE_NOT_EXIST_ERROR]",

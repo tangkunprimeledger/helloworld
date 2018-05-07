@@ -1,18 +1,13 @@
 package com.higgs.trust.slave._interface.accounting;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave._interface.InterfaceCommonTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.core.service.action.account.AccountOperationHandler;
 import com.higgs.trust.slave.model.bo.account.AccountOperation;
-import com.higgs.trust.tester.assertutil.AssertTool;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,13 +25,13 @@ import java.util.Map;
     }
 
     @Test(dataProvider = "defaultProvider", priority = 1) public void paramValidate(Map<?, ?> param){
-        log.info("[paramValidate]param:{}", param);
+        log.info("[paramValidate]{}", param.get("comment"));
         AccountOperation action = getAction(param,AccountOperation.class,ActionTypeEnum.ACCOUNTING);
         executeActionHandler(param,accountOperationHandler,action);
     }
 
     @Test(dataProvider = "defaultProvider", priority = 2) public void testRegular(Map<?, ?> param){
-        log.info("[testRegular]param:{}", param);
+        log.info("[testRegular]{}", param.get("comment"));
         executeBeforeSql(param);
 
         AccountOperation action = getAction(param,AccountOperation.class,ActionTypeEnum.ACCOUNTING);
@@ -48,7 +43,7 @@ import java.util.Map;
     }
 
     @Test(dataProvider = "defaultProvider", priority = 3) public void testException(Map<?, ?> param){
-        log.info("[testException]param:{}", param);
+        log.info("[testException]{}", param.get("comment"));
         executeBeforeSql(param);
 
         AccountOperation action = getAction(param,AccountOperation.class,ActionTypeEnum.ACCOUNTING);

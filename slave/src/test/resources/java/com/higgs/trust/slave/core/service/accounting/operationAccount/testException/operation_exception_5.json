@@ -25,12 +25,19 @@
     "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1001', 'BUC_CHAIN', 'ALL', '2018-04-25 18:21:57')",
     "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('account_no_1002', 'BUC_CHAIN0', 'ALL0', '2018-04-25 18:21:57')",
     "INSERT INTO `currency_info` (`currency`, `create_time`) VALUES ('CNY', '2018-05-05 05:05:05')",
-    "INSERT INTO `currency_info` (`currency`, `create_time`) VALUES ('CNY0', '2018-05-05 05:05:05')"
+    "INSERT INTO `currency_info` (`currency`, `create_time`) VALUES ('CNY0', '2018-05-05 05:05:05')",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('000000', 'register', '[\"ALL\"]', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('policy-test-1', '注册policy-test-1', 'Set[\"rs-test3\",\"rs-test1\"]', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test1', 'ccc', 'rs-test1-desc', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test2', 'ccc', 'rs-test2-desc', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test3', 'ccc', 'rs-test3-desc', '2018-04-18 16:12:39.518')"
   ],
   "afterSql": [
     "TRUNCATE TABLE `account_info`",
     "TRUNCATE TABLE `data_identity`",
-    "TRUNCATE TABLE `currency_info`"
+    "TRUNCATE TABLE `currency_info`",
+    "TRUNCATE TABLE `policy`",
+    "TRUNCATE TABLE `rs_pub_key`"
   ],
   "assert": "policy is not exists exception[SLAVE_POLICY_IS_NOT_EXISTS_EXCEPTION]",
   "comment": "账务操作,[policy][不存在]测试"

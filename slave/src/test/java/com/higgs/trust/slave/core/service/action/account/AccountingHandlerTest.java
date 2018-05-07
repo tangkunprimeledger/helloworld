@@ -53,7 +53,7 @@ public class AccountingHandlerTest extends IntegrateBaseTest {
         accountBO.setChainOwner("BUC_CHAIN");
         accountBO.setDataOwner("rs-test2");
         accountBO.setCurrency("CNY");
-        accountBO.setFundDirection(FundDirectionEnum.CREDIT);
+        accountBO.setFundDirection(FundDirectionEnum.DEBIT);
         PackContext packContext = new PackContext(new Package(), new Block());
         packContext.setCurrentAction(accountBO);
         openAccountHandler.validate(packContext);
