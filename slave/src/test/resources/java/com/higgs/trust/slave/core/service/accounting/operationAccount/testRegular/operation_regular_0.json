@@ -28,19 +28,28 @@
     "INSERT INTO `merkle_tree` (`root_hash`, `total_level`, `max_index`, `tree_type`, `create_time`,`update_time`) VALUES ('df130eb0bfa54eab7af979b268f173c1316e82c4c7d4957418a2331065f56b73', '2', '1', 'ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
     "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017074093490176', '94698d2304692372dcaa0496429dff67573b61273eb3e2c655e8b737509c6002', '0', '1','442017493729411072','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
     "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017493729411072', 'df130eb0bfa54eab7af979b268f173c1316e82c4c7d4957418a2331065f56b73', '0', '2','','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
-    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017493741993984', '90183221c3fd5c86cd883c7b6c0bf5f5527df3fb7a34caf938f4db398ea0d056', '1', '1','442017493729411072','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')"
+    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`,`parent`, `tree_type`,`create_time`,`update_time`) VALUES ('442017493741993984', '90183221c3fd5c86cd883c7b6c0bf5f5527df3fb7a34caf938f4db398ea0d056', '1', '1','442017493729411072','ACCOUNT', '2018-05-05 05:05:05', '2018-05-05 05:05:05')",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('000000', 'register', '[\"ALL\"]', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('policy-test-1', '注册policy-test-1', 'Set[\"rs-test3\",\"rs-test1\"]', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test1', 'ccc', 'rs-test1-desc', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test2', 'ccc', 'rs-test2-desc', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test3', 'ccc', 'rs-test3-desc', '2018-04-18 16:12:39.518')"
 
-  ],
-  "querySql":[
-   "SELECT * FROM `account_info` WHERE account_no='account_no_1001'",
-   "SELECT * FROM `account_info` WHERE account_no='account_no_1002'"
   ],
   "afterSql": [
     "TRUNCATE TABLE `account_info`",
     "TRUNCATE TABLE `data_identity`",
     "TRUNCATE TABLE `currency_info`",
     "TRUNCATE TABLE `merkle_tree`",
-    "TRUNCATE TABLE `merkle_node`"
+    "TRUNCATE TABLE `merkle_node`",
+    "TRUNCATE TABLE `account_dc_record`",
+    "TRUNCATE TABLE `account_detail`",
+    "TRUNCATE TABLE `policy`",
+    "TRUNCATE TABLE `rs_pub_key`"
+  ],
+  "querySql":[
+   "SELECT * FROM `account_info` WHERE account_no='account_no_1001'",
+   "SELECT * FROM `account_info` WHERE account_no='account_no_1002'"
   ],
   "assert": "",
   "assertData": [
