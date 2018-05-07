@@ -120,15 +120,11 @@ import java.util.List;
      * check the existence merkle node by treeType, level, rootHash(if not null)
      *
      * @param nodeHash
-     * @param level
-     * @param treeType
      * @return
      */
-    public MerkleNode queryMerkleNodeByHash(String nodeHash, int level, String treeType) {
+    public MerkleNode queryMerkleNodeByHash(String nodeHash) {
         MerkleNodePO merkleNodePO = new MerkleNodePO();
         merkleNodePO.setNodeHash(nodeHash);
-        merkleNodePO.setLevel(level);
-        merkleNodePO.setTreeType(treeType);
         merkleNodePO = merkleDao.queryMerkleNodeByHash(merkleNodePO);
         if (null == merkleNodePO) {
             return null;

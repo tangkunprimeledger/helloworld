@@ -1,8 +1,10 @@
 package com.higgs.trust.slave.core.api.impl;
 
 import com.higgs.trust.slave.api.BlockChainService;
+import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
+import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
@@ -25,7 +27,8 @@ import java.util.List;
  */
 @Slf4j @Service public class BlockChainServiceImpl implements BlockChainService {
 
-    @Autowired private PendingStateImpl pendingState;
+    @Autowired
+    private PendingStateImpl pendingState;
 
     @Autowired
     private NodeState nodeState;
@@ -33,9 +36,10 @@ import java.util.List;
     @Autowired
     private BlockChainClient blockChainClient;
 
-    @Autowired private BlockRepository blockRepository;
+    @Autowired
+    private BlockRepository blockRepository;
 
-    @Override public RespData submitTransaction(List<SignedTransaction> transactions) {
+    @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
         List<TransactionVO> transactionVOList = new ArrayList<>();
         // when master is running , then add txs into local pending txs
@@ -50,11 +54,33 @@ import java.util.List;
             respData.setData(transactionVOList);
         } else {
             //when it is not master ,then send txs to master node
-            //TODO test
             log.info("this node is not  master, send txs:{} to master node", transactions);
             respData = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
         }
 
+        return respData;
+    }
+
+    @Override public RespData submitTransaction(SignedTransaction tx) {
+        List<SignedTransaction> transactions = new ArrayList<>();
+        transactions.add(tx);
+        RespData respData = submitTransactions(transactions);
+        if (null == respData.getData()) {
+            try {
+                respData = AppContext.TX_HANDLE_RESULT_MAP.poll(tx.getCoreTx().getTxId(), 1000);
+            } catch (InterruptedException e) {
+                log.error("tx handle exception. ", e);
+                respData = new RespData();
+                respData.setCode(RespCodeEnum.SYS_FAIL.getRespCode());
+                respData.setMsg("handle transaction exception.");
+            }
+        }
+
+        if (null == respData) {
+            respData = new RespData();
+            respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
+            respData.setMsg("tx handle timeout");
+        }
         return respData;
     }
 

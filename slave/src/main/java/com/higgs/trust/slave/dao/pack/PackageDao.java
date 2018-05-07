@@ -88,8 +88,7 @@ import java.util.Set;
      * get height list for process
      *
      * @param maxBlockHeight
-     * @param limit
      * @return
      */
-    List<Long> getHeightListForProcess(@Param("maxBlockHeight") Long maxBlockHeight, @Param("limit") int limit);
+    List<Long> getHeightListForProcess(@Param("maxBlockHeight") Long maxBlockHeight);
 }
