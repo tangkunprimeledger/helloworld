@@ -166,10 +166,6 @@ public class SendStorage {
     }
 
     public SendCommandStatistics getSendCommandStatistics(String key) {
-        if(null == key){
-            log.warn("key is null");
-            return null;
-        }
         submitMap = getSubmitMap();
         return submitMap.get(key);
     }
@@ -265,22 +261,18 @@ public class SendStorage {
 
     private void gc() {
         try {
+            openTx();
             gcSet = getGcSet();
             if (gcSet.size() == 0) {
                 return;
             }
             Set<String> deleteKeys = new HashSet<>();
             for (String key : gcSet) {
-                if(null == key){
-                    log.warn("key is null");
-                    continue;
-                }
                 log.info("sendQueue gc {}", submitMap.get(key));
                 submitMap.remove(key);
                 deleteKeys.add(key);
             }
             gcSet.removeAll(deleteKeys);
-            openTx();
             try{
                 commit();
             }finally {

@@ -139,7 +139,14 @@ public class ConsensusContext {
                     sendStorage.removeFromSendQueue();
                     continue;
                 }
-                SendCommandStatistics sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
+                final SendCommandStatistics sendCommandStatistics;
+
+                sendStorage.openTx();
+                try{
+                    sendCommandStatistics = sendStorage.getSendCommandStatistics(key);
+                }finally {
+                    sendStorage.closeTx();
+                }
 
                 if (null == sendCommandStatistics) {
                     log.warn("key {} sendCommandStatistics is null", key);
