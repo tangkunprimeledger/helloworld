@@ -166,6 +166,10 @@ public class SendStorage {
     }
 
     public SendCommandStatistics getSendCommandStatistics(String key) {
+        if(null == key){
+            log.warn("key is null");
+            return null;
+        }
         submitMap = getSubmitMap();
         return submitMap.get(key);
     }

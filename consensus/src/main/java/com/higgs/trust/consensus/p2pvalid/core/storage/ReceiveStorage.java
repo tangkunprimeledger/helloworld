@@ -198,7 +198,9 @@ public class ReceiveStorage {
      * @return ReceiveCommandStatistics
      */
     public ReceiveCommandStatistics getReceiveCommandStatistics(String key) {
-        ConsensusAssert.notNull(key);
+        if(null == key){
+            log.warn("key is null");
+        }
         receiveStatisticsMap = getReceiveStatisticsMap();
         return receiveStatisticsMap.get(key);
     }
