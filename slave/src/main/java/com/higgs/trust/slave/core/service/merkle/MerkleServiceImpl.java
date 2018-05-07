@@ -538,6 +538,8 @@ import java.util.concurrent.ConcurrentHashMap;
             merkleNode = nodeMap.get(key);
         }
         if (null == merkleNode) {
+            log.info("[getMerkleNodeByIndex] merkleNode doesn't exist in nodeMap, start to query db, key={}, type={}",
+                key, type);
             merkleNode = merkleRepository
                 .queryMerkleNodeByIndex(Integer.parseInt(parseKey(key)[0]), Long.parseLong(parseKey(key)[1]), type);
             if (null == merkleNode) {
@@ -652,6 +654,9 @@ import java.util.concurrent.ConcurrentHashMap;
         }
 
         if (leafIndex == -1L || null == merkleNode) {
+            log.info(
+                "[getMerkleNodeByHash] merkleNode doesn't exist in nodeMap, start to query db, nodeHash={},type={}",
+                nodeHash, type);
             // this means hash(obj) doesn't exist in nodeMap, we need to find hash(obj) in table merkle_node  with exact treeType
             merkleNode = merkleRepository.queryMerkleNodeByHash(nodeHash, 1, type);
         }
