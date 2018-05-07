@@ -130,15 +130,16 @@ public class PackageScheduler {
         Long maxBlockHeight = blockRepository.getMaxHeight();
 
         if (null == maxBlockHeight) {
-            log.error("please initial Genesis block. ");
+            log.error("please initial Genesis block.");
             //TODO 添加告警
             return;
         }
+
         // get height list for process, height must max maxBlockHeight and sort by height asc in mysql
         // when package status equals 'PERSISTING', block already persist, but package doesn't handle finish
-        List<Long> heightList = packageRepository.getHeightListForProcess(maxBlockHeight - 1);
+        List<Long> heightList = packageRepository.getHeightListForProcess(maxBlockHeight);
 
-        // if list is null or empty，there are no package for submit
+        // if list is null or empty，there are no package for process
         if (CollectionUtils.isEmpty(heightList)) {
             return;
         }
@@ -146,11 +147,11 @@ public class PackageScheduler {
         for (Long height : heightList) {
             //get max block height
             maxBlockHeight = blockRepository.getMaxHeight();
-            if (height .equals(maxBlockHeight) || height.equals(maxBlockHeight + 1)) {
+            if (height.equals(maxBlockHeight) || height.equals(maxBlockHeight + 1)) {
                 try {
                     packageProcess.process(height);
                 } catch (Throwable e) {
-                    log.error("package scheduled execute failed", e);
+                    log.error("package process scheduled execute failed", e);
                 }
             }
         }

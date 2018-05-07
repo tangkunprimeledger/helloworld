@@ -1,0 +1,16 @@
+{
+  "测试ID": 0,
+  "body": {
+    "type":"FREEZE",
+    "index":1,
+    "bizFlowNo": "freeze_flow_no_001_",
+    "accountNo":null,
+    "amount":-1,
+    "contractAddr":null,
+    "contractArgs":null,
+    "remark":null
+  },
+  "type": "RS",
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "冻结账户单元测试"
+}

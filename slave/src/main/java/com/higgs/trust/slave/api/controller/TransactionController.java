@@ -24,9 +24,16 @@ public class TransactionController {
 
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     @ResponseBody
-    public RespData submitTransaction(@RequestBody List<SignedTransaction> transactions) {
-        log.info("submit transaction receive parameter :{}", transactions);
-        return blockChainService.submitTransaction(transactions);
+    public RespData submitTransactions(@RequestBody List<SignedTransaction> transactions) {
+        log.info("submit transactions receive parameter :{}", transactions);
+        return blockChainService.submitTransactions(transactions);
+    }
+
+    @RequestMapping(value = "/post", method = RequestMethod.POST)
+    @ResponseBody
+    public RespData submitTransaction(@RequestBody SignedTransaction transaction) {
+        log.info("submit transaction receive parameter :{}", transaction);
+        return blockChainService.submitTransaction(transaction);
     }
 
 }

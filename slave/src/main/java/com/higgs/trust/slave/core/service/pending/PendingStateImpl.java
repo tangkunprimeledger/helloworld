@@ -74,6 +74,10 @@ import java.util.List;
             pendingTxRepository.saveWithStatus(signedTransaction, PendingTxStatusEnum.INIT, null);
         });
 
+        // if all transaction received success, RespData will set data 'null'
+        if (transactionVOList.size() < 1) {
+            return null;
+        }
         return transactionVOList;
     }
 

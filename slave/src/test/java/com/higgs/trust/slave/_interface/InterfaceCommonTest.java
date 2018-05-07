@@ -144,6 +144,22 @@ import static org.testng.Assert.assertEquals;
     }
 
     /**
+     * 根据传入的json反序列化为对象
+     * @param content
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    protected  <T> T getObject(String content,Class<T> clazz){
+        if(StringUtils.isEmpty(content)){
+            return null;
+        }
+
+        content= content.replaceAll("\"@type\":\"com.alibaba.fastjson.JSONObject\",","");
+        return JSON.parseObject(content, clazz);
+    }
+
+    /**
      * 从body中获取action对象实体,同时设置actionType
      *
      * @param param

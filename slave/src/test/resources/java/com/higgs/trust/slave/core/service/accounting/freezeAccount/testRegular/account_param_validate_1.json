@@ -1,0 +1,73 @@
+{
+  "测试ID": 0,
+  "body": {
+    "freeze": {
+      "type": "FREEZE",
+      "index": 1,
+      "bizFlowNo": "2321321323",
+      "accountNo": "account_no_005_1",
+      "amount": 4,
+      "contractAddr": null,
+      "contractArgs": null,
+      "remark": null
+    },
+    "credit": {
+      "type": "OPEN_ACCOUNT",
+      "index": 1,
+      "chainOwner": "a",
+      "dataOwner": "b",
+      "accountNo": "account_no_005_1",
+      "currency": "CNY",
+      "fundDirection": "CREDIT"
+    },
+    "debit": {
+      "type": "OPEN_ACCOUNT",
+      "index": 1,
+      "chainOwner": "a",
+      "dataOwner": "b",
+      "accountNo": "account_no_005_2",
+      "currency": "CNY",
+      "fundDirection": "DEBIT"
+    },
+    "accounting": {
+      "type": "ACCOUNTING",
+      "index": 1,
+      "bizFlowNo": "123",
+      "debitTradeInfo": [
+        {
+          "accountNo": "account_no_005_2",
+          "amount": "5"
+        }
+      ],
+      "creditTradeInfo": [
+        {
+          "accountNo": "account_no_005_1",
+          "amount": "5"
+        }
+      ],
+      "accountDate": "2018-05-03 16:13:41"
+    },
+    "policyId": "1000000"
+  },
+  "beforeSql": [
+    "TRUNCATE TABLE data_identity",
+    "TRUNCATE TABLE merkle_tree",
+    "TRUNCATE TABLE  merkle_node",
+    "TRUNCATE TABLE currency_info",
+    "TRUNCATE  TABLE account_info",
+    "TRUNCATE TABLE policy",
+    "INSERT INTO currency_info (currency, remark, create_time) VALUES ('CNY','renmingbi',now())",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('1000000', 'register', '[\"b\"]', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('1000001', 'register', '[\"b\"]', '2018-04-18 16:12:39.518')"
+  ],
+  "afterSql": [
+    "TRUNCATE TABLE data_identity",
+    "TRUNCATE TABLE merkle_tree",
+    "TRUNCATE TABLE  merkle_node",
+    "TRUNCATE TABLE currency_info",
+    "TRUNCATE TABLE policy",
+    "TRUNCATE  TABLE account_info;"
+  ],
+  "type": "RS",
+  "comment": "冻结账户单元测试"
+}
