@@ -1,12 +1,52 @@
 {
+  "server": {
+    "port": 8082
+  },
   "copycat": {
     "server": {
-      "address": "127.0.0.1:8800",
-      "cluster": "127.0.0.1:8800",
+      "address": "",
+      "cluster": "",
       "stateMachineClass": "com.higgs.trust.consensus.bft.example.StringStateMachine"
     },
     "client1": {
       "server": "127.0.0.1:8800"
+    }
+  },
+  "bftSmart": {
+    "systemConfigs": {
+      "myId": "2",
+      "myClientId":"1102",
+      "configs": {
+        "system.communication.useSenderThread": true,
+        "system.communication.defaultkeys": true,
+        "system.servers.num": "4",
+        "system.servers.f": "1",
+        "system.totalordermulticast.timeout": "2000",
+        "system.totalordermulticast.maxbatchsize": "400",
+        "system.totalordermulticast.nonces": "10",
+        "system.totalordermulticast.verifyTimestamps": false,
+        "system.communication.inQueueSize": "500000",
+        "system.communication.outQueueSize": "500000",
+        "system.communication.useSignatures": "0",
+        "system.communication.useMACs": "1",
+        "system.debug": "0",
+        "system.shutdownhook": true,
+        "system.totalordermulticast.state_transfer": true,
+        "system.totalordermulticast.highMark": "10000",
+        "system.totalordermulticast.revival_highMark": "10",
+        "system.totalordermulticast.timeout_highMark": "200",
+        "system.totalordermulticast.log": true,
+        "system.totalordermulticast.log_parallel": false,
+        "system.totalordermulticast.log_to_disk": false,
+        "system.totalordermulticast.sync_log": false,
+        "system.totalordermulticast.checkpoint_period": "1000",
+        "system.totalordermulticast.global_checkpoint_period": "120000",
+        "system.totalordermulticast.checkpoint_to_disk": false,
+        "system.totalordermulticast.sync_ckp": false,
+        "system.bft": true
+      },
+      "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030",
+      "stateMachineClass": "com.higgs.trust.consensus.bftsmart.started.example.StringStateMachine"
     }
   }
 }
