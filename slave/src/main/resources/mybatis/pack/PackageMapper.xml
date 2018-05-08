@@ -88,6 +88,12 @@
         from package where status=#{status} order by height asc
     </select>
 
+    <select id="queryHeightsByStatusAndLimit" resultType="java.lang.Long" parameterType="object">
+        select
+        height
+        from package where status=#{status} order by height asc  limit 0,#{limit}
+    </select>
+
     <select id="getMinHeightWithStatus" resultType="long" parameterType="object">
         select min(height) from package
         where status in

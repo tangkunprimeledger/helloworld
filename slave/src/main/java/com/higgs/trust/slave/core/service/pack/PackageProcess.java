@@ -123,15 +123,6 @@ import java.util.concurrent.ExecutorService;
             return;
         }
 
-        Long height = pack.getHeight();
-        if (Constant.GENESIS_HEIGHT != height - 1) {
-            Package lastPack = packageRepository.load(height - 1);
-            if (PackageStatusEnum.PERSISTING != lastPack.getStatus()) {
-                log.info("last package is not persisting, waiting!");
-                throw new SlaveException(SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH);
-            }
-        }
-
         // check next package height
         Long maxBlockHeight = blockRepository.getMaxHeight();
         if (!pack.getHeight().equals(maxBlockHeight + 1)) {

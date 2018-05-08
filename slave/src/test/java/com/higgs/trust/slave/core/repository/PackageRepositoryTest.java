@@ -155,4 +155,11 @@ public class PackageRepositoryTest extends BaseTest {
       // List<Long> heightList = packageRepository.getHeightListForProcess(4L);
        // System.out.println(heightList);
     }
+
+
+    @Test
+    public void getHeightsByStatusAndLimit() {
+         List<Long> heightList = packageRepository.getHeightsByStatusAndLimit("1", 20);
+        System.out.println(heightList);
+    }
 }

@@ -34,6 +34,7 @@ import java.util.List;
 public class PackageScheduler {
 
     private static final int PACKAGE_LIMIT = 20;
+
     @Autowired
     private PendingState pendingState;
 
@@ -135,10 +136,16 @@ public class PackageScheduler {
             //TODO 添加告警
             return;
         }
+        //check if the next package to be process is exited
+        Long height = maxBlockHeight + 1;
+        Package pack = packageRepository.load(height);
+        if (null == pack) {
+            return;
+        }
 
         // process  next block as height = maxBlockHeight + 1
         try {
-            packageProcess.process(maxBlockHeight + 1);
+            packageProcess.process(height);
         } catch (Throwable e) {
             log.error("package process scheduled execute failed", e);
         }
@@ -156,7 +163,7 @@ public class PackageScheduler {
         }
 
         // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
-        List<Long> heightList = packageRepository.getHeightListByStatus(PackageStatusEnum.PERSISTING.getCode());
+        List<Long> heightList = packageRepository.getHeightsByStatusAndLimit(PackageStatusEnum.PERSISTING.getCode(), PACKAGE_LIMIT);
         // if list is null or empty，there are no package for process
         if (CollectionUtils.isEmpty(heightList)) {
             return;
@@ -178,7 +185,7 @@ public class PackageScheduler {
         }
 
         // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
-        List<Long> heightList = packageRepository.getHeightListByStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
+        List<Long> heightList = packageRepository.getHeightsByStatusAndLimit(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode(), PACKAGE_LIMIT);
 
         // if list is null or empty，there are no package for process
         if (CollectionUtils.isEmpty(heightList)) {
