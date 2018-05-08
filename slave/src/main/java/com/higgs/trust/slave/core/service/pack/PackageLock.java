@@ -90,6 +90,7 @@ public class PackageLock {
 
                 // if package status is not 'PERSISTING', return directly.
                 if (PackageStatusEnum.PERSISTING != pack.getStatus()) {
+                    log.info("Persisting and submit do not get lock");
                     return;
                 }
                 packageService.persistConsensus(pack);
@@ -120,6 +121,7 @@ public class PackageLock {
 
                 // if package status is not 'WAIT_PERSIST_CONSENSUS', return directly.
                 if (PackageStatusEnum.WAIT_PERSIST_CONSENSUS != pack.getStatus()) {
+                    log.info("Persisted  do not get lock");
                     return;
                 }
 

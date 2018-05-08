@@ -83,7 +83,8 @@ public class PackageScheduler {
         }
 
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 packageRepository.save(pack);
                 int update = pendingState.packagePendingTransactions(pack.getSignedTxList(), pack.getHeight());
                 if (update != pack.getSignedTxList().size()) {
@@ -135,28 +136,14 @@ public class PackageScheduler {
             return;
         }
 
-        // get height list for process, height must max maxBlockHeight and sort by height asc in mysql
-        // when package status equals 'PERSISTING', block already persist, but package doesn't handle finish
-        List<Long> heightList = packageRepository.getHeightListForProcess(maxBlockHeight);
-
-        // if list is null or empty，there are no package for process
-        if (CollectionUtils.isEmpty(heightList)) {
-            return;
+        // process  next block as height = maxBlockHeight + 1
+        try {
+            packageProcess.process(maxBlockHeight + 1);
+        } catch (Throwable e) {
+            log.error("package process scheduled execute failed", e);
         }
 
-        for (Long height : heightList) {
-            //get max block height
-            maxBlockHeight = blockRepository.getMaxHeight();
-            if (height.equals(maxBlockHeight) || height.equals(maxBlockHeight + 1)) {
-                try {
-                    packageProcess.process(height);
-                } catch (Throwable e) {
-                    log.error("package process scheduled execute failed", e);
-                }
-            }
-        }
     }
-
 
 
     /**
@@ -170,13 +157,13 @@ public class PackageScheduler {
 
         // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
         List<Long> heightList = packageRepository.getHeightListByStatus(PackageStatusEnum.PERSISTING.getCode());
-
         // if list is null or empty，there are no package for process
         if (CollectionUtils.isEmpty(heightList)) {
             return;
         }
-
+        log.info("persist to consensus heightList:{}", heightList);
         for (Long height : heightList) {
+            log.info("persist to consensus height = {}", height);
             packageLock.lockPersistingAndSubmit(height);
         }
     }
@@ -197,8 +184,9 @@ public class PackageScheduler {
         if (CollectionUtils.isEmpty(heightList)) {
             return;
         }
-
+        log.info("persisted heightList:{}", heightList);
         for (Long height : heightList) {
+            log.info("persisted  height = {}", height);
             packageLock.lockAndPersisted(height);
         }
     }

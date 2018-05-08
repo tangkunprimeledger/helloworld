@@ -84,11 +84,4 @@ import java.util.Set;
      */
     long countWithStatus(@Param("statusSet") Set<String> statusSet);
 
-    /**
-     * get height list for process
-     *
-     * @param maxBlockHeight
-     * @return
-     */
-    List<Long> getHeightListForProcess(@Param("maxBlockHeight") Long maxBlockHeight);
 }

@@ -119,13 +119,6 @@
         from package where height=#{height} for update;
     </select>
 
-    <select id="getHeightListForProcess" resultType="java.lang.Long">
-        select height from package
-        where status IN ('RECEIVED', 'VALIDATING', 'VALIDATED', 'PERSISTING', 'WAIT_VALIDATE_CONSENSUS', 'WAIT_PERSIST_CONSENSUS')
-        AND height IN (#{maxBlockHeight}, #{maxBlockHeight} + 1)
-        ORDER BY height asc
-    </select>
-
     <update id="updateStatus" parameterType="object">
         update package set status=#{to}, update_time=now(3)
         where height=#{height} and status=#{from}

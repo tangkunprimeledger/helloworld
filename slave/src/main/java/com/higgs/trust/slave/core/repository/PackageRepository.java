@@ -195,7 +195,4 @@ import java.util.Set;
         return packageBO;
     }
 
-    public List<Long> getHeightListForProcess(Long maxBlockHeight) {
-        return packageDao.getHeightListForProcess(maxBlockHeight);
-    }
 }
