@@ -190,13 +190,6 @@ import org.springframework.transaction.support.TransactionTemplate;
             return;
         }
 
-        // check package height
-        if (!pack.getHeight().equals(blockRepository.getMaxHeight())) {
-            log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),
-                blockRepository.getMaxHeight());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
-        }
-
         packageService.persistConsensus(pack);
         // update status
         packageService.statusChange(pack, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
