@@ -1,4 +1,4 @@
-package _interface.com.higgs.trust.slave.core.service.snapshot;
+package com.higgs.trust.slave.core.service.snapshot;
 
 import org.testng.annotations.Test;
 

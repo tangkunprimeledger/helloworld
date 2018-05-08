@@ -1,4 +1,4 @@
-package _interface.com.higgs.trust.slave.core.service;
+package com.higgs.trust.slave.core.service;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.BaseTest;
