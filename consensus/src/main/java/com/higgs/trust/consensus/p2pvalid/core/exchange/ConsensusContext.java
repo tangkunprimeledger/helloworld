@@ -63,12 +63,12 @@ public class ConsensusContext {
             return thread;
         });
 
-        new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
-            Thread thread = new Thread(r);
-            thread.setName("command send thread");
-            thread.setDaemon(true);
-            return thread;
-        }).execute(this::send);
+//        new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
+//            Thread thread = new Thread(r);
+//            thread.setName("command send thread");
+//            thread.setDaemon(true);
+//            return thread;
+//        }).execute(this::send);
 
         new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
             Thread thread = new Thread(r);
@@ -79,17 +79,18 @@ public class ConsensusContext {
     }
 
     public void submit(ValidCommandWrap validCommandWrap) {
-        sendStorage.openTx();
-        try {
-            String key = sendStorage.submit(validCommandWrap);
-            sendStorage.addSendQueue(key);
-            sendStorage.commit();
-        }catch (Throwable e){
-            sendStorage.rollBack();
-            throw new RuntimeException(e);
-        }finally {
-            sendStorage.closeTx();
-        }
+        receive(validCommandWrap);
+//        sendStorage.openTx();
+//        try {
+//            String key = sendStorage.submit(validCommandWrap);
+//            sendStorage.addSendQueue(key);
+//            sendStorage.commit();
+//        }catch (Throwable e){
+//            sendStorage.rollBack();
+//            throw new RuntimeException(e);
+//        }finally {
+//            sendStorage.closeTx();
+//        }
     }
 
     /**
