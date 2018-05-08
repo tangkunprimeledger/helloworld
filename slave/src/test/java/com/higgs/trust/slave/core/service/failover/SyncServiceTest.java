@@ -65,14 +65,14 @@ import static org.testng.Assert.assertEquals;
     }
 
     @Test public void testSyncGetClusterHeightFailed() {
-        when(blockSyncService.getClusterHeight(any())).thenReturn(null);
+        when(blockSyncService.getClusterHeight(anyInt())).thenReturn(null);
         syncService.sync();
         verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
         verify(nodeState, times(0)).isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync);
     }
 
     @Test public void testSyncInThreshold() {
-        when(blockSyncService.getClusterHeight(any())).thenReturn(101L);
+        when(blockSyncService.getClusterHeight(anyInt())).thenReturn(101L);
         when(properties.getThreshold()).thenReturn(100);
         syncService.sync();
         verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
@@ -80,7 +80,7 @@ import static org.testng.Assert.assertEquals;
     }
 
     @Test public void testSyncOutThreshold() {
-        when(blockSyncService.getClusterHeight(any())).thenReturn(102L);
+        when(blockSyncService.getClusterHeight(anyInt())).thenReturn(102L);
         when(properties.getThreshold()).thenReturn(100);
         syncService.sync();
         verify(nodeState, times(1)).isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync);
@@ -325,8 +325,8 @@ import static org.testng.Assert.assertEquals;
             return blockHeight.addAndGet(getHeaderTime.incrementAndGet() % 2 == 0 ? headerStep : 0);
         });
         when(properties.getThreshold()).thenReturn(50);
-        when(blockSyncService.getClusterHeight(any())).thenReturn(clusterHeight);
-        when(cache.getMinHeight()).thenReturn(SyncPackageCache.INIT_HEIGHT, cacheMinHeight);
+        when(blockSyncService.getClusterHeight(anyInt())).thenReturn(clusterHeight);
+        when(cache.getMinHeight()).thenReturn(clusterHeight, cacheMinHeight);
         when(properties.getTryTimes()).thenReturn(times);
         when(properties.getBlockStep()).thenReturn(blockStep);
         when(properties.getHeaderStep()).thenReturn(headerStep);
