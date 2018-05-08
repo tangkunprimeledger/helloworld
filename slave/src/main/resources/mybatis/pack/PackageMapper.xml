@@ -88,6 +88,12 @@
         from package where status=#{status} order by height asc
     </select>
 
+    <select id="queryHeightsByStatusAndLimit" resultType="java.lang.Long" parameterType="object">
+        select
+        height
+        from package where status=#{status} order by height asc  limit 0,#{limit}
+    </select>
+
     <select id="getMinHeightWithStatus" resultType="long" parameterType="object">
         select min(height) from package
         where status in
@@ -117,13 +123,6 @@
         select
         <include refid="baseColumnList"/>
         from package where height=#{height} for update;
-    </select>
-
-    <select id="getHeightListForProcess" resultType="java.lang.Long">
-        select height from package
-        where status IN ('RECEIVED', 'VALIDATING', 'VALIDATED', 'PERSISTING', 'WAIT_VALIDATE_CONSENSUS', 'WAIT_PERSIST_CONSENSUS')
-        AND height IN (#{maxBlockHeight}, #{maxBlockHeight} + 1)
-        ORDER BY height asc
     </select>
 
     <update id="updateStatus" parameterType="object">

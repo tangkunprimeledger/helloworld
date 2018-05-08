@@ -47,6 +47,19 @@ import static org.testng.Assert.*;
         verify(stateChangeListener, times(1)).stateChanged(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
     }
 
+    @Test public void testRegisterStateListenerNull() {
+        nodeState.registerStateListener(null);
+        nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
+    }
+
+    @Test public void testRegisterStateListenerDuplicate() {
+        StateChangeListener stateChangeListener = mock(StateChangeListener.class);
+        nodeState.registerStateListener(stateChangeListener);
+        nodeState.registerStateListener(stateChangeListener);
+        nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
+        verify(stateChangeListener, times(1)).stateChanged(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
+    }
+
     @Test public void testRegisterMasterListener() {
         MasterChangeListener masterChangeListener = mock(MasterChangeListener.class);
         nodeState.registerMasterListener(masterChangeListener);
@@ -195,9 +208,9 @@ import static org.testng.Assert.*;
     }
 
     @DataProvider public Object[][] offlineException() {
-        return new Object[][] {new Object[] {NodeStateEnum.Starting},
-            new Object[] {NodeStateEnum.AutoSync}, new Object[] {NodeStateEnum.ArtificialSync},
-            new Object[] {NodeStateEnum.Running}, new Object[] {NodeStateEnum.Offline},};
+        return new Object[][] {new Object[] {NodeStateEnum.Starting}, new Object[] {NodeStateEnum.AutoSync},
+            new Object[] {NodeStateEnum.ArtificialSync}, new Object[] {NodeStateEnum.Running},
+            new Object[] {NodeStateEnum.Offline},};
     }
 
     @Test(dataProvider = "offline") public void testChangeStateOffline(NodeStateEnum toState) {

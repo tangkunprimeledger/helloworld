@@ -72,7 +72,7 @@ class node {
     def selfCheck(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def selfCheckService = beans.getBean(SelfCheckingService.class)
-        def result = selfCheckService.selfCheck()
+        def result = selfCheckService.selfCheck(1)
         out.println("Self check result: $result")
     }
 

@@ -39,14 +39,13 @@ import java.util.List;
             return;
         }
         log.info("auto sync starting ...");
-        cache.clean();
         try {
             Long currentHeight = blockRepository.getMaxHeight();
-            Long latestHeight = null;
-            int tryTimes = 3;
+            Long clusterHeight = null;
+            int tryTimes = 0;
             do {
-                latestHeight = blockSyncService.getClusterHeight();
-                if (latestHeight != null) {
+                clusterHeight = blockSyncService.getClusterHeight(3);
+                if (clusterHeight != null) {
                     break;
                 }
                 try {
@@ -54,20 +53,21 @@ import java.util.List;
                 } catch (InterruptedException e) {
                     log.warn("self check error.", e);
                 }
-            } while (--tryTimes > 0);
-            if (latestHeight == null) {
+            } while (++tryTimes < properties.getTryTimes());
+            if (clusterHeight == null) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
             }
-            if (latestHeight <= currentHeight + properties.getThreshold()) {
+            if (clusterHeight <= currentHeight + properties.getThreshold()) {
                 nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
                 return;
             }
+            cache.reset(clusterHeight);
             do {
                 sync(currentHeight + 1, properties.getHeaderStep());
                 currentHeight = blockRepository.getMaxHeight();
                 //如果没有package接收，根据latestHeight判断是否在阈值内，否则，根据cache判断
-            } while (cache.getMinHeight() == SyncPackageCache.INIT_HEIGHT ?
-                latestHeight > currentHeight + properties.getThreshold() : currentHeight + 1 < cache.getMinHeight());
+            } while (cache.getMinHeight() <= clusterHeight ? clusterHeight > currentHeight + properties.getThreshold() :
+                currentHeight + 1 < cache.getMinHeight());
         } catch (SlaveException e) {
             log.error("auto sync block failed:{}", e.getCode().getDescription(), e);
             nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
@@ -154,6 +154,15 @@ import java.util.List;
     }
 
     /**
+     * receive package height
+     *
+     * @param height
+     */
+    public void receivePackHeight(long height) {
+        cache.receivePackHeight(height);
+    }
+
+    /**
      * get the blocks and validate it
      *
      * @param preHeader
@@ -161,7 +170,7 @@ import java.util.List;
      * @param size
      * @return
      */
-    
+
     private List<Block> getAndValidatingBlock(BlockHeader preHeader, long startHeight, int size) {
         int tryTimes = 0;
         List<Block> blocks = null;

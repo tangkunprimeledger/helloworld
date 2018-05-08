@@ -86,10 +86,6 @@ import java.util.concurrent.TimeUnit;
      * @return
      */
     @Override public Long getClusterHeight(String requestId, int size, long time) {
-        ResultListen resultListen = resultListenMap.get(requestId);
-        if (resultListen != null && resultListen.getResult() != null) {
-            return (Long)resultListen.getResult();
-        }
         client.submit(new ClusterHeightCmd(requestId, nodeState.getNodeName(), size));
         return registerAndGetResult(requestId, time);
     }
@@ -149,7 +145,7 @@ import java.util.concurrent.TimeUnit;
         }
     }
 
-    protected static class ResultListen {
+    static class ResultListen {
 
         @Getter private CountDownLatch latch = new CountDownLatch(1);
 
