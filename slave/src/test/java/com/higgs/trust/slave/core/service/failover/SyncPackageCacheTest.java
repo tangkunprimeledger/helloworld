@@ -28,25 +28,29 @@ import static org.testng.Assert.assertEquals;
 
     @Mock private NodeState nodeState;
 
+    long clusterHeight = 1L;
+
     @BeforeClass public void before() {
         MockitoAnnotations.initMocks(this);
     }
 
     @BeforeMethod public void beforMethod() {
-        packageCache.clean();
+
+        packageCache.reset(clusterHeight);
     }
 
     @Test public void testReceiveNot() {
         when(nodeState.isState(NodeStateEnum.AutoSync)).thenReturn(false);
-        packageCache.receivePackHeight(1L);
-        assertEquals(packageCache.getMinHeight(), SyncPackageCache.INIT_HEIGHT);
+        packageCache.receivePackHeight(2L);
+        assertEquals(packageCache.getMinHeight(), clusterHeight);
     }
 
     @Test public void testReceive() {
+        long clusterHeight = 1L;
         when(nodeState.isState(NodeStateEnum.AutoSync)).thenReturn(true);
-        packageCache.clean();
-        assertEquals(packageCache.getMinHeight(), SyncPackageCache.INIT_HEIGHT);
-        assertEquals(packageCache.getLatestHeight(), SyncPackageCache.INIT_HEIGHT);
+        packageCache.reset(clusterHeight);
+        assertEquals(packageCache.getMinHeight(), clusterHeight);
+        assertEquals(packageCache.getLatestHeight(), clusterHeight);
 
         when(failoverProperties.getThreshold()).thenReturn(100);
         when(failoverProperties.getKeepSize()).thenReturn(10);
@@ -150,7 +154,7 @@ import static org.testng.Assert.assertEquals;
         assertEquals(packageCache.getLatestHeight(), 21L);
     }
 
-    @Test public void testClean() {
+    @Test public void testReset() {
         when(nodeState.isState(NodeStateEnum.AutoSync)).thenReturn(true);
         when(failoverProperties.getThreshold()).thenReturn(100);
         when(failoverProperties.getKeepSize()).thenReturn(10);
@@ -160,36 +164,10 @@ import static org.testng.Assert.assertEquals;
         do {
             packageCache.receivePackHeight(height);
         } while (++height <= 100);
-        packageCache.clean();
-        assertEquals(packageCache.getMinHeight(), SyncPackageCache.INIT_HEIGHT);
-        assertEquals(packageCache.getLatestHeight(), SyncPackageCache.INIT_HEIGHT);
-    }
-
-    @Test public void testStateChanged() {
-        when(nodeState.isState(NodeStateEnum.AutoSync)).thenReturn(true);
-        when(failoverProperties.getThreshold()).thenReturn(100);
-        when(failoverProperties.getKeepSize()).thenReturn(10);
-
-        long height = 1L;
-        do {
-            packageCache.receivePackHeight(height);
-        } while (++height <= 100);
-        packageCache.stateChanged(null, null);
-        assertEquals(packageCache.getMinHeight(), 1L);
-        assertEquals(packageCache.getLatestHeight(), 100L);
-
-        packageCache.stateChanged(NodeStateEnum.Starting, NodeStateEnum.Running);
-        assertEquals(packageCache.getMinHeight(), 1L);
-        assertEquals(packageCache.getLatestHeight(), 100L);
-
-        packageCache.stateChanged(NodeStateEnum.AutoSync, NodeStateEnum.Running);
-        assertEquals(packageCache.getMinHeight(), SyncPackageCache.INIT_HEIGHT);
-        assertEquals(packageCache.getLatestHeight(), SyncPackageCache.INIT_HEIGHT);
-    }
-
-    @Test public void testAfterPropertiesSet() {
-        packageCache.afterPropertiesSet();
-        verify(nodeState).registerStateListener(packageCache);
+        long clusterHeight = 10;
+        packageCache.reset(clusterHeight);
+        assertEquals(packageCache.getMinHeight(), clusterHeight);
+        assertEquals(packageCache.getLatestHeight(), clusterHeight);
     }
 
 }
