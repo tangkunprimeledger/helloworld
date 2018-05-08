@@ -21,19 +21,26 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @date 2018/04/13 11:19
  * @desc package lock
  */
-@Service @Slf4j public class PackageLock {
-    @Autowired private PackageRepository packageRepository;
+@Service
+@Slf4j
+public class PackageLock {
+    @Autowired
+    private PackageRepository packageRepository;
 
-    @Autowired private TransactionTemplate txNested;
+    @Autowired
+    private TransactionTemplate txNested;
 
-    @Autowired private PackageService packageService;
+    @Autowired
+    private PackageService packageService;
 
-    @Autowired private LogReplicateHandler logReplicateHandler;
+    @Autowired
+    private LogReplicateHandler logReplicateHandler;
 
     public void lockAndSubmit(Long height) {
 
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
