@@ -162,7 +162,7 @@ public class PackageScheduler {
     /**
      * process package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.persist2consensus}")
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
     public void doPersistingToConsensus() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
@@ -184,7 +184,7 @@ public class PackageScheduler {
     /**
      * process package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.persisted}")
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
     public void doPersisted() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
