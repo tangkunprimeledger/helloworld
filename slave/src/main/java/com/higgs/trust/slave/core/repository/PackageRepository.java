@@ -120,12 +120,27 @@ import java.util.Set;
     }
 
     /**
-     * get package list for validating
+     * get package list
      *
      * @return
      */
     public List<Long> getHeightListByStatus(String status) {
         List<Long> heightList = packageDao.queryHeightListByStatus(status);
+
+        if (CollectionUtils.isEmpty(heightList)) {
+            return null;
+        }
+
+        return heightList;
+    }
+
+    /**
+     * get package list
+     *
+     * @return
+     */
+    public List<Long> getHeightsByStatusAndLimit(String status, int limit) {
+        List<Long> heightList = packageDao.queryHeightsByStatusAndLimit(status, limit);
 
         if (CollectionUtils.isEmpty(heightList)) {
             return null;
@@ -195,7 +210,4 @@ import java.util.Set;
         return packageBO;
     }
 
-    public List<Long> getHeightListForProcess(Long maxBlockHeight) {
-        return packageDao.getHeightListForProcess(maxBlockHeight);
-    }
 }

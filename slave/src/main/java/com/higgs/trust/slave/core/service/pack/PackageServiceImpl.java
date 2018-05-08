@@ -95,6 +95,8 @@ import java.util.Set;
 
         //get max height, add 1 for next package height
         pack.setHeight(height + 1);
+        //set status = INIT
+        pack.setStatus(PackageStatusEnum.INIT);
         return pack;
     }
 
