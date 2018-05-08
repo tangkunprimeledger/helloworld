@@ -33,6 +33,8 @@ import java.util.List;
 @Slf4j
 public class PackageScheduler {
 
+    private static final int PACKAGE_LIMIT = 20;
+
     @Autowired
     private PendingState pendingState;
 
@@ -81,9 +83,9 @@ public class PackageScheduler {
             return;
         }
 
-        pack.setStatus(PackageStatusEnum.INIT);
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 packageRepository.save(pack);
                 int update = pendingState.packagePendingTransactions(pack.getSignedTxList(), pack.getHeight());
                 if (update != pack.getSignedTxList().size()) {
@@ -134,26 +136,65 @@ public class PackageScheduler {
             //TODO 添加告警
             return;
         }
+        //check if the next package to be process is exited
+        Long height = maxBlockHeight + 1;
+        Package pack = packageRepository.load(height);
+        if (null == pack) {
+            return;
+        }
 
-        // get height list for process, height must max maxBlockHeight and sort by height asc in mysql
-        // when package status equals 'PERSISTING', block already persist, but package doesn't handle finish
-        List<Long> heightList = packageRepository.getHeightListForProcess(maxBlockHeight);
+        // process  next block as height = maxBlockHeight + 1
+        try {
+            packageProcess.process(height);
+        } catch (Throwable e) {
+            log.error("package process scheduled execute failed", e);
+        }
+
+    }
+
+
+    /**
+     * process package
+     */
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
+    public void doPersistingToConsensus() {
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            return;
+        }
+
+        // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
+        List<Long> heightList = packageRepository.getHeightsByStatusAndLimit(PackageStatusEnum.PERSISTING.getCode(), PACKAGE_LIMIT);
+        // if list is null or empty，there are no package for process
+        if (CollectionUtils.isEmpty(heightList)) {
+            return;
+        }
+        log.info("persist to consensus heightList:{}", heightList);
+        for (Long height : heightList) {
+            log.info("persist to consensus height = {}", height);
+            packageLock.lockPersistingAndSubmit(height);
+        }
+    }
+
+    /**
+     * process package
+     */
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
+    public void doPersisted() {
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            return;
+        }
+
+        // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
+        List<Long> heightList = packageRepository.getHeightsByStatusAndLimit(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode(), PACKAGE_LIMIT);
 
         // if list is null or empty，there are no package for process
         if (CollectionUtils.isEmpty(heightList)) {
             return;
         }
-
+        log.info("persisted heightList:{}", heightList);
         for (Long height : heightList) {
-            //get max block height
-            maxBlockHeight = blockRepository.getMaxHeight();
-            if (height.equals(maxBlockHeight) || height.equals(maxBlockHeight + 1)) {
-                try {
-                    packageProcess.process(height);
-                } catch (Throwable e) {
-                    log.error("package process scheduled execute failed", e);
-                }
-            }
+            log.info("persisted  height = {}", height);
+            packageLock.lockAndPersisted(height);
         }
     }
 }
