@@ -38,7 +38,7 @@ public class P2pConsensusControllerTest extends p2pBaseTest {
         int num = 3;
         while (num > 0) {
             log.info("wait for service registry ........................");
-            Thread.sleep(10000);
+            Thread.sleep(2000);
             ValidateCommand validateCommand = new ValidateCommand(header.getHeight()+ new Random().nextInt(1000), header);
             validConsensus.submit(validateCommand);
             num--;

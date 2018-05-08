@@ -113,9 +113,9 @@ public class SendStorage {
     @SuppressWarnings("unchecked")
     private void initStorageMap(){
         openTx();
+        submitMap = getSubmitMap();
+        sendQueue = getSendQueue();
         try{
-            submitMap = getSubmitMap();
-            sendQueue = getSendQueue();
             sendDelayQueue = getSendDelayQueue();
             gcSet = getGcSet();
             commit();
@@ -166,6 +166,7 @@ public class SendStorage {
     }
 
     public SendCommandStatistics getSendCommandStatistics(String key) {
+        submitMap = getSubmitMap();
         return submitMap.get(key);
     }
 
@@ -260,6 +261,7 @@ public class SendStorage {
 
     private void gc() {
         try {
+            openTx();
             gcSet = getGcSet();
             if (gcSet.size() == 0) {
                 return;
@@ -271,7 +273,6 @@ public class SendStorage {
                 deleteKeys.add(key);
             }
             gcSet.removeAll(deleteKeys);
-            openTx();
             try{
                 commit();
             }finally {
@@ -302,7 +303,6 @@ public class SendStorage {
      */
     public void addGCSet(String key) {
         gcSet = getGcSet();
-        ConsensusAssert.notNull(key);
         gcSet.add(key);
     }
 

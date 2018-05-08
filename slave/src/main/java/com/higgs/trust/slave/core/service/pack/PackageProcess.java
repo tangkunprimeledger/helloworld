@@ -64,20 +64,19 @@ import java.util.concurrent.ExecutorService;
                         packageFSM(pack);
                     }
                 } catch (SlaveException e) {
+                    transactionStatus.setRollbackOnly();
                     if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR == e.getCode()
                         || SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT == e.getCode()
                         || SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH == e.getCode()) {
-                        throw e;
+                        return;
                     }
                     log.error("slave exception. ", e);
-                    throw e;
                 } catch (Throwable e) {
+                    transactionStatus.setRollbackOnly();
                     if (e instanceof CannotAcquireLockException) {
                         log.warn("cannot acquire package lock, height={}", height);
                     } else {
                         log.error("package process exception. ", e);
-                        //terminal recycle
-                        throw e;
                     }
                 }
             }
