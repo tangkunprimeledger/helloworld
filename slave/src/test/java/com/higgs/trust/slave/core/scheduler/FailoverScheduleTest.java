@@ -70,7 +70,7 @@ import static org.testng.Assert.*;
         long height = 1L;
         when(nodeState.isState(NodeStateEnum.Running)).thenReturn(true);
         when(blockService.getMaxHeight()).thenReturn(height);
-        when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(null, height + 2);
         failoverSchedule.failover();
         verify(blockRepository, times(0)).getBlockHeader(anyLong());
@@ -95,7 +95,7 @@ import static org.testng.Assert.*;
         long height = 1L;
         when(nodeState.isState(NodeStateEnum.Running)).thenReturn(true);
         when(blockService.getMaxHeight()).thenReturn(height);
-        when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 2);
         when(packageRepository.load(height + 1)).thenReturn(null);
 
@@ -112,7 +112,7 @@ import static org.testng.Assert.*;
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
         when(blockService.getMaxHeight()).thenReturn(height - 1);
 
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 1);
         when(packageRepository.load(height)).thenReturn(null);
         when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
@@ -145,7 +145,7 @@ import static org.testng.Assert.*;
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
         when(blockService.getMaxHeight()).thenReturn(height - 1);
 
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 1);
         when(packageRepository.load(height)).thenReturn(null);
         when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
@@ -191,7 +191,7 @@ import static org.testng.Assert.*;
 
         //不存在比较高的初始package
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(null, height + 1);
 
         assertFalse(failoverSchedule.failover(height));
@@ -210,7 +210,7 @@ import static org.testng.Assert.*;
     @Test public void testFailoverHeight() {
         long height = 2L;
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 1);
         when(packageRepository.load(height)).thenReturn(null);
         when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
@@ -229,7 +229,7 @@ import static org.testng.Assert.*;
     @Test public void testFailoverBlock() {
         long height = 2L;
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 1);
         when(packageRepository.load(height)).thenReturn(null);
         when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);

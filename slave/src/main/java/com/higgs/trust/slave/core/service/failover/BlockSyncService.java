@@ -47,10 +47,20 @@ import java.util.List;
      * bft验证blockheader
      *
      * @param blockHeader blockheader
-     * @return 协议验证结果
+     * @return 协议验证结果, if timeout will return null
      */
     public Boolean bftValidating(BlockHeader blockHeader) {
-        Boolean aBoolean = clusterService.validatingHeader(blockHeader, nodeState.getConsensusWaitTime());
+        return bftValidating(blockHeader, nodeState.getConsensusWaitTime());
+    }
+
+    /**
+     * bft验证blockheader
+     *
+     * @param blockHeader blockheader
+     * @return 协议验证结果, if timeout will return null
+     */
+    public Boolean bftValidating(BlockHeader blockHeader, long waitTime) {
+        Boolean aBoolean = clusterService.validatingHeader(blockHeader, waitTime);
         if (log.isDebugEnabled()) {
             log.debug("the blockheader:{} validated result by bft :{}", blockHeader.getHeight(), aBoolean);
         }
@@ -62,8 +72,17 @@ import java.util.List;
      *
      * @return
      */
-    public Long getClusterHeight() {
-        Long clusterHeight = clusterService.getClusterHeight(3, nodeState.getConsensusWaitTime());
+    public Long getClusterHeight(int size) {
+        return getClusterHeight(size, nodeState.getConsensusWaitTime());
+    }
+
+    /**
+     * get the cluster height
+     *
+     * @return
+     */
+    public Long getClusterHeight(int size, long waitTime) {
+        Long clusterHeight = clusterService.getClusterHeight(size, waitTime);
         if (log.isDebugEnabled()) {
             log.debug("get the cluster height:{}", clusterHeight);
         }
@@ -130,6 +149,7 @@ import java.util.List;
             return false;
         }
         String txRootHash = txRootHashBuilder.buildTxs(block.getSignedTxList());
+
         if (!blockHeader.getStateRootHash().getTxRootHash().equalsIgnoreCase(txRootHash)) {
             if (log.isTraceEnabled()) {
                 log.trace("validating block: {} tx root hash failed.", blockHeader.getHeight());
@@ -203,6 +223,10 @@ import java.util.List;
      */
     public boolean validating(BlockHeader blockHeader) {
         if (blockHeader == null) {
+            return false;
+        }
+        if (blockHeader.getStateRootHash() == null || StringUtils
+            .isBlank(blockHeader.getStateRootHash().getTxRootHash())) {
             return false;
         }
         String currentHash = blockService.buildBlockHash(blockHeader);

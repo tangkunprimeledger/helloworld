@@ -43,9 +43,9 @@ import java.util.List;
         try {
             Long currentHeight = blockRepository.getMaxHeight();
             Long latestHeight = null;
-            int tryTimes = 3;
+            int tryTimes = 0;
             do {
-                latestHeight = blockSyncService.getClusterHeight();
+                latestHeight = blockSyncService.getClusterHeight(3);
                 if (latestHeight != null) {
                     break;
                 }
@@ -54,7 +54,7 @@ import java.util.List;
                 } catch (InterruptedException e) {
                     log.warn("self check error.", e);
                 }
-            } while (--tryTimes > 0);
+            } while (++tryTimes < properties.getTryTimes());
             if (latestHeight == null) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
             }
@@ -151,6 +151,15 @@ import java.util.List;
             blockStartHeight = blockStartHeight + blockSize;
             preHeader = headers.get(startIndex - 1);
         } while (startIndex < headerSize - 1);
+    }
+
+    /**
+     * receive package height
+     *
+     * @param height
+     */
+    public void receivePackHeight(long height) {
+        cache.receivePackHeight(height);
     }
 
     /**

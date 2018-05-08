@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.failover;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.managment.listener.StateChangeListener;
-import com.higgs.trust.slave.model.bo.Package;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -34,7 +33,7 @@ import org.springframework.stereotype.Component;
      *
      * @param currentHeight package height
      */
-    public synchronized void receivePackageHeight(long currentHeight) {
+    synchronized void receivePackHeight(long currentHeight) {
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
@@ -49,7 +48,7 @@ import org.springframework.stereotype.Component;
         if (currentHeight == latestHeight + 1) {
             latestHeight = currentHeight;
             if (latestHeight - minHeight >= properties.getThreshold()) {
-                if (properties.getKeepSize() > properties.getThreshold()) {
+                if (properties.getKeepSize() >= properties.getThreshold()) {
                     minHeight = currentHeight;
                 } else {
                     minHeight = currentHeight - properties.getKeepSize();
@@ -67,7 +66,7 @@ import org.springframework.stereotype.Component;
     /**
      * 清空缓存package
      */
-    public void clean() {
+    void clean() {
         latestHeight = INIT_HEIGHT;
         minHeight = INIT_HEIGHT;
     }
@@ -79,6 +78,7 @@ import org.springframework.stereotype.Component;
     }
 
     @Override public void afterPropertiesSet() {
+
         nodeState.registerStateListener(this);
     }
 }
