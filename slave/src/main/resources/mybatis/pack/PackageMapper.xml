@@ -122,9 +122,8 @@
     <select id="getHeightListForProcess" resultType="java.lang.Long">
         select height from package
         where status IN ('RECEIVED', 'VALIDATING', 'VALIDATED', 'PERSISTING', 'WAIT_VALIDATE_CONSENSUS', 'WAIT_PERSIST_CONSENSUS')
-        AND height > #{maxBlockHeight}
+        AND height IN (#{maxBlockHeight}, #{maxBlockHeight} + 1)
         ORDER BY height asc
-        limit #{limit}
     </select>
 
     <update id="updateStatus" parameterType="object">

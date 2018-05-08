@@ -122,7 +122,8 @@ IF NOT EXISTS `pending_transaction` (
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	`update_time` datetime (3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_pending_transation` (`tx_id`)
+	UNIQUE KEY `uniq_pending_transation` (`tx_id`),
+  INDEX `idx_height` (`height`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'pending transaction';
 
 CREATE TABLE
@@ -217,7 +218,8 @@ IF NOT EXISTS `merkle_node` (
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	`update_time` datetime (3) NOT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_idx` (`level`,`tree_type`,`index`)
+	UNIQUE KEY `uniq_idx` (`level`,`tree_type`,`index`),
+	UNIQUE KEY `uniq_idx_hash` (`node_hash`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'merkle node, this store the whole node info create merkle tree';
 
 CREATE TABLE
@@ -272,7 +274,8 @@ IF NOT EXISTS `transaction` (
 	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_tx_id` (`tx_id`)
+	UNIQUE KEY `uniq_tx_id` (`tx_id`),
+	INDEX `idx_block_height` (`block_height`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create transaction';
 
 CREATE TABLE

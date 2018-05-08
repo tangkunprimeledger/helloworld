@@ -36,6 +36,11 @@ public class SendStorage {
      */
     private final Lock txLock;
 
+    /**
+     * isolation lock to reduce the contention
+     */
+    private final Lock sendLock;
+
     private DB sendDB;
 
     private Condition sendQueueCondition;
@@ -49,7 +54,8 @@ public class SendStorage {
                 .transactionEnable()
                 .make();
         txLock = new ReentrantLock(true);
-        sendQueueCondition = txLock.newCondition();
+        sendLock = new ReentrantLock(true);
+        sendQueueCondition = sendLock.newCondition();
         initStorageMap();
         initThreadPool();
     }
@@ -62,7 +68,8 @@ public class SendStorage {
                 .transactionEnable()
                 .make();
         txLock = new ReentrantLock(true);
-        sendQueueCondition = txLock.newCondition();
+        sendLock = new ReentrantLock(true);
+        sendQueueCondition = sendLock.newCondition();
         initStorageMap();
         initThreadPool();
     }
@@ -106,9 +113,9 @@ public class SendStorage {
     @SuppressWarnings("unchecked")
     private void initStorageMap(){
         openTx();
+        submitMap = getSubmitMap();
+        sendQueue = getSendQueue();
         try{
-            submitMap = getSubmitMap();
-            sendQueue = getSendQueue();
             sendDelayQueue = getSendDelayQueue();
             gcSet = getGcSet();
             commit();
@@ -159,6 +166,7 @@ public class SendStorage {
     }
 
     public SendCommandStatistics getSendCommandStatistics(String key) {
+        submitMap = getSubmitMap();
         return submitMap.get(key);
     }
 
@@ -175,7 +183,13 @@ public class SendStorage {
         } else {
             sendQueue.put(lastEntry.getKey() + 1, key);
         }
-        sendQueueCondition.signal();
+
+        sendLock.lock();
+        try {
+            sendQueueCondition.signal();
+        }finally {
+            sendLock.unlock();
+        }
     }
 
     /**
@@ -183,17 +197,20 @@ public class SendStorage {
      * @return String
      */
     public String takeFromSendQueue() {
+        sendLock.lock();
         try {
             sendQueue = getSendQueue();
             Map.Entry<Long, String> firstEntry = sendQueue.firstEntry();
             while (null == firstEntry) {
-                sendQueueCondition.await();
+                sendQueueCondition.await(5, TimeUnit.SECONDS);
                 firstEntry = sendQueue.firstEntry();
             }
             return firstEntry.getValue();
         } catch (Exception e) {
             log.error("{}", e);
-            throw new RuntimeException(e);
+            return null;
+        }finally {
+            sendLock.unlock();
         }
     }
 
@@ -227,29 +244,24 @@ public class SendStorage {
     }
 
     private void transFromDelayToSendQueue() {
-        openTx();
         try {
             sendDelayQueue = getSendDelayQueue();
             Map.Entry<Long, String> entry = sendDelayQueue.firstEntry();
             if (null == entry) {
                 return;
             }
-            sendDelayQueue.remove(entry.getKey());
             addSendQueue(entry.getValue());
+            sendDelayQueue.remove(entry.getKey());
             log.info("trans {} from delay to send queue", entry.getValue());
-            commit();
         } catch (Exception e) {
             log.error("{}", e);
-            rollBack();
-        }finally {
-            closeTx();
         }
     }
 
 
     private void gc() {
-        openTx();
         try {
+            openTx();
             gcSet = getGcSet();
             if (gcSet.size() == 0) {
                 return;
@@ -261,12 +273,20 @@ public class SendStorage {
                 deleteKeys.add(key);
             }
             gcSet.removeAll(deleteKeys);
-            commit();
+            try{
+                commit();
+            }finally {
+                closeTx();
+            }
         } catch (Exception e) {
             log.error("{}", e);
-            rollBack();
-        }finally {
-            closeTx();
+            openTx();
+            try{
+                rollBack();
+            }finally {
+                closeTx();
+            }
+
         }
     }
 
@@ -283,7 +303,6 @@ public class SendStorage {
      */
     public void addGCSet(String key) {
         gcSet = getGcSet();
-        ConsensusAssert.notNull(key);
         gcSet.add(key);
     }
 

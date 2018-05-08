@@ -28,8 +28,6 @@ import java.util.Set;
 
     @Autowired PendingTxRepository pendingTxRepository;
 
-    private static final int limit = 20;
-
     /**
      * new package from repository
      *
@@ -198,6 +196,6 @@ import java.util.Set;
     }
 
     public List<Long> getHeightListForProcess(Long maxBlockHeight) {
-        return packageDao.getHeightListForProcess(maxBlockHeight, limit);
+        return packageDao.getHeightListForProcess(maxBlockHeight);
     }
 }

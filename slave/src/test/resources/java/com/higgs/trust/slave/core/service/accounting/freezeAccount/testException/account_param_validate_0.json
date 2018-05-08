@@ -1,0 +1,16 @@
+{
+  "测试ID": 0,
+  "body": {
+    "type":"FREEZE",
+    "index":1,
+    "bizFlowNo": "freeze_flow_no_001_",
+    "accountNo":"123",
+    "amount":"0.01",
+    "contractAddr":null,
+    "contractArgs":null,
+    "remark":null
+  },
+  "type": "RS",
+  "assert": "account is not exists error[SLAVE_ACCOUNT_IS_NOT_EXISTS_ERROR]",
+  "comment": "冻结账户单元测试"
+}

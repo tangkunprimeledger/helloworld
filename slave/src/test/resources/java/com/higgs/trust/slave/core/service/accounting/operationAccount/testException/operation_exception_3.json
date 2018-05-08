@@ -19,10 +19,17 @@
   },
   "type": "",
   "beforeSql": [
-    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0.8', '0.0', 'CREDIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')"
+    "INSERT INTO `account_info` (`account_no`, `currency`, `balance`, `freeze_amount`, `fund_direction`, `detail_no`, `detail_freeze_no`, `status`,`create_time`) VALUES ('account_no_1001', 'CNY', '0.8', '0.0', 'CREDIT', '1', '1', 'NORMAL','2018-05-02 05:05:05')",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('000000', 'register', '[\"ALL\"]', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('policy-test-1', '注册policy-test-1', 'Set[\"rs-test3\",\"rs-test1\"]', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test1', 'ccc', 'rs-test1-desc', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test2', 'ccc', 'rs-test2-desc', '2018-04-18 16:12:39.518')",
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`) VALUES ('rs-test3', 'ccc', 'rs-test3-desc', '2018-04-18 16:12:39.518')"
   ],
   "afterSql": [
-    "TRUNCATE TABLE `account_info`"
+    "TRUNCATE TABLE `account_info`",
+    "TRUNCATE TABLE `policy`",
+    "TRUNCATE TABLE `rs_pub_key`"
   ],
   "assert": "dataidentity is not exists[SLAVE_DATA_IDENTITY_NOT_EXISTS_ERROR]",
   "comment": "账务操作,[数据归属][不存在]测试"

@@ -53,19 +53,19 @@ public class ServerConfig
     @Value("${copycat.server.logDir:copycat/logs}")
     private String logDir;
 
-    @Value("${copycat.server.minorCompactionInterval:1000}")
+    @Value("${copycat.server.minorCompactionInterval:12000}")
     private Long minorCompactionInterval;
 
-    @Value("${copycat.server.entryBufferSize:20}")
+    @Value("${copycat.server.entryBufferSize:200}")
     private Integer entryBufferSize;
 
     @Value("${copycat.server.compactionThreads:4}")
     private Integer compactionThreads;
 
-    @Value("${copycat.server.maxEntriesPerSegment:10000}")
+    @Value("${copycat.server.maxEntriesPerSegment:20000}")
     private Integer maxEntriesPerSegment;
 
-    @Value("${copycat.server.majorCompactionInterval:10000}")
+    @Value("${copycat.server.majorCompactionInterval:60000}")
     private Long majorCompactionInterval;
 
     @Value("${copycat.server.compactionThreshold:0.01}")
