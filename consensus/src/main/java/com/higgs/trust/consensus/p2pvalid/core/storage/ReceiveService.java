@@ -92,7 +92,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
     }
 
-    public synchronized void receive(ValidCommandWrap validCommandWrap) {
+    public void receive(ValidCommandWrap validCommandWrap) {
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
 
         //check duplicate

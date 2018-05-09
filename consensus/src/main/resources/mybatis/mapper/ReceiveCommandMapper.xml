@@ -75,7 +75,7 @@
     </update>
 
     <update id="updateCloseStatus" parameterType="Object">
-        update receive_command set `closed` = #{closed} where `message_digest` = #{messageDigest} and `close` = ${from}
+        update receive_command set `closed` = #{closed} where `message_digest` = #{messageDigest} and `closed` = ${from}
     </update>
 
     <update id="transStatus" parameterType="Object">

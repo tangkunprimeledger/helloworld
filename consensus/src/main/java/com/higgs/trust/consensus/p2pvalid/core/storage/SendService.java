@@ -209,7 +209,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
                     //count ack num avoid send executors concurrence
                     int ackNodeNum =
-                        sendNodeDao.countByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_WAIT_SEND);
+                        sendNodeDao.countByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_ACK);
 
                     //just count without lock because of send function executes serially
                     //TODO 如果未来并发执行，锁sendCommand然后再count
@@ -346,8 +346,8 @@ import java.util.concurrent.locks.ReentrantLock;
     private void queuedGc(SendCommandPO sendCommand) {
         QueuedSendGcPO queuedSendGcPO = new QueuedSendGcPO();
         queuedSendGcPO.setMessageDigest(sendCommand.getMessageDigest());
-        //TODO 配置化
-        queuedSendGcPO.setGcTime(System.currentTimeMillis() + 10000L);
+        //TODO 配置化，目前改成了10分钟
+        queuedSendGcPO.setGcTime(System.currentTimeMillis() + 600000L);
         queuedSendGcDao.add(queuedSendGcPO);
         int count = sendCommandDao.transStatus(sendCommand.getMessageDigest(), COMMAND_QUEUED_SEND, COMMAND_QUEUED_GC);
         if (count != 1) {
