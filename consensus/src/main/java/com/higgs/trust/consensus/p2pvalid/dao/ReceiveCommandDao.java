@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface ReceiveCommandDao extends BaseConsensusDao<ReceiveCommandPO> {
     ReceiveCommandPO queryByMessageDigest(@Param("messageDigest") String messageDigest);
-    void transStatus(@Param("messageDigest") String messageDigest, @Param("status") Integer status);
-    void updateReceiveNodeNum(@Param("messageDigest") String messageDigest, @Param("receiveNodeNum") Integer receiveNodeNum);
-    void updateCloseStatus(@Param("messageDigest")String messageDigest, @Param("closed") Integer closed);
+    int transStatus(@Param("messageDigest") String messageDigest, @Param("from") Integer from, @Param("status") Integer status);
+    int increaseReceiveNodeNum(@Param("messageDigest") String messageDigest);
+    int updateCloseStatus(@Param("messageDigest")String messageDigest, @Param("from") Integer from, @Param("closed") Integer closed);
 }

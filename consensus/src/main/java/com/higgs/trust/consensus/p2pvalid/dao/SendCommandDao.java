@@ -9,6 +9,6 @@ import java.util.List;
 @Mapper
 public interface SendCommandDao extends BaseConsensusDao<SendCommandPO> {
     SendCommandPO queryByMessageDigest(@Param("messageDigest") String messageDigest);
-    void transStatus(@Param("messageDigest") String messageDigest, @Param("status") Integer status);
-    void updateAckNodeNum(@Param("messageDigest") String messageDigest, @Param("ackNodeNum") Integer ackNodeNum);
+    int transStatus(@Param("messageDigest") String messageDigest, @Param("from") Integer from, @Param("status") Integer status);
+    int updateAckNodeNum(@Param("messageDigest") String messageDigest, @Param("ackNodeNum") Integer ackNodeNum);
 }

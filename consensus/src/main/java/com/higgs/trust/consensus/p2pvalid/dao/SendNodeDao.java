@@ -9,5 +9,6 @@ import java.util.List;
 @Mapper
 public interface SendNodeDao extends BaseConsensusDao<SendNodePO> {
     public List<SendNodePO> queryByDigestAndStatus(@Param("messageDigest") String messageDigest, @Param("status") Integer status);
-    public void transStatus(@Param("messageDigest") String messageDigest, @Param("status") Integer status);
+    public int countByDigestAndStatus(@Param("messageDigest") String messageDigest, @Param("status") Integer status);
+    public int transStatus(@Param("messageDigest") String messageDigest, @Param("from") Integer from, @Param("status") Integer status);
 }

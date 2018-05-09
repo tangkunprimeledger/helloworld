@@ -49,9 +49,15 @@
         from send_node where `message_digest`=#{messageDigest} and `status` = #{status}
     </select>
 
+    <!-- 根据messageDigest和状态查询列表 -->
+    <select id="countByDigestAndStatus" resultType="java.lang.Integer" parameterType="Object">
+        select count(1)
+        from send_node where `message_digest`=#{messageDigest} and `status` = #{status}
+    </select>
+
     <!-- 变更状态 -->
     <update id="transStatus" parameterType="Object">
-        update send_node set `status` = #{status} where `message_digest` = #{messageDigest}
+        update send_node set `status` = #{status} where `message_digest` = #{messageDigest} and `status` = #{from}
     </update>
 
     <!-- 根据messageDigest删除记录 -->

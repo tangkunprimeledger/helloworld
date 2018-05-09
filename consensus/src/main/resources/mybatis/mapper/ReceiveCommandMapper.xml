@@ -70,16 +70,16 @@
     </insert>
     <!-- 以上为工具自动生成 -->
 
-    <update id="updateReceiveNodeNum" parameterType="Object">
-        update receive_command set `receive_node_num` = #{receiveNodeNum} where `message_digest` = #{messageDigest}
+    <update id="increaseReceiveNodeNum" parameterType="Object">
+        update receive_command set `receive_node_num` = `receive_node_num` + 1 where `message_digest` = #{messageDigest}
     </update>
 
     <update id="updateCloseStatus" parameterType="Object">
-        update receive_command set `closed` = #{closed} where `message_digest` = #{messageDigest}
+        update receive_command set `closed` = #{closed} where `message_digest` = #{messageDigest} and `close` = ${from}
     </update>
 
     <update id="transStatus" parameterType="Object">
-        update receive_command set `status` = #{status} where `message_digest` = #{messageDigest}
+        update receive_command set `status` = #{status} where `message_digest` = #{messageDigest} and `status` = ${from}
     </update>
 
     <!-- 根据messageDigest查询 -->

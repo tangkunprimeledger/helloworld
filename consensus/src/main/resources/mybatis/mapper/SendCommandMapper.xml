@@ -67,7 +67,7 @@
     <!-- 以上为工具自动生成 -->
 
     <update id="transStatus" parameterType="Object">
-        update send_command set `status` = #{status} where `message_digest` = #{messageDigest}
+        update send_command set `status` = #{status} where `message_digest` = #{messageDigest} and `status` = #{from}
     </update>
 
     <update id="updateAckNodeNum" parameterType="Object">
