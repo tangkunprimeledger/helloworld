@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
         nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
         boolean selfChecked = false;
         try {
-            selfChecked = selfCheck(3);
+            selfChecked = selfCheck(60);
             log.info("self checked result:{}", selfChecked);
         } catch (FailoverExecption e) {
             log.error("self check failed:", e);
