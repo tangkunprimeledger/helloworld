@@ -36,32 +36,29 @@
         queued_apply_delay(id,message_digest,apply_time,create_time)
         values(#{id},#{messageDigest},#{applyTime},now(3))
     </insert>
-    <!-- 删除记录 -->
-    <delete id="delete" parameterType="Object">
-        delete from queued_apply_delay where
-        id=#{id}
-    </delete>
-    <!-- 根据id查询 -->
-    <select id="queryById" resultMap="baseResultMap" parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from queued_apply_delay where id=#{id}
-    </select>
-    <!-- 列表总数 -->
-    <select id="queryByCount" resultType="java.lang.Integer"
-        parameterType="Object">
-        select count(1) from queued_apply_delay
-        <include refid="baseWhereClause" />
-    </select>
-    <!-- 查询列表 -->
-    <select id="queryByList" resultMap="baseResultMap"
-        parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from queued_apply_delay
-        <include refid="baseWhereClause" />
-    </select>
     <!-- 以上为工具自动生成 -->
+    
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="queryListByApplyTime" parameterType="Object">
+        delete from queued_apply_delay where
+        `apply_time` &lt;= #{applyTime}
+    </delete>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from queued_apply_delay where
+        `message_digest` = #{messageDigest}
+    </delete>
+
+    <!-- 根据messageDigestList删除记录 -->
+    <delete id="deleteByMessageDigestList" parameterType="Object">
+        delete from queued_apply_delay where
+        `message_digest` in
+        <foreach item="item" index="index" collection="messageDigestList" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 
 
 

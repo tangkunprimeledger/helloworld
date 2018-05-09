@@ -7,7 +7,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface QueuedSendGcDao extends BaseDao<QueuedSendGcPO> {
+public interface QueuedSendGcDao extends BaseConsensusDao<QueuedSendGcPO> {
     public List<QueuedSendGcPO> queryGcList(@Param("gcTime") Long gcTime);
+    @Override
     public void deleteByMessageDigestList(@Param("messageDigestList") List<String> messageDigestList);
 }

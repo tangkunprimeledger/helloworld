@@ -36,31 +36,6 @@
         queued_send_gc(id,message_digest,gc_time,create_time)
         values(#{id},#{messageDigest},#{gcTime},now(3))
     </insert>
-    <!-- 删除记录 -->
-    <delete id="delete" parameterType="Object">
-        delete from queued_send_gc where
-        id=#{id}
-    </delete>
-    <!-- 根据id查询 -->
-    <select id="queryById" resultMap="baseResultMap" parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from queued_send_gc where id=#{id}
-    </select>
-    <!-- 列表总数 -->
-    <select id="queryByCount" resultType="java.lang.Integer"
-        parameterType="Object">
-        select count(1) from queued_send_gc
-        <include refid="baseWhereClause" />
-    </select>
-    <!-- 查询列表 -->
-    <select id="queryByList" resultMap="baseResultMap"
-        parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from queued_send_gc
-        <include refid="baseWhereClause" />
-    </select>
     <!-- 以上为工具自动生成 -->
 
     <select id="queryGcList" resultMap="baseResultMap" parameterType="Object">
@@ -68,6 +43,12 @@
         <include refid="baseColumnList" />
         from queued_send_gc where `gc_time` &lt;= #{gcTime}
     </select>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from queued_send_gc where
+        `message_digest` = #{messageDigest}
+    </delete>
 
     <!-- 根据messageDigestList删除记录 -->
     <delete id="deleteByMessageDigestList" parameterType="Object">
@@ -78,7 +59,4 @@
             #{item}
         </foreach>
     </delete>
-
-
-
 </mapper>

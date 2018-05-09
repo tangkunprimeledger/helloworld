@@ -70,15 +70,22 @@
         from queued_send_delay where `send_time` &lt;= #{sendTime}
     </select>
 
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from queued_send_delay where
+        `message_digest` = #{messageDigest}
+    </delete>
+
     <!-- 根据messageDigestList删除记录 -->
     <delete id="deleteByMessageDigestList" parameterType="Object">
         delete from queued_send_delay where
         `message_digest` in
         <foreach item="item" index="index" collection="messageDigestList" open="("
-                                      separator="," close=")">
-          #{item}
+                 separator="," close=")">
+            #{item}
         </foreach>
     </delete>
+
 
 
 

@@ -7,7 +7,6 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface QueuedSendDelayDao extends BaseDao<QueuedSendDelayPO> {
+public interface QueuedSendDelayDao extends BaseConsensusDao<QueuedSendDelayPO> {
     public List<QueuedSendDelayPO> queryListBySendTime(@Param("sendTime") Long sendTime);
-    public void deleteByMessageDigestList(@Param("messageDigestList") List<String> messageDigestList);
 }

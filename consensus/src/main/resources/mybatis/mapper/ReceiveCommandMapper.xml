@@ -11,13 +11,14 @@
         <result column="receive_node_num" property="receiveNodeNum" />
         <result column="apply_threshold" property="applyThreshold" />
         <result column="gc_threshold" property="gcThreshold" />
+        <result column="closed" property="closed" />
         <result column="status" property="status" />
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
     </resultMap>
     <!-- receive_command table all fields -->
     <sql id="baseColumnList">
-        id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,status,create_time,update_time
+        id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,closed,status,create_time,update_time
     </sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">
@@ -47,6 +48,9 @@
             <if test="gcThreshold != null">
                 and gc_threshold=#{gcThreshold}
             </if>
+            <if test="closed != null">
+                and closed=#{closed}
+            </if>
             <if test="status != null">
                 and status=#{status}
             </if>
@@ -64,33 +68,38 @@
 		receive_command(id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,status,create_time,update_time)
 		values(#{id},#{messageDigest},#{validCommand},#{commandClass},#{nodeName},#{receiveNodeNum},#{applyThreshold},#{gcThreshold},#{status},now(),now())
     </insert>
-    <!-- 删除记录 -->
-    <delete id="delete" parameterType="Object">
-        delete from receive_command where
-		id=#{id}
-    </delete>
-    <!-- 根据id查询 -->
-    <select id="queryById" resultMap="baseResultMap" parameterType="Object">
-        select
-		<include refid="baseColumnList" />
-		from receive_command where id=#{id}
-    </select>
-    <!-- 列表总数 -->
-    <select id="queryByCount" resultType="java.lang.Integer"
-        parameterType="Object">
-        select count(1) from receive_command
-        <include refid="baseWhereClause" />
-    </select>
-    <!-- 查询列表 -->
-    <select id="queryByList" resultMap="baseResultMap"
-        parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from receive_command
-        <include refid="baseWhereClause" />
-    </select>
     <!-- 以上为工具自动生成 -->
 
+    <update id="updateReceiveNodeNum" parameterType="Object">
+        update receive_command set `ack_node_num` = #{receiveNodeNum} where `message_digest` = #{messageDigest}
+    </update>
+
+    <update id="transStatus" parameterType="Object">
+        update receive_command set `status` = #{status} where `message_digest` = #{messageDigest}
+    </update>
+
+    <!-- 根据messageDigest查询 -->
+    <select id="queryByMessageDigest" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList" />
+        from receive_command where `message_digest`=#{messageDigest}
+    </select>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from receive_command where
+        `message_digest` = #{messageDigest}
+    </delete>
+
+    <!-- 根据messageDigestList删除记录 -->
+    <delete id="deleteByMessageDigestList" parameterType="Object">
+        delete from receive_command where
+        `message_digest` in
+        <foreach item="item" index="index" collection="messageDigestList" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 
 
 </mapper>

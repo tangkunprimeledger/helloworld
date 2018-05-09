@@ -7,7 +7,6 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface QueuedSendDao extends BaseDao<QueuedSendPO> {
-    public List<QueuedSendPO> querySendList();
-    public void deleteByMessageDigestList(@Param("messageDigestList") List<String> messageDigestList);
+public interface QueuedSendDao extends BaseConsensusDao<QueuedSendPO> {
+    List<QueuedSendPO> querySendList();
 }

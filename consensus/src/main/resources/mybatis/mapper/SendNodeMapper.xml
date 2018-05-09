@@ -40,40 +40,7 @@
         send_node(id,message_digest,to_node_name,status,create_time)
         values(#{id},#{messageDigest},#{toNodeName},#{status},now())
     </insert>
-    <!-- 删除记录 -->
-    <delete id="delete" parameterType="Object">
-        delete from send_node where
-        id=#{id}
-    </delete>
-    <!-- 根据id查询 -->
-    <select id="queryById" resultMap="baseResultMap" parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from send_node where id=#{id}
-    </select>
-
-    <!-- 列表总数 -->
-    <select id="queryByCount" resultType="java.lang.Integer"
-        parameterType="Object">
-        select count(1) from send_node
-        <include refid="baseWhereClause" />
-    </select>
-    <!-- 查询列表 -->
-    <select id="queryByList" resultMap="baseResultMap"
-        parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from send_node
-        <include refid="baseWhereClause" />
-    </select>
     <!-- 以上为工具自动生成 -->
-
-    <!-- 根据messageDigest查询列表 -->
-    <select id="queryListByDigest" resultMap="baseResultMap" parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from send_node where message_digest=#{messageDigest}
-    </select>
 
     <!-- 根据messageDigest和状态查询列表 -->
     <select id="queryByDigestAndStatus" resultMap="baseResultMap" parameterType="Object">

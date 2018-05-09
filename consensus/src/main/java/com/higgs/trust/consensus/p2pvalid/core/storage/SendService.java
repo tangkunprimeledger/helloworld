@@ -1,8 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-import sun.security.provider.SHA;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -160,12 +157,12 @@ public class SendService {
                 txRequired.execute(new TransactionCallbackWithoutResult() {
                     @Override
                     protected void doInTransactionWithoutResult(TransactionStatus status) {
-                        List<QueuedSendPO> queuedSendPOList = queuedSendDao.querySendList();
+                        List<QueuedSendPO> queuedSendList = queuedSendDao.querySendList();
                         sendLock.lock();
                         try {
-                            while (null == queuedSendPOList || queuedSendPOList.isEmpty()) {
+                            while (null == queuedSendList || queuedSendList.isEmpty()) {
                                 sendCondition.await(5, TimeUnit.SECONDS);
-                                queuedSendPOList = queuedSendDao.querySendList();
+                                queuedSendList = queuedSendDao.querySendList();
                             }
                         } catch (InterruptedException e) {
                             log.error("{}", e);
@@ -174,7 +171,7 @@ public class SendService {
                         }
 
                         List<String> deleteMessageDigestList = new ArrayList<>();
-                        queuedSendPOList.forEach((queuedSend)->{
+                        queuedSendList.forEach((queuedSend)->{
                             SendCommandPO sendCommandPO = sendCommandDao.queryByMessageDigest(queuedSend.getMessageDigest());
                             if (null == sendCommandPO) {
                                 log.warn("command is null of messageDigest {}", queuedSend.getMessageDigest());
