@@ -52,26 +52,6 @@
         from send_node where id=#{id}
     </select>
 
-    <!-- 根据messageDigest查询列表 -->
-    <select id="queryListByDigest" resultMap="baseResultMap" parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from send_node where message_digest=#{messageDigest}
-    </select>
-
-    <!-- 根据messageDigest和状态查询列表 -->
-    <select id="queryByDigestAndStatus" resultMap="baseResultMap" parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from send_node where `message_digest`=#{messageDigest} and `status` = #{status}
-    </select>
-
-    <!-- 变更状态 -->
-    <update id="transStatus" parameterType="Object">
-        update table send_node set `status` = #{status} where `message_digest` = #{messageDigest}
-    </update>
-
-
     <!-- 列表总数 -->
     <select id="queryByCount" resultType="java.lang.Integer"
         parameterType="Object">
@@ -88,6 +68,40 @@
     </select>
     <!-- 以上为工具自动生成 -->
 
+    <!-- 根据messageDigest查询列表 -->
+    <select id="queryListByDigest" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList" />
+        from send_node where message_digest=#{messageDigest}
+    </select>
+
+    <!-- 根据messageDigest和状态查询列表 -->
+    <select id="queryByDigestAndStatus" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList" />
+        from send_node where `message_digest`=#{messageDigest} and `status` = #{status}
+    </select>
+
+    <!-- 变更状态 -->
+    <update id="transStatus" parameterType="Object">
+        update send_node set `status` = #{status} where `message_digest` = #{messageDigest}
+    </update>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from send_node where
+        `message_digest` = #{messageDigest}
+    </delete>
+
+    <!-- 根据messageDigestList删除记录 -->
+    <delete id="deleteByMessageDigestList" parameterType="Object">
+        delete from send_node where
+        `message_digest` in
+        <foreach item="item" index="index" collection="messageDigestList" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 
 
 </mapper>

@@ -76,21 +76,6 @@
         from send_command where id=#{id}
     </select>
 
-    <!-- 根据messageDigest查询 -->
-    <select id="queryByMessageDigest" resultMap="baseResultMap" parameterType="Object">
-        select
-        <include refid="baseColumnList" />
-        from send_command where message_digest=#{messageDigest}
-    </select>
-
-    <update id="transStatus" parameterType="Object">
-        update table send_command set `status` = #{status} where `message_digest` = #{messageDigest}
-    </update>
-
-    <update id="updateAckNodeNum" parameterType="Object">
-        update table send_command set `ack_node_num` = #{ackNodeNum} where `message_digest` = #{messageDigest}
-    </update>
-
     <!-- 列表总数 -->
     <select id="queryByCount" resultType="java.lang.Integer"
         parameterType="Object">
@@ -107,6 +92,37 @@
     </select>
     <!-- 以上为工具自动生成 -->
 
+
+    <!-- 根据messageDigest查询 -->
+    <select id="queryByMessageDigest" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList" />
+        from send_command where message_digest=#{messageDigest}
+    </select>
+
+    <update id="transStatus" parameterType="Object">
+        update send_command set `status` = #{status} where `message_digest` = #{messageDigest}
+    </update>
+
+    <update id="updateAckNodeNum" parameterType="Object">
+        update send_command set `ack_node_num` = #{ackNodeNum} where `message_digest` = #{messageDigest}
+    </update>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from send_command where
+        `message_digest` = #{messageDigest}
+    </delete>
+
+    <!-- 根据messageDigestList删除记录 -->
+    <delete id="deleteByMessageDigestList" parameterType="Object">
+        delete from send_command where
+        `message_digest` in
+        <foreach item="item" index="index" collection="messageDigestList" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 
 
 </mapper>

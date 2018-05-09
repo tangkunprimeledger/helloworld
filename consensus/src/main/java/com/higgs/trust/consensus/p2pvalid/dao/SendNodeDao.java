@@ -11,4 +11,6 @@ public interface SendNodeDao extends BaseDao<SendNodePO> {
     public List<SendNodePO> queryByDigest(@Param("messageDigest") String messageDigest);
     public List<SendNodePO> queryByDigestAndStatus(@Param("messageDigest") String messageDigest, @Param("status") Integer status);
     public void transStatus(@Param("messageDigest") String messageDigest, @Param("status") Integer status);
+    public void deleteByMessageDigest(@Param("messageDigest") String messageDigestList);
+    public void deleteByMessageDigestList(@Param("messageDigestList") List<String> messageDigestList);
 }
