@@ -17,6 +17,7 @@ import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterServiceImpl;
+import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandlerImpl;
 import com.higgs.trust.slave.core.service.failover.SyncService;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -56,7 +57,7 @@ import java.util.concurrent.ExecutorService;
 
     @Autowired private SyncService syncService;
 
-    @Autowired private ClusterServiceImpl clusterServiceImpl;
+    @Autowired private P2pHandlerImpl p2pHandler;
 
     @Autowired private BlockRepository blockRepository;
 
@@ -175,7 +176,7 @@ import java.util.concurrent.ExecutorService;
             List<Long> maxHeights = blockRepository.getMaxHeight(operation.get());
             maxHeights.forEach(height -> {
                 try {
-                    clusterServiceImpl.submit(new ValidClusterHeightCmd(operation.getRequestId(), height));
+                    p2pHandler.submit(new ValidClusterHeightCmd(operation.getRequestId(), height));
                 } catch (Exception e) {
                     log.error("consensus submit error:", e);
                 }
@@ -197,7 +198,7 @@ import java.util.concurrent.ExecutorService;
             BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
             boolean result = blockHeader != null && blockService.compareBlockHeader(header, blockHeader);
             try {
-                clusterServiceImpl.submit(new ValidBlockHeaderCmd(operation.getRequestId(), header, result));
+                p2pHandler.submit(new ValidBlockHeaderCmd(operation.getRequestId(), header, result));
             } catch (Exception e) {
                 log.error("consensus submit error:", e);
             }
