@@ -60,6 +60,15 @@ import java.util.Set;
     List<Long> queryHeightListByStatus(@Param("status") String status);
 
     /**
+     * query package height list by package status and limit
+     *
+     * @param status
+     * @param limit
+     * @return
+     */
+    List<Long> queryHeightsByStatusAndLimit(@Param("status") String status, @Param("limit") int limit);
+
+    /**
      * query min package height with status
      *
      * @param statusSet
@@ -83,12 +92,4 @@ import java.util.Set;
      * @return
      */
     long countWithStatus(@Param("statusSet") Set<String> statusSet);
-
-    /**
-     * get height list for process
-     *
-     * @param maxBlockHeight
-     * @return
-     */
-    List<Long> getHeightListForProcess(@Param("maxBlockHeight") Long maxBlockHeight);
 }

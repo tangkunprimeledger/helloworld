@@ -22,6 +22,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.support.SimpleTransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -47,6 +51,7 @@ import static org.testng.Assert.*;
     @Mock Package pack;
     @Mock Block currentBlock;
     @Mock BlockHeader currentHeader;
+    @Mock TransactionTemplate txNested;
     private String currentHash = "preHash";
 
     @BeforeClass public void before() {
@@ -58,6 +63,10 @@ import static org.testng.Assert.*;
         MockitoAnnotations.initMocks(this);
         when(currentBlock.getBlockHeader()).thenReturn(currentHeader);
         when(currentHeader.getBlockHash()).thenReturn(currentHash);
+        when(txNested.execute(any(TransactionCallbackWithoutResult.class))).thenAnswer(invocation -> {
+            TransactionCallback o = (TransactionCallback)invocation.getArguments()[0];
+            return o.doInTransaction(new SimpleTransactionStatus());
+        });
     }
 
     @Test public void testFailoverNotRunning() {
@@ -70,7 +79,7 @@ import static org.testng.Assert.*;
         long height = 1L;
         when(nodeState.isState(NodeStateEnum.Running)).thenReturn(true);
         when(blockService.getMaxHeight()).thenReturn(height);
-        when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(null, height + 2);
         failoverSchedule.failover();
         verify(blockRepository, times(0)).getBlockHeader(anyLong());
@@ -95,7 +104,7 @@ import static org.testng.Assert.*;
         long height = 1L;
         when(nodeState.isState(NodeStateEnum.Running)).thenReturn(true);
         when(blockService.getMaxHeight()).thenReturn(height);
-        when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 2);
         when(packageRepository.load(height + 1)).thenReturn(null);
 
@@ -112,7 +121,7 @@ import static org.testng.Assert.*;
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
         when(blockService.getMaxHeight()).thenReturn(height - 1);
 
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 1);
         when(packageRepository.load(height)).thenReturn(null);
         when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
@@ -134,7 +143,6 @@ import static org.testng.Assert.*;
         when(blockService.compareBlockHeader(header, header)).thenReturn(true);
 
         when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
-        when(blockService.compareBlockHeader(header, header)).thenReturn(true);
         failoverSchedule.failover();
         verify(properties, times(times)).getFailoverStep();
     }
@@ -145,7 +153,7 @@ import static org.testng.Assert.*;
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
         when(blockService.getMaxHeight()).thenReturn(height - 1);
 
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 1);
         when(packageRepository.load(height)).thenReturn(null);
         when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
@@ -191,7 +199,7 @@ import static org.testng.Assert.*;
 
         //不存在比较高的初始package
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(null, height + 1);
 
         assertFalse(failoverSchedule.failover(height));
@@ -210,7 +218,7 @@ import static org.testng.Assert.*;
     @Test public void testFailoverHeight() {
         long height = 2L;
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 1);
         when(packageRepository.load(height)).thenReturn(null);
         when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
@@ -229,7 +237,7 @@ import static org.testng.Assert.*;
     @Test public void testFailoverBlock() {
         long height = 2L;
         when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.INIT.getCode())))
+        when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
             .thenReturn(height + 1);
         when(packageRepository.load(height)).thenReturn(null);
         when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
@@ -243,9 +251,14 @@ import static org.testng.Assert.*;
         when(blockSyncService.getBlocks(height, 1)).thenReturn(blocks);
         doReturn(true).when(blockSyncService).validating(currentHash, block);
 
+
         //no validate header
         when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(null);
-        assertFalse(failoverSchedule.failover(height));
+        try {
+            failoverSchedule.failover(height);
+        } catch (FailoverExecption e) {
+            assertEquals(e.getCode(), SlaveErrorEnum.SLAVE_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST);
+        }
 
         //header compare: validating failed, has validate header
         when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
@@ -254,12 +267,20 @@ import static org.testng.Assert.*;
         when(context.getCurrentBlock()).thenReturn(block);
 
         when(blockService.compareBlockHeader(header, header)).thenReturn(false);
-        assertFalse(failoverSchedule.failover(height));
+        try {
+            failoverSchedule.failover(height);
+        } catch (FailoverExecption e) {
+            assertEquals(e.getCode(), SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_VALIDATE_RESULT_INVALID);
+        }
 
         //header compare: validating passed, no persist header
         when(blockService.compareBlockHeader(header, header)).thenReturn(true);
         when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(null);
-        assertFalse(failoverSchedule.failover(height));
+        try {
+            failoverSchedule.failover(height);
+        } catch (FailoverExecption e) {
+            assertEquals(e.getCode(), SlaveErrorEnum.SLAVE_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST);
+        }
 
         //header compare: validating passed，persisting failed
         when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);

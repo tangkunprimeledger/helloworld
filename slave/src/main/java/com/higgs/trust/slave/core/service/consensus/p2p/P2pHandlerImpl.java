@@ -12,6 +12,7 @@ import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.core.service.pack.PackageLock;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -28,24 +29,36 @@ import java.util.concurrent.ExecutorService;
  * @Description: handle p2p message sending and p2p message receiving
  * @author: pengdi
  **/
-@Slf4j @Service public class P2pHandlerImpl extends ValidConsensus implements P2pHandler {
+@Slf4j
+@Service
+public class P2pHandlerImpl extends ValidConsensus implements P2pHandler {
 
     PropertiesConfig propertiesConfig;
 
-    @Autowired PackageRepository packageRepository;
+    @Autowired
+    private PackageRepository packageRepository;
 
-    @Autowired PackageService packageService;
+    @Autowired
+    private PackageService packageService;
 
-    @Autowired PackageProcess packageProcess;
+    @Autowired
+    private PackageProcess packageProcess;
 
-    @Autowired ExecutorService packageThreadPool;
+    @Autowired
+    private ExecutorService packageThreadPool;
 
-    @Autowired BlockService blockService;
+    @Autowired
+    private BlockService blockService;
 
-    @Autowired NodeState nodeState;
+    @Autowired
+    private NodeState nodeState;
 
-    @Autowired public P2pHandlerImpl(P2pClusterInfo p2pClusterInfo, P2pConsensusClient p2pConsensusClient,
-        PropertiesConfig propertiesConfig) {
+
+    @Autowired
+    private PackageLock packageLock;
+
+    @Autowired
+    public P2pHandlerImpl(P2pClusterInfo p2pClusterInfo, P2pConsensusClient p2pConsensusClient, PropertiesConfig propertiesConfig) {
         super(p2pClusterInfo, p2pConsensusClient, propertiesConfig.getP2pDataDir());
         this.propertiesConfig = propertiesConfig;
     }
@@ -55,7 +68,8 @@ import java.util.concurrent.ExecutorService;
      *
      * @param header
      */
-    @Override public void sendValidating(BlockHeader header) {
+    @Override
+    public void sendValidating(BlockHeader header) {
         // validate param
         if (null == header) {
             log.error("[P2pReceiver.sendValidating]param validate failed, cause block header is null ");
@@ -80,7 +94,8 @@ import java.util.concurrent.ExecutorService;
      *
      * @param header
      */
-    @Override public void sendPersisting(BlockHeader header) {
+    @Override
+    public void sendPersisting(BlockHeader header) {
         // validate param
         if (null == header) {
             log.error("[P2pReceiver.sendPersisting]param validate failed, cause block header is null ");
@@ -163,11 +178,22 @@ import java.util.concurrent.ExecutorService;
             return;
         }
 
-        //async start process, multi thread and lock
-        try {
-            packageThreadPool.execute(new AsyncPackageProcess(header.getHeight()));
-        } catch (Throwable e) {
-            log.error("package's async process failed after receive {}, header: {}", headerType, header, e);
+        //async start process,when headerType = CONSENSUS_VALIDATE_TYPE, multi thread and lock
+        if (headerType == BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE) {
+            try {
+                packageThreadPool.execute(new AsyncPackageProcess(header.getHeight()));
+            } catch (Throwable e) {
+                log.error("package's async  validated failed after receive {}, header: {}", headerType, header, e);
+            }
+        }
+
+        //async start AsyncPersistingToConsensus,when headerType = CONSENSUS_PERSIST_TYPE, multi thread and lock
+        if (headerType == BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE) {
+            try {
+                packageThreadPool.execute(new AsyncPackagePersisted(header.getHeight()));
+            } catch (Throwable e) {
+                log.error("package's async persistingToConsensus failed after receive {}, header: {}", headerType, header, e);
+            }
         }
     }
 
@@ -181,13 +207,31 @@ import java.util.concurrent.ExecutorService;
             this.height = height;
         }
 
-        @Override public void run() {
+        @Override
+        public void run() {
             /**
              * if the header satisfy the following conditions, just async start process
              * 1.header.height == max(blockHeight) + 1
              * 2.package.status is WAIT_VALIDATE_CONSENSUS or WAIT_PERSIST_CONSENSUS
              */
             packageProcess.process(height);
+        }
+    }
+
+
+    /**
+     * thread for async package Persisted
+     */
+    private class AsyncPackagePersisted implements Runnable {
+        private Long height;
+
+        public AsyncPackagePersisted(Long height) {
+            this.height = height;
+        }
+
+        @Override
+        public void run() {
+            packageLock.lockAndPersisted(height);
         }
     }
 }

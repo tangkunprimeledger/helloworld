@@ -23,6 +23,7 @@ import javax.script.*;
     }
 
     @Override public Object execute(String methodName, Object... bizArgs) {
+        long startTime = System.currentTimeMillis();
         ScriptEngine engine = scriptEngine;
         ExecuteContext context = ExecuteContext.getCurrent();
         try {
@@ -46,7 +47,7 @@ import javax.script.*;
             ScriptObjectMirror method = (ScriptObjectMirror) bindings.get(methodName);
             if (null == method) {
                 log.error("method: {} not found", methodName);
-                throw new SmartContractException(String.format("method: %s not found"));
+                throw new SmartContractException(String.format("method: %s not found", methodName));
             }
 
             Object result = method.call(null, bizArgs);
@@ -60,6 +61,7 @@ import javax.script.*;
             log.error("ScriptException", ex);
             throw new SmartContractException(ex.getMessage());
         } finally {
+            log.info("execute contract duration: {}", System.currentTimeMillis() - startTime);
             ExecuteContext.Clear();
         }
     }

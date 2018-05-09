@@ -16,6 +16,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * @author tangfashuang
  * @date 2018/04/17 11:43
@@ -34,6 +36,12 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired
     private TransactionTemplate txNested;
 
+    @Autowired
+    private PackageLock packageLock;
+
+    @Autowired
+    private ExecutorService packageThreadPool;
+
     /**
      * package process logic
      *
@@ -50,7 +58,11 @@ import org.springframework.transaction.support.TransactionTemplate;
                         return;
                     }
 
-                    packageFSM(pack);
+                    //process only deal the package with status RECEIVED and WAIT_VALIDATE_CONSENSUS  in DB
+                    PackageStatusEnum packageStatusEnum = pack.getStatus();
+                    if (packageStatusEnum == PackageStatusEnum.RECEIVED || packageStatusEnum == PackageStatusEnum.WAIT_VALIDATE_CONSENSUS) {
+                        packageFSM(pack);
+                    }
                 } catch (SlaveException e) {
                     transactionStatus.setRollbackOnly();
                     if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR == e.getCode()
@@ -76,8 +88,8 @@ import org.springframework.transaction.support.TransactionTemplate;
     }
 
     private void packageFSM(Package pack) {
-        //package status equals 'WAIT_VALIDATE_CONSENSUS' or 'WAIT_PERSIST_CONSENSUS' or 'PERSISTED' will jump out recycle
-        while ((PackageStatusEnum.PERSISTED != pack.getStatus())) {
+        //package status equals 'WAIT_VALIDATE_CONSENSUS' or 'PERSISTING'will jump out recycle
+        while ((PackageStatusEnum.PERSISTING != pack.getStatus())) {
             switch (pack.getStatus()) {
                 case RECEIVED:
                     doValidate(pack);
@@ -85,8 +97,6 @@ import org.springframework.transaction.support.TransactionTemplate;
                     break;
                 case VALIDATING:
                     doValidatingToConsensus(pack);
-                    //no need for update pack status
-                    pack.setStatus(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS);
                     return;
                 case WAIT_VALIDATE_CONSENSUS:
                     doValidated(pack);
@@ -97,17 +107,8 @@ import org.springframework.transaction.support.TransactionTemplate;
                     pack.setStatus(PackageStatusEnum.PERSISTING);
                     break;
                 case PERSISTING:
-                    doPersistingToConsensus(pack);
-                    // no need update package status
-                    pack.setStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+                    doAsyncPersistingToConsensus(pack);
                     return;
-                case WAIT_PERSIST_CONSENSUS:
-                    doPersisted(pack);
-                    pack.setStatus(PackageStatusEnum.PERSISTED);
-                    break;
-                case PERSISTED:
-                    //finish
-                    break;
                 default:
                     log.error("package status is invalid, status={}", pack.getStatus());
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NO_SUCH_STATUS);
@@ -120,15 +121,6 @@ import org.springframework.transaction.support.TransactionTemplate;
         // if package status is not 'RECEIVED', return directly.
         if (PackageStatusEnum.RECEIVED != pack.getStatus()) {
             return;
-        }
-
-        Long height = pack.getHeight();
-        if (Constant.GENESIS_HEIGHT != height - 1) {
-            Package lastPack = packageRepository.load(height - 1);
-            if (PackageStatusEnum.PERSISTED != lastPack.getStatus()) {
-                log.info("last package is not persisted, waiting!");
-                throw new SlaveException(SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH);
-            }
         }
 
         // check next package height
@@ -180,36 +172,33 @@ import org.springframework.transaction.support.TransactionTemplate;
         PackContext packContext = packageService.createPackContext(pack);
         // do persist
         packageService.persisting(packContext);
+        // update status
+        packageService.statusChange(pack, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS, PackageStatusEnum.PERSISTING);
     }
 
 
-    private void doPersistingToConsensus(Package pack) {
+    private void doAsyncPersistingToConsensus(Package pack) {
         // if package status is not 'PERSISTING', return directly.
         if (PackageStatusEnum.PERSISTING != pack.getStatus()) {
             return;
         }
-
-        packageService.persistConsensus(pack);
-        // update status
-        packageService.statusChange(pack, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+        packageThreadPool.execute(new AsyncPackagePersistingToConsensus(pack.getHeight()));
     }
 
 
-    private void doPersisted(Package pack) {
-        // if package status is not 'WAIT_PERSIST_CONSENSUS', return directly.
-        if (PackageStatusEnum.WAIT_PERSIST_CONSENSUS != pack.getStatus()) {
-            return;
+    /**
+     * thread for async package PersistingToConsensus
+     */
+    private class AsyncPackagePersistingToConsensus implements Runnable {
+        private Long height;
+
+        public AsyncPackagePersistingToConsensus(Long height) {
+            this.height = height;
         }
 
-        // check package height
-        if (!pack.getHeight().equals(blockRepository.getMaxHeight())) {
-            log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),
-                blockRepository.getMaxHeight());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
+        @Override public void run() {
+            packageLock.lockPersistingAndSubmit(height);
         }
-
-        packageService.persisted(pack);
-        // update status
-        packageService.statusChange(pack, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
     }
+
 }

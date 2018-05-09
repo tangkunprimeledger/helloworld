@@ -2,21 +2,20 @@ package com.higgs.trust.slave.core.service.failover;
 
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.core.managment.NodeState;
-import com.higgs.trust.slave.core.managment.listener.StateChangeListener;
-import com.higgs.trust.slave.model.bo.Package;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component @Slf4j public class SyncPackageCache implements StateChangeListener, InitializingBean {
+@Component @Slf4j public class SyncPackageCache {
 
     @Autowired private FailoverProperties properties;
 
     @Autowired private NodeState nodeState;
 
-    public static final long INIT_HEIGHT = -1L;
+    private static final long INIT_HEIGHT = -1L;
+
+    private Long clusterHeight = INIT_HEIGHT;
 
     /**
      * package最新高度
@@ -34,30 +33,30 @@ import org.springframework.stereotype.Component;
      *
      * @param currentHeight package height
      */
-    public synchronized void receivePackageHeight(long currentHeight) {
+    void receivePackHeight(long currentHeight) {
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
         if (log.isDebugEnabled()) {
             log.debug("sync cache received package height:{}", currentHeight);
         }
-        if (latestHeight == INIT_HEIGHT) {
-            latestHeight = currentHeight;
-            minHeight = currentHeight;
-            return;
-        }
-        if (currentHeight == latestHeight + 1) {
-            latestHeight = currentHeight;
-            if (latestHeight - minHeight >= properties.getThreshold()) {
-                if (properties.getKeepSize() > properties.getThreshold()) {
-                    minHeight = currentHeight;
-                } else {
-                    minHeight = currentHeight - properties.getKeepSize();
-                }
+        synchronized (clusterHeight) {
+            if (currentHeight <= clusterHeight) {
+                return;
             }
-        } else if (currentHeight > latestHeight + 1) {
-            latestHeight = currentHeight;
-            minHeight = currentHeight;
+            if (currentHeight == latestHeight + 1) {
+                latestHeight = currentHeight;
+                if (latestHeight - minHeight >= properties.getThreshold()) {
+                    if (properties.getKeepSize() >= properties.getThreshold()) {
+                        minHeight = currentHeight;
+                    } else {
+                        minHeight = currentHeight - properties.getKeepSize();
+                    }
+                }
+            } else if (currentHeight > latestHeight + 1) {
+                latestHeight = currentHeight;
+                minHeight = currentHeight;
+            }
         }
         if (log.isDebugEnabled()) {
             log.debug("sync cache  minHeight:{}, latestHeight:{}", minHeight, latestHeight);
@@ -65,20 +64,14 @@ import org.springframework.stereotype.Component;
     }
 
     /**
-     * 清空缓存package
+     * 重置缓存package
      */
-    public void clean() {
-        latestHeight = INIT_HEIGHT;
-        minHeight = INIT_HEIGHT;
-    }
-
-    @Override public void stateChanged(NodeStateEnum from, NodeStateEnum to) {
-        if (NodeStateEnum.AutoSync == from) {
-            this.clean();
+    void reset(long clusterHeight) {
+        synchronized (this.clusterHeight) {
+            this.clusterHeight = clusterHeight;
+            latestHeight = clusterHeight;
+            minHeight = clusterHeight;
         }
     }
 
-    @Override public void afterPropertiesSet() {
-        nodeState.registerStateListener(this);
-    }
 }

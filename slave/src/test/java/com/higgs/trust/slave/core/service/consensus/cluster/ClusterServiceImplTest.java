@@ -128,8 +128,7 @@ import static org.testng.Assert.*;
     }
 
     @Test public void testValidatingHeader() {
-
-        when(System.currentTimeMillis()).thenReturn(20180503L);
+        PowerMockito.when(System.currentTimeMillis()).thenReturn(20180503L);
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         BlockHeader header = mock(BlockHeader.class);
         when(header.getHeight()).thenReturn(1L);
