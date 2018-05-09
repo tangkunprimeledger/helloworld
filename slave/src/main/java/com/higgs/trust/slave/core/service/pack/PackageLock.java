@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.model.bo.Package;
@@ -19,19 +21,26 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @date 2018/04/13 11:19
  * @desc package lock
  */
-@Service @Slf4j public class PackageLock {
-    @Autowired private PackageRepository packageRepository;
+@Service
+@Slf4j
+public class PackageLock {
+    @Autowired
+    private PackageRepository packageRepository;
 
-    @Autowired private TransactionTemplate txNested;
+    @Autowired
+    private TransactionTemplate txNested;
 
-    @Autowired private PackageService packageService;
+    @Autowired
+    private PackageService packageService;
 
-    @Autowired private LogReplicateHandler logReplicateHandler;
+    @Autowired
+    private LogReplicateHandler logReplicateHandler;
 
     public void lockAndSubmit(Long height) {
 
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -58,6 +67,65 @@ import org.springframework.transaction.support.TransactionTemplate;
                 logReplicateHandler.replicatePackage(packageVO);
                 // update status
                 packageService.statusChange(pack, PackageStatusEnum.INIT, PackageStatusEnum.SUBMIT_CONSENSUS_SUCCESS);
+            }
+        });
+    }
+
+    /**
+     * lock and send persisting  results to  consensus layer
+     *
+     * @param height
+     */
+    public void lockPersistingAndSubmit(Long height) {
+        txNested.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                Package pack = packageRepository.loadAndLock(height);
+
+                if (null == pack) {
+                    log.error("system exception, package is empty, height={}", height);
+                    //TODO 添加告警
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_IS_NOT_EXIST);
+                }
+
+                // if package status is not 'PERSISTING', return directly.
+                if (PackageStatusEnum.PERSISTING != pack.getStatus()) {
+                    return;
+                }
+                packageService.persistConsensus(pack);
+                // update status
+                packageService.statusChange(pack, PackageStatusEnum.PERSISTING, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+
+            }
+        });
+    }
+
+
+    /**
+     * lock and do something after persisting
+     *
+     * @param height
+     */
+    public void lockAndPersisted(Long height) {
+        txNested.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                Package pack = packageRepository.loadAndLock(height);
+
+                if (null == pack) {
+                    log.error("system exception, package is empty, height={}", height);
+                    //TODO 添加告警
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_IS_NOT_EXIST);
+                }
+
+                // if package status is not 'WAIT_PERSIST_CONSENSUS', return directly.
+                if (PackageStatusEnum.WAIT_PERSIST_CONSENSUS != pack.getStatus()) {
+                    return;
+                }
+
+                packageService.persisted(pack);
+                // update status
+                packageService.statusChange(pack, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
             }
         });
     }

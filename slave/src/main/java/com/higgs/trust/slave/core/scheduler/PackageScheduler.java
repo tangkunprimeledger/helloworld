@@ -33,6 +33,7 @@ import java.util.List;
 @Slf4j
 public class PackageScheduler {
 
+    private static final int PACKAGE_LIMIT = 20;
     @Autowired
     private PendingState pendingState;
 
@@ -81,7 +82,6 @@ public class PackageScheduler {
             return;
         }
 
-        pack.setStatus(PackageStatusEnum.INIT);
         txNested.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 packageRepository.save(pack);
@@ -154,6 +154,52 @@ public class PackageScheduler {
                     log.error("package process scheduled execute failed", e);
                 }
             }
+        }
+    }
+
+
+
+    /**
+     * process package
+     */
+    @Scheduled(fixedRateString = "${trust.schedule.package.persist2consensus}")
+    public void doPersistingToConsensus() {
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            return;
+        }
+
+        // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
+        List<Long> heightList = packageRepository.getHeightListByStatus(PackageStatusEnum.PERSISTING.getCode());
+
+        // if list is null or empty，there are no package for process
+        if (CollectionUtils.isEmpty(heightList)) {
+            return;
+        }
+
+        for (Long height : heightList) {
+            packageLock.lockPersistingAndSubmit(height);
+        }
+    }
+
+    /**
+     * process package
+     */
+    @Scheduled(fixedRateString = "${trust.schedule.package.persisted}")
+    public void doPersisted() {
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            return;
+        }
+
+        // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
+        List<Long> heightList = packageRepository.getHeightListByStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
+
+        // if list is null or empty，there are no package for process
+        if (CollectionUtils.isEmpty(heightList)) {
+            return;
+        }
+
+        for (Long height : heightList) {
+            packageLock.lockAndPersisted(height);
         }
     }
 }
