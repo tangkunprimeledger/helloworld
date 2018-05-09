@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
-import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
@@ -58,8 +57,7 @@ public class P2pHandlerImpl extends ValidConsensus implements P2pHandler {
     private PackageLock packageLock;
 
     @Autowired
-    public P2pHandlerImpl(P2pClusterInfo p2pClusterInfo, P2pConsensusClient p2pConsensusClient, PropertiesConfig propertiesConfig) {
-        super(p2pClusterInfo, p2pConsensusClient, propertiesConfig.getP2pDataDir());
+    public P2pHandlerImpl(PropertiesConfig propertiesConfig) {
         this.propertiesConfig = propertiesConfig;
     }
 

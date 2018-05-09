@@ -13,28 +13,18 @@ import java.util.function.Function;
 /**
  * @author cwy
  */
-@Slf4j
-public abstract class ValidConsensus {
+@Slf4j public abstract class ValidConsensus {
 
     private ValidExecutor executor;
 
-    @Autowired
-    private SendService sendService;
+    @Autowired private SendService sendService;
 
     public ValidConsensus() {
         executor = new ValidExecutor();
         config();
     }
 
-    public final void submit(ValidCommand<?> command) throws Exception {
-        sendService.submit(command);
-    }
-
-    public final void submit(ValidCommand<?> command, String toNodeName) {
-        sendService.submit(command);
-    }
-
-    public final void submit(ValidCommand<?> command, Collection<String> toNodeNames) {
+    public final void submit(ValidCommand<?> command) {
         sendService.submit(command);
     }
 
@@ -82,12 +72,12 @@ public abstract class ValidConsensus {
      */
     private Class<?> resolveArgument(Type type) {
         if (type instanceof ParameterizedType) {
-            ParameterizedType paramType = (ParameterizedType) type;
+            ParameterizedType paramType = (ParameterizedType)type;
             return resolveClass(paramType.getActualTypeArguments()[0]);
         } else if (type instanceof TypeVariable) {
             return resolveClass(type);
         } else if (type instanceof Class) {
-            TypeVariable<?>[] typeParams = ((Class<?>) type).getTypeParameters();
+            TypeVariable<?>[] typeParams = ((Class<?>)type).getTypeParameters();
             return resolveClass(typeParams[0]);
         }
         return null;
@@ -98,13 +88,13 @@ public abstract class ValidConsensus {
      */
     private Class<?> resolveClass(Type type) {
         if (type instanceof Class<?>) {
-            return (Class<?>) type;
+            return (Class<?>)type;
         } else if (type instanceof ParameterizedType) {
-            return resolveClass(((ParameterizedType) type).getRawType());
+            return resolveClass(((ParameterizedType)type).getRawType());
         } else if (type instanceof WildcardType) {
-            Type[] bounds = ((WildcardType) type).getUpperBounds();
+            Type[] bounds = ((WildcardType)type).getUpperBounds();
             if (bounds.length > 0) {
-                return (Class<?>) bounds[0];
+                return (Class<?>)bounds[0];
             }
         }
         return null;
@@ -125,8 +115,7 @@ public abstract class ValidConsensus {
     /**
      * Registers an operation with a void return value.
      */
-    @SuppressWarnings("unchecked")
-    private void registerVoidMethod(Class type, Method method) {
+    @SuppressWarnings("unchecked") private void registerVoidMethod(Class type, Method method) {
         executor.register(type, wrapVoidMethod(method));
     }
 
@@ -146,8 +135,7 @@ public abstract class ValidConsensus {
     /**
      * Registers an operation with a non-void return value.
      */
-    @SuppressWarnings("unchecked")
-    private void registerValueMethod(Class type, Method method) {
+    @SuppressWarnings("unchecked") private void registerValueMethod(Class type, Method method) {
         executor.register(type, wrapValueMethod(method));
     }
 

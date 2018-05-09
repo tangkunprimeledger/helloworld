@@ -175,8 +175,7 @@ import java.util.concurrent.ExecutorService;
             List<Long> maxHeights = blockRepository.getMaxHeight(operation.get());
             maxHeights.forEach(height -> {
                 try {
-                    clusterServiceImpl
-                        .submit(new ValidClusterHeightCmd(operation.getRequestId(), height), operation.getNodeName());
+                    clusterServiceImpl.submit(new ValidClusterHeightCmd(operation.getRequestId(), height));
                 } catch (Exception e) {
                     log.error("consensus submit error:", e);
                 }
@@ -198,8 +197,7 @@ import java.util.concurrent.ExecutorService;
             BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
             boolean result = blockHeader != null && blockService.compareBlockHeader(header, blockHeader);
             try {
-                clusterServiceImpl
-                    .submit(new ValidBlockHeaderCmd(operation.getRequestId(), header, result), operation.getNodeName());
+                clusterServiceImpl.submit(new ValidBlockHeaderCmd(operation.getRequestId(), header, result));
             } catch (Exception e) {
                 log.error("consensus submit error:", e);
             }
