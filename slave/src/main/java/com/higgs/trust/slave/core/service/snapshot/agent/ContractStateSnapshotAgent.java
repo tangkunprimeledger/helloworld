@@ -38,16 +38,24 @@ import java.util.Map;
     }
 
     @Override public void put(String key, StateManager state) {
-        snapshot.put(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key), state);
+        Map<String, Object> newState = state.getState();
         Map<String, Object> oldState = state.getOldState();
+        final String tempKeyName = "__KEY__";
+        newState.put(tempKeyName, key);
+
+        snapshot.put(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key), state);
+
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT);
         if (merkleTree == null) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CONTRACT, new Object[] {state.getState()});
+            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CONTRACT, new Object[] { newState });
         } else if (oldState == null){
-            merkleTreeSnapshotAgent.appendChild(merkleTree, state.getState());
+            merkleTreeSnapshotAgent.appendChild(merkleTree, newState);
         } else {
-            merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, oldState, state.getState());
+            oldState.put(tempKeyName, key);
+            merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, oldState, newState);
+            oldState.remove(tempKeyName);
         }
+        newState.remove(tempKeyName);
     }
 
     @Override public StateManager get(String key) {

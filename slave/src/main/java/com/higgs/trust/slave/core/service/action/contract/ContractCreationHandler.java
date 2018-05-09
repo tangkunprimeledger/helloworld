@@ -126,8 +126,7 @@ import java.util.Date;
 
             Contract contract = contractRepository.queryByAddress(address);
             if (null != contract) {
-                Profiler.release();
-                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BLOCK_HEIGHT_UNEQUAL_ERROR);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
             contract = new Contract();
             contract.setAddress(address);
