@@ -3,6 +3,7 @@ package com.higgs.trust.consensus.p2pvalid.core;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.higgs.trust.consensus.common.SHAUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,7 +22,6 @@ public abstract class ValidCommand<T extends Serializable> implements Serializab
 
     private T t;
 
-    private HashFunction function = Hashing.sha256();
 
     public ValidCommand() {
     }
@@ -42,7 +42,7 @@ public abstract class ValidCommand<T extends Serializable> implements Serializab
     public abstract String messageDigest();
 
     public String getMessageDigestHash(){
-        return function.hashString(messageDigest(), Charsets.UTF_8).toString();
+        return SHAUtils.sha256(messageDigest());
     }
 
 

@@ -9,4 +9,5 @@ import java.util.List;
 @Mapper
 public interface QueuedSendDao extends BaseConsensusDao<QueuedSendPO> {
     List<QueuedSendPO> querySendList();
+    QueuedSendPO queryByMessageDigest(@Param("messageDigest") String messageDigest);
 }

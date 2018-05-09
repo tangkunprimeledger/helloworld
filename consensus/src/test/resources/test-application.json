@@ -26,12 +26,12 @@
       "druid": {
         "driver-class-name": "com.mysql.jdbc.Driver",
         "initialSize": 1,
-        "maxActive": 20,
+        "maxActive": 10,
         "maxWait": 60000,
         "min-evictable-idle-time-millis": 300000,
         "minIdle": 1,
         "password": "123456",
-        "time-between-eviction-runs-millis": 60000,
+        "time-between-eviction-runs-millis": 100000,
         "url": "jdbc:mysql://192.168.56.3:3306/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
       },

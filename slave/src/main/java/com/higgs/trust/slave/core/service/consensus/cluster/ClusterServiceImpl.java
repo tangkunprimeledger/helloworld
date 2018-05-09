@@ -43,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired
     public ClusterServiceImpl(ClusterInfo clusterInfo, P2pConsensusClient client, NodeProperties properties) {
-        super(clusterInfo, client, properties.getConsensusDir());
         this.properties = properties;
     }
 

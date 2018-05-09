@@ -1,6 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.consensus.p2pvalid.core.storage.ReceiveService;
 import com.higgs.trust.consensus.p2pvalid.dao.po.ReceiveCommandPO;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,12 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ValidCommit<T extends ValidCommand<?>> {
 
-    private ReceiveCommandPO receiveCommandPO;
+    private ReceiveCommandPO receiveCommand;
     private ValidCommand<?> validCommand;
 
-    private ValidCommit(ReceiveCommandPO receiveCommandPO) {
-        this.receiveCommandPO = receiveCommandPO;
-        this.validCommand = (ValidCommand<?>) JSON.parse(receiveCommandPO.getValidCommand());
+    private ValidCommit(ReceiveCommandPO receiveCommand) {
+        this.receiveCommand = receiveCommand;
+        this.validCommand = (ValidCommand<?>) JSON.parse(receiveCommand.getValidCommand());
     }
 
     public static ValidCommit of(ReceiveCommandPO receiveCommandPO) {
@@ -23,7 +24,7 @@ public class ValidCommit<T extends ValidCommand<?>> {
     }
 
     public T operation() {
-        return (T)validCommand.getT() ;
+        return (T)validCommand;
     }
 
     public Class<? extends ValidCommand> type() {
@@ -31,7 +32,7 @@ public class ValidCommit<T extends ValidCommand<?>> {
     }
 
     public void close() {
-        log.info("add to gc {}", receiveCommandPO);
+        receiveCommand.setClosed(ReceiveService.COMMAND_CLOSED);
     }
 
 }
