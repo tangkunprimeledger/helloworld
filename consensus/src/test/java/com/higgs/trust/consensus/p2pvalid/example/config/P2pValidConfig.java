@@ -8,6 +8,7 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.example.StringValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.example.spi.impl.ClusterInfoImpl;
+import io.atomix.copycat.server.cluster.Cluster;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,7 @@ public class P2pValidConfig {
     }
 
     @Bean
-    public ValidConsensus validConsensus() {
+    public ClusterInfo clusterInfo(){
         String pubKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDT3gcMfUYTHCyRQ6t89oVC1ZwS" +
                 "bjj045VZOPDyqFlcfJK2ZAdw3qw1Io/A47BmtHw0XNS1DsltiA/Kgdl2UKeej73a" +
                 "tNNccfTuZE89GRtN5Fp983Wa1Fr9gPHooljUdp2+QldbjaoQ/pZGX33wkkwK77Ac" +
@@ -72,8 +73,7 @@ public class P2pValidConfig {
         if (StringUtils.isEmpty(myNodeName)) {
             myNodeName = "";
         }
-        myNodeName = myNodeName.toUpperCase();
-        ClusterInfo clusterInfo = ClusterInfoImpl.of()
+        return ClusterInfoImpl.of()
                 .setPubKey(pubKey)
                 .setPrivateKey(privateKey)
                 .setMyNodeName(myNodeName)
@@ -81,8 +81,5 @@ public class P2pValidConfig {
                     add(myNodeName);
                 }})
                 .setFaultNodeNum(0);
-        ValidConsensus validConsensus = new StringValidConsensus(clusterInfo, p2pConsensusClient, p2pBaseDir);
-        log.info("{}", validConsensus);
-        return validConsensus;
     }
 }

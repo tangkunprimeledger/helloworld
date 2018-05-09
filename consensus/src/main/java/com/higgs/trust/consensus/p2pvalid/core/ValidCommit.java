@@ -1,32 +1,37 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
-import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommandStatistics;
+import com.alibaba.fastjson.JSON;
+import com.higgs.trust.consensus.p2pvalid.dao.po.ReceiveCommandPO;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author cwy
  */
+@Slf4j
 public class ValidCommit<T extends ValidCommand<?>> {
 
-    private ReceiveCommandStatistics receiveCommandStatistics;
+    private ReceiveCommandPO receiveCommandPO;
+    private ValidCommand<?> validCommand;
 
-    private ValidCommit(ReceiveCommandStatistics receiveCommandStatistics) {
-        this.receiveCommandStatistics = receiveCommandStatistics;
+    private ValidCommit(ReceiveCommandPO receiveCommandPO) {
+        this.receiveCommandPO = receiveCommandPO;
+        this.validCommand = (ValidCommand<?>) JSON.parse(receiveCommandPO.getValidCommand());
     }
 
-    public static ValidCommit of(ReceiveCommandStatistics receiveCommandStatistics) {
-        return new ValidCommit(receiveCommandStatistics);
+    public static ValidCommit of(ReceiveCommandPO receiveCommandPO) {
+        return new ValidCommit(receiveCommandPO);
     }
 
     public T operation() {
-        return (T) receiveCommandStatistics.getValidCommand();
+        return (T)validCommand.getT() ;
     }
 
     public Class<? extends ValidCommand> type() {
-        return receiveCommandStatistics.getValidCommand().getClass();
+        return validCommand.getClass();
     }
 
     public void close() {
-        receiveCommandStatistics.close();
+        log.info("add to gc {}", receiveCommandPO);
     }
 
 }

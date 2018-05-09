@@ -20,7 +20,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
-public class ValidCommandWrap implements Serializable {
+public class SendValidCommandWrap implements Serializable {
 
     private static final long serialVersionUID = -1L;
     private ValidCommand<?> validCommand;
@@ -31,10 +31,10 @@ public class ValidCommandWrap implements Serializable {
     private Set<String> toNodeNames = new HashSet<>();
     private Long traceId;
 
-    public ValidCommandWrap() {
+    public SendValidCommandWrap() {
     }
 
-    private ValidCommandWrap(ValidCommand<?> validCommand) {
+    private SendValidCommandWrap(ValidCommand<?> validCommand) {
         this.validCommand = validCommand;
         this.commandClass = validCommand.getClass();
         HashFunction function = Hashing.sha256();
@@ -42,27 +42,27 @@ public class ValidCommandWrap implements Serializable {
         this.messageDigest = hash;
     }
 
-    public static ValidCommandWrap of(ValidCommand<?> validCommand) {
-        ValidCommandWrap validCommandWrap = new ValidCommandWrap(validCommand);
+    public static SendValidCommandWrap of(ValidCommand<?> validCommand) {
+        SendValidCommandWrap validCommandWrap = new SendValidCommandWrap(validCommand);
         return validCommandWrap;
     }
 
-    public ValidCommandWrap fromNodeName(String fromNodeName) {
+    public SendValidCommandWrap fromNodeName(String fromNodeName) {
         this.fromNodeName = fromNodeName;
         return this;
     }
 
-    public ValidCommandWrap sign(String privateKey) throws Exception {
+    public SendValidCommandWrap sign(String privateKey) throws Exception {
         this.sign = SignUtils.sign(messageDigest, privateKey);
         return this;
     }
 
-    public ValidCommandWrap addToNodeNames(Collection<String> toNodeNames) {
+    public SendValidCommandWrap addToNodeNames(Collection<String> toNodeNames) {
         this.toNodeNames.addAll(toNodeNames);
         return this;
     }
 
-    public ValidCommandWrap addToNodeName(String toNodeName) {
+    public SendValidCommandWrap addToNodeName(String toNodeName) {
         this.toNodeNames.add(toNodeName);
         return this;
     }
