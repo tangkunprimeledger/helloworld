@@ -671,6 +671,14 @@ import java.util.concurrent.ConcurrentHashMap;
         return merkleNode;
     }
 
+    /**
+     * update or add one merkleNode into merkleTree
+     *
+     * @param merkleTree
+     * @param level
+     * @param leafIndex
+     * @param maxIndex
+     */
     private void updateAddParent(MerkleTree merkleTree, int level, long leafIndex, long maxIndex) {
         MerkleNode left = null;
         MerkleNode right = null;
@@ -716,7 +724,13 @@ import java.util.concurrent.ConcurrentHashMap;
         }
     }
 
-    // 所有不在nodeMap中的数据都要从db查
+    /**
+     * batch acquire merkleNode from database which doesn't exist nodeMap
+     *
+     * @param merkleTree
+     * @param totalLevel
+     * @param leafIndex
+     */
     private void getMerkleNodeListForUpdate(MerkleTree merkleTree, int totalLevel, long leafIndex) {
         long maxIndex = merkleTree.getMaxIndex();
         Map nodeMap =merkleTree.getNodeMap();
@@ -783,6 +797,13 @@ import java.util.concurrent.ConcurrentHashMap;
         }
     }
 
+    /**
+     * batch acquire merkleNode from database which doesn't exist nodeMap
+     *
+     * @param merkleTree
+     * @param totalLevel
+     * @param leafIndex
+     */
     private void getMerkleNodeListForAdd(MerkleTree merkleTree, int totalLevel, long leafIndex) {
         long maxIndex = merkleTree.getMaxIndex();
         Map nodeMap =merkleTree.getNodeMap();
