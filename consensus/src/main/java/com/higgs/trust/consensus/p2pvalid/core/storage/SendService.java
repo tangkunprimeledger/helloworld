@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.CollectionUtils;
 import sun.security.provider.SHA;
 
 import javax.annotation.PostConstruct;
@@ -102,22 +103,23 @@ public class SendService {
      * @throws Exception
      */
     public void submit(ValidCommand<?> validCommand) {
+        SendCommandPO sendCommand = sendCommandDao.queryByMessageDigest(validCommand.getMessageDigestHash());
+        if (null != sendCommand) {
+            log.warn("duplicate command {}", validCommand);
+            return;
+        }
+
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                SendCommandPO sendCommand = sendCommandDao.queryByMessageDigest(validCommand.getMessageDigestHash());
-                if (null != sendCommand) {
-                    log.warn("duplicate command {}", validCommand);
-                    return;
-                }
-                sendCommand = new SendCommandPO();
+                SendCommandPO sendCommand = new SendCommandPO();
                 sendCommand.setAckNodeNum(0);
                 sendCommand.setGcThreshold(clusterInfo.clusterNodeNames().size());
                 sendCommand.setNodeName(clusterInfo.myNodeName());
                 try {
                     sendCommand.setCommandSign(SignUtils.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
                 } catch (Exception e) {
-                    log.error("sign error {}", e);
+                    log.error("sign error {}", e.getCause());
                     throw new RuntimeException(e);
                 }
                 sendCommand.setMessageDigest(validCommand.getMessageDigestHash());
@@ -157,13 +159,14 @@ public class SendService {
     private void send() {
         while (true) {
             try {
+                //TODO chengwenyan 事务开大了，整个队列开了一个事务，应该一个send请求一个队列
                 txRequired.execute(new TransactionCallbackWithoutResult() {
                     @Override
                     protected void doInTransactionWithoutResult(TransactionStatus status) {
                         List<QueuedSendPO> queuedSendPOList = queuedSendDao.querySendList();
                         sendLock.lock();
                         try {
-                            while (null == queuedSendPOList || queuedSendPOList.isEmpty()) {
+                            while (CollectionUtils.isEmpty(queuedSendPOList)) {
                                 sendCondition.await(5, TimeUnit.SECONDS);
                                 queuedSendPOList = queuedSendDao.querySendList();
                             }
@@ -232,7 +235,7 @@ public class SendService {
                     }
                 });
             } catch (Throwable throwable) {
-                log.error("{}", throwable);
+                log.error("p2p send process failed", throwable);
             }
         }
     }
