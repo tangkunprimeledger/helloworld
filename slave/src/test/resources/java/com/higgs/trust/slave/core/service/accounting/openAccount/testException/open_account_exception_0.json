@@ -1,0 +1,31 @@
+{
+  "测试ID": 0,
+  "body": {
+    "type":"OPEN_ACCOUNT",
+    "index":1,
+    "chainOwner": "a",
+    "dataOwner":"b",
+    "accountNo":"1",
+    "currency":"CNY",
+    "fundDirection":"CREDIT"
+  },
+  "type": "RS",
+  "assert": "request idempotent[SLAVE_IDEMPOTENT]",
+  "beforeSql": [
+    "TRUNCATE table data_identity",
+    "TRUNCATE table merkle_tree",
+    "TRUNCATE TABLE  merkle_node",
+    "truncate table currency_info",
+    "TRUNCATE  table account_info",
+    "INSERT INTO currency_info (currency, remark, create_time) VALUES ('CNY','renmingbi',now())",
+    "INSERT INTO account_info (account_no, currency, balance, freeze_amount, fund_direction, create_time, update_time) values ('1','CNY','0.0000000000',	'0.0000000000',	'CREDIT',		'2018-05-08 14:17:17.000',	'2018-05-08 14:17:17.355')"
+  ],
+  "afterSql": [
+    "TRUNCATE table data_identity",
+    "TRUNCATE table merkle_tree",
+    "TRUNCATE TABLE  merkle_node",
+    "truncate table currency_info",
+    "TRUNCATE  table account_info"
+  ],
+  "comment": "创建账户单元测试"
+}

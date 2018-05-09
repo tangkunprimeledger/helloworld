@@ -10,9 +10,14 @@
     "contractArgs":null,
     "remark":null
   },
-  "beforeSql":"",
-  "afterSql":"",
+  "beforeSql":[
+    "TRUNCATE TABLE account_info",
+    "INSERT INTO account_info (account_no, currency, balance, freeze_amount, fund_direction, create_time, update_time) values ('account_no_005_1','CNY','0.0000000000',	'0.0000000000',	'CREDIT',	'2018-05-08 14:17:17.000',	'2018-05-08 14:17:17.355')"
+  ],
+  "afterSql":[
+    "TRUNCATE TABLE account_info"
+  ],
   "type": "RS",
-  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "assert": "account balance is not enough error[SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR]",
   "comment": "冻结账户单元测试"
 }

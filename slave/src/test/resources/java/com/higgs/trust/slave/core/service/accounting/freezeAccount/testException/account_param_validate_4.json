@@ -1,66 +1,27 @@
 {
   "测试ID": 0,
   "body": {
-    "freeze": {
-      "type": "FREEZE",
-      "index": 1,
-      "bizFlowNo": "2321321323",
-      "accountNo": "account_no_005_1",
-      "amount": 4,
-      "contractAddr": null,
-      "contractArgs": null,
-      "remark": null
-    },
-    "credit": {
-      "type": "OPEN_ACCOUNT",
-      "index": 1,
-      "chainOwner": "a",
-      "dataOwner": "b",
-      "accountNo": "account_no_005_1",
-      "currency": "CNY",
-      "fundDirection": "CREDIT"
-    },
-    "debit": {
-      "type": "OPEN_ACCOUNT",
-      "index": 1,
-      "chainOwner": "a",
-      "dataOwner": "b",
-      "accountNo": "account_no_005_2",
-      "currency": "CNY",
-      "fundDirection": "DEBIT"
-    },
-    "accounting": {
-      "type": "ACCOUNTING",
-      "index": 1,
-      "bizFlowNo": "123",
-      "debitTradeInfo": [
-        {
-          "accountNo": "account_no_005_2",
-          "amount": "5"
-        }
-      ],
-      "creditTradeInfo": [
-        {
-          "accountNo": "account_no_005_1",
-          "amount": "5"
-        }
-      ],
-      "accountDate": "2018-05-03 16:13:41"
-    },
-    "policyId": "1000000"
+    "type":"FREEZE",
+    "index":1,
+    "bizFlowNo": "2132132",
+    "accountNo":"account_no_005_1",
+    "amount":"0.00",
+    "contractAddr":null,
+    "contractArgs":null,
+    "remark":null
   },
-  "beforeSql": [
-    "TRUNCATE TABLE data_identity",
+  "beforeSql":[
+    "TRUNCATE TABLE account_info",
     "TRUNCATE TABLE merkle_tree",
-    "TRUNCATE TABLE  merkle_node",
+    "TRUNCATE TABLE merkle_node",
+    "TRUNCATE TABLE data_identity",
     "TRUNCATE TABLE currency_info",
-    "TRUNCATE  TABLE account_info",
+    "TRUNCATE TABLE rs_pub_key",
     "TRUNCATE TABLE policy",
-    "TRUNCATE TABLE account_freeze_record",
     "INSERT INTO currency_info (currency, remark, create_time) VALUES ('CNY','renmingbi',now())",
     "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('1000000', 'register', '[\"b\"]', '2018-04-18 16:12:39.518')",
     "INSERT INTO account_detail (biz_flow_no, account_no, block_height, detail_no, change_direction, amount, before_amount, after_amount,create_time) VALUES ('123','account_no_005_2',	'1','1'	,'INCREASE'	,'5.0000000000','0.0000000000','5.0000000000','2018-05-09 15:31:55.000');",
-    "INSERT INTO account_detail (biz_flow_no, account_no, block_height, detail_no, change_direction, amount, before_amount, after_amount,create_time) VALUES ('123',	'account_no_005_1','1',	'1','INCREASE','5.0000000000','0.0000000000','5.0000000000','2018-05-09 15:31:55.000');",
+    "INSERT INTO account_detail (biz_flow_no, account_no, block_height, detail_no, change_direction, amount, before_amount, after_amount,create_time) VALUES ('123','account_no_005_1','1',	'1','INCREASE','5.0000000000','0.0000000000','5.0000000000','2018-05-09 15:31:55.000');",
     "INSERT INTO account_info (account_no, currency, balance, freeze_amount, fund_direction, detail_no, detail_freeze_no, status, create_time, update_time) VALUES ('account_no_005_1','CNY','5.0000000000','0.0000000000','CREDIT','1','0','NORMAL','2018-05-09 15:31:24.000','2018-05-09 15:31:55.531');",
     "INSERT INTO account_info (account_no, currency, balance, freeze_amount, fund_direction, detail_no, detail_freeze_no, status, create_time, update_time) VALUES ('account_no_005_2','CNY','5.0000000000','0.0000000000','DEBIT','1','0','NORMAL','2018-05-09 15:31:24.000','2018-05-09 15:31:55.337');",
     "INSERT INTO data_identity ( identity, chain_owner, data_owner, create_time) VALUES ('account_no_005_1',	'a','b','2018-05-09 15:31:24.182');",
@@ -70,15 +31,12 @@
     "INSERT INTO merkle_node (uuid, node_hash, `index`, level, parent, tree_type, create_time, update_time) VALUES ('443797143388422144','2cee5e160900b847064290bd08cab09bd78565849a62f3247592c3a0bb267c50','1','1','443797143300341760','ACCOUNT','2018-05-09 15:31:24.343','2018-05-09 15:31:55.507');",
     "INSERT INTO merkle_tree (root_hash, total_level, max_index, tree_type, create_time, update_time) VALUES ('445ffb851acf665e067a8f3e8e1527fb2c0e6c7937cd58f0fc1e715fde408571','2	','1','ACCOUNT','2018-05-09 15:31:24.217','2018-05-09 15:31:55.615');"
   ],
-  "afterSql": [
-    "TRUNCATE TABLE data_identity",
+  "afterSql":[
     "TRUNCATE TABLE merkle_tree",
-    "TRUNCATE TABLE  merkle_node",
-    "TRUNCATE TABLE currency_info",
-    "TRUNCATE TABLE policy",
-    "TRUNCATE TABLE account_freeze_record",
-    "TRUNCATE  TABLE account_info;"
+    "TRUNCATE TABLE merkle_node",
+    "TRUNCATE TABLE account_info"
   ],
   "type": "RS",
+  "assert": "account check freeze amount error[SLAVE_ACCOUNT_FREEZE_AMOUNT_ERROR]",
   "comment": "冻结账户单元测试"
 }

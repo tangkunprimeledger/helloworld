@@ -69,6 +69,7 @@
     "INSERT INTO merkle_node (uuid, node_hash, `index`, level, tree_type, create_time, update_time) VALUES ('443797143300341760','445ffb851acf665e067a8f3e8e1527fb2c0e6c7937cd58f0fc1e715fde408571','0','2','ACCOUNT','2018-05-09 15:31:24.343','2018-05-09 15:31:55.624');",
     "INSERT INTO merkle_node (uuid, node_hash, `index`, level, parent, tree_type, create_time, update_time) VALUES ('443797143388422144','2cee5e160900b847064290bd08cab09bd78565849a62f3247592c3a0bb267c50','1','1','443797143300341760','ACCOUNT','2018-05-09 15:31:24.343','2018-05-09 15:31:55.507');",
     "INSERT INTO merkle_tree (root_hash, total_level, max_index, tree_type, create_time, update_time) VALUES ('445ffb851acf665e067a8f3e8e1527fb2c0e6c7937cd58f0fc1e715fde408571','2	','1','ACCOUNT','2018-05-09 15:31:24.217','2018-05-09 15:31:55.615');"
+
   ],
   "afterSql": [
     "TRUNCATE TABLE data_identity",
