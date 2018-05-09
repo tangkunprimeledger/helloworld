@@ -1,0 +1,25 @@
+{
+  "测试ID": 0,
+  "body": {
+    "type":"FREEZE",
+    "index":1,
+    "bizFlowNo": "2132132",
+    "accountNo":"account_no_005_1",
+    "amount":"0.01",
+    "contractAddr":null,
+    "contractArgs":null,
+    "remark":null
+  },
+  "beforeSql":[
+    "TRUNCATE TABLE account_info",
+    "TRUNCATE TABLE merkle_tree",
+    "TRUNCATE TABLE merkle_node",
+    "INSERT INTO account_info (account_no, currency,status, balance, freeze_amount, fund_direction, create_time, update_time) values ('account_no_005_1','CNY','DESTROY','5.000',	'0.0000000000',	'CREDIT',	'2018-05-08 14:17:17.000',	'2018-05-08 14:17:17.355')"
+  ],
+  "afterSql":[
+    "TRUNCATE TABLE account_info"
+  ],
+  "type": "RS",
+  "assert": "account merkletree not exist error[SLAVE_ACCOUNT_MERKLE_TREE_NOT_EXIST_ERROR]",
+  "comment": "冻结账户单元测试"
+}

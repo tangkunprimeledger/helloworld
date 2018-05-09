@@ -1,17 +1,31 @@
 {
   "测试ID": 0,
   "body": {
-    "type":"OPEN_ACCOUNT",
-    "index":1,
+    "type": "OPEN_ACCOUNT",
+    "index": 1,
     "chainOwner": "a",
-    "dataOwner":"b",
-    "accountNo":"1",
-    "currency":"USD",
-    "fundDirection":"DEBIT"
+    "dataOwner": "b",
+    "accountNo": "1",
+    "currency": "USD",
+    "fundDirection": "DEBIT"
   },
   "type": "RS",
   "assert": "",
-  "beforeSql":"TRUNCATE table data_identity;TRUNCATE table merkle_tree;TRUNCATE TABLE  merkle_node;truncate table currency_info;TRUNCATE  table account_info;INSERT INTO currency_info (currency, remark, create_time) VALUES ('USD','renmingbi',now());",
-  "afterSql":"TRUNCATE table data_identity;TRUNCATE table merkle_tree;TRUNCATE TABLE  merkle_node;truncate table currency_info;TRUNCATE  table account_info;",
+  "beforeSql": [
+    "TRUNCATE table data_identity",
+    "TRUNCATE table merkle_tree",
+    "TRUNCATE TABLE  merkle_node",
+    "truncate table currency_info",
+    "TRUNCATE  table account_info",
+    "INSERT INTO currency_info (currency, remark, create_time) VALUES ('USD','renmingbi',now())"
+  ],
+  "afterSql": [
+    "TRUNCATE table data_identity",
+    "TRUNCATE table merkle_tree",
+    "TRUNCATE TABLE  merkle_node",
+    "truncate table currency_info",
+    "TRUNCATE  table account_info",
+    "TRUNCATE  table account_detail"
+  ],
   "comment": "创建账户单元测试"
 }

@@ -11,5 +11,8 @@
   },
   "type": "RS",
   "assert": "currency is not exists[SLAVE_ACCOUNT_CURRENCY_NOT_EXISTS_ERROR]",
-  "comment": "创建账户单元测试"
+  "comment": "创建账户单元测试",
+
+  "beforeSql": [
+    "TRUNCATE  table account_info"]
 }
