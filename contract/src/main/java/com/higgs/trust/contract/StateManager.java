@@ -1,6 +1,9 @@
 package com.higgs.trust.contract;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.util.IOUtils;
+import jdk.nashorn.api.scripting.AbstractJSObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +11,17 @@ import java.util.Map;
 public class StateManager {
     private Map<String, Object> state;
     private Map<String, Object> oldState;
+    public final static int JSON_GENERATE_FEATURES;
+
+    static {
+        int features = 0;
+        features = features | SerializerFeature.QuoteFieldNames.getMask();
+        features |= SerializerFeature.SkipTransientField.getMask();
+        features |= SerializerFeature.WriteEnumUsingName.getMask();
+        features |= SerializerFeature.SortField.getMask();
+        features |= SerializerFeature.MapSortField.getMask();
+        JSON_GENERATE_FEATURES = features;
+    }
 
     public StateManager() {
         state = new HashMap<>(8);
@@ -22,16 +36,16 @@ public class StateManager {
 
     private int toInt(Object value) {
         if (value instanceof String) {
-            return Integer.parseInt((String)value);
+            return Integer.parseInt((String) value);
         } else if (value instanceof Number) {
-            return ((Number)value).intValue();
+            return ((Number) value).intValue();
         } else {
             return ((Integer) value).intValue();
         }
     }
 
     public StateManager put(String name, Object value) {
-        this.state.put(name, JSON.parse(JSON.toJSONString(value)));
+        this.state.put(name, JSON.parse(JSON.toJSONString(value, JSON_GENERATE_FEATURES)));
         return this;
     }
 
