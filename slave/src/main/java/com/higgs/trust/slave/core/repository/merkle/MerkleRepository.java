@@ -73,7 +73,7 @@ import java.util.List;
                 new MerkleNodePO(temp.getNodeHash(), temp.getUuid(), temp.getIndex(), temp.getLevel(), temp.getParent(),
                     temp.getTreeType().getCode()));
         }
-        return  merkleDao.batchInsertMerkleNode(addedList);
+        return merkleDao.batchInsertMerkleNode(addedList);
     }
 
     /**
@@ -90,7 +90,7 @@ import java.util.List;
                 new MerkleNodePO(temp.getNodeHash(), temp.getUuid(), temp.getIndex(), temp.getLevel(), temp.getParent(),
                     temp.getTreeType().getCode()));
         }
-        return  merkleDao.batchUpdateMerkleNode(modifiedList);
+        return merkleDao.batchUpdateMerkleNode(modifiedList);
     }
 
     /**
@@ -117,7 +117,7 @@ import java.util.List;
     }
 
     /**
-     * check the existence merkle node by treeType, level, rootHash(if not null)
+     * check the existence merkle node by treeType, level, nodeHash(if not null)
      *
      * @param nodeHash
      * @return
@@ -133,5 +133,23 @@ import java.util.List;
         BeanUtils.copyProperties(merkleNodePO, merkleNode);
         merkleNode.setTreeType(MerkleTypeEnum.getBizTypeEnumBycode(merkleNodePO.getTreeType()));
         return merkleNode;
+    }
+
+    /**
+     * batch query merkleNode
+     *
+     * @param list
+     * @return
+     */
+    public List<MerkleNode> batchQueryMerkleNodeByIndex(List list) {
+        List<MerkleNodePO> nodeList = merkleDao.batchQueryMerkleNodeByIndex(list);
+        list.clear();
+        for (MerkleNodePO merkleNodePO : nodeList) {
+            MerkleNode merkleNode = new MerkleNode();
+            BeanUtils.copyProperties(merkleNodePO, merkleNode);
+            merkleNode.setTreeType(MerkleTypeEnum.getBizTypeEnumBycode(merkleNodePO.getTreeType()));
+            list.add(merkleNode);
+        }
+        return list;
     }
 }
