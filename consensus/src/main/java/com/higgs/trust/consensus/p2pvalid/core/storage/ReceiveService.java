@@ -163,33 +163,32 @@ public class ReceiveService {
 
     public void apply() {
         while (true) {
-            try{
+            try {
                 List<QueuedApplyPO> queuedApplyList = takeApplyList();
-                queuedApplyList.forEach((queuedApply)->{
+                queuedApplyList.forEach((queuedApply) -> {
                     ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
-                    if(null == receiveCommand){
+                    if (null == receiveCommand) {
                         escapeQueuedApply(queuedApply);
                         return;
-                    }
-                    ValidCommit validCommit = ValidCommit.of(receiveCommand);
-                    validConsensus.getValidExecutor().excute(validCommit);
-
-                    if(receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)){
-                        log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
-                        queuedDeley(receiveCommand);
-                    }else if(receiveCommand.getClosed().equals(COMMAND_CLOSED) && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()){
-                        log.info("command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}", receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
-                        queuedGc(receiveCommand);
-                        receiveCommandDao.updateReceiveNodeNum(receiveCommand.getMessageDigest(),COMMAND_CLOSED);
                     }
                     txRequired.execute(new TransactionCallbackWithoutResult() {
                         @Override
                         protected void doInTransactionWithoutResult(TransactionStatus status) {
+                            ValidCommit validCommit = ValidCommit.of(receiveCommand);
+                            validConsensus.getValidExecutor().excute(validCommit);
+                            if (receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)) {
+                                log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
+                                queuedDeley(receiveCommand);
+                            } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED) && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
+                                log.info("command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}", receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
+                                receiveCommandDao.updateCloseStatus(receiveCommand.getMessageDigest(), receiveCommand.getClosed());
+                                queuedGc(receiveCommand);
+                            }
                             queuedApplyDao.deleteByMessageDigest(queuedApply.getMessageDigest());
                         }
                     });
                 });
-            }catch (Throwable throwable){
+            } catch (Throwable throwable) {
                 log.error("{}", throwable);
             }
         }
@@ -200,18 +199,18 @@ public class ReceiveService {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 List<QueuedApplyDelayPO> queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
-                if(CollectionUtils.isEmpty(queuedApplyDelayList)){
+                if (CollectionUtils.isEmpty(queuedApplyDelayList)) {
                     return;
                 }
                 List<String> deleteMessageDigestList = new ArrayList<>();
-                queuedApplyDelayList.forEach((queuedApplyDelay)->{
+                queuedApplyDelayList.forEach((queuedApplyDelay) -> {
                     QueuedApplyPO queuedApply = new QueuedApplyPO();
                     queuedApply.setMessageDigest(queuedApplyDelay.getMessageDigest());
                     queuedApplyDao.add(queuedApply);
                     deleteMessageDigestList.add(queuedApply.getMessageDigest());
                     log.info("trans message from apply delay queue to apply queue : {}", queuedApplyDelay);
                 });
-                if(!CollectionUtils.isEmpty(deleteMessageDigestList)){
+                if (!CollectionUtils.isEmpty(deleteMessageDigestList)) {
                     queuedApplyDelayDao.deleteByMessageDigestList(deleteMessageDigestList);
                 }
             }
@@ -231,7 +230,7 @@ public class ReceiveService {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 List<QueuedReceiveGcPO> queuedReceiveGcList = queuedReceiveGcDao.queryGcList(System.currentTimeMillis());
-                if(CollectionUtils.isEmpty(queuedReceiveGcList)){
+                if (CollectionUtils.isEmpty(queuedReceiveGcList)) {
                     return;
                 }
                 List<String> deleteMessageDigestList = new ArrayList<>();
@@ -250,7 +249,6 @@ public class ReceiveService {
             }
         });
     }
-
 
     /**
      * take apply list
@@ -273,7 +271,7 @@ public class ReceiveService {
         return queuedApplyList;
     }
 
-    private void checkReceiveStatus(ReceiveCommandPO receiveCommand){
+    private void checkReceiveStatus(ReceiveCommandPO receiveCommand) {
         //check status
         if (receiveCommand.getStatus().equals(COMMAND_QUEUED_GC)) {
             log.warn("command has add to gc : {}", receiveCommand);
@@ -281,7 +279,7 @@ public class ReceiveService {
         } else if (receiveCommand.getStatus().equals(COMMAND_QUEUED_APPLY)) {
             log.info("command has queued to apply : {}", receiveCommand);
 
-        } else if(receiveCommand.getClosed().equals(COMMAND_CLOSED) && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()){
+        } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED) && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
             log.info("command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}", receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
             queuedGc(receiveCommand);
         } else if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getApplyThreshold()) {
@@ -290,7 +288,7 @@ public class ReceiveService {
         }
     }
 
-    private void escapeQueuedApply(QueuedApplyPO queuedApply){
+    private void escapeQueuedApply(QueuedApplyPO queuedApply) {
         //delete with transactions
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override
@@ -301,7 +299,7 @@ public class ReceiveService {
         });
     }
 
-    private void queuedApply(ReceiveCommandPO receiveCommand){
+    private void queuedApply(ReceiveCommandPO receiveCommand) {
         QueuedApplyPO queuedApply = new QueuedApplyPO();
         queuedApply.setMessageDigest(receiveCommand.getMessageDigest());
         queuedApplyDao.add(queuedApply);
@@ -309,7 +307,7 @@ public class ReceiveService {
         receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_QUEUED_APPLY);
     }
 
-    private void queuedGc(ReceiveCommandPO receiveCommand){
+    private void queuedGc(ReceiveCommandPO receiveCommand) {
         QueuedReceiveGcPO queuedReceiveGc = new QueuedReceiveGcPO();
         queuedReceiveGc.setGcTime(System.currentTimeMillis() + 10000L);
         queuedReceiveGc.setMessageDigest(receiveCommand.getMessageDigest());
@@ -318,8 +316,8 @@ public class ReceiveService {
         receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_QUEUED_GC);
     }
 
-    private boolean queuedDeley(ReceiveCommandPO receiveCommand){
-        if(receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)){
+    private boolean queuedDeley(ReceiveCommandPO receiveCommand) {
+        if (receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)) {
             log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
             //add
             QueuedApplyDelayPO queuedApplyDelay = new QueuedApplyDelayPO();
