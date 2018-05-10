@@ -83,7 +83,12 @@ import java.math.BigDecimal;
             }
             //check balance
             BigDecimal afterAmount = accountInfo.getBalance().subtract(accountInfo.getFreezeAmount()).subtract(bo.getAmount());
-            if (afterAmount.compareTo(BigDecimal.ZERO) < 0) {
+            if (afterAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                log.error("[accountFreeze.validate] balance is not enough by accountNo:{}", bo.getAccountNo());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
+            }
+            //compare balance
+            if (afterAmount.compareTo(bo.getAmount()) < 0) {
                 log.error("[accountFreeze.validate] balance is not enough by accountNo:{}", bo.getAccountNo());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
             }
