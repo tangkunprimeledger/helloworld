@@ -55,7 +55,7 @@ import java.util.List;
             // pending transaction idempotent check
             if (pendingTxRepository.isExist(txId)) {
                 log.warn("pending transaction idempotent, txId={}", txId);
-                transactionVO.setErrMsg("transaction idempotent");
+                transactionVO.setErrMsg("pending transaction idempotent");
                 transactionVO.setRetry(true);
                 transactionVOList.add(transactionVO);
                 return;

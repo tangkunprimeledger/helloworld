@@ -1,7 +1,9 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
+import com.higgs.trust.consensus.common.SHAUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
 
@@ -10,11 +12,13 @@ import java.io.Serializable;
  */
 @Setter
 @Getter
+@ToString
 public abstract class ValidCommand<T extends Serializable> implements Serializable {
 
     private static final long serialVersionUID = -1L;
 
     private T t;
+
 
     public ValidCommand() {
     }
@@ -34,10 +38,9 @@ public abstract class ValidCommand<T extends Serializable> implements Serializab
 
     public abstract String messageDigest();
 
-    @Override
-    public String toString() {
-        return "ValidCommand{" +
-                "t=" + t +
-                '}';
+    public String getMessageDigestHash(){
+        return SHAUtils.sha256(this.getClass().getName().concat("_").concat(messageDigest()));
     }
+
+
 }

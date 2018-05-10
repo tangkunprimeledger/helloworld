@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.consensus.p2pvalid.dao.QueuedApplyDelayDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.consensus.p2pvalid.dao.po.QueuedApplyDelayPO">
+        <result column="id" property="id" />
+        <result column="message_digest" property="messageDigest" />
+        <result column="apply_time" property="applyTime" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+    <!-- queued_apply_delay table all fields -->
+    <sql id="baseColumnList">
+        id,message_digest,apply_time,create_time
+    </sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="id != null">
+                and id=#{id}
+            </if>
+            <if test="messageDigest != null and messageDigest != ''">
+                and message_digest=#{messageDigest}
+            </if>
+            <if test="applyTime != null">
+                and apply_time=#{applyTime}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="Object">
+        insert into
+        queued_apply_delay(id,message_digest,apply_time,create_time)
+        values(#{id},#{messageDigest},#{applyTime},now(3))
+    </insert>
+    <!-- 以上为工具自动生成 -->
+    
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="queryListByApplyTime" parameterType="Object">
+        delete from queued_apply_delay where
+        `apply_time` &lt;= #{applyTime}
+    </delete>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from queued_apply_delay where
+        `message_digest` = #{messageDigest}
+    </delete>
+
+    <!-- 根据messageDigestList删除记录 -->
+    <delete id="deleteByMessageDigestList" parameterType="Object">
+        delete from queued_apply_delay where
+        `message_digest` in
+        <foreach item="item" index="index" collection="messageDigestList" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+
+
+</mapper>

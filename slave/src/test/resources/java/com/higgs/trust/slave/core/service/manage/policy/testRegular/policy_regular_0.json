@@ -1,0 +1,15 @@
+{
+  "测试ID": 0,
+  "body": {
+    "policyId": "test-policy",
+    "policyName":"测试-1",
+    "rsIds":["rs-test-1", "rs-test-2"]
+  },
+  "policyId": "000000",
+  "assert": "",
+  "afterSql": ["delete from policy where policy_id='test-policy'",
+    "truncate table merkle_tree",
+    "truncate table merkle_node"
+  ],
+  "comment": "注册policy接口测试-merkle-tree不存在"
+}

@@ -1,7 +1,9 @@
 package com.higgs.trust.consensus.p2pvalid.api;
 
 import com.higgs.trust.common.feign.FeignRibbonConstants;
-import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
+import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
+import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
+import com.higgs.trust.consensus.p2pvalid.core.exchange.SendValidCommandWrap;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,0 +1,9 @@
+{
+  "测试ID": 0,
+  "body": {
+    "rsId": "rs-test-1",
+    "desc":"测试注册RS"
+  },
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "注册rs接口测试-pubKey为null"
+}

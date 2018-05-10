@@ -12,7 +12,6 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
-import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandler;
 import com.higgs.trust.slave.core.service.pending.PendingState;
@@ -62,9 +61,10 @@ import java.util.Set;
 
     @Autowired private NodeState nodeState;
 
-    @Autowired private RsPubKeyRepository rsPubKeyRepository;
-
     private static final Long DEFAULT_HEIGHT = 1L;
+
+    @Value("${trust.package.pending}")
+    private int PACKAGE_PENDING_COUNT;
 
     /**
      * create new package from pending transactions
@@ -141,11 +141,15 @@ import java.util.Set;
                 add(PackageStatusEnum.VALIDATING.getCode());
                 add(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS.getCode());
                 add(PackageStatusEnum.VALIDATED.getCode());
-                add(PackageStatusEnum.PERSISTING.getCode());
-                add(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
             }};
             long minPackHeight = packageRepository.getMinHeight(statusSet);
             long count = packageRepository.count(statusSet);
+
+            //if pending package number is too large, will stop creating package
+            if (count >= PACKAGE_PENDING_COUNT) {
+                log.warn("pending package count is too large, stop creating package.");
+                return null;
+            }
 
             if (0 != minPackHeight && 0 != count) {
                 long result = count + minPackHeight - 1;

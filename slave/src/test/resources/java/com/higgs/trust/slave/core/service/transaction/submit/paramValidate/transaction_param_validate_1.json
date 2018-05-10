@@ -1,0 +1,15 @@
+{
+  "测试ID": 0,
+  "body":
+  [
+    {
+      "@type": "com.higgs.trust.slave.model.bo.SignedTransaction",
+      "signatureList": [
+        "F4hXBiV8Qdmh/c4gWmR0sBnknrFyd6D0G5RXNgJsZaHNugcLTOlc7Ges/WlhMiaLvy/jnbGMeVshMTLoqBSUyLrTpveDrDXpy7NhnEFBslqwyKt2weYCfiCbWOTjmeF1v5LAzgKn1PDKVPgV2n3zRqsOtd2ru85NYkiIDykMoZE=",
+        "UhPX8MV8g/2X5763iWRcMHWGHpl4SNtWXbUhZ3qhyraN7KvOYNCU5QIn4IustTKp+9sUDjz6K1idLhgRs/Dj7wNhQX2AhF8vgApNZ7rXt7st+khFZxs1oMdATiQfYkwKh7VclJ4TvRoh8ZEiDrHKWbw3TwzWei2Ml0r3H8CoXUs="
+      ]
+    }
+  ],
+  "assert": null,
+  "comment": "交易提交接口测试-coreTx为null"
+}

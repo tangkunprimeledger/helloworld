@@ -52,23 +52,27 @@ import java.security.spec.X509EncodedKeySpec;
      * @return
      * @throws Exception
      */
-    public static String sign(String dataString, String privateKey) throws Exception {
-        log.info("sign data string:{}", dataString);
+    public static String sign(String dataString, String privateKey) {
+        try {
+            log.info("sign data string:{}", dataString);
 
-        //解码私钥
-        byte[] keyBytes = decryptBASE64(privateKey);
-        //构造PKCS8EncodedKeySpec对象
-        PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(keyBytes);
-        //指定加密算法
-        KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
-        //取私钥匙对象
-        PrivateKey privateKey2 = keyFactory.generatePrivate(pkcs8EncodedKeySpec);
-        //用私钥对信息生成数字签名
-        Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
-        signature.initSign(privateKey2);
-        signature.update(dataString.getBytes("UTF-8"));
+            //解码私钥
+            byte[] keyBytes = decryptBASE64(privateKey);
+            //构造PKCS8EncodedKeySpec对象
+            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(keyBytes);
+            //指定加密算法
+            KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+            //取私钥匙对象
+            PrivateKey privateKey2 = keyFactory.generatePrivate(pkcs8EncodedKeySpec);
+            //用私钥对信息生成数字签名
+            Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
+            signature.initSign(privateKey2);
+            signature.update(dataString.getBytes("UTF-8"));
 
-        return encryptBASE64(signature.sign());
+            return encryptBASE64(signature.sign());
+        } catch (Exception e) {
+            throw new RuntimeException("sign utils sign failed", e);
+        }
     }
 
     /**
@@ -79,20 +83,23 @@ import java.security.spec.X509EncodedKeySpec;
      * @return
      * @throws Exception
      */
-    public static boolean verify(String verifyString, String sign, String publicKey) throws Exception {
-        //解码公钥
-        byte[] keyBytes = decryptBASE64(publicKey);
-        //构造X509EncodedKeySpec对象
-        X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(keyBytes);
-        //指定加密算法
-        KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
-        //取公钥匙对象
-        PublicKey publicKey2 = keyFactory.generatePublic(x509EncodedKeySpec);
+    public static boolean verify(String verifyString, String sign, String publicKey) {
+        try {
+            //解码公钥
+            byte[] keyBytes = decryptBASE64(publicKey);
+            //构造X509EncodedKeySpec对象
+            X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(keyBytes);
+            //指定加密算法
+            KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+            //取公钥匙对象
+            PublicKey publicKey2 = keyFactory.generatePublic(x509EncodedKeySpec);
 
-        Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
-        signature.initVerify(publicKey2);
-        signature.update(verifyString.getBytes("UTF-8"));
-
-        return signature.verify(decryptBASE64(sign));
+            Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
+            signature.initVerify(publicKey2);
+            signature.update(verifyString.getBytes("UTF-8"));
+            return signature.verify(decryptBASE64(sign));
+        } catch (Exception e) {
+            throw new RuntimeException("sign utils verify failed", e);
+        }
     }
 }

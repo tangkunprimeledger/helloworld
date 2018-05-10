@@ -1,0 +1,49 @@
+{
+  "测试ID": 0,
+  "body":
+  [
+    {
+      "@type": "com.higgs.trust.slave.model.bo.SignedTransaction",
+      "coreTx": {
+        "actionList": [
+          {
+            "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+            "index": 0,
+            "policyId": "test-policy-0002",
+            "policyName": "测试policy注册",
+            "rsIds": [
+              "TRUST-NODE97",
+              "TRUST-NODE100"
+            ],
+            "type": null
+          }
+        ],
+        "bizModel": {
+          "@type": "com.alibaba.fastjson.JSONObject",
+          "data": {
+            "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+            "index": 0,
+            "policyId": "test-policy-0002",
+            "policyName": "测试policy注册",
+            "rsIds": [
+              "TRUST-Test1",
+              "TRUST-Test2"
+            ],
+            "type": "REGISTER_POLICY"
+          }
+        },
+        "lockTime": 1525232969688,
+        "txId": "tx_id_REGISTER_POLICY_0_1525232969688Thread-0",
+        "policyId": "test-policy-1",
+        "sender": "TRUST-NODE97",
+        "version": "1.0.0"
+      },
+      "signatureList": [
+        "F4hXBiV8Qdmh/c4gWmR0sBnknrFyd6D0G5RXNgJsZaHNugcLTOlc7Ges/WlhMiaLvy/jnbGMeVshMTLoqBSUyLrTpveDrDXpy7NhnEFBslqwyKt2weYCfiCbWOTjmeF1v5LAzgKn1PDKVPgV2n3zRqsOtd2ru85NYkiIDykMoZE=",
+        "UhPX8MV8g/2X5763iWRcMHWGHpl4SNtWXbUhZ3qhyraN7KvOYNCU5QIn4IustTKp+9sUDjz6K1idLhgRs/Dj7wNhQX2AhF8vgApNZ7rXt7st+khFZxs1oMdATiQfYkwKh7VclJ4TvRoh8ZEiDrHKWbw3TwzWei2Ml0r3H8CoXUs="
+      ]
+    }
+  ],
+  "assert": "param invalid",
+  "comment": "交易提交接口测试-actionList中type为null"
+}

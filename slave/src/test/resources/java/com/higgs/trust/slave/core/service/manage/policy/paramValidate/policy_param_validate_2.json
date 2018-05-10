@@ -1,0 +1,10 @@
+{
+  "测试ID": 0,
+  "body": {
+    "policyId": "policy-test-length-too-long-policy-test-length-too-long-policy-test-length-too-long",
+    "policyName":"测试-1",
+    "rsIds":["rs-test-1", "rs-test-2"]
+  },
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "注册policy接口测试-policyId超长"
+}

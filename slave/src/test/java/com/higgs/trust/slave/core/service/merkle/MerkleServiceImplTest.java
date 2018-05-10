@@ -354,4 +354,56 @@ public class MerkleServiceImplTest extends BaseTest {
             assertEquals(e.getMessage(), "slave merkle node build duplicate exception[SLAVE_MERKLE_NODE_BUILD_DUPLICATE_EXCEPTION]");
         }
     }
+
+    @Test
+    public void verify5(){
+        dataBaseManager.executeSingleDelete(sql,url);
+        List tempTxList = new LinkedList();
+        tempTxList.add("a");
+        tempTxList.add("b");
+        tempTxList.add("c");
+        tempTxList.add("d");
+        tempTxList.add("e");
+        tempTxList.add("f");
+        tempTxList.add("g");
+        tempTxList.add("h");
+        MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
+        merkleService.flush(merkleTree);
+        merkleTree = merkleService.queryMerkleTree(MerkleTypeEnum.RS);
+
+
+        merkleService.update(merkleTree,"a","x");
+        tempTxList.set(0,"x");
+        assertEquals(merkleService.build(MerkleTypeEnum.RS, tempTxList).getRootHash(),(merkleTree.getRootHash()));
+
+        merkleService.update(merkleTree,"b","y");
+        tempTxList.set(1,"y");
+        assertEquals(merkleService.build(MerkleTypeEnum.RS, tempTxList).getRootHash(),(merkleTree.getRootHash()));
+    }
+
+
+    @Test
+    public void verify6(){
+        dataBaseManager.executeSingleDelete(sql,url);
+        List tempTxList = new LinkedList();
+        tempTxList.add("a");
+        tempTxList.add("b");
+        tempTxList.add("c");
+        tempTxList.add("d");
+        tempTxList.add("e");
+        tempTxList.add("f");
+        tempTxList.add("g");
+        tempTxList.add("h");
+        MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
+        merkleService.flush(merkleTree);
+        merkleTree = merkleService.queryMerkleTree(MerkleTypeEnum.RS);
+
+        merkleService.add(merkleTree,"x");
+        tempTxList.add("x");
+        assertEquals(merkleService.build(MerkleTypeEnum.RS, tempTxList).getRootHash(),(merkleTree.getRootHash()));
+
+        merkleService.add(merkleTree,"y");
+        tempTxList.add("y");
+        assertEquals(merkleService.build(MerkleTypeEnum.RS, tempTxList).getRootHash(),(merkleTree.getRootHash()));
+    }
 }

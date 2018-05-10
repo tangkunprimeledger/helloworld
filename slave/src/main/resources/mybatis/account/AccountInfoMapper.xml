@@ -128,4 +128,16 @@
 		set freeze_amount=freeze_amount-#{amount},detail_freeze_no=detail_freeze_no+1,update_time=now(3)
 		where account_no=#{accountNo} and freeze_amount - #{amount} >= 0
 	</update>
+
+    <!--batch query the account info-->
+    <select id="queryByAccountNos" resultType="com.higgs.trust.slave.dao.po.account.AccountInfoPO">
+        select
+        <include refid="baseColumnList"/>
+        from account_info
+        where account_no in
+        <foreach collection="accountNos" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
 </mapper>

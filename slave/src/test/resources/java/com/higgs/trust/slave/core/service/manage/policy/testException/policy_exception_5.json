@@ -1,0 +1,13 @@
+{
+  "测试ID": 0,
+  "body": {
+    "policyId": "test-policy1",
+    "policyName":"测试-1",
+    "rsIds":["rs-test-1", "rs-test-2"]
+  },
+  "policyId": "000000",
+  "beforeSql": ["INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`)VALUES('test-policy1', '测试注册policy-1', '[\"rs-test1\"]', '2018-05-08 15:44:56.363')"],
+  "assert": "policy is already exists[SLAVE_POLICY_EXISTS_ERROR]",
+  "afterSql": ["delete from policy where policy_id='test-policy1'"],
+  "comment": "注册policy接口测试-policy已存在"
+}
