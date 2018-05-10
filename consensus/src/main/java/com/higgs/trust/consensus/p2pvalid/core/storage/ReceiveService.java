@@ -378,7 +378,7 @@ public class ReceiveService {
         //trans status
         int count = receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_APPLIED, COMMAND_QUEUED_GC);
         if (count != 1) {
-            throw new RuntimeException("trans receive command status failed when apply! count: " + count);
+            throw new RuntimeException("trans receive command status failed when add gc queue! count: " + count);
         }
     }
 
