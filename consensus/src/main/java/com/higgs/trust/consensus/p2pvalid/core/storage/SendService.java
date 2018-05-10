@@ -105,6 +105,15 @@ import java.util.concurrent.locks.ReentrantLock;
         SendCommandPO sendCommand = sendCommandDao.queryByMessageDigest(validCommand.getMessageDigestHash());
         if (null != sendCommand) {
             log.warn("duplicate command {}", validCommand);
+
+            //signal wait
+            sendLock.lock();
+            try {
+                log.info("signal the send thread");
+                sendCondition.signal();
+            } finally {
+                sendLock.unlock();
+            }
             return;
         }
         txRequired.execute(new TransactionCallbackWithoutResult() {
@@ -133,7 +142,6 @@ import java.util.concurrent.locks.ReentrantLock;
                     sendNodePO.setStatus(SEND_NODE_WAIT_SEND);
                     sendNodeDao.add(sendNodePO);
                 });
-
                 queuedSend(sendCommand);
             }
         });
