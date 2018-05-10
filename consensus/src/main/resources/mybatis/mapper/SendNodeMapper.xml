@@ -57,7 +57,7 @@
 
     <!-- 变更状态 -->
     <update id="transStatus" parameterType="Object">
-        update send_node set `status` = #{status} where `message_digest` = #{messageDigest} and `status` = #{from}
+        update send_node set `status` = #{status} where `message_digest` = #{messageDigest} and `to_node_name` = #{toNodeName} and `status` = #{from}
     </update>
 
     <!-- 根据messageDigest删除记录 -->
