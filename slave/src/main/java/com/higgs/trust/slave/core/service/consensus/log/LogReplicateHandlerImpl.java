@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 /**
  * @Description: replicate the sorted package to cluster
@@ -83,7 +83,13 @@ import java.util.concurrent.ExecutorService;
         // replicate package to all nodes
         log.info("package starts to distribute to each node through consensus layer");
         PackageCommand packageCommand = new PackageCommand(packageVO);
-        consensusClient.submit(packageCommand);
+        CompletableFuture future = consensusClient.submit(packageCommand);
+        try {
+            future.get(2, TimeUnit.SECONDS);
+        } catch (Throwable e) {
+            log.error("replicate log failed!");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED);
+        }
         log.info("package has been sent to consensus layer");
     }
 
