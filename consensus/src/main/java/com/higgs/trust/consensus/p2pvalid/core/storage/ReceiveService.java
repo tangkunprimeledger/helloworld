@@ -34,6 +34,8 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class ReceiveService {
 
+    //TODO 简化状态，去掉close
+
     private static final Integer COMMAND_NORMAL = 0;
     private static final Integer COMMAND_QUEUED_APPLY = 1;
     private static final Integer COMMAND_APPLIED = 2;
@@ -322,7 +324,8 @@ public class ReceiveService {
         return queuedApplyList;
     }
 
-    private void checkReceiveStatus(String messageDigest) {
+    private void
+    checkReceiveStatus(String messageDigest) {
         //re-query db for avoid dirty read
         ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
 
@@ -333,16 +336,22 @@ public class ReceiveService {
         } else if (receiveCommand.getStatus().equals(COMMAND_QUEUED_APPLY)) {
             log.info("command has queued to apply : {}", receiveCommand);
 
-        }else if (receiveCommand.getStatus().equals(COMMAND_APPLIED) && receiveCommand.getClosed().equals(COMMAND_CLOSED)
-                && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
-            queuedGc(receiveCommand);
-            log.info("command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                    receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
+        }else if (receiveCommand.getStatus().equals(COMMAND_APPLIED)) {
 
-        } else if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getApplyThreshold()) {
-            queuedApply(receiveCommand);
-            log.info("command receive node num : {} >= command apply threshold : {}, add command to apply queue : {}",
-                    receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(), receiveCommand);
+            if(receiveCommand.getClosed().equals(COMMAND_CLOSED)
+                    && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()){
+                queuedGc(receiveCommand);
+                log.info("command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
+                        receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
+            }
+        } else if (receiveCommand.getStatus().equals(COMMAND_NORMAL)) {
+            if(receiveCommand.getReceiveNodeNum() >= receiveCommand.getApplyThreshold()){
+                queuedApply(receiveCommand);
+                log.info("command receive node num : {} >= command apply threshold : {}, add command to apply queue : {}",
+                        receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(), receiveCommand);
+            }else{
+                log.info("command receive ... {}", receiveCommand);
+            }
         }
     }
 
