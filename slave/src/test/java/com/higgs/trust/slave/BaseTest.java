@@ -21,7 +21,7 @@
     extends AbstractTestNGSpringContextTests{
 
     @Autowired
-    SnapshotService snapshotService;
+    private SnapshotService snapshotService;
 
     @BeforeSuite public void beforeClass() throws Exception {
         System.setProperty("spring.config.location", "classpath:test-application.json");
