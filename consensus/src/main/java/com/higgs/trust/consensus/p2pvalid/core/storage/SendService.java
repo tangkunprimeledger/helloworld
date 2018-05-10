@@ -377,7 +377,7 @@ public class SendService {
         QueuedSendGcPO queuedSendGcPO = new QueuedSendGcPO();
         queuedSendGcPO.setMessageDigest(sendCommand.getMessageDigest());
         //TODO 配置化，目前改成了10分钟
-        queuedSendGcPO.setGcTime(System.currentTimeMillis() + 600000L);
+        queuedSendGcPO.setGcTime(System.currentTimeMillis() + 6000L);
         queuedSendGcDao.add(queuedSendGcPO);
         int count = sendCommandDao.transStatus(sendCommand.getMessageDigest(), COMMAND_QUEUED_SEND, COMMAND_QUEUED_GC);
         if (count != 1) {
