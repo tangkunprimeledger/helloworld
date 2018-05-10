@@ -2,6 +2,7 @@ package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.consensus.common.TraceUtils;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
@@ -11,6 +12,7 @@ import com.higgs.trust.consensus.p2pvalid.dao.po.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.sleuth.Span;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -177,39 +179,44 @@ public class ReceiveService {
             try {
                 List<QueuedApplyPO> queuedApplyList = takeApplyList();
                 queuedApplyList.forEach((queuedApply) -> {
-                    ReceiveCommandPO receiveCommand =
-                            receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
-                    if (null == receiveCommand) {
-                        escapeQueuedApply(queuedApply);
-                        return;
-                    }
-                    txRequired.execute(new TransactionCallbackWithoutResult() {
-                        @Override
-                        protected void doInTransactionWithoutResult(TransactionStatus status) {
-                            ValidCommit validCommit = ValidCommit.of(receiveCommand);
-                            validConsensus.getValidExecutor().execute(validCommit);
-                            if (receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)) {
-                                log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
-                                queuedDelay(receiveCommand);
-                            } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)
-                                    && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
-                                int count = receiveCommandDao
-                                        .updateCloseStatus(receiveCommand.getMessageDigest(), COMMAND_NOT_CLOSED,
-                                                COMMAND_CLOSED);
-                                if (count != 1) {
-                                    throw new RuntimeException(
-                                            "update receive command close status failed when apply! count: " + count);
-                                }
-                                queuedGc(receiveCommand);
-                                log.info(
-                                        "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                                        receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
-                                        receiveCommand);
-                            }
-                            queuedApplyDao.deleteByMessageDigest(queuedApply.getMessageDigest());
-                            log.info("command dequeue : {}", receiveCommand);
+                    Span span = TraceUtils.createSpan();
+                    try {
+                        ReceiveCommandPO receiveCommand =
+                                receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
+                        if (null == receiveCommand) {
+                            escapeQueuedApply(queuedApply);
+                            return;
                         }
-                    });
+                        txRequired.execute(new TransactionCallbackWithoutResult() {
+                            @Override
+                            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                                ValidCommit validCommit = ValidCommit.of(receiveCommand);
+                                validConsensus.getValidExecutor().execute(validCommit);
+                                if (receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)) {
+                                    log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
+                                    queuedDelay(receiveCommand);
+                                } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)
+                                        && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
+                                    int count = receiveCommandDao
+                                            .updateCloseStatus(receiveCommand.getMessageDigest(), COMMAND_NOT_CLOSED,
+                                                    COMMAND_CLOSED);
+                                    if (count != 1) {
+                                        throw new RuntimeException(
+                                                "update receive command close status failed when apply! count: " + count);
+                                    }
+                                    queuedGc(receiveCommand);
+                                    log.info(
+                                            "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
+                                            receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
+                                            receiveCommand);
+                                }
+                                queuedApplyDao.deleteByMessageDigest(queuedApply.getMessageDigest());
+                                log.info("command dequeue : {}", receiveCommand);
+                            }
+                        });
+                    } finally {
+                        TraceUtils.closeSpan(span);
+                    }
                 });
             } catch (Throwable throwable) {
                 log.error(" apply error : {}", throwable);
