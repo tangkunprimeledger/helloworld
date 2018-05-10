@@ -190,7 +190,7 @@ import java.util.concurrent.locks.ReentrantLock;
                                 validCommandWrap.setFromNode(sendCommand.getNodeName());
                                 validCommandWrap.setSign(sendCommand.getCommandSign());
                                 validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parse(sendCommand.getValidCommand()));
-                                p2pConsensusClient.receiveCommand(sendNode.getToNodeName(), validCommandWrap);
+                                p2pConsensusClient.send(sendNode.getToNodeName(), validCommandWrap);
 
                                 int count = sendNodeDao
                                     .transStatus(sendNode.getMessageDigest(), sendNode.getToNodeName(), SEND_NODE_WAIT_SEND, SEND_NODE_ACK);

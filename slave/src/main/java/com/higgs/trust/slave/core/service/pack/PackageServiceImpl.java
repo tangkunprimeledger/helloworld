@@ -63,7 +63,7 @@ import java.util.Set;
 
     private static final Long DEFAULT_HEIGHT = 1L;
 
-    @Value("${trust.package.pending}")
+    @Value("${trust.package.pending:1000}")
     private int PACKAGE_PENDING_COUNT;
 
     /**
