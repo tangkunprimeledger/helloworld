@@ -95,23 +95,24 @@ import java.util.concurrent.locks.ReentrantLock;
     public void receive(ValidCommandWrap validCommandWrap) {
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
 
-        //check duplicate
-        ReceiveNodePO receiveNode = receiveNodeDao
-            .queryByMessageDigestAndFromNode(validCommandWrap.getValidCommand().getMessageDigestHash(),
-                validCommandWrap.getFromNode());
-
-        if (null != receiveNode) {
-            log.warn("duplicate command from node {} , validCommandWrap : {}", validCommandWrap.getFromNode(),
-                validCommandWrap);
-            return;
-        }
-
         String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNode());
         if (!SignUtils.verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
             throw new RuntimeException(String
                 .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
                     validCommandWrap, pubKey));
         }
+
+        //check duplicate
+        ReceiveNodePO receiveNode = receiveNodeDao
+                .queryByMessageDigestAndFromNode(messageDigest,
+                        validCommandWrap.getFromNode());
+
+        if (null != receiveNode) {
+            log.warn("duplicate command from node {} , validCommandWrap : {}", validCommandWrap.getFromNode(),
+                    validCommandWrap);
+            return;
+        }
+
         //TODO 考虑降低并发粒度
         synchronized (this){
             txRequired.execute(new TransactionCallbackWithoutResult() {
