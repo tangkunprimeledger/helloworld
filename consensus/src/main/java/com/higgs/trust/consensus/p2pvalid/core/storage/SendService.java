@@ -22,7 +22,6 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -47,8 +46,6 @@ import java.util.concurrent.locks.ReentrantLock;
     @Autowired private TransactionTemplate txRequired;
 
     @Autowired private ClusterInfo clusterInfo;
-
-    @Autowired private ReceiveService receiveService;
 
     @Autowired private P2pConsensusClient p2pConsensusClient;
 
@@ -138,16 +135,17 @@ import java.util.concurrent.locks.ReentrantLock;
                 });
 
                 queuedSend(sendCommand);
-                //signal wait
-                sendLock.lock();
-                try {
-                    log.info("signal the send thread");
-                    sendCondition.signal();
-                } finally {
-                    sendLock.unlock();
-                }
             }
         });
+
+        //signal wait
+        sendLock.lock();
+        try {
+            log.info("signal the send thread");
+            sendCondition.signal();
+        } finally {
+            sendLock.unlock();
+        }
     }
 
     /**

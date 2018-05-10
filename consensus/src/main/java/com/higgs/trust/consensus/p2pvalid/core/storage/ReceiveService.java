@@ -153,6 +153,14 @@ import java.util.concurrent.locks.ReentrantLock;
                 }
             });
         }
+        //signal wait
+        applyLock.lock();
+        try {
+            log.info("signal the send thread");
+            applyCondition.signal();
+        } finally {
+            applyLock.unlock();
+        }
     }
 
     private void increaseReceiveNodeNum(String messageDigest) {
