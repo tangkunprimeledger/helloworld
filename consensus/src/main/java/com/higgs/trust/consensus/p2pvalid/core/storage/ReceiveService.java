@@ -28,7 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-@Component @Slf4j public class ReceiveService {
+@Component
+@Slf4j
+public class ReceiveService {
 
     private static final Integer COMMAND_NORMAL = 0;
     private static final Integer COMMAND_QUEUED_APPLY = 1;
@@ -37,25 +39,35 @@ import java.util.concurrent.locks.ReentrantLock;
     public static final Integer COMMAND_NOT_CLOSED = 0;
     public static final Integer COMMAND_CLOSED = 1;
 
-    @Autowired private ValidConsensus validConsensus;
+    @Autowired
+    private ValidConsensus validConsensus;
 
-    @Autowired private ReceiveCommandDao receiveCommandDao;
+    @Autowired
+    private ReceiveCommandDao receiveCommandDao;
 
-    @Autowired private ReceiveNodeDao receiveNodeDao;
+    @Autowired
+    private ReceiveNodeDao receiveNodeDao;
 
-    @Autowired private QueuedReceiveGcDao queuedReceiveGcDao;
+    @Autowired
+    private QueuedReceiveGcDao queuedReceiveGcDao;
 
-    @Autowired private QueuedApplyDao queuedApplyDao;
+    @Autowired
+    private QueuedApplyDao queuedApplyDao;
 
-    @Autowired private QueuedApplyDelayDao queuedApplyDelayDao;
+    @Autowired
+    private QueuedApplyDelayDao queuedApplyDelayDao;
 
-    @Autowired private TransactionTemplate txRequired;
+    @Autowired
+    private TransactionTemplate txRequired;
 
-    @Autowired private ClusterInfo clusterInfo;
+    @Autowired
+    private ClusterInfo clusterInfo;
 
-    @Value("${p2p.revceive.delay.interval:2}") private Long transDelayInterval;
+    @Value("${p2p.revceive.delay.interval:2}")
+    private Long transDelayInterval;
 
-    @Value("${p2p.receive.gc.interval:10}") private Long gcInterval;
+    @Value("${p2p.receive.gc.interval:10}")
+    private Long gcInterval;
 
     /**
      * apply lock
@@ -67,7 +79,8 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private final Condition applyCondition = applyLock.newCondition();
 
-    @PostConstruct public void initThreadPool() {
+    @PostConstruct
+    public void initThreadPool() {
         new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("command apply thread");
@@ -81,7 +94,7 @@ import java.util.concurrent.locks.ReentrantLock;
             thread.setDaemon(true);
             return new Thread(r);
         }).scheduleWithFixedDelay(this::transApplyDelayToApply, transDelayInterval, transDelayInterval,
-            TimeUnit.SECONDS);
+                TimeUnit.SECONDS);
 
         new ScheduledThreadPoolExecutor(1, (r) -> {
             Thread thread = new Thread(r);
@@ -98,56 +111,55 @@ import java.util.concurrent.locks.ReentrantLock;
         String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNode());
         if (!SignUtils.verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
             throw new RuntimeException(String
-                .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
-                    validCommandWrap, pubKey));
+                    .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
+                            validCommandWrap, pubKey));
         }
 
+        // update receive command
+        ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
+        if (null == receiveCommand) {
+            receiveCommand = new ReceiveCommandPO();
+            //set apply threshold
+            receiveCommand.setApplyThreshold(
+                    Math.min(clusterInfo.faultNodeNum() * 2 + 1, clusterInfo.clusterNodeNames().size()));
+            receiveCommand.setCommandClass(validCommandWrap.getCommandClass().getSimpleName());
+            receiveCommand.setGcThreshold(clusterInfo.clusterNodeNames().size());
+            receiveCommand.setMessageDigest(messageDigest);
+            receiveCommand.setNodeName(clusterInfo.myNodeName());
+            receiveCommand.setReceiveNodeNum(0);
+            receiveCommand.setValidCommand(JSON.toJSONString(validCommandWrap.getValidCommand()));
+            receiveCommand.setStatus(COMMAND_NORMAL);
+            receiveCommand.setClosed(COMMAND_NOT_CLOSED);
+            try {
+                receiveCommandDao.add(receiveCommand);
+            } catch (DuplicateKeyException e) {
+                //do nothing when idempotent
+            }
+        }
 
-        // add receive node
+        ReceiveNodePO tempReceiveNode = receiveNodeDao.queryByMessageDigestAndFromNode(validCommandWrap.getValidCommand().getMessageDigestHash(),validCommandWrap.getFromNode());
+        if(null != tempReceiveNode){
+            return;
+        }
+
+        //add receive node
         ReceiveNodePO receiveNode = new ReceiveNodePO();
         receiveNode.setCommandSign(validCommandWrap.getSign());
         receiveNode.setFromNodeName(validCommandWrap.getFromNode());
         receiveNode.setMessageDigest(validCommandWrap.getValidCommand().getMessageDigestHash());
         try {
-            receiveNodeDao.add(receiveNode);
+            txRequired.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    receiveNodeDao.add(receiveNode);
+                    receiveCommandDao.increaseReceiveNodeNum(receiveNode.getMessageDigest());
+                    checkReceiveStatus(receiveNode.getMessageDigest());
+                }
+            });
         } catch (DuplicateKeyException e) {
             //do nothing when idempotent
         }
 
-        //TODO 考虑降低并发粒度
-        synchronized (this){
-            txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    // update receive command
-                    ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
-                    if (null == receiveCommand) {
-                        receiveCommand = new ReceiveCommandPO();
-                        //set apply threshold
-                        receiveCommand.setApplyThreshold(
-                                Math.min(clusterInfo.faultNodeNum() * 2 + 1, clusterInfo.clusterNodeNames().size()));
-                        receiveCommand.setCommandClass(validCommandWrap.getCommandClass().getSimpleName());
-                        receiveCommand.setGcThreshold(clusterInfo.clusterNodeNames().size());
-                        receiveCommand.setMessageDigest(messageDigest);
-                        receiveCommand.setNodeName(clusterInfo.myNodeName());
-                        receiveCommand.setReceiveNodeNum(1);
-                        receiveCommand.setValidCommand(JSON.toJSONString(validCommandWrap.getValidCommand()));
-                        receiveCommand.setStatus(COMMAND_NORMAL);
-                        receiveCommand.setClosed(COMMAND_NOT_CLOSED);
-                        try {
-                            receiveCommandDao.add(receiveCommand);
-                        } catch (DuplicateKeyException e) {
-                            //TODO DuplicateKeyException 为了保证事务读取的时候还能读到这个key，会对key加共享锁，超过两个线程同时并发时候，更新会导致死锁
-                            //just increase when idempotent
-                            increaseReceiveNodeNum(receiveCommand.getMessageDigest());
-                        }
-                    } else {
-                        increaseReceiveNodeNum(receiveCommand.getMessageDigest());
-                    }
-                    //check receive status
-                    checkReceiveStatus(receiveCommand.getMessageDigest());
-                }
-            });
-        }
         //signal wait
         applyLock.lock();
         try {
@@ -156,6 +168,7 @@ import java.util.concurrent.locks.ReentrantLock;
         } finally {
             applyLock.unlock();
         }
+
     }
 
     private void increaseReceiveNodeNum(String messageDigest) {
@@ -171,30 +184,31 @@ import java.util.concurrent.locks.ReentrantLock;
                 List<QueuedApplyPO> queuedApplyList = takeApplyList();
                 queuedApplyList.forEach((queuedApply) -> {
                     ReceiveCommandPO receiveCommand =
-                        receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
+                            receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
                     if (null == receiveCommand) {
                         escapeQueuedApply(queuedApply);
                         return;
                     }
                     txRequired.execute(new TransactionCallbackWithoutResult() {
-                        @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        @Override
+                        protected void doInTransactionWithoutResult(TransactionStatus status) {
                             ValidCommit validCommit = ValidCommit.of(receiveCommand);
                             validConsensus.getValidExecutor().execute(validCommit);
                             if (receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)) {
                                 log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
                                 queuedDelay(receiveCommand);
                             } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)
-                                && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
+                                    && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
                                 log.info(
-                                    "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                                    receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
-                                    receiveCommand);
+                                        "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
+                                        receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
+                                        receiveCommand);
                                 int count = receiveCommandDao
-                                    .updateCloseStatus(receiveCommand.getMessageDigest(), COMMAND_NOT_CLOSED,
-                                        receiveCommand.getClosed());
+                                        .updateCloseStatus(receiveCommand.getMessageDigest(), COMMAND_NOT_CLOSED,
+                                                receiveCommand.getClosed());
                                 if (count != 1) {
                                     throw new RuntimeException(
-                                        "update receive command close status failed when apply! count: " + count);
+                                            "update receive command close status failed when apply! count: " + count);
                                 }
                                 queuedGc(receiveCommand);
                             }
@@ -210,9 +224,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
     public void transApplyDelayToApply() {
         txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
                 List<QueuedApplyDelayPO> queuedApplyDelayList =
-                    queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
+                        queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
                 if (CollectionUtils.isEmpty(queuedApplyDelayList)) {
                     return;
                 }
@@ -245,7 +260,8 @@ import java.util.concurrent.locks.ReentrantLock;
             return;
         }
         txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
                 List<String> deleteMessageDigestList = new ArrayList<>();
                 queuedReceiveGcList.forEach((queuedReceiveGc) -> {
                     deleteMessageDigestList.add(queuedReceiveGc.getMessageDigest());
@@ -296,14 +312,13 @@ import java.util.concurrent.locks.ReentrantLock;
             log.info("command has queued to apply : {}", receiveCommand);
 
         } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)
-            && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
-            log.info(
-                "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
+                && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
+            log.info("command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
+                    receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
             queuedGc(receiveCommand);
         } else if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getApplyThreshold()) {
             log.info("comman receive node num : {} >= command apply threshold : {}, add command to apply queue : {}",
-                receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(), receiveCommand);
+                    receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(), receiveCommand);
             queuedApply(receiveCommand);
         }
     }
@@ -311,7 +326,8 @@ import java.util.concurrent.locks.ReentrantLock;
     private void escapeQueuedApply(QueuedApplyPO queuedApply) {
         //delete with transactions
         txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
                 log.warn("escape apply command is null of messageDigest {}", queuedApply.getMessageDigest());
                 queuedApplyDao.deleteByMessageDigest(queuedApply.getMessageDigest());
             }
@@ -324,7 +340,7 @@ import java.util.concurrent.locks.ReentrantLock;
         queuedApplyDao.add(queuedApply);
         //trans status
         int count =
-            receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_NORMAL, COMMAND_QUEUED_APPLY);
+                receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_NORMAL, COMMAND_QUEUED_APPLY);
         if (count != 1) {
             throw new RuntimeException("trans receive command status failed when apply! count: " + count);
         }
@@ -338,7 +354,7 @@ import java.util.concurrent.locks.ReentrantLock;
         queuedReceiveGcDao.add(queuedReceiveGc);
         //trans status
         int count =
-            receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_QUEUED_APPLY, COMMAND_QUEUED_GC);
+                receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_QUEUED_APPLY, COMMAND_QUEUED_GC);
         if (count != 1) {
             throw new RuntimeException("trans receive command status failed when apply! count: " + count);
         }
