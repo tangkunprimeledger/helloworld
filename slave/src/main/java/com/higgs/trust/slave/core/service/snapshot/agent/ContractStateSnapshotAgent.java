@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,17 +34,22 @@ import java.util.Map;
     @Override public Object query(Object object) {
         ContractStateCacheKey key = (ContractStateCacheKey) object;
         Map<String, Object> state = repository.get(key.getAddress());
-        StateManager stateManager = new StateManager(state);
+        if (state == null) {
+            return null;
+        }
+
+        StateManager stateManager = new StateManager(state, false);
         return stateManager;
     }
 
     @Override public void put(String key, StateManager state) {
         Map<String, Object> newState = state.getState();
         Map<String, Object> oldState = state.getOldState();
+
+        snapshot.put(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key), new StateManager(newState, false));
+
         final String tempKeyName = "__KEY__";
         newState.put(tempKeyName, key);
-
-        snapshot.put(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key), state);
 
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT);
         if (merkleTree == null) {
@@ -59,7 +65,14 @@ import java.util.Map;
     }
 
     @Override public StateManager get(String key) {
-        return (StateManager) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key));
+        StateManager stateManager = (StateManager) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key));
+        if (stateManager == null) {
+            return new StateManager();
+        }
+
+        Map<String, Object> newState = new HashMap<>(stateManager.getState().size());
+        stateManager.getState().forEach((k, value) -> newState.put(k, value));
+        return new StateManager(newState);
     }
 
     @Override public void remove(String key) {
