@@ -88,7 +88,7 @@ import java.util.concurrent.*;
             future.get(2, TimeUnit.SECONDS);
         } catch (Throwable e) {
             log.error("replicate log failed!");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED, e);
         }
         log.info("package has been sent to consensus layer");
     }
