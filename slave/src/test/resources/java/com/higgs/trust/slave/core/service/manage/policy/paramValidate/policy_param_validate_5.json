@@ -1,10 +1,10 @@
 {
   "测试ID": 0,
   "body": {
-    "policyId": "",
-    "policyName":"测试-1",
+    "policyId": "test-1",
+    "policyName":"测试Policy-测试Policy测试Policy-测试Policy测试Policy-测试Policy测试Policy-测试Policy测试Policy-测试Policy测试Policy-测试Policy测试Policy-测试Policy",
     "rsIds":["rs-test-1", "rs-test-2"]
   },
   "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
-  "comment": "注册policy接口测试"
+  "comment": "注册policy接口测试-policyName超长"
 }

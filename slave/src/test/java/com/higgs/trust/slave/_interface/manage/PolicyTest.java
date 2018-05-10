@@ -20,13 +20,6 @@ import java.util.Map;
         return PROVIDER_ROOT_PATH;
     }
 
-    private void clearDB() {
-        StringBuilder sql = new StringBuilder();
-        sql.append("truncate table policy;");
-        DataBaseManager dataBaseManager = new DataBaseManager();
-        dataBaseManager.executeSingleDelete(sql.toString(), DB_URL);
-    }
-
     @Test(dataProvider = "defaultProvider", priority = 1) public void paramValidate(Map<?, ?> param) {
         log.info("[paramValidate]param:{}", param);
         RegisterPolicy action = getAction(param, RegisterPolicy.class, ActionTypeEnum.REGISTER_POLICY);
@@ -37,11 +30,17 @@ import java.util.Map;
         log.info("[testRegular]param:{}", param);
         RegisterPolicy action = getAction(param, RegisterPolicy.class, ActionTypeEnum.REGISTER_POLICY);
         executeActionHandler(param, registerPolicyHandler, action);
+
+        executeAfterSql(param);
     }
 
     @Test(dataProvider = "defaultProvider", priority = 3) public void testException(Map<?, ?> param) {
         log.info("[testException]param:{}", param);
+        executeBeforeSql(param);
+
         RegisterPolicy action = getAction(param, RegisterPolicy.class, ActionTypeEnum.REGISTER_POLICY);
         executeActionHandler(param, registerPolicyHandler, action);
+
+        executeAfterSql(param);
     }
 }

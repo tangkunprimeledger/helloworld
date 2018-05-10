@@ -1,0 +1,14 @@
+{
+  "测试ID": 0,
+  "body": {
+    "rsId": "rs-test1",
+    "pubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCK44EynMXc3+KSX/e8DqxujYscTwiMUPgS7CBywYGnMLioeYA2IcUXLqtlwhPx1/14uEYS9fMewkPeTlOquKDxX6Xr1+s8bgals0OxdBR/CjAHPNnG1GZlxlfNN8IIyFagbcGJD8537cdb9nXkZ0FYoCx6GZSba+JoMjxZBReViQIDAQAB",
+    "desc": "注册rs接口测试"
+  },
+  "policyId": "000000",
+  "afterSql": ["delete from rs_pub_key where rs_id='rs-test1'",
+    "truncate table merkle_tree",
+    "truncate table merkle_node"],
+  "assert": "",
+  "comment": "注册rs接口测试"
+}

@@ -29,37 +29,49 @@ import java.util.List;
  * @author tangfashuang
  * @date 2018/04/09 15:30
  */
-@Service @Slf4j public class PackageScheduler {
+@Service
+@Slf4j
+public class PackageScheduler {
 
     private static final int PACKAGE_LIMIT = 20;
 
-    @Autowired private PendingState pendingState;
+    @Autowired
+    private PendingState pendingState;
 
-    @Autowired private PackageRepository packageRepository;
+    @Autowired
+    private PackageRepository packageRepository;
 
-    @Autowired private TransactionTemplate txNested;
+    @Autowired
+    private TransactionTemplate txNested;
 
-    @Autowired private PackageService packageService;
+    @Autowired
+    private PackageService packageService;
 
-    @Autowired private PackageLock packageLock;
+    @Autowired
+    private PackageLock packageLock;
 
-    @Autowired private PackageProcess packageProcess;
+    @Autowired
+    private PackageProcess packageProcess;
 
-    @Autowired private BlockRepository blockRepository;
+    @Autowired
+    private BlockRepository blockRepository;
 
-    @Autowired private NodeState nodeState;
+    @Autowired
+    private NodeState nodeState;
 
-    @Value("${trust.batch.tx.limit}") private int PENDING_COUNT;
+    @Value("${trust.batch.tx.limit}")
+    private int TX_PENDING_COUNT;
 
     /**
      * master node create package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.create}")
+    public void createPackage() {
         if (!nodeState.isMaster()) {
             return;
         }
 
-        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(PENDING_COUNT);
+        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
             return;
@@ -72,7 +84,8 @@ import java.util.List;
         }
 
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 packageRepository.save(pack);
                 int update = pendingState.packagePendingTransactions(pack.getSignedTxList(), pack.getHeight());
                 if (update != pack.getSignedTxList().size()) {
@@ -88,7 +101,8 @@ import java.util.List;
     /**
      * master node submit package which status equals 'INIT'
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.submit}") public void submitPackage() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.submit}")
+    public void submitPackage() {
         if (!nodeState.isMaster()) {
             return;
         }
@@ -109,7 +123,8 @@ import java.util.List;
     /**
      * process package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.process}") public void processPackage() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
+    public void processPackage() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }

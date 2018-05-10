@@ -1,0 +1,10 @@
+{
+  "测试ID": 0,
+  "body": {
+    "policyId": "test-policy",
+    "policyName":"测试-1",
+    "rsIds":["rs-test-1", "rs-test-1"]
+  },
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "注册policy接口测试-rsIds存在重复"
+}

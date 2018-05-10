@@ -96,6 +96,14 @@ import java.util.List;
             Profiler.release();
             Profiler.logDump();
         }
+
+        pack.getSignedTxList().forEach(signedTx -> {
+            try {
+                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
+            } catch (InterruptedException e) {
+                log.error("interrupted exception. txId={}", signedTx.getCoreTx().getTxId());
+            }
+        });
     }
 
     /**
@@ -190,13 +198,6 @@ import java.util.List;
         }
 
         //TODO:call RS business
-        pack.getSignedTxList().forEach(signedTx -> {
-            try {
-                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
-            } catch (InterruptedException e) {
-                log.error("interrupted exception. txId={}", signedTx.getCoreTx().getTxId());
-            }
-        });
         Profiler.release();
         if (Profiler.getDuration() > 0) {
             Profiler.logDump();

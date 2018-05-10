@@ -1,9 +1,10 @@
 {
   "测试ID": 0,
   "body": {
-    "policyId": "test-1",
-    "policyName":"测试-1"
+    "rsId": "rs-test-1",
+    "pubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCK44EynMXc3+KSX/e8DqxujYscTwiMUPgS7CBywYGnMLioeYA2IcUXLqtlwhPx1/14uEYS9fMewkPeTlOquKDxX6Xr1+s8bgals0OxdBR/CjAHPNnG1GZlxlfNN8IIyFagbcGJD8537cdb9nXkZ0FYoCx6GZSba+JoMjxZBReViQIDAQAB",
+    "desc":""
   },
   "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
-  "comment": "注册policy接口测试"
+  "comment": "注册rs接口测试-desc为空"
 }
