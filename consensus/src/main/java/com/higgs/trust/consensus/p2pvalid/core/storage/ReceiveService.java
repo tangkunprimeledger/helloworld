@@ -181,8 +181,7 @@ public class ReceiveService {
                 queuedApplyList.forEach((queuedApply) -> {
                     Span span = TraceUtils.createSpan();
                     try {
-                        ReceiveCommandPO receiveCommand =
-                                receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
+                        ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
                         if (null == receiveCommand) {
                             escapeQueuedApply(queuedApply);
                             return;
@@ -195,8 +194,7 @@ public class ReceiveService {
                                 if (receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)) {
                                     log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
                                     queuedDelay(receiveCommand);
-                                } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)
-                                        && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
+                                } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)) {
                                     int count = receiveCommandDao
                                             .updateCloseStatus(receiveCommand.getMessageDigest(), COMMAND_NOT_CLOSED,
                                                     COMMAND_CLOSED);
@@ -204,14 +202,21 @@ public class ReceiveService {
                                         throw new RuntimeException(
                                                 "update receive command close status failed when apply! count: " + count);
                                     }
-                                    queuedGc(receiveCommand);
-                                    log.info(
-                                            "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                                            receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
-                                            receiveCommand);
+
+                                    ReceiveCommandPO receiveCommandTemp = receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
+
+                                    if(receiveCommandTemp.getReceiveNodeNum() >= receiveCommandTemp.getGcThreshold()){
+
+                                        queuedGc(receiveCommandTemp);
+                                        log.info(
+                                                "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
+                                                receiveCommandTemp.getReceiveNodeNum(), receiveCommandTemp.getGcThreshold(),
+                                                receiveCommandTemp);
+                                    }
+
                                 }
                                 queuedApplyDao.deleteByMessageDigest(queuedApply.getMessageDigest());
-                                log.info("command dequeue : {}", receiveCommand);
+                                log.info("command dequeue : {}", receiveCommand.getMessageDigest());
                             }
                         });
                     } finally {
