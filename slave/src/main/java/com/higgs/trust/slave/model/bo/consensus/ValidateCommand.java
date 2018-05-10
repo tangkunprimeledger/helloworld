@@ -19,7 +19,6 @@ import lombok.Setter;
     }
 
     @Override public String messageDigest() {
-        return new StringBuffer(this.getClass().getSimpleName()).append(Constant.SPLIT_SLASH).append(get().toString())
-            .toString();
+        return get().toString();
     }
 }
