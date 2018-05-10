@@ -20,8 +20,11 @@ public class P2pConsensusController{
     @RequestMapping(value = "/receive_command", method = RequestMethod.POST)
     @ResponseBody
     public String receiveCommand(@RequestBody ValidCommandWrap validCommandWrap) {
-       receiveService.receive(validCommandWrap);
-       //TODO 如果出现异常，需要上游感知
+        try {
+            receiveService.receive(validCommandWrap);
+        }catch (Throwable throwable){
+            throw new RuntimeException(throwable);
+        }
        return "SUCCESS";
     }
 }
