@@ -21,6 +21,7 @@ public class P2pConsensusController{
     @ResponseBody
     public String receiveCommand(@RequestBody ValidCommandWrap validCommandWrap) {
        receiveService.receive(validCommandWrap);
+       //TODO 如果出现异常，需要上游感知
        return "SUCCESS";
     }
 }
