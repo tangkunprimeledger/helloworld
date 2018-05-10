@@ -1,0 +1,7 @@
+{
+  "测试ID": 0,
+  "body": [
+  ],
+  "assert": null,
+  "comment": "交易提交接口测试-List<Transaction>为null"
+}

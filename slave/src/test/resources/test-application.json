@@ -83,6 +83,9 @@
         "limit": 200
       }
     },
+    "package": {
+      "pending" : 1000
+    },
     "schedule": {
       "package": {
         "create": 50,
@@ -91,6 +94,7 @@
       }
     }
   },
+  "runMode": "MOCK",
   "logging": {
     "config": "classpath:logback.xml"
   }

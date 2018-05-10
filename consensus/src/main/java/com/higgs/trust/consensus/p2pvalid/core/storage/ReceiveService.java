@@ -102,28 +102,22 @@ import java.util.concurrent.locks.ReentrantLock;
                     validCommandWrap, pubKey));
         }
 
-        //check duplicate
-        ReceiveNodePO receiveNode = receiveNodeDao
-                .queryByMessageDigestAndFromNode(messageDigest,
-                        validCommandWrap.getFromNode());
 
-        if (null != receiveNode) {
-            log.warn("duplicate command from node {} , validCommandWrap : {}", validCommandWrap.getFromNode(),
-                    validCommandWrap);
-            return;
+        // add receive node
+        ReceiveNodePO receiveNode = new ReceiveNodePO();
+        receiveNode.setCommandSign(validCommandWrap.getSign());
+        receiveNode.setFromNodeName(validCommandWrap.getFromNode());
+        receiveNode.setMessageDigest(validCommandWrap.getValidCommand().getMessageDigestHash());
+        try {
+            receiveNodeDao.add(receiveNode);
+        } catch (DuplicateKeyException e) {
+            //do nothing when idempotent
         }
 
         //TODO 考虑降低并发粒度
         synchronized (this){
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    // add receive node
-                    ReceiveNodePO receiveNode = new ReceiveNodePO();
-                    receiveNode.setCommandSign(validCommandWrap.getSign());
-                    receiveNode.setFromNodeName(validCommandWrap.getFromNode());
-                    receiveNode.setMessageDigest(validCommandWrap.getValidCommand().getMessageDigestHash());
-                    receiveNodeDao.add(receiveNode);
-
                     // update receive command
                     ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
                     if (null == receiveCommand) {

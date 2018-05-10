@@ -1,0 +1,47 @@
+{
+  "测试ID": 0,
+  "body":
+  [
+    {
+      "@type": "com.higgs.trust.slave.model.bo.SignedTransaction",
+      "coreTx": {
+        "actionList": [
+          {
+            "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+            "index": 0,
+            "policyId": "test-policy-0002",
+            "policyName": "测试policy注册",
+            "rsIds": [
+              "TRUST-NODE97",
+              "TRUST-NODE100"
+            ],
+            "type": "REGISTER_POLICY"
+          }
+        ],
+        "bizModel": {
+          "@type": "com.alibaba.fastjson.JSONObject",
+          "data": {
+            "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+            "index": 0,
+            "policyId": "test-policy-0002",
+            "policyName": "测试policy注册",
+            "rsIds": [
+              "TRUST-Test1",
+              "TRUST-Test2"
+            ],
+            "type": "REGISTER_POLICY"
+          }
+        },
+        "lockTime": 1525232969688,
+        "txId": "tx_id_REGISTER_POLICY_0_1525232969688Thread-0",
+        "policyId": "test-policy-1",
+        "sender": "TRUST-TEST1",
+        "version": "1.0.0"
+      },
+      "signatureList": [
+      ]
+    }
+  ],
+  "assert": "param invalid",
+  "comment": "交易提交接口测试-signatureList长度小于1"
+}

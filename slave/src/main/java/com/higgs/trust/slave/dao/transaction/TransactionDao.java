@@ -22,7 +22,7 @@ import java.util.List;
      * @param txId
      * @return
      */
-    TransactionVO queryByTxId(String txId);
+    TransactionPO queryByTxId(String txId);
 
     /**
      * batch insert
