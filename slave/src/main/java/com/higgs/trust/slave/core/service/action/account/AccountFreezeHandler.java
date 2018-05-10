@@ -82,13 +82,9 @@ import java.math.BigDecimal;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_FREEZE_AMOUNT_ERROR);
             }
             //check balance
-            BigDecimal afterAmount = accountInfo.getBalance().subtract(accountInfo.getFreezeAmount()).subtract(bo.getAmount());
-            if (afterAmount.compareTo(BigDecimal.ZERO) <= 0) {
-                log.error("[accountFreeze.validate] balance is not enough by accountNo:{}", bo.getAccountNo());
-                throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
-            }
-            //compare balance
-            if (afterAmount.compareTo(bo.getAmount()) < 0) {
+            BigDecimal afterAmount =
+                accountInfo.getBalance().subtract(accountInfo.getFreezeAmount()).subtract(bo.getAmount());
+            if (afterAmount.compareTo(BigDecimal.ZERO) < 0) {
                 log.error("[accountFreeze.validate] balance is not enough by accountNo:{}", bo.getAccountNo());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
             }
@@ -97,9 +93,11 @@ import java.math.BigDecimal;
             bo.setContractAddr(contractBindHash);
 
             //check record is already exists
-            AccountFreezeRecord freezeRecord = accountHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
+            AccountFreezeRecord freezeRecord =
+                accountHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
             if (freezeRecord != null) {
-                log.error("[accountFreeze.validate] freezeRecord is already exists flowNo:{},accountNo:{}", bo.getBizFlowNo(), bo.getAccountNo());
+                log.error("[accountFreeze.validate] freezeRecord is already exists flowNo:{},accountNo:{}",
+                    bo.getBizFlowNo(), bo.getAccountNo());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
             }
         } finally {
