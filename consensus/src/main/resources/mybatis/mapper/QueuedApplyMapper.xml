@@ -38,7 +38,7 @@
     <select id="queryApplyList" resultMap="baseResultMap" parameterType="Object">
         select
         <include refid="baseColumnList" />
-        from queued_apply order by id limit 2;
+        from queued_apply order by id limit 10;
     </select>
 
     <!-- 根据messageDigest删除记录 -->
