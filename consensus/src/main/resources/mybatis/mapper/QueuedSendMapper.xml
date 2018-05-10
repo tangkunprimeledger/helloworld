@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.consensus.p2pvalid.dao.QueuedSendDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.consensus.p2pvalid.dao.po.QueuedSendPO">
+        <result column="id" property="id" />
+        <result column="message_digest" property="messageDigest" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+    <!-- queued_send table all fields -->
+    <sql id="baseColumnList">
+        id,message_digest,create_time
+    </sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="id != null">
+                and id=#{id}
+            </if>
+            <if test="messageDigest != null and messageDigest != ''">
+                and message_digest=#{messageDigest}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="Object">
+        insert into
+        queued_send(id,message_digest,create_time)
+        values(#{id},#{messageDigest},now(3))
+    </insert>
+    <!-- 以上为工具自动生成 -->
+
+    <!-- 查询待发送的列表 -->
+    <select id="querySendList" resultMap="baseResultMap">
+        select
+        <include refid="baseColumnList" />
+        from queued_send order by id limit 2;
+    </select>
+
+    <!-- 根据messageDigest查询 -->
+    <select id="queryByMessageDigest" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList" />
+        from queued_send where `message_digest`=#{messageDigest}
+    </select>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from queued_send where
+        `message_digest` = #{messageDigest}
+    </delete>
+
+    <!-- 根据messageDigestList删除记录 -->
+    <delete id="deleteByMessageDigestList" parameterType="Object">
+        delete from queued_send where
+        `message_digest` in
+        <foreach item="item" index="index" collection="messageDigestList" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+
+
+</mapper>

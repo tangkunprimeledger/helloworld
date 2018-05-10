@@ -21,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,11 +37,12 @@ import java.util.List;
     @Autowired private PackageRepository packageRepository;
     @Autowired private NodeState nodeState;
     @Autowired private FailoverProperties properties;
+    @Autowired private TransactionTemplate txNested;
 
     /**
      * 自动failover，判断状态是否为NodeStateEnum.Running
      */
-    @Scheduled(fixedDelay = 30000) public void failover() {
+    @Scheduled(fixedDelayString = "${trust.schedule.failover:10000}") public void failover() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
@@ -98,7 +102,13 @@ import java.util.List;
         if (!checkAndInsert(height)) {
             return false;
         }
-        return failoverBlock(block);
+        Block finalBlock = block;
+        txNested.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                failoverBlock(finalBlock);
+            }
+        });
+        return true;
     }
 
     /**
@@ -113,13 +123,7 @@ import java.util.List;
         if (minHeight == null) {
             return false;
         }
-        //前一区块处理完成
-        Package pack = packageRepository.load(height - 1);
-        if (pack != null && pack.getStatus() != PackageStatusEnum.PERSISTED
-            && pack.getStatus() != PackageStatusEnum.FAILOVER) {
-            return false;
-        }
-        pack = packageRepository.load(height);
+        Package pack = packageRepository.load(height);
         if (pack == null || pack.getStatus() == PackageStatusEnum.FAILOVER) {
             return true;
         }
@@ -143,13 +147,7 @@ import java.util.List;
         if (minHeight == null || height <= maxHeight) {
             return false;
         }
-        //前一区块处理完成
-        Package pack = packageRepository.load(height - 1);
-        if (pack != null && pack.getStatus() != PackageStatusEnum.PERSISTED
-            && pack.getStatus() != PackageStatusEnum.FAILOVER) {
-            return false;
-        }
-        pack = packageRepository.load(height);
+        Package pack = packageRepository.load(height);
         if (pack == null) {
             return insertFailoverPackage(height);
         } else {
@@ -186,7 +184,7 @@ import java.util.List;
      * @param block 区块
      * @return 同步结果
      */
-    private boolean failoverBlock(Block block) {
+    private void failoverBlock(Block block) {
         log.info("failover block:{}", block);
         BlockHeader blockHeader = block.getBlockHeader();
         Package pack = new Package();
@@ -199,7 +197,7 @@ import java.util.List;
         BlockHeader consensusHeader =
             blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
         if (consensusHeader == null) {
-            return false;
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST);
         }
         boolean validated =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), consensusHeader);
@@ -207,7 +205,7 @@ import java.util.List;
             BlockHeader persistHeader =
                 blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE);
             if (persistHeader == null) {
-                return false;
+                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST);
             }
             packContext = packageService.createPackContext(pack);
             packageService.persisting(packContext);
@@ -215,10 +213,9 @@ import java.util.List;
                 blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), persistHeader);
             if (!persistValid) {
                 throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID);
-            } else {
-                return true;
             }
+        } else {
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_VALIDATE_RESULT_INVALID);
         }
-        return false;
     }
 }

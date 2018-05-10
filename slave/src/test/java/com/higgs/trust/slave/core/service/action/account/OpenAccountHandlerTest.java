@@ -49,29 +49,35 @@ public class OpenAccountHandlerTest extends InterfaceCommonTest {
     }
     @Test(dataProvider = "defaultProvider", priority = 1)
     public void testException(Map<?, ?> param) throws Exception {
+        executeBeforeSql(param);
+
         OpenAccount openAccount = getBodyData(param, OpenAccount.class);
         executeActionHandler(param,openAccountHandler,openAccount);
+
+        executeAfterSql(param);
 
     }
 
 
     @Test(dataProvider = "defaultProvider", priority = 2)
     public void testRegular(Map<?, ?> param) throws Exception {
-        if (param.get("beforeSql") != null) {
-            String[] sql = param.get("beforeSql").toString().split(";");
-            DataBaseManager dataBaseManager = new DataBaseManager();
-            for(String s:sql)  dataBaseManager.executeSingleDelete(s, DB_URL);
-        }
+//        if (param.get("beforeSql") != null) {
+//            String[] sql = param.get("beforeSql").toString().split(";");
+//            DataBaseManager dataBaseManager = new DataBaseManager();
+//            for(String s:sql)  dataBaseManager.executeSingleDelete(s, DB_URL);
+//        }
+        executeBeforeSql(param);
 
         OpenAccount openAccount = getBodyData(param, OpenAccount.class);
         executeActionHandler(param,openAccountHandler,openAccount);
 
-        if (param.get("afterSql") != null) {
-            String[] sql = param.get("beforeSql").toString().split(";");
-            DataBaseManager dataBaseManager = new DataBaseManager();
-            for(String s:sql)
-                dataBaseManager.executeSingleDelete(s, DB_URL);
-        }
+        executeAfterSql(param);
+//        if (param.get("afterSql") != null) {
+//            String[] sql = param.get("beforeSql").toString().split(";");
+//            DataBaseManager dataBaseManager = new DataBaseManager();
+//            for(String s:sql)
+//                dataBaseManager.executeSingleDelete(s, DB_URL);
+//        }
 
     }
 

@@ -1,17 +1,10 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
-import com.higgs.trust.common.utils.SignUtils;
-import com.higgs.trust.consensus.common.TraceUtils;
-import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
-import com.higgs.trust.consensus.p2pvalid.core.exception.ReceiveException;
-import com.higgs.trust.consensus.p2pvalid.core.exchange.ConsensusContext;
-import com.higgs.trust.consensus.p2pvalid.core.exchange.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
-import com.higgs.trust.consensus.p2pvalid.core.storage.entry.impl.ReceiveCommandStatistics;
+import com.higgs.trust.consensus.p2pvalid.core.storage.SendService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.File;
 import java.lang.reflect.*;
 import java.util.Collection;
 import java.util.function.Consumer;
@@ -20,113 +13,19 @@ import java.util.function.Function;
 /**
  * @author cwy
  */
-@Slf4j
-public abstract class ValidConsensus {
+@Slf4j public abstract class ValidConsensus {
 
-    private final static String BACKSLASH = "/";
-    private final static String SLASH = "\\";
     private ValidExecutor executor;
-    private ClusterInfo clusterInfo;
-    private ConsensusContext consensusContext;
 
-    public ValidConsensus(ClusterInfo clusterInfo, P2pConsensusClient p2pConsensusClient, String baseDir) {
-        this.clusterInfo = clusterInfo;
-        initContest(baseDir, p2pConsensusClient);
+    @Autowired private SendService sendService;
+
+    public ValidConsensus() {
         executor = new ValidExecutor();
         config();
-    }
-
-    public ValidConsensus(ClusterInfo clusterInfo, P2pConsensusClient p2pConsensusClient) {
-        this.clusterInfo = clusterInfo;
-        initContest(null, p2pConsensusClient);
-        executor = new ValidExecutor();
-        config();
-    }
-
-    private void initContest(String baseDir, P2pConsensusClient p2pConsensusClient) {
-        if(StringUtils.isNotEmpty(baseDir)){
-            if (!baseDir.endsWith(BACKSLASH) && !baseDir.endsWith(SLASH)) {
-                baseDir = baseDir.concat(BACKSLASH);
-            }
-            File file = new File(baseDir);
-            if (!file.exists()) {
-                file.mkdirs();
-            }
-            consensusContext = ConsensusContext.create(this, p2pConsensusClient, baseDir, clusterInfo.faultNodeNum(), clusterInfo.clusterNodeNames().size());
-        }else{
-            consensusContext = ConsensusContext.createInMemory(this, p2pConsensusClient, clusterInfo.faultNodeNum(), clusterInfo.clusterNodeNames().size());
-        }
     }
 
     public final void submit(ValidCommand<?> command) {
-        try {
-            String fromNode = clusterInfo.myNodeName();
-            ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
-                    .fromNodeName(fromNode)
-                    .addToNodeNames(clusterInfo.clusterNodeNames())
-                    .sign(clusterInfo.privateKey());
-            //set traceId
-            validCommandWrap.setTraceId(TraceUtils.getTraceId());
-            consensusContext.submit(validCommandWrap);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public final void submit(ValidCommand<?> command, String toNodeName) {
-        try {
-
-            String fromNode = clusterInfo.myNodeName();
-            ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
-                    .fromNodeName(fromNode)
-                    .addToNodeName(toNodeName)
-                    .sign(clusterInfo.privateKey());
-            //set traceId
-            validCommandWrap.setTraceId(TraceUtils.getTraceId());
-            consensusContext.submit(validCommandWrap);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public final void submit(ValidCommand<?> command, Collection<String> toNodeNames) {
-        try {
-            String fromNode = clusterInfo.myNodeName();
-            ValidCommandWrap validCommandWrap = ValidCommandWrap.of(command)
-                    .fromNodeName(fromNode)
-                    .addToNodeNames(toNodeNames)
-                    .sign(clusterInfo.privateKey());
-            //set traceId
-            validCommandWrap.setTraceId(TraceUtils.getTraceId());
-            consensusContext.submit(validCommandWrap);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void receive(ValidCommandWrap validCommandWrap) throws ReceiveException {
-
-        if (StringUtils.isEmpty(validCommandWrap.getFromNodeName())) {
-            throw new ReceiveException("from node name can not be null");
-        }
-        String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNodeName());
-        if (StringUtils.isEmpty(pubKey)) {
-            throw new ReceiveException(String.format("unknown pubKey for node %s", validCommandWrap.getFromNodeName()));
-        }
-        try {
-            if (!SignUtils.verify(validCommandWrap.getMessageDigest(), validCommandWrap.getSign(), pubKey)) {
-                throw new Exception(String.format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNodeName(), validCommandWrap, pubKey));
-            }
-        } catch (Exception e) {
-            log.error("{}", e);
-            throw new ReceiveException(String.format("invalid command from node %s", validCommandWrap.getFromNodeName()), e);
-        }
-        consensusContext.receive(validCommandWrap);
-    }
-
-    public void apply(ReceiveCommandStatistics receiveCommandStatistics) {
-        ValidCommit validCommit = ValidCommit.of(receiveCommandStatistics);
-        executor.excute(validCommit);
+        sendService.submit(command);
     }
 
     public ValidExecutor getValidExecutor() {
@@ -173,12 +72,12 @@ public abstract class ValidConsensus {
      */
     private Class<?> resolveArgument(Type type) {
         if (type instanceof ParameterizedType) {
-            ParameterizedType paramType = (ParameterizedType) type;
+            ParameterizedType paramType = (ParameterizedType)type;
             return resolveClass(paramType.getActualTypeArguments()[0]);
         } else if (type instanceof TypeVariable) {
             return resolveClass(type);
         } else if (type instanceof Class) {
-            TypeVariable<?>[] typeParams = ((Class<?>) type).getTypeParameters();
+            TypeVariable<?>[] typeParams = ((Class<?>)type).getTypeParameters();
             return resolveClass(typeParams[0]);
         }
         return null;
@@ -189,13 +88,13 @@ public abstract class ValidConsensus {
      */
     private Class<?> resolveClass(Type type) {
         if (type instanceof Class<?>) {
-            return (Class<?>) type;
+            return (Class<?>)type;
         } else if (type instanceof ParameterizedType) {
-            return resolveClass(((ParameterizedType) type).getRawType());
+            return resolveClass(((ParameterizedType)type).getRawType());
         } else if (type instanceof WildcardType) {
-            Type[] bounds = ((WildcardType) type).getUpperBounds();
+            Type[] bounds = ((WildcardType)type).getUpperBounds();
             if (bounds.length > 0) {
-                return (Class<?>) bounds[0];
+                return (Class<?>)bounds[0];
             }
         }
         return null;
@@ -216,8 +115,7 @@ public abstract class ValidConsensus {
     /**
      * Registers an operation with a void return value.
      */
-    @SuppressWarnings("unchecked")
-    private void registerVoidMethod(Class type, Method method) {
+    @SuppressWarnings("unchecked") private void registerVoidMethod(Class type, Method method) {
         executor.register(type, wrapVoidMethod(method));
     }
 
@@ -237,8 +135,7 @@ public abstract class ValidConsensus {
     /**
      * Registers an operation with a non-void return value.
      */
-    @SuppressWarnings("unchecked")
-    private void registerValueMethod(Class type, Method method) {
+    @SuppressWarnings("unchecked") private void registerValueMethod(Class type, Method method) {
         executor.register(type, wrapValueMethod(method));
     }
 
