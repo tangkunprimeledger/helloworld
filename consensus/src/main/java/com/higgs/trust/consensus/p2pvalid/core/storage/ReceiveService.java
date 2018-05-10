@@ -351,8 +351,8 @@ public class ReceiveService {
 
     private void queuedGc(ReceiveCommandPO receiveCommand) {
         QueuedReceiveGcPO queuedReceiveGc = new QueuedReceiveGcPO();
-        //TODO 配置化，目前改成了10分钟
-        queuedReceiveGc.setGcTime(System.currentTimeMillis() + 600000L);
+        //TODO 配置化，目前改成了6秒钟
+        queuedReceiveGc.setGcTime(System.currentTimeMillis() + 6000L);
         queuedReceiveGc.setMessageDigest(receiveCommand.getMessageDigest());
         queuedReceiveGcDao.add(queuedReceiveGc);
         //trans status
