@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Repository
@@ -24,7 +25,9 @@ public class ContractStateRepository {
         }
 
         Map<String, Object> state = JSON.parseObject(po.getState());
-        return state;
+        Map<String, Object> newState = new HashMap<>(state.size());
+        state.forEach((key, value) -> newState.put(key, value));
+        return newState;
     }
 
     public void put(String address, Map<String, Object> state) {

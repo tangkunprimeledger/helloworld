@@ -28,9 +28,15 @@ public class StateManager {
     }
 
     public StateManager(Map<String, Object> state) {
+        this(state, true);
+    }
+
+    public StateManager(Map<String, Object> state, boolean backup) {
         this.state = state == null ? new HashMap<>(8) : state;
-        if (state != null) {
-            this.oldState = JSON.parseObject(JSON.toJSONString(state));
+        if (state != null && backup) {
+            //this.oldState = JSON.parseObject(JSON.toJSONString(state, JSON_GENERATE_FEATURES), HashMap.class);
+            this.oldState = new HashMap<>(this.state.size());
+            this.state.forEach((key, value) -> this.oldState.put(key, value));
         }
     }
 
