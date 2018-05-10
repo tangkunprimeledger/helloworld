@@ -181,6 +181,10 @@ import java.util.concurrent.ConcurrentHashMap;
             nodeMap.put(getKey(1, leafIndex), merkleNode);
 
             int totalLevel = merkleTree.getTotalLevel();
+
+            // batch query merkleNode from nodeMap or db
+            getMerkleNodeListForUpdate(merkleTree,totalLevel,leafIndex);
+
             for (int i = 1; i < totalLevel; i++) {
                 Profiler.enter("[update parentNode]");
                 log.info("[update] start to update parentNode, leafIndex={}, maxIndex={}, currentLevel={}", leafIndex,
@@ -263,6 +267,9 @@ import java.util.concurrent.ConcurrentHashMap;
                 merkleTree.getTreeType(), MerkleStatusEnum.ADD);
             nodeMap.put(getKey(1, leafIndex), leafNode);
             merkleTree.setMaxIndex(leafIndex);
+
+            // batch query merkleNode from nodeMap or db
+            getMerkleNodeListForAdd(merkleTree,totalLevel,leafIndex);
 
             // handle the other level
             for (int i = 1; i < totalLevel; i++) {
@@ -664,6 +671,14 @@ import java.util.concurrent.ConcurrentHashMap;
         return merkleNode;
     }
 
+    /**
+     * update or add one merkleNode into merkleTree
+     *
+     * @param merkleTree
+     * @param level
+     * @param leafIndex
+     * @param maxIndex
+     */
     private void updateAddParent(MerkleTree merkleTree, int level, long leafIndex, long maxIndex) {
         MerkleNode left = null;
         MerkleNode right = null;
@@ -681,14 +696,22 @@ import java.util.concurrent.ConcurrentHashMap;
                     leafIndex / N, level + 1, null, merkleTree.getTreeType(), MerkleStatusEnum.ADD);
                 left.setParent(parent.getUuid());
                 nodeMap.put(getKey(level + 1, leafIndex / N), parent);
+                return;
             }
             // this means only have left chaild
             left = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex), type);
             parent = getMerkleNodeByIndex(nodeMap, getKey(level + 1, leafIndex / N), type);
+            if (!left.getParent().equals(parent.getUuid())) {
+                log.error("[add] update parent error, left's parent={}, parent's uuid={}", left.getParent(),
+                    parent.getUuid());
+                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_UPDATE_PARENT_EXCEPTION,
+                    "[add] update parent error");
+            }
             parent.setNodeHash(getSHA2HexValue(left.getNodeHash()));
             if (parent.getStatus() == MerkleStatusEnum.NO_CHANGE) {
                 parent.setStatus(MerkleStatusEnum.MODIFY);
             }
+            return;
         }
         if (1 == leafIndex % N) {
             log.info("[add] 1 == leafIndex % N, update a parent node");
@@ -707,6 +730,147 @@ import java.util.concurrent.ConcurrentHashMap;
             }
             right.setParent(parent.getUuid());
         }
+    }
+
+    /**
+     * batch acquire merkleNode from database which doesn't exist nodeMap
+     *
+     * @param merkleTree
+     * @param totalLevel
+     * @param leafIndex
+     */
+    private void getMerkleNodeListForUpdate(MerkleTree merkleTree, int totalLevel, long leafIndex) {
+        long maxIndex = merkleTree.getMaxIndex();
+        Map nodeMap =merkleTree.getNodeMap();
+        MerkleTypeEnum treeType = merkleTree.getTreeType();
+        List<MerkleNode> list = new LinkedList<>();
+        for (int level = 1; level < totalLevel; level++) {
+            if (leafIndex <= maxIndex && 1 == (leafIndex % N)) {
+                log.info("[getMerkleNodeListForUpdate] leafIndex <= maxIndex && 1 == (leafIndex % N)");
+                if (!nodeMap.containsKey(getKey(level, leafIndex - 1))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex-1,level,null,treeType,null);
+                    list.add(merkleNode);
+                }
+                if (!nodeMap.containsKey(getKey(level, leafIndex))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex,level,null,treeType,null);
+                    list.add(merkleNode);
+                }
+                if (!nodeMap.containsKey(getKey(level+1, leafIndex/N))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex/N,level+1,null,treeType,null);
+                    list.add(merkleNode);
+                }
+            }
+
+            // this means leafIndex is the max index of the currrent level and (leafIndex+1) is odd
+            if (leafIndex == maxIndex && 0 == (leafIndex % N)) {
+                log.info("[getMerkleNodeListForUpdate] leafIndex == maxIndex && 0 == (leafIndex % N)");
+                if (!nodeMap.containsKey(getKey(level, leafIndex))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex,level,null,treeType,null);
+                    list.add(merkleNode);
+                }
+                if (!nodeMap.containsKey(getKey(level+1, leafIndex / N))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex / N,level+1,null,treeType,null);
+                    list.add(merkleNode);
+                }
+            }
+
+            // this means leafIndex is not the max index of the currrent level and (leafIndex+1) is odd
+            if (leafIndex < maxIndex && 0 == (leafIndex % N)) {
+                log.info("[getMerkleNodeListForUpdate] leafIndex < maxIndex && 0 == (leafIndex % N)");
+                if (!nodeMap.containsKey(getKey(level, leafIndex))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex,level,null,treeType,null);
+                    list.add(merkleNode);
+                }
+                if (!nodeMap.containsKey(getKey(level, leafIndex + 1))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex + 1,level,null,treeType,null);
+                    list.add(merkleNode);
+                }
+                if (!nodeMap.containsKey(getKey(level + 1, leafIndex / N))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex / N,level + 1,null,treeType,null);
+                    list.add(merkleNode);
+                }
+            }
+
+            leafIndex = leafIndex / N;
+            maxIndex = maxIndex / N;
+        }
+
+        if (list.size()>0){
+            log.info("[getMerkleNodeListForUpdate] before query db, list.size={}, list={}",list.size(), JSON.toJSONString(list));
+            list = merkleRepository.batchQueryMerkleNodeByIndex(list);
+            log.info("[getMerkleNodeListForUpdate] after query db, list.size={}, list={}",list.size(), JSON.toJSONString(list));
+
+            // add merkleNode into nodeMap
+            for (MerkleNode merkleNode : list){
+                nodeMap.put(getKey(merkleNode.getLevel(), merkleNode.getIndex()), merkleNode);
+            }
+        }
+    }
+
+    /**
+     * batch acquire merkleNode from database which doesn't exist nodeMap
+     *
+     * @param merkleTree
+     * @param totalLevel
+     * @param leafIndex
+     */
+    private void getMerkleNodeListForAdd(MerkleTree merkleTree, int totalLevel, long leafIndex) {
+        long maxIndex = merkleTree.getMaxIndex();
+        Map nodeMap =merkleTree.getNodeMap();
+        MerkleTypeEnum treeType = merkleTree.getTreeType();
+        List<MerkleNode> list = new LinkedList<>();
+        for (int level = 1; level < totalLevel; level++) {
+            if (0 == leafIndex % N) {
+                log.info("[getMerkleNodeListForAdd] 0 == leafIndex % N");
+                // this means a parent should be added into nodeMap
+                if ((leafIndex / N) > (maxIndex / N)) {
+                    log.info("[getMerkleNodeListForAdd] (leafIndex / N) > (maxIndex / N), add a parent node to merkleTree");
+                    if (!nodeMap.containsKey(getKey(level, leafIndex))){
+                        MerkleNode merkleNode = new MerkleNode(null,null,leafIndex,level,null,treeType,null);
+                        list.add(merkleNode);
+                    }
+                }
+                // this means only have left chaild
+                if (!nodeMap.containsKey(getKey(level, leafIndex))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex,level,null,treeType,null);
+                    list.add(merkleNode);
+                }
+                if (!nodeMap.containsKey(getKey(level + 1, leafIndex / N))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex / N,level + 1,null,treeType,null);
+                    list.add(merkleNode);
+                }
+            }
+            if (1 == leafIndex % N) {
+                log.info("[getMerkleNodeListForAdd] 1 == leafIndex % N, update a parent node");
+                if (!nodeMap.containsKey(getKey(level, leafIndex - 1L))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex - 1L,level,null,treeType,null);
+                    list.add(merkleNode);
+                }
+                if (!nodeMap.containsKey(getKey(level, leafIndex))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex,level,null,treeType,null);
+                    list.add(merkleNode);
+                }
+                if (!nodeMap.containsKey(getKey(level + 1, leafIndex))){
+                    MerkleNode merkleNode = new MerkleNode(null,null,leafIndex / N,level + 1,null,treeType,null);
+                    list.add(merkleNode);
+                }
+            }
+
+            leafIndex = leafIndex / N;
+            maxIndex = maxIndex / N;
+        }
+
+        if (list.size()>0){
+            log.info("[getMerkleNodeListForAdd] before query db, list.size={}, list={}",list.size(), JSON.toJSONString(list));
+            list = merkleRepository.batchQueryMerkleNodeByIndex(list);
+            log.info("[getMerkleNodeListForAdd] after query db, list.size={}, list={}",list.size(), JSON.toJSONString(list));
+
+            // add merkleNode into nodeMap
+            for (MerkleNode merkleNode : list){
+                nodeMap.put(getKey(merkleNode.getLevel(), merkleNode.getIndex()), merkleNode);
+            }
+        }
+
     }
 
 }

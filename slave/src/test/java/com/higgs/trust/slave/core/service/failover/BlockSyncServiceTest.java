@@ -19,12 +19,15 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 @RunWith(PowerMockRunner.class) public class BlockSyncServiceTest {
 
@@ -71,7 +74,7 @@ import static org.testng.Assert.assertTrue;
     private BlockHeader mockHeader(BlockHeader preHeader) {
         BlockHeader header = mock(BlockHeader.class);
         Long preHeight = preHeader.getHeight();
-        when(header.getPreviousHash()).thenReturn(""+preHeight);
+        when(header.getPreviousHash()).thenReturn("" + preHeight);
         long height = preHeight + 1;
         when(header.getHeight()).thenReturn(height);
         when(header.getBlockHash()).thenReturn("" + height);
@@ -114,6 +117,15 @@ import static org.testng.Assert.assertTrue;
 
     @Test public void testValidatingHeader() {
         BlockHeader header = mock(BlockHeader.class);
+        when(header.getStateRootHash()).thenReturn(null);
+        assertFalse(blockSyncService.validating(header));
+
+        StateRootHash rootHash = mock(StateRootHash.class);
+        when(header.getStateRootHash()).thenReturn(rootHash);
+        when(rootHash.getTxRootHash()).thenReturn(null, "", "0");
+        assertFalse(blockSyncService.validating(header));
+        assertFalse(blockSyncService.validating(header));
+
         when(header.getHeight()).thenReturn(0L);
         when(header.getBlockHash()).thenReturn("0");
         when(blockService.buildBlockHash(header)).thenReturn("0", "1");
@@ -122,11 +134,22 @@ import static org.testng.Assert.assertTrue;
     }
 
     @Test public void testValidatingHeaderWithPer() {
-        List<BlockHeader> headers = mockHeaders(3);
+        List<BlockHeader> headers = mockHeaders(1);
         BlockHeader header0 = headers.get(0);
+        BlockHeader header1 = mockHeader(header0);
+        assertTrue(blockSyncService.validating(header0.getBlockHash(), header1));
+        when(blockService.buildBlockHash(header1)).thenReturn("0");
+        assertFalse(blockSyncService.validating(header0.getBlockHash(), header1));
+        assertFalse(blockSyncService.validating("1", header1));
+        when(blockService.buildBlockHash(header1)).thenReturn("1");
+        assertFalse(blockSyncService.validating("1", header1));
+
+        headers = mockHeaders(3);
+        header0 = headers.get(0);
         assertTrue(blockSyncService.validating(header0.getBlockHash(), headers.get(1)));
         assertTrue(blockSyncService.validating(headers.get(1).getBlockHash(), headers.get(2)));
         assertFalse(blockSyncService.validating(header0.getBlockHash(), headers.get(2)));
+        assertFalse(blockSyncService.validating(null, headers.get(2)));
         assertFalse(blockSyncService.validating("", headers.get(2)));
     }
 
@@ -135,6 +158,8 @@ import static org.testng.Assert.assertTrue;
         BlockHeader header0 = headers.get(0);
         assertTrue(blockSyncService.validating(header0.getPreviousHash(), headers));
         assertTrue(blockSyncService.validating(headers));
+        assertTrue(blockSyncService.validating(Collections.singletonList(header0)));
+        assertFalse(blockSyncService.validating(Collections.emptyList()));
         headers.remove(5);
         assertFalse(blockSyncService.validating(header0.getPreviousHash(), headers));
         assertFalse(blockSyncService.validating(null, headers));
@@ -142,6 +167,10 @@ import static org.testng.Assert.assertTrue;
     }
 
     @Test public void testValidatingBlock() {
+        Block block = mock(Block.class);
+        when(block.getBlockHeader()).thenReturn(null);
+        assertFalse(blockSyncService.validating(block));
+
         List<Block> blocks = mockBlocks(2);
         assertTrue(blockSyncService.validating(blocks.get(0)));
 
@@ -178,5 +207,26 @@ import static org.testng.Assert.assertTrue;
         assertFalse(blockSyncService.validatingBlocks(previousHash, null));
         assertFalse(blockSyncService.validatingBlocks("", bloks));
         assertFalse(blockSyncService.validatingBlocks(null, null));
+    }
+
+    @Test public void testGetClusterHeight() {
+        Long result = 1L;
+        when(clusterService.getClusterHeight(anyInt(), anyLong())).thenReturn(result, null);
+        assertEquals(blockSyncService.getClusterHeight(1, 1L), result);
+        assertNull(blockSyncService.getClusterHeight(1, 1L));
+    }
+
+    @Test public void testGetClusterHeight2() {
+        Long result = 1L;
+        when(clusterService.getClusterHeight(anyInt(), anyLong())).thenReturn(result, null);
+        assertEquals(blockSyncService.getClusterHeight(1), result);
+        assertNull(blockSyncService.getClusterHeight(1));
+    }
+
+    @Test public void testBftValidating() {
+        when(clusterService.validatingHeader(any(BlockHeader.class), anyLong())).thenReturn(null, false, true);
+        assertNull(blockSyncService.bftValidating(mock(BlockHeader.class)));
+        assertFalse(blockSyncService.bftValidating(mock(BlockHeader.class)));
+        assertTrue(blockSyncService.bftValidating(mock(BlockHeader.class)));
     }
 }

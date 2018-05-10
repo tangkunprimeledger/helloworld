@@ -75,7 +75,7 @@
     </logger>
 
 
-    <logger name="com.higgs" level="TRACE" additivity="false">
+    <logger name="com.higgs" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
 

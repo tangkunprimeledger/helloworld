@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author liuyu
@@ -21,6 +22,14 @@ import java.math.BigDecimal;
      * @return
      */
     AccountInfoPO queryByAccountNo(@Param("accountNo") String accountNo, @Param("forUpdate") boolean forUpdate);
+
+    /**
+     * batch query the account info
+     *
+     * @param accountNos
+     * @return
+     */
+    List<AccountInfoPO> queryByAccountNos(@Param("accountNos") List<String> accountNos);
 
     /**
      * increase balance for account

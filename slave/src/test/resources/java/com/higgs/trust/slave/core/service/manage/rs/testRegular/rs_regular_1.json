@@ -1,0 +1,17 @@
+{
+  "测试ID": 0,
+  "body": {
+    "rsId": "rs-test1-with-merkle-tree",
+    "pubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCK44EynMXc3+KSX/e8DqxujYscTwiMUPgS7CBywYGnMLioeYA2IcUXLqtlwhPx1/14uEYS9fMewkPeTlOquKDxX6Xr1+s8bgals0OxdBR/CjAHPNnG1GZlxlfNN8IIyFagbcGJD8537cdb9nXkZ0FYoCx6GZSba+JoMjxZBReViQIDAQAB",
+    "desc": "注册rs接口测试"
+  },
+  "beforeSql": ["INSERT INTO `merkle_tree` (`root_hash`, `total_level`, `max_index`, `tree_type`, `create_time`, `update_time`) VALUES('bdf1ba54a879263c05b1f147e19c421d85fd914f94c0b4d4c00d407eb34f5948', 1, 0, 'RS', '2018-05-09 11:07:09.607', '2018-05-09 11:07:09.607')",
+    "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`, `parent`, `tree_type`, `create_time`, `update_time`)VALUES('443730643784826880', 'bdf1ba54a879263c05b1f147e19c421d85fd914f94c0b4d4c00d407eb34f5948', 0, 1, NULL, 'RS', '2018-05-09 11:07:09.637', '2018-05-09 11:07:09.637')"],
+    "policyId": "000000",
+    "afterSql": ["delete from rs_pub_key where rs_id='rs-test1-with-merkle-tree'",
+    "truncate table merkle_tree",
+    "truncate table merkle_node"
+    ],
+    "assert": "",
+    "comment": "注册rs接口测试-rs的merkle-tree存在"
+}

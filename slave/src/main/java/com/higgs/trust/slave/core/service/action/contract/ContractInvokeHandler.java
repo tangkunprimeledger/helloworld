@@ -25,17 +25,20 @@ import org.springframework.util.StringUtils;
     private StandardSmartContract smartContract;
 
     private void check(ContractInvokeAction action) {
-        if (null == action) {
-            log.error("invokeContract validate: convert action to ContractInvokeAction is error");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
         if (StringUtils.isEmpty(action.getAddress())) {
             log.error("invokeContract validate: address is empty");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if (action.getAddress().length() > 64) {
+            log.error("invokeContract validate: address is too long");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }
 
     private void process(ActionData actionData, TxProcessTypeEnum processType) {
+        if (!(actionData.getCurrentAction() instanceof ContractInvokeAction)) {
+            throw new IllegalArgumentException("action need a type of ContractInvokeAction");
+        }
         ContractInvokeAction invokeAction = (ContractInvokeAction) actionData.getCurrentAction();
         this.check(invokeAction);
         ExecuteContextData data = new StandardExecuteContextData().put("ActionData", actionData);

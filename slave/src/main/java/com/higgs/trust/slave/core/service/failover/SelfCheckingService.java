@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.failover;
 
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.FailoverExecption;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
@@ -23,8 +25,13 @@ import org.springframework.stereotype.Service;
      */
     public boolean check() {
         nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        boolean selfChecked = selfCheck();
-        log.info("self checked result:{}", selfChecked);
+        boolean selfChecked = false;
+        try {
+            selfChecked = selfCheck(60);
+            log.info("self checked result:{}", selfChecked);
+        } catch (FailoverExecption e) {
+            log.error("self check failed:", e);
+        }
         if (!selfChecked) {
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
             return false;
@@ -48,19 +55,17 @@ import org.springframework.stereotype.Service;
     /**
      * 检查自身最高区块是否正确
      *
+     * @param tryTimes bft validating retry times
      * @return
      */
-    public boolean selfCheck() {
+    public boolean selfCheck(int tryTimes) {
         log.info("Starting self checking ...");
         Long maxHeight = blockService.getMaxHeight();
         Block block = blockRepository.getBlock(maxHeight);
+        int i = 0;
         if (blockSyncService.validating(block)) {
-            int tryTimes = 200;
             do {
                 Boolean result = blockSyncService.bftValidating(block.getBlockHeader());
-                if (log.isDebugEnabled()) {
-                    log.debug("bft validating header result:{}", result);
-                }
                 if (result != null) {
                     return result;
                 }
@@ -70,7 +75,8 @@ import org.springframework.stereotype.Service;
                     log.warn("self check error.", e);
                 }
 
-            } while (--tryTimes > 0);
+            } while (++i < tryTimes);
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
         }
         return false;
     }

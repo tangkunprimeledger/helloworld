@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.consensus.p2pvalid.dao.SendCommandDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.consensus.p2pvalid.dao.po.SendCommandPO">
+        <result column="id" property="id" />
+        <result column="message_digest" property="messageDigest" />
+        <result column="valid_command" property="validCommand" />
+        <result column="node_name" property="nodeName" />
+        <result column="command_sign" property="commandSign" />
+        <result column="command_class" property="commandClass" />
+        <result column="ack_node_num" property="ackNodeNum" />
+        <result column="gc_threshold" property="gcThreshold" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    <!-- send_command table all fields -->
+    <sql id="baseColumnList">
+        id,message_digest,valid_command,node_name,command_sign,command_class,ack_node_num,gc_threshold,status,create_time,update_time
+    </sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="id != null">
+                and id=#{id}
+            </if>
+            <if test="messageDigest != null and messageDigest != ''">
+                and message_digest=#{messageDigest}
+            </if>
+            <if test="validCommand != null and validCommand != ''">
+                and valid_command=#{validCommand}
+            </if>
+            <if test="nodeName != null and nodeName != ''">
+                and node_name=#{nodeName}
+            </if>
+            <if test="commandSign != null and commandSign != ''">
+                and command_sign=#{commandSign}
+            </if>
+            <if test="commandClass != null and commandClass != ''">
+                and command_class=#{commandClass}
+            </if>
+            <if test="ackNodeNum != null">
+                and ack_node_num=#{ackNodeNum}
+            </if>
+            <if test="gcThreshold != null">
+                and gc_threshold=#{gcThreshold}
+            </if>
+            <if test="status != null">
+                and status=#{status}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time=#{updateTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="Object">
+        insert into
+        send_command(id,message_digest,valid_command,node_name,command_sign,command_class,ack_node_num,gc_threshold,status,create_time,update_time)
+        values(#{id},#{messageDigest},#{validCommand},#{nodeName},#{commandSign},#{commandClass},#{ackNodeNum},#{gcThreshold},#{status},now(),now())
+    </insert>
+    <!-- 以上为工具自动生成 -->
+
+    <update id="transStatus" parameterType="Object">
+        update send_command set `status` = #{status} where `message_digest` = #{messageDigest} and `status` = #{from}
+    </update>
+
+    <update id="updateAckNodeNum" parameterType="Object">
+        update send_command set `ack_node_num` = #{ackNodeNum} where `message_digest` = #{messageDigest}
+    </update>
+
+    <!-- 根据messageDigest查询 -->
+    <select id="queryByMessageDigest" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList" />
+        from send_command where `message_digest`=#{messageDigest}
+    </select>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from send_command where
+        `message_digest` = #{messageDigest}
+    </delete>
+
+    <!-- 根据messageDigestList删除记录 -->
+    <delete id="deleteByMessageDigestList" parameterType="Object">
+        delete from send_command where
+        `message_digest` in
+        <foreach item="item" index="index" collection="messageDigestList" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

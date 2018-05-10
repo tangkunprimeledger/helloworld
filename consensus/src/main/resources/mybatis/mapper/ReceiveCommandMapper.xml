@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.consensus.p2pvalid.dao.ReceiveCommandDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.consensus.p2pvalid.dao.po.ReceiveCommandPO">
+        <result column="id" property="id" />
+        <result column="message_digest" property="messageDigest" />
+        <result column="valid_command" property="validCommand" />
+        <result column="command_class" property="commandClass" />
+        <result column="node_name" property="nodeName" />
+        <result column="receive_node_num" property="receiveNodeNum" />
+        <result column="apply_threshold" property="applyThreshold" />
+        <result column="gc_threshold" property="gcThreshold" />
+        <result column="closed" property="closed" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    <!-- receive_command table all fields -->
+    <sql id="baseColumnList">
+        id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,closed,status,create_time,update_time
+    </sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="id != null">
+                and id=#{id}
+            </if>
+            <if test="messageDigest != null and messageDigest != ''">
+                and message_digest=#{messageDigest}
+            </if>
+            <if test="validCommand != null and validCommand != ''">
+                and valid_command=#{validCommand}
+            </if>
+            <if test="commandClass != null and commandClass != ''">
+                and command_class=#{commandClass}
+            </if>
+            <if test="nodeName != null and nodeName != ''">
+                and node_name=#{nodeName}
+            </if>
+            <if test="receiveNodeNum != null">
+                and receive_node_num=#{receiveNodeNum}
+            </if>
+            <if test="applyThreshold != null">
+                and apply_threshold=#{applyThreshold}
+            </if>
+            <if test="gcThreshold != null">
+                and gc_threshold=#{gcThreshold}
+            </if>
+            <if test="closed != null">
+                and closed=#{closed}
+            </if>
+            <if test="status != null">
+                and status=#{status}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time=#{updateTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="Object">
+        insert into
+		receive_command(id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,status,create_time,update_time)
+		values(#{id},#{messageDigest},#{validCommand},#{commandClass},#{nodeName},#{receiveNodeNum},#{applyThreshold},#{gcThreshold},#{status},now(),now())
+    </insert>
+    <!-- 以上为工具自动生成 -->
+
+    <update id="increaseReceiveNodeNum" parameterType="Object">
+        update receive_command set `receive_node_num` = `receive_node_num` + 1 where `message_digest` = #{messageDigest}
+    </update>
+
+    <update id="updateCloseStatus" parameterType="Object">
+        update receive_command set `closed` = #{closed} where `message_digest` = #{messageDigest} and `closed` = ${from}
+    </update>
+
+    <update id="transStatus" parameterType="Object">
+        update receive_command set `status` = #{status} where `message_digest` = #{messageDigest} and `status` = ${from}
+    </update>
+
+    <!-- 根据messageDigest查询 -->
+    <select id="queryByMessageDigest" resultMap="baseResultMap" parameterType="Object">
+        select
+        <include refid="baseColumnList" />
+        from receive_command where `message_digest`=#{messageDigest}
+    </select>
+
+    <!-- 根据messageDigest删除记录 -->
+    <delete id="deleteByMessageDigest" parameterType="Object">
+        delete from receive_command where
+        `message_digest` = #{messageDigest}
+    </delete>
+
+    <!-- 根据messageDigestList删除记录 -->
+    <delete id="deleteByMessageDigestList" parameterType="Object">
+        delete from receive_command where
+        `message_digest` in
+        <foreach item="item" index="index" collection="messageDigestList" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+
+</mapper>

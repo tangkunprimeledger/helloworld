@@ -45,7 +45,7 @@ import java.util.List;
     public int batchUpdateMerkleNode(List list);
 
     /**
-     * query merkle node by treeType, blockHeight, rootHash(if not null)
+     * query merkle node by treeType, level, index
      *
      * @param merkleNodePO
      * @return
@@ -53,11 +53,19 @@ import java.util.List;
     public MerkleNodePO queryMerkleNodeByIndex(MerkleNodePO merkleNodePO);
 
     /**
-     * check the existence merkle node by treeType, level, rootHash(if not null)
+     * check the existence merkle node by treeType, level, nodeHash
      *
      * @param merkleNodePO
      * @return
      */
     public MerkleNodePO queryMerkleNodeByHash(MerkleNodePO merkleNodePO);
+
+    /**
+     * batch query merkleNode
+     *
+     * @param list
+     * @return
+     */
+    public List<MerkleNodePO> batchQueryMerkleNodeByIndex(List list);
 
 }
