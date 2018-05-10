@@ -137,8 +137,9 @@ public class ReceiveService {
             }
         }
 
-        ReceiveNodePO tempReceiveNode = receiveNodeDao.queryByMessageDigestAndFromNode(validCommandWrap.getValidCommand().getMessageDigestHash(),validCommandWrap.getFromNode());
-        if(null != tempReceiveNode){
+        ReceiveNodePO tempReceiveNode = receiveNodeDao.queryByMessageDigestAndFromNode(validCommandWrap.getValidCommand().getMessageDigestHash(), validCommandWrap.getFromNode());
+        if (null != tempReceiveNode) {
+            log.warn("duplicate command from node {} : {}", validCommandWrap.getFromNode(), validCommandWrap.getValidCommand());
             return;
         }
 
@@ -171,13 +172,6 @@ public class ReceiveService {
 
     }
 
-    private void increaseReceiveNodeNum(String messageDigest) {
-        int count = receiveCommandDao.increaseReceiveNodeNum(messageDigest);
-        if (count != 1) {
-            throw new RuntimeException("increase receive node count failed when p2p receive command! count: " + count);
-        }
-    }
-
     public void apply() {
         while (true) {
             try {
@@ -199,25 +193,25 @@ public class ReceiveService {
                                 queuedDelay(receiveCommand);
                             } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)
                                     && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
-                                log.info(
-                                        "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                                        receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
-                                        receiveCommand);
                                 int count = receiveCommandDao
                                         .updateCloseStatus(receiveCommand.getMessageDigest(), COMMAND_NOT_CLOSED,
-                                                receiveCommand.getClosed());
+                                                COMMAND_CLOSED);
                                 if (count != 1) {
                                     throw new RuntimeException(
                                             "update receive command close status failed when apply! count: " + count);
                                 }
                                 queuedGc(receiveCommand);
+                                log.info(
+                                        "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
+                                        receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
+                                        receiveCommand);
                             }
                             queuedApplyDao.deleteByMessageDigest(queuedApply.getMessageDigest());
                         }
                     });
                 });
             } catch (Throwable throwable) {
-                log.error("{}", throwable);
+                log.error(" apply error : {}", throwable);
             }
         }
     }
@@ -274,6 +268,7 @@ public class ReceiveService {
                     queuedReceiveGcDao.deleteByMessageDigestList(deleteMessageDigestList);
                     //delete receive node
                     receiveNodeDao.deleteByMessageDigestList(deleteMessageDigestList);
+                    log.info("receive gc {}" ,deleteMessageDigestList);
                 }
             }
         });
@@ -313,13 +308,13 @@ public class ReceiveService {
 
         } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)
                 && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
+            queuedGc(receiveCommand);
             log.info("command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
                     receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
-            queuedGc(receiveCommand);
         } else if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getApplyThreshold()) {
+            queuedApply(receiveCommand);
             log.info("comman receive node num : {} >= command apply threshold : {}, add command to apply queue : {}",
                     receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(), receiveCommand);
-            queuedApply(receiveCommand);
         }
     }
 
@@ -353,24 +348,18 @@ public class ReceiveService {
         queuedReceiveGc.setMessageDigest(receiveCommand.getMessageDigest());
         queuedReceiveGcDao.add(queuedReceiveGc);
         //trans status
-        int count =
-                receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_QUEUED_APPLY, COMMAND_QUEUED_GC);
+        int count = receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_QUEUED_APPLY, COMMAND_QUEUED_GC);
         if (count != 1) {
             throw new RuntimeException("trans receive command status failed when apply! count: " + count);
         }
     }
 
-    private boolean queuedDelay(ReceiveCommandPO receiveCommand) {
-        if (receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)) {
-            log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
-            //add
-            QueuedApplyDelayPO queuedApplyDelay = new QueuedApplyDelayPO();
-            //TODO 配置化
-            queuedApplyDelay.setApplyTime(System.currentTimeMillis() + 2000L);
-            queuedApplyDelay.setMessageDigest(receiveCommand.getMessageDigest());
-            queuedApplyDelayDao.add(queuedApplyDelay);
-            return true;
-        }
-        return false;
+    private void queuedDelay(ReceiveCommandPO receiveCommand) {
+        //add
+        QueuedApplyDelayPO queuedApplyDelay = new QueuedApplyDelayPO();
+        //TODO 配置化
+        queuedApplyDelay.setApplyTime(System.currentTimeMillis() + 2000L);
+        queuedApplyDelay.setMessageDigest(receiveCommand.getMessageDigest());
+        queuedApplyDelayDao.add(queuedApplyDelay);
     }
 }
