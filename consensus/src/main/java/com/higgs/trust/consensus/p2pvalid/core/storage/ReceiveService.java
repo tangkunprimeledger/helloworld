@@ -207,6 +207,7 @@ public class ReceiveService {
                                         receiveCommand);
                             }
                             queuedApplyDao.deleteByMessageDigest(queuedApply.getMessageDigest());
+                            log.info("command dequeue : {}", receiveCommand);
                         }
                     });
                 });
@@ -268,7 +269,7 @@ public class ReceiveService {
                     queuedReceiveGcDao.deleteByMessageDigestList(deleteMessageDigestList);
                     //delete receive node
                     receiveNodeDao.deleteByMessageDigestList(deleteMessageDigestList);
-                    log.info("receive gc {}" ,deleteMessageDigestList);
+                    log.info("receive gc {}", deleteMessageDigestList);
                 }
             }
         });
@@ -313,7 +314,7 @@ public class ReceiveService {
                     receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
         } else if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getApplyThreshold()) {
             queuedApply(receiveCommand);
-            log.info("comman receive node num : {} >= command apply threshold : {}, add command to apply queue : {}",
+            log.info("command receive node num : {} >= command apply threshold : {}, add command to apply queue : {}",
                     receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(), receiveCommand);
         }
     }
