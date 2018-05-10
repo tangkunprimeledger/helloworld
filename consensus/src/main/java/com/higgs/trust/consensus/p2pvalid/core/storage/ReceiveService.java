@@ -112,45 +112,47 @@ import java.util.concurrent.locks.ReentrantLock;
                 .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
                     validCommandWrap, pubKey));
         }
+        //TODO 考虑降低并发粒度
+        synchronized (this){
+            txRequired.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    // add receive node
+                    ReceiveNodePO receiveNode = new ReceiveNodePO();
+                    receiveNode.setCommandSign(validCommandWrap.getSign());
+                    receiveNode.setFromNodeName(validCommandWrap.getFromNode());
+                    receiveNode.setMessageDigest(validCommandWrap.getValidCommand().getMessageDigestHash());
+                    receiveNodeDao.add(receiveNode);
 
-        txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // add receive node
-                ReceiveNodePO receiveNode = new ReceiveNodePO();
-                receiveNode.setCommandSign(validCommandWrap.getSign());
-                receiveNode.setFromNodeName(validCommandWrap.getFromNode());
-                receiveNode.setMessageDigest(validCommandWrap.getValidCommand().getMessageDigestHash());
-                receiveNodeDao.add(receiveNode);
-
-                // update receive command
-                ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
-                if (null == receiveCommand) {
-                    receiveCommand = new ReceiveCommandPO();
-                    //set apply threshold
-                    receiveCommand.setApplyThreshold(
-                        Math.min(clusterInfo.faultNodeNum() * 2 + 1, clusterInfo.clusterNodeNames().size()));
-                    receiveCommand.setCommandClass(validCommandWrap.getCommandClass().getSimpleName());
-                    receiveCommand.setGcThreshold(clusterInfo.clusterNodeNames().size());
-                    receiveCommand.setMessageDigest(messageDigest);
-                    receiveCommand.setNodeName(clusterInfo.myNodeName());
-                    receiveCommand.setReceiveNodeNum(1);
-                    receiveCommand.setValidCommand(JSON.toJSONString(validCommandWrap.getValidCommand()));
-                    receiveCommand.setStatus(COMMAND_NORMAL);
-                    receiveCommand.setClosed(COMMAND_NOT_CLOSED);
-                    try {
-                        receiveCommandDao.add(receiveCommand);
-                    } catch (DuplicateKeyException e) {
-                        //just increase when idempotent
+                    // update receive command
+                    ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
+                    if (null == receiveCommand) {
+                        receiveCommand = new ReceiveCommandPO();
+                        //set apply threshold
+                        receiveCommand.setApplyThreshold(
+                                Math.min(clusterInfo.faultNodeNum() * 2 + 1, clusterInfo.clusterNodeNames().size()));
+                        receiveCommand.setCommandClass(validCommandWrap.getCommandClass().getSimpleName());
+                        receiveCommand.setGcThreshold(clusterInfo.clusterNodeNames().size());
+                        receiveCommand.setMessageDigest(messageDigest);
+                        receiveCommand.setNodeName(clusterInfo.myNodeName());
+                        receiveCommand.setReceiveNodeNum(1);
+                        receiveCommand.setValidCommand(JSON.toJSONString(validCommandWrap.getValidCommand()));
+                        receiveCommand.setStatus(COMMAND_NORMAL);
+                        receiveCommand.setClosed(COMMAND_NOT_CLOSED);
+                        try {
+                            receiveCommandDao.add(receiveCommand);
+                        } catch (DuplicateKeyException e) {
+                            //TODO DuplicateKeyException 为了保证事务读取的时候还能读到这个key，会对key加共享锁，超过两个线程同时并发时候，更新会导致死锁
+                            //just increase when idempotent
+                            increaseReceiveNodeNum(receiveCommand.getMessageDigest());
+                        }
+                    } else {
                         increaseReceiveNodeNum(receiveCommand.getMessageDigest());
                     }
-                } else {
-                    increaseReceiveNodeNum(receiveCommand.getMessageDigest());
+                    //check receive status
+                    checkReceiveStatus(receiveCommand.getMessageDigest());
                 }
-
-                //check receive status
-                checkReceiveStatus(receiveCommand.getMessageDigest());
-            }
-        });
+            });
+        }
     }
 
     private void increaseReceiveNodeNum(String messageDigest) {

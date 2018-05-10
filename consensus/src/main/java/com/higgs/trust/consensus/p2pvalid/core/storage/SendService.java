@@ -183,15 +183,13 @@ import java.util.concurrent.locks.ReentrantLock;
                                 validCommandWrap.setCommandClass(sendCommand.getValidCommand().getClass());
                                 validCommandWrap.setFromNode(sendCommand.getNodeName());
                                 validCommandWrap.setSign(sendCommand.getCommandSign());
-                                validCommandWrap
-                                    .setValidCommand((ValidCommand<?>)JSON.parse(sendCommand.getValidCommand()));
+                                validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parse(sendCommand.getValidCommand()));
                                 p2pConsensusClient.receiveCommand(sendNode.getToNodeName(), validCommandWrap);
 
                                 int count = sendNodeDao
-                                    .transStatus(sendNode.getMessageDigest(), SEND_NODE_WAIT_SEND, SEND_NODE_ACK);
+                                    .transStatus(sendNode.getMessageDigest(), sendNode.getToNodeName(), SEND_NODE_WAIT_SEND, SEND_NODE_ACK);
                                 if (count != 1) {
-                                    throw new RuntimeException(
-                                        "trans send node status failed when apply! count: " + count);
+                                    throw new RuntimeException(  "trans send node status failed when apply! count: " + count);
                                 }
                             } catch (Throwable throwable) {
                                 log.error("{}", throwable);
