@@ -7,7 +7,7 @@
       "bizFlowNo": "2321321323",
       "accountNo": "account_no_005_1",
       "amount": 4,
-      "contractAddr": null,
+      "contractAddr": "bf9818a20dff5e1eebeeb31f58279401751b5abdf102e371220703f78198d83d",
       "contractArgs": null,
       "remark": null
     }
@@ -20,6 +20,8 @@
     "TRUNCATE  TABLE account_info",
     "TRUNCATE TABLE policy",
     "TRUNCATE TABLE account_freeze_record",
+    "TRUNCATE TABLE account_contract_binding",
+    "TRUNCATE TABLE contract",
     "INSERT INTO currency_info (currency, remark, create_time) VALUES ('CNY','renmingbi',now())",
     "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('1000000', 'register', '[\"b\"]', '2018-04-18 16:12:39.518')",
     "INSERT INTO account_detail (biz_flow_no, account_no, block_height, detail_no, change_direction, amount, before_amount, after_amount,create_time) VALUES ('123','account_no_005_2',	'1','1'	,'INCREASE'	,'5.0000000000','0.0000000000','5.0000000000','2018-05-09 15:31:55.000');",
@@ -31,8 +33,8 @@
     "INSERT INTO merkle_node (uuid, node_hash, `index`, level, parent, tree_type, create_time, update_time) VALUES ('443797142776053760','f2127512dddc36c28bb1beb6e50cc100a5cc7025f9e7031eabb945fb158c315a','0','1','443797143300341760','ACCOUNT','2018-05-09 15:31:24.231','2018-05-09 15:31:55.624');",
     "INSERT INTO merkle_node (uuid, node_hash, `index`, level, tree_type, create_time, update_time) VALUES ('443797143300341760','445ffb851acf665e067a8f3e8e1527fb2c0e6c7937cd58f0fc1e715fde408571','0','2','ACCOUNT','2018-05-09 15:31:24.343','2018-05-09 15:31:55.624');",
     "INSERT INTO merkle_node (uuid, node_hash, `index`, level, parent, tree_type, create_time, update_time) VALUES ('443797143388422144','2cee5e160900b847064290bd08cab09bd78565849a62f3247592c3a0bb267c50','1','1','443797143300341760','ACCOUNT','2018-05-09 15:31:24.343','2018-05-09 15:31:55.507');",
-    "INSERT INTO merkle_tree (root_hash, total_level, max_index, tree_type, create_time, update_time) VALUES ('445ffb851acf665e067a8f3e8e1527fb2c0e6c7937cd58f0fc1e715fde408571','2	','1','ACCOUNT','2018-05-09 15:31:24.217','2018-05-09 15:31:55.615');"
-
+    "INSERT INTO merkle_tree (root_hash, total_level, max_index, tree_type, create_time, update_time) VALUES ('445ffb851acf665e067a8f3e8e1527fb2c0e6c7937cd58f0fc1e715fde408571','2	','1','ACCOUNT','2018-05-09 15:31:24.217','2018-05-09 15:31:55.615');",
+    "INSERT INTO contract (address, language, code, create_time) VALUES ('bf9818a20dff5e1eebeeb31f58279401751b5abdf102e371220703f78198d83d','javascript','print(good)','2018-05-08 20:23:12.000')"
   ],
   "afterSql": [
     "TRUNCATE TABLE data_identity",
@@ -41,7 +43,8 @@
     "TRUNCATE TABLE currency_info",
     "TRUNCATE TABLE policy",
     "TRUNCATE TABLE account_freeze_record",
-    "TRUNCATE  TABLE account_info;"
+    "TRUNCATE  TABLE account_info",
+    "TRUNCATE  TABLE contract"
   ],
   "type": "RS",
   "comment": "冻结账户单元测试"
