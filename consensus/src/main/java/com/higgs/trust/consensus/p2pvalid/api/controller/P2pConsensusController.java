@@ -1,7 +1,10 @@
 package com.higgs.trust.consensus.p2pvalid.api.controller;
 
+import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
+import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import com.higgs.trust.consensus.p2pvalid.core.storage.ReceiveService;
+import com.higgs.trust.consensus.p2pvalid.core.storage.SyncReceiveService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
