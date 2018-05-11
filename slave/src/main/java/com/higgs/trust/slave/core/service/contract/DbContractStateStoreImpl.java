@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.contract;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.contract.ContractStateStore;
 import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
@@ -38,7 +39,10 @@ import java.util.Map;
             merkleService.add(merkleTree, newState);
         } else  {
             oldState.put(tempKeyName, key);
-            merkleService.update(merkleTree, oldState, newState);
+            // TODO need optimize
+            if(!JSON.toJSONString(oldState).equals(JSON.toJSONString(newState))) {
+                merkleService.update(merkleTree, oldState, newState);
+            }
             oldState.remove(tempKeyName);
         }
         merkleService.flush(merkleTree);
