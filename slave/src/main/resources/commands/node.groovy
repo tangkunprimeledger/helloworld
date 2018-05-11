@@ -1,5 +1,9 @@
 package commands
 
+import com.higgs.trust.common.utils.SignUtils
+import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient
+import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap
+import com.higgs.trust.consensus.p2pvalid.core.storage.SyncSendService
 import com.higgs.trust.slave.common.enums.NodeStateEnum
 import com.higgs.trust.slave.core.managment.NodeState
 import com.higgs.trust.slave.core.service.block.BlockService
@@ -9,6 +13,8 @@ import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.*
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
+
+import java.util.concurrent.ConcurrentHashMap
 
 /*
  * Copyright (c) 2013-2017, suimi
@@ -43,9 +49,15 @@ class node {
     @Command
     def height(InvocationContext context,
                @Usage("will show the cluster height")
-               @Option(names = ["c", "cluster"]) Boolean isCluster) {
+               @Option(names = ["c", "cluster"]) Boolean isCluster, @Option(names = ["a", "all"]) Boolean isAll) {
 
         BeanFactory beans = context.attributes['spring.beanfactory']
+        if (isAll) {
+            def clusterService = beans.getBean(ClusterService.class)
+            def map = clusterService.getAllClusterHeight()
+            map.entrySet().forEach({ entry -> context.provide([name: entry.key, value: entry.value]) })
+            return
+        }
         def height
         if (isCluster) {
             def clusterService = beans.getBean(ClusterService.class)

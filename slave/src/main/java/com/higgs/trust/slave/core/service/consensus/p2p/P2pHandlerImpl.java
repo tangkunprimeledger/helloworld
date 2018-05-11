@@ -1,10 +1,9 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
-import com.higgs.trust.consensus.bft.core.ConsensusClient;
-import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
-import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
-import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
-import com.higgs.trust.consensus.p2pvalid.core.ValidSyncCommit;
+import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
+import com.higgs.trust.consensus.p2pvalid.core.*;
+import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -25,7 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -33,7 +34,6 @@ import java.util.concurrent.ExecutorService;
  * @author: pengdi
  **/
 @Slf4j @Service public class P2pHandlerImpl extends ValidConsensus implements P2pHandler, ClusterService {
-    @Autowired private ConsensusClient consensusClient;
 
     @Autowired private PackageProcess packageProcess;
 
@@ -48,6 +48,10 @@ import java.util.concurrent.ExecutorService;
     private static final String DEFAULT_CLUSTER_HEIGHT_ID = "cluster_height_id";
 
     @Autowired private BlockRepository blockRepository;
+
+    @Autowired private P2pConsensusClient p2pConsensusClient;
+
+    @Autowired private ClusterInfo clusterInfo;
 
     /**
      * send validating result to p2p consensus layer
@@ -263,6 +267,39 @@ import java.util.concurrent.ExecutorService;
     @Override public Long getClusterHeight(String requestId, int size) {
         ResponseCommand<?> responseCommand = this.submitSync(new ClusterHeightCmd(requestId, size));
         return responseCommand == null ? null : (Long)responseCommand.get();
+    }
+
+    @Override public Map<String, Long> getAllClusterHeight() {
+        List<String> nodeNames = clusterInfo.clusterNodeNames();
+        Map<String, Long> heightMap = new HashMap<>();
+        String requestId = DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis();
+        ClusterHeightCmd cmd = new ClusterHeightCmd(requestId, 1);
+        ValidCommandWrap validCommandWrap = new ValidCommandWrap();
+        validCommandWrap.setCommandClass(cmd.getClass());
+        validCommandWrap.setFromNode(clusterInfo.myNodeName());
+        validCommandWrap.setSign(SignUtils.sign(cmd.getMessageDigestHash(), clusterInfo.privateKey()));
+        validCommandWrap.setValidCommand(cmd);
+        nodeNames.forEach((nodeName) -> {
+            Long height = null;
+            try {
+                ValidResponseWrap<? extends ResponseCommand> validResponseWrap =
+                    p2pConsensusClient.syncSend(nodeName, validCommandWrap);
+                Object response = validResponseWrap.getResult();
+                if (response != null) {
+                    if (response instanceof List) {
+                        List<ResponseCommand> commands = (List)response;
+                        if (!commands.isEmpty() && commands.get(0).get() != null) {
+                            height = (Long)commands.get(0).get();
+                        }
+                    }
+                }
+
+            } catch (Throwable throwable) {
+                log.error("{}", throwable);
+            }
+            heightMap.put(nodeName, height);
+        });
+        return heightMap;
     }
 
     /**
