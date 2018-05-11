@@ -23,6 +23,14 @@ import java.util.Map;
         return tValidResponseWrap;
     }
 
+    public static ValidResponseWrap failedResponse() {
+        return failedResponse("");
+    }
+
+    public static ValidResponseWrap failedResponse(String message) {
+        return failedResponse(FAILED_CODE, message);
+    }
+
     public static ValidResponseWrap failedResponse(String code, String message) {
         ValidResponseWrap<ResponseCommand> response = new ValidResponseWrap<>();
         response.setCode(code);

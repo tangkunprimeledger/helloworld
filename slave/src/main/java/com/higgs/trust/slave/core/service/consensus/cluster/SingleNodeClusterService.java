@@ -17,15 +17,15 @@ import org.springframework.stereotype.Service;
 
     @Autowired private BlockService blockService;
 
-    @Override public Long getClusterHeight(int size, long timeout) {
+    @Override public Long getClusterHeight(int size) {
         return blockRepository.getMaxHeight();
     }
 
-    @Override public Long getClusterHeight(String requestId, int size, long timeout) {
+    @Override public Long getClusterHeight(String requestId, int size) {
         return blockRepository.getMaxHeight();
     }
 
-    @Override public Boolean validatingHeader(BlockHeader header, long timeout) {
+    @Override public Boolean validatingHeader(BlockHeader header) {
         BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
         return blockHeader != null && blockService.compareBlockHeader(header, blockHeader);
     }

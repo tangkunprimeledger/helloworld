@@ -247,12 +247,10 @@ import java.util.concurrent.ExecutorService;
      * get the cluster height through consensus, the default request id will be set. if timeout, null will be return
      *
      * @param size the size of height will be consensus
-     * @param time waiting time for the result
      * @return
      */
-    @Override public Long getClusterHeight(int size, long time) {
-        return getClusterHeight(DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis(), size,
-            time);
+    @Override public Long getClusterHeight(int size) {
+        return getClusterHeight(DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis(), size);
     }
 
     /**
@@ -260,10 +258,9 @@ import java.util.concurrent.ExecutorService;
      *
      * @param requestId the id of request
      * @param size      the size of height will be consensus
-     * @param time      waiting time for the result
      * @return
      */
-    @Override public Long getClusterHeight(String requestId, int size, long time) {
+    @Override public Long getClusterHeight(String requestId, int size) {
         ResponseCommand<?> responseCommand = this.submitSync(new ClusterHeightCmd(requestId, size));
         return responseCommand == null ? null : (Long)responseCommand.get();
     }
@@ -272,10 +269,9 @@ import java.util.concurrent.ExecutorService;
      * validating the block header through consensus, if timeout, null will be return
      *
      * @param header block header
-     * @param time   waiting time for the result
      * @return
      */
-    @Override public Boolean validatingHeader(BlockHeader header, long time) {
+    @Override public Boolean validatingHeader(BlockHeader header) {
         BlockHeaderCmd command = new BlockHeaderCmd(header);
         ResponseCommand<?> responseCommand = this.submitSync(command);
         return responseCommand == null ? null : (Boolean)responseCommand.get();

@@ -50,17 +50,7 @@ import java.util.List;
      * @return 协议验证结果, if timeout will return null
      */
     public Boolean bftValidating(BlockHeader blockHeader) {
-        return bftValidating(blockHeader, nodeState.getConsensusWaitTime());
-    }
-
-    /**
-     * bft验证blockheader
-     *
-     * @param blockHeader blockheader
-     * @return 协议验证结果, if timeout will return null
-     */
-    public Boolean bftValidating(BlockHeader blockHeader, long waitTime) {
-        Boolean aBoolean = clusterService.validatingHeader(blockHeader, waitTime);
+        Boolean aBoolean = clusterService.validatingHeader(blockHeader);
         if (log.isDebugEnabled()) {
             log.debug("the blockheader:{} validated result by bft :{}", blockHeader.getHeight(), aBoolean);
         }
@@ -73,16 +63,7 @@ import java.util.List;
      * @return
      */
     public Long getClusterHeight(int size) {
-        return getClusterHeight(size, nodeState.getConsensusWaitTime());
-    }
-
-    /**
-     * get the cluster height
-     *
-     * @return
-     */
-    public Long getClusterHeight(int size, long waitTime) {
-        Long clusterHeight = clusterService.getClusterHeight(size, waitTime);
+        Long clusterHeight = clusterService.getClusterHeight(size);
         if (log.isDebugEnabled()) {
             log.debug("get the cluster height:{}", clusterHeight);
         }

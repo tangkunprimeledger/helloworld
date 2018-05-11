@@ -43,18 +43,13 @@ class node {
     @Command
     def height(InvocationContext context,
                @Usage("will show the cluster height")
-               @Option(names = ["c", "cluster"]) Boolean isCluster,
-               @Usage("set the waiting time in milliseconds for consensus")
-               @Option(names = ["t", "waiting"]) Integer time) {
+               @Option(names = ["c", "cluster"]) Boolean isCluster) {
 
         BeanFactory beans = context.attributes['spring.beanfactory']
         def height
         if (isCluster) {
             def clusterService = beans.getBean(ClusterService.class)
-            if (time == null) {
-                time = 2000
-            }
-            height = clusterService.getClusterHeight(1, time)
+            height = clusterService.getClusterHeight(1)
             if (height == null) {
                 out.println("Failed to get cluster height, please try again")
                 return

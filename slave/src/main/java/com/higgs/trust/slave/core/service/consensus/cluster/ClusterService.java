@@ -11,28 +11,25 @@ public interface ClusterService {
      * get the block height of cluster
      *
      * @param size    the size of height will be consensus
-     * @param timeout waiting time for the result
      * @return
      */
-    Long getClusterHeight(int size, long timeout);
+    Long getClusterHeight(int size);
 
     /**
      * get the block height of cluster
      *
      * @param requestId the id of request
      * @param size      the size of height will be consensus
-     * @param timeout   waiting time for the result
      * @return
      */
-    Long getClusterHeight(String requestId, int size, long timeout);
+    Long getClusterHeight(String requestId, int size);
 
     /**
      * cluster validates the block header
      *
      * @param header  block header
-     * @param timeout timeout  for waiting result
      * @return
      */
-    Boolean validatingHeader(BlockHeader header, long timeout);
+    Boolean validatingHeader(BlockHeader header);
 
 }

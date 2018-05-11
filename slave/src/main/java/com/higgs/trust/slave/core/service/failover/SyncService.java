@@ -55,7 +55,7 @@ import java.util.List;
                 }
             } while (++tryTimes < properties.getTryTimes());
             if (clusterHeight == null) {
-                throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
             }
             if (clusterHeight <= currentHeight + properties.getThreshold()) {
                 nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);

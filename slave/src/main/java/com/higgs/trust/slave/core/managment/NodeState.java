@@ -61,17 +61,11 @@ import java.util.Locale;
      */
     @Getter private String prefix;
 
-    /**
-     * waiting time for consensus
-     */
-    @Getter private long consensusWaitTime;
-
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
         this.privateKey = properties.getPrivateKey();
         this.masterPubKey = properties.getMasterPubKey();
         this.prefix = properties.getPrefix();
-        this.consensusWaitTime = properties.getConsensusWaitTime();
         this.changeMaster(properties.getMasterName());
     }
 

@@ -25,7 +25,7 @@ public enum SlaveErrorEnum {
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         查询相关[300-399]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT("301", "get the consensus result time out.", true),
+    SLAVE_CONSENSUS_GET_RESULT_FAILED("301", "get the consensus result failed.", true),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         Failover相关[400-499]                           //
