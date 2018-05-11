@@ -12,5 +12,5 @@ public interface ReceiveCommandDao extends BaseConsensusDao<ReceiveCommandPO> {
     ReceiveCommandPO queryByMessageDigest(@Param("messageDigest") String messageDigest);
     int transStatus(@Param("messageDigest") String messageDigest, @Param("from") Integer from, @Param("status") Integer status);
     int increaseReceiveNodeNum(@Param("messageDigest") String messageDigest);
-    int updateCloseStatus(@Param("messageDigest")String messageDigest, @Param("from") Integer from, @Param("closed") Integer closed);
+    int increaseRetryApplyNum(@Param("messageDigest") String messageDigest);
 }

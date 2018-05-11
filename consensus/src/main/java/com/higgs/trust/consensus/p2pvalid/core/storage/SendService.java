@@ -142,6 +142,7 @@ public class SendService {
                         .setCommandSign(SignUtils.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
                 sendCommand.setMessageDigest(validCommand.getMessageDigestHash());
                 sendCommand.setStatus(COMMAND_QUEUED_SEND);
+                sendCommand.setRetrySendNum(0);
                 sendCommand.setValidCommand(JSON.toJSONString(validCommand));
                 sendCommand.setCommandClass(validCommand.getClass().getSimpleName());
                 try {
@@ -248,7 +249,8 @@ public class SendService {
                                     queuedGc(sendCommand);
                                     log.info("ack node num >= gc threshold, add command to gc {}", sendCommand);
                                 } else {
-                                    queuedDelay(sendCommand);
+                                    sendCommandDao.increaseRetrySendNum(sendCommand.getMessageDigest());
+                                    queuedDelay(sendCommand, sendCommand.getRetrySendNum() * 3000L + 2000L);
                                     log.info("ack node num {} < gc threshold {}, add to delay send queue {}",
                                             sendCommand.getAckNodeNum(), sendCommand.getGcThreshold(), sendCommand);
                                 }
@@ -386,11 +388,11 @@ public class SendService {
         }
     }
 
-    private void queuedDelay(SendCommandPO sendCommand) {
+    private void queuedDelay(SendCommandPO sendCommand, Long delayTime) {
         QueuedSendDelayPO queuedSendDelay = new QueuedSendDelayPO();
         queuedSendDelay.setMessageDigest(sendCommand.getMessageDigest());
         //TODO 配置化
-        queuedSendDelay.setSendTime(System.currentTimeMillis() + 2000L);
+        queuedSendDelay.setSendTime(System.currentTimeMillis() + delayTime);
         queuedSendDelayDao.add(queuedSendDelay);
     }
 

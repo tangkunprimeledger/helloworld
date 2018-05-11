@@ -11,14 +11,14 @@
         <result column="receive_node_num" property="receiveNodeNum" />
         <result column="apply_threshold" property="applyThreshold" />
         <result column="gc_threshold" property="gcThreshold" />
-        <result column="closed" property="closed" />
         <result column="status" property="status" />
+        <result column="retry_apply_num" property="retryApplyNum" />
         <result column="create_time" property="createTime" />
         <result column="update_time" property="updateTime" />
     </resultMap>
     <!-- receive_command table all fields -->
     <sql id="baseColumnList">
-        id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,closed,status,create_time,update_time
+        id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,status,retry_apply_num,create_time,update_time
     </sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">
@@ -48,11 +48,11 @@
             <if test="gcThreshold != null">
                 and gc_threshold=#{gcThreshold}
             </if>
-            <if test="closed != null">
-                and closed=#{closed}
-            </if>
             <if test="status != null">
                 and status=#{status}
+            </if>
+            <if test="retryApplyNum != null">
+                and retry_apply_num=#{retryApplyNum}
             </if>
             <if test="createTime != null">
                 and create_time=#{createTime}
@@ -65,8 +65,8 @@
     <!-- 插入记录 -->
     <insert id="add" parameterType="Object">
         insert into
-		receive_command(id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,status,create_time,update_time)
-		values(#{id},#{messageDigest},#{validCommand},#{commandClass},#{nodeName},#{receiveNodeNum},#{applyThreshold},#{gcThreshold},#{status},now(),now())
+        receive_command(id,message_digest,valid_command,command_class,node_name,receive_node_num,apply_threshold,gc_threshold,status,retry_apply_num,create_time,update_time)
+        values(#{id},#{messageDigest},#{validCommand},#{commandClass},#{nodeName},#{receiveNodeNum},#{applyThreshold},#{gcThreshold},#{status},#{retryApplyNum},now(),now())
     </insert>
     <!-- 以上为工具自动生成 -->
 
@@ -74,8 +74,8 @@
         update receive_command set `receive_node_num` = `receive_node_num` + 1 where `message_digest` = #{messageDigest}
     </update>
 
-    <update id="updateCloseStatus" parameterType="Object">
-        update receive_command set `closed` = #{closed} where `message_digest` = #{messageDigest} and `closed` = ${from}
+    <update id="increaseRetryApplyNum" parameterType="Object">
+        update receive_command set `retry_apply_num` = `retry_apply_num` + 1 where `message_digest` = #{messageDigest}
     </update>
 
     <update id="transStatus" parameterType="Object">
