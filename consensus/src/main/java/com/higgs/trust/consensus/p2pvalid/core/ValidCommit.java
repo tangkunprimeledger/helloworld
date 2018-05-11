@@ -32,7 +32,7 @@ public class ValidCommit<T extends ValidCommand<?>> {
     }
 
     public void close() {
-        receiveCommand.setClosed(ReceiveService.COMMAND_CLOSED);
+        receiveCommand.setStatus(ReceiveService.COMMAND_APPLIED);
     }
 
 }
