@@ -1,0 +1,7 @@
+{
+  "测试ID": 0,
+  "body": "",
+  "type": "",
+  "assert": "validate object is null",
+  "comment": "解冻操作,入参为空字符串测试"
+}

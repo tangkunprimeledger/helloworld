@@ -14,7 +14,7 @@ public enum SnapshotBizKeyEnum {
     FREEZE("FREEZE", "freeze core Snapshot"),
     CONTRACT("CONTRACT", "contract core Snapshot"),
     ACCOUNT_CONTRACT_BIND("ACCOUNT_CONTRACT_BIND", "account contract binding Snapshot"),
-    CONTRACT_SATE("CONTRACTSATE", "contract state Snapshot"),
+    CONTRACT_SATE("CONTRACT_SATE", "contract state Snapshot"),
     DATA_IDENTITY("DATA_IDENTITY", "dataIdentity core Snapshot"),
     UTXO("UTXO", "UTXO core Snapshot"), MANAGE("MANAGE", "manage  Snapshot"),
     MERKLE_TREE("MERKLE_TREE", "merkle tree  Snapshot"),

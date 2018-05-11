@@ -1,0 +1,11 @@
+{
+  "测试ID": 0,
+  "body": {
+    "bizFlowNo":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx11111111111111111111xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    "amount":10,
+    "accountNo":"ssss"
+  },
+  "type": "",
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "解冻操作,[bizFlowNo][超长]测试"
+}

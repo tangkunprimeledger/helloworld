@@ -4,11 +4,17 @@ import cn.primeledger.stability.trace.PrimeTraceUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.sleuth.Span;
 
+import java.util.Random;
+
 /**
  * @author cwy
  */
 @Slf4j
 public class TraceUtils {
+
+    public static Span createSpan(){
+        return PrimeTraceUtil.openNewTracer(new Random(100000000).nextLong());
+    }
     /**
      * create new span
      * @param traceId tranceId for new span

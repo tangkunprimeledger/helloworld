@@ -112,6 +112,7 @@ public enum SlaveErrorEnum {
     SLAVE_ACCOUNT_CURRENCY_ALREADY_EXISTS_ERROR("831", "currency is already exists", false),
     SLAVE_CONTRACT_NOT_EXIST_ERROR("832", "contract is not exist", false),
     SLAVE_LAST_PACKAGE_NOT_FINISH("833", "last package is not finished, just waiting", false),
+    SLAVE_PACKAGE_REPLICATE_FAILED("834", "package replicated to consensus failed", false),
     ;
     //@formatter:on
 

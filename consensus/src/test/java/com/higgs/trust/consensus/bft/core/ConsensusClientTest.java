@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.CompletableFuture;
+
 @Slf4j
 public class ConsensusClientTest extends BftBaseTest{
     @Autowired
@@ -13,6 +15,6 @@ public class ConsensusClientTest extends BftBaseTest{
 
     @Test
     public void testConsensusClient(){
-        consensusClient.submit(new StringCommand("test consensusClient with String command"));
+        CompletableFuture completableFuture = consensusClient.submit(new StringCommand("test consensusClient with String command"));
     }
 }

@@ -24,7 +24,7 @@ public class P2pConsensusControllerTest extends p2pBaseTest {
         BlockHeader header = new BlockHeader();
         header.setHeight(10L);
         header.setPreviousHash("abc");
-        int num = 30;
+        int num = 1;
         while (num > 0) {
             log.info("wait for service registry ........................");
             Thread.sleep(2000);
