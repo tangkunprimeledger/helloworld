@@ -120,6 +120,8 @@ public class ReceiveService {
                             validCommandWrap, pubKey));
         }
 
+        log.info("command receive : {}",  validCommandWrap);
+
         // update receive command
         ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
         if (null == receiveCommand) {
