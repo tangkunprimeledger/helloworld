@@ -90,7 +90,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     @Getter class CommandCounter<T extends ResponseCommand> {
         T command;
-        AtomicInteger counter = new AtomicInteger(1);
+        AtomicInteger counter = new AtomicInteger(0);
 
         CommandCounter(T command) {
             this.command = command;
