@@ -205,8 +205,8 @@ public class SendService {
                         txRequired.execute(new TransactionCallbackWithoutResult() {
                             @Override
                             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                            checkGc(sendCommand);
                             queuedSendDao.deleteByMessageDigest(queuedSend.getMessageDigest());
+                            checkGc(sendCommand);
                             }
                         });
 
@@ -242,8 +242,8 @@ public class SendService {
                         txRequired.execute(new TransactionCallbackWithoutResult() {
                             @Override
                             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                                checkGc(sendCommand);
                                 queuedSendDelayDao.deleteByMessageDigest(queuedSendDelay.getMessageDigest());
+                                checkGc(sendCommand);
                             }
                         });
 
