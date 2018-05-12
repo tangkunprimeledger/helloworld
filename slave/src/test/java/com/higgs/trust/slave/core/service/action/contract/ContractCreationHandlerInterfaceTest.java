@@ -42,7 +42,7 @@ public class ContractCreationHandlerInterfaceTest extends ContractBaseTest {
                 .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .setTransactionPolicyIdIf(policyId, !Strings.isNullOrEmpty(policyId))
                 .addAction(action)
-                .setTxId("00000000000")
+                .setTxId("00000000000" + System.currentTimeMillis())
                 .signature(ActionDataMockBuilder.privateKey1)
                 .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
@@ -55,20 +55,22 @@ public class ContractCreationHandlerInterfaceTest extends ContractBaseTest {
         return "java/com/higgs/trust/slave/core/service/contract/creation/";
     }
 
-    @AfterClass
-    public void clearDb() {
-        executeDelete("TRUNCATE TABLE contract;");
-    }
-
     @Test(dataProvider = "defaultProvider",priority = 0)
     public void testValidate(Map<?, ?> param) {
         PackContext packContext = createPackContext(param);
+        snapshot.startTransaction();
         doTestValidate(param, packContext, creationHandler);
+        snapshot.commit();
     }
 
     @Test(dataProvider = "defaultProvider",priority = 1)
     public void testPersist(Map<?, ?> param) {
         PackContext packContext = createPackContext(param);
         doTestPersist(param, packContext, creationHandler);
+    }
+
+    @AfterClass
+    public void clearDb() {
+        //executeDelete("TRUNCATE TABLE contract;");
     }
 }
