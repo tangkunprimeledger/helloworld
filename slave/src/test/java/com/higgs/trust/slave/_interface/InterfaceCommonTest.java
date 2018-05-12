@@ -54,7 +54,10 @@ import static org.testng.Assert.assertEquals;
     @AfterMethod public void after() {
         snapshotService.destroy();
     }
-
+    private Map<?, ?> param = null;
+    public void setParam(Map<?, ?> param){
+        this.param = param;
+    }
     /**
      * 测试数据根路径
      *
@@ -87,7 +90,7 @@ import static org.testng.Assert.assertEquals;
     protected void executeActionHandler(Map<?, ?> param, ActionHandler actionHandler, Action action) {
         String assertData = getAssertData(param);
         try {
-            PackContext packContext = makePackContext(action, 1L);
+            PackContext packContext = makePackContext(action, 1L,param);
             String policyId = getPolicyId(param);
             if(!StringUtils.isEmpty(policyId) && !StringUtils.equals("null",policyId)){
                 packContext.getCurrentTransaction().getCoreTx().setPolicyId(policyId);
@@ -336,9 +339,9 @@ import static org.testng.Assert.assertEquals;
      * @return
      */
     protected String getPolicyId(Map<?,?> param){
-        return String.valueOf(param.get("policyId"));
+        String pid = String.valueOf(param.get("policyId"));
+        return StringUtils.isEmpty(pid)?InitPolicyEnum.REGISTER.getPolicyId():pid;
     }
-
     /**
      * package data 的 封装
      *
@@ -347,10 +350,10 @@ import static org.testng.Assert.assertEquals;
      * @return
      * @throws Exception
      */
-    protected PackContext makePackContext(Action action, Long blockHeight) throws Exception {
+    protected PackContext makePackContext(Action action, Long blockHeight,Map<?, ?> param) throws Exception {
         List<Action> actions = new ArrayList<>();
         actions.add(action);
-        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 1, InitPolicyEnum.REGISTER);
+        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 1, InitPolicyEnum.getInitPolicyEnumByPolicyId(getPolicyId(param)));
         SignedTransaction transaction = TestDataMaker.makeSignedTx(coreTransaction);
 
         Package pack = new Package();

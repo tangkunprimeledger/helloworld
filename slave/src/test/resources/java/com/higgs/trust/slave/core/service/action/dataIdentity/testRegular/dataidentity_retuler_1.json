@@ -1,0 +1,29 @@
+{
+  "测试ID": 0,
+  "body": {
+    "chainOwner": "trust",
+    "dataOwner": "trust",
+    "identity": "123",
+    "index": 1,
+    "type": "CREATE_DATA_IDENTITY"
+  },
+  "type": "1",
+  "assert": "",
+  "querySql":[
+    "SELECT chain_owner AS chainOwner,data_owner AS dataOwner, identity AS identity FROM `data_identity` WHERE identity='123'"
+  ],
+  "beforeSql": [
+    "TRUNCATE TABLE `data_identity`"
+  ],
+  "afterSql": [
+    "TRUNCATE TABLE `data_identity`"
+  ],
+  "assertData": [
+    {
+      "chainOwner": "trust",
+      "dataOwner": "trust",
+      "identity": "123"
+    }
+  ],
+  "comment": "创建dataIdentity,正常情况"
+}

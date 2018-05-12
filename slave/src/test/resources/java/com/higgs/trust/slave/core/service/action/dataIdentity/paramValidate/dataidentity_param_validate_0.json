@@ -1,0 +1,7 @@
+{
+  "测试ID": 0,
+  "body": "null",
+  "type": "1",
+  "assert": "validate object is null",
+  "comment": "创建dataIdentity,入参为空测试"
+}

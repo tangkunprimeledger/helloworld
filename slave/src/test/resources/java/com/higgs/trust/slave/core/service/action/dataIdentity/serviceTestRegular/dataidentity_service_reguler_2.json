@@ -1,0 +1,8 @@
+{
+  "测试ID": 0,
+    "rsList": ["RS1","RS2"],
+    "dataIdentityList": [{"chainOwner":"trust","dataOwner":"RS2","identity":"123212"}],
+  "type": "1",
+  "assert": "true",
+  "comment": "数据归属校验, dataIdentityList 内rs 个数比rsList内少，并且值是rsList 内的值"
+}

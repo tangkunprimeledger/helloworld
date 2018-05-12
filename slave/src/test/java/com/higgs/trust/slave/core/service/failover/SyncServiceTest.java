@@ -80,7 +80,7 @@ import static org.testng.Assert.assertEquals;
     }
 
     @Test public void testSyncOutThreshold() {
-        when(blockSyncService.getClusterHeight(anyInt())).thenReturn(102L);
+        when(blockSyncService.getClusterHeight(any())).thenReturn(102L);
         when(properties.getThreshold()).thenReturn(100);
         syncService.sync();
         verify(nodeState, times(1)).isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync);
