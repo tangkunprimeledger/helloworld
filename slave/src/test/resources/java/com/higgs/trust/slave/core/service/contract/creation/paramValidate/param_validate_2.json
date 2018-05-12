@@ -1,0 +1,5 @@
+{
+  "测试ID": 2,
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "创建合约，action为空"
+}
