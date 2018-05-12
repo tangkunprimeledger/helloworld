@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum CoreTxResultEnum {
     SUCCESS("SUCCESS","the tx execute success"),
-    FAIL("SUCCESS","the tx execute fail");
+    FAIL("FAIL","the tx execute fail");
 
     private String code;
     private String desc;
