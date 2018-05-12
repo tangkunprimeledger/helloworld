@@ -83,7 +83,7 @@ import java.util.Set;
             return null;
         }
 
-        log.info("[PackageScheduler.createPackage] start create package, txSize: {}, txList: {}, package.height: {}",
+        log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, txList: {}, package.height: {}",
             signedTransactions.size(), signedTransactions, height + 1);
 
         /**
@@ -142,7 +142,7 @@ import java.util.Set;
                 add(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS.getCode());
                 add(PackageStatusEnum.VALIDATED.getCode());
             }};
-            long minPackHeight = packageRepository.getMinHeight(statusSet);
+            Long minPackHeight = packageRepository.getMinHeight(statusSet);
             long count = packageRepository.count(statusSet);
 
             //if pending package number is too large, will stop creating package
@@ -151,7 +151,7 @@ import java.util.Set;
                 return null;
             }
 
-            if (0 != minPackHeight && 0 != count) {
+            if (null != minPackHeight && 0 != count) {
                 long result = count + minPackHeight - 1;
 
                 /**

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.rs.core.dao.CoreTransactionDao">
+	<!-- Result Map -->
+	<resultMap id="baseResultMap" type="com.higgs.trust.rs.core.dao.po.CoreTransactionPO">
+		<result column="id" property="id" />
+		<result column="tx_id" property="txId" />
+		<result column="biz_model" property="bizModel" />
+		<result column="policy_id" property="policyId" />
+		<result column="lock_time" property="lockTime" />
+		<result column="sender" property="sender" />
+		<result column="version" property="version" />
+		<result column="status" property="status" />
+		<result column="exe_result" property="exeResult" />
+		<result column="error_code" property="errorCode" />
+		<result column="action_data" property="actionData" />
+		<result column="sign_data" property="signData" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+	<!-- core_transaction table all fields -->
+	<sql id="baseColumnList">
+		id,tx_id,biz_model,policy_id,lock_time,sender,version,status,exe_result,error_code,action_data,sign_data,create_time,update_time
+	</sql>
+	<!-- 查询条件 -->
+	<sql id="baseWhereClause">
+		where 1=1
+		<trim suffixOverrides=",">
+			<if test="id != null">
+				and id=#{id}
+			</if>
+			<if test="txId != null and txId != ''">
+				and tx_id=#{txId}
+			</if>
+			<if test="bizModel != null">
+				and biz_model=#{bizModel}
+			</if>
+			<if test="policyId != null and policyId != ''">
+				and policy_id=#{policyId}
+			</if>
+			<if test="lockTime != null">
+				and lock_time=#{lockTime}
+			</if>
+			<if test="sender != null and sender != ''">
+				and sender=#{sender}
+			</if>
+			<if test="version != null and version != ''">
+				and version=#{version}
+			</if>
+			<if test="status != null and status != ''">
+				and status=#{status}
+			</if>
+			<if test="exeResult != null">
+				and exe_result=#{exeResult}
+			</if>
+			<if test="errorCode != null and errorCode != ''">
+				and error_code=#{errorCode}
+			</if>
+			<if test="actionData != null">
+				and action_data=#{actionData}
+			</if>
+			<if test="signData != null">
+				and sign_data=#{signData}
+			</if>
+			<if test="createTime != null">
+				and create_time=#{createTime}
+			</if>
+			<if test="updateTime != null">
+				and update_time=#{updateTime}
+			</if>
+		</trim>
+	</sql>
+	<!-- 插入记录 -->
+	<insert id="add" parameterType="Object">
+		insert into
+		core_transaction(id,tx_id,biz_model,policy_id,lock_time,sender,version,status,exe_result,error_code,action_data,sign_data,create_time,update_time)
+		values(#{id},#{txId},#{bizModel},#{policyId},#{lockTime},#{sender},#{version},#{status},#{exeResult},#{errorCode},#{actionData},#{signData},now(),now())
+	</insert>
+	<!-- 删除记录 -->
+	<delete id="delete" parameterType="Object">
+		delete from core_transaction where
+		id=#{id}
+	</delete>
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from core_transaction where id=#{id}
+	</select>
+	<!-- 列表总数 -->
+	<select id="queryByCount" resultType="java.lang.Integer"
+		parameterType="Object">
+		select count(1) from core_transaction
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 查询列表 -->
+	<select id="queryByList" resultMap="baseResultMap"
+		parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from core_transaction
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 以上为工具自动生成 -->
+
+
+
+</mapper>

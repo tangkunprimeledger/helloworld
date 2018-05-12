@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
     }
 
     public void close() {
-        receiveCommand.setClosed(ReceiveService.COMMAND_CLOSED);
+        receiveCommand.setStatus(ReceiveService.COMMAND_APPLIED);
     }
 
 }

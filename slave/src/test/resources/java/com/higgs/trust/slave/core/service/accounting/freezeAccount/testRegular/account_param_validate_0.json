@@ -10,44 +10,7 @@
       "contractAddr": null,
       "contractArgs": null,
       "remark": null
-    },
-    "credit": {
-      "type": "OPEN_ACCOUNT",
-      "index": 1,
-      "chainOwner": "a",
-      "dataOwner": "b",
-      "accountNo": "account_no_005_1",
-      "currency": "CNY",
-      "fundDirection": "CREDIT"
-    },
-    "debit": {
-      "type": "OPEN_ACCOUNT",
-      "index": 1,
-      "chainOwner": "a",
-      "dataOwner": "b",
-      "accountNo": "account_no_005_2",
-      "currency": "CNY",
-      "fundDirection": "DEBIT"
-    },
-    "accounting": {
-      "type": "ACCOUNTING",
-      "index": 1,
-      "bizFlowNo": "123",
-      "debitTradeInfo": [
-        {
-          "accountNo": "account_no_005_2",
-          "amount": "5"
-        }
-      ],
-      "creditTradeInfo": [
-        {
-          "accountNo": "account_no_005_1",
-          "amount": "5"
-        }
-      ],
-      "accountDate": "2018-05-03 16:13:41"
-    },
-    "policyId": "1000000"
+    }
   },
   "beforeSql": [
     "TRUNCATE TABLE data_identity",

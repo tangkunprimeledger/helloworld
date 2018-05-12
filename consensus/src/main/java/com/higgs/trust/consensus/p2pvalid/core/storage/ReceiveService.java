@@ -34,15 +34,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class ReceiveService {
 
-    //TODO 简化状态，去掉close
-
-    private static final Integer COMMAND_NORMAL = 0;
-    private static final Integer COMMAND_QUEUED_APPLY = 1;
-    private static final Integer COMMAND_APPLIED = 2;
-    private static final Integer COMMAND_QUEUED_GC = 3;
-
-    public static final Integer COMMAND_NOT_CLOSED = 0;
-    public static final Integer COMMAND_CLOSED = 1;
+    public static final Integer COMMAND_NORMAL = 0;
+    public static final Integer COMMAND_QUEUED_APPLY = 1;
+    public static final Integer COMMAND_APPLIED = 2;
+    public static final Integer COMMAND_QUEUED_GC = 3;
 
     @Autowired
     private ValidConsensus validConsensus;
@@ -120,6 +115,8 @@ public class ReceiveService {
                             validCommandWrap, pubKey));
         }
 
+        log.info("command receive : {}",  validCommandWrap);
+
         // update receive command
         ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
         if (null == receiveCommand) {
@@ -132,9 +129,9 @@ public class ReceiveService {
             receiveCommand.setMessageDigest(messageDigest);
             receiveCommand.setNodeName(clusterInfo.myNodeName());
             receiveCommand.setReceiveNodeNum(0);
+            receiveCommand.setRetryApplyNum(0);
             receiveCommand.setValidCommand(JSON.toJSONString(validCommandWrap.getValidCommand()));
             receiveCommand.setStatus(COMMAND_NORMAL);
-            receiveCommand.setClosed(COMMAND_NOT_CLOSED);
             try {
                 receiveCommandDao.add(receiveCommand);
             } catch (DuplicateKeyException e) {
@@ -195,11 +192,12 @@ public class ReceiveService {
                                 ValidCommit validCommit = ValidCommit.of(receiveCommand);
                                 validConsensus.getValidExecutor().execute(validCommit);
 
-                                if (receiveCommand.getClosed().equals(COMMAND_NOT_CLOSED)) {
-                                    log.info("command not closed by biz,add command to delay queue : {}", receiveCommand);
-                                    queuedDelay(receiveCommand);
+                                if (receiveCommand.getStatus().equals(COMMAND_QUEUED_APPLY)) {
+                                    log.info("command not consume by biz, retry app num {}, add command to delay queue : {}", receiveCommand.getRetryApplyNum(), receiveCommand);
+                                    receiveCommandDao.increaseRetryApplyNum(receiveCommand.getMessageDigest());
+                                    queuedDelay(receiveCommand,receiveCommand.getRetryApplyNum() * 3000L + 2000L);
 
-                                } else if (receiveCommand.getClosed().equals(COMMAND_CLOSED)) {
+                                } else if (receiveCommand.getStatus().equals(COMMAND_APPLIED)) {
 
                                     //trans queued_apply to applied
                                     int count = receiveCommandDao
@@ -208,15 +206,6 @@ public class ReceiveService {
                                     if (count != 1) {
                                         throw new RuntimeException(
                                                 "trans applied status failed when apply! count: " + count);
-                                    }
-
-                                    //trans not close to closed
-                                    count = receiveCommandDao
-                                            .updateCloseStatus(receiveCommand.getMessageDigest(), COMMAND_NOT_CLOSED,
-                                                    COMMAND_CLOSED);
-                                    if (count != 1) {
-                                        throw new RuntimeException(
-                                                "update receive command closed status failed when apply! count: " + count);
                                     }
 
                                     ReceiveCommandPO receiveCommandTemp = receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
@@ -338,10 +327,9 @@ public class ReceiveService {
 
         }else if (receiveCommand.getStatus().equals(COMMAND_APPLIED)) {
 
-            if(receiveCommand.getClosed().equals(COMMAND_CLOSED)
-                    && receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()){
+            if(receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()){
                 queuedGc(receiveCommand);
-                log.info("command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
+                log.info("command has consume by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
                         receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
             }
         } else if (receiveCommand.getStatus().equals(COMMAND_NORMAL)) {
@@ -387,15 +375,15 @@ public class ReceiveService {
         //trans status
         int count = receiveCommandDao.transStatus(receiveCommand.getMessageDigest(), COMMAND_APPLIED, COMMAND_QUEUED_GC);
         if (count != 1) {
-            throw new RuntimeException("trans receive command status failed when apply! count: " + count);
+            throw new RuntimeException("trans receive command status failed when add gc queue! count: " + count);
         }
     }
 
-    private void queuedDelay(ReceiveCommandPO receiveCommand) {
+    private void queuedDelay(ReceiveCommandPO receiveCommand, Long delayTime) {
         //add
         QueuedApplyDelayPO queuedApplyDelay = new QueuedApplyDelayPO();
         //TODO 配置化
-        queuedApplyDelay.setApplyTime(System.currentTimeMillis() + 2000L);
+        queuedApplyDelay.setApplyTime(System.currentTimeMillis() + delayTime);
         queuedApplyDelay.setMessageDigest(receiveCommand.getMessageDigest());
         queuedApplyDelayDao.add(queuedApplyDelay);
     }

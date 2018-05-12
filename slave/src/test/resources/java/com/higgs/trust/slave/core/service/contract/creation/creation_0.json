@@ -1,0 +1,9 @@
+{
+  "测试ID": 0,
+  "body": {
+    "code": "function main() {}",
+    "language": "javascript"
+  },
+  "assert": "",
+  "comment": "创建合约"
+}

@@ -1,0 +1,8 @@
+{
+  "测试ID": 0,
+    "rsList": ["RS1","RS2"],
+    "dataIdentityList": null,
+  "type": "1",
+  "assert": "false",
+  "comment": "数据归属校验, dataIdentityList 为null"
+}
