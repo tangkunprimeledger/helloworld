@@ -65,12 +65,15 @@ public class UTXOActionServiceTest extends BaseTest {
     public void testIsLegalContractAddress() throws Exception {
         List<TxIn> inputList = new ArrayList<>();
         TxIn txIn = new TxIn();
-        txIn.setTxId("12312322");
+        txIn.setTxId("123123222");
         txIn.setIndex(0);
         txIn.setActionIndex(0);
         inputList.add(txIn);
-        System.out.println("isLegalContractAddress validate:" + isLegalContractAddress("qqqqq", inputList, TxProcessTypeEnum.VALIDATE));
-        System.out.println("isLegalContractAddress persisted:" + isLegalContractAddress("qqqqq", inputList, TxProcessTypeEnum.PERSIST));
+        UTXOAction utxoAction = new UTXOAction();
+        utxoAction.setContractAddress("qqqqq");
+
+        System.out.println("isLegalContractAddress validate:" + isLegalContractAddress(utxoAction.getContractAddress(), inputList, TxProcessTypeEnum.VALIDATE));
+        System.out.println("isLegalContractAddress persisted:" + isLegalContractAddress(utxoAction.getContractAddress(), inputList, TxProcessTypeEnum.PERSIST));
     }
 
 
@@ -93,7 +96,10 @@ public class UTXOActionServiceTest extends BaseTest {
         }
 
         //check whether the contract is existed in tht block chain
-        //###############################################//
+        boolean isExist = utxoSmartContract.isExist(contractAddress, processTypeEnum);
+        if (!isExist) {
+            return false;
+        }
 
         if (CollectionUtils.isEmpty(inputList)) {
             return true;
@@ -101,9 +107,10 @@ public class UTXOActionServiceTest extends BaseTest {
 
         List<UTXO> utxoList = utxoHandler.queryUTXOList(inputList);
         for (UTXO utxo : utxoList) {
-            if (!StringUtils.equals(contractAddress, utxo.getContractAddress())) ;
-            log.error("utxoAction contract address:{} is not the same with contract address: {} for UTXO:{}", contractAddress, utxo.getContractAddress(), utxo);
-            return false;
+            if (!StringUtils.equals(contractAddress, utxo.getContractAddress())) {
+                log.error("utxoAction contract address:{} is not the same with contract address: {} for UTXO:{}", contractAddress, utxo.getContractAddress(), utxo);
+                return false;
+            }
         }
 
         return true;

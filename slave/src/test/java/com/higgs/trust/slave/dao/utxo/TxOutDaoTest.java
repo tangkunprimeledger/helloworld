@@ -32,19 +32,19 @@ public class TxOutDaoTest extends BaseTest {
                 txOutPO.setStatus(UTXOStatusEnum.UNSPENT.getCode());
                 txOutPO.setActionIndex(0);
                 txOutPO.setIndex(i);
-                txOutPO.setContractAddress("12321" + new Date());
-                txOutPO.setState("12321");
+                txOutPO.setContractAddress("qqqqq");
+                txOutPO.setState("{\"@type\":\"com.alibaba.fastjson.JSONObject\",\"amount\":1}");
                 txOutPO.setStateClass("afdaf");
                 txOutPO.setIdentity("12312312");
                 txOutPOList.add(txOutPO);
             }
             TxOutPO txOutPO = new TxOutPO();
-            txOutPO.setTxId("123123");
+            txOutPO.setTxId("123123222");
             txOutPO.setStatus(UTXOStatusEnum.UNSPENT.getCode());
             txOutPO.setActionIndex(0);
             txOutPO.setIndex(0);
-            txOutPO.setContractAddress("12321" + new Date());
-            txOutPO.setState("12321");
+            txOutPO.setContractAddress("qqqqq");
+            txOutPO.setState("{\"@type\":\"com.alibaba.fastjson.JSONObject\",\"amount\":1}");
             txOutPO.setStateClass("afdaf");
             txOutPO.setIdentity("12312312");
             txOutPOList.add(txOutPO);

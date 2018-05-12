@@ -218,7 +218,10 @@ public class UTXOActionService {
         }
 
         //check whether the contract is existed in tht block chain
-        //###############################################//
+        boolean isExist = utxoSmartContract.isExist(contractAddress, processTypeEnum);
+        if (!isExist) {
+            return false;
+        }
 
         if (CollectionUtils.isEmpty(inputList)) {
             return true;
@@ -226,9 +229,10 @@ public class UTXOActionService {
 
         List<UTXO> utxoList = utxoHandler.queryUTXOList(inputList);
         for (UTXO utxo : utxoList) {
-            if (!StringUtils.equals(contractAddress, utxo.getContractAddress())) ;
-            log.error("utxoAction contract address:{} is not the same with contract address: {} for UTXO:{}", contractAddress, utxo.getContractAddress(), utxo);
-            return false;
+            if (!StringUtils.equals(contractAddress, utxo.getContractAddress())) {
+                log.error("utxoAction contract address:{} is not the same with contract address: {} for UTXO:{}", contractAddress, utxo.getContractAddress(), utxo);
+                return false;
+            }
         }
 
         return true;
