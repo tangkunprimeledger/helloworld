@@ -7,7 +7,6 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.MerkleException;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
-import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.version.TransactionProcessor;
 import com.higgs.trust.slave.core.service.version.TxProcessorHolder;
@@ -60,12 +59,12 @@ import org.springframework.transaction.support.TransactionTemplate;
             //should retry package process
             throw e;
         } catch (SlaveException e) {
-            log.error("[validate]has error", e);
+            log.error("[validate] has error", e);
             //snapshot transactions should be rollback
             snapshot.rollback();
             receipt.setErrorCode(e.getCode().getCode());
         } catch (Throwable e) {
-            log.error("[validate]has error", e);
+            log.error("[validate] has error", e);
             //snapshot transactions should be rollback
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
@@ -76,7 +75,7 @@ import org.springframework.transaction.support.TransactionTemplate;
     }
 
      @Override public TransactionReceipt persist(TransactionData transactionData) {
-        log.info("[TransactionExecutorImpl.persist]is start");
+        log.info("[TransactionExecutorImpl.persist] is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
 
         TransactionReceipt receipt = new TransactionReceipt();
@@ -86,22 +85,22 @@ import org.springframework.transaction.support.TransactionTemplate;
             execute(transactionData, TxProcessTypeEnum.PERSIST);
             receipt.setResult(true);
         } catch (SmartContractException e) {
-            log.error("[TransactionExecutorImpl.persist]has SmartContractException");
+            log.error("[TransactionExecutorImpl.persist] has SmartContractException");
             //should retry package process
             throw e;
         } catch (MerkleException e) {
-            log.error("[TransactionExecutorImpl.persist]has MerkleException");
+            log.error("[TransactionExecutorImpl.persist] has MerkleException");
             //should retry package process
             throw e;
         } catch (SlaveException e) {
-            log.error("[TransactionExecutorImpl.persist]has error", e);
+            log.error("[TransactionExecutorImpl.persist] has error", e);
             receipt.setErrorCode(e.getCode().getCode());
         } catch (Throwable e) {
-            log.error("[TransactionExecutorImpl.persist]has error", e);
+            log.error("[TransactionExecutorImpl.persist] has error", e);
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
         }
 
-        log.info("[TransactionExecutorImpl.persist]is end");
+        log.info("[TransactionExecutorImpl.persist] is end");
         return receipt;
     }
 
@@ -109,7 +108,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         SignedTransaction signedTransaction = transactionData.getCurrentTransaction();
         //param validation
         if (null == signedTransaction || null == signedTransaction.getCoreTx()) {
-            log.error("SignedTransaction is invalid, ", signedTransaction);
+            log.error("SignedTransaction is invalid, {}", signedTransaction);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
@@ -124,7 +123,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
         // check action, if action type equals REGISTER_POLICY or REGISTER_RS, current transaction can have only one action.
         if (!txCheckHandler.checkActions(coreTx)) {
-            log.error("core transaction is invalid, ", coreTx);
+            log.error("core transaction is invalid, txId={}", coreTx.getTxId());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
