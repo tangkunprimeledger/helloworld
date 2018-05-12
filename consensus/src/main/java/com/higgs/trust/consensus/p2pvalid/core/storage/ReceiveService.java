@@ -63,9 +63,6 @@ public class ReceiveService {
     @Autowired
     private ClusterInfo clusterInfo;
 
-    @Value("${p2p.revceive.trans.delay.interval:2000}")
-    private Long transDelayInterval;
-
     @Value("${p2p.revceive.increase.delay.interval:3000}")
     private Long delayIncreaseInterval;
 
@@ -206,8 +203,8 @@ public class ReceiveService {
                         txRequired.execute(new TransactionCallbackWithoutResult() {
                             @Override
                             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                                applyCommand(receiveCommand);
                                 queuedApplyDao.deleteByMessageDigest(receiveCommand.getMessageDigest());
+                                applyCommand(receiveCommand);
                                 log.info("command dequeue : {}", receiveCommand.getMessageDigest());
                             }
                         });
@@ -236,8 +233,8 @@ public class ReceiveService {
                         txRequired.execute(new TransactionCallbackWithoutResult() {
                             @Override
                             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                                applyCommand(receiveCommand);
                                 queuedApplyDelayDao.deleteByMessageDigest(receiveCommand.getMessageDigest());
+                                applyCommand(receiveCommand);
                                 log.info("command dequeue : {}", receiveCommand.getMessageDigest());
                             }
                         });
