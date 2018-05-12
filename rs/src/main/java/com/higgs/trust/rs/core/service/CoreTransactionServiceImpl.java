@@ -39,7 +39,7 @@ import java.util.List;
     @Autowired private PolicyRepository policyRepository;
     @Autowired private RsConfig rsConfig;
 
-    @Override public void submitTx(CoreTxVO vo) {
+    @Override public void submitTx(BizTypeEnum bizType,CoreTxVO vo,String signData) {
         log.info("[submitTx]{}", vo);
         if (vo == null) {
             log.error("[submitTx] the tx is null");
@@ -51,29 +51,35 @@ import java.util.List;
             log.error("[submitTx] param validate is fail,first msg:{}", validateResult.getFirstMsg());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
+        //check bizType
+        if(bizType == null){
+            log.error("[submitTx] bizType is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_BIZ_TYPE_IS_NULL);
+        }
         //check sign data of self
-        if(CollectionUtils.isEmpty(vo.getSignDatas())){
+        if(StringUtils.isEmpty(signData)){
             log.error("[submitTx] self sign data is empty");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
-        //convert bo
-        CoreTxBO bo = BeanConvertor.convertBean(vo, CoreTxBO.class);
-        CoreTransactionPO po = coreTransactionDao.queryByTxId(bo.getTxId(), false);
+        //convert po
+        CoreTransactionPO po = coreTransactionDao.queryByTxId(vo.getTxId(), false);
         if (po != null) {
-            log.info("[submitTx]is idempotent txId:{}", bo.getTxId());
+            log.info("[submitTx]is idempotent txId:{}", vo.getTxId());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
         //convert po
-        po = BeanConvertor.convertBean(bo, CoreTransactionPO.class);
-        po.setBizType(bo.getBizType().getCode());
-        po.setVersion(bo.getVersion().getCode());
-        if (bo.getBizModel() != null) {
-            po.setBizModel(bo.getBizModel().toJSONString());
+        po = BeanConvertor.convertBean(vo, CoreTransactionPO.class);
+        po.setBizType(bizType.getCode());
+        po.setVersion(vo.getVersion());
+        if (vo.getBizModel() != null) {
+            po.setBizModel(vo.getBizModel().toJSONString());
         }
-        String actionDatas = JSON.toJSONString(bo.getActionDatas());
+        String actionDatas = JSON.toJSONString(vo.getActionList());
         po.setActionDatas(actionDatas);
-        String signDatas = JSON.toJSONString(bo.getSignDatas());
-        po.setSignDatas(signDatas);
+        List<String> signDatas = new ArrayList<>();
+        signDatas.add(signData);
+        String signDataJSON = JSON.toJSONString(signDatas);
+        po.setSignDatas(signDataJSON);
         po.setStatus(CoreTxStatusEnum.INIT.getCode());
         po.setCreateTime(new Date());
         try {

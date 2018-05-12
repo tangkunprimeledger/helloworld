@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.vo.CoreTxVO;
 
 /**
@@ -12,9 +13,11 @@ public interface CoreTransactionService {
     /**
      * submit transaction from custom rs
      *
+     * @param bizType
      * @param coreTxVO
+     * @param signData
      */
-    void submitTx(CoreTxVO coreTxVO);
+    void submitTx(BizTypeEnum bizType,CoreTxVO coreTxVO,String signData);
 
     /**
      * process sign and update tx status to wait,called by scheduler
