@@ -155,7 +155,7 @@ import java.util.Set;
      * @param statusSet
      * @return
      */
-    public long getMinHeight(Set<String> statusSet) {
+    public Long getMinHeight(Set<String> statusSet) {
         return packageDao.getMinHeightWithStatus(statusSet);
     }
 

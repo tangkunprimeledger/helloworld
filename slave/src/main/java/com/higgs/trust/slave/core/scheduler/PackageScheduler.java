@@ -60,7 +60,7 @@ public class PackageScheduler {
     private NodeState nodeState;
 
     @Value("${trust.batch.tx.limit}")
-    private int PENDING_COUNT;
+    private int TX_PENDING_COUNT;
 
     /**
      * master node create package
@@ -71,7 +71,7 @@ public class PackageScheduler {
             return;
         }
 
-        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(PENDING_COUNT);
+        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
             return;
@@ -152,18 +152,17 @@ public class PackageScheduler {
 
     }
 
-
     /**
      * process package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
-    public void doPersistingToConsensus() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}") public void doPersistingToConsensus() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
 
         // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
-        List<Long> heightList = packageRepository.getHeightsByStatusAndLimit(PackageStatusEnum.PERSISTING.getCode(), PACKAGE_LIMIT);
+        List<Long> heightList =
+            packageRepository.getHeightsByStatusAndLimit(PackageStatusEnum.PERSISTING.getCode(), PACKAGE_LIMIT);
         // if list is null or empty，there are no package for process
         if (CollectionUtils.isEmpty(heightList)) {
             return;
@@ -178,14 +177,14 @@ public class PackageScheduler {
     /**
      * process package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
-    public void doPersisted() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}") public void doPersisted() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
 
         // get height list for process  persist to p2p ,package status equals 'PERSISTING and  height be sort by height asc in mysql
-        List<Long> heightList = packageRepository.getHeightsByStatusAndLimit(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode(), PACKAGE_LIMIT);
+        List<Long> heightList = packageRepository
+            .getHeightsByStatusAndLimit(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode(), PACKAGE_LIMIT);
 
         // if list is null or empty，there are no package for process
         if (CollectionUtils.isEmpty(heightList)) {
@@ -194,7 +193,18 @@ public class PackageScheduler {
         log.info("persisted heightList:{}", heightList);
         for (Long height : heightList) {
             log.info("persisted  height = {}", height);
-            packageLock.lockAndPersisted(height);
+            try {
+                packageLock.lockAndPersisted(height);
+            } catch (SlaveException e) {
+                if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR == e.getCode()
+                    || SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT == e.getCode()
+                    || SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH == e.getCode()) {
+                    return;
+                }
+                log.error("slave exception. ", e);
+            } catch (Throwable e) {
+                log.error("package process exception. ", e);
+            }
         }
     }
 }

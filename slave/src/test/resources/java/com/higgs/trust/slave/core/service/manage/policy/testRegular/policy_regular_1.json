@@ -1,0 +1,17 @@
+{
+  "测试ID": 0,
+  "body": {
+    "policyId": "test-policy-with-merkle-tree",
+    "policyName":"测试policy",
+    "rsIds":["rs-test-1", "rs-test-2", "re-test-3"]
+  },
+  "beforeSql": ["INSERT INTO `merkle_tree` (`root_hash`, `total_level`, `max_index`, `tree_type`, `create_time`, `update_time`)VALUES('76030c1ac4e0126a8417ccab32315a5685e2344965dcfc657e366b54a264c3d3', 1, 0, 'POLICY', '2018-05-09 10:50:07.853', '2018-05-09 10:50:07.853')",
+  "INSERT INTO `merkle_node` (`uuid`, `node_hash`, `index`, `level`, `parent`, `tree_type`, `create_time`, `update_time`)VALUES('443726358246326272', '76030c1ac4e0126a8417ccab32315a5685e2344965dcfc657e366b54a264c3d3', 0, 1, NULL, 'POLICY', '2018-05-09 10:50:07.893', '2018-05-09 10:50:07.893')"],
+  "policyId": "000000",
+  "assert": "",
+  "afterSql": ["delete from policy where policy_id='test-policy-with-merkle-tree'",
+    "truncate table merkle_tree",
+    "truncate table merkle_node"
+  ],
+  "comment": "注册policy接口测试-merkle-tree存在"
+}

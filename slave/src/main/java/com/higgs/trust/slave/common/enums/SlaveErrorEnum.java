@@ -37,7 +37,10 @@ public enum SlaveErrorEnum {
     SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED("412", "get and validating the block headers from other node failed", false),
     SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED("413", "the package of block validating failed when sync block.", false),
     SLAVE_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID("414", "the package of block persist result invalid after sync block.", false),
-    SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID("415", "the package of block persist result invalid after failover block.", false),
+    SLAVE_FAILOVER_BLOCK_VALIDATE_RESULT_INVALID("415", "the package of block validating result invalid after failover block.", false),
+    SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID("416", "the package of block persist result invalid after failover block.", false),
+    SLAVE_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST("417","consensus validate result not exist",false),
+    SLAVE_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST("418","consensus persist result not exist",false),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         内部处理相关[500-699]                            //
@@ -109,6 +112,7 @@ public enum SlaveErrorEnum {
     SLAVE_ACCOUNT_CURRENCY_ALREADY_EXISTS_ERROR("831", "currency is already exists", false),
     SLAVE_CONTRACT_NOT_EXIST_ERROR("832", "contract is not exist", false),
     SLAVE_LAST_PACKAGE_NOT_FINISH("833", "last package is not finished, just waiting", false),
+    SLAVE_PACKAGE_REPLICATE_FAILED("834", "package replicated to consensus failed", false),
     ;
     //@formatter:on
 

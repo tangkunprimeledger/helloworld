@@ -35,7 +35,7 @@ import java.text.DecimalFormat;
 
         int max = validAmount.compareTo(MAX_AMOUNT);
         int min = validAmount.compareTo(allowNegative ? MIN_AMOUNT_NEGATIVE : MIN_AMOUNT);
-        if (max == 1 || min == -1) {
+        if (max == 1 || min == -1 || validAmount.compareTo(MIN_AMOUNT) == 0) {
             isLegal = false;
         }
         return isLegal;

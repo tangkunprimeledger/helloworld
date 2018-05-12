@@ -47,7 +47,7 @@
   },
   "mybatis": {
     "configLocation": "classpath:mybatis-config.xml",
-    "mapper-locations": "classpath:mybatis/**/*Mapper.xml"
+    "mapper-locations": "classpath*:mybatis/**/*Mapper.xml"
   },
   "primeJob": {
     "scheduler": {
@@ -83,6 +83,9 @@
         "limit": 200
       }
     },
+    "package": {
+      "pending" : 1000
+    },
     "schedule": {
       "package": {
         "create": 50,
@@ -91,6 +94,7 @@
       }
     }
   },
+  "runMode": "MOCK",
   "logging": {
     "config": "classpath:logback.xml"
   }

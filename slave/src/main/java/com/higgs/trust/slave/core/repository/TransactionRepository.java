@@ -32,8 +32,8 @@ import java.util.List;
     @Autowired TransactionDao transactionDao;
 
     public boolean isExist(String txId) {
-        TransactionVO transactionVO = transactionDao.queryByTxId(txId);
-        if (null != transactionVO) {
+        TransactionPO transactionPO = transactionDao.queryByTxId(txId);
+        if (null != transactionPO) {
             return true;
         }
         return false;

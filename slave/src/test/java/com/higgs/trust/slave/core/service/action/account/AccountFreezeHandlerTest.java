@@ -57,8 +57,10 @@ public class AccountFreezeHandlerTest extends InterfaceCommonTest {
 
     @Test(dataProvider = "defaultProvider", priority = 1)
     public void testException(Map<?, ?> param) throws Exception {
+        executeBeforeSql(param);
         AccountFreeze freeze = getBodyData(param, AccountFreeze.class);
         executeActionHandler(param, accountFreezeHandler, freeze);
+        executeAfterSql(param);
 
     }
 
@@ -72,46 +74,24 @@ public class AccountFreezeHandlerTest extends InterfaceCommonTest {
         AccountOperation accountOperation = getObject(object.get("accounting").toString(), AccountOperation.class);
         String policyId = object.getString("policyId");
 
-        if (param.get("beforeSql") != null) {
-            String[] sql = ((JSONArray)param.get("beforeSql")).toArray(new String[] {});
-            DataBaseManager dataBaseManager = new DataBaseManager();
-            for (String s : sql)
-                dataBaseManager.executeSingleDelete(s, DB_URL);
-        }
-        // AccountFreeze freeze = getBodyData(param, AccountFreeze.class);
-        openAccountHandler.validate(makePackContext(creditAccount, 1L, null));
-        openAccountHandler.persist(makePackContext(creditAccount, 1L, null));
-        openAccountHandler.validate(makePackContext(debitAccount, 1L,null));
-        openAccountHandler.persist(makePackContext(debitAccount, 1L,null));
+        executeBeforeSql(param);
 
-        PackContext packContext = makePackContext(accountOperation, 1L,null);
-        packContext.getCurrentTransaction().getCoreTx().setPolicyId(policyId);
-
-//        RegisterPolicy policy = new RegisterPolicy();
-//        policy.setPolicyName("test");
-//        policy.setPolicyId(policyId);
-//        List<String> list = new ArrayList<String>();
-//        list.add("b");
-//        policy.setRsIds(list);
-//        policy.setIndex(1);
-//        policy.setType(REGISTER_POLICY);
-//        manageSnapshotAgent.registerPolicy(policy);
-//        policyRepository.save(policyRepository.convertActionToPolicy(policy));
+//        openAccountHandler.validate(makePackContext(creditAccount, 1L));
+//        openAccountHandler.persist(makePackContext(creditAccount, 1L));
+//        openAccountHandler.validate(makePackContext(debitAccount, 1L));
+//        openAccountHandler.persist(makePackContext(debitAccount, 1L));
+//
+//        PackContext packContext = makePackContext(accountOperation, 1L);
+//        packContext.getCurrentTransaction().getCoreTx().setPolicyId(policyId);
+//
+//        accountOperationHandler.validate(packContext);
+//        accountOperationHandler.persist(packContext);
 
 
-        accountOperationHandler.validate(packContext);
-//        packContext.getCurrentTransaction().getCoreTx().setPolicyId("000001");
-        accountOperationHandler.persist(packContext);
+        accountFreezeHandler.validate(makePackContext(freeze, 1L));
+        accountFreezeHandler.persist(makePackContext(freeze, 1L));
+        executeAfterSql(param);
 
-        accountFreezeHandler.validate(makePackContext(freeze, 1L,null));
-        accountFreezeHandler.persist(makePackContext(freeze, 1L,null));
-
-        if (param.get("afterSql") != null) {
-            String[] sql = ((JSONArray)param.get("beforeSql")).toArray(new String[] {});
-            DataBaseManager dataBaseManager = new DataBaseManager();
-            for (String s : sql)
-                dataBaseManager.executeSingleDelete(s, DB_URL);
-        }
     }
 
 }

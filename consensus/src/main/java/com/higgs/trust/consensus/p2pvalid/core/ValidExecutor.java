@@ -30,7 +30,7 @@ public class ValidExecutor {
         });
     }
 
-    public <T extends ValidCommand<U>, U extends Serializable> U excute(ValidCommit commit) {
+    public <T extends ValidCommand<U>, U extends Serializable> U execute(ValidCommit commit) {
         Function function = registry.get(commit.type());
         return (U) function.apply(commit);
     }

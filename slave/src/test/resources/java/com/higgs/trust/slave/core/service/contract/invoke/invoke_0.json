@@ -1,0 +1,7 @@
+{
+    "测试ID": 0,
+    "codeFile": "../code/putState.js",
+    "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+    "comment": "调用合约，address参数为空"
+}
+  

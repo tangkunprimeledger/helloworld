@@ -16,7 +16,7 @@ import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
-import com.higgs.trust.slave.core.service.consensus.cluster.ClusterServiceImpl;
+import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandlerImpl;
 import com.higgs.trust.slave.core.service.failover.SyncService;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 /**
  * @Description: replicate the sorted package to cluster
@@ -56,7 +56,7 @@ import java.util.concurrent.ExecutorService;
 
     @Autowired private SyncService syncService;
 
-    @Autowired private ClusterServiceImpl clusterServiceImpl;
+    @Autowired private P2pHandlerImpl p2pHandler;
 
     @Autowired private BlockRepository blockRepository;
 
@@ -83,7 +83,13 @@ import java.util.concurrent.ExecutorService;
         // replicate package to all nodes
         log.info("package starts to distribute to each node through consensus layer");
         PackageCommand packageCommand = new PackageCommand(packageVO);
-        consensusClient.submit(packageCommand);
+        CompletableFuture future = consensusClient.submit(packageCommand);
+        try {
+            future.get(2, TimeUnit.SECONDS);
+        } catch (Throwable e) {
+            log.error("replicate log failed!");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED, e);
+        }
         log.info("package has been sent to consensus layer");
     }
 
@@ -175,8 +181,7 @@ import java.util.concurrent.ExecutorService;
             List<Long> maxHeights = blockRepository.getMaxHeight(operation.get());
             maxHeights.forEach(height -> {
                 try {
-                    clusterServiceImpl
-                        .submit(new ValidClusterHeightCmd(operation.getRequestId(), height), operation.getNodeName());
+                    p2pHandler.submit(new ValidClusterHeightCmd(operation.getRequestId(), height));
                 } catch (Exception e) {
                     log.error("consensus submit error:", e);
                 }
@@ -198,8 +203,7 @@ import java.util.concurrent.ExecutorService;
             BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
             boolean result = blockHeader != null && blockService.compareBlockHeader(header, blockHeader);
             try {
-                clusterServiceImpl
-                    .submit(new ValidBlockHeaderCmd(operation.getRequestId(), header, result), operation.getNodeName());
+                p2pHandler.submit(new ValidBlockHeaderCmd(operation.getRequestId(), header, result));
             } catch (Exception e) {
                 log.error("consensus submit error:", e);
             }

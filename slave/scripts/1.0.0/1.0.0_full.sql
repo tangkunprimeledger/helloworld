@@ -296,5 +296,157 @@ IF NOT EXISTS `tx_out` (
 	UNIQUE KEY `uniq_tx_id_index_action_index` (`tx_id`,`index`,`action_index`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create tx out';
 
+#
+# Consensus
+#
+
+CREATE TABLE `queued_apply` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`),
+  KEY `idx_message_digest` (`message_digest`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table apply_queue';
+
+#
+# Structure for table "queued_apply_delay"
+#
+
+CREATE TABLE `queued_apply_delay` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `apply_time` bigint(1) unsigned NOT NULL DEFAULT '0' COMMENT 'requeued to apply',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`),
+  KEY `idx_message_digest` (`message_digest`),
+  KEY `index_apply_time` (`apply_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table apply_delay_queue';
+
+#
+# Structure for table "queued_receive_gc"
+#
+
+CREATE TABLE `queued_receive_gc` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `gc_time` bigint(1) unsigned NOT NULL DEFAULT '0' COMMENT 'gc time',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`),
+  KEY `idx_message_digest` (`message_digest`),
+  KEY `index_gc_time` (`gc_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_gc_queue';
+
+#
+# Structure for table "queued_send"
+#
+
+CREATE TABLE `queued_send` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`),
+  KEY `idx_message_digest` (`message_digest`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table send_queue';
+
+#
+# Structure for table "queued_send_delay"
+#
+
+CREATE TABLE `queued_send_delay` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `send_time` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'requeued to send',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`),
+  KEY `idx_message_digest` (`message_digest`),
+  KEY `index_send_time` (`send_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_delay_queue';
+
+#
+# Structure for table "queued_send_gc"
+#
+
+CREATE TABLE `queued_send_gc` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `gc_time` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'gc time',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`),
+  KEY `idx_message_digest` (`message_digest`),
+  KEY `index_gc_time` (`gc_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table send_gc_queue';
+
+#
+# Structure for table "receive_command"
+#
+
+CREATE TABLE `receive_command` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `valid_command` varchar(3072) NOT NULL COMMENT 'valid command',
+  `command_class` varchar(255) NOT NULL DEFAULT '' COMMENT 'command class',
+  `node_name` varchar(255) NOT NULL DEFAULT '' COMMENT 'node name',
+  `receive_node_num` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'num of receive node',
+  `apply_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to apply',
+  `gc_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to gc',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-normal，1-add to apply queue，2-add to gc queue',
+  `retry_apply_num` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT 'count of retry apply',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  `update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_message_digest` (`message_digest`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_command';
+
+#
+# Structure for table "receive_node"
+#
+
+CREATE TABLE `receive_node` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `from_node_name` varchar(64) NOT NULL COMMENT 'from node name',
+  `command_sign` varchar(512) NOT NULL DEFAULT '' COMMENT 'command sign',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`from_node_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
+
+#
+# Structure for table "send_command"
+#
+
+CREATE TABLE `send_command` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `valid_command` varchar(3072) NOT NULL COMMENT 'valid command',
+  `node_name` varchar(255) NOT NULL DEFAULT '' COMMENT 'node name',
+  `command_sign` varchar(512) NOT NULL DEFAULT '' COMMENT 'command sign',
+  `command_class` varchar(255) NOT NULL DEFAULT '' COMMENT 'command class',
+  `ack_node_num` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'num of  ack node',
+  `gc_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to gc',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-add to send queue，1-add to gc queue',
+  `retry_send_num` mediumint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'count of retry',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  `update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_message_digest` (`message_digest`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table send_command';
+
+#
+# Structure for table "send_node"
+#
+
+CREATE TABLE `send_node` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `to_node_name` varchar(64) NOT NULL DEFAULT '' COMMENT 'from node name',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-wait to send , 1- ack',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`to_node_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
+
 INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)
 VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3));

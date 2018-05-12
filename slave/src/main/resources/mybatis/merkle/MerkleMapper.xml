@@ -100,6 +100,23 @@
 		where `level`=#{level} and tree_type=#{treeType} and `index`=#{index}
 	</select>
 
+	<select id="batchQueryMerkleNodeByIndex" parameterType="java.util.List" resultType="com.higgs.trust.slave.dao.po.merkle.MerkleNodePO">
+		SELECT uuid as uuid,
+				node_hash as nodeHash,
+				`index` as `index`,
+				`level` as `level`,
+				parent as parent,
+				tree_type as treeType,
+				create_time as createTime,
+				update_time as updateTime
+		FROM merkle_node
+		<where>
+			<foreach collection ="list" item="item" index="index" separator ="or">
+				(`level` = #{item.level} and `tree_type` = #{item.treeType} and `index` = #{item.index})
+			</foreach>
+		</where>
+	</select>
+
 
 	<select id="queryMerkleNodeByHash" parameterType="com.higgs.trust.slave.dao.po.merkle.MerkleNodePO" resultType="com.higgs.trust.slave.dao.po.merkle.MerkleNodePO">
 		SELECT uuid as uuid,
