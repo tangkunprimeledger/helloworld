@@ -47,6 +47,7 @@ import java.util.List;
     @Autowired private RsConfig rsConfig;
     @Autowired private BlockChainService blockChainService;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
+    @Autowired private SignServiceImpl signService;
 
     @Override public void submitTx(BizTypeEnum bizType,CoreTransaction vo,String signData) {
         log.info("[submitTx]{}", vo);
@@ -196,9 +197,6 @@ import java.util.List;
             return null;
         }
         vo.setVersion(bo.getVersion().getCode());
-        if(bo.getBizModel()!=null){
-            bo.setBizModel(JSON.parseObject(bo.getBizModel().toJSONString()));
-        }
         return vo;
     }
 
@@ -212,7 +210,7 @@ import java.util.List;
         List<String> otherRs = new ArrayList<>(rsIds.size() - 1);
         for(String rs : rsIds){
             //filter self
-            if(!StringUtils.equals(rs,rsConfig.getRsName())){
+            if(!StringUtils.equals(rs.toUpperCase(),rsConfig.getRsName().toUpperCase())){
                 otherRs.add(rs);
             }
         }
@@ -221,7 +219,9 @@ import java.util.List;
         }
         List<String> signDatas = new ArrayList<>();
         for(String rs : otherRs){
-            //TODO:to sign by other rs
+            //to sign by other rs
+            String sign = signService.requestSign(rs,convertTxVO(bo));
+            signDatas.add(sign);
         }
         return signDatas;
     }
