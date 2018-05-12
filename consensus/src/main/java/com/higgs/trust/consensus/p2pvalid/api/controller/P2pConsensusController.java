@@ -23,7 +23,8 @@ import org.springframework.web.bind.annotation.*;
         try {
             receiveService.receive(validCommandWrap);
         } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
+            log.error("failed process received command", throwable);
+            return ValidResponseWrap.failedResponse(throwable.getMessage());
         }
         return ValidResponseWrap.successResponse(null);
     }
