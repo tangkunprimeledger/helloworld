@@ -38,10 +38,9 @@
     </insert>
     <!-- 以上为工具自动生成 -->
     
-    <!-- 根据messageDigest删除记录 -->
     <delete id="queryListByApplyTime" parameterType="Object">
         delete from queued_apply_delay where
-        `apply_time` &lt;= #{applyTime}
+        `apply_time` &lt;= #{applyTime} limit 10
     </delete>
 
     <!-- 根据messageDigest删除记录 -->
