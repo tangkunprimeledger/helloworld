@@ -51,7 +51,6 @@ public class CoreTransaction extends BaseBO {
     /**
      * lock time
      */
-    @NotNull
     private Date lockTime;
 
     /**
