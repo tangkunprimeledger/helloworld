@@ -11,7 +11,7 @@ import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.snapshot.agent.AccountContractBindingSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
-import com.higgs.trust.slave.model.bo.Contract;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBindingAction;
