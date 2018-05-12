@@ -7,7 +7,7 @@ import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
-import com.higgs.trust.slave.model.bo.Contract;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

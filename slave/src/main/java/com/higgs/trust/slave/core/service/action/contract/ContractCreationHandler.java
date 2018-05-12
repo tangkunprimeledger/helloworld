@@ -8,7 +8,7 @@ import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
-import com.higgs.trust.slave.model.bo.Contract;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
 import lombok.extern.slf4j.Slf4j;
@@ -83,6 +83,7 @@ import java.util.Date;
             log.error("[ContractCreation] language is error: {}", creationAction.getLanguage());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("language is error: %s", creationAction.getLanguage()));
         }
+
         return creationAction;
     }
 
@@ -104,9 +105,13 @@ import java.util.Date;
 
             contract = new Contract();
             contract.setAddress(address);
+            contract.setBlockHeight(blockHeight);
+            contract.setTxId(txId);
+            contract.setActionId(actionData.getCurrentAction().getIndex());
             contract.setLanguage(creationAction.getLanguage());
             contract.setCode(creationAction.getCode());
             contract.setCreateTime(new Date());
+            contract.setVersion("0.1");
             snapshotAgent.put(address, contract);
         } finally {
             Profiler.release();
@@ -130,9 +135,13 @@ import java.util.Date;
             }
             contract = new Contract();
             contract.setAddress(address);
+            contract.setBlockHeight(blockHeight);
+            contract.setTxId(txId);
+            contract.setActionId(actionData.getCurrentAction().getIndex());
             contract.setLanguage(creationAction.getLanguage());
             contract.setCode(creationAction.getCode());
             contract.setCreateTime(new Date());
+            contract.setVersion("0.1");
 
             contractRepository.deploy(contract);
         } finally {

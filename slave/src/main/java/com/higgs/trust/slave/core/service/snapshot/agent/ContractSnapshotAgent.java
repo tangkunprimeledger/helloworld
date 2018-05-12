@@ -5,7 +5,7 @@ import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.model.bo.BaseBO;
-import com.higgs.trust.slave.model.bo.Contract;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

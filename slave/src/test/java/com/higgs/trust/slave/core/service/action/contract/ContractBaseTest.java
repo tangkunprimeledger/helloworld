@@ -40,9 +40,9 @@ public abstract class ContractBaseTest extends BaseTest {
         return (new StringBuilder()).append(Character.toLowerCase(s.charAt(0))).append(s.substring(1)).toString();
     }
 
-    protected String getDbConnectString() {
+    public static String getDbConnectString() {
         try {
-            String json = IOUtils.toString(this.getClass().getResource("/test-application.json"), "UTF-8");
+            String json = IOUtils.toString(ContractBaseTest.class.getResource("/test-application.json"), "UTF-8");
             JSONObject config = (JSONObject) JSON.parse(json);
             JSONObject dbConf = config.getJSONObject("spring").getJSONObject("datasource").getJSONObject("druid");
             String connectStr = dbConf.getString("url");// "jdbc:mysql://localhost:3306/trust?user=root&password=root";

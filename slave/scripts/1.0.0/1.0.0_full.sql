@@ -174,11 +174,16 @@ CREATE TABLE
 IF NOT EXISTS `contract` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`address` VARCHAR (64) NOT NULL COMMENT 'contract address',
+	`block_height` BIGINT (20) DEFAULT NULL COMMENT 'block height',
+	`tx_id` VARCHAR (64) NOT NULL COMMENT 'the id create transaction',
+	`action_index` INT NOT NULL COMMENT 'the index create action',
 	`language` VARCHAR (32) NOT NULL COMMENT 'contract code language',
+  `version` VARCHAR(5) NOT NULL COMMENT  '',
 	`code` NVARCHAR (2048) NOT NULL COMMENT 'contract code',
 	`create_time` DATETIME (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_address` (`address`)
+	UNIQUE KEY `uniq_address` (`address`),
+	UNIQUE KEY `uniq_txid_actionindex` (`tx_id`, `action_index`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'smart contract';
 
 CREATE TABLE
@@ -269,7 +274,7 @@ IF NOT EXISTS `transaction` (
 	`version` VARCHAR (32) NOT NULL COMMENT 'the version create the tx',
 	`block_height` BIGINT (20) NOT NULL COMMENT 'the block height create the tx',
 	`block_time` datetime (3) NOT NULL COMMENT 'the create time create the block for the tx',
-	`action_datas` MEDIUMTEXT DEFAULT NULL COMMENT 'the action list by json',
+	`action_datas` varchar(4096) DEFAULT NULL COMMENT 'the action list by json',
 	`sign_datas` varchar(4096) DEFAULT NULL COMMENT 'the signatures by json',
 	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',

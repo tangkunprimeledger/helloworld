@@ -1,10 +1,11 @@
 package com.higgs.trust.slave.core.repository.contract;
 
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.contract.ContractDao;
 import com.higgs.trust.slave.dao.po.contract.ContractPO;
-import com.higgs.trust.slave.model.bo.Contract;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -26,11 +27,7 @@ public class ContractRepository {
      * @param contract
      */
     public void deploy(Contract contract) {
-        ContractPO contractPO = new ContractPO();
-        contractPO.setAddress(contract.getAddress());
-        contractPO.setLanguage(contract.getLanguage());
-        contractPO.setCode(contract.getCode());
-        contractPO.setCreateTime(contract.getCreateTime());
+        ContractPO contractPO = BeanConvertor.convertBean(contract, ContractPO.class);
 
         try {
             contractDao.add(contractPO);
@@ -46,11 +43,7 @@ public class ContractRepository {
         if (null == po) {
             return null;
         }
-        Contract contract = new Contract();
-        contract.setAddress(po.getAddress());
-        contract.setCode(po.getCode());
-        contract.setLanguage(po.getLanguage());
-        contract.setCreateTime(po.getCreateTime());
+        Contract contract = BeanConvertor.convertBean(po, Contract.class);
         return contract;
     }
 }
