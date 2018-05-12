@@ -1,7 +1,7 @@
 {
   "测试ID": 0,
   "body": {
-    "bizFlowNo":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx11111111111111111111xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    "bizFlowNo":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx11111111111111111111xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "amount":10,
     "accountNo":"ssss"
   },

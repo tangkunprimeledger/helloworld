@@ -5,22 +5,23 @@
 	<resultMap id="baseResultMap" type="com.higgs.trust.rs.core.dao.po.CoreTransactionPO">
 		<result column="id" property="id" />
 		<result column="tx_id" property="txId" />
-		<result column="biz_model" property="bizModel" />
+		<result column="biz_type" property="bizType" />
 		<result column="policy_id" property="policyId" />
 		<result column="lock_time" property="lockTime" />
 		<result column="sender" property="sender" />
 		<result column="version" property="version" />
+		<result column="biz_model" property="bizModel" />
+		<result column="action_datas" property="actionDatas" />
+		<result column="sign_datas" property="signDatas" />
 		<result column="status" property="status" />
-		<result column="exe_result" property="exeResult" />
+		<result column="execute_result" property="executeResult" />
 		<result column="error_code" property="errorCode" />
-		<result column="action_data" property="actionData" />
-		<result column="sign_data" property="signData" />
 		<result column="create_time" property="createTime" />
 		<result column="update_time" property="updateTime" />
 	</resultMap>
 	<!-- core_transaction table all fields -->
 	<sql id="baseColumnList">
-		id,tx_id,biz_model,policy_id,lock_time,sender,version,status,exe_result,error_code,action_data,sign_data,create_time,update_time
+		id,tx_id,biz_type,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,status,execute_result,error_code,create_time,update_time
 	</sql>
 	<!-- 查询条件 -->
 	<sql id="baseWhereClause">
@@ -32,8 +33,8 @@
 			<if test="txId != null and txId != ''">
 				and tx_id=#{txId}
 			</if>
-			<if test="bizModel != null">
-				and biz_model=#{bizModel}
+			<if test="bizType != null and bizType != ''">
+				and biz_type=#{bizType}
 			</if>
 			<if test="policyId != null and policyId != ''">
 				and policy_id=#{policyId}
@@ -47,20 +48,23 @@
 			<if test="version != null and version != ''">
 				and version=#{version}
 			</if>
+			<if test="bizModel != null">
+				and biz_model=#{bizModel}
+			</if>
+			<if test="actionDatas != null and actionDatas != ''">
+				and action_datas=#{actionDatas}
+			</if>
+			<if test="signDatas != null and signDatas != ''">
+				and sign_datas=#{signDatas}
+			</if>
 			<if test="status != null and status != ''">
 				and status=#{status}
 			</if>
-			<if test="exeResult != null">
-				and exe_result=#{exeResult}
+			<if test="executeResult != null and executeResult != ''">
+				and execute_result=#{executeResult}
 			</if>
 			<if test="errorCode != null and errorCode != ''">
 				and error_code=#{errorCode}
-			</if>
-			<if test="actionData != null">
-				and action_data=#{actionData}
-			</if>
-			<if test="signData != null">
-				and sign_data=#{signData}
 			</if>
 			<if test="createTime != null">
 				and create_time=#{createTime}
@@ -73,8 +77,8 @@
 	<!-- 插入记录 -->
 	<insert id="add" parameterType="Object">
 		insert into
-		core_transaction(id,tx_id,biz_model,policy_id,lock_time,sender,version,status,exe_result,error_code,action_data,sign_data,create_time,update_time)
-		values(#{id},#{txId},#{bizModel},#{policyId},#{lockTime},#{sender},#{version},#{status},#{exeResult},#{errorCode},#{actionData},#{signData},now(),now())
+		core_transaction(id,tx_id,biz_type,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,status,execute_result,error_code,create_time,update_time)
+		values(#{id},#{txId},#{bizType},#{policyId},#{lockTime},#{sender},#{version},#{bizModel},#{actionDatas},#{signDatas},#{status},#{executeResult},#{errorCode},now(),now())
 	</insert>
 	<!-- 删除记录 -->
 	<delete id="delete" parameterType="Object">
@@ -89,13 +93,13 @@
 	</select>
 	<!-- 列表总数 -->
 	<select id="queryByCount" resultType="java.lang.Integer"
-		parameterType="Object">
+			parameterType="Object">
 		select count(1) from core_transaction
 		<include refid="baseWhereClause" />
 	</select>
 	<!-- 查询列表 -->
 	<select id="queryByList" resultMap="baseResultMap"
-		parameterType="Object">
+			parameterType="Object">
 		select
 		<include refid="baseColumnList" />
 		from core_transaction
@@ -103,6 +107,43 @@
 	</select>
 	<!-- 以上为工具自动生成 -->
 
+	<!--query by tx id-->
+	<select id="queryByTxId" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from core_transaction where tx_id=#{txId}
+		<if test="forUpdate == true">
+			for update
+		</if>
+	</select>
+	<!--query by status -->
+	<select id="queryByStatus" resultMap="baseResultMap"
+			parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from core_transaction
+		where status=#{status} limit #{rowNum},#{count}
+	</select>
+	<!--update status-->
+	<update id="updateStatus" parameterType="Object">
+		update core_transaction
+		set status=#{to},update_time=now(3)
+		where tx_id=#{txId} and status=#{from}
+	</update>
+
+	<!--saveExecuteResult-->
+	<update id="saveExecuteResult" parameterType="Object">
+		update core_transaction
+		set execute_result=#{executResult},error_code=#{errorCode},update_time=now(3)
+		where tx_id=#{txId}
+	</update>
+
+	<!--updateSignDatas-->
+	<update id="updateSignDatas" parameterType="Object">
+		update core_transaction
+		set sign_datas=#{signDatas},update_time=now(3)
+		where tx_id=#{txId}
+	</update>
 
 
 </mapper>
