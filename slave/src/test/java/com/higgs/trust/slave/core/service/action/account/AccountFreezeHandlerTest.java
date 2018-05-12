@@ -79,12 +79,12 @@ public class AccountFreezeHandlerTest extends InterfaceCommonTest {
                 dataBaseManager.executeSingleDelete(s, DB_URL);
         }
         // AccountFreeze freeze = getBodyData(param, AccountFreeze.class);
-        openAccountHandler.validate(makePackContext(creditAccount, 1L));
-        openAccountHandler.persist(makePackContext(creditAccount, 1L));
-        openAccountHandler.validate(makePackContext(debitAccount, 1L));
-        openAccountHandler.persist(makePackContext(debitAccount, 1L));
+        openAccountHandler.validate(makePackContext(creditAccount, 1L, null));
+        openAccountHandler.persist(makePackContext(creditAccount, 1L, null));
+        openAccountHandler.validate(makePackContext(debitAccount, 1L,null));
+        openAccountHandler.persist(makePackContext(debitAccount, 1L,null));
 
-        PackContext packContext = makePackContext(accountOperation, 1L);
+        PackContext packContext = makePackContext(accountOperation, 1L,null);
         packContext.getCurrentTransaction().getCoreTx().setPolicyId(policyId);
 
 //        RegisterPolicy policy = new RegisterPolicy();
@@ -103,8 +103,8 @@ public class AccountFreezeHandlerTest extends InterfaceCommonTest {
 //        packContext.getCurrentTransaction().getCoreTx().setPolicyId("000001");
         accountOperationHandler.persist(packContext);
 
-        accountFreezeHandler.validate(makePackContext(freeze, 1L));
-        accountFreezeHandler.persist(makePackContext(freeze, 1L));
+        accountFreezeHandler.validate(makePackContext(freeze, 1L,null));
+        accountFreezeHandler.persist(makePackContext(freeze, 1L,null));
 
         if (param.get("afterSql") != null) {
             String[] sql = ((JSONArray)param.get("beforeSql")).toArray(new String[] {});

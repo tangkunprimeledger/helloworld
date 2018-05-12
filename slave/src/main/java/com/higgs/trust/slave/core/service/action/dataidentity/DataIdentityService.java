@@ -104,7 +104,7 @@ public class DataIdentityService {
             return false;
         }
 
-        // validate dataidentity rs can not be more than rsList
+        // validate dataIdentity rs can not be more than rsList
         if (rsList.size() < dataIdentityRsSet.size()) {
             log.error("Chain owner  is illegal, the data owners are more than rsList .The data owners  are: {} , rsList is :{}", dataIdentityRsSet, rsList);
             return false;

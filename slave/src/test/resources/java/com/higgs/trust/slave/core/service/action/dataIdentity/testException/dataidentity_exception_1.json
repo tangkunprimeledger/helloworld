@@ -1,0 +1,19 @@
+{
+  "测试ID": 0,
+  "body": {
+    "chainOwner": "trust",
+    "dataOwner": "trust",
+    "identity": "123",
+    "index": 1,
+    "type": "CREATE_DATA_IDENTITY"
+  },
+  "type": "1",
+  "assert": "request idempotent[SLAVE_IDEMPOTENT]",
+  "comment": "创建dataIdentity,创建已存在dataIdentity",
+  "beforeSql": [
+    "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('123', 'trust', 'trust', '2018-5-9 15:41:51');"
+  ],
+  "afterSql": [
+    "TRUNCATE TABLE `data_identity`"
+  ]
+}

@@ -326,7 +326,7 @@ import static org.testng.Assert.assertEquals;
         });
         when(properties.getThreshold()).thenReturn(50);
         when(blockSyncService.getClusterHeight(any())).thenReturn(clusterHeight);
-        when(cache.getMinHeight()).thenReturn(SyncPackageCache.INIT_HEIGHT, cacheMinHeight);
+       // when(cache.getMinHeight()).thenReturn(SyncPackageCache.INIT_HEIGHT, cacheMinHeight);
         when(properties.getTryTimes()).thenReturn(times);
         when(properties.getBlockStep()).thenReturn(blockStep);
         when(properties.getHeaderStep()).thenReturn(headerStep);

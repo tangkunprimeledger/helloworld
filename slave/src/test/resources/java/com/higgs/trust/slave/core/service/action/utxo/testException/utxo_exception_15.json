@@ -1,0 +1,46 @@
+{
+  "测试ID": 0,
+  "body": {
+    "contract":"function verify() {\n var action = ctx.getAction();\n\tvar actionType = action.utxoActionType;\n\tvar issueActionType = ctx.getUTXOActionType('ISSUE');\n\tvar normalActionType = ctx.getUTXOActionType('NORMAL');\n\tvar destructionActionType = ctx.getUTXOActionType('DESTRUCTION');\n\n\t//issue utxo action\n\tif(actionType == issueActionType){\n\t\treturn true;\n\t}\n\n //notmal utxo action\n if(actionType == normalActionType){\n\t if(action.inputList.length == 0 || action.getOutputList().length == 0){\n\t \treturn false;\n\t }\n\tvar utxoList = ctx.queryUTXOList(action.inputList);\n\tvar inputsAmount = 0;\n\tvar outputsAmount = 0;\n\tutxoList.forEach(function (input) {inputsAmount += input.getState().amount;});\n\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\n\treturn inputsAmount == outputsAmount;\n\t}\n\n\t //destruction utxo action\n\tif(actionType == destructionActionType){\n\n\t\treturn true;\n\t}\n\n\treturn false;\n}",
+    "inputList":null,
+    "outputList":[
+      {
+        "actionIndex":0,
+        "identity":"lingchao",
+        "index":0,
+        "state":{
+          "amount":1
+        }
+      },
+      {
+        "actionIndex":0,
+        "identity":"123123",
+        "index":1,
+        "state":{
+          "amount":2
+        }
+      }
+    ],
+    "stateClass":"qweqwe",
+    "utxoActionType":"DESTRUCTION"
+  },
+  "beforeSql": [
+    "TRUNCATE TABLE `policy`",
+    "INSERT INTO `policy` (`policy_id`, `policy_name`, `rs_ids`, `create_time`) VALUES ('test-policy-1', '测试注册policy-1', '[]', '2018-5-11 11:19:34');\n",
+    "TRUNCATE TABLE `tx_out`",
+    "INSERT INTO `tx_out` (`tx_id`, `index`, `action_index`, `identity`, `state_class`, `state`, `contract`, `status`, `s_tx_id`, `create_time`, `update_time`) VALUES ('12321', 0, 0, 'lin', 'ewerwe', '{\\\"@type\\\":\\\"com.alibaba.fastjson.JSONObject\\\",\\\"amount\\\":1}', 'function verify() {\\n    var action = ctx.getAction();\\n\tvar actionType = action.utxoActionType;\\n\tvar issueActionType = ctx.getUTXOActionType(\\'ISSUE\\');\\n\tvar normalActionType = ctx.getUTXOActionType(\\'NORMAL\\');\\n\tvar destructionActionType = ctx.getUTXOActionType(\\'DESTRUCTION\\');\\n\\n\t//issue utxo  action\\n\tif(actionType == issueActionType){\\n\t\treturn true;\\n\t}\\n\\n    //notmal utxo  action\\n    if(actionType == normalActionType){\\n\t  if(action.inputList.length == 0 || action.getOutputList().length == 0){\\n\t \treturn false;\\n\t  }\\n\tvar utxoList = ctx.queryUTXOList(action.inputList);\\n\tvar inputsAmount = 0;\\n\tvar outputsAmount = 0;\\n\tutxoList.forEach(function (input) {inputsAmount += input.getState().amount;});\\n\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\\n\treturn inputsAmount == outputsAmount;\\n\t}\\n\\n\t //destruction utxo  action\\n\tif(actionType == destructionActionType){\\n\\n\t\treturn true;\\n\t}\\n\\n\treturn false;\\n}', 'UNSPENT', NULL, '2018-5-11 17:13:24', '2018-5-11 17:13:24')",
+    "INSERT INTO `tx_out` (`tx_id`, `index`, `action_index`, `identity`, `state_class`, `state`, `contract`, `status`, `s_tx_id`, `create_time`, `update_time`) VALUES ('123', 0, 0, 'cha', 'q32', '{\\\"@type\\\":\\\"com.alibaba.fastjson.JSONObject\\\",\\\"amount\\\":1}', 'function verify() {\\n    var action = ctx.getAction();\\n\tvar actionType = action.utxoActionType;\\n\tvar issueActionType = ctx.getUTXOActionType(\\'ISSUE\\');\\n\tvar normalActionType = ctx.getUTXOActionType(\\'NORMAL\\');\\n\tvar destructionActionType = ctx.getUTXOActionType(\\'DESTRUCTION\\');\\n\\n\t//issue utxo  action\\n\tif(actionType == issueActionType){\\n\t\treturn true;\\n\t}\\n\\n    //notmal utxo  action\\n    if(actionType == normalActionType){\\n\t  if(action.inputList.length == 0 || action.getOutputList().length == 0){\\n\t \treturn false;\\n\t  }\\n\tvar utxoList = ctx.queryUTXOList(action.inputList);\\n\tvar inputsAmount = 0;\\n\tvar outputsAmount = 0;\\n\tutxoList.forEach(function (input) {inputsAmount += input.getState().amount;});\\n\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\\n\treturn inputsAmount == outputsAmount;\\n\t}\\n\\n\t //destruction utxo  action\\n\tif(actionType == destructionActionType){\\n\\n\t\treturn true;\\n\t}\\n\\n\treturn false;\\n}', 'UNSPENT', NULL, '2018-5-11 17:14:13', '2018-5-11 17:14:13')",
+    "TRUNCATE TABLE `data_identity`",
+    "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('ling', 'trust', 'TRUST-NODE97', '2018-5-11 17:16:46')",
+    "INSERT INTO `data_identity` (`identity`, `chain_owner`, `data_owner`, `create_time`) VALUES ('chao', 'trust', 'TRUST-NODE97', '2018-5-11 17:16:51')"
+  ],
+  "afterSql": [
+    "TRUNCATE TABLE `policy`",
+    "TRUNCATE TABLE `tx_out`",
+    "TRUNCATE TABLE `data_identity`"
+  ],
+  "type": "1",
+  "policyId":"000002",
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "归属验证 OutputList为空，OutputList不为空，InputList为空 "
+}
