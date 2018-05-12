@@ -2,21 +2,29 @@ package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.dao.CoreTransactionDao;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.vo.CoreTxVO;
+import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.api.vo.TransactionVO;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +46,8 @@ import java.util.List;
     @Autowired private CoreTransactionDao coreTransactionDao;
     @Autowired private PolicyRepository policyRepository;
     @Autowired private RsConfig rsConfig;
+    @Autowired private BlockChainService blockChainService;
+    @Autowired private TxCallbackRegistor txCallbackRegistor;
 
     @Override public void submitTx(BizTypeEnum bizType,CoreTxVO vo,String signData) {
         log.info("[submitTx]{}", vo);
@@ -74,8 +84,8 @@ import java.util.List;
         if (vo.getBizModel() != null) {
             po.setBizModel(vo.getBizModel().toJSONString());
         }
-        String actionDatas = JSON.toJSONString(vo.getActionList());
-        po.setActionDatas(actionDatas);
+        String actionDataJSON = JSON.toJSONString(vo.getActionList());
+        po.setActionDatas(actionDataJSON);
         List<String> signDatas = new ArrayList<>();
         signDatas.add(signData);
         String signDataJSON = JSON.toJSONString(signDatas);
@@ -90,24 +100,24 @@ import java.util.List;
         }
     }
 
-    @Override public void processSignData(String txId) {
-        log.info("[processSignData]txId:{}", txId);
+    @Override public void processInitTx(String txId) {
+        log.info("[processInitTx]txId:{}", txId);
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 CoreTransactionPO po = coreTransactionDao.queryByTxId(txId, true);
                 Date lockTime = po.getLockTime();
                 if (lockTime != null && lockTime.after(new Date())) {
-                    log.info("[processSignData]should skip this tx by lock time:{}", lockTime);
+                    log.info("[processInitTx]should skip this tx by lock time:{}", lockTime);
                     return;
                 }
                 //convert bo
                 CoreTxBO bo = convertTxBO(po);
                 String policyId = bo.getPolicyId();
-                log.info("[processSignData]policyId:{}", policyId);
+                log.info("[processInitTx]policyId:{}", policyId);
                 Policy policy = policyRepository.getPolicyById(policyId);
                 if (policy == null) {
-                    log.error("[processSignData]get policy is null by policyId:{}", policyId);
-                    toEndAndCallBackByError(txId, CoreTxStatusEnum.INIT,RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
+                    log.error("[processInitTx]get policy is null by policyId:{}", policyId);
+                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
                     return;
                 }
                 List<String> rsIds = policy.getRsIds();
@@ -119,8 +129,8 @@ import java.util.List;
                     try{
                         otherSignDatas = getSignDataByOther(bo,rsIds);
                     }catch (Throwable t){
-                        log.error("[processSignData]getSignDataByOther is fail txId:{}", txId);
-                        toEndAndCallBackByError(txId, CoreTxStatusEnum.INIT,RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
+                        log.error("[processInitTx]getSignDataByOther is fail txId:{}", txId);
+                        toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
                         return;
                     }
                 }
@@ -132,23 +142,23 @@ import java.util.List;
                     //update sign data
                     int r = coreTransactionDao.updateSignDatas(txId, signJSON);
                     if (r != 1) {
-                        log.error("[processSignData]updateSignDatas is fail txId:{}", txId);
+                        log.error("[processInitTx]updateSignDatas is fail txId:{}", txId);
                         throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_SIGN_DATAS_FAILED);
                     }
-                    log.info("[processSignData]updateSignDatas is success txId:{}", txId);
+                    log.info("[processInitTx]updateSignDatas is success txId:{}", txId);
                 }
                 //update status to WAIT
                 int r = coreTransactionDao
                     .updateStatus(txId, CoreTxStatusEnum.INIT.getCode(), CoreTxStatusEnum.WAIT.getCode());
                 if (r != 1) {
                     log.error(
-                        "[processSignData]update status from INIT to END is fail txId:{}",
+                        "[processInitTx]update status from INIT to END is fail txId:{}",
                         txId);
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
             }
         });
-        log.info("[processSignData]is success");
+        log.info("[processInitTx]is success");
     }
 
     /**
@@ -171,9 +181,28 @@ import java.util.List;
         String signJSON = po.getSignDatas();
         bo.setSignDatas(JSON.parseArray(signJSON, String.class));
         String actionJSON = po.getActionDatas();
-        bo.setActionDatas(JSON.parseArray(actionJSON, Action.class));
+        bo.setActionList(JSON.parseArray(actionJSON, Action.class));
         return bo;
     }
+
+    /**
+     * convert transaction BO to VO
+     *
+     * @param bo
+     * @return
+     */
+    private CoreTxVO convertTxVO(CoreTxBO bo){
+        CoreTxVO vo = BeanConvertor.convertBean(bo, CoreTxVO.class);
+        if(vo == null){
+            return null;
+        }
+        vo.setVersion(bo.getVersion().getCode());
+        if(bo.getBizModel()!=null){
+            bo.setBizModel(JSON.parseObject(bo.getBizModel().toJSONString()));
+        }
+        return vo;
+    }
+
     /**
      * get sign data by other rs
      * @param bo
@@ -201,14 +230,28 @@ import java.util.List;
     /**
      * to tx END status for fail business and call back custom rs
      *
-     * @param txId
+     * @param bo
      * @param from
-     * @param coreErrorEnum
+     * @param rsCoreErrorEnum
      */
-    private void toEndAndCallBackByError(String txId,CoreTxStatusEnum from,RsCoreErrorEnum coreErrorEnum){
+    private void toEndAndCallBackByError(CoreTxBO bo,CoreTxStatusEnum from,RsCoreErrorEnum rsCoreErrorEnum){
+        RespData respData = new RespData();
+        respData.setCode(rsCoreErrorEnum.getCode());
+        respData.setMsg(rsCoreErrorEnum.getDescription());
+        toEndAndCallBackByError(bo,from,respData);
+    }
+    /**
+     * to tx END status for fail business and call back custom rs
+     *
+     * @param bo
+     * @param from
+     * @param respData
+     */
+    private void toEndAndCallBackByError(CoreTxBO bo,CoreTxStatusEnum from,RespData respData){
         //save execute result and error code
+        String txId = bo.getTxId();
         coreTransactionDao
-            .saveExecuteResult(txId, CoreTxResultEnum.FAIL.getCode(),coreErrorEnum.getCode());
+            .saveExecuteResult(txId, CoreTxResultEnum.FAIL.getCode(),respData.getRespCode());
         //update status from INIT to END
         int r = coreTransactionDao
             .updateStatus(txId, from.getCode(), CoreTxStatusEnum.END.getCode());
@@ -217,22 +260,70 @@ import java.util.List;
                 txId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
         }
-        //TODO:callback custom rs
+        TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
+        if(txCallbackHandler == null){
+            log.error("[toEndStatusForFail]call back handler is not set");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
+        }
+        //callback custom rs
+        txCallbackHandler.onEnd(bo.getBizType(),convertTxVO(bo),respData);
     }
 
 
 
     @Override public void submitToSlave() {
-        int maxSize = 100;
+        int maxSize = 200;
         List<CoreTransactionPO> list = coreTransactionDao.queryByStatus(CoreTxStatusEnum.WAIT.getCode(),0,maxSize);
         if(CollectionUtils.isEmpty(list)){
             return;
         }
-        List<CoreTxBO> boList = new ArrayList<>(maxSize);
+        List<CoreTxBO> boList = new ArrayList<>(list.size());
         for (CoreTransactionPO po : list){
             boList.add(convertTxBO(po));
         }
+        List<SignedTransaction> txs = makeTxs(boList);
+        try {
+            log.info("[submitToSlave] start");
+            RespData respData = blockChainService.submitTransactions(txs);
+            //has fail tx
+            if(respData.getData() != null) {
+                List<TransactionVO> txsOfFail = (List<TransactionVO>)respData.getData();
+                for(TransactionVO txVo : txsOfFail){
+                    if(!txVo.getRetry()){
+                        CoreTransactionPO po = coreTransactionDao.queryByTxId(txVo.getTxId(),false);
+                        CoreTxBO bo = convertTxBO(po);
+                        //end
+                        RespData mRes = new RespData();
+                        //TODO:set error code
+                        mRes.setMsg(txVo.getErrMsg());
+                        toEndAndCallBackByError(bo,CoreTxStatusEnum.WAIT,mRes);
+                    }
+                }
+            }
+        }catch (SlaveException e){
+            log.error("[submitToSlave] has slave error",e);
+        }catch (Throwable e){
+            log.error("[submitToSlave] has unknown error",e);
+        }
+        log.info("[submitToSlave] end");
+    }
 
-
+    /**
+     * make txs from core transaction
+     *
+     * @param list
+     * @return
+     */
+    private List<SignedTransaction> makeTxs(List<CoreTxBO> list){
+        List<SignedTransaction> txs = new ArrayList<>(list.size());
+        for (CoreTxBO bo : list){
+            SignedTransaction tx = new SignedTransaction();
+            CoreTxVO vo = convertTxVO(bo);
+            CoreTransaction coreTx = BeanConvertor.convertBean(vo,CoreTransaction.class);
+            tx.setCoreTx(coreTx);
+            tx.setSignatureList(bo.getSignDatas());
+            txs.add(tx);
+        }
+        return txs;
     }
 }

@@ -20,11 +20,11 @@ public interface CoreTransactionService {
     void submitTx(BizTypeEnum bizType,CoreTxVO coreTxVO,String signData);
 
     /**
-     * process sign and update tx status to wait,called by scheduler
+     * process init data,sign and update tx status to wait,called by scheduler
      *
      * @param txId
      */
-    void processSignData(String txId);
+    void processInitTx(String txId);
 
     /**
      * submit to slave for wait status,called by scheduler
