@@ -265,8 +265,10 @@ import java.util.List;
             log.error("[toEndStatusForFail]call back handler is not set");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
         }
+        //save vo
+        respData.setData(convertTxVO(bo));
         //callback custom rs
-        txCallbackHandler.onEnd(bo.getBizType(),convertTxVO(bo),respData);
+        txCallbackHandler.onEnd(bo.getBizType(),respData);
     }
 
 
@@ -285,19 +287,21 @@ import java.util.List;
         try {
             log.info("[submitToSlave] start");
             RespData respData = blockChainService.submitTransactions(txs);
+            if(respData.getData() == null) {
+                return;
+            }
             //has fail tx
-            if(respData.getData() != null) {
-                List<TransactionVO> txsOfFail = (List<TransactionVO>)respData.getData();
-                for(TransactionVO txVo : txsOfFail){
-                    if(!txVo.getRetry()){
-                        CoreTransactionPO po = coreTransactionDao.queryByTxId(txVo.getTxId(),false);
-                        CoreTxBO bo = convertTxBO(po);
-                        //end
-                        RespData mRes = new RespData();
-                        //TODO:set error code
-                        mRes.setMsg(txVo.getErrMsg());
-                        toEndAndCallBackByError(bo,CoreTxStatusEnum.WAIT,mRes);
-                    }
+            List<TransactionVO> txsOfFail = (List<TransactionVO>)respData.getData();
+            log.info("[submitToSlave] has fail tx:{}",txsOfFail);
+            for(TransactionVO txVo : txsOfFail){
+                if(!txVo.getRetry()){
+                    CoreTransactionPO po = coreTransactionDao.queryByTxId(txVo.getTxId(),false);
+                    CoreTxBO bo = convertTxBO(po);
+                    //end
+                    RespData mRes = new RespData();
+                    //TODO:set error code
+//                        mRes.setMsg(txVo.getErrMsg());
+                    toEndAndCallBackByError(bo,CoreTxStatusEnum.WAIT,mRes);
                 }
             }
         }catch (SlaveException e){
