@@ -1,0 +1,9 @@
+{
+    "测试ID": 8,
+    "body": {
+        "accountNo": "40adef8565fe4e7a33a4d39cfa3797b356bab5491bd580bed50504127004c5dc",
+        "contractAddress": "4835ce31f929a234b2c7bd4aeb195b9134a6f81abc95e6a6f41d6f656d1930da",
+        "args": "[1,2,3]"
+    },
+    "comment": "正常绑定合约"
+}
