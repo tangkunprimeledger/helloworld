@@ -63,9 +63,6 @@ public class ReceiveService {
     @Autowired
     private ClusterInfo clusterInfo;
 
-    @Value("${p2p.revceive.trans.delay.interval:2000}")
-    private Long transDelayInterval;
-
     @Value("${p2p.revceive.increase.delay.interval:3000}")
     private Long delayIncreaseInterval;
 

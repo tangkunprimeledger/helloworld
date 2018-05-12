@@ -61,9 +61,6 @@ public class SendService {
     @Autowired
     private P2pConsensusClient p2pConsensusClient;
 
-    @Value("${p2p.send.delay.interval:2000}")
-    private Long transDelayInterval;
-
     @Value("${p2p.send.gc.interval:6000}")
     private Long gcInterval;
 
