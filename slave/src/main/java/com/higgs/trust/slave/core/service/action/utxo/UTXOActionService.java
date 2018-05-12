@@ -97,6 +97,13 @@ public class UTXOActionService {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
+        //validate utxoAction contract address is the same with all the txIn's contract address
+        boolean isLegalContractAddress = isLegalContractAddress(utxoAction.getContractAddress(), utxoAction.getInputList(), processTypeEnum);
+        if (!isLegalContractAddress) {
+            log.error("utxoAction contract address is not legal!");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
         // validate utxoAction's index is the same with txOut's actionIndex
         if (CollectionUtils.isNotEmpty(utxoAction.getOutputList())) {
             for (TxOut txOut : utxoAction.getOutputList()) {
@@ -127,7 +134,7 @@ public class UTXOActionService {
         ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
 
         Profiler.enter("[UTXO.doubleSpendCheck]");
-        boolean contractProcessSuccess = utxoSmartContract.execute(utxoAction.getContract(), data, processTypeEnum);
+        boolean contractProcessSuccess = utxoSmartContract.execute(utxoAction.getContractAddress(), data, processTypeEnum);
         if (!contractProcessSuccess) {
             log.error("UTXO contract process fail!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_CONTRACT_PROCESS_FAIL_ERROR);
@@ -191,6 +198,42 @@ public class UTXOActionService {
         }
         return true;
     }
+
+    /**
+     * check whether the contractAddress is legal
+     *
+     * @param contractAddress
+     * @param inputList
+     * @return
+     */
+    private boolean isLegalContractAddress(String contractAddress, List<TxIn> inputList, TxProcessTypeEnum processTypeEnum) {
+        log.info("Start to validate Contract Address for UTXO action");
+        //data operate type
+        UTXOHandler utxoHandler = null;
+        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
+            utxoHandler = utxoSnapshotHandler;
+        }
+        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
+            utxoHandler = utxoDBHandler;
+        }
+
+        //check whether the contract is existed in tht block chain
+        //###############################################//
+
+        if (CollectionUtils.isEmpty(inputList)) {
+            return true;
+        }
+
+        List<UTXO> utxoList = utxoHandler.queryUTXOList(inputList);
+        for (UTXO utxo : utxoList) {
+            if (!StringUtils.equals(contractAddress, utxo.getContractAddress())) ;
+            log.error("utxoAction contract address:{} is not the same with contract address: {} for UTXO:{}", contractAddress, utxo.getContractAddress(), utxo);
+            return false;
+        }
+
+        return true;
+    }
+
 
     /**
      * validate issue utxo action,
@@ -444,11 +487,11 @@ public class UTXOActionService {
         //BachInsert data
         log.info("BachInsert data txOutPOList: {}", txOutPOList);
         UTXOHandler utxoHandler = null;
-        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)){
+        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
             utxoHandler = utxoSnapshotHandler;
         }
-        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)){
-           utxoHandler = utxoDBHandler;
+        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
+            utxoHandler = utxoDBHandler;
         }
 
         utxoHandler.batchInsert(txOutPOList);

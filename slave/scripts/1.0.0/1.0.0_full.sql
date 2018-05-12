@@ -287,7 +287,7 @@ IF NOT EXISTS `tx_out` (
 	`identity` VARCHAR (64) NOT NULL COMMENT 'identity id for the attribution create the row:data owner and chain owner',
 	`state_class` VARCHAR (255) NOT NULL COMMENT 'the state class name',
 	`state` TEXT NOT NULL COMMENT 'sate data',
-	`contract` MEDIUMTEXT NOT NULL COMMENT 'contract script',
+	`contract_address` VARCHAR (64) NOT NULL COMMENT 'contract address',
 	`status` VARCHAR (32) NOT NULL COMMENT 'the status create the out: 1.UNSPENT 2.SPENT',
 	`s_tx_id` VARCHAR (64) DEFAULT NULL COMMENT 'the transaction id for spent the out',
 	`create_time` datetime (3) NOT NULL DEFAULT CURRENT_TIMESTAMP (3) COMMENT 'create time',
