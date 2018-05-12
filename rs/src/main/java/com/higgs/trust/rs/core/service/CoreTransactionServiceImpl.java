@@ -14,7 +14,6 @@ import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.dao.CoreTransactionDao;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
-import com.higgs.trust.rs.core.vo.CoreTxVO;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -49,7 +48,7 @@ import java.util.List;
     @Autowired private BlockChainService blockChainService;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
 
-    @Override public void submitTx(BizTypeEnum bizType,CoreTxVO vo,String signData) {
+    @Override public void submitTx(BizTypeEnum bizType,CoreTransaction vo,String signData) {
         log.info("[submitTx]{}", vo);
         if (vo == null) {
             log.error("[submitTx] the tx is null");
@@ -191,8 +190,8 @@ import java.util.List;
      * @param bo
      * @return
      */
-    private CoreTxVO convertTxVO(CoreTxBO bo){
-        CoreTxVO vo = BeanConvertor.convertBean(bo, CoreTxVO.class);
+    private CoreTransaction convertTxVO(CoreTxBO bo){
+        CoreTransaction vo = BeanConvertor.convertBean(bo, CoreTransaction.class);
         if(vo == null){
             return null;
         }
@@ -271,8 +270,6 @@ import java.util.List;
         txCallbackHandler.onEnd(bo.getBizType(),respData);
     }
 
-
-
     @Override public void submitToSlave() {
         int maxSize = 200;
         List<CoreTransactionPO> list = coreTransactionDao.queryByStatus(CoreTxStatusEnum.WAIT.getCode(),0,maxSize);
@@ -288,12 +285,14 @@ import java.util.List;
             log.info("[submitToSlave] start");
             RespData respData = blockChainService.submitTransactions(txs);
             if(respData.getData() == null) {
+                log.info("[submitToSlave] end");
                 return;
             }
             //has fail tx
             List<TransactionVO> txsOfFail = (List<TransactionVO>)respData.getData();
             log.info("[submitToSlave] has fail tx:{}",txsOfFail);
             for(TransactionVO txVo : txsOfFail){
+                //dont need
                 if(!txVo.getRetry()){
                     CoreTransactionPO po = coreTransactionDao.queryByTxId(txVo.getTxId(),false);
                     CoreTxBO bo = convertTxBO(po);
@@ -309,7 +308,6 @@ import java.util.List;
         }catch (Throwable e){
             log.error("[submitToSlave] has unknown error",e);
         }
-        log.info("[submitToSlave] end");
     }
 
     /**
@@ -322,8 +320,7 @@ import java.util.List;
         List<SignedTransaction> txs = new ArrayList<>(list.size());
         for (CoreTxBO bo : list){
             SignedTransaction tx = new SignedTransaction();
-            CoreTxVO vo = convertTxVO(bo);
-            CoreTransaction coreTx = BeanConvertor.convertBean(vo,CoreTransaction.class);
+            CoreTransaction coreTx = convertTxVO(bo);
             tx.setCoreTx(coreTx);
             tx.setSignatureList(bo.getSignDatas());
             txs.add(tx);
