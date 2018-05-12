@@ -14,17 +14,15 @@ public interface TxCallbackHandler {
      * on slave persisted phase,only current node persisted
      *
      * @param bizTypeEnum
-     * @param coreTxVO
      * @param respData
      */
-    void onPersisted(BizTypeEnum bizTypeEnum,CoreTxVO coreTxVO,RespData respData);
+    void onPersisted(BizTypeEnum bizTypeEnum,RespData<CoreTxVO> respData);
 
     /**
      * on slave end phase,cluster node persisted
      *
      * @param bizTypeEnum
-     * @param coreTxVO
      * @param respData
      */
-    void onEnd(BizTypeEnum bizTypeEnum,CoreTxVO coreTxVO,RespData respData);
+    void onEnd(BizTypeEnum bizTypeEnum,RespData<CoreTxVO> respData);
 }
