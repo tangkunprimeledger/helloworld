@@ -1,0 +1,9 @@
+{
+  "测试ID": 5,
+  "body": {
+    "code": "function main() {}",
+    "javascript": " javascript "
+  },
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "创建合约，无效policyId"
+}

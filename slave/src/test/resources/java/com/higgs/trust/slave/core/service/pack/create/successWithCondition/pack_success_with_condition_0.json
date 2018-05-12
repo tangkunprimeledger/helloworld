@@ -1,0 +1,51 @@
+{
+  "测试ID": 0,
+  "body":
+  [
+    {
+      "@type": "com.higgs.trust.slave.model.bo.SignedTransaction",
+      "coreTx": {
+        "actionList": [
+          {
+            "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+            "index": 0,
+            "policyId": "test-policy-0002",
+            "policyName": "测试policy注册",
+            "rsIds": [
+              "TRUST-NODE97",
+              "TRUST-NODE100"
+            ],
+            "type": "REGISTER_POLICY"
+          }
+        ],
+        "bizModel": {
+          "@type": "com.alibaba.fastjson.JSONObject",
+          "data": {
+            "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+            "index": 0,
+            "policyId": "test-policy-0002",
+            "policyName": "测试policy注册",
+            "rsIds": [
+              "TRUST-Test1",
+              "TRUST-Test2"
+            ],
+            "type": "REGISTER_POLICY"
+          }
+        },
+        "lockTime": 1525232969688,
+        "txId": "tx_id_REGISTER_POLICY",
+        "policyId": "test-policy-1",
+        "sender": "TRUST-TEST1",
+        "version": "1.0.0"
+      },
+      "signatureList": [
+        "F4hXBiV8Qdmh/c4gWmR0sBnknrFyd6D0G5RXNgJsZaHNugcLTOlc7Ges/WlhMiaLvy/jnbGMeVshMTLoqBSUyLrTpveDrDXpy7NhnEFBslqwyKt2weYCfiCbWOTjmeF1v5LAzgKn1PDKVPgV2n3zRqsOtd2ru85NYkiIDykMoZE=",
+        "UhPX8MV8g/2X5763iWRcMHWGHpl4SNtWXbUhZ3qhyraN7KvOYNCU5QIn4IustTKp+9sUDjz6K1idLhgRs/Dj7wNhQX2AhF8vgApNZ7rXt7st+khFZxs1oMdATiQfYkwKh7VclJ4TvRoh8ZEiDrHKWbw3TwzWei2Ml0r3H8CoXUs="
+      ]
+    }
+  ],
+  "beforeSql": ["truncate table block"],
+  "assert": 2,
+  "afterSql": ["INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)  VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3))"],
+  "comment": "Package-create接口测试-maxBlockHeight不为null但maxPackHeight为null"
+}

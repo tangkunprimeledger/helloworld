@@ -1,0 +1,8 @@
+{
+  "测试ID": 0,
+    "rsList": "",
+    "dataIdentityList": [{"chainOwner":"trust","dataOwner":"trust","identity":"12321"},{"chainOwner":"trust","dataOwner":"trust","identity":"12321"}],
+  "type": "1",
+  "assert": "false",
+  "comment": "数据归属校验, rsList 为空"
+}

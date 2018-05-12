@@ -1,0 +1,41 @@
+{
+  "测试ID": 0,
+  "body": {
+    "contract":"function verify() {\n var action = ctx.getAction();\n\tvar actionType = action.utxoActionType;\n\tvar issueActionType = ctx.getUTXOActionType('ISSUE');\n\tvar normalActionType = ctx.getUTXOActionType('NORMAL');\n\tvar destructionActionType = ctx.getUTXOActionType('DESTRUCTION');\n\n\t//issue utxo action\n\tif(actionType == issueActionType){\n\t\treturn true;\n\t}\n\n //notmal utxo action\n if(actionType == normalActionType){\n\t if(action.inputList.length == 0 || action.getOutputList().length == 0){\n\t \treturn false;\n\t }\n\tvar utxoList = ctx.queryUTXOList(action.inputList);\n\tvar inputsAmount = 0;\n\tvar outputsAmount = 0;\n\tutxoList.forEach(function (input) {inputsAmount += input.getState().amount;});\n\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\n\treturn inputsAmount == outputsAmount;\n\t}\n\n\t //destruction utxo action\n\tif(actionType == destructionActionType){\n\n\t\treturn true;\n\t}\n\n\treturn false;\n}",
+    "inputList":[
+      {
+        "actionIndex":0,
+        "index":0,
+        "txId":"123"
+      },
+      {
+        "actionIndex":0,
+        "index":1,
+        "txId":"123"
+      }
+    ],
+    "outputList":[
+      {
+        "actionIndex":0,
+        "identity":"lingchao",
+        "index":0,
+        "state":{
+          "amount":1
+        }
+      },
+      {
+        "actionIndex":0,
+        "identity":"lingchao",
+        "index":1,
+        "state":{
+          "amount":2
+        }
+      }
+    ],
+    "stateClass":"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "utxoActionType":"NORMAL"
+  },
+  "type": "1",
+  "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+  "comment": "stateClass为 超过255"
+}

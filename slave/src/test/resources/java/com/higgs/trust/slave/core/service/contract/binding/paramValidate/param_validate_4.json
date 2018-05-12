@@ -1,0 +1,10 @@
+{
+    "测试ID": 4,
+    "body": {
+        "accountNo": "40adef8565fe4e7a33a4d39cfa3797b356bab5491bd580bed50504127004c5dc",
+        "contractAddress": "",
+        "args": ""
+    },
+    "assert": "param validate error[SLAVE_PARAM_VALIDATE_ERROR]",
+    "comment": "绑定合约，contractAddress为空"
+}
