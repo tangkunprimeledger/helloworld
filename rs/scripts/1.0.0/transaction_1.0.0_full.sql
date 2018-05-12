@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `core_transaction` (
 	`create_time` datetime(3) NOT NULL COMMENT 'create time',
 	`update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_tx_id` (`tx_id`)
+	UNIQUE KEY `uniq_tx_id` (`tx_id`),
+	KEY `idx_status` (`status`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create core transaction';
 
