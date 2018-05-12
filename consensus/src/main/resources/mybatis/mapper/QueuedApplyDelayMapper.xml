@@ -38,10 +38,12 @@
     </insert>
     <!-- 以上为工具自动生成 -->
     
-    <delete id="queryListByApplyTime" parameterType="Object">
-        delete from queued_apply_delay where
+    <select id="queryListByApplyTime" parameterType="Object" resultMap="baseResultMap">
+        select
+        <include refid="baseColumnList"/>
+        from queued_apply_delay where
         `apply_time` &lt;= #{applyTime} limit 10
-    </delete>
+    </select>
 
     <!-- 根据messageDigest删除记录 -->
     <delete id="deleteByMessageDigest" parameterType="Object">
