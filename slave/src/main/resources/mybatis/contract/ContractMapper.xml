@@ -4,21 +4,25 @@
     <!-- Result Map -->
     <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.contract.ContractPO">
         <result column="id" property="id"/>
+        <result column="block_height" property="blockHeight"/>
+        <result column="tx_id" property="txId"/>
+        <result column="action_index" property="actionIndex"/>
         <result column="address" property="address"/>
         <result column="language" property="language"/>
+        <result column="version" property="version"/>
         <result column="code" property="code" />
         <result column="create_time" property="createTime"/>
     </resultMap>
 
     <!-- contract table all fields -->
     <sql id="baseColumnList">
-        id,address,language,code,create_time
+        id, block_height, tx_id, action_index, address, language, version, code, create_time
     </sql>
 
     <!-- add -->
     <insert id="add" parameterType="com.higgs.trust.slave.dao.po.contract.ContractPO">
-        INSERT INTO contract (address, language, code, create_time)
-        VALUES (#{address}, #{language}, #{code}, now())
+        INSERT INTO contract (block_height, tx_id, action_index, address, language, version, code, create_time)
+        VALUES (#{blockHeight}, #{txId}, #{actionIndex}, #{address}, #{language}, #{version}, #{code}, now(3))
     </insert>
 
     <!-- delete -->

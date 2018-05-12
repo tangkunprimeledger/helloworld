@@ -11,7 +11,7 @@ import com.higgs.trust.slave.core.service.contract.DbContractStateStoreImpl;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
-import com.higgs.trust.slave.model.bo.Contract;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
@@ -44,7 +44,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
 
     @AfterClass
     public void clearDb() {
-        //executeDelete("TRUNCATE TABLE contract;TRUNCATE TABLE contract_state");
+        executeDelete("TRUNCATE TABLE contract;TRUNCATE TABLE contract_state");
     }
 
     private String getHash(String str) {
@@ -64,9 +64,13 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
         try {
             String code = IOUtils.toString(this.getClass().getResource(String.format("/%s%s", getProviderRootPath(), filePath)), "UTF-8");
             Contract contract = new Contract();
+            contract.setBlockHeight(1L);
+            contract.setTxId("0000000000000000000000" + System.currentTimeMillis());
+            contract.setActionId(0);
             contract.setAddress(getHash(code + System.currentTimeMillis()));
             contract.setCode(code);
             contract.setLanguage("javascript");
+            contract.setVersion("0.1");
             contract.setCreateTime(new Date());
 
             if (processType == TxProcessTypeEnum.VALIDATE) {
@@ -102,7 +106,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
         PackContext packContext = ActionDataMockBuilder.getBuilder()
                 .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
-                .setTxId("00000000000")
+                .setTxId("00000000000" + System.currentTimeMillis())
                 .signature(ActionDataMockBuilder.privateKey1)
                 .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
