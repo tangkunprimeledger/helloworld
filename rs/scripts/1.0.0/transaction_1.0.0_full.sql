@@ -28,7 +28,7 @@ IF NOT EXISTS `request` (
 	`request_id` VARCHAR (64) NOT NULL COMMENT 'request id',
 	`data` varchar(12288) NULL COMMENT 'the request data',
 	`status` VARCHAR(32) NOT NULL COMMENT 'request status',
-	`resp_code` datetime(3) DEFAULT NULL COMMENT 'response code',
+	`resp_code` VARCHAR(10) DEFAULT NULL COMMENT 'response code',
 	`resp_msg` varchar(2048) DEFAULT NULL COMMENT 'response msg',
 	`create_time` datetime (3) NOT NULL COMMENT 'the create time',
 	`update_time` datetime (3) NOT NULL COMMENT 'the update time',

@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -35,6 +36,7 @@ import java.math.BigDecimal;
     /**
      * 金额
      */
+    @NotNull
     private BigDecimal amount;
 
     /**

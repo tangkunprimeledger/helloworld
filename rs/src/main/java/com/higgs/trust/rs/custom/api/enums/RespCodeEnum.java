@@ -21,6 +21,9 @@ public enum RespCodeEnum {
     ASYNC_SEND_IDENTITY_REQUEST("000", "000", "下发存证请求成功"),
     GET_IDENTITY_REQUEST_SUCCESS("000", "000", "获取存证信息成功"),
 
+    //票据处理
+    CREATE_BILL_PROCESS("000", "001", "创建票据处理中"),
+
     SIGNATURE_VERIFY_FAIL("100", "000", "签名验证失败"),
     PARAM_NOT_VALID("100", "001", "请求参数校验失败"),
     REQUEST_REPEAT_CHECK_VALID("100", "007", "重复请求"),
