@@ -77,8 +77,6 @@ import java.io.IOException;
             respData.setCode(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED.getCode());
             return respData;
         }
-        //TODO:callback custom handler
-
         String coreTxJSON = JSON.toJSONString(coreTx);
         log.info("[signTx]coreTxJSON:{}", coreTxJSON);
         String privateKey = rsConfig.getPrivateKey();
