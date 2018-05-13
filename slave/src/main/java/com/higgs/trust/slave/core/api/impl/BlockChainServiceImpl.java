@@ -2,18 +2,21 @@ package com.higgs.trust.slave.core.api.impl;
 
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
-import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.api.vo.TransactionVO;
+import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
+import com.higgs.trust.slave.core.repository.TransactionRepository;
+import com.higgs.trust.slave.core.repository.TxOutRepository;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +41,12 @@ import java.util.List;
 
     @Autowired
     private BlockRepository blockRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private TxOutRepository txOutRepository;
 
     @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
@@ -85,10 +94,12 @@ import java.util.List;
     }
 
     private List<TransactionVO> buildTxVOList(List<SignedTransaction> transactions) {
+        log.warn("master node status is not running. cannot receive tx");
         List<TransactionVO> transactionVOList = new ArrayList<>();
         transactions.forEach(signedTx -> {
             TransactionVO txVO = new TransactionVO();
-            txVO.setErrMsg("master node status is not running. cannot receive tx");
+            txVO.setErrCode(TxSubmitResultEnum.NODE_STATE_IS_NOT_RUNNING.getCode());
+            txVO.setErrMsg(TxSubmitResultEnum.NODE_STATE_IS_NOT_RUNNING.getDesc());
             txVO.setTxId(signedTx.getCoreTx().getTxId());
             txVO.setRetry(true);
             transactionVOList.add(txVO);
@@ -103,6 +114,22 @@ import java.util.List;
 
     @Override public List<Block> listBlocks(long startHeight, int size) {
         return blockRepository.listBlocks(startHeight, size);
+    }
+
+    @Override public List<BlockVO> queryBlocks(QueryBlockVO req) {
+        return blockRepository.queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNum(), req.getPageSize());
+    }
+
+    @Override public List<CoreTransactionVO> queryTransactions(QueryTxVO req) {
+        return transactionRepository.queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNum(), req.getPageSize());
+    }
+
+    @Override public List<UTXOVO> queryUTXOByTxId(String txId) {
+        if (StringUtils.isBlank(txId)) {
+            return null;
+        }
+
+        return txOutRepository.queryTxOutByTxId(txId);
     }
 
 }

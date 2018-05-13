@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.api.vo;
 
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.StandardToStringStyle;
 
@@ -62,6 +63,10 @@ public class RespData<T> implements java.io.Serializable {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public boolean isSuccess(){
+        return StringUtils.equals(respCode,"000000");
     }
 
     @Override public String toString() {

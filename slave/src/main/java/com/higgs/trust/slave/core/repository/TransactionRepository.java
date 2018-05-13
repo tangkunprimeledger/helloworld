@@ -2,7 +2,7 @@ package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
-import com.higgs.trust.slave.api.vo.TransactionVO;
+import com.higgs.trust.slave.api.vo.CoreTransactionVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
@@ -138,7 +138,7 @@ import java.util.List;
      * @param txs
      * @return
      */
-     public List<String> queryTxIds(List<SignedTransaction> txs) {
+    public List<String> queryTxIds(List<SignedTransaction> txs) {
         List<String> datas = new ArrayList<>();
         if (CollectionUtils.isEmpty(txs)) {
             return datas;
@@ -155,5 +155,27 @@ import java.util.List;
             datas.add(transactionPO.getTxId());
         }
         return datas;
+    }
+
+    public List<CoreTransactionVO> queryTxsWithCondition(Long blockHeight, String txId,
+        String sender, Integer pageNum, Integer pageSize) {
+        if (null != txId) {
+            txId = txId.trim();
+        }
+
+        if (null != sender) {
+            sender = sender.trim();
+        }
+
+        if (null == pageNum || pageNum < 1) {
+            pageNum = 1;
+        }
+
+        if (null == pageSize || pageSize < 1) {
+            pageSize = 200;
+        }
+
+        List<TransactionPO> list = transactionDao.queryTxWithCondition(blockHeight, txId, sender, (pageNum - 1) * pageSize, pageSize);
+        return BeanConvertor.convertList(list, CoreTransactionVO.class);
     }
 }

@@ -58,7 +58,7 @@ public class UTXOSnapshotAgentTest extends  BaseTest{
         txOutPO.setStatus(UTXOStatusEnum.UNSPENT.getCode());
         txOutPO.setActionIndex(0);
         txOutPO.setIndex(0);
-        txOutPO.setContract("12321"+ new Date());
+        txOutPO.setContractAddress("12321"+ new Date());
         txOutPO.setState(state.toJSONString());
         txOutPO.setStateClass("afdaf");
         txOutPO.setIdentity("12312312");
@@ -68,7 +68,7 @@ public class UTXOSnapshotAgentTest extends  BaseTest{
         txOutPO1.setStatus(UTXOStatusEnum.UNSPENT.getCode());
         txOutPO1.setActionIndex(0);
         txOutPO1.setIndex(1);
-        txOutPO1.setContract("12321");
+        txOutPO1.setContractAddress("12321");
         txOutPO1.setState(state.toJSONString());
         txOutPO1.setStateClass("afdaf");
         txOutPO1.setIdentity("12312312");
@@ -78,7 +78,7 @@ public class UTXOSnapshotAgentTest extends  BaseTest{
         txOutPO2.setStatus(UTXOStatusEnum.UNSPENT.getCode());
         txOutPO2.setActionIndex(0);
         txOutPO2.setIndex(2);
-        txOutPO2.setContract("12321");
+        txOutPO2.setContractAddress("12321");
         txOutPO2.setState(state.toJSONString());
         txOutPO2.setStateClass("afdaf");
         txOutPO2.setIdentity("12312312");
@@ -108,7 +108,7 @@ public class UTXOSnapshotAgentTest extends  BaseTest{
         txOutPO.setStatus(UTXOStatusEnum.UNSPENT.getCode());
         txOutPO.setActionIndex(0);
         txOutPO.setIndex(0);
-        txOutPO.setContract("12321"+ new Date());
+        txOutPO.setContractAddress("12321"+ new Date());
         txOutPO.setState("12321");
         txOutPO.setStateClass("afdaf");
         txOutPO.setIdentity("12312312");
@@ -118,7 +118,7 @@ public class UTXOSnapshotAgentTest extends  BaseTest{
         txOutPO1.setStatus(UTXOStatusEnum.UNSPENT.getCode());
         txOutPO1.setActionIndex(0);
         txOutPO1.setIndex(1);
-        txOutPO1.setContract("12321");
+        txOutPO1.setContractAddress("12321");
         txOutPO1.setState("12321");
         txOutPO1.setStateClass("afdaf");
         txOutPO1.setIdentity("12312312");
@@ -128,7 +128,7 @@ public class UTXOSnapshotAgentTest extends  BaseTest{
         txOutPO2.setStatus(UTXOStatusEnum.UNSPENT.getCode());
         txOutPO2.setActionIndex(0);
         txOutPO2.setIndex(2);
-        txOutPO2.setContract("12321");
+        txOutPO2.setContractAddress("12321");
         txOutPO2.setState("12321");
         txOutPO2.setStateClass("afdaf");
         txOutPO2.setIdentity("12312312");

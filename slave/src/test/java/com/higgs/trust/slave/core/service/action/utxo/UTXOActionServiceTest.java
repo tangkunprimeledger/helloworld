@@ -11,9 +11,13 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.UTXOSmartContract;
+import com.higgs.trust.slave.core.service.datahandler.utxo.UTXODBHandler;
+import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOHandler;
+import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +34,12 @@ public class UTXOActionServiceTest extends BaseTest {
     @Autowired
     private PolicyRepository policyRepository;
     @Autowired
-    private  UTXOSmartContract utxoSmartContract;
+    private UTXOSmartContract utxoSmartContract;
+    @Autowired
+    private UTXOSnapshotHandler utxoSnapshotHandler;
+    @Autowired
+    private UTXODBHandler utxoDBHandler;
+
     @Test
     public void testProcess() throws Exception {
     }
@@ -40,15 +49,71 @@ public class UTXOActionServiceTest extends BaseTest {
         UTXOAction utxoAction = new UTXOAction();
         List<TxIn> inputList = new ArrayList<>();
         List<TxOut> outputList = new ArrayList<>();
-        TxIn  txIn = new TxIn();
+        TxIn txIn = new TxIn();
         inputList.add(txIn);
-        TxOut txOut= new TxOut();
+        TxOut txOut = new TxOut();
         outputList.add(txOut);
         utxoAction.setInputList(inputList);
         //utxoAction.setOutputList(outputList);
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.ISSUE);
         System.out.println(validateUTXOActionType(utxoAction, "000002"));
 
+    }
+
+
+    @Test
+    public void testIsLegalContractAddress() throws Exception {
+        List<TxIn> inputList = new ArrayList<>();
+        TxIn txIn = new TxIn();
+        txIn.setTxId("123123222");
+        txIn.setIndex(0);
+        txIn.setActionIndex(0);
+        inputList.add(txIn);
+        UTXOAction utxoAction = new UTXOAction();
+        utxoAction.setContractAddress("qqqqq");
+
+        System.out.println("isLegalContractAddress validate:" + isLegalContractAddress(utxoAction.getContractAddress(), inputList, TxProcessTypeEnum.VALIDATE));
+        System.out.println("isLegalContractAddress persisted:" + isLegalContractAddress(utxoAction.getContractAddress(), inputList, TxProcessTypeEnum.PERSIST));
+    }
+
+
+    /**
+     * check whether the contractAddress is legal
+     *
+     * @param contractAddress
+     * @param inputList
+     * @return
+     */
+    private boolean isLegalContractAddress(String contractAddress, List<TxIn> inputList, TxProcessTypeEnum processTypeEnum) {
+        log.info("Start to validate Contract Address for UTXO action");
+        //data operate type
+        UTXOHandler utxoHandler = null;
+        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
+            utxoHandler = utxoSnapshotHandler;
+        }
+        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
+            utxoHandler = utxoDBHandler;
+        }
+
+        //check whether the contract is existed in tht block chain
+        boolean isExist = utxoSmartContract.isExist(contractAddress, processTypeEnum);
+        if (!isExist) {
+            return false;
+        }
+
+        if (CollectionUtils.isEmpty(inputList)) {
+            return true;
+        }
+
+        List<UTXO> utxoList = utxoHandler.queryUTXOList(inputList);
+        for (UTXO utxo : utxoList) {
+            if (!StringUtils.equals(contractAddress, utxo.getContractAddress())) {
+                log.error("utxoAction contract address:{} is not the same with contract address: {} for UTXO:{}", contractAddress, utxo.getContractAddress(), utxo);
+                return false;
+            }
+        }
+
+        return true;
     }
 
 
@@ -104,19 +169,19 @@ public class UTXOActionServiceTest extends BaseTest {
 
     @Test
     public void testisUTXOIssueAction() throws Exception {
-        System.out.println(isUTXOIssueAction(2,1, InitPolicyEnum.UTXO_ISSUE.getType()));
-        System.out.println(isUTXOIssueAction(0,0, InitPolicyEnum.UTXO_ISSUE.getType()));
-        System.out.println(isUTXOIssueAction(1,0, InitPolicyEnum.UTXO_ISSUE.getType()));
-        System.out.println(isUTXOIssueAction(0,1, InitPolicyEnum.UTXO_DESTROY.getType()));
+        System.out.println(isUTXOIssueAction(2, 1, InitPolicyEnum.UTXO_ISSUE.getType()));
+        System.out.println(isUTXOIssueAction(0, 0, InitPolicyEnum.UTXO_ISSUE.getType()));
+        System.out.println(isUTXOIssueAction(1, 0, InitPolicyEnum.UTXO_ISSUE.getType()));
+        System.out.println(isUTXOIssueAction(0, 1, InitPolicyEnum.UTXO_DESTROY.getType()));
     }
 
     @Test
     public void testisisUTXODestructionAction() throws Exception {
-        System.out.println(isUTXODestructionAction(2,1, InitPolicyEnum.UTXO_DESTROY.getType()));
-        System.out.println(isUTXODestructionAction(0,0, InitPolicyEnum.UTXO_DESTROY.getType()));
-        System.out.println(isUTXODestructionAction(0,1, InitPolicyEnum.UTXO_DESTROY.getType()));
-        System.out.println(isUTXODestructionAction(0,1, InitPolicyEnum.UTXO_ISSUE.getType()));
-        System.out.println(isUTXODestructionAction(1,0, InitPolicyEnum.UTXO_DESTROY.getType()));
+        System.out.println(isUTXODestructionAction(2, 1, InitPolicyEnum.UTXO_DESTROY.getType()));
+        System.out.println(isUTXODestructionAction(0, 0, InitPolicyEnum.UTXO_DESTROY.getType()));
+        System.out.println(isUTXODestructionAction(0, 1, InitPolicyEnum.UTXO_DESTROY.getType()));
+        System.out.println(isUTXODestructionAction(0, 1, InitPolicyEnum.UTXO_ISSUE.getType()));
+        System.out.println(isUTXODestructionAction(1, 0, InitPolicyEnum.UTXO_DESTROY.getType()));
     }
 
     /**
@@ -136,7 +201,7 @@ public class UTXOActionServiceTest extends BaseTest {
             log.error("The issue UTXO action , policyType should be UTXO_ISSUE ,in fact it is {}", policyType);
             return false;
         }
-        if (inputSize >0 || outputSize == 0) {
+        if (inputSize > 0 || outputSize == 0) {
             log.error("The issue UTXO action , inputSize should be    0 " + ",in fact it is :{}, outputSize should be bigger than 0 ,in fact it is :{}.", inputSize, outputSize);
             return false;
         }
@@ -170,7 +235,6 @@ public class UTXOActionServiceTest extends BaseTest {
     }
 
 
-
     @Test
     public void testUtxoContract() throws Exception {
 
@@ -189,17 +253,17 @@ public class UTXOActionServiceTest extends BaseTest {
         inputList.add(txIn1);
 
         List<TxOut> outputList = new ArrayList<>();
-        TxOut  txOut = new TxOut();
+        TxOut txOut = new TxOut();
         JSONObject state = new JSONObject();
-        state.put("amount",1);
+        state.put("amount", 1);
         txOut.setState(state);
         txOut.setIndex(0);
         txOut.setActionIndex(0);
         txOut.setIdentity("lingchao");
 
-        TxOut  txOut1 = new TxOut();
+        TxOut txOut1 = new TxOut();
         JSONObject state1 = new JSONObject();
-        state1.put("amount",2);
+        state1.put("amount", 2);
         txOut1.setState(state1);
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
@@ -208,16 +272,16 @@ public class UTXOActionServiceTest extends BaseTest {
         outputList.add(txOut);
         outputList.add(txOut1);
 
-        String code ="function verify() {\n" + "    var action = ctx.getAction();\n" + "\tvar actionType = action.utxoActionType;\n" + "\tvar issueActionType = ctx.getUTXOActionType('ISSUE');\n" + "\tvar normalActionType = ctx.getUTXOActionType('NORMAL');\n" + "\tvar destructionActionType = ctx.getUTXOActionType('DESTRUCTION');\n" + "\n" + "\t//issue utxo  action\n" + "\tif(actionType == issueActionType){\n" + "\t\treturn true;\n" + "\t}\n" + "\n" + "    //notmal utxo  action\n" + "    if(actionType == normalActionType){\n" + "\t  if(action.inputList.length == 0 || action.getOutputList().length == 0){\n" + "\t \treturn false;\n" + "\t  }\n" + "\tvar utxoList = ctx.queryUTXOList(action.inputList);\n" + "\tvar inputsAmount = 0;\n" + "\tvar outputsAmount = 0;\n" + "\tutxoList.forEach(function (input) {inputsAmount += input.getState().amount;});\n" + "\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\n" + "\treturn inputsAmount == outputsAmount;\n" + "\t}\n" + "\n" + "\t //destruction utxo  action\n" + "\tif(actionType == destructionActionType){\n" + "\n" + "\t\treturn true;\n" + "\t}\n" + "\n" + "\treturn false;\n" + "}";
+        String code = "function verify() {\n" + "    var action = ctx.getAction();\n" + "\tvar actionType = action.utxoActionType;\n" + "\tvar issueActionType = ctx.getUTXOActionType('ISSUE');\n" + "\tvar normalActionType = ctx.getUTXOActionType('NORMAL');\n" + "\tvar destructionActionType = ctx.getUTXOActionType('DESTRUCTION');\n" + "\n" + "\t//issue utxo  action\n" + "\tif(actionType == issueActionType){\n" + "\t\treturn true;\n" + "\t}\n" + "\n" + "    //notmal utxo  action\n" + "    if(actionType == normalActionType){\n" + "\t  if(action.inputList.length == 0 || action.getOutputList().length == 0){\n" + "\t \treturn false;\n" + "\t  }\n" + "\tvar utxoList = ctx.queryUTXOList(action.inputList);\n" + "\tvar inputsAmount = 0;\n" + "\tvar outputsAmount = 0;\n" + "\tutxoList.forEach(function (input) {inputsAmount += input.getState().amount;});\n" + "\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\n" + "\treturn inputsAmount == outputsAmount;\n" + "\t}\n" + "\n" + "\t //destruction utxo  action\n" + "\tif(actionType == destructionActionType){\n" + "\n" + "\t\treturn true;\n" + "\t}\n" + "\n" + "\treturn false;\n" + "}";
         //execute contract
-        utxoAction.setContract(code);
+        utxoAction.setContractAddress(code);
         utxoAction.setOutputList(outputList);
         utxoAction.setInputList(new ArrayList<>());
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.ISSUE);
         ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
-        boolean contractIssueProcessSuccess = utxoSmartContract.execute(utxoAction.getContract(), data, TxProcessTypeEnum.VALIDATE);
+        boolean contractIssueProcessSuccess = utxoSmartContract.execute(utxoAction.getContractAddress(), data, TxProcessTypeEnum.VALIDATE);
 
-        System.out.println("Issue true==============================="+contractIssueProcessSuccess);
+        System.out.println("Issue true===============================" + contractIssueProcessSuccess);
 
 
 
@@ -234,9 +298,9 @@ public class UTXOActionServiceTest extends BaseTest {
         utxoAction.setInputList(inputList);
         utxoAction.setOutputList(outputList);
         ExecuteContextData data2 = new UTXOExecuteContextData().setAction(utxoAction);
-        boolean contractNormalProcessSuccess2 = utxoSmartContract.execute(utxoAction.getContract(), data2, TxProcessTypeEnum.VALIDATE);
+        boolean contractNormalProcessSuccess2 = utxoSmartContract.execute(utxoAction.getContractAddress(), data2, TxProcessTypeEnum.VALIDATE);
 
-        System.out.println("Normal true==============================="+contractNormalProcessSuccess2);
+        System.out.println("Normal true===============================" + contractNormalProcessSuccess2);
 
 
     /*    utxoAction.setUtxoActionType(UTXOActionTypeEnum.DESTRUCTION);
@@ -252,14 +316,12 @@ public class UTXOActionServiceTest extends BaseTest {
     @Test
     public void test() throws Exception {
         JSONObject state = new JSONObject();
-        state.put("amount",1);
-        System.out.println("state:"+state);
+        state.put("amount", 1);
+        System.out.println("state:" + state);
         JSONObject state1 = new JSONObject();
-        state1.put("amount",2);
-        System.out.println("state1:"+state1);
+        state1.put("amount", 2);
+        System.out.println("state1:" + state1);
     }
-
-
 
 
 }

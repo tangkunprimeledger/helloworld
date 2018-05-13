@@ -2,6 +2,7 @@ package com.higgs.trust.slave.dao.account;
 
 import com.higgs.trust.slave.dao.BaseDao;
 import com.higgs.trust.slave.dao.po.account.AccountInfoPO;
+import com.higgs.trust.slave.dao.po.account.AccountInfoWithOwnerPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -68,5 +69,13 @@ import java.util.List;
      * @return
      */
     int unfreeze(@Param("accountNo") String accountNo, @Param("amount") BigDecimal amount);
+
+    /**
+     * query account with data owner
+     * @param accountNo
+     * @param dataOwner
+     * @return
+     */
+    List<AccountInfoWithOwnerPO> queryAccountInfoWithOwner(@Param("accountNo") String accountNo, @Param("dataOwner") String dataOwner);
 
 }

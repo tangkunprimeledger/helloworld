@@ -11,6 +11,9 @@ import javax.validation.constraints.NotNull;
 
 @Configuration @Setter @Getter public class RsConfig implements InitializingBean {
     @NotNull @Value("${higgs.trust.nodeName}") private String rsName;
+    @NotNull @Value("${higgs.trust.privateKey}") private String privateKey;
+    @NotNull @Value("${rs.core.useHttpChannel}") private boolean useHttpChannel;
+    @NotNull @Value("${server.port}") private int serverPort;
 
     @Override public void afterPropertiesSet() throws Exception {
         BeanValidator.validate(this).failThrow();

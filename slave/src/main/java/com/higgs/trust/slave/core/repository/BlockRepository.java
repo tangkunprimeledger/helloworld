@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.slave.api.vo.BlockVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.block.BlockDao;
@@ -230,6 +232,10 @@ import java.util.List;
         blockPO.setPolicyRootHash(rootHash.getPolicyRootHash());
         blockPO.setRsRootHash(rootHash.getRsRootHash());
         List<SignedTransaction> txs = block.getSignedTxList();
+
+        //add transaction number to block table
+        blockPO.setTxNum(txs.size());
+
         //save block
         try {
             blockDao.add(blockPO);
@@ -242,4 +248,21 @@ import java.util.List;
         log.info("[BlockRepository.saveBlock] is end");
     }
 
+    public List<BlockVO> queryBlocksWithCondition(Long height, String blockHash, Integer pageNum, Integer pageSize) {
+        if (null != blockHash) {
+            blockHash = blockHash.trim();
+        }
+
+        if (null == pageNum || pageNum < 1) {
+            pageNum = 1;
+        }
+
+        if (null == pageSize || pageSize < 1) {
+            pageSize = 20;
+        }
+
+        List<BlockPO> list = blockDao.queryBlocksWithCondition(height, blockHash, (pageNum - 1) * pageSize, pageSize);
+
+        return BeanConvertor.convertList(list, BlockVO.class);
+    }
 }

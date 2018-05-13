@@ -97,5 +97,10 @@
   "runMode": "MOCK",
   "logging": {
     "config": "classpath:logback.xml"
+  },
+  "rs":{
+    "core":{
+      "useHttpChannel":false
+    }
   }
 }

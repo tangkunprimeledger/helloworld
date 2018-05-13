@@ -14,11 +14,13 @@
         <result column="rs_root_hash" property="rsRootHash"/>
         <result column="tx_receipt_root_hash" property="txReceiptRootHash"/>
         <result column="block_time" property="blockTime"/>
+        <result column="tx_num" property="txNum"/>
         <result column="create_time" property="createTime"/>
     </resultMap>
+
     <!-- block table all fields -->
     <sql id="baseColumnList">
-		height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,block_time,create_time
+		height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,block_time,tx_num,create_time
 	</sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">
@@ -116,6 +118,20 @@
 
     <select id="getLimitHeight" resultType="java.lang.Long">
         select height from block order by height desc limit #{limit}
+    </select>
+    <select id="queryBlocksWithCondition" resultMap="baseResultMap">
+        select
+          <include refid="baseColumnList"/>
+          from block b
+        where 1=1
+          <if test="height != null">
+              and height = #{height}
+          </if>
+          <if test="blockHash != null and blockHash !=''">
+              and block_hash = #{blockHash}
+          </if>
+          order by height desc
+          limit #{start}, #{end}
     </select>
 
 </mapper>

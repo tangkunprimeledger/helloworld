@@ -66,7 +66,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
             Contract contract = new Contract();
             contract.setBlockHeight(1L);
             contract.setTxId("0000000000000000000000" + System.currentTimeMillis());
-            contract.setActionId(0);
+            contract.setActionIndex(0);
             contract.setAddress(getHash(code + System.currentTimeMillis()));
             contract.setCode(code);
             contract.setLanguage("javascript");
