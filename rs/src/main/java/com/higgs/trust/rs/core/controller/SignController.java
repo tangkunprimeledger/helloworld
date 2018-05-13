@@ -21,7 +21,8 @@ import java.util.List;
  * @date 2018/5/12
  */
 
-@RestController @Slf4j public class SignController {
+//@RestController
+@Slf4j public class SignController {
 
     @Autowired private SignService signService;
 
@@ -32,6 +33,7 @@ import java.util.List;
      * @return
      */
     @RequestMapping(value = "/signTx") RespData<String> signTx(@RequestBody CoreTransaction coreTransaction) {
+        //TODO:call custom business
         return signService.signTx(coreTransaction);
     }
 }

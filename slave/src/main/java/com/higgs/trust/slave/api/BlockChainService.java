@@ -44,4 +44,11 @@ public interface BlockChainService {
 
 
     List<UTXOVO> queryUTXOByTxId(String txId);
+
+    /**
+     * check whether the identity is existed
+     * @param identity
+     * @return
+     */
+    boolean isExistedIdentity(String identity);
 }
