@@ -304,8 +304,9 @@ import java.util.List;
                     CoreTxBO bo = convertTxBO(po);
                     //end
                     RespData mRes = new RespData();
-                    //TODO:set error code
-//                        mRes.setMsg(txVo.getErrMsg());
+                    //set error code
+                    mRes.setCode(txVo.getErrCode());
+                    mRes.setMsg(txVo.getErrMsg());
                     toEndAndCallBackByError(bo,CoreTxStatusEnum.WAIT,mRes);
                 }
             }

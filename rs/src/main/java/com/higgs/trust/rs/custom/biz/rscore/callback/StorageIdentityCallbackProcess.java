@@ -2,6 +2,7 @@ package com.higgs.trust.rs.custom.biz.rscore.callback;
 
 import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
+import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.custom.api.enums.BankChainExceptionCodeEnum;
 import com.higgs.trust.rs.custom.config.PropertiesConfig;
 import com.higgs.trust.rs.custom.dao.BankChainRequestDAO;
@@ -14,6 +15,7 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -26,16 +28,18 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @author wangquanzhou
  * @time 2018年3月16日15:14:51
  */
-@Slf4j @Service public class StorageIdentityCallbackProcess implements TxCallbackHandler {
+@Slf4j @Service public class StorageIdentityCallbackProcess implements TxCallbackHandler,InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageIdentityCallbackProcess.class);
 
     @Autowired private PropertiesConfig propertiesConfig;
-
-    @Autowired TransactionTemplate txRequired;
-
+    @Autowired private TransactionTemplate txRequired;
     @Autowired private BankChainRequestDAO bankChainRequestDAO;
-
     @Autowired private IdentityDAO identityDAO;
+    @Autowired private TxCallbackRegistor txCallbackRegistor;
+
+    @Override public void afterPropertiesSet() throws Exception {
+        txCallbackRegistor.registCallback(this);
+    }
 
     /**
      * on slave persisted phase,only current node persisted
