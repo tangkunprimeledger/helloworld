@@ -41,8 +41,6 @@
                                     <groupId>com.higgs.trust</groupId>
                                     <artifactId>registry</artifactId>
                                     <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <destFileName>registry.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>../target/</outputDirectory>

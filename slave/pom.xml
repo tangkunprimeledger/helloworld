@@ -268,8 +268,6 @@
                                     <groupId>com.higgs.trust</groupId>
                                     <artifactId>slave</artifactId>
                                     <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <destFileName>trust.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>../target/</outputDirectory>
