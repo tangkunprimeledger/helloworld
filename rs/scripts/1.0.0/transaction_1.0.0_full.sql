@@ -26,7 +26,7 @@ CREATE TABLE
 IF NOT EXISTS `request` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`tx_id` VARCHAR (64) NOT NULL COMMENT 'transaction id',
-	`data` varchar(4096) NULL COMMENT 'the request data',
+	`data` varchar(12288) NULL COMMENT 'the request data',
 	`status` VARCHAR(32) NOT NULL COMMENT 'request status',
 	`resp_code` datetime(3) DEFAULT NULL COMMENT 'response code',
 	`resp_msg` varchar(2048) DEFAULT NULL COMMENT 'response msg',

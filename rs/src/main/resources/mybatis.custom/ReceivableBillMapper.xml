@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.ReceivableBillDao">
+	<!-- Result Map -->
+	<resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.ReceivableBillPO">
+		<result column="id" property="id" />
+		<result column="bill_id" property="billId" />
+		<result column="state" property="state" />
+		<result column="status" property="status" />
+		<result column="holder" property="holder" />
+		<result column="tx_id" property="txId" />
+		<result column="action_index" property="actionIndex" />
+		<result column="index" property="index" />
+		<result column="contract_address" property="contractAddress" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+	<!-- receivable_bill table all fields -->
+	<sql id="baseColumnList">
+		id,bill_id,state,status,holder,tx_id,action_index,index,contract_address,create_time,update_time
+	</sql>
+	<!-- 查询条件 -->
+	<sql id="baseWhereClause">
+		where 1=1
+		<trim suffixOverrides=",">
+			<if test="id != null">
+				and id=#{id}
+			</if>
+			<if test="billId != null and billId != ''">
+				and bill_id=#{billId}
+			</if>
+			<if test="state != null and state != ''">
+				and state=#{state}
+			</if>
+			<if test="status != null and status != ''">
+				and status=#{status}
+			</if>
+			<if test="holder != null and holder != ''">
+				and holder=#{holder}
+			</if>
+			<if test="txId != null and txId != ''">
+				and tx_id=#{txId}
+			</if>
+			<if test="actionIndex != null">
+				and action_index=#{actionIndex}
+			</if>
+			<if test="index != null">
+				and index=#{index}
+			</if>
+			<if test="contractAddress != null and contractAddress != ''">
+				and contract_address=#{contractAddress}
+			</if>
+			<if test="createTime != null">
+				and create_time=#{createTime}
+			</if>
+			<if test="updateTime != null">
+				and update_time=#{updateTime}
+			</if>
+		</trim>
+	</sql>
+	<!-- 插入记录 -->
+	<insert id="add" parameterType="Object">
+		insert into
+		receivable_bill(id,bill_id,state,status,holder,tx_id,action_index,index,contract_address,create_time,update_time)
+		values(#{id},#{billId},#{state},#{status},#{holder},#{txId},#{actionIndex},#{index},#{contractAddress},now(),now())
+	</insert>
+	<!-- 删除记录 -->
+	<delete id="delete" parameterType="Object">
+		delete from receivable_bill where
+		id=#{id}
+	</delete>
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from receivable_bill where id=#{id}
+	</select>
+	<!-- 列表总数 -->
+	<select id="queryByCount" resultType="java.lang.Integer"
+		parameterType="Object">
+		select count(1) from receivable_bill
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 查询列表 -->
+	<select id="queryByList" resultMap="baseResultMap"
+		parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from receivable_bill
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 以上为工具自动生成 -->
+
+
+
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.RequestDao">
+	<!-- Result Map -->
+	<resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.RequestPO">
+		<result column="id" property="id" />
+		<result column="tx_id" property="txId" />
+		<result column="data" property="data" />
+		<result column="status" property="status" />
+		<result column="resp_code" property="respCode" />
+		<result column="resp_msg" property="respMsg" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+	<!-- request table all fields -->
+	<sql id="baseColumnList">
+		id,tx_id,data,status,resp_code,resp_msg,create_time,update_time
+	</sql>
+	<!-- 查询条件 -->
+	<sql id="baseWhereClause">
+		where 1=1
+		<trim suffixOverrides=",">
+			<if test="id != null">
+				and id=#{id}
+			</if>
+			<if test="txId != null and txId != ''">
+				and tx_id=#{txId}
+			</if>
+			<if test="data != null and data != ''">
+				and data=#{data}
+			</if>
+			<if test="status != null and status != ''">
+				and status=#{status}
+			</if>
+			<if test="respCode != null">
+				and resp_code=#{respCode}
+			</if>
+			<if test="respMsg != null and respMsg != ''">
+				and resp_msg=#{respMsg}
+			</if>
+			<if test="createTime != null">
+				and create_time=#{createTime}
+			</if>
+			<if test="updateTime != null">
+				and update_time=#{updateTime}
+			</if>
+		</trim>
+	</sql>
+	<!-- 插入记录 -->
+	<insert id="add" parameterType="Object">
+		insert into
+		request(id,tx_id,data,status,resp_code,resp_msg,create_time,update_time)
+		values(#{id},#{txId},#{data},#{status},#{respCode},#{respMsg},now(),now())
+	</insert>
+	<!-- 删除记录 -->
+	<delete id="delete" parameterType="Object">
+		delete from request where
+		id=#{id}
+	</delete>
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from request where id=#{id}
+	</select>
+	<!-- 列表总数 -->
+	<select id="queryByCount" resultType="java.lang.Integer"
+		parameterType="Object">
+		select count(1) from request
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 查询列表 -->
+	<select id="queryByList" resultMap="baseResultMap"
+		parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from request
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 以上为工具自动生成 -->
+
+
+
+</mapper>
