@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.custom.biz.api.impl.bill;
 
+import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.custom.api.bill.BillService;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 public class BillServiceImpl implements BillService {
     @Autowired
     private BillServiceHelper billServiceHelper;
+    @Autowired
+    private RsBlockChainService rsBlockChainService;
 
     /**
      * 创建票据方法
@@ -38,8 +41,7 @@ public class BillServiceImpl implements BillService {
             return respData;
         }
         //identity 是否存在
-        //##############################//
-        boolean isIdentityExist = true;
+        boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billCreateVO.getHolder());
 
         //组装UTXO,CoreTransaction,签名，下发
         respData = billServiceHelper.buildCreateBillAndSend(isIdentityExist, billCreateVO);
@@ -68,8 +70,7 @@ public class BillServiceImpl implements BillService {
             return respData;
         }
         //identity 是否存在
-        //##############################//
-        boolean isIdentityExist = true;
+        boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billTransferVO.getNextHolder());
 
         //组装UTXO,CoreTransaction,签名，下发
         respData = billServiceHelper.buildTransferBillAndSend(isIdentityExist, billTransferVO);

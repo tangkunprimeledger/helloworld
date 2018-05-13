@@ -210,7 +210,7 @@ public class BillServiceHelper {
         }
 
         //send and get callback result
-        com.higgs.trust.slave.api.vo.RespData rsRespData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.TRANSFER_UTXO, coreTransaction, signData);
+        RespData rsRespData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.TRANSFER_UTXO, coreTransaction, signData);
         BeanUtils.copyProperties(rsRespData, respData);
         return respData;
     }

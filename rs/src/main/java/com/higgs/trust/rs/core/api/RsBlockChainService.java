@@ -38,4 +38,11 @@ public interface RsBlockChainService {
      * @return
      */
     List<UTXOVO> queryUtxo(String txId);
+
+    /**
+     * check whether the identity is existed
+     * @param identity
+     * @return
+     */
+    boolean isExistedIdentity(String identity);
 }

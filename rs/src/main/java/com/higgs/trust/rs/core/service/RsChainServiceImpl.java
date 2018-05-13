@@ -23,20 +23,35 @@ public class RsChainServiceImpl implements RsBlockChainService {
     @Autowired
     private AccountInfoService accountInfoService;
 
-    @Override public PageVO<BlockVO> queryBlock(QueryBlockVO req) {
+    @Override
+    public PageVO<BlockVO> queryBlock(QueryBlockVO req) {
         return blockChainService.queryBlocks(req);
     }
 
-    @Override public PageVO<CoreTransactionVO> queryTransaction(QueryTransactionVO req) {
+    @Override
+    public PageVO<CoreTransactionVO> queryTransaction(QueryTransactionVO req) {
         return blockChainService.queryTransactions(req);
     }
 
-    @Override public PageVO<AccountInfoVO> queryAccount(QueryAccountVO req) {
+    @Override
+    public PageVO<AccountInfoVO> queryAccount(QueryAccountVO req) {
         return accountInfoService.queryAccountInfo(req);
     }
 
-    @Override public List<UTXOVO> queryUtxo(String txId) {
+    @Override
+    public List<UTXOVO> queryUtxo(String txId) {
 
         return blockChainService.queryUTXOByTxId(txId);
+    }
+
+    /**
+     * check whether the identity is existed
+     *
+     * @param identity
+     * @return
+     */
+    @Override
+    public boolean isExistedIdentity(String identity) {
+        return blockChainService.isExistedIdentity(identity);
     }
 }
