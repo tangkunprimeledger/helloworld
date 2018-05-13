@@ -80,6 +80,9 @@ public class ServerConfig
     @Value("${copycat.server.sessionTimeout:5000}")
     private Long sessionTimeout;
 
+    @Value("${copycat.server.backlog:20}")
+    private Integer backlog;
+
     @Override
     public String toString() {
         return "ServerConfig{" + "address='" + address + '\'' + ", cluster='" + cluster + '\'' + ", stateMachineClass='"
@@ -105,7 +108,9 @@ public class ServerConfig
             }
         });
 
-        builder.withTransport(NettyTransport.builder().withThreads(nettyThreadNum).build());
+        builder.withTransport(NettyTransport.builder()
+                .withAcceptBacklog(Math.min(backlog,500))
+                .withThreads(nettyThreadNum).build());
         builder.withElectionTimeout(Duration.ofMillis(electionTimeout))
                 .withHeartbeatInterval(Duration.ofMillis(heartbeatInterval))
                 .withSessionTimeout(Duration.ofMillis(sessionTimeout));
