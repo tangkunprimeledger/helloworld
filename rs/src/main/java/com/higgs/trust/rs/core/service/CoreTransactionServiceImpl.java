@@ -49,14 +49,18 @@ import java.util.List;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private SignServiceImpl signService;
 
-    @Override public void submitTx(BizTypeEnum bizType,CoreTransaction vo,String signData) {
-        log.info("[submitTx]{}", vo);
-        if (vo == null) {
+    @Override public void syncSubmitTx(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
+        submitTx(bizType,coreTx,signData);
+    }
+
+    @Override public void submitTx(BizTypeEnum bizType,CoreTransaction coreTx,String signData) {
+        log.info("[submitTx]{}", coreTx);
+        if (coreTx == null) {
             log.error("[submitTx] the tx is null");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
         //validate param
-        BeanValidateResult validateResult = BeanValidator.validate(vo);
+        BeanValidateResult validateResult = BeanValidator.validate(coreTx);
         if (!validateResult.isSuccess()) {
             log.error("[submitTx] param validate is fail,first msg:{}", validateResult.getFirstMsg());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
@@ -72,19 +76,19 @@ import java.util.List;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
         //convert po
-        CoreTransactionPO po = coreTransactionDao.queryByTxId(vo.getTxId(), false);
+        CoreTransactionPO po = coreTransactionDao.queryByTxId(coreTx.getTxId(), false);
         if (po != null) {
-            log.info("[submitTx]is idempotent txId:{}", vo.getTxId());
+            log.info("[submitTx]is idempotent txId:{}", coreTx.getTxId());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
         //convert po
-        po = BeanConvertor.convertBean(vo, CoreTransactionPO.class);
+        po = BeanConvertor.convertBean(coreTx, CoreTransactionPO.class);
         po.setBizType(bizType.getCode());
-        po.setVersion(vo.getVersion());
-        if (vo.getBizModel() != null) {
-            po.setBizModel(vo.getBizModel().toJSONString());
+        po.setVersion(coreTx.getVersion());
+        if (coreTx.getBizModel() != null) {
+            po.setBizModel(coreTx.getBizModel().toJSONString());
         }
-        String actionDataJSON = JSON.toJSONString(vo.getActionList());
+        String actionDataJSON = JSON.toJSONString(coreTx.getActionList());
         po.setActionDatas(actionDataJSON);
         List<String> signDatas = new ArrayList<>();
         signDatas.add(signData);

@@ -49,7 +49,8 @@ import org.springframework.transaction.support.TransactionTemplate;
         });
     }
 
-    @Override public void onPersisted(TransactionReceipt transactionReceipt, CoreTransaction tx) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData) {
+        CoreTransaction tx = (CoreTransaction)respData.getData();
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 int r = coreTransactionDao
@@ -64,18 +65,33 @@ import org.springframework.transaction.support.TransactionTemplate;
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
                 }
                 CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(),false);
-                RespData respData = new RespData();
-                if(!transactionReceipt.isResult()) {
-                    respData.setCode(transactionReceipt.getErrorCode());
-                }
-                respData.setData(tx);
                 //callback custom rs
                 txCallbackHandler.onPersisted(BizTypeEnum.fromCode(po.getBizType()),respData);
             }
         });
+        //TODO:同步通知
     }
 
-    @Override public void onClusterPersisted(TransactionReceipt transactionReceipt, CoreTransaction tx) {
-
+    @Override public void onClusterPersisted(RespData<CoreTransaction> respData) {
+        CoreTransaction tx = (CoreTransaction)respData.getData();
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                int r = coreTransactionDao
+                    .updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED.getCode(), CoreTxStatusEnum.END.getCode());
+                if (r != 1) {
+                    log.error("[onClusterPersisted] update tx status is fail from:{},to:{}", CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
+                }
+                TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
+                if(txCallbackHandler == null){
+                    log.error("[onClusterPersisted]call back handler is not register");
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
+                }
+                CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(),false);
+                //callback custom rs
+                txCallbackHandler.onEnd(BizTypeEnum.fromCode(po.getBizType()),respData);
+            }
+        });
+        //TODO:同步通知
     }
 }
