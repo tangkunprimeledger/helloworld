@@ -29,7 +29,7 @@ public class UTXOConvert {
         BeanUtils.copyProperties(txOut, txOutPO);
         txOutPO.setState(txOut.getState().toJSONString());
         txOutPO.setStateClass(utxoAction.getStateClass());
-        txOutPO.setContract(utxoAction.getContract());
+        txOutPO.setContractAddress(utxoAction.getContractAddress());
         txOutPO.setTxId(actionData.getCurrentTransaction().getCoreTx().getTxId());
         txOutPO.setStatus(UTXOStatusEnum.UNSPENT.getCode());
         return txOutPO;

@@ -67,7 +67,7 @@
     <select id="queryListBySendTime" resultMap="baseResultMap" parameterType="Object">
         select
         <include refid="baseColumnList" />
-        from queued_send_delay where `send_time` &lt;= #{sendTime}
+        from queued_send_delay where `send_time` &lt;= #{sendTime} limit 10;
     </select>
 
     <!-- 根据messageDigest删除记录 -->

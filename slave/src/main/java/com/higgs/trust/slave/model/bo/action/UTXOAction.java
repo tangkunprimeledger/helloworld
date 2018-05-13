@@ -33,9 +33,9 @@ import java.util.List;
      */
     @NotBlank @Length(max = 255) private String stateClass;
     /**
-     * tx contract script
+     * tx contract address
      */
-    @NotNull private String contract;
+    @NotNull @Length(max = 64) private String contractAddress;
     /**
      * tx utxo action type
      * 1.ISSUE (all  should sign the tx,the tx likes no one input and at least one output)

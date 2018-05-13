@@ -9,7 +9,7 @@
         <result column="identity" property="identity"/>
         <result column="state_class" property="stateClass"/>
         <result column="state" property="state"/>
-        <result column="contract" property="contract"/>
+        <result column="contract_address" property="contractAddress"/>
         <result column="status" property="status"/>
         <result column="s_tx_id" property="sTxId"/>
         <result column="create_time" property="createTime"/>
@@ -17,7 +17,7 @@
     </resultMap>
     <!-- tx_out table all fields -->
     <sql id="baseColumnList">
-        tx_id,`index`,action_index,identity,state_class,`state`,contract,status,s_tx_id,create_time,update_time
+        tx_id,`index`,action_index,identity,state_class,`state`,contract_address,status,s_tx_id,create_time,update_time
     </sql>
     <!-- query  conditions -->
     <sql id="baseWhereClause">
@@ -49,8 +49,8 @@
     <!-- insert row -->
     <insert id="add" parameterType="com.higgs.trust.slave.dao.po.utxo.TxOutPO">
         insert into
-        tx_out(tx_id,`index`,action_index,identity,state_class,`state`,contract,status,create_time,update_time)
-        values(#{txId},#{index},#{actionIndex},#{identity},#{stateClass},#{state},#{contract},#{status},now(3),now(3))
+        tx_out(tx_id,`index`,action_index,identity,state_class,`state`,contract_address,status,create_time,update_time)
+        values(#{txId},#{index},#{actionIndex},#{identity},#{stateClass},#{state},#{contractAddress},#{status},now(3),now(3))
     </insert>
     <!-- queryByCount -->
     <select id="queryByCount" resultType="java.lang.Integer"
@@ -80,11 +80,11 @@
     <!-- batch insert -->
     <insert id="batchInsert" parameterType="java.util.List">
         INSERT INTO
-        tx_out(tx_id,`index`,action_index,identity,state_class,`state`,contract,status,create_time,update_time)
+        tx_out(tx_id,`index`,action_index,identity,state_class,`state`,contract_address,status,create_time,update_time)
         VALUES
         <foreach collection="list" item="item" index="index"
                  separator=",">
-            (#{item.txId},#{item.index},#{item.actionIndex},#{item.identity},#{item.stateClass},#{item.state},#{item.contract},#{item.status},now(3),now(3))
+            (#{item.txId},#{item.index},#{item.actionIndex},#{item.identity},#{item.stateClass},#{item.state},#{item.contractAddress},#{item.status},now(3),now(3))
         </foreach>
     </insert>
 

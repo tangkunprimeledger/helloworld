@@ -13,7 +13,7 @@ import java.util.Random;
 public class TraceUtils {
 
     public static Span createSpan(){
-        return PrimeTraceUtil.openNewTracer(new Random(100000000).nextLong());
+        return PrimeTraceUtil.openNewTracer(new Random().nextLong());
     }
     /**
      * create new span

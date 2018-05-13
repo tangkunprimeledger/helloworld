@@ -14,7 +14,7 @@ import com.higgs.trust.slave.core.service.action.contract.AccountContractBinding
 import com.higgs.trust.slave.core.service.datahandler.account.AccountDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
-import com.higgs.trust.slave.model.bo.Contract;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.account.AccountFreeze;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;

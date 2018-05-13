@@ -90,6 +90,9 @@ public class AccountFreezeHandlerTest extends InterfaceCommonTest {
 
         accountFreezeHandler.validate(packContext);
         accountFreezeHandler.persist(packContext);
+
+        accountFreezeHandler.validate(makePackContext(freeze, 1L,param));
+        accountFreezeHandler.persist(makePackContext(freeze, 1L,param));
         executeAfterSql(param);
 
     }

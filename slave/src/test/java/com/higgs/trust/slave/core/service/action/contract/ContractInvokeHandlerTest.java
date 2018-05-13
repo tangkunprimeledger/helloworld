@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.slave.IntegrateBaseTest;
@@ -23,7 +24,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
 
     private ContractInvokeAction createContractInvokeAction() {
         ContractInvokeAction action = new ContractInvokeAction();
-        action.setAddress("2261293c58148bea30623b8b5ce60d43b76f770c1e344eb58fbbea5ebf1fed74");
+        action.setAddress("4835ce31f929a234b2c7bd4aeb195b9134a6f81abc95e6a6f41d6f656d1930da");
         //action.setMethod("main");
         action.setIndex(0);
         action.setType(ActionTypeEnum.TRIGGER_CONTRACT);
@@ -39,6 +40,8 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
                 .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
                 .signature(ActionDataMockBuilder.privateKey1)
                 .signature(ActionDataMockBuilder.privateKey2)
+//                .signature(ActionDataMockBuilder.privateKey1)
+//                .signature(ActionDataMockBuilder.privateKey1)
                 .makeBlockHeader()
                 .build();
 
@@ -79,10 +82,18 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
 
         Action action = new ContractInvokeHandlerTest().createContractInvokeAction();
+        JSONObject bizModel = new JSONObject();
+        bizModel.put("data", action);
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.UTXO_DESTROY)
+                .createSignedTransaction(InitPolicyEnum.REGISTER)
                 .addAction(action)
+                .setBizModel(bizModel)
                 .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
+//                .signature(ActionDataMockBuilder.privateKey1)
+//                .signature(ActionDataMockBuilder.privateKey1)
+//                .signature(ActionDataMockBuilder.privateKey1)
+//                .signature(ActionDataMockBuilder.privateKey1)
+
                 .signature(ActionDataMockBuilder.privateKey1)
                 .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()

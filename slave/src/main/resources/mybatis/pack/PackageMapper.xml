@@ -94,7 +94,7 @@
         from package where status=#{status} order by height asc  limit 0,#{limit}
     </select>
 
-    <select id="getMinHeightWithStatus" resultType="long" parameterType="object">
+    <select id="getMinHeightWithStatus" resultType="java.lang.Long" parameterType="object">
         select min(height) from package
         where status in
           <foreach collection="statusSet" index="index" item="item" open="(" separator="," close=")">
@@ -111,7 +111,7 @@
         AND height > #{startHeight}
     </select>
 
-    <select id="countWithStatus" resultType="long" parameterType="object">
+    <select id="countWithStatus" resultType="java.lang.Long" parameterType="object">
         select count(1) from package
         where status in
         <foreach collection="statusSet" index="index" item="item" open="(" separator="," close=")">

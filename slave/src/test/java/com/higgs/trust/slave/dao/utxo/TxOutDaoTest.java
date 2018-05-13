@@ -32,19 +32,19 @@ public class TxOutDaoTest extends BaseTest {
                 txOutPO.setStatus(UTXOStatusEnum.UNSPENT.getCode());
                 txOutPO.setActionIndex(0);
                 txOutPO.setIndex(i);
-                txOutPO.setContract("12321" + new Date());
-                txOutPO.setState("12321");
+                txOutPO.setContractAddress("qqqqq");
+                txOutPO.setState("{\"@type\":\"com.alibaba.fastjson.JSONObject\",\"amount\":1}");
                 txOutPO.setStateClass("afdaf");
                 txOutPO.setIdentity("12312312");
                 txOutPOList.add(txOutPO);
             }
             TxOutPO txOutPO = new TxOutPO();
-            txOutPO.setTxId("123123");
+            txOutPO.setTxId("123123222");
             txOutPO.setStatus(UTXOStatusEnum.UNSPENT.getCode());
             txOutPO.setActionIndex(0);
             txOutPO.setIndex(0);
-            txOutPO.setContract("12321" + new Date());
-            txOutPO.setState("12321");
+            txOutPO.setContractAddress("qqqqq");
+            txOutPO.setState("{\"@type\":\"com.alibaba.fastjson.JSONObject\",\"amount\":1}");
             txOutPO.setStateClass("afdaf");
             txOutPO.setIdentity("12312312");
             txOutPOList.add(txOutPO);
@@ -57,7 +57,7 @@ public class TxOutDaoTest extends BaseTest {
 
         List<TxOutPO> txOutPOList = new ArrayList<>();
         TxOutPO txOutPO = new TxOutPO();
-        txOutPO.setTxId("123123");
+        txOutPO.setTxId("12312322");
         txOutPO.setSTxId("123123" + new Date());
         txOutPO.setStatus(UTXOStatusEnum.SPENT.getCode());
         txOutPO.setActionIndex(0);
@@ -68,18 +68,11 @@ public class TxOutDaoTest extends BaseTest {
         txOutPO1.setSTxId("123123" + new Date());
         txOutPO1.setStatus(UTXOStatusEnum.SPENT.getCode());
         txOutPO1.setActionIndex(0);
-        txOutPO1.setIndex(1);
+        txOutPO1.setIndex(0);
 
-        TxOutPO txOutPO2 = new TxOutPO();
-        txOutPO2.setTxId("123123");
-        txOutPO2.setSTxId("123123" + new Date());
-        txOutPO2.setStatus(UTXOStatusEnum.SPENT.getCode());
-        txOutPO2.setActionIndex(0);
-        txOutPO2.setIndex(2);
 
         txOutPOList.add(txOutPO);
         txOutPOList.add(txOutPO1);
-        txOutPOList.add(txOutPO2);
 
         System.out.println("batchUpdate :" + txOutDao.batchUpdate(txOutPOList));
     }

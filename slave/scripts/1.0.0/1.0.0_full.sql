@@ -174,11 +174,16 @@ CREATE TABLE
 IF NOT EXISTS `contract` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`address` VARCHAR (64) NOT NULL COMMENT 'contract address',
+	`block_height` BIGINT (20) DEFAULT NULL COMMENT 'block height',
+	`tx_id` VARCHAR (64) NOT NULL COMMENT 'the id create transaction',
+	`action_index` INT NOT NULL COMMENT 'the index create action',
 	`language` VARCHAR (32) NOT NULL COMMENT 'contract code language',
+  `version` VARCHAR(5) NOT NULL COMMENT  '',
 	`code` NVARCHAR (2048) NOT NULL COMMENT 'contract code',
 	`create_time` DATETIME (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_address` (`address`)
+	UNIQUE KEY `uniq_address` (`address`),
+	UNIQUE KEY `uniq_txid_actionindex` (`tx_id`, `action_index`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'smart contract';
 
 CREATE TABLE
@@ -264,12 +269,12 @@ IF NOT EXISTS `transaction` (
 	`tx_id` VARCHAR (64) NOT NULL COMMENT 'transaction id',
 	`biz_model` MEDIUMTEXT DEFAULT NULL COMMENT 'the save data create the biz',
 	`policy_id` VARCHAR (32) NOT NULL COMMENT 'policy id',
-	`lock_time` datetime(3) NOT NULL COMMENT 'the lock time create the tx . use in rs and slave to deal tx',
+	`lock_time` datetime(3) DEFAULT NULL COMMENT 'the lock time create the tx . use in rs and slave to deal tx',
 	`sender` VARCHAR (32) NOT NULL COMMENT 'the rsId if the sender  for the tx',
 	`version` VARCHAR (32) NOT NULL COMMENT 'the version create the tx',
 	`block_height` BIGINT (20) NOT NULL COMMENT 'the block height create the tx',
 	`block_time` datetime (3) NOT NULL COMMENT 'the create time create the block for the tx',
-	`action_datas` MEDIUMTEXT DEFAULT NULL COMMENT 'the action list by json',
+	`action_datas` varchar(4096) DEFAULT NULL COMMENT 'the action list by json',
 	`sign_datas` varchar(4096) DEFAULT NULL COMMENT 'the signatures by json',
 	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
@@ -287,7 +292,7 @@ IF NOT EXISTS `tx_out` (
 	`identity` VARCHAR (64) NOT NULL COMMENT 'identity id for the attribution create the row:data owner and chain owner',
 	`state_class` VARCHAR (255) NOT NULL COMMENT 'the state class name',
 	`state` TEXT NOT NULL COMMENT 'sate data',
-	`contract` MEDIUMTEXT NOT NULL COMMENT 'contract script',
+	`contract_address` VARCHAR (64) NOT NULL COMMENT 'contract address',
 	`status` VARCHAR (32) NOT NULL COMMENT 'the status create the out: 1.UNSPENT 2.SPENT',
 	`s_tx_id` VARCHAR (64) DEFAULT NULL COMMENT 'the transaction id for spent the out',
 	`create_time` datetime (3) NOT NULL DEFAULT CURRENT_TIMESTAMP (3) COMMENT 'create time',
@@ -299,7 +304,6 @@ IF NOT EXISTS `tx_out` (
 #
 # Consensus
 #
-
 #
 # Structure for table "queued_apply"
 #
@@ -319,7 +323,7 @@ CREATE TABLE `queued_apply` (
 CREATE TABLE `queued_apply_delay` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
-  `apply_time` bigint(1) unsigned NOT NULL DEFAULT '0' COMMENT 'requeued to apply',
+  `apply_time` bigint(20) NOT NULL,
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
   KEY `idx_message_digest` (`message_digest`),
@@ -338,7 +342,7 @@ CREATE TABLE `queued_receive_gc` (
   PRIMARY KEY (`id`),
   KEY `idx_message_digest` (`message_digest`),
   KEY `index_gc_time` (`gc_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_gc_queue';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_gc_queue';
 
 #
 # Structure for table "queued_send"
@@ -378,7 +382,7 @@ CREATE TABLE `queued_send_gc` (
   PRIMARY KEY (`id`),
   KEY `idx_message_digest` (`message_digest`),
   KEY `index_gc_time` (`gc_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COMMENT='the table send_gc_queue';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_gc_queue';
 
 #
 # Structure for table "receive_command"
@@ -393,14 +397,14 @@ CREATE TABLE `receive_command` (
   `receive_node_num` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'num of receive node',
   `apply_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to apply',
   `gc_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to gc',
-  `closed` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0 - 未关闭， 1 - 关闭',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-normal，1-add to apply queue，2-add to gc queue',
+  `retry_apply_num` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT 'count of retry apply',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_message_digest` (`message_digest`),
   KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_command';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_command';
 
 #
 # Structure for table "receive_node"
@@ -414,7 +418,7 @@ CREATE TABLE `receive_node` (
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`from_node_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
 
 #
 # Structure for table "send_command"
@@ -430,12 +434,13 @@ CREATE TABLE `send_command` (
   `ack_node_num` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'num of  ack node',
   `gc_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to gc',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-add to send queue，1-add to gc queue',
+  `retry_send_num` mediumint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'count of retry',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_message_digest` (`message_digest`),
   KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COMMENT='the table send_command';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_command';
 
 #
 # Structure for table "send_node"
@@ -449,7 +454,7 @@ CREATE TABLE `send_node` (
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`to_node_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
 
 INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)
 VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3));

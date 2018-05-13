@@ -1,0 +1,59 @@
+{
+  "测试ID": 0,
+  "body":
+  [
+    {
+      "@type": "com.higgs.trust.slave.model.bo.SignedTransaction",
+      "coreTx": {
+        "actionList": [
+          {
+            "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+            "index": 0,
+            "policyId": "test-policy-0002",
+            "policyName": "测试policy注册",
+            "rsIds": [
+              "TRUST-NODE97",
+              "TRUST-NODE100"
+            ],
+            "type": "REGISTER_POLICY"
+          }
+        ],
+        "bizModel": {
+          "@type": "com.alibaba.fastjson.JSONObject",
+          "data": {
+            "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+            "index": 0,
+            "policyId": "test-policy-0002",
+            "policyName": "测试policy注册",
+            "rsIds": [
+              "TRUST-Test1",
+              "TRUST-Test2"
+            ],
+            "type": "REGISTER_POLICY"
+          }
+        },
+        "lockTime": 1525232969688,
+        "txId": "tx_id_REGISTER_POLICY",
+        "policyId": "test-policy-1",
+        "sender": "TRUST-TEST1",
+        "version": "1.0.0"
+      },
+      "signatureList": [
+        "F4hXBiV8Qdmh/c4gWmR0sBnknrFyd6D0G5RXNgJsZaHNugcLTOlc7Ges/WlhMiaLvy/jnbGMeVshMTLoqBSUyLrTpveDrDXpy7NhnEFBslqwyKt2weYCfiCbWOTjmeF1v5LAzgKn1PDKVPgV2n3zRqsOtd2ru85NYkiIDykMoZE=",
+        "UhPX8MV8g/2X5763iWRcMHWGHpl4SNtWXbUhZ3qhyraN7KvOYNCU5QIn4IustTKp+9sUDjz6K1idLhgRs/Dj7wNhQX2AhF8vgApNZ7rXt7st+khFZxs1oMdATiQfYkwKh7VclJ4TvRoh8ZEiDrHKWbw3TwzWei2Ml0r3H8CoXUs="
+      ]
+    }
+  ],
+  "beforeSql": [
+    "INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)VALUES	(2, 'v1.0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'e95656f2acfb47363d9e338bdc5b1613cfc3780adeb2a4837e3038cdd743ca89', '010c8d90d00820c0ef96dc3c31ace134c3c179a55b5e303ec69ed1e10965d6e9', 'NO_TREE', 'NO_TREE', '39a36c9e45a0af65c4f3b13689b0c2aff1f1218ade252f0b2fa4e9280686e63d', 'NO_TREE', 'a3c4686496bcec6aa54ecb164295270b4f7c675f5574c981c571dc990e747b90', '2018-05-07 16:59:24.144', '2018-05-07 16:59:24.629')",
+    "INSERT INTO `package` (`height`, `status`, `callbacked`, `package_time`, `create_time`, `update_time`)VALUES	(2, 'PERSISTED', 0, 1525683564144, '2018-05-07 16:59:24.499', '2018-05-07 16:59:24.804')",
+    "INSERT INTO `package` (`height`, `status`, `callbacked`, `package_time`, `create_time`, `update_time`)VALUES (3, 'RECEIVED', 0, 1525683868194, '2018-05-07 17:04:28.302', '2018-05-07 17:04:28.573')",
+    "INSERT INTO `package` (`height`, `status`, `callbacked`, `package_time`, `create_time`, `update_time`)VALUES(5, 'INIT', 0, 1525684296994, '2018-05-07 17:11:37.201', '2018-05-07 17:11:37.533')"
+  ],
+  "assert": null,
+  "afterSql": ["truncate table block",
+    "truncate table package",
+    "INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)  VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3))"
+  ],
+  "comment": "Package-create接口测试-height不连续"
+}
