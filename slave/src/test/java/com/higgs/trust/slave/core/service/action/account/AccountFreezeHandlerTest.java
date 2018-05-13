@@ -86,7 +86,7 @@ public class AccountFreezeHandlerTest extends InterfaceCommonTest {
 //
 //        accountOperationHandler.validate(packContext);
 //        accountOperationHandler.persist(packContext);
-        PackContext packContext = makePackContext(freeze, 1L);
+        PackContext packContext = makePackContext(freeze, 1L,param);
 
         accountFreezeHandler.validate(packContext);
         accountFreezeHandler.persist(packContext);
