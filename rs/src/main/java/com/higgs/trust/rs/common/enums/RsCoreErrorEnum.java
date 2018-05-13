@@ -25,8 +25,9 @@ public enum RsCoreErrorEnum {
     RS_CORE_TX_UPDATE_STATUS_FAILED("202", "update transaction status failed", false),
     RS_CORE_TX_UPDATE_SIGN_DATAS_FAILED("203", "update transaction signDatas failed", false),
     RS_CORE_TX_BIZ_TYPE_IS_NULL("204", "tx bizType is null", false),
-    RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET("204", "tx core tx callback not set", false),
-    RS_CORE_TX_SYNC_EXECUTE_FAILED("205", "rs core tx sync execute failed", false),
+    RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET("205", "tx core tx callback not set", false),
+    RS_CORE_TX_SYNC_EXECUTE_FAILED("206", "rs core tx sync execute failed", false),
+    RS_CORE_TX_GET_OTHER_SIGN_ERROR("207", "tx core get other sign data error", false),
     ;
     //@formatter:on
 

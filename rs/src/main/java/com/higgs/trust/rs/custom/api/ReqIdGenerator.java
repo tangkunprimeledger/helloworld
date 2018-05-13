@@ -2,6 +2,7 @@ package com.higgs.trust.rs.custom.api;
 
 import com.higgs.trust.rs.custom.util.CoinChainIdGenerator;
 import com.higgs.trust.rs.custom.util.IpUtil;
+import com.higgs.trust.slave.common.SnowflakeIdWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -163,9 +163,9 @@ import java.util.List;
                     try {
                         otherSignDatas = getSignDataByOther(bo, rsIds);
                     } catch (Throwable t) {
-                        log.error("[processInitTx]getSignDataByOther is fail txId:{}", txId);
+                        log.error("[processInitTx]getSignDataByOther is fail", t);
                         toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
-                            RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
+                            RsCoreErrorEnum.RS_CORE_TX_GET_OTHER_SIGN_ERROR);
                         return;
                     }
                 }
@@ -229,7 +229,9 @@ import java.util.List;
         if (vo == null) {
             return null;
         }
-        vo.setVersion(bo.getVersion().getCode());
+        if (bo.getVersion() != null) {
+            vo.setVersion(bo.getVersion().getCode());
+        }
         return vo;
     }
 

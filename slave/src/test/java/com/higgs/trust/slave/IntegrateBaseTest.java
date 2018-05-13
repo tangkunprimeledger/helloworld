@@ -64,22 +64,4 @@ public abstract class IntegrateBaseTest {
 
     protected void runLast() {
     }
-
-
-    @Bean(name = "txRequired")
-    public TransactionTemplate txRequired(PlatformTransactionManager platformTransactionManager) {
-        return new TransactionTemplate(platformTransactionManager);
-    }
-    @Bean(name = "txNested")
-    public TransactionTemplate txNested(PlatformTransactionManager platformTransactionManager) {
-        TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
-        tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NESTED);
-        return tx;
-    }
-    @Bean(name = "txRequiresNew")
-    public TransactionTemplate txRequiresNew(PlatformTransactionManager platformTransactionManager) {
-        TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
-        tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        return tx;
-    }
 }

@@ -8,7 +8,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
 public class ApplicationConfig {
 
     @Autowired
-    private PropertiesConfig config;
+    private RsPropertiesConfig config;
 
     @Bean
     public Jackson2ObjectMapperFactoryBean objectMapper() {

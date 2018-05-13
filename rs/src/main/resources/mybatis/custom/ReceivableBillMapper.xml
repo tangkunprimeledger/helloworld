@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.higgs.trust.slave.dao.ReceivableBillDao">
+<mapper namespace="com.higgs.trust.rs.custom.dao.ReceivableBillDao">
 	<!-- Result Map -->
-	<resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.ReceivableBillPO">
+	<resultMap id="baseResultMap" type="com.higgs.trust.rs.custom.dao.po.ReceivableBillPO">
 		<result column="id" property="id" />
 		<result column="bill_id" property="billId" />
 		<result column="state" property="state" />

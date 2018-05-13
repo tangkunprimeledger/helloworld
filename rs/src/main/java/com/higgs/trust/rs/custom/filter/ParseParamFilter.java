@@ -5,7 +5,7 @@ import cn.primeledger.pl.wallet.dock.util.AesUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
-import com.higgs.trust.rs.custom.config.PropertiesConfig;
+import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.model.RespData;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class ParseParamFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(ParseParamFilter.class);
 
     @Autowired
-    private PropertiesConfig propertiesConfig;
+    private RsPropertiesConfig propertiesConfig;
     /**
      * 放过的请求
      */

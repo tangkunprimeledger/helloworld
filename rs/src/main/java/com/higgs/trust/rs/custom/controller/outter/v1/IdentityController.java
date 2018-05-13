@@ -4,13 +4,11 @@ import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.api.identity.IdentityService;
 import com.higgs.trust.rs.custom.api.vo.identity.IdentityRequestVO;
 import com.higgs.trust.rs.custom.config.MngPropertiesConfig;
-import com.higgs.trust.rs.custom.config.PropertiesConfig;
+import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.model.RespData;
 import com.higgs.trust.rs.custom.model.convertor.identity.VOToBOConvertor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +28,7 @@ import java.io.UnsupportedEncodingException;
 public class IdentityController {
 
     @Autowired
-    private PropertiesConfig propertiesConfig;
+    private RsPropertiesConfig propertiesConfig;
 
     @Autowired
     private IdentityService identityService;

@@ -4,7 +4,7 @@ import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.custom.api.enums.BankChainExceptionCodeEnum;
-import com.higgs.trust.rs.custom.config.PropertiesConfig;
+import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.dao.BankChainRequestDAO;
 import com.higgs.trust.rs.custom.dao.identity.IdentityDAO;
 import com.higgs.trust.rs.custom.dao.po.BankChainRequestPO;
@@ -28,7 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @Slf4j @Service public class StorageIdentityCallbackProcess implements TxCallbackHandler,InitializingBean {
 
-    @Autowired private PropertiesConfig propertiesConfig;
+    @Autowired private RsPropertiesConfig propertiesConfig;
     @Autowired private TransactionTemplate txRequired;
     @Autowired private BankChainRequestDAO bankChainRequestDAO;
     @Autowired private IdentityDAO identityDAO;

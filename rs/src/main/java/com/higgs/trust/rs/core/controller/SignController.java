@@ -21,8 +21,7 @@ import java.util.List;
  * @date 2018/5/12
  */
 
-//@RestController
-@Slf4j public class SignController {
+@RestController @Slf4j public class SignController {
 
     @Autowired private SignService signService;
 
