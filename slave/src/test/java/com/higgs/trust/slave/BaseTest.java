@@ -7,6 +7,8 @@
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.boot.test.context.SpringBootTest;
     import org.springframework.context.annotation.Bean;
+    import org.springframework.context.annotation.Profile;
+    import org.springframework.test.context.ActiveProfiles;
     import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
     import org.springframework.transaction.PlatformTransactionManager;
     import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -17,7 +19,9 @@
 
 //@RunWith(MockitoJUnitRunner.class)
 //@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE) public abstract class BaseTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@ActiveProfiles("DEV")
+public abstract class BaseTest
     extends AbstractTestNGSpringContextTests{
 
     @Autowired
