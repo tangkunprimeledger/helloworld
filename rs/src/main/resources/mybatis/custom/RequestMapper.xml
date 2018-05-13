@@ -13,7 +13,7 @@
 	</resultMap>
 	<!-- request table all fields -->
 	<sql id="baseColumnList">
-		request_id,data,status,resp_code,resp_msg,create_time,update_time
+		request_id,`data`,status,resp_code,resp_msg,create_time,update_time
 	</sql>
 	<!-- 查询条件 -->
 	<sql id="baseWhereClause">
@@ -39,7 +39,7 @@
 	<!-- 插入记录 -->
 	<insert id="add" parameterType="Object">
 		insert into
-		request(request_id,data,status,resp_code,resp_msg,create_time,update_time)
+		request(request_id,`data`,status,resp_code,resp_msg,create_time,update_time)
 		values(#{requestId},#{data},#{status},#{respCode},#{respMsg},now(),now())
 	</insert>
 	<!-- 列表总数 -->
@@ -58,7 +58,7 @@
 	</select>
 	<!-- 以上为工具自动生成 -->
 	<!-- 根据请求ID 查询 -->
-	<select id="queryByRequestId" resultType="baseResultMap"
+	<select id="queryByRequestId" resultMap="baseResultMap"
 			parameterType="java.lang.String">
 		select
 		<include refid="baseColumnList"/>

@@ -51,7 +51,7 @@ import java.util.List;
     @Autowired private BlockChainService blockChainService;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private SignServiceImpl signService;
-    @Autowired private HashBlockingMap<RespData> persisedResultMap;
+    @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
 
     @Override public RespData syncSubmitTxForPersisted(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
@@ -70,7 +70,7 @@ import java.util.List;
             if (forEnd) {
                 respData = clusterPersistedResultMap.poll(key, 1000);
             } else {
-                respData = persisedResultMap.poll(key, 1000);
+                respData = persistedResultMap.poll(key, 1000);
             }
         } catch (Throwable e) {
             log.error("tx handle exception. ", e);

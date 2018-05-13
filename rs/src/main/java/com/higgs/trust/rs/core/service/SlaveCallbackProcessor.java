@@ -31,7 +31,7 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
     @Autowired private CoreTransactionDao coreTransactionDao;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
-    @Autowired private HashBlockingMap<RespData> persisedResultMap;
+    @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
 
 
@@ -75,7 +75,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         //TODO:同步通知
         //TODO:同步通知
         try {
-            persisedResultMap.put(tx.getTxId(), respData);
+            persistedResultMap.put(tx.getTxId(), respData);
         } catch (Throwable e) {
             log.warn("sync notify rs resp data failed", e);
         }
