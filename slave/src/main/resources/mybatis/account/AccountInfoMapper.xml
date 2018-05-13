@@ -15,6 +15,40 @@
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
+
+    <resultMap id="queryAccountInfoMap" type="com.higgs.trust.slave.dao.po.account.AccountInfoWithOwnerPO">
+        <result column="account_no" property="accountNo"/>
+        <result column="currency" property="currency"/>
+        <result column="balance" property="balance"/>
+        <result column="freeze_amount" property="freezeAmount"/>
+        <result column="fund_direction" property="fundDirection"/>
+        <result column="data_owner" property="dataOwner"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="queryAccountInfoWithOwner" resultMap="queryAccountInfoMap" parameterType="object">
+      select
+        a.account_no,
+        a.currency,
+        a.balance,
+        a.freeze_amount,
+        a.fund_direction,
+        d.data_owner,
+        a.status,
+        a.create_time
+        from account_info a
+        LEFT JOIN
+        data_identity d
+        ON a.account_no = d.identity
+      where 1=1
+        <if test="accountNo != null and accountNo != ''">
+            and a.account_no=#{accountNo}
+        </if>
+        <if test="dataOwner != null and dataOwner != ''">
+            and d.data_owner=#{dataOwner}
+        </if>
+    </select>
     <!-- account_info table all fields -->
     <sql id="baseColumnList">
 		id,account_no,currency,balance,freeze_amount,fund_direction,detail_no,detail_freeze_no,status,create_time,update_time

@@ -46,4 +46,15 @@ import java.util.List;
      * @return
      */
     List<TransactionPO> queryByTxIds(@Param("txIds") List<String> txIds);
+
+    /**
+     * query transactions with condition
+     * @param blockHeight
+     * @param txId
+     * @param sender
+     * @return
+     */
+    List<TransactionPO> queryTxWithCondition(@Param("height") Long blockHeight,
+        @Param("txId") String txId, @Param("sender") String sender,
+        @Param("start") Integer start, @Param("end") Integer end);
 }

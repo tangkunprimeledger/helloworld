@@ -7,6 +7,7 @@ import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
+import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,8 @@ import java.util.List;
             BeanValidateResult validateResult = BeanValidator.validate(signedTransaction);
             if (!validateResult.isSuccess()) {
                 log.error("transaction invalid. errMsg={}, txId={}", validateResult.getFirstMsg(), txId);
-                transactionVO.setErrMsg("param invalid");
+                transactionVO.setErrCode(TxSubmitResultEnum.PARAM_INVALID.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.PARAM_INVALID.getDesc());
                 transactionVO.setRetry(false);
                 transactionVOList.add(transactionVO);
                 return;
@@ -55,7 +57,8 @@ import java.util.List;
             // pending transaction idempotent check
             if (pendingTxRepository.isExist(txId)) {
                 log.warn("pending transaction idempotent, txId={}", txId);
-                transactionVO.setErrMsg("pending transaction idempotent");
+                transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
                 transactionVO.setRetry(true);
                 transactionVOList.add(transactionVO);
                 return;
@@ -64,7 +67,8 @@ import java.util.List;
             // chained transaction idempotent check, cannot retry
             if (transactionRepository.isExist(txId)) {
                 log.warn("transaction idempotent, txId={}", txId);
-                transactionVO.setErrMsg("transaction idempotent");
+                transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.TX_IDEMPOTENT.getDesc());
                 transactionVO.setRetry(false);
                 transactionVOList.add(transactionVO);
                 return;

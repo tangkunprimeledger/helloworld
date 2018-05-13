@@ -16,7 +16,12 @@ import lombok.Setter;
     private String txId;
 
     /**
-     * error msg
+     * error code
+     */
+    private String errCode;
+
+    /**
+     * error message
      */
     private String errMsg;
 

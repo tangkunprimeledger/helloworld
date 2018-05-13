@@ -76,6 +76,13 @@
         where
         tx_id = #{txId} and `index` = #{index} and action_index = #{actionIndex}
     </select>
+    <select id="queryByTxId" resultType="com.higgs.trust.slave.dao.po.utxo.TxOutPO">
+        select
+        <include refid="baseColumnList"/>
+        from tx_out
+        where
+        tx_id = #{txId}
+    </select>
 
     <!-- batch insert -->
     <insert id="batchInsert" parameterType="java.util.List">

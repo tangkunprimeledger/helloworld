@@ -13,6 +13,7 @@ import com.higgs.trust.slave.dao.account.AccountInfoDao;
 import com.higgs.trust.slave.dao.po.account.AccountDcRecordPO;
 import com.higgs.trust.slave.dao.po.account.AccountDetailPO;
 import com.higgs.trust.slave.dao.po.account.AccountInfoPO;
+import com.higgs.trust.slave.dao.po.account.AccountInfoWithOwnerPO;
 import com.higgs.trust.slave.model.bo.DataIdentity;
 import com.higgs.trust.slave.model.bo.account.AccountDcRecord;
 import com.higgs.trust.slave.model.bo.account.AccountDetail;
@@ -146,5 +147,18 @@ import java.util.List;
     public void createAccountDCRecord(AccountDcRecord accountDcRecord) {
         AccountDcRecordPO accountDcRecordPO = BeanConvertor.convertBean(accountDcRecord, AccountDcRecordPO.class);
         accountDcRecordDao.add(accountDcRecordPO);
+    }
+
+    public List<AccountInfoVO> queryAccountInfoWithOwner(String accountNo, String dataOwner) {
+        if (null != accountNo) {
+            accountNo = accountNo.trim();
+        }
+
+        if (null != dataOwner) {
+            dataOwner = dataOwner.trim();
+        }
+
+        List<AccountInfoWithOwnerPO> list = accountInfoDao.queryAccountInfoWithOwner(accountNo, dataOwner);
+        return BeanConvertor.convertList(list, AccountInfoVO.class);
     }
 }

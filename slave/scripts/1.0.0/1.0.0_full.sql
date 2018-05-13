@@ -140,6 +140,7 @@ IF NOT EXISTS `block` (
 	`rs_root_hash` VARCHAR (64) NOT NULL COMMENT 'rs merkle tree root hash',
 	`tx_receipt_root_hash` VARCHAR (64) NOT NULL COMMENT 'tx receipt merkel tree root hash',
 	`block_time` datetime (3) NOT NULL COMMENT 'block time',
+	`tx_num` INT NOT NULL DEFAULT 0 COMMENT 'transaction num',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_block` (`height`)
