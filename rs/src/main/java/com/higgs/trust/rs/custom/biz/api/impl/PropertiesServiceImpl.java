@@ -3,7 +3,7 @@ package com.higgs.trust.rs.custom.biz.api.impl;
 import com.higgs.trust.rs.custom.api.IPropertiesService;
 import com.higgs.trust.rs.custom.api.enums.BankChainExceptionCodeEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
-import com.higgs.trust.rs.custom.config.PropertiesConfig;
+import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.model.MaintanenceModeBO;
 import com.higgs.trust.rs.custom.model.RespData;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class PropertiesServiceImpl implements IPropertiesService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesServiceImpl.class);
 
     @Autowired
-    private PropertiesConfig propertiesConfig;
+    private RsPropertiesConfig propertiesConfig;
 
     @Autowired
     private MaintenanceModeService maintenanceModeService;

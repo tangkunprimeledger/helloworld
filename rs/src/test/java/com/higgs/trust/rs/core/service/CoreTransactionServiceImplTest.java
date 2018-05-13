@@ -1,6 +1,6 @@
 package com.higgs.trust.rs.core.service;
 
-import com.higgs.trust.rs.IntegrateBaseTest;
+import com.higgs.trust.IntegrateBaseTest;
 import org.testng.annotations.Test;
 
 public class CoreTransactionServiceImplTest extends IntegrateBaseTest {

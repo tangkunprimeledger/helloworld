@@ -1,6 +1,6 @@
 package com.higgs.trust.rs.custom.api;
 
-import com.higgs.trust.rs.custom.config.PropertiesConfig;
+import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.exceptions.BankChainException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ public abstract class StatefulService {
     private volatile boolean isStop = true;
 
     @Autowired
-    private PropertiesConfig propertiesConfig;
+    private RsPropertiesConfig propertiesConfig;
 
     public abstract String getStatefulServiceName();
 

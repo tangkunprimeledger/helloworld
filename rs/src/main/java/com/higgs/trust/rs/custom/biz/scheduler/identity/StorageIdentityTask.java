@@ -9,8 +9,6 @@ import com.higgs.trust.rs.custom.model.convertor.identity.POToBOConvertor;
 import com.higgs.trust.rs.custom.model.enums.identity.IdentityEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,8 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.higgs.trust.rs.Application.COMMON_THREAD_POOL;
-import static com.higgs.trust.rs.Application.INITIAL_DELAY;
+import static com.higgs.trust.Application.COMMON_THREAD_POOL;
+import static com.higgs.trust.Application.INITIAL_DELAY;
 
 /*
  * @desc 异步下发存证数据定时任务
