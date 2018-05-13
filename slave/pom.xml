@@ -244,7 +244,7 @@
             <version>4.3.13.RELEASE</version>
         </dependency>
     </dependencies>
-
+<!--
     <build>
         <finalName>slave</finalName>
         <plugins>
@@ -280,5 +280,5 @@
             </plugin>
         </plugins>
     </build>
-
+-->
 </project>

@@ -40,6 +40,32 @@ import java.util.List;
     }
 
     /**
+     * query more execute receipt for txs
+     * @param txs
+     * @return
+     */
+    public List<TransactionReceipt> queryTxReceipts(List<SignedTransaction> txs) {
+        if (CollectionUtils.isEmpty(txs)) {
+            return null;
+        }
+        List<String> txIds = new ArrayList<>();
+        for (SignedTransaction signedTransaction : txs) {
+            txIds.add(signedTransaction.getCoreTx().getTxId());
+        }
+        List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
+        if (CollectionUtils.isEmpty(transactionPOS)) {
+            return null;
+        }
+        List<TransactionReceipt> receipts = new ArrayList<>(transactionPOS.size());
+        for (TransactionPO transactionPO : transactionPOS) {
+            TransactionReceipt receipt = new TransactionReceipt();
+            receipt.setResult(StringUtils.equals(transactionPO.getExecuteResult(),"1")?true:false);
+            receipt.setErrorCode(transactionPO.getErrorCode());
+            receipts.add(receipt);
+        }
+        return receipts;
+    }
+    /**
      * query transactions by block height
      *
      * @param blockHeight
