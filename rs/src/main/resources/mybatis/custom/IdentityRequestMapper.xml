@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.primeledger.pl.bankchain.dao.identity.IdentityRequestDAO">
+
+	<insert id="insertIdentityRequest" parameterType="com.higgs.trust.rs.custom.dao.po.identity.IdentityRequestPO">
+		INSERT INTO identity_request(request_id,
+								`key`,
+								`value`,
+								flag,
+								create_time,
+								update_time)
+					  VALUES (#{reqNo},
+					  			#{key},
+					  			#{value},
+					  			#{flag},
+					  			now(),
+					  			now())
+	</insert>
+
+<!-- 从identity_request查询出需要下发的数据 -->
+	<select id="queryIdentityRequest" parameterType="java.lang.String" resultType="com.higgs.trust.rs.custom.dao.po.identity.IdentityRequestPO">
+		SELECT request_id as reqNo,
+				`key` as `key`,
+				`value` as `value`,
+				flag as flag,
+				create_time as createTime,
+				update_time as updateTime
+		FROM identity_request WHERE request_id = #{reqNo}
+	</select>
+
+</mapper>
