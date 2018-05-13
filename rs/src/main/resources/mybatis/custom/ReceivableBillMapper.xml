@@ -2,8 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.higgs.trust.slave.dao.ReceivableBillDao">
 	<!-- Result Map -->
-	<resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.ReceivableBillPO">
-		<result column="id" property="id" />
+	<resultMap id="baseResultMap" type="com.higgs.trust.rs.custom.dao.po.ReceivableBillPO">
 		<result column="bill_id" property="billId" />
 		<result column="state" property="state" />
 		<result column="status" property="status" />
@@ -17,15 +16,12 @@
 	</resultMap>
 	<!-- receivable_bill table all fields -->
 	<sql id="baseColumnList">
-		id,bill_id,state,status,holder,tx_id,action_index,index,contract_address,create_time,update_time
+		bill_id,state,status,holder,tx_id,action_index,index,contract_address,create_time,update_time
 	</sql>
 	<!-- 查询条件 -->
 	<sql id="baseWhereClause">
 		where 1=1
 		<trim suffixOverrides=",">
-			<if test="id != null">
-				and id=#{id}
-			</if>
 			<if test="billId != null and billId != ''">
 				and bill_id=#{billId}
 			</if>
@@ -50,31 +46,14 @@
 			<if test="contractAddress != null and contractAddress != ''">
 				and contract_address=#{contractAddress}
 			</if>
-			<if test="createTime != null">
-				and create_time=#{createTime}
-			</if>
-			<if test="updateTime != null">
-				and update_time=#{updateTime}
-			</if>
 		</trim>
 	</sql>
 	<!-- 插入记录 -->
 	<insert id="add" parameterType="Object">
 		insert into
-		receivable_bill(id,bill_id,state,status,holder,tx_id,action_index,index,contract_address,create_time,update_time)
-		values(#{id},#{billId},#{state},#{status},#{holder},#{txId},#{actionIndex},#{index},#{contractAddress},now(),now())
+		receivable_bill(bill_id,state,status,holder,tx_id,action_index,index,contract_address,create_time,update_time)
+		values(#{billId},#{state},#{status},#{holder},#{txId},#{actionIndex},#{index},#{contractAddress},now(),now())
 	</insert>
-	<!-- 删除记录 -->
-	<delete id="delete" parameterType="Object">
-		delete from receivable_bill where
-		id=#{id}
-	</delete>
-	<!-- 根据id查询 -->
-	<select id="queryById" resultMap="baseResultMap" parameterType="Object">
-		select
-		<include refid="baseColumnList" />
-		from receivable_bill where id=#{id}
-	</select>
 	<!-- 列表总数 -->
 	<select id="queryByCount" resultType="java.lang.Integer"
 		parameterType="Object">
@@ -90,7 +69,5 @@
 		<include refid="baseWhereClause" />
 	</select>
 	<!-- 以上为工具自动生成 -->
-
-
 
 </mapper>

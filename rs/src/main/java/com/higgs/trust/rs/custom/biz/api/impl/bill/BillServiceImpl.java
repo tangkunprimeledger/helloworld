@@ -4,6 +4,7 @@ import com.higgs.trust.rs.custom.api.bill.BillService;
 import com.higgs.trust.rs.custom.model.RespData;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class BillServiceImpl implements BillService{
+    @Autowired
+    private BillServiceHelper billServiceHelper;
     /**
      * 创建票据方法
      *
@@ -22,13 +25,23 @@ public class BillServiceImpl implements BillService{
      */
     @Override
     public RespData<?> create(BillCreateVO billCreateVO){
+        RespData<?> respData = null;
         //初步幂等校验
-
+        respData = billServiceHelper.requestIdempotent(billCreateVO.getRequestId());
+       if (null != respData){
+           return respData;
+       }
         //请求入库
-
+        respData = billServiceHelper.insertRequest(billCreateVO);
+        if (null != respData){
+            return respData;
+        }
         //identity 是否存在
+         //##############################//
+        boolean isIdentityExist = true;
 
         //组装UTXO,CoreTransaction,签名，下发
+
         return new RespData<>();
     }
 

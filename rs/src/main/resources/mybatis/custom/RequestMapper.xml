@@ -2,8 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.higgs.trust.slave.dao.RequestDao">
 	<!-- Result Map -->
-	<resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.RequestPO">
-		<result column="id" property="id" />
+	<resultMap id="baseResultMap" type="com.higgs.trust.rs.custom.dao.po.RequestPO">
 		<result column="request_id" property="requestId" />
 		<result column="data" property="data" />
 		<result column="status" property="status" />
@@ -14,15 +13,12 @@
 	</resultMap>
 	<!-- request table all fields -->
 	<sql id="baseColumnList">
-		id,request_id,data,status,resp_code,resp_msg,create_time,update_time
+		request_id,data,status,resp_code,resp_msg,create_time,update_time
 	</sql>
 	<!-- 查询条件 -->
 	<sql id="baseWhereClause">
 		where 1=1
 		<trim suffixOverrides=",">
-			<if test="id != null">
-				and id=#{id}
-			</if>
 			<if test="requestId != null and requestId != ''">
 				and request_id=#{requestId}
 			</if>
@@ -38,31 +34,14 @@
 			<if test="respMsg != null and respMsg != ''">
 				and resp_msg=#{respMsg}
 			</if>
-			<if test="createTime != null">
-				and create_time=#{createTime}
-			</if>
-			<if test="updateTime != null">
-				and update_time=#{updateTime}
-			</if>
 		</trim>
 	</sql>
 	<!-- 插入记录 -->
 	<insert id="add" parameterType="Object">
 		insert into
-		request(id,request_id,data,status,resp_code,resp_msg,create_time,update_time)
-		values(#{id},#{requestId},#{data},#{status},#{respCode},#{respMsg},now(),now())
+		request(request_id,data,status,resp_code,resp_msg,create_time,update_time)
+		values(#{requestId},#{data},#{status},#{respCode},#{respMsg},now(),now())
 	</insert>
-	<!-- 删除记录 -->
-	<delete id="delete" parameterType="Object">
-		delete from request where
-		id=#{id}
-	</delete>
-	<!-- 根据id查询 -->
-	<select id="queryById" resultMap="baseResultMap" parameterType="Object">
-		select
-		<include refid="baseColumnList" />
-		from request where id=#{id}
-	</select>
 	<!-- 列表总数 -->
 	<select id="queryByCount" resultType="java.lang.Integer"
 			parameterType="Object">
@@ -78,7 +57,14 @@
 		<include refid="baseWhereClause" />
 	</select>
 	<!-- 以上为工具自动生成 -->
-
+	<!-- 根据请求ID 查询 -->
+	<select id="queryByRequestId" resultType="baseResultMap"
+			parameterType="java.lang.String">
+		select
+		<include refid="baseColumnList"/>
+		from request
+		where `request_id` =#{requestId}
+	</select>
 
 
 </mapper>
