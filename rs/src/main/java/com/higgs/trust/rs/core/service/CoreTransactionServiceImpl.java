@@ -261,10 +261,9 @@ import java.util.List;
         }
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
         if(txCallbackHandler == null){
-            log.error("[toEndStatusForFail]call back handler is not set");
+            log.error("[toEndStatusForFail]call back handler is not register");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
         }
-        //save vo
         respData.setData(convertTxVO(bo));
         //callback custom rs
         txCallbackHandler.onEnd(bo.getBizType(),respData);
