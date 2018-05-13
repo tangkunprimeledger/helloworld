@@ -7,11 +7,9 @@ import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.asynctosync.BlockingMap;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController @Slf4j public class BillController {
-
-    @Autowired BlockingMap rsResultMap;
 
     /**
      * create bill
