@@ -125,4 +125,19 @@
             limit #{start}, #{end}
         </if>
     </select>
+    <select id="countTxWithCondition" resultType="java.lang.Long">
+        select
+        count(1)
+        from transaction
+        where 1=1
+        <if test="height != null">
+            and block_height=#{height}
+        </if>
+        <if test="txId != null and txId != ''">
+            and tx_id=#{txId}
+        </if>
+        <if test="sender != null and sender != ''">
+            and sender=#{sender}
+        </if>
+    </select>
 </mapper>

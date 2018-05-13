@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.api.vo;
+package com.higgs.trust.rs.custom.api.vo.blockchain;
 
 import com.higgs.trust.slave.model.bo.BaseBO;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.util.List;
 
 @Setter
 @Getter
-public class UTXOVO extends BaseBO{
+public class UtxoVO extends BaseBO{
 
     private String txId;
 
@@ -27,5 +27,5 @@ public class UTXOVO extends BaseBO{
 
     private Date createTime;
 
-    private List<UTXOVO> preUTXOVO;
+    private List<UtxoVO> preUTXOVO;
 }

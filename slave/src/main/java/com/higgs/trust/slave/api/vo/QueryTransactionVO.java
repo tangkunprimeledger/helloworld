@@ -11,7 +11,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class QueryTxVO extends BaseBO{
+public class QueryTransactionVO extends BaseBO{
 
     private Long blockHeight;
 
@@ -19,7 +19,7 @@ public class QueryTxVO extends BaseBO{
 
     private String sender;
 
-    private Integer pageNum;
+    private Integer pageNo;
 
     private Integer pageSize;
 }

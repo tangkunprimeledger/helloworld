@@ -126,14 +126,63 @@ public class BlockChainServiceImpl implements BlockChainService {
         return blockRepository.listBlocks(startHeight, size);
     }
 
-    @Override
-    public List<BlockVO> queryBlocks(QueryBlockVO req) {
-        return blockRepository.queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNum(), req.getPageSize());
+    @Override public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
+        if (null == req) {
+            return null;
+        }
+        if (null == req.getPageNo()) {
+            req.setPageNo(1);
+        }
+        if (null == req.getPageSize()) {
+            req.setPageSize(20);
+        }
+        PageVO<BlockVO> pageVO = new PageVO<>();
+        pageVO.setPageNo(req.getPageNo());
+        pageVO.setPageSize(req.getPageSize());
+
+        long count = blockRepository.countBlocksWithCondition(req.getHeight(), req.getBlockHash());
+        pageVO.setTotal(count);
+        if (0 == count) {
+            pageVO.setData(null);
+        } else {
+            List<BlockVO> list = blockRepository.queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+            pageVO.setData(list);
+        }
+
+        log.info("[BlockChainServiceImpl.queryBlocks] query result: {}", pageVO);
+        return pageVO;
     }
 
-    @Override
-    public List<CoreTransactionVO> queryTransactions(QueryTxVO req) {
-        return transactionRepository.queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNum(), req.getPageSize());
+
+    @Override public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
+
+        if (null == req) {
+            return null;
+        }
+
+        if (null == req.getPageNo()) {
+            req.setPageNo(1);
+        }
+        if (null == req.getPageSize()) {
+            req.setPageSize(200);
+        }
+
+        PageVO<CoreTransactionVO> pageVO = new PageVO<>();
+        pageVO.setPageNo(req.getPageNo());
+        pageVO.setPageSize(req.getPageSize());
+
+        long count = transactionRepository.countTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender());
+        pageVO.setTotal(count);
+        if (0 == count) {
+            pageVO.setData(null);
+        } else {
+            List<CoreTransactionVO> list = transactionRepository
+                .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(), req.getPageSize());
+            pageVO.setData(list);
+        }
+
+        log.info("[BlockChainServiceImpl.queryTransactions] query result: {}", pageVO);
+        return pageVO;
     }
 
     @Override
@@ -142,7 +191,9 @@ public class BlockChainServiceImpl implements BlockChainService {
             return null;
         }
 
-        return txOutRepository.queryTxOutByTxId(txId);
+        List<UTXOVO> list = txOutRepository.queryTxOutByTxId(txId);
+        log.info("[BlockChainServiceImpl.queryUTXOByTxId] query result: {}", list);
+        return list;
     }
 
     /**

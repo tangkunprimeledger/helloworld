@@ -11,10 +11,7 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
-import com.higgs.trust.slave.api.vo.BlockVO;
-import com.higgs.trust.slave.api.vo.CoreTransactionVO;
-import com.higgs.trust.slave.api.vo.QueryBlockVO;
-import com.higgs.trust.slave.api.vo.QueryTxVO;
+import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.account.OpenAccount;
@@ -29,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import sun.jvm.hotspot.debugger.Page;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -435,32 +433,37 @@ public class BlockChainServiceImplTest extends BaseTest{
     @Test
     public void testQueryBlocksWithCondition() {
         QueryBlockVO req = new QueryBlockVO();
-        req.setPageNum(1);
+        req.setPageNo(1);
         req.setPageSize(10);
         req.setHeight(2L);
 //        req.setBlockHash("48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4");
 
-        List<BlockVO> list = blockChainService.queryBlocks(req);
-        for (BlockVO blockVO : list) {
+        PageVO<BlockVO> pageVO = blockChainService.queryBlocks(req);
+        for (BlockVO blockVO : pageVO.getData()) {
             System.out.println(blockVO);
         }
     }
 
     @Test
     public void testQueryTxsWithCondition() {
-        QueryTxVO req = new QueryTxVO();
+        QueryTransactionVO req = new QueryTransactionVO();
         req.setTxId("tx_id_OPEN_ACCOUNT_0_1526047995917main");
         req.setSender("TRUST-NODE97");
-        req.setPageNum(2);
+        req.setPageNo(2);
         req.setPageSize(50);
 
         req.setBlockHeight(82L);
-        List<CoreTransactionVO> list = blockChainService.queryTransactions(req);
-        log.error("list-size={}", list.size());
+        PageVO<CoreTransactionVO> pageVO = blockChainService.queryTransactions(req);
+        log.error("list-size={}", pageVO);
         System.out.println();
-        list.forEach(coreTxVo -> {
+        pageVO.getData().forEach(coreTxVo -> {
             System.out.println(coreTxVo);
         });
+    }
+
+    @Test
+    public void testQueryTxOut() {
+        System.out.println(blockChainService.queryUTXOByTxId("tx_id_UTXO_0_152610630004"));
     }
 
 }

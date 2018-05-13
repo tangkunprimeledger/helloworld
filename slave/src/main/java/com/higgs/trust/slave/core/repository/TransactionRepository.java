@@ -193,15 +193,12 @@ import java.util.List;
             sender = sender.trim();
         }
 
-        if (null == pageNum || pageNum < 1) {
-            pageNum = 1;
-        }
-
-        if (null == pageSize || pageSize < 1) {
-            pageSize = 200;
-        }
-
         List<TransactionPO> list = transactionDao.queryTxWithCondition(blockHeight, txId, sender, (pageNum - 1) * pageSize, pageSize);
         return BeanConvertor.convertList(list, CoreTransactionVO.class);
+    }
+
+    public long countTxsWithCondition(Long blockHeight, String txId, String sender) {
+
+        return transactionDao.countTxWithCondition(blockHeight, txId, sender);
     }
 }
