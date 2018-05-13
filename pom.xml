@@ -11,7 +11,7 @@
     <modules>
         <module>slave</module>
         <module>common</module>
-        <!--<module>rs</module>-->
+        <module>rs</module>
         <module>consensus</module>
         <module>contract</module>
         <module>tester</module>
@@ -44,11 +44,11 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!--<dependency>-->
-                <!--<groupId>com.higgs.trust</groupId>-->
-                <!--<artifactId>rs</artifactId>-->
-                <!--<version>${project.version}</version>-->
-            <!--</dependency>-->
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>rs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.higgs.trust</groupId>
