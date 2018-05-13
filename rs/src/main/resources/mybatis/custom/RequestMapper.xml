@@ -4,7 +4,7 @@
 	<!-- Result Map -->
 	<resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.RequestPO">
 		<result column="id" property="id" />
-		<result column="tx_id" property="txId" />
+		<result column="request_id" property="requestId" />
 		<result column="data" property="data" />
 		<result column="status" property="status" />
 		<result column="resp_code" property="respCode" />
@@ -14,7 +14,7 @@
 	</resultMap>
 	<!-- request table all fields -->
 	<sql id="baseColumnList">
-		id,tx_id,data,status,resp_code,resp_msg,create_time,update_time
+		id,request_id,data,status,resp_code,resp_msg,create_time,update_time
 	</sql>
 	<!-- 查询条件 -->
 	<sql id="baseWhereClause">
@@ -23,8 +23,8 @@
 			<if test="id != null">
 				and id=#{id}
 			</if>
-			<if test="txId != null and txId != ''">
-				and tx_id=#{txId}
+			<if test="requestId != null and requestId != ''">
+				and request_id=#{requestId}
 			</if>
 			<if test="data != null and data != ''">
 				and data=#{data}
@@ -49,8 +49,8 @@
 	<!-- 插入记录 -->
 	<insert id="add" parameterType="Object">
 		insert into
-		request(id,tx_id,data,status,resp_code,resp_msg,create_time,update_time)
-		values(#{id},#{txId},#{data},#{status},#{respCode},#{respMsg},now(),now())
+		request(id,request_id,data,status,resp_code,resp_msg,create_time,update_time)
+		values(#{id},#{requestId},#{data},#{status},#{respCode},#{respMsg},now(),now())
 	</insert>
 	<!-- 删除记录 -->
 	<delete id="delete" parameterType="Object">
@@ -65,13 +65,13 @@
 	</select>
 	<!-- 列表总数 -->
 	<select id="queryByCount" resultType="java.lang.Integer"
-		parameterType="Object">
+			parameterType="Object">
 		select count(1) from request
 		<include refid="baseWhereClause" />
 	</select>
 	<!-- 查询列表 -->
 	<select id="queryByList" resultMap="baseResultMap"
-		parameterType="Object">
+			parameterType="Object">
 		select
 		<include refid="baseColumnList" />
 		from request
