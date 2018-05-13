@@ -13,8 +13,8 @@ CREATE TABLE `bankchain_request` (
   `status` varchar(50) NOT NULL COMMENT 'request status：INIT PROCESSING FAIL DUPLICATE SUCCESS',
   `resp_code` varchar(10) DEFAULT NULL COMMENT 'response code：RespCodeEnum',
   `resp_msg` varchar(1024) DEFAULT NULL COMMENT 'response message',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-  `update_time` datetime  NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'update time',
+  `create_time` datetime (3) NOT NULL COMMENT 'create time',
+  `update_time` datetime (3)  NULL  COMMENT 'update time',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_request_id` (`request_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 comment 'banckchain request table';
@@ -27,8 +27,8 @@ CREATE TABLE `identity_request` (
   `key` varchar(64) NOT NULL COMMENT 'identity key',
   `value` varchar(8192) NOT NULL COMMENT 'identity value',
   `flag` varchar(10) NOT NULL COMMENT 'modify flag，000 means modify  999 means do nothing',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-  `update_time` datetime  NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'update time',
+  `create_time` datetime (3) NOT NULL COMMENT 'create time',
+  `update_time` datetime (3)  NULL  COMMENT 'update time',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_request_id` (`request_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 comment 'identity request table';
@@ -40,8 +40,8 @@ CREATE TABLE `identity` (
   `request_id` varchar(64) NOT NULL COMMENT 'unique request id',
   `key` varchar(64) NOT NULL COMMENT 'identity key',
   `value` varchar(8192) NOT NULL COMMENT 'identity value',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-  `update_time` datetime  NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'update time',
+  `create_time` datetime (3) NOT NULL COMMENT 'create time',
+  `update_time` datetime (3)  NULL  COMMENT 'update time',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_request_id` (`request_id`),
   UNIQUE KEY `uniq_key` (`key`)

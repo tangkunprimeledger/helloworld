@@ -13,8 +13,6 @@ import com.higgs.trust.rs.custom.exceptions.BankChainException;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +27,6 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @time 2018年3月16日15:14:51
  */
 @Slf4j @Service public class StorageIdentityCallbackProcess implements TxCallbackHandler,InitializingBean {
-    private static final Logger LOGGER = LoggerFactory.getLogger(StorageIdentityCallbackProcess.class);
 
     @Autowired private PropertiesConfig propertiesConfig;
     @Autowired private TransactionTemplate txRequired;
@@ -87,13 +84,13 @@ import org.springframework.transaction.support.TransactionTemplate;
             // 开启事务执行DB操作
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    LOGGER.info("[StorageIdentityCallbackProcess] transaction start，reqNo={}", reqNo);
+                    log.info("[store] transaction start，reqNo={}", reqNo);
                     // 更新bankchain_request表的对应的请求状态为SUCCESS
                     bankChainRequestDAO.updateRequest(bankChainRequestPO);
 
                     // 将回调的数据存入identity表
                     identityDAO.insertIdentity(identityPO);
-                    LOGGER.info("[StorageIdentityCallbackProcess] transaction success，reqNo={}", reqNo);
+                    log.info("[store] transaction success，reqNo={}", reqNo);
                 }
             });
         } catch (Throwable e) {
