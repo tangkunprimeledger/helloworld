@@ -4,6 +4,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.higgs.trust.slave.asynctosync.HashBlockingMap;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
@@ -43,5 +44,9 @@ import java.util.concurrent.*;
         supportedMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
         fastConverter.setSupportedMediaTypes(supportedMediaTypes);
         return new HttpMessageConverters(fastConverter);
+    }
+
+    @Bean public HashBlockingMap rsResultMap() {
+        return new HashBlockingMap<>();
     }
 }
