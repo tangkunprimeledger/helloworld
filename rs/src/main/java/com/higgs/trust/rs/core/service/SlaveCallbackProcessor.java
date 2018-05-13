@@ -11,8 +11,8 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +31,9 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
     @Autowired private CoreTransactionDao coreTransactionDao;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
+    @Autowired private HashBlockingMap<RespData> persistedResultMap;
+    @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
+
 
     @Override public void afterPropertiesSet() throws Exception {
         slaveCallbackRegistor.registCallbackHandler(this);
@@ -70,6 +73,12 @@ import org.springframework.transaction.support.TransactionTemplate;
             }
         });
         //TODO:同步通知
+        //TODO:同步通知
+        try {
+            persistedResultMap.put(tx.getTxId(), respData);
+        } catch (Throwable e) {
+            log.warn("sync notify rs resp data failed", e);
+        }
     }
 
     @Override public void onClusterPersisted(RespData<CoreTransaction> respData) {
@@ -93,5 +102,10 @@ import org.springframework.transaction.support.TransactionTemplate;
             }
         });
         //TODO:同步通知
+        try {
+            clusterPersistedResultMap.put(tx.getTxId(), respData);
+        } catch (Throwable e) {
+            log.warn("sync notify rs resp data failed", e);
+        }
     }
 }

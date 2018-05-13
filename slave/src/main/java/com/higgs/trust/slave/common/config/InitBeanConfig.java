@@ -5,6 +5,7 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
+import com.higgs.trust.slave.common.constant.Constant;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
@@ -45,6 +46,7 @@ import java.util.concurrent.*;
         tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return tx;
     }
+
     @Bean public ExecutorService packageThreadPool() {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("package-pool-%d").build();
         ExecutorService packageExecutor =
@@ -67,7 +69,11 @@ import java.util.concurrent.*;
         return new HttpMessageConverters(fastConverter);
     }
 
-    @Bean public HashBlockingMap rsResultMap() {
-        return new HashBlockingMap<>();
+    @Bean public HashBlockingMap persistedResultMap() {
+        return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
+    }
+
+    @Bean public HashBlockingMap clusterPersistedResultMap() {
+        return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
 }

@@ -33,16 +33,20 @@ public interface BlockChainService {
      * @param req
      * @return
      */
-    List<BlockVO> queryBlocks(QueryBlockVO req);
+    PageVO<BlockVO> queryBlocks(QueryBlockVO req);
 
     /**
      * query transaction
      * @param req
      * @return
      */
-    List<CoreTransactionVO> queryTransactions(QueryTxVO req);
+    PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req);
 
-
+    /**
+     * query utxo by transaction id
+     * @param txId
+     * @return
+     */
     List<UTXOVO> queryUTXOByTxId(String txId);
 
     /**

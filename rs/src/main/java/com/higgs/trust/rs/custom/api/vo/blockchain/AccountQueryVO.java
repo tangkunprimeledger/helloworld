@@ -1,17 +1,12 @@
-package com.higgs.trust.slave.api.vo;
+package com.higgs.trust.rs.custom.api.vo.blockchain;
 
-import com.higgs.trust.slave.model.bo.BaseBO;
+import com.higgs.trust.rs.custom.api.vo.BaseVO;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * @author tangfashuang
- * @date 2018/05/12
- * @desc query account request
- */
-@Setter
 @Getter
-public class QueryAccountVO extends BaseBO{
+@Setter
+public class AccountQueryVO extends BaseVO{
     /**
      * account no
      */

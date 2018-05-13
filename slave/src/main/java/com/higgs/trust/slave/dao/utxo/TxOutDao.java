@@ -40,5 +40,17 @@ import java.util.List;
      */
     int batchUpdate(List<TxOutPO> txOutPOList);
 
+    /**
+     * query tx_out by tx_id
+     * @param txId
+     * @return
+     */
     List<TxOutPO> queryByTxId(@Param("txId") String txId);
+
+    /**
+     * query tx_out by s_tx_id
+     * @param sTxId
+     * @return
+     */
+    List<TxOutPO> queryBySTxId(@Param("sTxId") String sTxId);
 }

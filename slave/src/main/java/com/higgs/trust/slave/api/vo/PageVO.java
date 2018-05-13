@@ -4,18 +4,20 @@ import com.higgs.trust.slave.model.bo.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
- * @author tangfashuang
+ *
+ * @param <T>
  */
-@Getter
 @Setter
-public class QueryBlockVO extends BaseBO {
-
-    private Long height;
-
-    private String blockHash;
+@Getter
+public class PageVO<T> extends BaseBO{
+    private Long total;
 
     private Integer pageNo;
 
     private Integer pageSize;
+
+    private List<T> data;
 }

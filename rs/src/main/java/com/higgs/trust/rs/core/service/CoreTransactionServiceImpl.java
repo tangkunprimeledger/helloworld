@@ -20,6 +20,7 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.asynctosync.BlockingMap;
+import com.higgs.trust.slave.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
@@ -50,22 +51,27 @@ import java.util.List;
     @Autowired private BlockChainService blockChainService;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private SignServiceImpl signService;
-    @Autowired private BlockingMap<RespData> rsResultMap;
+    @Autowired private HashBlockingMap<RespData> persistedResultMap;
+    @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
 
     @Override public RespData syncSubmitTxForPersisted(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
         submitTx(bizType, coreTx, signData);
-        return syncWait(coreTx.getTxId());
+        return syncWait(coreTx.getTxId(), false);
     }
 
     @Override public RespData syncSubmitTxForEnd(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
         submitTx(bizType, coreTx, signData);
-        return syncWait(coreTx.getTxId());
+        return syncWait(coreTx.getTxId(), true);
     }
 
-    private RespData syncWait(String key) {
+    private RespData syncWait(String key, boolean forEnd) {
         RespData respData = null;
         try {
-            respData = rsResultMap.poll(key, 1000);
+            if (forEnd) {
+                respData = clusterPersistedResultMap.poll(key, 1000);
+            } else {
+                respData = persistedResultMap.poll(key, 1000);
+            }
         } catch (Throwable e) {
             log.error("tx handle exception. ", e);
             respData = new RespData();

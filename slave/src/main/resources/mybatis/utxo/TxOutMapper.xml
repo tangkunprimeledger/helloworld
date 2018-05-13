@@ -83,6 +83,13 @@
         where
         tx_id = #{txId}
     </select>
+    <select id="queryBySTxId" resultType="com.higgs.trust.slave.dao.po.utxo.TxOutPO">
+        select
+        <include refid="baseColumnList"/>
+        from tx_out
+        where
+        s_tx_id = #{sTxId}
+    </select>
 
     <!-- batch insert -->
     <insert id="batchInsert" parameterType="java.util.List">
