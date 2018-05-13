@@ -66,5 +66,12 @@
 		where `request_id` =#{requestId}
 	</select>
 
+	<!-- 根据requestId修改请求Id -->
+	<update id="updateStatusByRequestId">
+		UPDATE `request`
+		SET `status` = #{toStatus}, `resp_code` = #{respCode},`resp_msg` = #{respMsg}, `update_time`= now()
+		WHERE
+		`request_id` = #{requestId} and `status` = #{fromStatus}
+	</update>
 
 </mapper>

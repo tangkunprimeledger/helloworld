@@ -1,9 +1,10 @@
 package com.higgs.trust.rs.custom.biz.api.impl.bill;
 
+import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.custom.api.bill.BillService;
-import com.higgs.trust.rs.custom.model.RespData;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.slave.api.vo.RespData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +15,12 @@ import org.springframework.stereotype.Service;
  * @create 2018年05月13日15:24
  */
 @Service
-public class BillServiceImpl implements BillService{
+public class BillServiceImpl implements BillService {
     @Autowired
     private BillServiceHelper billServiceHelper;
+    @Autowired
+    private RsBlockChainService rsBlockChainService;
+
     /**
      * 创建票据方法
      *
@@ -24,25 +28,24 @@ public class BillServiceImpl implements BillService{
      * @return
      */
     @Override
-    public RespData<?> create(BillCreateVO billCreateVO){
+    public RespData<?> create(BillCreateVO billCreateVO) {
         RespData<?> respData = null;
         //初步幂等校验
         respData = billServiceHelper.requestIdempotent(billCreateVO.getRequestId());
-       if (null != respData){
-           return respData;
-       }
+        if (null != respData) {
+            return respData;
+        }
         //请求入库
         respData = billServiceHelper.insertRequest(billCreateVO);
-        if (null != respData){
+        if (null != respData) {
             return respData;
         }
         //identity 是否存在
-         //##############################//
-        boolean isIdentityExist = true;
+        boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billCreateVO.getHolder());
 
         //组装UTXO,CoreTransaction,签名，下发
-
-        return new RespData<>();
+        respData = billServiceHelper.buildCreateBillAndSend(isIdentityExist, billCreateVO);
+        return respData;
     }
 
 
@@ -54,7 +57,23 @@ public class BillServiceImpl implements BillService{
      */
 
     @Override
-    public RespData<?> transfer(BillTransferVO billTransferVO){
-        return new RespData<>();
+    public RespData<?> transfer(BillTransferVO billTransferVO) {
+        RespData<?> respData = null;
+        //初步幂等校验
+        respData = billServiceHelper.requestIdempotent(billTransferVO.getRequestId());
+        if (null != respData) {
+            return respData;
+        }
+        //请求入库
+        respData = billServiceHelper.insertRequest(billTransferVO);
+        if (null != respData) {
+            return respData;
+        }
+        //identity 是否存在
+        boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billTransferVO.getNextHolder());
+
+        //组装UTXO,CoreTransaction,签名，下发
+        respData = billServiceHelper.buildTransferBillAndSend(isIdentityExist, billTransferVO);
+        return respData;
     }
 }

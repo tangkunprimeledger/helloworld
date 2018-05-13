@@ -1,10 +1,6 @@
-package com.higgs.trust.rs.custom.biz.rscore.callback;
+package com.higgs.trust.rs.custom.biz.rscore.callback.handler;
 
-import com.higgs.trust.rs.common.TxCallbackHandler;
-import com.higgs.trust.rs.common.enums.BizTypeEnum;
-import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.custom.api.enums.BankChainExceptionCodeEnum;
-import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.dao.BankChainRequestDAO;
 import com.higgs.trust.rs.custom.dao.identity.IdentityDAO;
 import com.higgs.trust.rs.custom.dao.po.BankChainRequestPO;
@@ -13,7 +9,6 @@ import com.higgs.trust.rs.custom.exceptions.BankChainException;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -21,53 +16,22 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * 存证回调处理
+ * storage callback handler
  *
- * @author wangquanzhou
- * @time 2018年3月16日15:14:51
+ * @author lingchao
+ * @create 2018年05月13日23:03
  */
-@Slf4j @Service public class StorageIdentityCallbackProcess implements TxCallbackHandler,InitializingBean {
+@Service
+@Slf4j
+public class StorageIdentityCallbackHandler {
+    @Autowired
+    private TransactionTemplate txRequired;
+    @Autowired
+    private BankChainRequestDAO bankChainRequestDAO;
+    @Autowired
+    private IdentityDAO identityDAO;
 
-    @Autowired private RsPropertiesConfig propertiesConfig;
-    @Autowired private TransactionTemplate txRequired;
-    @Autowired private BankChainRequestDAO bankChainRequestDAO;
-    @Autowired private IdentityDAO identityDAO;
-    @Autowired private TxCallbackRegistor txCallbackRegistor;
-
-    @Override public void afterPropertiesSet() throws Exception {
-        txCallbackRegistor.registCallback(this);
-    }
-
-    /**
-     * on slave persisted phase,only current node persisted
-     *
-     * @param bizTypeEnum
-     * @param respData
-     */
-    @Override public void onPersisted(BizTypeEnum bizTypeEnum, RespData<CoreTransaction> respData) {
-
-    }
-
-    /**
-     * on slave end phase,cluster node persisted
-     * only after cluster node persisted, then identity data can be stored into identity table
-     *
-     * @param bizTypeEnum
-     * @param respData
-     */
-    @Override public void onEnd(BizTypeEnum bizTypeEnum, RespData<CoreTransaction> respData) {
-        log.info("[onEnd] start process");
-        switch (bizTypeEnum) {
-            case STORAGE:
-                store(respData);
-                break;
-            default:
-                break;
-        }
-        log.info("[onEnd] end process");
-    }
-
-    private void store(RespData<CoreTransaction> respData) {
+    public void process(RespData<CoreTransaction> respData) {
         try {
             String reqNo = respData.getData().getTxId();
             String key = respData.getData().getBizModel().getString("key");
@@ -83,7 +47,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
             // 开启事务执行DB操作
             txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
                     log.info("[store] transaction start，reqNo={}", reqNo);
                     // 更新bankchain_request表的对应的请求状态为SUCCESS
                     bankChainRequestDAO.updateRequest(bankChainRequestPO);

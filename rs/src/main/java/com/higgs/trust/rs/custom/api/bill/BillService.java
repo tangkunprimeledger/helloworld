@@ -1,8 +1,8 @@
 package com.higgs.trust.rs.custom.api.bill;
 
-import com.higgs.trust.rs.custom.model.RespData;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.slave.api.vo.RespData;
 
 /**
  * @author lingchao
