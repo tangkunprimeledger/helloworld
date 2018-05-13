@@ -10,13 +10,22 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
  */
 public interface CoreTransactionService {
     /**
-     * submit transaction from custom rs by synchronous
+     * submit transaction from custom rs by synchronous,release when enPersisted callback is finished
      *
      * @param bizType
      * @param coreTx
      * @param signData
      */
-    void syncSubmitTx(BizTypeEnum bizType,CoreTransaction coreTx,String signData);
+    void syncSubmitTxForPersisted(BizTypeEnum bizType,CoreTransaction coreTx,String signData);
+
+    /**
+     * submit transaction from custom rs by synchronous,release when enEnd callback is finished
+     *
+     * @param bizType
+     * @param coreTx
+     * @param signData
+     */
+    void syncSubmitTxForEnd(BizTypeEnum bizType,CoreTransaction coreTx,String signData);
 
     /**
      * submit transaction from custom rs

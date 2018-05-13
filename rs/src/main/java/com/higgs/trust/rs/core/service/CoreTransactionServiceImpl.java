@@ -49,7 +49,10 @@ import java.util.List;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private SignServiceImpl signService;
 
-    @Override public void syncSubmitTx(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
+    @Override public void syncSubmitTxForPersisted(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
+        submitTx(bizType,coreTx,signData);
+    }
+    @Override public void syncSubmitTxForEnd(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
         submitTx(bizType,coreTx,signData);
     }
 
