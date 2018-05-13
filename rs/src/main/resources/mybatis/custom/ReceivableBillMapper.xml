@@ -70,4 +70,12 @@
 	</select>
 	<!-- 以上为工具自动生成 -->
 
+	<!-- 修改状态 -->
+	<update id="updateStatus">
+		UPDATE `receivable_bill`
+		SET `status` = #{toStatus}, `update_time`= now()
+		WHERE
+		`tx_id` = #{txId} and `action_index` = #{actionIndex} and `index` = #{index} and `status` = #{fromStatus}
+	</update>
+
 </mapper>
