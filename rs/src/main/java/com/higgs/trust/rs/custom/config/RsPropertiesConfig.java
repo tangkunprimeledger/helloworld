@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
  * 线上必须是用file:,必须通行证为-DappConf="file:/data/home/admin/bankchain/conf/application.json11"
  */
 @Configuration
-public class PropertiesConfig implements InitializingBean {
+public class RsPropertiesConfig implements InitializingBean {
 
     @NotNull
     @Value("${bankchain.maintenance.mode}")

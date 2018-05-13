@@ -33,7 +33,7 @@ IF NOT EXISTS `request` (
 	`create_time` datetime (3) NOT NULL COMMENT 'the create time',
 	`update_time` datetime (3) NOT NULL COMMENT 'the update time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_tx_id` (`tx_id`)
+	UNIQUE KEY `uniq_request_id` (`request_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table request';
 
 CREATE TABLE

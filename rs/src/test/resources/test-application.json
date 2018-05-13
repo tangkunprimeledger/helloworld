@@ -100,7 +100,11 @@
   },
   "rs":{
     "core":{
-      "useHttpChannel":false
+      "useHttpChannel":false,
+      "schedule":{
+        "processInit":50,
+        "submitSlave":50
+      }
     }
   }
 }

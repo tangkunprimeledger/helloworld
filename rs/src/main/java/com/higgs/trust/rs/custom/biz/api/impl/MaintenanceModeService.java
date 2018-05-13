@@ -2,7 +2,7 @@ package com.higgs.trust.rs.custom.biz.api.impl;
 
 import com.higgs.trust.rs.custom.api.StatefulService;
 import com.higgs.trust.rs.custom.api.enums.MaintenanceModeSwitchEnum;
-import com.higgs.trust.rs.custom.config.PropertiesConfig;
+import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ public class MaintenanceModeService extends StatefulService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MaintenanceModeService.class);
     private volatile MaintenanceModeSwitchEnum maintenanceModeSwitch = MaintenanceModeSwitchEnum.OFF;
     @Autowired
-    private PropertiesConfig propertiesConfig;
+    private RsPropertiesConfig propertiesConfig;
 
     @Override
     public String getStatefulServiceName() {
