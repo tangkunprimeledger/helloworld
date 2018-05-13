@@ -32,7 +32,6 @@ import java.util.List;
  */
 @Service
 @Slf4j
-@Profile("PRO")
 public class PackageScheduler {
 
     private static final int PACKAGE_LIMIT = 20;
