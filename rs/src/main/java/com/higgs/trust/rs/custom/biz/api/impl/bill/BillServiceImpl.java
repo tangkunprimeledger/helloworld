@@ -27,6 +27,8 @@ public class BillServiceImpl implements BillService{
         //请求入库
 
         //identity 是否存在
+
+        //组装UTXO,CoreTransaction,签名，下发
         return new RespData<>();
     }
 
