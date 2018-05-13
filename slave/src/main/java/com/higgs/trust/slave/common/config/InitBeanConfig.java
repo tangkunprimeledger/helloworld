@@ -12,6 +12,9 @@ import org.springframework.cloud.sleuth.instrument.async.TraceableExecutorServic
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +27,24 @@ import java.util.concurrent.*;
 @Configuration public class InitBeanConfig {
     @Autowired BeanFactory beanFactory;
 
+    @Bean(name = "txRequired")
+    public TransactionTemplate txRequired(PlatformTransactionManager platformTransactionManager) {
+        return new TransactionTemplate(platformTransactionManager);
+    }
+
+    @Bean(name = "txNested")
+    public TransactionTemplate txNested(PlatformTransactionManager platformTransactionManager) {
+        TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
+        tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NESTED);
+        return tx;
+    }
+
+    @Bean(name = "txRequiresNew")
+    public TransactionTemplate txRequiresNew(PlatformTransactionManager platformTransactionManager) {
+        TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
+        tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return tx;
+    }
     @Bean public ExecutorService packageThreadPool() {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("package-pool-%d").build();
         ExecutorService packageExecutor =
