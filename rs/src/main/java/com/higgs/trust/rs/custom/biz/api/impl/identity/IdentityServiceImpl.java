@@ -214,7 +214,7 @@ import org.springframework.transaction.support.TransactionTemplate;
                 //根据reqNo修改request状态，从INIT修改为PROCESSING
                 bankChainRequestDAO.updateRequestToProc(identityRequest.getReqNo());
 
-                //下发 VN
+                //下发 slave
                 asyncSendToVN(identityRequest);
 
                 log.info("[asyncSendIdentity] transaction success，reqNo={}", bankChainRequest.getReqNo());
@@ -258,7 +258,7 @@ import org.springframework.transaction.support.TransactionTemplate;
     public void asyncSendToVN(IdentityRequest identityRequest) {
         //下面组装requestVN,准备下发VN
         if (null == identityRequest) {
-            log.error("[asyncSendToVN]异步下发VN,入参为空");
+            log.error("[asyncSendToVN]异步下发slave,入参为空");
             return;
         }
 
@@ -266,14 +266,14 @@ import org.springframework.transaction.support.TransactionTemplate;
         //2.获取policyId
 //        String policyId = policyDao.queryByPolicyId("api.user.storageIdentity");
 
-        //3.组装bizField
+        //3.组装bizModel
         JSONObject bizModel = new JSONObject();
         bizModel.put("reqNo", identityRequest.getReqNo());
         bizModel.put("key", identityRequest.getKey());
         bizModel.put("value", identityRequest.getValue());
         bizModel.put("flag", identityRequest.getFlag());
 
-        // 组装CoreTxVO
+        // 组装CoreTransaction
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setBizModel(bizModel);
         coreTx.setPolicyId("api.user.storageIdentity");
