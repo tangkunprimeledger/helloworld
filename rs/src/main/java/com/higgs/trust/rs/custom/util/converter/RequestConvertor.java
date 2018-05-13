@@ -5,6 +5,7 @@ import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.dao.po.RequestPO;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
+import com.higgs.trust.rs.custom.vo.BillTransferVO;
 
 /**
  * Request convertor
@@ -24,6 +25,21 @@ public class RequestConvertor {
         requestPO.setData(JSON.toJSONString(billCreateVO));
         requestPO.setRespCode(RespCodeEnum.CREATE_BILL_PROCESS.getRespCode());
         requestPO.setRespMsg(RespCodeEnum.CREATE_BILL_PROCESS.getMsg());
+        requestPO.setStatus(RequestEnum.PROCESS.getCode());
+        return requestPO;
+    }
+
+    /**
+     * build RequestPO
+     * @param billTransferVO
+     * @return
+     */
+    public static RequestPO buildRequestPO(BillTransferVO billTransferVO) {
+        RequestPO requestPO = new RequestPO();
+        requestPO.setRequestId(billTransferVO.getRequestId());
+        requestPO.setData(JSON.toJSONString(billTransferVO));
+        requestPO.setRespCode(RespCodeEnum.TRANSFER_BILL_PROCESS.getRespCode());
+        requestPO.setRespMsg(RespCodeEnum.TRANSFER_BILL_PROCESS.getMsg());
         requestPO.setStatus(RequestEnum.PROCESS.getCode());
         return requestPO;
     }

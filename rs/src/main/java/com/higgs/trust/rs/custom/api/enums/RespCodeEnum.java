@@ -23,6 +23,7 @@ public enum RespCodeEnum {
 
     //票据处理
     CREATE_BILL_PROCESS("000", "001", "创建票据处理中"),
+    TRANSFER_BILL_PROCESS("000", "002", "转移票据处理中"),
 
     SIGNATURE_VERIFY_FAIL("100", "000", "签名验证失败"),
     PARAM_NOT_VALID("100", "001", "请求参数校验失败"),
