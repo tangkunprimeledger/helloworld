@@ -1,14 +1,15 @@
 package com.higgs.trust.rs.custom.biz.rscore.callback.handler;
 
-import com.higgs.trust.rs.custom.api.enums.BankChainExceptionCodeEnum;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.RequestDao;
-import com.higgs.trust.rs.custom.exceptions.BankChainException;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.action.UTXOAction;
+import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,7 @@ public class CreateBillCallbackHandler {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus status) {
                     CoreTransaction coreTransaction = respData.getData();
+                    log.info("coreTransaction:{}", coreTransaction);
                     List<Action> actionList = coreTransaction.getActionList();
                     String toStatus = null;
                     Long actionIndex = null;
@@ -52,17 +54,20 @@ public class CreateBillCallbackHandler {
                         toStatus = BillStatusEnum.FAILED.getCode();
                     }
 
-                    if (actionList.size() > 1) {
-                        actionIndex = 1L;
-                    } else {
-                        actionIndex = 0L;
-                    }
-                    //update bill status from process to
-                    int isUpdate = receivableBillDao.updateStatus(coreTransaction.getTxId(), actionIndex, Long.valueOf(actionList.get(actionIndex.intValue()).getIndex()), BillStatusEnum.PROCESS.getCode(), toStatus);
+                    for (Action action : actionList) {
+                        if (action.getType() == ActionTypeEnum.UTXO) {
+                            UTXOAction utxoAction = (UTXOAction) action;
+                            List<TxOut> outputList = utxoAction.getOutputList();
+                            for (TxOut txOut : outputList) {
+                                //update bill status from process to
+                                int isUpdate = receivableBillDao.updateStatus(coreTransaction.getTxId(), txOut.getActionIndex().longValue(), txOut.getIndex().longValue(), BillStatusEnum.PROCESS.getCode(), toStatus);
 
-                    if (0 == isUpdate) {
-                        log.error(" create bill update status  for txId :{} ,actionIndex :{} ,index :{} to status: {} is failed!", coreTransaction.getTxId(), actionIndex, actionList.get(actionIndex.intValue()).getIndex(), toStatus);
-                        throw new RuntimeException("create bill update status failed!");
+                                if (0 == isUpdate) {
+                                    log.error(" create bill update status  for txId :{} ,actionIndex :{} ,index :{} to status: {} is failed!", coreTransaction.getTxId(), actionIndex, actionList.get(actionIndex.intValue()).getIndex(), toStatus);
+                                    throw new RuntimeException("create bill update status failed!");
+                                }
+                            }
+                        }
                     }
                     //update process status from process to done
                     int isUpdated = requestDao.updateStatusByRequestId(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());

@@ -3,8 +3,8 @@ package com.higgs.trust.rs.custom.util.converter;
 import com.higgs.trust.IntegrateBaseTest;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 

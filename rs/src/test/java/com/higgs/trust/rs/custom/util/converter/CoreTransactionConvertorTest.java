@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.IntegrateBaseTest;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.slave.model.bo.action.Action;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
