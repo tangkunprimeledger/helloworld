@@ -1,13 +1,15 @@
 package com.higgs.trust.slave.core.repository;
 
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.vo.UTXOVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.dao.utxo.TxOutDao;
-import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
@@ -25,6 +27,9 @@ public class TxOutRepository {
 
     @Autowired
     private TxOutDao txOutDao;
+
+    @Value("${trust.utxo.display:2}")
+    private int DISPLAY;
 
     /**
      * query txOut by txId, index and actionIndex
@@ -68,23 +73,35 @@ public class TxOutRepository {
 
     public List<UTXOVO> queryTxOutByTxId(String txId) {
         List<TxOutPO> list = txOutDao.queryByTxId(txId);
-        int i = 0;
-        do {
-            for (TxOutPO po : list) {
-                UTXOVO vo = new UTXOVO();
-//                vo.setPreUTXOVO(txOutDao.queryByTxId(txId));
-            }
-            i++;
-        } while (i < 5);
-        return null;
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+
+        List<UTXOVO> utxovoList = BeanConvertor.convertList(list, UTXOVO.class);
+
+        for (UTXOVO vo : utxovoList) {
+            queryTxOutBySTxId(vo, txId, DISPLAY);
+        }
+        return utxovoList;
     }
 
-    public List<TxOutPO> queryTxOutsByTxId (String txId, int i) {
-        if (i < 5) {
-            List<TxOutPO> list = txOutDao.queryByTxId(txId);
-        } else {
+    private void queryTxOutBySTxId(UTXOVO vo, String txId, int i) {
 
+        List<TxOutPO> list = txOutDao.queryBySTxId(txId);
+        if (CollectionUtils.isEmpty(list)) {
+            return;
         }
-        return null;
+
+        List<UTXOVO> utxovoList = BeanConvertor.convertList(list, UTXOVO.class);
+        vo.setPreUTXOVO(utxovoList);
+
+        if (i == 0) {
+            return;
+        } else {
+            i -= 1;
+            for (UTXOVO utxovo : utxovoList) {
+                queryTxOutBySTxId(utxovo, utxovo.getTxId(), i);
+            }
+        }
     }
 }

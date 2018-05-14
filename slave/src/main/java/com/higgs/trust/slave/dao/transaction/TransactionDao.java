@@ -57,4 +57,14 @@ import java.util.List;
     List<TransactionPO> queryTxWithCondition(@Param("height") Long blockHeight,
         @Param("txId") String txId, @Param("sender") String sender,
         @Param("start") Integer start, @Param("end") Integer end);
+
+    /**
+     * count transaction with condition
+     * @param blockHeight
+     * @param txId
+     * @param sender
+     * @return
+     */
+    long countTxWithCondition(@Param("height") Long blockHeight,
+        @Param("txId") String txId, @Param("sender") String sender);
 }

@@ -22,4 +22,7 @@ public class Constant {
     public static final String MONITOR_TEXT = "monitor_text";
 
     public static final Long GENESIS_HEIGHT = 1L;
+
+    public static final int MAX_BLOCKING_QUEUE_SIZE = 10000;
+
 }

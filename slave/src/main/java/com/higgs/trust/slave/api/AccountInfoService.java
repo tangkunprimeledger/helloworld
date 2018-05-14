@@ -1,8 +1,8 @@
 package com.higgs.trust.slave.api;
 
 import com.higgs.trust.slave.api.vo.AccountInfoVO;
+import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.QueryAccountVO;
-import com.higgs.trust.slave.model.bo.account.AccountInfo;
 
 import java.util.List;
 
@@ -20,5 +20,5 @@ public interface AccountInfoService {
      */
     List<AccountInfoVO> queryByAccountNos(List<String> accountNos);
 
-    List<AccountInfoVO> queryAccountInfo(QueryAccountVO req);
+    PageVO<AccountInfoVO> queryAccountInfo(QueryAccountVO req);
 }

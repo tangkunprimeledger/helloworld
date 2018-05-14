@@ -1,26 +1,26 @@
 package com.higgs.trust.slave.asynctosync;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author tangfashuang
  * @param <V>
+ * @author tangfashuang
  */
 public class HashBlockingMap<V> implements BlockingMap<V> {
-    private ConcurrentMap<String, Item<V>> map;
+
+    private ConcurrentLinkedHashMap<String, Item<V>> map;
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    public HashBlockingMap() {
-        map = new ConcurrentHashMap<String, Item<V>>();
+    public HashBlockingMap(int maxSize) {
+        map = new ConcurrentLinkedHashMap.Builder<String, Item<V>>().maximumWeightedCapacity(maxSize).build();
     }
 
-    @Override
-    public void put(String key, V o) throws InterruptedException {
+    @Override public void put(String key, V o) throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
@@ -37,8 +37,7 @@ public class HashBlockingMap<V> implements BlockingMap<V> {
         }
     }
 
-    @Override
-    public V take(String key) throws InterruptedException {
+    @Override public V take(String key) throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
@@ -56,8 +55,7 @@ public class HashBlockingMap<V> implements BlockingMap<V> {
         return x;
     }
 
-    @Override
-    public V poll(String key, long timeout) throws InterruptedException {
+    @Override public V poll(String key, long timeout) throws InterruptedException {
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {

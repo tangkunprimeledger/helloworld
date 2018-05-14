@@ -110,6 +110,7 @@ public class ServerConfig
 
         builder.withTransport(NettyTransport.builder()
                 .withAcceptBacklog(Math.min(backlog,500))
+                .withRequestTimeout(1500)
                 .withThreads(nettyThreadNum).build());
         builder.withElectionTimeout(Duration.ofMillis(electionTimeout))
                 .withHeartbeatInterval(Duration.ofMillis(heartbeatInterval))

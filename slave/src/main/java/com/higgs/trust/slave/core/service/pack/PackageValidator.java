@@ -165,11 +165,19 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
         }
         //call RS business
-        callbackRS(pack);
-        //profiler log
-        Profiler.release();
-        if (Profiler.getDuration() > 0) {
-            log.info(Profiler.dump());
+        try {
+            Profiler.enter("[callbackRSForValidate]");
+            callbackRS(pack);
+            Profiler.release();
+        }catch (Throwable e){
+            log.error("[package.validated] callback rs has error",e);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR);
+        }finally {
+            //profiler log
+            Profiler.release();
+            if (Profiler.getDuration() > 0) {
+                log.info(Profiler.dump());
+            }
         }
     }
 
@@ -178,22 +186,19 @@ import java.util.List;
      */
     private void callbackRS(Package pack){
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
-        if(callbackHandler == null){
-            log.error("[callbackRS]callbackHandler is not register");
+        if (callbackHandler == null) {
+            log.warn("[callbackRS]callbackHandler is not register");
+            //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             return;
         }
         List<SignedTransaction> txs = pack.getSignedTxList();
-        if(CollectionUtils.isEmpty(txs)){
-            log.error("[callbackRS]txs is empty from pack:{}",pack);
-            return;
+        if (CollectionUtils.isEmpty(txs)) {
+            log.error("[callbackRS]txs is empty from pack:{}", pack);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
-        Profiler.enter("[callbackRSForValidate]");
-        try {
-            for (SignedTransaction tx : txs) {
-                callbackHandler.onValidated(tx.getCoreTx().getTxId());
-            }
-        }finally {
-            Profiler.release();
+        for (SignedTransaction tx : txs) {
+            //call back business
+            callbackHandler.onValidated(tx.getCoreTx().getTxId());
         }
     }
 }

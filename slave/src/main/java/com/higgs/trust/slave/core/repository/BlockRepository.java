@@ -253,16 +253,13 @@ import java.util.List;
             blockHash = blockHash.trim();
         }
 
-        if (null == pageNum || pageNum < 1) {
-            pageNum = 1;
-        }
-
-        if (null == pageSize || pageSize < 1) {
-            pageSize = 20;
-        }
-
         List<BlockPO> list = blockDao.queryBlocksWithCondition(height, blockHash, (pageNum - 1) * pageSize, pageSize);
 
         return BeanConvertor.convertList(list, BlockVO.class);
+    }
+
+    public long countBlocksWithCondition(Long height, String blockHash) {
+
+        return blockDao.countBlockWithCondition(height, blockHash);
     }
 }

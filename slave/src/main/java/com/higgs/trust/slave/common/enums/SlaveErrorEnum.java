@@ -113,6 +113,8 @@ public enum SlaveErrorEnum {
     SLAVE_CONTRACT_NOT_EXIST_ERROR("832", "contract is not exist", false),
     SLAVE_LAST_PACKAGE_NOT_FINISH("833", "last package is not finished, just waiting", false),
     SLAVE_PACKAGE_REPLICATE_FAILED("834", "package replicated to consensus failed", false),
+    SLAVE_PACKAGE_CALLBACK_ERROR("835", "package callback rs has error", false),
+    SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR("836", "rs callback not register error", false),
     ;
     //@formatter:on
 

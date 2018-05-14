@@ -21,4 +21,14 @@ public class QueryAccountVO extends BaseBO{
      * data owner
      */
     private String dataOwner;
+
+    /**
+     * page number
+     */
+    private Integer pageNo;
+
+    /**
+     * page size
+     */
+    private Integer pageSize;
 }

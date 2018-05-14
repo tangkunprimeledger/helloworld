@@ -5,15 +5,16 @@ import com.higgs.trust.consensus.bft.core.ConsensusCommit;
 import com.higgs.trust.consensus.bft.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.common.TraceUtils;
 import io.atomix.copycat.Operation;
-import io.atomix.copycat.error.CommandException;
 import io.atomix.copycat.server.StateMachine;
 import io.atomix.copycat.server.StateMachineExecutor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.sleuth.Span;
 
 import java.lang.reflect.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+@Slf4j
 public abstract class AbstractConsensusStateMachine extends StateMachine implements ConsensusStateMachine {
 
     @Override
@@ -111,18 +112,23 @@ public abstract class AbstractConsensusStateMachine extends StateMachine impleme
     private Consumer wrapVoidMethod(Method method) {
         return c -> {
             Span span = null;
-            try {
-                if(c instanceof AbstractConsensusCommand){
-                    span = TraceUtils.createSpan(((AbstractConsensusCommand)c).getTraceId());
+            if (c instanceof AbstractConsensusCommand) {
+                span = TraceUtils.createSpan(((AbstractConsensusCommand) c).getTraceId());
+            }
+            while (true) {
+                try {
+                    ConsensusCommit<? extends Operation> consensusCommit = new CopycatCommitAdapter<>(c);
+                    method.invoke(this, consensusCommit);
+                    TraceUtils.closeSpan(span);
+                    return;
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e1) {
+                        log.error(e1.getMessage());
+                    }
                 }
-                ConsensusCommit<? extends Operation> consensusCommit = new CopycatCommitAdapter<>(c);
-                method.invoke(this, consensusCommit);
-            } catch (InvocationTargetException e) {
-                throw new CommandException(e);
-            } catch (IllegalAccessException e) {
-                throw new AssertionError(e);
-            }finally {
-                TraceUtils.closeSpan(span);
             }
         };
     }
@@ -141,18 +147,23 @@ public abstract class AbstractConsensusStateMachine extends StateMachine impleme
     private Function wrapValueMethod(Method method) {
         return c -> {
             Span span = null;
-            try {
-                if(c instanceof AbstractConsensusCommand){
-                    span = TraceUtils.createSpan(((AbstractConsensusCommand)c).getTraceId());
+            if (c instanceof AbstractConsensusCommand) {
+                span = TraceUtils.createSpan(((AbstractConsensusCommand) c).getTraceId());
+            }
+            while (true) {
+                try {
+                    ConsensusCommit<? extends Operation> consensusCommit = new CopycatCommitAdapter<>(c);
+                    Object result = method.invoke(this, consensusCommit);
+                    TraceUtils.closeSpan(span);
+                    return result;
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e1) {
+                        log.error(e1.getMessage());
+                    }
                 }
-                ConsensusCommit<? extends Operation> consensusCommit = new CopycatCommitAdapter<>(c);
-                return method.invoke(this, consensusCommit);
-            } catch (InvocationTargetException e) {
-                throw new CommandException(e);
-            } catch (IllegalAccessException e) {
-                throw new AssertionError(e);
-            }finally {
-                TraceUtils.closeSpan(span);
             }
         };
     }

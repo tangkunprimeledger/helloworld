@@ -15,7 +15,7 @@ public class QueryBlockVO extends BaseBO {
 
     private String blockHash;
 
-    private Integer pageNum;
+    private Integer pageNo;
 
     private Integer pageSize;
 }

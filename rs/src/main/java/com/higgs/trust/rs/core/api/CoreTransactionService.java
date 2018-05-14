@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.api;
 
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
+import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 
 /**
@@ -9,16 +10,31 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
  * @date 2018-05-12
  */
 public interface CoreTransactionService {
+    /**
+     * submit transaction from custom rs by synchronous,release when enPersisted callback is finished
+     *
+     * @param bizType
+     * @param coreTx
+     * @return
+     */
+    RespData syncSubmitTxForPersisted(BizTypeEnum bizType,CoreTransaction coreTx);
+
+    /**
+     * submit transaction from custom rs by synchronous,release when enEnd callback is finished
+     *
+     * @param bizType
+     * @param coreTx
+     * @return
+     */
+    RespData syncSubmitTxForEnd(BizTypeEnum bizType,CoreTransaction coreTx);
 
     /**
      * submit transaction from custom rs
      *
      * @param bizType
      * @param coreTx
-     * @param signData
      */
-    void submitTx(BizTypeEnum bizType,CoreTransaction coreTx,String signData);
-
+    void submitTx(BizTypeEnum bizType,CoreTransaction coreTx);
     /**
      * process init data,sign and update tx status to wait,called by scheduler
      *

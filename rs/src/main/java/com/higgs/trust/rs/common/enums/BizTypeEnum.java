@@ -7,8 +7,13 @@ import org.apache.commons.lang3.StringUtils;
  * @description
  * @date 2018-05-12
  */
+//TODO 使用枚举不是很好。在需要添加业务类型时。所有rs-core 都得修改
 public enum BizTypeEnum {
-    STORAGE("STORAGE","STORAGE DATAS");
+    STORAGE("STORAGE","STORAGE DATAS"),
+    ISSUE_UTXO("ISSUE_UTXO","ISSUE UTXO"),
+    TRANSFER_UTXO("TRANSFER_UTXO","TRANSFER  UTXO"),
+    NOP("NOP", "NO OPERATION"),
+    ;
 
     private String code;
     private String desc;

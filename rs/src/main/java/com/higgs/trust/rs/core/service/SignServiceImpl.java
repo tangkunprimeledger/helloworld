@@ -54,7 +54,7 @@ import java.io.IOException;
         String paramJSON = JSON.toJSONString(coreTx);
         log.info("[signTxByHttp]paramJSON:" + paramJSON);
         try {
-            String resultJSON = OkHttpClientManager.postAsString(url,paramJSON,10000L);
+            String resultJSON = OkHttpClientManager.postAsString(url,paramJSON,rsConfig.getSyncRequestTimeout() / 2);
             log.info("[signTxByHttp]resultJSON:" + resultJSON);
             if(StringUtils.isEmpty(resultJSON)){
                 return null;

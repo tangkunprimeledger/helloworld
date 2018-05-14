@@ -19,11 +19,9 @@ public class UTXOVO extends BaseBO{
 
     private String identity;
 
-    private String stateClass;
-
     private String state;
 
-    private String contract;
+    private String contractAddress;
 
     private String status;
 

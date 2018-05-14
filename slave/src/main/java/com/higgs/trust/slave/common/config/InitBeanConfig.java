@@ -4,6 +4,8 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.higgs.trust.slave.asynctosync.HashBlockingMap;
+import com.higgs.trust.slave.common.constant.Constant;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
@@ -11,6 +13,9 @@ import org.springframework.cloud.sleuth.instrument.async.TraceableExecutorServic
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +27,25 @@ import java.util.concurrent.*;
  **/
 @Configuration public class InitBeanConfig {
     @Autowired BeanFactory beanFactory;
+
+    @Bean(name = "txRequired")
+    public TransactionTemplate txRequired(PlatformTransactionManager platformTransactionManager) {
+        return new TransactionTemplate(platformTransactionManager);
+    }
+
+    @Bean(name = "txNested")
+    public TransactionTemplate txNested(PlatformTransactionManager platformTransactionManager) {
+        TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
+        tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NESTED);
+        return tx;
+    }
+
+    @Bean(name = "txRequiresNew")
+    public TransactionTemplate txRequiresNew(PlatformTransactionManager platformTransactionManager) {
+        TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
+        tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return tx;
+    }
 
     @Bean public ExecutorService packageThreadPool() {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("package-pool-%d").build();
@@ -43,5 +67,13 @@ import java.util.concurrent.*;
         supportedMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
         fastConverter.setSupportedMediaTypes(supportedMediaTypes);
         return new HttpMessageConverters(fastConverter);
+    }
+
+    @Bean public HashBlockingMap persistedResultMap() {
+        return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
+    }
+
+    @Bean public HashBlockingMap clusterPersistedResultMap() {
+        return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
 }
