@@ -11,7 +11,6 @@ import com.higgs.trust.rs.custom.model.bo.identity.IdentityRequest;
  */
 public interface IdentityService {
 
-
     /*
      * @desc 接收存证请求
      * @param  IdentityRequest
