@@ -63,8 +63,7 @@ import java.util.Set;
 
     private static final Long DEFAULT_HEIGHT = 1L;
 
-    @Value("${trust.package.pending:1000}")
-    private int PACKAGE_PENDING_COUNT;
+    @Value("${trust.package.pending:1000}") private int PACKAGE_PENDING_COUNT;
 
     /**
      * create new package from pending transactions
@@ -213,8 +212,14 @@ import java.util.Set;
                 log.warn("package already exists. {}", pack);
                 return;
             }
-            packageRepository
-                .updateStatus(pack.getHeight(), PackageStatusEnum.INIT, PackageStatusEnum.RECEIVED);
+            try {
+                packageRepository.updateStatus(pack.getHeight(), PackageStatusEnum.INIT, PackageStatusEnum.RECEIVED);
+            } catch (SlaveException e) {
+                //eat exception SLAVE_PACKAGE_UPDATE_STATUS_ERROR for idempotent
+                if (!(SlaveErrorEnum.SLAVE_PACKAGE_UPDATE_STATUS_ERROR == e.getCode())) {
+                    throw e;
+                }
+            }
         } else {
             if (null != packageBO) {
                 log.warn("package already exists. {}", pack);
