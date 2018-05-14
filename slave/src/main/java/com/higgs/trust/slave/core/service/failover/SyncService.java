@@ -154,6 +154,75 @@ import java.util.List;
     }
 
     /**
+     * 从指定节点同步指定数量的区块
+     *
+     * @param startHeight 开始高度
+     * @param size        同步数量
+     */
+    public synchronized void sync(long startHeight, int size, String fromNodeName) {
+        if (!nodeState.isState(NodeStateEnum.ArtificialSync)) {
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
+        }
+        log.info("starting to sync the block from node {}, start height:{}, size:{}", fromNodeName, startHeight, size);
+        Assert.isTrue(size > 0, "the size of sync block must > 0");
+        long currentHeight = blockRepository.getMaxHeight();
+        log.info("local current block height:{}", currentHeight);
+        if (currentHeight != startHeight - 1) {
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_START_HEIGHT_ERROR);
+        }
+        int tryTimes = 0;
+        List<BlockHeader> headers = null;
+        Boolean headerValidated = false;
+        BlockHeader currentHeader = blockRepository.getBlockHeader(currentHeight);
+        //批量拉取header并验证
+        do {
+            headers = blockSyncService.getHeadersFromNode(startHeight, size, fromNodeName);
+            if (headers == null || headers.isEmpty()) {
+                continue;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("get the block headers from other node:{}", ToStringBuilder.reflectionToString(headers));
+            }
+            headerValidated = blockSyncService.validating(currentHeader.getBlockHash(), headers);
+            if (log.isDebugEnabled()) {
+                log.debug("the block headers local valid result:{}", headerValidated);
+            }
+            if (!headerValidated) {
+                continue;
+            }
+        } while (!headerValidated && ++tryTimes < properties.getTryTimes());
+        if (!headerValidated) {
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED);
+        }
+        int headerSize = headers.size();
+        int startIndex = 0;
+        long blockStartHeight = headers.get(startIndex).getHeight();
+        long blockEndHeight = headers.get(headers.size() - 1).getHeight();
+        int blockSize = properties.getBlockStep();
+        BlockHeader preHeader = currentHeader;
+
+        do {
+            if (blockStartHeight + properties.getBlockStep() > blockEndHeight) {
+                blockSize = new Long(blockEndHeight - blockStartHeight + 1).intValue();
+            }
+            List<Block> blocks = getAndValidatingBlock(preHeader, blockStartHeight, blockSize, fromNodeName);
+            blockSize = blocks.size();
+            Block lastBlock = blocks.get(blockSize - 1);
+            //验证最后块的header是否与header列表中的一致
+            boolean blocksValidated =
+                blockService.compareBlockHeader(lastBlock.getBlockHeader(), headers.get(startIndex + blockSize - 1));
+            if (!blocksValidated) {
+                log.error("validating the last block of blocks failed");
+                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
+            }
+            blocks.forEach(block -> syncBlock(block));
+            startIndex = startIndex + blockSize;
+            blockStartHeight = blockStartHeight + blockSize;
+            preHeader = headers.get(startIndex - 1);
+        } while (startIndex < headerSize - 1);
+    }
+
+    /**
      * receive package height
      *
      * @param height
@@ -170,13 +239,40 @@ import java.util.List;
      * @param size
      * @return
      */
-
     private List<Block> getAndValidatingBlock(BlockHeader preHeader, long startHeight, int size) {
         int tryTimes = 0;
         List<Block> blocks = null;
         boolean blockValidated = false;
         do {
             blocks = blockSyncService.getBlocks(startHeight, size);
+            if (blocks == null || blocks.isEmpty()) {
+                continue;
+            }
+            blockValidated = blockSyncService.validatingBlocks(preHeader.getBlockHash(), blocks);
+            if (!blockValidated) {
+                continue;
+            }
+        } while (!blockValidated && ++tryTimes < properties.getTryTimes());
+        if (!blockValidated) {
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
+        }
+        return blocks;
+    }
+
+    /**
+     * get the blocks and validate it
+     *
+     * @param preHeader
+     * @param startHeight
+     * @param size
+     * @return
+     */
+    private List<Block> getAndValidatingBlock(BlockHeader preHeader, long startHeight, int size, String fromNode) {
+        int tryTimes = 0;
+        List<Block> blocks = null;
+        boolean blockValidated = false;
+        do {
+            blocks = blockSyncService.getBlocksFromNode(startHeight, size, fromNode);
             if (blocks == null || blocks.isEmpty()) {
                 continue;
             }

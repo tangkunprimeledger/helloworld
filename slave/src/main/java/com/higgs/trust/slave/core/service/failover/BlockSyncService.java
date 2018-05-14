@@ -33,6 +33,17 @@ import java.util.List;
     }
 
     /**
+     * 从startHeight开始获取size个blockheader
+     *
+     * @param startHeight 开始高度
+     * @param size        数量
+     * @return blockheader列表
+     */
+    public List<BlockHeader> getHeadersFromNode(long startHeight, int size, String nodeName) {
+        return blockChainClient.getBlockHeadersFromNode(nodeName, startHeight, size);
+    }
+
+    /**
      * 从startHeight开始获取size个block
      *
      * @param startHeight 开始高度
@@ -41,6 +52,17 @@ import java.util.List;
      */
     public List<Block> getBlocks(long startHeight, int size) {
         return blockChainClient.getBlocks(nodeState.notMeNodeNameReg(), startHeight, size);
+    }
+
+    /**
+     * 从startHeight开始获取size个block
+     *
+     * @param startHeight 开始高度
+     * @param size        数量
+     * @return blockheader列表
+     */
+    public List<Block> getBlocksFromNode(long startHeight, int size, String nodeName) {
+        return blockChainClient.getBlocksFromNode(nodeName, startHeight, size);
     }
 
     /**

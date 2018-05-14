@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.common.TraceUtils;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
+import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
+import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.dao.*;
 import com.higgs.trust.consensus.p2pvalid.dao.po.*;
@@ -298,11 +300,15 @@ public class SendService {
                     validCommandWrap.setFromNode(sendCommand.getNodeName());
                     validCommandWrap.setSign(sendCommand.getCommandSign());
                     validCommandWrap.setValidCommand((ValidCommand<?>) JSON.parse(sendCommand.getValidCommand()));
-                    p2pConsensusClient.receiveCommand(sendNode.getToNodeName(), validCommandWrap);
-
-                    int count = sendNodeDao.transStatus(sendNode.getMessageDigest(), sendNode.getToNodeName(), SEND_NODE_WAIT_SEND, SEND_NODE_ACK);
-                    if (count != 1) {
-                        throw new RuntimeException("trans send node status failed when apply! count: " + count);
+                    ValidResponseWrap<? extends ResponseCommand> responseWrap =
+                        p2pConsensusClient.send(sendNode.getToNodeName(), validCommandWrap);
+                    if(responseWrap.isSucess()){
+                        int count = sendNodeDao.transStatus(sendNode.getMessageDigest(), sendNode.getToNodeName(), SEND_NODE_WAIT_SEND, SEND_NODE_ACK);
+                        if (count != 1) {
+                            throw new RuntimeException("trans send node status failed when apply! count: " + count);
+                        }
+                    }else {
+                        log.error("send command to node {} failed:{}",sendNode,responseWrap.getMessage());
                     }
 
                 } catch (Throwable throwable) {
