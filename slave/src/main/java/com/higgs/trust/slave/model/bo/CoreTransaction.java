@@ -44,7 +44,7 @@ public class CoreTransaction extends BaseBO {
     private List<Action> actionList;
 
     /**
-     * the JSONObject that store data which will be packaged into blockchain .It  can be null , when there is no need for it
+     * the JSONObject that store data which will be packaged into blockChain .It  can be null , when there is no need for it
      */
     private JSONObject bizModel;
 

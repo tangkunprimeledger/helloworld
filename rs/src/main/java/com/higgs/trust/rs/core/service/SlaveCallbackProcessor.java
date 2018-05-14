@@ -11,8 +11,8 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +31,9 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
     @Autowired private CoreTransactionDao coreTransactionDao;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
+    @Autowired private HashBlockingMap<RespData> persistedResultMap;
+    @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
+
 
     @Override public void afterPropertiesSet() throws Exception {
         slaveCallbackRegistor.registCallbackHandler(this);
@@ -49,7 +52,8 @@ import org.springframework.transaction.support.TransactionTemplate;
         });
     }
 
-    @Override public void onPersisted(TransactionReceipt transactionReceipt, CoreTransaction tx) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData) {
+        CoreTransaction tx = respData.getData();
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 int r = coreTransactionDao
@@ -64,18 +68,43 @@ import org.springframework.transaction.support.TransactionTemplate;
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
                 }
                 CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(),false);
-                RespData respData = new RespData();
-                if(!transactionReceipt.isResult()) {
-                    respData.setCode(transactionReceipt.getErrorCode());
-                }
-                respData.setData(tx);
                 //callback custom rs
                 txCallbackHandler.onPersisted(BizTypeEnum.fromCode(po.getBizType()),respData);
             }
         });
+        //同步通知
+        try {
+            persistedResultMap.put(tx.getTxId(), respData);
+        } catch (Throwable e) {
+            log.warn("sync notify rs resp data failed", e);
+        }
     }
 
-    @Override public void onClusterPersisted(TransactionReceipt transactionReceipt, CoreTransaction tx) {
-
+    @Override public void onClusterPersisted(RespData<CoreTransaction> respData) {
+        CoreTransaction tx = respData.getData();
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                int r = coreTransactionDao
+                    .updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED.getCode(), CoreTxStatusEnum.END.getCode());
+                if (r != 1) {
+                    log.error("[onClusterPersisted] update tx status is fail from:{},to:{}", CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
+                }
+                TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
+                if(txCallbackHandler == null){
+                    log.error("[onClusterPersisted]call back handler is not register");
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
+                }
+                CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(),false);
+                //callback custom rs
+                txCallbackHandler.onEnd(BizTypeEnum.fromCode(po.getBizType()),respData);
+            }
+        });
+        //同步通知
+        try {
+            clusterPersistedResultMap.put(tx.getTxId(), respData);
+        } catch (Throwable e) {
+            log.warn("sync notify rs resp data failed", e);
+        }
     }
 }

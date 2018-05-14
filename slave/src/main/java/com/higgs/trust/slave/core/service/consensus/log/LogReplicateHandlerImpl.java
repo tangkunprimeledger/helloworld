@@ -7,6 +7,7 @@ import com.higgs.trust.consensus.bft.core.ConsensusClient;
 import com.higgs.trust.consensus.bft.core.ConsensusCommit;
 import com.higgs.trust.consensus.bft.core.template.AbstractConsensusStateMachine;
 import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -30,7 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Description: replicate the sorted package to cluster
@@ -38,7 +41,7 @@ import java.util.concurrent.*;
  **/
 @Slf4j @Service public class LogReplicateHandlerImpl extends AbstractConsensusStateMachine
     implements LogReplicateHandler {
-
+    @Autowired PropertiesConfig propertiesConfig;
     /**
      * client from the log replicate consensus layer
      */
@@ -83,13 +86,15 @@ import java.util.concurrent.*;
         // replicate package to all nodes
         log.info("package starts to distribute to each node through consensus layer");
         PackageCommand packageCommand = new PackageCommand(packageVO);
+
         CompletableFuture future = consensusClient.submit(packageCommand);
         try {
-            future.get(2, TimeUnit.SECONDS);
+            future.get(1, TimeUnit.SECONDS);
         } catch (Throwable e) {
             log.error("replicate log failed!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED, e);
         }
+
         log.info("package has been sent to consensus layer");
     }
 

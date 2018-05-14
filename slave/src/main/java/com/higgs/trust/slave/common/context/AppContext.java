@@ -2,6 +2,7 @@ package com.higgs.trust.slave.common.context;
 
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
+import com.higgs.trust.slave.common.constant.Constant;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -14,7 +15,7 @@ public class AppContext implements ApplicationContextAware {
      */
     public static ApplicationContext springContext;
 
-    public static HashBlockingMap<RespData> TX_HANDLE_RESULT_MAP = new HashBlockingMap<>();
+    public static HashBlockingMap<RespData> TX_HANDLE_RESULT_MAP = new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
 
     @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         springContext = applicationContext;

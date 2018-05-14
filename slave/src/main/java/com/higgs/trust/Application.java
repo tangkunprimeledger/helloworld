@@ -24,25 +24,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @EnableFeignClients
 public class Application {
 
-    @Bean(name = "txRequired")
-    public TransactionTemplate txRequired(PlatformTransactionManager platformTransactionManager) {
-        return new TransactionTemplate(platformTransactionManager);
-    }
-
-    @Bean(name = "txNested")
-    public TransactionTemplate txNested(PlatformTransactionManager platformTransactionManager) {
-        TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
-        tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NESTED);
-        return tx;
-    }
-
-    @Bean(name = "txRequiresNew")
-    public TransactionTemplate txRequiresNew(PlatformTransactionManager platformTransactionManager) {
-        TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
-        tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        return tx;
-    }
-
     /**
      * 启动入口。<br> 需要通过启动参数设置配置文件路径，例如：-Dspring.config.location=file:/data/home/admin/prime_demo/conf/dev_config.json<br>
      * mybatis代码生成工具：https://tower.im/projects/cc46ccaf6b1f4f398d7d2277fab3f67d/docs/52c7297b64a94da690191a891862939b/

@@ -12,15 +12,17 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 
-
 /**
  * @author liuyu
  * @description
  * @date 2018-04-10
  */
-@Repository @Slf4j public class DataIdentityRepository {
+@Repository
+@Slf4j
+public class DataIdentityRepository {
     @Autowired
     private DataIdentityDao dataIdentityDao;
+
     /**
      * query identity data by identity
      *
@@ -34,16 +36,31 @@ import org.springframework.stereotype.Repository;
 
     /**
      * save data identity
+     *
      * @param dataIdentity
      */
-    public void save(DataIdentity dataIdentity){
-        DataIdentityPO dataIdentityPO = BeanConvertor.convertBean(dataIdentity,DataIdentityPO.class);
+    public void save(DataIdentity dataIdentity) {
+        DataIdentityPO dataIdentityPO = BeanConvertor.convertBean(dataIdentity, DataIdentityPO.class);
         try {
             dataIdentityDao.add(dataIdentityPO);
         } catch (DuplicateKeyException e) {
-            log.error("Insert dataIdentityPO fail, because there is DuplicateKeyException for dataidentity:",
-                dataIdentityPO);
+            log.error("Insert dataIdentityPO fail, because there is DuplicateKeyException for dataidentity:", dataIdentityPO);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
         }
     }
+
+    /**
+     * check there the identity is existed in the slave
+     *
+     * @param identity
+     * @return
+     */
+    public boolean isExist(String identity) {
+        DataIdentity dataIdentity = queryDataIdentity(identity);
+        if (null == dataIdentity) {
+            return false;
+        }
+        return true;
+    }
+
 }

@@ -149,7 +149,7 @@ import java.util.List;
         accountDcRecordDao.add(accountDcRecordPO);
     }
 
-    public List<AccountInfoVO> queryAccountInfoWithOwner(String accountNo, String dataOwner) {
+    public List<AccountInfoVO> queryAccountInfoWithOwner(String accountNo, String dataOwner, Integer pageNo, Integer pageSize) {
         if (null != accountNo) {
             accountNo = accountNo.trim();
         }
@@ -158,7 +158,19 @@ import java.util.List;
             dataOwner = dataOwner.trim();
         }
 
-        List<AccountInfoWithOwnerPO> list = accountInfoDao.queryAccountInfoWithOwner(accountNo, dataOwner);
+        List<AccountInfoWithOwnerPO> list = accountInfoDao.queryAccountInfoWithOwner(accountNo, dataOwner, (pageNo - 1) * pageSize, pageSize);
         return BeanConvertor.convertList(list, AccountInfoVO.class);
+    }
+
+    public long countAccountInfoWithOwner(String accountNo, String dataOwner) {
+        if (null != accountNo) {
+            accountNo = accountNo.trim();
+        }
+
+        if (null != dataOwner) {
+            dataOwner = dataOwner.trim();
+        }
+
+        return accountInfoDao.countAccountInfoWithOwner(accountNo, dataOwner);
     }
 }

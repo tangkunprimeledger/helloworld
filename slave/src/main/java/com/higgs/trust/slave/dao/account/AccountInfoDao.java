@@ -74,8 +74,18 @@ import java.util.List;
      * query account with data owner
      * @param accountNo
      * @param dataOwner
+     * @param start
+     * @param end
      * @return
      */
-    List<AccountInfoWithOwnerPO> queryAccountInfoWithOwner(@Param("accountNo") String accountNo, @Param("dataOwner") String dataOwner);
+    List<AccountInfoWithOwnerPO> queryAccountInfoWithOwner(@Param("accountNo") String accountNo,
+        @Param("dataOwner") String dataOwner, @Param("start") Integer start, @Param("end") Integer end);
 
+    /**
+     * count
+     * @param accountNo
+     * @param dataOwner
+     * @return
+     */
+    long countAccountInfoWithOwner(@Param("accountNo") String accountNo, @Param("dataOwner") String dataOwner);
 }

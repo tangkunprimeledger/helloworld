@@ -32,6 +32,7 @@ import java.util.List;
      * @return
      */
     @RequestMapping(value = "/signTx") RespData<String> signTx(@RequestBody CoreTransaction coreTransaction) {
+        //TODO:call custom business
         return signService.signTx(coreTransaction);
     }
 }

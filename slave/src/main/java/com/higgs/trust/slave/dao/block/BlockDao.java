@@ -41,6 +41,23 @@ import java.util.List;
      */
     List<Long> getLimitHeight(@Param("limit") int limit);
 
+    /**
+     * query blocks with condition
+     * @param height
+     * @param blockHash
+     * @param start
+     * @param end
+     * @return
+     */
     List<BlockPO> queryBlocksWithCondition(@Param("height") Long height, @Param("blockHash") String blockHash,
         @Param("start") int start, @Param("end") int end);
+
+    /**
+     * count blocks with condition
+     * @param height
+     * @param blockHash
+     * @return
+     */
+    long countBlockWithCondition(@Param("height") Long height,
+        @Param("blockHash") String blockHash);
 }
