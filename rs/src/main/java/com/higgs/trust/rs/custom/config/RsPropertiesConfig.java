@@ -114,6 +114,15 @@ public class RsPropertiesConfig implements InitializingBean {
     @Value("${cas.aeskey}")
     private String aesKey;
 
+
+
+    /**
+     * 创建票据 智能合约地址
+     */
+    @NotBlank
+    @Value("${costom.contractAddress}")
+    private String contractAddress;
+
     private ECKey ecKey;
 
     @Override
@@ -271,6 +280,14 @@ public class RsPropertiesConfig implements InitializingBean {
 
     public void setEcKey(ECKey ecKey) {
         this.ecKey = ecKey;
+    }
+
+    public String getContractAddress() {
+        return contractAddress;
+    }
+
+    public void setContractAddress(String contractAddress) {
+        this.contractAddress = contractAddress;
     }
 }
 

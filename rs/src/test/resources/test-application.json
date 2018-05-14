@@ -106,5 +106,9 @@
         "submitSlave":50
       }
     }
+  },
+  "costom":{
+    "contractAddress":"1234567"
   }
+
 }

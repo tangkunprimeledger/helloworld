@@ -21,7 +21,7 @@ public class BillConvertor {
      * @param index
      * @return
      */
-    public static ReceivableBillPO buildBill(BillCreateVO billCreateVO, Long actionIndex, Long index){
+    public static ReceivableBillPO buildBill(BillCreateVO billCreateVO, Long actionIndex, Long index, String contractAddress){
         ReceivableBillPO  receivableBillPO = new ReceivableBillPO();
         receivableBillPO.setBillId(billCreateVO.getBillId());
         receivableBillPO.setHolder(billCreateVO.getHolder());
@@ -29,8 +29,7 @@ public class BillConvertor {
         receivableBillPO.setTxId(billCreateVO.getRequestId());
         receivableBillPO.setActionIndex(actionIndex);
         receivableBillPO.setIndex(index);
-        //TODO get  ContractAddress from config
-        receivableBillPO.setContractAddress("");
+        receivableBillPO.setContractAddress(contractAddress);
 
         //build state
         JSONObject state = new JSONObject();
