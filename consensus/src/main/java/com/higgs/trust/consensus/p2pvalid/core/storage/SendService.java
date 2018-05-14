@@ -291,7 +291,6 @@ public class SendService {
         sendNodeList.forEach((sendNode) -> {
             sendExecutorService.submit(() -> {
                 try {
-                    log.info("send command to node {} ", sendNode.getToNodeName());
 
                     ValidCommandWrap validCommandWrap = new ValidCommandWrap();
                     validCommandWrap.setCommandClass(sendCommand.getValidCommand().getClass());
@@ -304,9 +303,10 @@ public class SendService {
                     if (count != 1) {
                         throw new RuntimeException("trans send node status failed when apply! count: " + count);
                     }
+                    log.info("send command to node {} success", sendNode);
 
                 } catch (Throwable throwable) {
-                    log.error("{}", throwable);
+                    log.error("send to node {} error ", sendNode, throwable);
                 } finally {
                     countDownLatch.countDown();
                 }
