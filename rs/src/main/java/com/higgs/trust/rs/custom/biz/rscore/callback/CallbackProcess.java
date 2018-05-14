@@ -6,7 +6,6 @@ import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.custom.biz.rscore.callback.handler.CreateBillCallbackHandler;
 import com.higgs.trust.rs.custom.biz.rscore.callback.handler.StorageIdentityCallbackHandler;
 import com.higgs.trust.rs.custom.biz.rscore.callback.handler.TransferBillCallbackHandler;
-import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j @Service public class CallbackProcess implements TxCallbackHandler, InitializingBean {
 
-    @Autowired private RsPropertiesConfig propertiesConfig;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private StorageIdentityCallbackHandler storageIdentityCallbackHandler;
     @Autowired private CreateBillCallbackHandler createBillCallbackHandler;

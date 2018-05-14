@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -27,7 +28,7 @@ public class RsBlockChainController {
     @Autowired
     private BlockService blockService;
 
-    @RequestMapping(value = "/block/query")
+    @RequestMapping(value = "/block/query", method = RequestMethod.POST)
     public RespData queryBlock(BlockQueryVO req) {
        log.info("[BlockChainController.queryBlock] query block request receive: {}", req);
 
@@ -40,7 +41,7 @@ public class RsBlockChainController {
        return blockService.queryBlock(req);
     }
 
-    @RequestMapping(value = "/transaction/query")
+    @RequestMapping(value = "/transaction/query", method = RequestMethod.POST)
     public RespData queryTransaction(TxQueryVO req) {
         log.info("[BlockChainController.queryTransaction] query transaction request receive: {}", req);
 
@@ -53,7 +54,7 @@ public class RsBlockChainController {
         return blockService.queryTx(req);
     }
 
-    @RequestMapping(value = "/account/query")
+    @RequestMapping(value = "/account/query", method = RequestMethod.POST)
     public RespData queryAccount(AccountQueryVO req) {
         log.info("[BlockChainController.queryAccount] query account request receive: {}", req);
 
@@ -66,7 +67,7 @@ public class RsBlockChainController {
         return accountInfoService.queryAccount(req);
     }
 
-    @RequestMapping(value = "/utxo/query")
+    @RequestMapping(value = "/utxo/query", method = RequestMethod.POST)
     public RespData queryUtxo(String txId) {
         log.info("[BlockChainController.queryUtxo] query UTXO request receive: txId={}", txId);
 
