@@ -83,6 +83,9 @@
         "limit": 200
       }
     },
+    "utxo": {
+      "display": 2
+    },
     "package": {
       "pending" : 1000
     },
@@ -104,7 +107,8 @@
       "schedule":{
         "processInit":50,
         "submitSlave":50
-      }
+      },
+      "syncRequestTimeout":1000
     },
     "custom":{
       "contractAddress":"1234567",

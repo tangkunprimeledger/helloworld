@@ -2,8 +2,8 @@ package com.higgs.trust.rs.custom.util.converter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
-import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
@@ -41,7 +41,7 @@ public class UTXOActionConvertor {
     private ReceivableBillDao receivableBillDao;
 
     @Autowired
-    private RsPropertiesConfig rsPropertiesConfig;
+    private RsConfig rsConfig;
 
 
     /**
@@ -82,7 +82,7 @@ public class UTXOActionConvertor {
         //build UTXOAction
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setOutputList(txOutList);
-        utxoAction.setContractAddress(rsPropertiesConfig.getContractAddress());
+        utxoAction.setContractAddress(rsConfig.getContractAddress());
         utxoAction.setType(ActionTypeEnum.UTXO);
         utxoAction.setStateClass("com.alibaba.fastjson.JSONObject");
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.ISSUE);
@@ -122,7 +122,7 @@ public class UTXOActionConvertor {
         //build UTXOAction
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setOutputList(txOutList);
-        utxoAction.setContractAddress(rsPropertiesConfig.getContractAddress());
+        utxoAction.setContractAddress(rsConfig.getContractAddress());
         utxoAction.setType(ActionTypeEnum.UTXO);
         utxoAction.setStateClass("com.alibaba.fastjson.JSONObject");
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.ISSUE);

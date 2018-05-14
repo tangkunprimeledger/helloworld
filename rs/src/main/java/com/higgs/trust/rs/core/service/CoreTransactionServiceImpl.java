@@ -68,9 +68,9 @@ import java.util.List;
         RespData respData = null;
         try {
             if (forEnd) {
-                respData = clusterPersistedResultMap.poll(key, 1000);
+                respData = clusterPersistedResultMap.poll(key, rsConfig.getSyncRequestTimeout());
             } else {
-                respData = persistedResultMap.poll(key, 1000);
+                respData = persistedResultMap.poll(key, rsConfig.getSyncRequestTimeout());
             }
         } catch (Throwable e) {
             log.error("tx handle exception. ", e);

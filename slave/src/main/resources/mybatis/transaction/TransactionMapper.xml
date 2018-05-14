@@ -18,7 +18,7 @@
     </resultMap>
     <!-- transaction table all fields -->
     <sql id="baseColumnList">
-        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas,action_datas
+        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,execute_result,error_code,sign_datas,action_datas
     </sql>
     <!-- query  conditions -->
     <sql id="baseWhereClause">
@@ -121,7 +121,8 @@
         <if test="sender != null and sender != ''">
             and sender=#{sender}
         </if>
-        <if test="height == null and txId == null and txId ==''">
+        order by block_height desc
+        <if test="(txId == null or txId =='') and height == null">
             limit #{start}, #{end}
         </if>
     </select>
