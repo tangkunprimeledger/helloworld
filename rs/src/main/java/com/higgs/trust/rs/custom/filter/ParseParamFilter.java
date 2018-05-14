@@ -103,7 +103,7 @@ public class ParseParamFilter implements Filter {
                 response.getWriter().println(JSON.toJSONString(new RespData<>(RespCodeEnum.PARAM_NOT_VALID)));
                 return;
             }
-            if (!jsonObject.containsKey("signature")) {
+            if (!jsonObject.containsKey("signature") && !isPassedPath) {
                 LOGGER.error("[doFilter] signature doesn't exist");
                 response.getWriter().println(JSON.toJSONString(new RespData<>(RespCodeEnum.PARAM_NOT_VALID)));
                 return;
@@ -111,14 +111,19 @@ public class ParseParamFilter implements Filter {
             String requestParam = jsonObject.getString("requestParam");
             String signature = jsonObject.getString("signature");
 
-            String message = AesUtil.decryptToString(requestParam, rsConfig.getAesKey());
-
-            //验证签名
-            if (!ECKey.verify(message, signature, rsConfig.getPubKey())) {
-                LOGGER.error("[doFilter] signature verification errors");
-                response.getWriter().println(JSON.toJSONString(new RespData<>(RespCodeEnum.SIGNATURE_VERIFY_FAIL)));
-                return;
+            String message = null;
+            if (isPassedPath){
+                message = requestParam;
+            }else {
+                message = AesUtil.decryptToString(requestParam, rsConfig.getAesKey());
+                //验证签名
+                if (!ECKey.verify(message, signature, rsConfig.getPubKey())) {
+                    LOGGER.error("[doFilter] signature verification errors");
+                    response.getWriter().println(JSON.toJSONString(new RespData<>(RespCodeEnum.SIGNATURE_VERIFY_FAIL)));
+                    return;
+                }
             }
+
             Map<String, Object> map = JSON.parseObject(message, Map.class);
             chain.doFilter(new RequestWrapper(request, map), res);
         } catch (Throwable e) {
