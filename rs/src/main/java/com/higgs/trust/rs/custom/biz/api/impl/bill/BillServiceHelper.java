@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.custom.biz.api.impl.bill;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
@@ -15,9 +16,12 @@ import com.higgs.trust.rs.custom.util.converter.RequestConvertor;
 import com.higgs.trust.rs.custom.util.converter.UTXOActionConvertor;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.action.UTXOAction;
+import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -118,13 +122,25 @@ public class BillServiceHelper {
             actionList = utxoActionConvertor.buildCreateBillWithIdentityActionList(billCreateVO);
         }
 
+        JSONObject bizModel = new JSONObject();
+        try {
+            bizModel = JSON.parseObject(billCreateVO.getBizModel());
+        } catch (Throwable e) {
+            bizModel.put("bizModel", billCreateVO.getBizModel());
+        }
+
         //创建coreTx
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billCreateVO.getRequestId(), JSON.parseObject(billCreateVO.getBizModel()), actionList);
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList);
+
         //insert bill
-        if (isIdentityExist){
-            insertBill(billCreateVO, 1L, Long.valueOf(actionList.get(1).getIndex()));
-        }else {
-            insertBill(billCreateVO, 0L, Long.valueOf(actionList.get(0).getIndex()));
+        for (Action action : actionList) {
+            if (action.getType() == ActionTypeEnum.UTXO) {
+                UTXOAction utxoAction = (UTXOAction) action;
+                List<TxOut> outputList = utxoAction.getOutputList();
+                for (TxOut txOut : outputList) {
+                    insertBill(billCreateVO, txOut.getActionIndex().longValue(), txOut.getIndex().longValue());
+                }
+            }
         }
 
         //send and get callback result
@@ -195,12 +211,25 @@ public class BillServiceHelper {
             actionList = utxoActionConvertor.buildTransferBillWithIdentityActionList(billTransferVO);
         }
         //创建coreTx
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), JSON.parseObject(billTransferVO.getBizModel()), actionList);
+
+        JSONObject bizModel = new JSONObject();
+        try {
+            bizModel = JSON.parseObject(billTransferVO.getBizModel());
+        } catch (Throwable e) {
+            bizModel.put("bizModel", billTransferVO.getBizModel());
+        }
+
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList);
+
         //insert bill
-        if (isIdentityExist){
-            insertBill(billTransferVO, 1L, Long.valueOf(actionList.get(1).getIndex()));
-        }else {
-            insertBill(billTransferVO, 0L, Long.valueOf(actionList.get(0).getIndex()));
+        for (Action action : actionList) {
+            if (action.getType() == ActionTypeEnum.UTXO) {
+                UTXOAction utxoAction = (UTXOAction) action;
+                List<TxOut> outputList = utxoAction.getOutputList();
+                for (TxOut txOut : outputList) {
+                    insertBill(billTransferVO, txOut.getActionIndex().longValue(), txOut.getIndex().longValue());
+                }
+            }
         }
 
         //send and get callback result
