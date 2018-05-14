@@ -122,7 +122,7 @@ public abstract class AbstractConsensusStateMachine extends StateMachine impleme
                     TraceUtils.closeSpan(span);
                     return;
                 } catch (Exception e) {
-                    log.error(e.getMessage());
+                    log.error("apply error {}", e);
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e1) {
@@ -157,7 +157,7 @@ public abstract class AbstractConsensusStateMachine extends StateMachine impleme
                     TraceUtils.closeSpan(span);
                     return result;
                 } catch (Exception e) {
-                    log.error(e.getMessage());
+                    log.error("apply error {}", e);
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e1) {
