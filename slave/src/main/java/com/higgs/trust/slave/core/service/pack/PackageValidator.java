@@ -170,8 +170,8 @@ import java.util.List;
             callbackRS(pack);
             Profiler.release();
         }catch (Throwable e){
-            log.error("[package.validated] callback rs has error",e);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR);
+            log.error("[package.validated] callback rs has error");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR, e);
         }finally {
             //profiler log
             Profiler.release();
@@ -198,7 +198,7 @@ import java.util.List;
         }
         for (SignedTransaction tx : txs) {
             //call back business
-            callbackHandler.onValidated(tx.getCoreTx().getTxId());
+            callbackHandler.onValidated(tx.getCoreTx());
         }
     }
 }
