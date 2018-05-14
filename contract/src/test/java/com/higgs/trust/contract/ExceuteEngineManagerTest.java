@@ -54,7 +54,7 @@ public class ExceuteEngineManagerTest extends BaseTest {
 
         ExecuteEngineManager manager = getExceuteEngineManager();
         long startTime = System.currentTimeMillis();
-        for(int i = 0; i < 10000; i++) {
+        for(int i = 0; i < 10; i++) {
             ExecuteContextData contextData = newContextData();
             ExecuteContext.newContext(contextData).setInstanceAddress("0xddkdkadJAkdkdkkdkdd");
 

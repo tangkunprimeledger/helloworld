@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.api;
 
+import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 
@@ -17,16 +18,14 @@ public interface SlaveCallbackHandler {
 
     /**
      * on tx persisted
-     * @param transactionReceipt
-     * @param tx
+     * @param respData
      */
-    void onPersisted(TransactionReceipt transactionReceipt,CoreTransaction tx);
+    void onPersisted(RespData<CoreTransaction> respData);
 
     /**
      * when the cluster persisted of tx
      *
-     * @param transactionReceipt
-     * @param tx
+     * @param respData
      */
-    void onClusterPersisted(TransactionReceipt transactionReceipt,CoreTransaction tx);
+    void onClusterPersisted(RespData<CoreTransaction> respData);
 }

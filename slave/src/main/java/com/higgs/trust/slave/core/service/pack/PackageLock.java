@@ -21,54 +21,42 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @date 2018/04/13 11:19
  * @desc package lock
  */
-@Service
-@Slf4j
-public class PackageLock {
-    @Autowired
-    private PackageRepository packageRepository;
+@Service @Slf4j public class PackageLock {
+    @Autowired private PackageRepository packageRepository;
 
-    @Autowired
-    private TransactionTemplate txNested;
+    @Autowired private TransactionTemplate txNested;
 
-    @Autowired
-    private PackageService packageService;
+    @Autowired private PackageService packageService;
 
-    @Autowired
-    private LogReplicateHandler logReplicateHandler;
+    @Autowired private LogReplicateHandler logReplicateHandler;
 
     public void lockAndSubmit(Long height) {
 
-        txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                Package pack = packageRepository.loadAndLock(height);
+        Package pack = packageRepository.load(height);
 
-                if (null == pack) {
-                    log.error("system exception, package is empty, height={}", height);
-                    //TODO 添加告警
-                    return;
-                }
+        if (null == pack) {
+            log.error("system exception, package is empty, height={}", height);
+            //TODO 添加告警
+            return;
+        }
 
-                // if package status is not 'INIT', return directly.
-                if (PackageStatusEnum.INIT != pack.getStatus()) {
-                    return;
-                }
+        // if package status is not 'INIT', return directly.
+        if (PackageStatusEnum.INIT != pack.getStatus()) {
+            return;
+        }
 
-                PackageVO packageVO = PackageConvert.convertPackToPackVO(pack);
-                String sign = packageService.getSign(packageVO);
-                if (StringUtils.isEmpty(sign)) {
-                    log.error("get signature failed.");
-                    //TODO 添加告警
-                    return;
-                }
-                packageVO.setSign(sign);
+        PackageVO packageVO = PackageConvert.convertPackToPackVO(pack);
+        String sign = packageService.getSign(packageVO);
+        if (StringUtils.isEmpty(sign)) {
+            log.error("get signature failed.");
+            //TODO 添加告警
+            return;
+        }
+        packageVO.setSign(sign);
 
-                //send package to log replicate consensus layer
-                logReplicateHandler.replicatePackage(packageVO);
-                // update status
-                packageService.statusChange(pack, PackageStatusEnum.INIT, PackageStatusEnum.SUBMIT_CONSENSUS_SUCCESS);
-            }
-        });
+        //send package to log replicate consensus layer
+        logReplicateHandler.replicatePackage(packageVO);
+
     }
 
     /**
@@ -78,8 +66,7 @@ public class PackageLock {
      */
     public void lockPersistingAndSubmit(Long height) {
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -95,12 +82,12 @@ public class PackageLock {
                 }
                 packageService.persistConsensus(pack);
                 // update status
-                packageService.statusChange(pack, PackageStatusEnum.PERSISTING, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+                packageService
+                    .statusChange(pack, PackageStatusEnum.PERSISTING, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
 
             }
         });
     }
-
 
     /**
      * lock and do something after persisting
@@ -109,8 +96,7 @@ public class PackageLock {
      */
     public void lockAndPersisted(Long height) {
         txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 Package pack = packageRepository.loadAndLock(height);
 
                 if (null == pack) {
@@ -127,7 +113,8 @@ public class PackageLock {
 
                 packageService.persisted(pack);
                 // update status
-                packageService.statusChange(pack, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
+                packageService
+                    .statusChange(pack, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
             }
         });
     }

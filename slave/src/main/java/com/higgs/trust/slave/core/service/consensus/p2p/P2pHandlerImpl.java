@@ -1,5 +1,9 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
+import com.higgs.trust.consensus.bft.core.ConsensusClient;
+import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
+import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
+import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.*;
@@ -34,6 +38,9 @@ import java.util.concurrent.ExecutorService;
  * @author: pengdi
  **/
 @Slf4j @Service public class P2pHandlerImpl extends ValidConsensus implements P2pHandler, ClusterService {
+    @Autowired private PropertiesConfig propertiesConfig;
+
+    @Autowired private ConsensusClient consensusClient;
 
     @Autowired private PackageProcess packageProcess;
 
@@ -44,6 +51,8 @@ import java.util.concurrent.ExecutorService;
     @Autowired private NodeState nodeState;
 
     @Autowired private PackageLock packageLock;
+
+    private ConcurrentHashMap<String, P2pHandlerImpl.ResultListen> resultListenMap = new ConcurrentHashMap<>();
 
     private static final String DEFAULT_CLUSTER_HEIGHT_ID = "cluster_height_id";
 
@@ -74,7 +83,12 @@ import java.util.concurrent.ExecutorService;
         // send header to p2p consensus
         ValidateCommand validateCommand = new ValidateCommand(header.getHeight(), header);
         log.info("start send validating command to p2p consensus layer, validateCommand : {}", validateCommand);
-        this.submit(validateCommand);
+        if (propertiesConfig.isMock()) {
+            // store the validated header result
+            blockService.storeTempHeader(header, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
+        } else {
+            this.submit(validateCommand);
+        }
         log.info("end send validating command to p2p consensus layer");
     }
 
@@ -99,7 +113,12 @@ import java.util.concurrent.ExecutorService;
         // send header to p2p consensus
         PersistCommand persistCommand = new PersistCommand(header.getHeight(), header);
         log.info("start send persisting command to p2p consensus layer, persistCommand : {}", persistCommand);
-        this.submit(persistCommand);
+        if (propertiesConfig.isMock()) {
+            // store the persist header result
+            blockService.storeTempHeader(header, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE);
+        } else {
+            this.submit(persistCommand);
+        }
         log.info("end send persisting command to p2p consensus layer");
     }
 

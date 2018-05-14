@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.core.service.pack;
 
+import com.higgs.trust.slave.api.SlaveCallbackHandler;
+import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.context.AppContext;
@@ -37,6 +39,7 @@ import java.util.List;
     @Autowired TransactionExecutor transactionExecutor;
     @Autowired SnapshotService snapshotService;
     @Autowired TransactionRepository transactionRepository;
+    @Autowired SlaveCallbackRegistor slaveCallbackRegistor;
 
     /**
      * execute package persisting, get persist result and submit consensus layer
@@ -83,9 +86,13 @@ import java.util.List;
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                     //persist block
-                    blockService.persistBlock(block,txReceipts);
+                    blockService.persistBlock(block, txReceipts);
                 }
             });
+            Profiler.release();
+            //call back business
+            Profiler.enter("[callbackRSForPersisted]");
+            callbackRS(pack, txReceipts,false);
             Profiler.release();
         } catch (Throwable e) {
             log.error("[package.persisting]has unknown error");
@@ -141,6 +148,7 @@ import java.util.List;
         packageData.getCurrentBlock().setSignedTxList(persistedDatas);
         return txReceipts;
     }
+
     /**
      * check tx is exist by txId
      *
@@ -148,17 +156,18 @@ import java.util.List;
      * @param txId
      * @return
      */
-    private boolean hasTx(List<String> txs,String txId){
-        if(CollectionUtils.isEmpty(txs)){
+    private boolean hasTx(List<String> txs, String txId) {
+        if (CollectionUtils.isEmpty(txs)) {
             return false;
         }
-        for(String mTxId : txs){
-            if(StringUtils.equals(txId,mTxId)){
+        for (String mTxId : txs) {
+            if (StringUtils.equals(txId, mTxId)) {
                 return true;
             }
         }
         return false;
     }
+
     /**
      * receive persist final result from consensus layer
      *
@@ -196,12 +205,64 @@ import java.util.List;
             log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", pack.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
         }
-
-        //TODO:call RS business
-        Profiler.release();
-        if (Profiler.getDuration() > 0) {
-            Profiler.logDump();
+        try {
+            //call back business
+            Profiler.enter("[callbackRSForClusterPersisted]");
+            List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(pack.getSignedTxList());
+            callbackRS(pack, txReceipts,true);
+            Profiler.release();
+        }catch (Throwable e){
+            log.error("[package.persisted]callback rs has error", e);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR,e);
+        }finally {
+            Profiler.release();
+            if (Profiler.getDuration() > 0) {
+                Profiler.logDump();
+            }
         }
     }
+
+
+    /**
+     * call back business
+     */
+    private void callbackRS(Package pack, List<TransactionReceipt> txReceipts,boolean isClusterPersisted) {
+        log.info("[callbackRS]isClusterPersisted:{}",isClusterPersisted);
+        SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
+        if (callbackHandler == null) {
+            log.error("[callbackRS]callbackHandler is not register");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
+        }
+        List<SignedTransaction> txs = pack.getSignedTxList();
+        if (CollectionUtils.isEmpty(txs)) {
+            log.error("[callbackRS]txs is empty from pack:{}", pack);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
+        }
+        for (SignedTransaction tx : txs) {
+            String txId = tx.getCoreTx().getTxId();
+            RespData<CoreTransaction> respData = new RespData<>();
+            respData.setData(tx.getCoreTx());
+            //make resp code and msg for fail tx
+            for (TransactionReceipt receipt : txReceipts) {
+                if (StringUtils.equals(receipt.getTxId(), txId) && !receipt.isResult()) {
+                    respData.setCode(receipt.getErrorCode());
+                    SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
+                    if (slaveErrorEnum != null) {
+                        respData.setMsg(slaveErrorEnum.getDescription());
+                    }
+                    break;
+                }
+            }
+            //callback business
+            log.info("[callbackRS]start callback rs txId:{}", txId);
+            if(isClusterPersisted){
+                callbackHandler.onClusterPersisted(respData);
+            }else{
+                callbackHandler.onPersisted(respData);
+            }
+            log.info("[callbackRS]end callback rs txId:{}", txId);
+        }
+    }
+
 }
 

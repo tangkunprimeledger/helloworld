@@ -48,6 +48,25 @@
         <if test="dataOwner != null and dataOwner != ''">
             and d.data_owner=#{dataOwner}
         </if>
+        <if test="accountNo == null || accountNo == ''">
+            limit #{start}, #{end}
+        </if>
+    </select>
+
+    <select id="countAccountInfoWithOwner" resultType="java.lang.Long">
+        select
+        count(1)
+        from account_info a
+        LEFT JOIN
+        data_identity d
+        ON a.account_no = d.identity
+        where 1=1
+        <if test="accountNo != null and accountNo != ''">
+            and a.account_no=#{accountNo}
+        </if>
+        <if test="dataOwner != null and dataOwner != ''">
+            and d.data_owner=#{dataOwner}
+        </if>
     </select>
     <!-- account_info table all fields -->
     <sql id="baseColumnList">

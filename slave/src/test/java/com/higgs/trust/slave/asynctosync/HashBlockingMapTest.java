@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.asynctosync;
 
+import com.higgs.trust.slave.common.constant.Constant;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -16,7 +17,7 @@ public class HashBlockingMapTest {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        BlockingMap<String> hashBlockingMap = new HashBlockingMap<String>();
+        BlockingMap<String> hashBlockingMap = new HashBlockingMap<String>(Constant.MAX_BLOCKING_QUEUE_SIZE);
 
         hashBlockingMap.put("123", "test");
 

@@ -1,0 +1,16 @@
+{
+  "测试ID": 0,
+  "coreTx": {
+    "txId":"123466777",
+    "policyId":"test1",
+    "actionList": [{},{},{}],
+    "bizModel":{"33":"ee"},
+    "lockTime":1234565657567,
+    "sender":null,
+    "version":"1.0"
+  },
+  "BizTypeEnum": "STORAGE",
+  "signData": "SAFDAFAEFA",
+  "assert": "param validate error[RS_CORE_PARAM_VALIDATE_ERROR]",
+  "comment":"sender为null"
+}
