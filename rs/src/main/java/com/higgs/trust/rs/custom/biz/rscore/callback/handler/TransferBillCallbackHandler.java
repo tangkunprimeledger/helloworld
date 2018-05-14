@@ -4,11 +4,13 @@ import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.RequestDao;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
+import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,7 @@ public class TransferBillCallbackHandler {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus status) {
                     CoreTransaction coreTransaction = respData.getData();
+                    log.info("coreTransaction:{}", coreTransaction);
                     List<Action> actionList = coreTransaction.getActionList();
                     String toStatus = null;
                     Long actionIndex = null;
@@ -52,26 +55,29 @@ public class TransferBillCallbackHandler {
                         toStatus = BillStatusEnum.FAILED.getCode();
                     }
 
-                    if (actionList.size() > 1) {
-                        actionIndex = 1L;
+                    for (Action action : actionList) {
+                        if (action.getType() == ActionTypeEnum.UTXO) {
+                            UTXOAction utxoAction = (UTXOAction) action;
+                            List<TxOut> outputList = utxoAction.getOutputList();
+                            for (TxOut txOut : outputList) {
+                                //update bill status from process to
+                                int isUpdate = receivableBillDao.updateStatus(coreTransaction.getTxId(), txOut.getActionIndex().longValue(), txOut.getIndex().longValue(), BillStatusEnum.PROCESS.getCode(), toStatus);
+                                if (0 == isUpdate) {
+                                    log.error(" transfer bill update status  for txId :{} ,actionIndex :{} ,index :{} to status: {} is failed!", coreTransaction.getTxId(), txOut.getActionIndex(), txOut.getIndex(), toStatus);
+                                    throw new RuntimeException("create bill update status failed!");
+                                }
+                            }
 
-                    } else {
-                        actionIndex = 0L;
-                    }
-                    //update bill status from process to
-                    int isUpdate = receivableBillDao.updateStatus(coreTransaction.getTxId(), actionIndex, Long.valueOf(actionList.get(actionIndex.intValue()).getIndex()), BillStatusEnum.PROCESS.getCode(), toStatus);
-
-                    if (0 == isUpdate) {
-                        log.error(" transfer bill update status  for txId :{} ,actionIndex :{} ,index :{} to status: {} is failed!", coreTransaction.getTxId(), actionIndex, actionList.get(actionIndex.intValue()).getIndex(), toStatus);
-                        throw new RuntimeException("create bill update status failed!");
-                    }
-                    //update bill status from UNSPENT  to SPENT
-                    if (respData.isSuccess()) {
-                        TxIn txIn = ((UTXOAction) actionList.get(actionIndex.intValue())).getInputList().get(0);
-                        int isUpdateSTXO = receivableBillDao.updateStatus(txIn.getTxId(), txIn.getActionIndex().longValue(), txIn.getIndex().longValue(), BillStatusEnum.UNSPENT.getCode(), BillStatusEnum.SPENT.getCode());
-                        if (0 == isUpdateSTXO) {
-                            log.error(" transfer spend bill to update status  for txId :{} ,actionIndex :{} ,index :{} to status: {} is failed!", txIn.getTxId(), txIn.getActionIndex().longValue(), txIn.getIndex().longValue(), BillStatusEnum.SPENT.getCode());
-                            throw new RuntimeException("create bill update status failed!");
+                            //update bill status from UNSPENT  to SPENT
+                            if (respData.isSuccess()) {
+                                for (TxIn txIn : utxoAction.getInputList()) {
+                                    int isUpdateSTXO = receivableBillDao.updateStatus(txIn.getTxId(), txIn.getActionIndex().longValue(), txIn.getIndex().longValue(), BillStatusEnum.UNSPENT.getCode(), BillStatusEnum.SPENT.getCode());
+                                    if (0 == isUpdateSTXO) {
+                                        log.error(" transfer spend bill to update status  for txId :{} ,actionIndex :{} ,index :{} to status: {} is failed!", txIn.getTxId(), txIn.getActionIndex().longValue(), txIn.getIndex().longValue(), BillStatusEnum.SPENT.getCode());
+                                        throw new RuntimeException("create bill update status failed!");
+                                    }
+                                }
+                            }
                         }
                     }
                     //update process status from process to done

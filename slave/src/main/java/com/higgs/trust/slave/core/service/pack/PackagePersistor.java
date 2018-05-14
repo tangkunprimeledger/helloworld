@@ -92,7 +92,7 @@ import java.util.List;
             Profiler.release();
             //call back business
             Profiler.enter("[callbackRSForPersisted]");
-            callbackRS(pack, txReceipts,false);
+            callbackRS(block.getSignedTxList(), txReceipts,false);
             Profiler.release();
         } catch (Throwable e) {
             log.error("[package.persisting]has unknown error");
@@ -208,8 +208,9 @@ import java.util.List;
         try {
             //call back business
             Profiler.enter("[callbackRSForClusterPersisted]");
-            List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(pack.getSignedTxList());
-            callbackRS(pack, txReceipts,true);
+            List<SignedTransaction> txs = transactionRepository.queryTransactions(pack.getHeight());
+            List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
+            callbackRS(txs, txReceipts,true);
             Profiler.release();
         }catch (Throwable e){
             log.error("[package.persisted]callback rs has error", e);
@@ -226,7 +227,7 @@ import java.util.List;
     /**
      * call back business
      */
-    private void callbackRS(Package pack, List<TransactionReceipt> txReceipts,boolean isClusterPersisted) {
+    private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,boolean isClusterPersisted) {
         log.info("[callbackRS]isClusterPersisted:{}",isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         if (callbackHandler == null) {
@@ -234,9 +235,8 @@ import java.util.List;
             //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             return;
         }
-        List<SignedTransaction> txs = pack.getSignedTxList();
         if (CollectionUtils.isEmpty(txs)) {
-            log.error("[callbackRS]txs is empty from pack:{}", pack);
+            log.error("[callbackRS]txs is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
         for (SignedTransaction tx : txs) {

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,7 +30,7 @@ public class IdentityController {
     private IdentityService identityService;
 
     @RequestMapping(value = "/storage")
-    public RespData storageIdentity(@Valid IdentityRequestVO identityRequestVO, BindingResult result) {
+    public RespData storageIdentity(@RequestBody @Valid IdentityRequestVO identityRequestVO, BindingResult result) {
         log.info("[storageIdentity] storage identity request receive. {}", identityRequestVO.toString());
 
         if (result.hasErrors()) {
