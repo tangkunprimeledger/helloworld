@@ -2,11 +2,9 @@ package com.higgs.trust.rs.custom.biz.scheduler.identity;
 
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.custom.api.identity.IdentityService;
-import com.higgs.trust.rs.custom.config.MngPropertiesConfig;
 import com.higgs.trust.rs.custom.dao.BankChainRequestDAO;
 import com.higgs.trust.rs.custom.dao.po.BankChainRequestPO;
 import com.higgs.trust.rs.custom.model.convertor.identity.POToBOConvertor;
-import com.higgs.trust.rs.custom.model.enums.identity.IdentityEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -31,7 +29,6 @@ import static com.higgs.trust.Application.INITIAL_DELAY;
     public static final long PERIOD_TX = 5;
     @Autowired private BankChainRequestDAO bankChainRequestDAO;
     @Autowired private IdentityService identityService;
-    @Autowired private MngPropertiesConfig mngPropertiesConfig;
 
     @Override public void afterPropertiesSet() throws Exception {
         //ScheduleWithFixedDelay 取决于每次任务执行的时间长短，是基于不固定时间间隔进行任务调度

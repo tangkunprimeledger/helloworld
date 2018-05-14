@@ -3,8 +3,6 @@ package com.higgs.trust.rs.custom.controller.outter.v1;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.api.identity.IdentityService;
 import com.higgs.trust.rs.custom.api.vo.identity.IdentityRequestVO;
-import com.higgs.trust.rs.custom.config.MngPropertiesConfig;
-import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.model.RespData;
 import com.higgs.trust.rs.custom.model.convertor.identity.VOToBOConvertor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +26,7 @@ import java.io.UnsupportedEncodingException;
 public class IdentityController {
 
     @Autowired
-    private RsPropertiesConfig propertiesConfig;
-
-    @Autowired
     private IdentityService identityService;
-
-    @Autowired
-    private MngPropertiesConfig mngPropertiesConfig;
-
 
     @RequestMapping(value = "/storage")
     public RespData storageIdentity(@Valid IdentityRequestVO identityRequestVO, BindingResult result) {
