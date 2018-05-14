@@ -313,12 +313,12 @@ public class ReceiveService {
                 });
 
                 if (!CollectionUtils.isEmpty(deleteMessageDigestList)) {
-                    //delete receive command
-                    receiveCommandDao.deleteByMessageDigestList(deleteMessageDigestList);
                     //delete queued gc
                     queuedReceiveGcDao.deleteByMessageDigestList(deleteMessageDigestList);
                     //delete receive node
                     receiveNodeDao.deleteByMessageDigestList(deleteMessageDigestList);
+                    //delete receive command
+                    receiveCommandDao.deleteByMessageDigestList(deleteMessageDigestList);
                     log.info("receive gc {}", deleteMessageDigestList);
                 }
             }
