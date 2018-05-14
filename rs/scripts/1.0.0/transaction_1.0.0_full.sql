@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `core_transaction` (
 	KEY `idx_status` (`status`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create core transaction';
 
-# RS
+
 CREATE TABLE
 IF NOT EXISTS `request` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
