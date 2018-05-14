@@ -175,6 +175,16 @@ import java.util.List;
     }
 
     /**
+     * delete the temp header by height
+     *
+     * @param height
+     * @param blockHeaderTypeEnum
+     */
+    public void deleteTempHeader(Long height, BlockHeaderTypeEnum blockHeaderTypeEnum) {
+        blockHeaderDao.deleteBlockHeader(height, blockHeaderTypeEnum.getCode());
+    }
+
+    /**
      * save to db
      *
      * @param header
@@ -189,7 +199,7 @@ import java.util.List;
         try {
             blockHeaderDao.add(blockHeaderPO);
         } catch (DuplicateKeyException e) {
-            log.error("[saveTempHeader] is idempotent blockHeight:{}",header.getHeight());
+            log.error("[saveTempHeader] is idempotent blockHeight:{}", header.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
         }
     }
@@ -244,7 +254,7 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
         //save transactions
-        transactionRepository.batchSaveTransaction(blockHeader.getHeight(), blockTime, txs,txReceipts);
+        transactionRepository.batchSaveTransaction(blockHeader.getHeight(), blockTime, txs, txReceipts);
         log.info("[BlockRepository.saveBlock] is end");
     }
 

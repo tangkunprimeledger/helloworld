@@ -64,4 +64,9 @@
         <include refid="baseColumnList"/>
         from block_header where height=#{height} and type=#{type}
     </select>
+
+    <!-- delete -->
+    <delete id="deleteBlockHeader" parameterType="Object">
+       delete from block_header where height=#{height} and type=#{type}
+    </delete>
 </mapper>

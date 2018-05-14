@@ -6,6 +6,7 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap
 import com.higgs.trust.consensus.p2pvalid.core.storage.SyncSendService
 import com.higgs.trust.slave.common.enums.NodeStateEnum
 import com.higgs.trust.slave.core.managment.NodeState
+import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService
 import com.higgs.trust.slave.core.service.failover.SelfCheckingService
@@ -30,11 +31,13 @@ class node {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
         def blockService = beans.getBean(BlockService.class)
+        def packageRepository = beans.getBean(PackageRepository.class)
         context.provide([name: "Name", value: nodeState.nodeName])
         context.provide([name: "Master", value: nodeState.masterName])
         context.provide([name: "isMaster", value: nodeState.master])
         context.provide([name: "State", value: nodeState.state])
-        context.provide([name: "Height", value: blockService.getMaxHeight().toString()])
+        context.provide([name: "Block Height", value: blockService.getMaxHeight().toString()])
+        context.provide([name: "Package Height", value: packageRepository.getMaxHeight().toString()])
     }
 
     @Usage('show the current state of node')
