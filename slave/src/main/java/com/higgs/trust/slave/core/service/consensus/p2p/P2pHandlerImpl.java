@@ -1,13 +1,11 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
-import com.higgs.trust.consensus.bft.core.ConsensusClient;
-import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
-import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
-import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.consensus.bft.core.ConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.*;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -51,8 +49,6 @@ import java.util.concurrent.ExecutorService;
     @Autowired private NodeState nodeState;
 
     @Autowired private PackageLock packageLock;
-
-    private ConcurrentHashMap<String, P2pHandlerImpl.ResultListen> resultListenMap = new ConcurrentHashMap<>();
 
     private static final String DEFAULT_CLUSTER_HEIGHT_ID = "cluster_height_id";
 
