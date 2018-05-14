@@ -120,7 +120,7 @@ public class RsPropertiesConfig implements InitializingBean {
      * 创建票据 智能合约地址
      */
     @NotBlank
-    @Value("${rs.costom.contractAddress}")
+    @Value("${rs.custom.contractAddress}")
     private String contractAddress;
 
     private ECKey ecKey;
