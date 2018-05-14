@@ -108,8 +108,8 @@ import java.util.List;
         //sign tx for self
         RespData<String> signRespData = signService.signTx(coreTx);
         //check sign data of self
-        if(!signRespData.isSuccess()){
-            log.error("[submitTx] self sign tx has error:{}",signRespData);
+        if (!signRespData.isSuccess()) {
+            log.error("[submitTx] self sign tx has error:{}", signRespData);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
         //check sign data of self
@@ -168,23 +168,16 @@ import java.util.List;
                         RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
                     return;
                 }
-                List<String> rsIds = policy.getRsIds();
                 List<String> otherSignDatas = null;
-                boolean requireSigned = false;
-                if (!CollectionUtils.isEmpty(rsIds)) {
-                    requireSigned = true;
-                    //get other rs sign datas
-                    try {
-                        otherSignDatas = getSignDataByOther(bo, rsIds);
-                    } catch (Throwable t) {
-                        log.error("[processInitTx]getSignDataByOther is fail", t);
-                        toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
-                            RsCoreErrorEnum.RS_CORE_TX_GET_OTHER_SIGN_ERROR);
-                        return;
-                    }
+                try {
+                    otherSignDatas = getOtherSignDatas(bo, policy.getRsIds());
+                } catch (Throwable t) {
+                    log.error("[processInitTx]getSignDataByOther is fail", t);
+                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_TX_GET_OTHER_SIGN_ERROR);
+                    return;
                 }
                 //when require other rs sign
-                if (requireSigned && !CollectionUtils.isEmpty(otherSignDatas)) {
+                if (!CollectionUtils.isEmpty(otherSignDatas)) {
                     List<String> signDatas = bo.getSignDatas();
                     signDatas.addAll(otherSignDatas);
                     String signJSON = JSON.toJSONString(signDatas);
@@ -256,7 +249,7 @@ import java.util.List;
      * @param rsIds
      * @return
      */
-    private List<String> getSignDataByOther(CoreTxBO bo, List<String> rsIds) {
+    private List<String> getOtherSignDatas(CoreTxBO bo, List<String> rsIds) {
         List<String> otherRs = new ArrayList<>(rsIds.size() - 1);
         for (String rs : rsIds) {
             //filter self
@@ -265,6 +258,7 @@ import java.util.List;
             }
         }
         if (CollectionUtils.isEmpty(otherRs)) {
+            log.info("[getOtherSignDatas]required other sign rs is empty");
             return null;
         }
         List<String> signDatas = new ArrayList<>();
@@ -272,6 +266,10 @@ import java.util.List;
             //to sign by other rs
             String sign = signService.requestSign(rs, convertTxVO(bo));
             signDatas.add(sign);
+        }
+        if (CollectionUtils.isEmpty(signDatas)) {
+            log.error("[getOtherSignDatas]request other sign data is empty");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_GET_OTHER_SIGN_ERROR);
         }
         return signDatas;
     }
