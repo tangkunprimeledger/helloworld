@@ -44,7 +44,7 @@ public class CoreTxServiceTest extends IntegrateBaseTest{
         coreTx.setSender("TRUST-TEST1");
         coreTx.setActionList(initPolicy());
         String signData = "my-sign";
-        coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.STORAGE, coreTx,signData);
+        coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.STORAGE, coreTx);
         try {
             Thread.sleep(5000000L);
         } catch (InterruptedException e) {

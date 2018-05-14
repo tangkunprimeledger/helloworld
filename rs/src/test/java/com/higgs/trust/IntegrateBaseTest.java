@@ -7,10 +7,10 @@ import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.rs.core.integration.ServiceProviderClient;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
+//import org.junit.After;
+//import org.junit.Before;
+//import org.junit.BeforeClass;
+//import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.mybatis.spring.annotation.MapperScan;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -27,15 +27,19 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeSuite;
 
-@RunWith(SpringRunner.class)
+//@RunWith(SpringRunner.class)
 @SpringBootTest
 @EnableFeignClients
-public class IntegrateBaseTest {
-    @BeforeClass public static void beforeClass() {
+public class IntegrateBaseTest extends AbstractTestNGSpringContextTests {
+    @BeforeSuite public static void beforeClass() {
         System.setProperty("spring.config.location", "classpath:test-application.json");
         //JSON auto detect class type
         ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
@@ -51,11 +55,11 @@ public class IntegrateBaseTest {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
     }
 
-    @Before public void runBefore() {
+    @BeforeClass public void runBefore() {
         initMock();
     }
 
-    @After public void runAfter() {
+    @AfterClass public void runAfter() {
         runLast();
     }
 

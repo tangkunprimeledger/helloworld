@@ -1,0 +1,16 @@
+{
+  "测试ID": 0,
+  "coreTx": {
+    "txId":"123466777",
+    "policyId":"test1",
+    "actionList": [{},{},{}],
+    "bizModel":{"33":"ee"},
+    "lockTime":1234565657567,
+    "sender":"senders11",
+    "version":"1.0"
+  },
+  "BizTypeEnum": "STORAGE",
+  "signData": "SAFDAFAEFA",
+  "assert": "request idempotent[RS_CORE_IDEMPOTENT]",
+  "comment":"txId已存在时抛异常"
+}

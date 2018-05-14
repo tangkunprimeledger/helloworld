@@ -1,0 +1,16 @@
+{
+  "测试ID": 0,
+  "coreTx": {
+    "txId":"1234667771",
+    "policyId":"test11",
+    "actionList": [1,2,3],
+    "bizModel":{"33":"ee"},
+    "lockTime":1234565657567,
+    "sender":"senders11",
+    "version":"1.0"
+  },
+  "BizTypeEnum": "STORAGE",
+  "signData": "SAFDAFAEFA",
+  "assert": "冻结账户单元测试",
+  "comment":"txId"
+}
