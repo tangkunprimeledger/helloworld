@@ -214,7 +214,7 @@ import java.util.Set;
                 return;
             }
             packageRepository
-                .updateStatus(pack.getHeight(), PackageStatusEnum.SUBMIT_CONSENSUS_SUCCESS, PackageStatusEnum.RECEIVED);
+                .updateStatus(pack.getHeight(), PackageStatusEnum.INIT, PackageStatusEnum.RECEIVED);
         } else {
             if (null != packageBO) {
                 log.warn("package already exists. {}", pack);
