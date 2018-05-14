@@ -15,29 +15,26 @@ public interface CoreTransactionService {
      *
      * @param bizType
      * @param coreTx
-     * @param signData
      * @return
      */
-    RespData syncSubmitTxForPersisted(BizTypeEnum bizType,CoreTransaction coreTx,String signData);
+    RespData syncSubmitTxForPersisted(BizTypeEnum bizType,CoreTransaction coreTx);
 
     /**
      * submit transaction from custom rs by synchronous,release when enEnd callback is finished
      *
      * @param bizType
      * @param coreTx
-     * @param signData
      * @return
      */
-    RespData syncSubmitTxForEnd(BizTypeEnum bizType,CoreTransaction coreTx,String signData);
+    RespData syncSubmitTxForEnd(BizTypeEnum bizType,CoreTransaction coreTx);
 
     /**
      * submit transaction from custom rs
      *
      * @param bizType
      * @param coreTx
-     * @param signData
      */
-    void submitTx(BizTypeEnum bizType,CoreTransaction coreTx,String signData);
+    void submitTx(BizTypeEnum bizType,CoreTransaction coreTx);
     /**
      * process init data,sign and update tx status to wait,called by scheduler
      *

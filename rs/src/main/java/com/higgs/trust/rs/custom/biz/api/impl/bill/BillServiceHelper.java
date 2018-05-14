@@ -46,9 +46,6 @@ public class BillServiceHelper {
     private CoreTransactionConvertor coreTransactionConvertor;
 
     @Autowired
-    private SignService signService;
-
-    @Autowired
     private CoreTransactionService coreTransactionService;
 
     @Autowired
@@ -120,9 +117,6 @@ public class BillServiceHelper {
 
         //创建coreTx
         CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billCreateVO.getRequestId(), JSON.parseObject(billCreateVO.getBizModel()), actionList);
-        //签名
-        String signData = signService.signTx(coreTransaction).getData();
-
         //insert bill
         if (isIdentityExist){
             insertBill(billCreateVO, 1L, Long.valueOf(actionList.get(1).getIndex()));
@@ -131,7 +125,7 @@ public class BillServiceHelper {
         }
 
         //send and get callback result
-        RespData<?> respData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.ISSUE_UTXO, coreTransaction, signData);
+        RespData<?> respData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.ISSUE_UTXO, coreTransaction);
         return respData;
     }
 
@@ -199,9 +193,6 @@ public class BillServiceHelper {
         }
         //创建coreTx
         CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), JSON.parseObject(billTransferVO.getBizModel()), actionList);
-        //签名
-        String signData = signService.signTx(coreTransaction).getData();
-
         //insert bill
         if (isIdentityExist){
             insertBill(billTransferVO, 1L, Long.valueOf(actionList.get(1).getIndex()));
@@ -210,7 +201,7 @@ public class BillServiceHelper {
         }
 
         //send and get callback result
-        RespData rsRespData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.TRANSFER_UTXO, coreTransaction, signData);
+        RespData rsRespData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.TRANSFER_UTXO, coreTransaction);
         BeanUtils.copyProperties(rsRespData, respData);
         return respData;
     }
