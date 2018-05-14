@@ -24,35 +24,26 @@ import static com.higgs.trust.Application.INITIAL_DELAY;
  * @author WangQuanzhou
  * @date 2018/3/7 16:59
  */
-@Service
-@Slf4j
-public class StorageIdentityTask implements InitializingBean {
+@Service @Slf4j public class StorageIdentityTask implements InitializingBean {
     /**
      * 间隔时间
      */
     public static final long PERIOD_TX = 5;
-    @Autowired
-    private BankChainRequestDAO bankChainRequestDAO;
-    @Autowired
-    private IdentityService identityService;
-    @Autowired
-    private MngPropertiesConfig mngPropertiesConfig;
+    @Autowired private BankChainRequestDAO bankChainRequestDAO;
+    @Autowired private IdentityService identityService;
+    @Autowired private MngPropertiesConfig mngPropertiesConfig;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    @Override public void afterPropertiesSet() throws Exception {
         //ScheduleWithFixedDelay 取决于每次任务执行的时间长短，是基于不固定时间间隔进行任务调度
         //只有非管控模式才运行异常推进
         COMMON_THREAD_POOL.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                if (mngPropertiesConfig.getAcceptAsyncRequestStatus() == IdentityEnum.RUNNING) {
+            @Override public void run() {
                     process();
-                }
             }
         }, INITIAL_DELAY, PERIOD_TX, TimeUnit.SECONDS);
     }
 
-    private void process() {
+    public void process() {
         // 定时下发存证数据
         log.info("[process]: start handle");
         List<BankChainRequestPO> list = bankChainRequestDAO.queryRequest();
@@ -69,13 +60,13 @@ public class StorageIdentityTask implements InitializingBean {
                 return;
             }
 
-                try {
-                    log.info("定时任务处理存证下发业务  reqNo :{}，开始处理", bankChainRequestPO.getReqNo());
-                    identityService.asyncSendIdentity(POToBOConvertor.convertBankChainRequestPOToBO(bankChainRequestPO));
-                    log.info("定时任务处理存证下发业务  reqNo :{} 处理结束", bankChainRequestPO.getReqNo());
-                } catch (Throwable e) {
-                    log.error("[StorageIdentityTask] process failed,reqNo={}", bankChainRequestPO.getReqNo(), e);
-                }
+            try {
+                log.info("定时任务处理存证下发业务  reqNo :{}，开始处理", bankChainRequestPO.getReqNo());
+                identityService.asyncSendIdentity(POToBOConvertor.convertBankChainRequestPOToBO(bankChainRequestPO));
+                log.info("定时任务处理存证下发业务  reqNo :{} 处理结束", bankChainRequestPO.getReqNo());
+            } catch (Throwable e) {
+                log.error("[StorageIdentityTask] process failed,reqNo={}", bankChainRequestPO.getReqNo(), e);
+            }
 
         }
         log.info("[process]: end handle,the list size={}", list.size());
