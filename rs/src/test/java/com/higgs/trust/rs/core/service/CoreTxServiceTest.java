@@ -25,8 +25,7 @@ public class CoreTxServiceTest extends IntegrateBaseTest{
         coreTx.setBizModel(new JSONObject());
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setSender("RS001");
-        String signData = "my-sign";
-        coreTransactionService.submitTx(BizTypeEnum.STORAGE, coreTx,signData);
+        coreTransactionService.submitTx(BizTypeEnum.STORAGE, coreTx);
     }
     @Test
     public void testProcessInitTx(){

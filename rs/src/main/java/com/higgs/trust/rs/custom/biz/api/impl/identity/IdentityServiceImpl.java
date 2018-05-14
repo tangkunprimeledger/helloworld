@@ -1,8 +1,6 @@
 package com.higgs.trust.rs.custom.biz.api.impl.identity;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.custom.api.enums.ActionTypeEnum;
@@ -280,10 +278,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         coreTx.setTxId(identityRequest.getReqNo());
         coreTx.setSender("TRUST-NODE97");
         coreTx.setVersion(VersionEnum.V1.getCode());
-        String sign = SignUtils.sign(JSON.toJSONString(coreTx), propertiesConfig.getPriKey());
-
-        log.info("存证下发 VN开始 。异步调用请求参数为:{}", JSON.toJSONString(coreTx));
-        coreTransactionService.submitTx(BizTypeEnum.STORAGE, coreTx, sign);
+        coreTransactionService.submitTx(BizTypeEnum.STORAGE, coreTx);
         log.info("[asyncSendToVN]: end handle , reqNo = {}", identityRequest.getReqNo());
     }
 }

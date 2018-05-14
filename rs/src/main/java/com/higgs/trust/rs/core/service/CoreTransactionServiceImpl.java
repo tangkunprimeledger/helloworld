@@ -54,13 +54,13 @@ import java.util.List;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
 
-    @Override public RespData syncSubmitTxForPersisted(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
-        submitTx(bizType, coreTx, signData);
+    @Override public RespData syncSubmitTxForPersisted(BizTypeEnum bizType, CoreTransaction coreTx) {
+        submitTx(bizType, coreTx);
         return syncWait(coreTx.getTxId(), false);
     }
 
-    @Override public RespData syncSubmitTxForEnd(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
-        submitTx(bizType, coreTx, signData);
+    @Override public RespData syncSubmitTxForEnd(BizTypeEnum bizType, CoreTransaction coreTx) {
+        submitTx(bizType, coreTx);
         return syncWait(coreTx.getTxId(), true);
     }
 
@@ -88,7 +88,7 @@ import java.util.List;
         return respData;
     }
 
-    @Override public void submitTx(BizTypeEnum bizType, CoreTransaction coreTx, String signData) {
+    @Override public void submitTx(BizTypeEnum bizType, CoreTransaction coreTx) {
         log.info("[submitTx]{}", coreTx);
         if (coreTx == null) {
             log.error("[submitTx] the tx is null");
@@ -105,7 +105,15 @@ import java.util.List;
             log.error("[submitTx] bizType is null");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_BIZ_TYPE_IS_NULL);
         }
+        //sign tx for self
+        RespData<String> signRespData = signService.signTx(coreTx);
         //check sign data of self
+        if(!signRespData.isSuccess()){
+            log.error("[submitTx] self sign tx has error:{}",signRespData);
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
+        }
+        //check sign data of self
+        String signData = signRespData.getData();
         if (StringUtils.isEmpty(signData)) {
             log.error("[submitTx] self sign data is empty");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
@@ -307,6 +315,13 @@ import java.util.List;
         respData.setData(convertTxVO(bo));
         //callback custom rs
         txCallbackHandler.onEnd(bo.getBizType(), respData);
+        //同步通知
+        try {
+            persistedResultMap.put(bo.getTxId(), respData);
+            clusterPersistedResultMap.put(bo.getTxId(), respData);
+        } catch (Throwable e) {
+            log.warn("sync notify rs resp data failed", e);
+        }
     }
 
     @Override public void submitToSlave() {
