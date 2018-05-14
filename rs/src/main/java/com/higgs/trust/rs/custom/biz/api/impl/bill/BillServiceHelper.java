@@ -211,8 +211,16 @@ public class BillServiceHelper {
             actionList = utxoActionConvertor.buildTransferBillWithIdentityActionList(billTransferVO);
         }
         //创建coreTx
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), JSON.parseObject(billTransferVO.getBizModel()), actionList);
-        //insert bill
+
+        JSONObject bizModel = new JSONObject();
+        try {
+            bizModel = JSON.parseObject(billTransferVO.getBizModel());
+        } catch (Throwable e) {
+            bizModel.put("bizModel", billTransferVO.getBizModel());
+        }
+
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList);
+
         //insert bill
         for (Action action : actionList) {
             if (action.getType() == ActionTypeEnum.UTXO) {

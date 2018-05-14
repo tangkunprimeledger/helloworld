@@ -7,6 +7,7 @@ import com.higgs.trust.rs.custom.vo.BillTransferVO;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 public class BillControllerTest {
 
@@ -16,12 +17,12 @@ public class BillControllerTest {
         String url = "http://127.0.0.1:7070/create";
         BillCreateVO billCreateVO = new BillCreateVO();
         billCreateVO.setAmount(new BigDecimal("1231231"));
-        billCreateVO.setBillId("12312312312");
+        billCreateVO.setBillId("12312312312123");
         billCreateVO.setBizModel("23231231");
         billCreateVO.setDueDate("qw3eqweqw");
         billCreateVO.setFinalPayerId("q23eqwewq");
         billCreateVO.setHolder("lingchao");
-        billCreateVO.setRequestId("lingchaoddd");
+        billCreateVO.setRequestId("lingchaoddddddwqeqw");
 
         String params = JSON.toJSONString(billCreateVO);
 
@@ -36,19 +37,22 @@ public class BillControllerTest {
     @Test
     public void testTransfer() throws Exception {
         String url = "http://127.0.0.1:7070/transfer";
-        BillTransferVO billTransferVO = new BillTransferVO();
-        billTransferVO.setBillId("12312312312");
-        billTransferVO.setBizModel("12312");
-        billTransferVO.setNextHolder("lingchao");
-        billTransferVO.setRequestId("132123dfscsdwada");
+        while (true){
+            BillTransferVO billTransferVO = new BillTransferVO();
+            billTransferVO.setBillId("12312312312");
+            billTransferVO.setBizModel("12312");
+            billTransferVO.setNextHolder("lingchao22");
+            billTransferVO.setRequestId("132123dfscsdwadass"+System.currentTimeMillis()+ new Random());
 
-        String params = JSON.toJSONString(billTransferVO);
+            String params = JSON.toJSONString(billTransferVO);
 
-        System.out.println("request.params:" + params);
+            System.out.println("request.params:" + params);
 
-        String res = OkHttpClientManager.postAsString(url, params);
+            String res = OkHttpClientManager.postAsString(url, params);
 
-        System.out.println("res.data:" + res);
+            System.out.println("res.data:" + res);
+        }
+
     }
 
 
