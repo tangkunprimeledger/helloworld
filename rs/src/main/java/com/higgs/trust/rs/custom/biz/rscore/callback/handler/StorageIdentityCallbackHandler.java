@@ -29,10 +29,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
     public void process(RespData<CoreTransaction> respData) {
 
-        if (null == respData) {
-            log.error("[process] identity callback error, respData is null");
+        if (null == respData || null == respData.getData()) {
+            log.error("[process] identity callback error, respData or respData.getData() is null");
             throw new BankChainException(BankChainExceptionCodeEnum.IdentityCallbackProcessException,
-                "[process] identity callback error, respData is null");
+                "[process] identity callback error, respData or respData.getData() is null");
         }
 
         try {
