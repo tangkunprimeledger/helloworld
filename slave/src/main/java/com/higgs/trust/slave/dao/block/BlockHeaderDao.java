@@ -13,6 +13,14 @@ import org.apache.ibatis.annotations.Param;
      * @param type
      * @return
      */
-    BlockHeaderPO queryByHeight(@Param("height") Long height,@Param("type")String type);
+    BlockHeaderPO queryByHeight(@Param("height") Long height, @Param("type") String type);
+
+    /**
+     * delete the block header by height
+     *
+     * @param height
+     * @param type
+     */
+    void deleteBlockHeader(@Param("height") Long height, @Param("type") String type);
 
 }

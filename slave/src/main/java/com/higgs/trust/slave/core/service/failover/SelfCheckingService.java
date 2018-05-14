@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.failover;
 
+import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.FailoverExecption;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
     @Autowired private BlockService blockService;
     @Autowired private BlockRepository blockRepository;
     @Autowired private NodeState nodeState;
+    @Autowired private NodeProperties properties;
 
     /**
      * auto check
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Service;
         nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
         boolean selfChecked = false;
         try {
-            selfChecked = selfCheck(60);
+            selfChecked = selfCheck(properties.getSelfCheckTimes());
             log.info("self checked result:{}", selfChecked);
         } catch (FailoverExecption e) {
             log.error("self check failed:", e);
@@ -76,7 +78,7 @@ import org.springframework.stereotype.Service;
                 }
 
             } while (++i < tryTimes);
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_CONSENSUS_WAIT_RESULT_TIMEOUT);
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
         }
         return false;
     }

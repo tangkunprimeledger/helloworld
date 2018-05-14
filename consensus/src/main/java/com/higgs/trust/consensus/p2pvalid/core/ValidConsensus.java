@@ -1,12 +1,11 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.core.storage.SendService;
+import com.higgs.trust.consensus.p2pvalid.core.storage.SyncSendService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.*;
-import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -19,6 +18,8 @@ import java.util.function.Function;
 
     @Autowired private SendService sendService;
 
+    @Autowired private SyncSendService syncSendService;
+
     public ValidConsensus() {
         executor = new ValidExecutor();
         config();
@@ -26,6 +27,10 @@ import java.util.function.Function;
 
     public final void submit(ValidCommand<?> command) {
         sendService.submit(command);
+    }
+
+    public final ResponseCommand<?> submitSync(ValidCommand<?> command) {
+        return syncSendService.send(command);
     }
 
     public ValidExecutor getValidExecutor() {
@@ -53,7 +58,7 @@ import java.util.function.Function;
      */
     private boolean isOperationMethod(Method method) {
         Class<?>[] paramTypes = method.getParameterTypes();
-        return paramTypes.length == 1 && paramTypes[0] == ValidCommit.class;
+        return paramTypes.length == 1 && ValidBaseCommit.class.isAssignableFrom(paramTypes[0]);
     }
 
     /**

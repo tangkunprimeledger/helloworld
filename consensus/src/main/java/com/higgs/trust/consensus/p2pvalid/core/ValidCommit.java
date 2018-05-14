@@ -8,27 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * @author cwy
  */
-@Slf4j
-public class ValidCommit<T extends ValidCommand<?>> {
+@Slf4j public class ValidCommit<T extends ValidCommand<?>> extends ValidBaseCommit<T> {
 
     private ReceiveCommandPO receiveCommand;
-    private ValidCommand<?> validCommand;
 
     private ValidCommit(ReceiveCommandPO receiveCommand) {
+        super((T)JSON.parse(receiveCommand.getValidCommand()));
         this.receiveCommand = receiveCommand;
-        this.validCommand = (ValidCommand<?>) JSON.parse(receiveCommand.getValidCommand());
     }
 
     public static ValidCommit of(ReceiveCommandPO receiveCommandPO) {
         return new ValidCommit(receiveCommandPO);
-    }
-
-    public T operation() {
-        return (T)validCommand;
-    }
-
-    public Class<? extends ValidCommand> type() {
-        return validCommand.getClass();
     }
 
     public void close() {

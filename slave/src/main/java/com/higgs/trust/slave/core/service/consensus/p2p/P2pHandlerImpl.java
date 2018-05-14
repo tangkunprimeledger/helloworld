@@ -1,8 +1,10 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
+import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.bft.core.ConsensusClient;
-import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
-import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
+import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
+import com.higgs.trust.consensus.p2pvalid.core.*;
+import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
@@ -11,6 +13,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService;
 import com.higgs.trust.slave.core.service.pack.PackageLock;
@@ -18,18 +21,15 @@ import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.consensus.*;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Description: handle p2p message sending and p2p message receiving
@@ -50,9 +50,13 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired private PackageLock packageLock;
 
-    private ConcurrentHashMap<String, P2pHandlerImpl.ResultListen> resultListenMap = new ConcurrentHashMap<>();
-
     private static final String DEFAULT_CLUSTER_HEIGHT_ID = "cluster_height_id";
+
+    @Autowired private BlockRepository blockRepository;
+
+    @Autowired private P2pConsensusClient p2pConsensusClient;
+
+    @Autowired private ClusterInfo clusterInfo;
 
     /**
      * send validating result to p2p consensus layer
@@ -237,8 +241,12 @@ import java.util.concurrent.TimeUnit;
      *
      * @param commit
      */
-    public void handleClusterHeight(ValidCommit<ValidClusterHeightCmd> commit) {
-        handleResult(commit);
+    public List<ValidClusterHeightCmd> handleClusterHeight(ValidSyncCommit<ClusterHeightCmd> commit) {
+        ClusterHeightCmd operation = commit.operation();
+        List<Long> maxHeights = blockRepository.getMaxHeight(operation.get());
+        List<ValidClusterHeightCmd> cmds = new ArrayList<>();
+        maxHeights.forEach(height -> cmds.add(new ValidClusterHeightCmd(operation.getRequestId(), height)));
+        return cmds;
     }
 
     /**
@@ -246,20 +254,22 @@ import java.util.concurrent.TimeUnit;
      *
      * @param commit
      */
-    public void handleValidHeader(ValidCommit<ValidBlockHeaderCmd> commit) {
-        handleResult(commit);
+    public ValidBlockHeaderCmd handleValidHeader(ValidSyncCommit<BlockHeaderCmd> commit) {
+        BlockHeaderCmd operation = commit.operation();
+        BlockHeader header = operation.get();
+        BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
+        boolean result = blockHeader != null && blockService.compareBlockHeader(header, blockHeader);
+        return new ValidBlockHeaderCmd(operation.getRequestId(), header, result);
     }
 
     /**
      * get the cluster height through consensus, the default request id will be set. if timeout, null will be return
      *
      * @param size the size of height will be consensus
-     * @param time waiting time for the result
      * @return
      */
-    @Override public Long getClusterHeight(int size, long time) {
-        return getClusterHeight(DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis(), size,
-            time);
+    @Override public Long getClusterHeight(int size) {
+        return getClusterHeight(DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis(), size);
     }
 
     /**
@@ -267,81 +277,56 @@ import java.util.concurrent.TimeUnit;
      *
      * @param requestId the id of request
      * @param size      the size of height will be consensus
-     * @param time      waiting time for the result
      * @return
      */
-    @Override public Long getClusterHeight(String requestId, int size, long time) {
-        consensusClient.submit(new ClusterHeightCmd(requestId, nodeState.getNodeName(), size));
-        return registerAndGetResult(requestId, time);
+    @Override public Long getClusterHeight(String requestId, int size) {
+        ResponseCommand<?> responseCommand = this.submitSync(new ClusterHeightCmd(requestId, size));
+        return responseCommand == null ? null : (Long)responseCommand.get();
+    }
+
+    @Override public Map<String, Long> getAllClusterHeight() {
+        List<String> nodeNames = clusterInfo.clusterNodeNames();
+        Map<String, Long> heightMap = new HashMap<>();
+        String requestId = DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis();
+        ClusterHeightCmd cmd = new ClusterHeightCmd(requestId, 1);
+        ValidCommandWrap validCommandWrap = new ValidCommandWrap();
+        validCommandWrap.setCommandClass(cmd.getClass());
+        validCommandWrap.setFromNode(clusterInfo.myNodeName());
+        validCommandWrap.setSign(SignUtils.sign(cmd.getMessageDigestHash(), clusterInfo.privateKey()));
+        validCommandWrap.setValidCommand(cmd);
+        nodeNames.forEach((nodeName) -> {
+            Long height = null;
+            try {
+                ValidResponseWrap<? extends ResponseCommand> validResponseWrap =
+                    p2pConsensusClient.syncSend(nodeName, validCommandWrap);
+                Object response = validResponseWrap.getResult();
+                if (response != null) {
+                    if (response instanceof List) {
+                        List<ResponseCommand> commands = (List)response;
+                        if (!commands.isEmpty() && commands.get(0).get() != null) {
+                            height = (Long)commands.get(0).get();
+                        }
+                    }
+                }
+
+            } catch (Throwable throwable) {
+                log.error("{}", throwable);
+            }
+            heightMap.put(nodeName, height);
+        });
+        return heightMap;
     }
 
     /**
      * validating the block header through consensus, if timeout, null will be return
      *
      * @param header block header
-     * @param time   waiting time for the result
      * @return
      */
-    @Override public Boolean validatingHeader(BlockHeader header, long time) {
-        BlockHeaderCmd command = new BlockHeaderCmd(nodeState.getNodeName(), header);
-        consensusClient.submit(command);
-        return registerAndGetResult(command.getRequestId(), time);
+    @Override public Boolean validatingHeader(BlockHeader header) {
+        BlockHeaderCmd command = new BlockHeaderCmd(header);
+        ResponseCommand<?> responseCommand = this.submitSync(command);
+        return responseCommand == null ? null : (Boolean)responseCommand.get();
     }
 
-    private <T> T registerAndGetResult(String requestId, long time) {
-        try {
-            P2pHandlerImpl.ResultListen resultListen = register(requestId);
-            resultListen.getLatch().await(time, TimeUnit.MILLISECONDS);
-            return getResult(requestId);
-        } catch (InterruptedException e) {
-            log.warn("waiting the consensus result failed", e);
-            return null;
-        } finally {
-            resultListenMap.remove(requestId);
-        }
-    }
-
-    private P2pHandlerImpl.ResultListen register(String requestId) {
-        P2pHandlerImpl.ResultListen resultListen =
-            resultListenMap.getOrDefault(requestId, new P2pHandlerImpl.ResultListen());
-        resultListen.renew();
-        resultListenMap.put(requestId, resultListen);
-        return resultListen;
-    }
-
-    private <T> T getResult(String id) {
-        P2pHandlerImpl.ResultListen resultListen = resultListenMap.get(id);
-        Object result = resultListen.getResult();
-        return result == null ? null : (T)result;
-    }
-
-    private <T extends Serializable, C extends IdValidCommand<T>> void handleResult(ValidCommit<C> commit) {
-        if (log.isDebugEnabled()) {
-            log.debug("handle consensus result:{}", ToStringBuilder.reflectionToString(commit));
-        }
-        try {
-            IdValidCommand<T> command = commit.operation();
-            P2pHandlerImpl.ResultListen resultListen = resultListenMap.get(command.getRequestId());
-            if (resultListen != null) {
-                resultListen.setResult(command.get());
-                resultListen.getLatch().countDown();
-            }
-        } finally {
-            commit.close();
-        }
-    }
-
-    static public class ResultListen {
-
-        @Getter private CountDownLatch latch = new CountDownLatch(1);
-
-        /**
-         * result
-         */
-        @Getter @Setter private Object result;
-
-        public void renew() {
-            latch = new CountDownLatch(1);
-        }
-    }
 }

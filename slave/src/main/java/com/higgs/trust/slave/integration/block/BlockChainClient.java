@@ -27,6 +27,18 @@ import java.util.List;
         @RequestParam(value = "startHeight") long startHeight, @RequestParam(value = "size") int size);
 
     /**
+     * get the block headers
+     *
+     * @param nodeName    node name
+     * @param startHeight
+     * @param size
+     * @return
+     */
+    @RequestMapping(value = "/block/header/get", method = RequestMethod.GET) List<BlockHeader> getBlockHeadersFromNode(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName,
+        @RequestParam(value = "startHeight") long startHeight, @RequestParam(value = "size") int size);
+
+    /**
      * get the blocks
      *
      * @param nodeNameReg node name regex
@@ -39,9 +51,21 @@ import java.util.List;
         @RequestParam(value = "startHeight") long startHeight, @RequestParam(value = "size") int size);
 
     /**
+     * get the blocks
+     *
+     * @param nodeName    node name
+     * @param startHeight
+     * @param size
+     * @return
+     */
+    @RequestMapping(value = "/block/get", method = RequestMethod.GET) List<Block> getBlocksFromNode(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName,
+        @RequestParam(value = "startHeight") long startHeight, @RequestParam(value = "size") int size);
+
+    /**
      * submit transaction
      *
-     * @param nodeName  node name
+     * @param nodeName     node name
      * @param transactions
      * @return submit failed transaction list
      */

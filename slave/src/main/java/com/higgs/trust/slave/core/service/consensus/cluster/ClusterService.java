@@ -5,34 +5,38 @@ package com.higgs.trust.slave.core.service.consensus.cluster;
 
 import com.higgs.trust.slave.model.bo.BlockHeader;
 
+import java.util.Map;
+
 public interface ClusterService {
 
     /**
      * get the block height of cluster
      *
-     * @param size    the size of height will be consensus
-     * @param timeout waiting time for the result
+     * @param size the size of height will be consensus
      * @return
      */
-    Long getClusterHeight(int size, long timeout);
+    Long getClusterHeight(int size);
 
     /**
      * get the block height of cluster
      *
      * @param requestId the id of request
      * @param size      the size of height will be consensus
-     * @param timeout   waiting time for the result
      * @return
      */
-    Long getClusterHeight(String requestId, int size, long timeout);
+    Long getClusterHeight(String requestId, int size);
 
     /**
      * cluster validates the block header
      *
-     * @param header  block header
-     * @param timeout timeout  for waiting result
+     * @param header block header
      * @return
      */
-    Boolean validatingHeader(BlockHeader header, long timeout);
+    Boolean validatingHeader(BlockHeader header);
+
+    /**
+     * Get the height of all node
+     */
+    Map<String, Long> getAllClusterHeight();
 
 }
