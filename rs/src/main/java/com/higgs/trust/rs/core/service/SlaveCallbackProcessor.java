@@ -59,12 +59,12 @@ import org.springframework.transaction.support.TransactionTemplate;
                 int r = coreTransactionDao
                     .updateStatus(tx.getTxId(), CoreTxStatusEnum.VALIDATED.getCode(), CoreTxStatusEnum.PERSISTED.getCode());
                 if (r != 1) {
-                    log.error("[onValidated] update tx status is fail from:{},to:{}", CoreTxStatusEnum.VALIDATED, CoreTxStatusEnum.PERSISTED);
+                    log.error("[onPersisted] update tx status is fail from:{},to:{}", CoreTxStatusEnum.VALIDATED, CoreTxStatusEnum.PERSISTED);
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
                 TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
                 if(txCallbackHandler == null){
-                    log.error("[onValidated]call back handler is not register");
+                    log.error("[onPersisted]call back handler is not register");
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
                 }
                 CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(),false);
