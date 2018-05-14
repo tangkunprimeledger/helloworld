@@ -3,7 +3,6 @@ package com.higgs.trust.rs.custom.biz.api.impl.bill;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
-import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
 import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
