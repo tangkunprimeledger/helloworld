@@ -89,7 +89,7 @@ import java.util.concurrent.TimeUnit;
 
         CompletableFuture future = consensusClient.submit(packageCommand);
         try {
-            future.get(1, TimeUnit.SECONDS);
+            future.get();
         } catch (Throwable e) {
             log.error("replicate log failed!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED, e);
