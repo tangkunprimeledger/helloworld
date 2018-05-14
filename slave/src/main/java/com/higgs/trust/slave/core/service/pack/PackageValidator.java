@@ -187,7 +187,7 @@ import java.util.List;
     private void callbackRS(Package pack){
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         if (callbackHandler == null) {
-            log.error("[callbackRS]callbackHandler is not register");
+            log.warn("[callbackRS]callbackHandler is not register");
             //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             return;
         }
