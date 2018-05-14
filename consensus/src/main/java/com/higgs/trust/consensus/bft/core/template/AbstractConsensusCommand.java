@@ -28,7 +28,7 @@ public abstract class AbstractConsensusCommand<T> implements ConsensusCommand<T>
 
     @Override
     public CompactionMode compaction() {
-        return CompactionMode.FULL;
+        return CompactionMode.QUORUM;
     }
 
 }
