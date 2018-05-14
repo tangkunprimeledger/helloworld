@@ -39,6 +39,8 @@ import org.testng.annotations.BeforeSuite;
 @SpringBootTest
 @EnableFeignClients
 public class IntegrateBaseTest extends AbstractTestNGSpringContextTests {
+
+    public static String DB_URL = "jdbc:mysql://localhost:3306/trust?user=root&password=root";
     @BeforeSuite public static void beforeClass() {
         System.setProperty("spring.config.location", "classpath:test-application.json");
         //JSON auto detect class type
