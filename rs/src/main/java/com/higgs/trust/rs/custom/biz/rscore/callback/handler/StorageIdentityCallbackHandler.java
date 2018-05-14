@@ -1,6 +1,5 @@
 package com.higgs.trust.rs.custom.biz.rscore.callback.handler;
 
-import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.custom.api.enums.BankChainExceptionCodeEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestStatusEnum;
 import com.higgs.trust.rs.custom.dao.BankChainRequestDAO;
@@ -23,17 +22,19 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @author lingchao
  * @create 2018年05月13日23:03
  */
-@Service
-@Slf4j
-public class StorageIdentityCallbackHandler {
-    @Autowired
-    private TransactionTemplate txRequired;
-    @Autowired
-    private BankChainRequestDAO bankChainRequestDAO;
-    @Autowired
-    private IdentityDAO identityDAO;
+@Service @Slf4j public class StorageIdentityCallbackHandler {
+    @Autowired private TransactionTemplate txRequired;
+    @Autowired private BankChainRequestDAO bankChainRequestDAO;
+    @Autowired private IdentityDAO identityDAO;
 
     public void process(RespData<CoreTransaction> respData) {
+
+        if (null == respData) {
+            log.error("[process] identity callback error, respData is null");
+            throw new BankChainException(BankChainExceptionCodeEnum.IdentityCallbackProcessException,
+                "[process] identity callback error, respData is null");
+        }
+
         try {
             String reqNo = respData.getData().getTxId();
             String key = respData.getData().getBizModel().getString("key");
@@ -41,9 +42,9 @@ public class StorageIdentityCallbackHandler {
 
             BankChainRequestPO bankChainRequestPO = new BankChainRequestPO();
             bankChainRequestPO.setReqNo(reqNo);
-            if (respData.isSuccess()){
+            if (respData.isSuccess()) {
                 bankChainRequestPO.setStatus(RequestStatusEnum.SUCCESS.getCode());
-            }else {
+            } else {
                 bankChainRequestPO.setStatus(RequestStatusEnum.FAILED.getCode());
             }
 
@@ -54,20 +55,22 @@ public class StorageIdentityCallbackHandler {
 
             // 开启事务执行DB操作
             txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override
-                protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    log.info("[store] transaction start，reqNo={}", reqNo);
-                    // 更新bankchain_request表的对应的请求状态为SUCCESS
+                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    log.info("[process] transaction start，reqNo={}", reqNo);
+                    // 更新bankchain_request表的对应的请求状态为SUCCESS 或者 FAILED
                     bankChainRequestDAO.updateRequest(bankChainRequestPO);
 
                     // 将回调的数据存入identity表
-                    identityDAO.insertIdentity(identityPO);
-                    log.info("[store] transaction success，reqNo={}", reqNo);
+                    if (respData.isSuccess()){
+                        identityDAO.insertIdentity(identityPO);
+                    }
+                    log.info("[process] transaction success，reqNo={}", reqNo);
                 }
             });
         } catch (Throwable e) {
-            log.error("[store] store identity data error", e);
-            throw new BankChainException(BankChainExceptionCodeEnum.IdentityCallbackProcessException, "[store] store identity data error");
+            log.error("[process] store identity data error", e);
+            throw new BankChainException(BankChainExceptionCodeEnum.IdentityCallbackProcessException,
+                "[process] store identity data error");
         }
     }
 }
