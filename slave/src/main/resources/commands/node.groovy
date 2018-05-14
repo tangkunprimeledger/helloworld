@@ -11,6 +11,7 @@ import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService
 import com.higgs.trust.slave.core.service.failover.SelfCheckingService
 import lombok.extern.slf4j.Slf4j
+import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
@@ -27,7 +28,19 @@ class node {
 
     @Usage('show the node info')
     @Command
-    def info(InvocationContext context) {
+    def info(InvocationContext context, @Usage("show the info until the end") @Option(names = ["t"]) Boolean isTill) {
+        if (isTill) {
+            while (true) {
+                printInfo(context)
+                context.flush()
+                Thread.sleep(1000)
+            }
+        } else {
+            printInfo(context)
+        }
+    }
+
+    def printInfo(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
         def blockService = beans.getBean(BlockService.class)
@@ -38,6 +51,8 @@ class node {
         context.provide([name: "State", value: nodeState.state])
         context.provide([name: "Block Height", value: blockService.getMaxHeight().toString()])
         context.provide([name: "Package Height", value: packageRepository.getMaxHeight().toString()])
+        context.provide([name: "Time", value: DateFormatUtils.format(System.currentTimeMillis(), "yyyy-MM-dd HH:mm:ss.SSS")])
+        out.println("")
     }
 
     @Usage('show the current state of node')

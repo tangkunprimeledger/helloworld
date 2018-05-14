@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.failover;
 
+import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
@@ -31,6 +32,7 @@ import static org.testng.Assert.assertTrue;
 
     @Mock Block block;
     @Mock BlockHeader header;
+    @Mock NodeProperties properties;
 
     @BeforeClass public void before() {
         MockitoAnnotations.initMocks(this);
@@ -38,6 +40,7 @@ import static org.testng.Assert.assertTrue;
         when(blockService.getMaxHeight()).thenReturn(height);
         when(block.getBlockHeader()).thenReturn(header);
         when(blockRepository.getBlock(height)).thenReturn(block);
+        when(properties.getSelfCheckTimes()).thenReturn(1);
     }
 
     @BeforeMethod public void beforeMethod() {
@@ -60,6 +63,7 @@ import static org.testng.Assert.assertTrue;
 
         when(blockSyncService.validating(block)).thenReturn(true);
         when(blockSyncService.bftValidating(header)).thenReturn(null, true);
+        when(properties.getSelfCheckTimes()).thenReturn(2);
 
         assertTrue(selfCheckingService.check());
         verify(nodeState, times(1)).changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
@@ -87,7 +91,7 @@ import static org.testng.Assert.assertTrue;
         verify(nodeState, times(1)).changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
     }
 
-//    @Test
+    //    @Test
     public void testCheckBftValidOut() {
         when(nodeState.isMaster()).thenReturn(false);
 
