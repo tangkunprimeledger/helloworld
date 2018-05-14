@@ -80,7 +80,7 @@ public class ServerConfig
     @Value("${copycat.server.sessionTimeout:5000}")
     private Long sessionTimeout;
 
-    @Value("${copycat.server.backlog:20}")
+    @Value("${copycat.server.backlog:50}")
     private Integer backlog;
 
     @Override
