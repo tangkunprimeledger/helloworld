@@ -105,10 +105,10 @@
         "processInit":50,
         "submitSlave":50
       }
+    },
+    "costom":{
+      "contractAddress":"1234567"
     }
-  },
-  "costom":{
-    "contractAddress":"1234567"
   }
 
 }
