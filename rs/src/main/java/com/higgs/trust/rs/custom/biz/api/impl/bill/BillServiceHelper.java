@@ -3,8 +3,8 @@ package com.higgs.trust.rs.custom.biz.api.impl.bill;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
-import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
+import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.RequestDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
@@ -51,6 +51,9 @@ public class BillServiceHelper {
     @Autowired
     private ReceivableBillDao receivableBillDao;
 
+    @Autowired
+    private RsPropertiesConfig rsPropertiesConfig;
+
     /**
      * requestIdempotent
      *
@@ -90,7 +93,7 @@ public class BillServiceHelper {
      * @param billCreateVO
      */
     public void insertBill(BillCreateVO billCreateVO, Long actionIndex, Long index) {
-        ReceivableBillPO receivableBillPO = BillConvertor.buildBill(billCreateVO, actionIndex, index);
+        ReceivableBillPO receivableBillPO = BillConvertor.buildBill(billCreateVO, actionIndex, index, rsPropertiesConfig.getContractAddress());
         try {
             receivableBillDao.add(receivableBillPO);
         } catch (DuplicateKeyException e) {

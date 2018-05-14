@@ -3,6 +3,7 @@ package com.higgs.trust.rs.custom.util.converter;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
+import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
@@ -38,6 +39,9 @@ public class UTXOActionConvertor {
 
     @Autowired
     private ReceivableBillDao receivableBillDao;
+
+    @Autowired
+    private RsPropertiesConfig rsPropertiesConfig;
 
 
     /**
@@ -78,10 +82,9 @@ public class UTXOActionConvertor {
         //build UTXOAction
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setOutputList(txOutList);
-        //TODO lingchao get it from config
-        utxoAction.setContractAddress("");
+        utxoAction.setContractAddress(rsPropertiesConfig.getContractAddress());
         utxoAction.setType(ActionTypeEnum.UTXO);
-        utxoAction.setStateClass("JSONObject");
+        utxoAction.setStateClass("com.alibaba.fastjson.JSONObject");
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.ISSUE);
         utxoAction.setIndex(1);
 
@@ -119,10 +122,9 @@ public class UTXOActionConvertor {
         //build UTXOAction
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setOutputList(txOutList);
-        //TODO lingchao get it from config
-        utxoAction.setContractAddress("");
+        utxoAction.setContractAddress(rsPropertiesConfig.getContractAddress());
         utxoAction.setType(ActionTypeEnum.UTXO);
-        utxoAction.setStateClass("JSONObject");
+        utxoAction.setStateClass("com.alibaba.fastjson.JSONObject");
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.ISSUE);
         utxoAction.setIndex(0);
         actionList.add(utxoAction);
@@ -184,8 +186,7 @@ public class UTXOActionConvertor {
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setInputList(inputList);
         utxoAction.setOutputList(txOutList);
-        //TODO lingchao get it from config
-        utxoAction.setContractAddress("");
+        utxoAction.setContractAddress(receivableBillPO.getContractAddress());
         utxoAction.setType(ActionTypeEnum.UTXO);
         utxoAction.setStateClass("com.alibaba.fastjson.JSONObject");
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
@@ -238,8 +239,7 @@ public class UTXOActionConvertor {
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setInputList(inputList);
         utxoAction.setOutputList(txOutList);
-        //TODO lingchao get it from config
-        utxoAction.setContractAddress("");
+        utxoAction.setContractAddress(receivableBillPO.getContractAddress());
         utxoAction.setType(ActionTypeEnum.UTXO);
         utxoAction.setStateClass("com.alibaba.fastjson.JSONObject");
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);

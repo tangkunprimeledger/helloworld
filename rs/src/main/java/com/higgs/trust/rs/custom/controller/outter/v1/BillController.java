@@ -63,7 +63,7 @@ public class BillController {
         BeanValidateResult result = BeanValidator.validate(billTransferVO);
 
         if (!result.isSuccess()) {
-            log.error("[BillController.create]param validate failed, cause: " + result.getFirstMsg());
+            log.error("[BillController.transfer]param validate failed, cause: " + result.getFirstMsg());
             respData = new RespData();
             respData.setCode(RespCodeEnum.PARAM_NOT_VALID.getRespCode());
             respData.setMsg(result.getFirstMsg());
