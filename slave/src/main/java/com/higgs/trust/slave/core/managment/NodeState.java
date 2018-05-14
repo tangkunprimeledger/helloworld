@@ -27,8 +27,7 @@ import java.util.Locale;
 
     private List<StateChangeListener> stateListeners = new ArrayList<>();
 
-    //todo:suimi change state to Starting
-    @Getter private NodeStateEnum state = NodeStateEnum.Running;
+    @Getter private NodeStateEnum state = NodeStateEnum.Starting;
 
     /**
      * 当前节点是否为master
