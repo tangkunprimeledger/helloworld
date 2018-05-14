@@ -1,6 +1,8 @@
 package com.higgs.trust.rs.custom.biz.rscore.callback.handler;
 
+import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.custom.api.enums.BankChainExceptionCodeEnum;
+import com.higgs.trust.rs.custom.api.enums.RequestStatusEnum;
 import com.higgs.trust.rs.custom.dao.BankChainRequestDAO;
 import com.higgs.trust.rs.custom.dao.identity.IdentityDAO;
 import com.higgs.trust.rs.custom.dao.po.BankChainRequestPO;
@@ -39,6 +41,11 @@ public class StorageIdentityCallbackHandler {
 
             BankChainRequestPO bankChainRequestPO = new BankChainRequestPO();
             bankChainRequestPO.setReqNo(reqNo);
+            if (respData.isSuccess()){
+                bankChainRequestPO.setStatus(RequestStatusEnum.SUCCESS.getCode());
+            }else {
+                bankChainRequestPO.setStatus(RequestStatusEnum.FAILED.getCode());
+            }
 
             IdentityPO identityPO = new IdentityPO();
             identityPO.setReqNo(reqNo);
