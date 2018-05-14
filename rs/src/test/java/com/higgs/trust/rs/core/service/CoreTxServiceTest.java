@@ -48,11 +48,6 @@ public class CoreTxServiceTest extends IntegrateBaseTest{
         coreTx.setLockTime(new Date());
         String signData = "my-sign";
         coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.NOP, coreTx);
-        try {
-            Thread.sleep(5000000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     private List<Action> initPolicy() {
