@@ -57,14 +57,14 @@ public class CreateBillCallbackHandler {
                     } else {
                         actionIndex = 0L;
                     }
-
+                    //update bill status from process to
                     int isUpdate = receivableBillDao.updateStatus(coreTransaction.getTxId(), actionIndex, Long.valueOf(actionList.get(actionIndex.intValue()).getIndex()), BillStatusEnum.PROCESS.getCode(), toStatus);
 
                     if (0 == isUpdate) {
                         log.error(" create bill update status  for txId :{} ,actionIndex :{} ,index :{} to status: {} is failed!", coreTransaction.getTxId(), actionIndex, actionList.get(actionIndex.intValue()).getIndex(), toStatus);
                         throw new RuntimeException("create bill update status failed!");
                     }
-
+                    //update process status from process to done
                     int isUpdated = requestDao.updateStatusByRequestId(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
 
                     if (0 == isUpdated) {

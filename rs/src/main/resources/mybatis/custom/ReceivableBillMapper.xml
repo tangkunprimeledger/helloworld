@@ -16,7 +16,7 @@
 	</resultMap>
 	<!-- receivable_bill table all fields -->
 	<sql id="baseColumnList">
-		bill_id,state,status,holder,tx_id,action_index,index,contract_address,create_time,update_time
+		bill_id,state,status,holder,tx_id,action_index,`index`,contract_address,create_time,update_time
 	</sql>
 	<!-- 查询条件 -->
 	<sql id="baseWhereClause">
@@ -41,7 +41,7 @@
 				and action_index=#{actionIndex}
 			</if>
 			<if test="index != null">
-				and index=#{index}
+				and `index`=#{index}
 			</if>
 			<if test="contractAddress != null and contractAddress != ''">
 				and contract_address=#{contractAddress}
@@ -51,7 +51,7 @@
 	<!-- 插入记录 -->
 	<insert id="add" parameterType="Object">
 		insert into
-		receivable_bill(bill_id,state,status,holder,tx_id,action_index,index,contract_address,create_time,update_time)
+		receivable_bill(bill_id,state,status,holder,tx_id,action_index,`index`,contract_address,create_time,update_time)
 		values(#{billId},#{state},#{status},#{holder},#{txId},#{actionIndex},#{index},#{contractAddress},now(),now())
 	</insert>
 	<!-- 列表总数 -->

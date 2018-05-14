@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
  * @author wangquanzhou
  * @time 2018年3月16日15:14:51
  */
-@Slf4j @Service public class CallbackProcess implements TxCallbackHandler,InitializingBean {
+@Slf4j @Service public class CallbackProcess implements TxCallbackHandler, InitializingBean {
 
     @Autowired private RsPropertiesConfig propertiesConfig;
     @Autowired private TxCallbackRegistor txCallbackRegistor;
@@ -60,6 +60,8 @@ import org.springframework.stereotype.Service;
                 break;
             case TRANSFER_UTXO:
                 transferBillCallbackHandler.process(respData);
+                break;
+            case NOP:
                 break;
             default:
                 break;

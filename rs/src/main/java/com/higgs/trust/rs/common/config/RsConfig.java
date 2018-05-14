@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
     @NotNull @Value("${higgs.trust.nodeName}") private String rsName;
     @NotNull @Value("${higgs.trust.privateKey}") private String privateKey;
     @NotNull @Value("${rs.core.useHttpChannel}") private boolean useHttpChannel;
+    @NotNull @Value("${rs.core.syncRequestTimeout}") private long syncRequestTimeout;
     @NotNull @Value("${server.port}") private int serverPort;
 
     @Override public void afterPropertiesSet() throws Exception {
