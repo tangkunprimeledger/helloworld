@@ -14,7 +14,7 @@ public class TxQueryVO extends BaseVO{
 
     private String sender;
 
-    private Integer pageNum;
+    private Integer pageNo;
 
     private Integer pageSize;
 }
