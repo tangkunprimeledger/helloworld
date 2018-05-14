@@ -41,17 +41,16 @@ import org.springframework.transaction.support.TransactionTemplate;
             String value = respData.getData().getBizModel().getString("value");
 
             BankChainRequestPO bankChainRequestPO = new BankChainRequestPO();
+            IdentityPO identityPO = new IdentityPO();
             bankChainRequestPO.setReqNo(reqNo);
             if (respData.isSuccess()) {
                 bankChainRequestPO.setStatus(RequestStatusEnum.SUCCESS.getCode());
+                identityPO.setReqNo(reqNo);
+                identityPO.setKey(key);
+                identityPO.setValue(value);
             } else {
                 bankChainRequestPO.setStatus(RequestStatusEnum.FAILED.getCode());
             }
-
-            IdentityPO identityPO = new IdentityPO();
-            identityPO.setReqNo(reqNo);
-            identityPO.setKey(key);
-            identityPO.setValue(value);
 
             // 开启事务执行DB操作
             txRequired.execute(new TransactionCallbackWithoutResult() {
@@ -61,7 +60,7 @@ import org.springframework.transaction.support.TransactionTemplate;
                     bankChainRequestDAO.updateRequest(bankChainRequestPO);
 
                     // 将回调的数据存入identity表
-                    if (respData.isSuccess()){
+                    if (respData.isSuccess()) {
                         identityDAO.insertIdentity(identityPO);
                     }
                     log.info("[process] transaction success，reqNo={}", reqNo);
