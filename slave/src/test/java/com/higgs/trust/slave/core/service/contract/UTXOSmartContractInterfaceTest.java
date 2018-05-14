@@ -68,7 +68,7 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
         Contract contract = new Contract();
         contract.setBlockHeight(1L);
         contract.setTxId("000000000000000" + System.currentTimeMillis());
-        contract.setActionId(0);
+        contract.setActionIndex(0);
         contract.setAddress("00000" + System.currentTimeMillis() + System.currentTimeMillis());
         contract.setCode(code);
         contract.setLanguage("javascript");

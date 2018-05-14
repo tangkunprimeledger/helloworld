@@ -15,7 +15,7 @@ import java.util.Date;
     private String address;
     private Long blockHeight;
     private String txId;
-    private Integer actionId;
+    private Integer actionIndex;
     private String language;
     private String version;
     private String code;

@@ -1,9 +1,11 @@
 package com.higgs.trust.slave.core.repository;
 
+import com.higgs.trust.slave.api.vo.UTXOVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.dao.utxo.TxOutDao;
+import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -64,4 +66,25 @@ public class TxOutRepository {
         return txOutPOList.size() == txOutDao.batchUpdate(txOutPOList);
     }
 
+    public List<UTXOVO> queryTxOutByTxId(String txId) {
+        List<TxOutPO> list = txOutDao.queryByTxId(txId);
+        int i = 0;
+        do {
+            for (TxOutPO po : list) {
+                UTXOVO vo = new UTXOVO();
+//                vo.setPreUTXOVO(txOutDao.queryByTxId(txId));
+            }
+            i++;
+        } while (i < 5);
+        return null;
+    }
+
+    public List<TxOutPO> queryTxOutsByTxId (String txId, int i) {
+        if (i < 5) {
+            List<TxOutPO> list = txOutDao.queryByTxId(txId);
+        } else {
+
+        }
+        return null;
+    }
 }

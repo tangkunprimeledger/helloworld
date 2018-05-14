@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -59,7 +60,7 @@ public class PackageScheduler {
     @Autowired
     private NodeState nodeState;
 
-    @Value("${trust.batch.tx.limit}")
+    @Value("${trust.batch.tx.limit:200}")
     private int TX_PENDING_COUNT;
 
     /**

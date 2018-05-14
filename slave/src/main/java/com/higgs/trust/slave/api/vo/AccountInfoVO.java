@@ -17,6 +17,12 @@ import java.util.Date;
      * 账号
      */
     private String accountNo;
+
+    /**
+     * currency
+     */
+    private String currency;
+
     /**
      * 余额(含冻结金额)
      */
@@ -29,6 +35,12 @@ import java.util.Date;
      * fund direction-DEBIT,CREDIT
      */
     private String fundDirection;
+
+    /**
+     * dataOwner
+     */
+    private String dataOwner;
+
     /**
      * status,NORMAL,DESTROY
      */

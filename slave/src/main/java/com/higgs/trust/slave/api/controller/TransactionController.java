@@ -35,5 +35,4 @@ public class TransactionController {
         log.info("submit transaction receive parameter :{}", transaction);
         return blockChainService.submitTransaction(transaction);
     }
-
 }

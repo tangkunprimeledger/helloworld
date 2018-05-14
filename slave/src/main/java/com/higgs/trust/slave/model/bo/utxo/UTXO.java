@@ -41,9 +41,9 @@ public class UTXO extends BaseBO{
      */
     private JSONObject state;
     /**
-     * contract script
+     * contract address
      */
-    private String contract;
+    private String contractAddress;
     /**
      * the status of the out: 1.UNSPENT 2.SPENT
      */

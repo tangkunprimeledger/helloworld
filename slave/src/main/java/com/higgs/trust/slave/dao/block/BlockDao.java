@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.dao.block;
 
+import com.higgs.trust.slave.api.vo.BlockVO;
 import com.higgs.trust.slave.dao.BaseDao;
 import com.higgs.trust.slave.dao.po.block.BlockPO;
 import org.apache.ibatis.annotations.Mapper;
@@ -39,4 +40,7 @@ import java.util.List;
      * @return
      */
     List<Long> getLimitHeight(@Param("limit") int limit);
+
+    List<BlockPO> queryBlocksWithCondition(@Param("height") Long height, @Param("blockHash") String blockHash,
+        @Param("start") int start, @Param("end") int end);
 }

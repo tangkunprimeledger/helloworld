@@ -40,7 +40,7 @@ import static org.testng.Assert.assertEquals;
     /**
      * 数据库连接定义
      */
-    public static String DB_URL = "jdbc:mysql://localhost:3306/trust?user=root&password=root";
+    public static String DB_URL = "jdbc:mysql://localhost:3306/trust?user=root&password=";
     /**
      * snapshot service
      */

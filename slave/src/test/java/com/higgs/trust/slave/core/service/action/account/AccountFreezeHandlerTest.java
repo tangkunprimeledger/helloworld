@@ -69,10 +69,10 @@ public class AccountFreezeHandlerTest extends InterfaceCommonTest {
         JSONObject object = (JSONObject)param.get("body");
 
         AccountFreeze freeze = getObject(object.get("freeze").toString(), AccountFreeze.class);
-        OpenAccount creditAccount = getObject(object.get("credit").toString(), OpenAccount.class);
-        OpenAccount debitAccount = getObject(object.get("debit").toString(), OpenAccount.class);
-        AccountOperation accountOperation = getObject(object.get("accounting").toString(), AccountOperation.class);
-        String policyId = object.getString("policyId");
+//        OpenAccount creditAccount = getObject(object.get("credit").toString(), OpenAccount.class);
+//        OpenAccount debitAccount = getObject(object.get("debit").toString(), OpenAccount.class);
+//        AccountOperation accountOperation = getObject(object.get("accounting").toString(), AccountOperation.class);
+//        String policyId = object.getString("policyId");
 
         executeBeforeSql(param);
 
@@ -86,10 +86,13 @@ public class AccountFreezeHandlerTest extends InterfaceCommonTest {
 //
 //        accountOperationHandler.validate(packContext);
 //        accountOperationHandler.persist(packContext);
+        PackContext packContext = makePackContext(freeze, 1L,param);
 
+        accountFreezeHandler.validate(packContext);
+        accountFreezeHandler.persist(packContext);
 
-        accountFreezeHandler.validate(makePackContext(freeze, 1L));
-        accountFreezeHandler.persist(makePackContext(freeze, 1L));
+//        accountFreezeHandler.validate(makePackContext(freeze, 1L));
+//        accountFreezeHandler.persist(makePackContext(freeze, 1L));
         executeAfterSql(param);
 
     }

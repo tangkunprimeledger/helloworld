@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.core.service.pack;
 
+import com.higgs.trust.slave.api.SlaveCallbackHandler;
+import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -8,10 +10,8 @@ import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.transaction.TransactionExecutor;
-import com.higgs.trust.slave.model.bo.BlockHeader;
+import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.Package;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +32,7 @@ import java.util.List;
     @Autowired TransactionExecutor transactionExecutor;
     @Autowired TransactionRepository transactionRepository;
     @Autowired SnapshotService snapshotService;
+    @Autowired SlaveCallbackRegistor slaveCallbackRegistor;
 
     /**
      * execute package validating, get validate result and submit consensus layer
@@ -163,11 +164,36 @@ import java.util.List;
             log.error("[package.validated] consensus header unequal tempHeader,blockHeight:{}", pack.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
         }
-
-        //TODO:call RS business
+        //call RS business
+        callbackRS(pack);
+        //profiler log
         Profiler.release();
         if (Profiler.getDuration() > 0) {
             log.info(Profiler.dump());
+        }
+    }
+
+    /**
+     * call back business
+     */
+    private void callbackRS(Package pack){
+        SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
+        if(callbackHandler == null){
+            log.error("[callbackRS]callbackHandler is not register");
+            return;
+        }
+        List<SignedTransaction> txs = pack.getSignedTxList();
+        if(CollectionUtils.isEmpty(txs)){
+            log.error("[callbackRS]txs is empty from pack:{}",pack);
+            return;
+        }
+        Profiler.enter("[callbackRSForValidate]");
+        try {
+            for (SignedTransaction tx : txs) {
+                callbackHandler.onValidated(tx.getCoreTx().getTxId());
+            }
+        }finally {
+            Profiler.release();
         }
     }
 }

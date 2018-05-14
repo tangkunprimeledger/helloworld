@@ -105,7 +105,7 @@ import org.springframework.stereotype.Repository;
                 long elapseTime = System.currentTimeMillis() - startTime;
 
                 // 打印DAO摘要日志
-                log.info(constructLogString(methodName, isSuccess, elapseTime));
+//                log.info(constructLogString(methodName, isSuccess, elapseTime));
             } catch (Exception e) {
 
                 log.error("记录income调用DAO摘要日志出错!", e);

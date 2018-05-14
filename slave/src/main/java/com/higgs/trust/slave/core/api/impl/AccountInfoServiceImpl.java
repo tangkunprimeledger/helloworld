@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.api.impl;
 
 import com.higgs.trust.slave.api.AccountInfoService;
 import com.higgs.trust.slave.api.vo.AccountInfoVO;
+import com.higgs.trust.slave.api.vo.QueryAccountVO;
 import com.higgs.trust.slave.core.repository.account.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,5 +20,9 @@ public class AccountInfoServiceImpl implements AccountInfoService{
 
     @Override public List<AccountInfoVO> queryByAccountNos(List<String> accountNos) {
         return accountRepository.queryByAccountNos(accountNos);
+    }
+
+    @Override public List<AccountInfoVO> queryAccountInfo(QueryAccountVO req) {
+        return accountRepository.queryAccountInfoWithOwner(req.getAccountNo(), req.getDataOwner());
     }
 }
