@@ -11,7 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 public enum BizTypeEnum {
     STORAGE("STORAGE","STORAGE DATAS"),
     ISSUE_UTXO("ISSUE_UTXO","ISSUE UTXO"),
-    TRANSFER_UTXO("TRANSFER_UTXO","TRANSFER  UTXO");
+    TRANSFER_UTXO("TRANSFER_UTXO","TRANSFER  UTXO"),
+    NOP("NOP", "NO OPERATION"),
+    ;
 
     private String code;
     private String desc;

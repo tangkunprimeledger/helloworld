@@ -92,7 +92,7 @@ import java.util.List;
             Profiler.release();
             //call back business
             Profiler.enter("[callbackRSForPersisted]");
-            callbackRS(pack, txReceipts);
+            callbackRS(pack, txReceipts,false);
             Profiler.release();
         } catch (Throwable e) {
             log.error("[package.persisting]has unknown error");
@@ -207,9 +207,9 @@ import java.util.List;
         }
         try {
             //call back business
-            Profiler.enter("[callbackRSForPersisted]");
+            Profiler.enter("[callbackRSForClusterPersisted]");
             List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(pack.getSignedTxList());
-            callbackRS(pack, txReceipts);
+            callbackRS(pack, txReceipts,true);
             Profiler.release();
         }catch (Throwable e){
             log.error("[package.persisted]callback rs has error", e);
@@ -226,7 +226,8 @@ import java.util.List;
     /**
      * call back business
      */
-    private void callbackRS(Package pack, List<TransactionReceipt> txReceipts) {
+    private void callbackRS(Package pack, List<TransactionReceipt> txReceipts,boolean isClusterPersisted) {
+        log.info("[callbackRS]isClusterPersisted:{}",isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         if (callbackHandler == null) {
             log.error("[callbackRS]callbackHandler is not register");
@@ -254,7 +255,11 @@ import java.util.List;
             }
             //callback business
             log.info("[callbackRS]start callback rs txId:{}", txId);
-            callbackHandler.onPersisted(respData);
+            if(isClusterPersisted){
+                callbackHandler.onClusterPersisted(respData);
+            }else{
+                callbackHandler.onPersisted(respData);
+            }
             log.info("[callbackRS]end callback rs txId:{}", txId);
         }
     }

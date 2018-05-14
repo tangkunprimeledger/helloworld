@@ -57,9 +57,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
     @Autowired private RsPropertiesConfig propertiesConfig;
 
-    @Autowired
-    private PolicyDao policyDao;
-
     @Override public RespData acceptRequest(IdentityRequest identityRequest) {
         if (null == identityRequest) {
             log.error("[acceptRequest]请求参数为空");
@@ -213,7 +210,7 @@ import org.springframework.transaction.support.TransactionTemplate;
                 bankChainRequestDAO.updateRequestToProc(identityRequest.getReqNo());
 
                 //下发 slave
-                asyncSendToVN(identityRequest);
+                asyncSendToSlave(identityRequest);
 
                 log.info("[asyncSendIdentity] transaction success，reqNo={}", bankChainRequest.getReqNo());
                 return RespCodeEnum.ASYNC_SEND_IDENTITY_REQUEST;
@@ -229,7 +226,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
     }
 
-    public IdentityRequest getRequestData(BankChainRequest bankChainRequest) {
+    private IdentityRequest getRequestData(BankChainRequest bankChainRequest) {
         if (StringUtils.isBlank(bankChainRequest.getReqNo())) {
             log.warn("[getRequestData] reqNo is null");
             return null;
@@ -253,14 +250,14 @@ import org.springframework.transaction.support.TransactionTemplate;
         return POToBOConvertor.convertIdentityRequestPOToBO(identityRequestPO);
     }
 
-    public void asyncSendToVN(IdentityRequest identityRequest) {
-        //下面组装requestVN,准备下发VN
+    private void asyncSendToSlave(IdentityRequest identityRequest) {
+        //下面组装数据  下发到slave
         if (null == identityRequest) {
-            log.error("[asyncSendToVN]异步下发slave,入参为空");
+            log.error("[asyncSendToSlave]异步下发slave,入参为空");
             return;
         }
 
-        log.info("[asyncSendToVN]: start handle , reqNo = {}", identityRequest.getReqNo());
+        log.info("[asyncSendToSlave]: start handle , reqNo = {}", identityRequest.getReqNo());
         //2.获取policyId
 //        String policyId = policyDao.queryByPolicyId("api.user.storageIdentity");
 
@@ -279,6 +276,6 @@ import org.springframework.transaction.support.TransactionTemplate;
         coreTx.setSender("TRUST-NODE97");
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTransactionService.submitTx(BizTypeEnum.STORAGE, coreTx);
-        log.info("[asyncSendToVN]: end handle , reqNo = {}", identityRequest.getReqNo());
+        log.info("[asyncSendToSlave]: end handle , reqNo = {}", identityRequest.getReqNo());
     }
 }

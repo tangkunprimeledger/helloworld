@@ -53,7 +53,7 @@ import org.springframework.transaction.support.TransactionTemplate;
     }
 
     @Override public void onPersisted(RespData<CoreTransaction> respData) {
-        CoreTransaction tx = (CoreTransaction)respData.getData();
+        CoreTransaction tx = respData.getData();
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 int r = coreTransactionDao
@@ -72,8 +72,7 @@ import org.springframework.transaction.support.TransactionTemplate;
                 txCallbackHandler.onPersisted(BizTypeEnum.fromCode(po.getBizType()),respData);
             }
         });
-        //TODO:同步通知
-        //TODO:同步通知
+        //同步通知
         try {
             persistedResultMap.put(tx.getTxId(), respData);
         } catch (Throwable e) {
@@ -82,7 +81,7 @@ import org.springframework.transaction.support.TransactionTemplate;
     }
 
     @Override public void onClusterPersisted(RespData<CoreTransaction> respData) {
-        CoreTransaction tx = (CoreTransaction)respData.getData();
+        CoreTransaction tx = respData.getData();
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 int r = coreTransactionDao
@@ -101,7 +100,7 @@ import org.springframework.transaction.support.TransactionTemplate;
                 txCallbackHandler.onEnd(BizTypeEnum.fromCode(po.getBizType()),respData);
             }
         });
-        //TODO:同步通知
+        //同步通知
         try {
             clusterPersistedResultMap.put(tx.getTxId(), respData);
         } catch (Throwable e) {

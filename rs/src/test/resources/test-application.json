@@ -105,10 +105,14 @@
         "processInit":50,
         "submitSlave":50
       }
+    },
+    "custom":{
+      "contractAddress":"1234567",
+      "id": "bankchain-rsid",
+      "pubkey": "0299ab5170051e5d8568543709348e7804110f126c45b305042c1e964c327d728e",
+      "prikey": "f37a12485f23960ddd922b9ced5467806cbb393ef24660305ddd0abfdf987c72",
+      "aeskey": "cbs+jcajndcwje-9"
     }
-  },
-  "costom":{
-    "contractAddress":"1234567"
   }
 
 }
