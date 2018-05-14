@@ -104,7 +104,8 @@
       "schedule":{
         "processInit":50,
         "submitSlave":50
-      }
+      },
+      "syncRequestTimeout":1000
     },
     "custom":{
       "contractAddress":"1234567",
