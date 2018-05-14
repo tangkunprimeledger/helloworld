@@ -16,11 +16,10 @@ public class IdentityServiceImplTest extends IntegrateBaseTest {
 
     @Autowired
     IdentityService identityService;
-//    IdentityService identityService = new IdentityServiceImpl();
 
     @Test public void testAcceptRequest() throws Exception {
         IdentityRequest identityRequest = new IdentityRequest();
-        identityRequest.setReqNo("1233");
+        identityRequest.setReqNo("1236");
         identityRequest.setFlag("000");
         identityRequest.setKey("wang");
         identityRequest.setValue("daye");
