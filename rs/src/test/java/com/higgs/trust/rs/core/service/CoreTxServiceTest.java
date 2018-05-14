@@ -9,8 +9,8 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,12 +47,7 @@ public class CoreTxServiceTest extends IntegrateBaseTest{
         coreTx.setActionList(initPolicy());
         coreTx.setLockTime(new Date());
         String signData = "my-sign";
-        coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.STORAGE, coreTx);
-        try {
-            Thread.sleep(5000000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.NOP, coreTx);
     }
 
     private List<Action> initPolicy() {

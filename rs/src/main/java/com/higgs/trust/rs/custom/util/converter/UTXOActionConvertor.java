@@ -33,7 +33,7 @@ import java.util.List;
 @Slf4j
 @Service
 public class UTXOActionConvertor {
-    private static final String CHAIN_OWNER = "TRUST";
+    private static final String CHAIN_OWNER = "BANK_CHAIN";
     @Autowired
     private NodeState nodeState;
 
