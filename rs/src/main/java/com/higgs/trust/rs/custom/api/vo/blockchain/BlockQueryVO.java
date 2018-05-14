@@ -12,7 +12,7 @@ public class BlockQueryVO extends BaseVO {
 
     private String blockHash;
 
-    private Integer pageNum;
+    private Integer pageNo;
 
     private Integer pageSize;
 }
