@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.config.RsConfig;
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.instrument.async.LazyTraceThreadPoolTaskExecutor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -53,6 +55,7 @@ import java.util.List;
     @Autowired private SignServiceImpl signService;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
+    @Autowired private LazyTraceThreadPoolTaskExecutor traceThreadPoolTaskExecutor;
 
     @Override public RespData syncSubmitTxForPersisted(BizTypeEnum bizType, CoreTransaction coreTx) {
         submitTx(bizType, coreTx);
@@ -149,6 +152,7 @@ import java.util.List;
 
     @Override public void processInitTx(String txId) {
         log.info("[processInitTx]txId:{}", txId);
+        final CoreTxBO[] finalTx = {null};
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 CoreTransactionPO po = coreTransactionDao.queryByTxId(txId, true);
@@ -187,6 +191,8 @@ import java.util.List;
                         log.error("[processInitTx]updateSignDatas is fail txId:{}", txId);
                         throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_SIGN_DATAS_FAILED);
                     }
+                    //should set for async submit
+                    bo.setSignDatas(signDatas);
                     log.info("[processInitTx]updateSignDatas is success txId:{}", txId);
                 }
                 //update status to WAIT
@@ -196,6 +202,13 @@ import java.util.List;
                     log.error("[processInitTx]update status from INIT to END is fail txId:{}", txId);
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
+                finalTx[0] = bo;
+            }
+        });
+        //submit by async
+        traceThreadPoolTaskExecutor.execute(new Runnable() {
+            @Override public void run() {
+                submitToSlave(Lists.newArrayList(finalTx[0]));
             }
         });
         log.info("[processInitTx]is success");
@@ -322,8 +335,12 @@ import java.util.List;
         }
     }
 
+    /**
+     * submit slave by schedule
+     */
     @Override public void submitToSlave() {
-        int maxSize = 200;
+        //max size
+        int maxSize = 20;
         List<CoreTransactionPO> list = coreTransactionDao.queryByStatus(CoreTxStatusEnum.WAIT.getCode(), 0, maxSize);
         if (CollectionUtils.isEmpty(list)) {
             return;
@@ -332,6 +349,15 @@ import java.util.List;
         for (CoreTransactionPO po : list) {
             boList.add(convertTxBO(po));
         }
+        //submit
+        submitToSlave(boList);
+    }
+
+    /**
+     * submit slave
+     * @param boList
+     */
+    private void submitToSlave(List<CoreTxBO> boList){
         List<SignedTransaction> txs = makeTxs(boList);
         try {
             log.info("[submitToSlave] start");
