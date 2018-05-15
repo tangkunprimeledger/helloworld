@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2018/5/12
  */
 
-@RestController(value = "/v1/bill")
+@RestController
 @Slf4j
 @RequestMapping(value = "/bill")
 public class BillController {
