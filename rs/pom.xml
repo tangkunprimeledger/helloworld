@@ -205,7 +205,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>com.higgs.trust</groupId>
-                                    <artifactId>slave</artifactId>
+                                    <artifactId>rs</artifactId>
                                     <type>jar</type>
                                     <destFileName>trust.jar</destFileName>
                                 </artifactItem>
