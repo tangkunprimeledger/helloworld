@@ -36,20 +36,6 @@ public class CoreTxServiceTest extends IntegrateBaseTest{
         coreTransactionService.submitTx(BizTypeEnum.STORAGE, coreTx);
     }
 
-    @Test
-    public void testSubmitTxSyncForPolicy(){
-        CoreTransaction coreTx = new CoreTransaction();
-        coreTx.setTxId("tx_id_001");
-        coreTx.setPolicyId("000000");
-        coreTx.setBizModel(new JSONObject());
-        coreTx.setVersion(VersionEnum.V1.getCode());
-        coreTx.setSender("TRUST-TEST1");
-        coreTx.setActionList(initPolicy());
-        coreTx.setLockTime(new Date());
-        String signData = "my-sign";
-        coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.NOP, coreTx);
-    }
-
     private List<Action> initPolicy() {
         RegisterPolicy registerPolicy = new RegisterPolicy();
         registerPolicy.setPolicyId("test-policy-1");

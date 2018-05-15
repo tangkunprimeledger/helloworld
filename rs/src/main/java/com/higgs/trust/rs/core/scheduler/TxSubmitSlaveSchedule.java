@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTransactionDao coreTransactionDao;
 
-    @Scheduled(fixedDelayString = "${rs.core.schedule.submitSlave:50}") public void exe() {
+    @Scheduled(fixedDelayString = "${rs.core.schedule.submitSlave:500}") public void exe() {
         coreTransactionService.submitToSlave();
     }
 }

@@ -40,7 +40,7 @@ import java.util.List;
     private int pageNo = 1;
     private int pageSize = 100;
 
-    @Scheduled(fixedDelayString = "${rs.core.schedule.processInit:50}") public void exe() {
+    @Scheduled(fixedDelayString = "${rs.core.schedule.processInit:500}") public void exe() {
         List<CoreTransactionPO> list =
             coreTransactionDao.queryByStatus(CoreTxStatusEnum.INIT.getCode(), (pageNo - 1) * pageSize, pageSize);
         if(CollectionUtils.isEmpty(list)){

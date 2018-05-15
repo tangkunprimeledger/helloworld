@@ -79,13 +79,22 @@ import java.util.concurrent.*;
         return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
 
-    @Bean public LazyTraceThreadPoolTaskExecutor traceExecutorPool() {
+    @Bean public ThreadPoolTaskExecutor txProcessExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
         threadPoolTaskExecutor.setMaxPoolSize(10);
-        threadPoolTaskExecutor.setQueueCapacity(10);
-        threadPoolTaskExecutor.setThreadNamePrefix("TraceExecutor-");
-        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        threadPoolTaskExecutor.setQueueCapacity(5000);
+        threadPoolTaskExecutor.setThreadNamePrefix("txProcessExecutor-");
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
+
+    @Bean public ThreadPoolTaskExecutor txSubmitExecutorPool() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(10);
+        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.setQueueCapacity(5000);
+        threadPoolTaskExecutor.setThreadNamePrefix("txSubmitExecutor-");
         threadPoolTaskExecutor.initialize();
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }

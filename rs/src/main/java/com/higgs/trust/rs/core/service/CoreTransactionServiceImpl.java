@@ -20,7 +20,6 @@ import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
-import com.higgs.trust.slave.asynctosync.BlockingMap;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
@@ -34,8 +33,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.sleuth.instrument.async.LazyTraceThreadPoolTaskExecutor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -55,7 +54,9 @@ import java.util.List;
     @Autowired private SignServiceImpl signService;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
-    @Autowired private LazyTraceThreadPoolTaskExecutor traceThreadPoolTaskExecutor;
+    @Autowired private ThreadPoolTaskExecutor txSubmitExecutorPool;
+    @Autowired private ThreadPoolTaskExecutor txProcessExecutorPool;
+
 
     @Override public RespData syncWait(String key, boolean forEnd) {
         RespData respData = null;
@@ -138,6 +139,12 @@ import java.util.List;
             log.error("[submitTx]has idempotent error");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
+        //process by async
+        txProcessExecutorPool.execute(new Runnable() {
+            @Override public void run() {
+                processInitTx(coreTx.getTxId());
+            }
+        });
     }
 
     @Override public void processInitTx(String txId) {
@@ -196,7 +203,7 @@ import java.util.List;
             }
         });
         //submit by async
-        traceThreadPoolTaskExecutor.execute(new Runnable() {
+        txSubmitExecutorPool.execute(new Runnable() {
             @Override public void run() {
                 submitToSlave(Lists.newArrayList(finalTx[0]));
             }
@@ -345,9 +352,10 @@ import java.util.List;
 
     /**
      * submit slave
+     *
      * @param boList
      */
-    private void submitToSlave(List<CoreTxBO> boList){
+    private void submitToSlave(List<CoreTxBO> boList) {
         List<SignedTransaction> txs = makeTxs(boList);
         try {
             log.info("[submitToSlave] start");
