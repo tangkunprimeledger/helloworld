@@ -8,7 +8,6 @@ import com.higgs.trust.rs.custom.api.enums.RequestStatusEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.api.identity.IdentityService;
 import com.higgs.trust.rs.custom.api.vo.identity.IdentityVO;
-import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.dao.BankChainRequestDAO;
 import com.higgs.trust.rs.custom.dao.identity.IdentityDAO;
 import com.higgs.trust.rs.custom.dao.identity.IdentityRequestDAO;
@@ -23,7 +22,6 @@ import com.higgs.trust.rs.custom.model.convertor.identity.POToBOConvertor;
 import com.higgs.trust.rs.custom.model.convertor.identity.POToVOConvertor;
 import com.higgs.trust.rs.custom.util.Profiler;
 import com.higgs.trust.slave.api.enums.VersionEnum;
-import com.higgs.trust.slave.dao.manage.PolicyDao;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -54,8 +52,6 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired TransactionTemplate txRequired;
 
     @Autowired private CoreTransactionService coreTransactionService;
-
-    @Autowired private RsPropertiesConfig propertiesConfig;
 
     @Override public RespData acceptRequest(IdentityRequest identityRequest) {
         if (null == identityRequest) {

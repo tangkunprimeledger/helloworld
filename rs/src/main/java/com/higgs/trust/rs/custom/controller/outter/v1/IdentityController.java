@@ -3,14 +3,13 @@ package com.higgs.trust.rs.custom.controller.outter.v1;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.api.identity.IdentityService;
 import com.higgs.trust.rs.custom.api.vo.identity.IdentityRequestVO;
-import com.higgs.trust.rs.custom.config.MngPropertiesConfig;
-import com.higgs.trust.rs.custom.config.RsPropertiesConfig;
 import com.higgs.trust.rs.custom.model.RespData;
 import com.higgs.trust.rs.custom.model.convertor.identity.VOToBOConvertor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,17 +27,10 @@ import java.io.UnsupportedEncodingException;
 public class IdentityController {
 
     @Autowired
-    private RsPropertiesConfig propertiesConfig;
-
-    @Autowired
     private IdentityService identityService;
 
-    @Autowired
-    private MngPropertiesConfig mngPropertiesConfig;
-
-
     @RequestMapping(value = "/storage")
-    public RespData storageIdentity(@Valid IdentityRequestVO identityRequestVO, BindingResult result) {
+    public RespData storageIdentity(@RequestBody @Valid IdentityRequestVO identityRequestVO, BindingResult result) {
         log.info("[storageIdentity] storage identity request receive. {}", identityRequestVO.toString());
 
         if (result.hasErrors()) {

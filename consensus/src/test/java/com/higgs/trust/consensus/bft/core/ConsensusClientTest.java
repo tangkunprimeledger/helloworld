@@ -20,6 +20,7 @@ public class ConsensusClientTest extends BftBaseTest{
     @Test
     public void testConsensusClient(){
 //        while(true){
+
             CompletableFuture completableFuture = consensusClient.submit(new StringCommand("test consensusClient with String command" + new Random().nextInt(10000)));
             try {
                 Thread.sleep(2000);

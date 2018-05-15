@@ -256,6 +256,9 @@ public class UTXOActionServiceTest extends BaseTest {
         TxOut txOut = new TxOut();
         JSONObject state = new JSONObject();
         state.put("amount", 1);
+        state.put("billId", "1234");
+        state.put("dueDate", "2018-05-14 00:00:00");
+        state.put("finalPayerId", "lingchao");
         txOut.setState(state);
         txOut.setIndex(0);
         txOut.setActionIndex(0);
@@ -264,6 +267,9 @@ public class UTXOActionServiceTest extends BaseTest {
         TxOut txOut1 = new TxOut();
         JSONObject state1 = new JSONObject();
         state1.put("amount", 2);
+        state1.put("billId", "1234");
+        state1.put("dueDate", "2018-05-14 00:00:00");
+        state1.put("finalPayerId", "lingchao");
         txOut1.setState(state1);
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
@@ -272,27 +278,29 @@ public class UTXOActionServiceTest extends BaseTest {
         outputList.add(txOut);
         outputList.add(txOut1);
 
-        String code = "function verify() {\n" + "    var action = ctx.getAction();\n" + "\tvar actionType = action.utxoActionType;\n" + "\tvar issueActionType = ctx.getUTXOActionType('ISSUE');\n" + "\tvar normalActionType = ctx.getUTXOActionType('NORMAL');\n" + "\tvar destructionActionType = ctx.getUTXOActionType('DESTRUCTION');\n" + "\n" + "\t//issue utxo  action\n" + "\tif(actionType == issueActionType){\n" + "\t\treturn true;\n" + "\t}\n" + "\n" + "    //notmal utxo  action\n" + "    if(actionType == normalActionType){\n" + "\t  if(action.inputList.length == 0 || action.getOutputList().length == 0){\n" + "\t \treturn false;\n" + "\t  }\n" + "\tvar utxoList = ctx.queryUTXOList(action.inputList);\n" + "\tvar inputsAmount = 0;\n" + "\tvar outputsAmount = 0;\n" + "\tutxoList.forEach(function (input) {inputsAmount += input.getState().amount;});\n" + "\taction.getOutputList().forEach(function (input) {outputsAmount += input.getState().amount;});\n" + "\treturn inputsAmount == outputsAmount;\n" + "\t}\n" + "\n" + "\t //destruction utxo  action\n" + "\tif(actionType == destructionActionType){\n" + "\n" + "\t\treturn true;\n" + "\t}\n" + "\n" + "\treturn false;\n" + "}";
-        //execute contract
-        utxoAction.setContractAddress(code);
-        utxoAction.setOutputList(outputList);
+        String contractAddress = "12345";
+                //execute contract
+        utxoAction.setContractAddress(contractAddress);
+/*        utxoAction.setOutputList(outputList);
         utxoAction.setInputList(new ArrayList<>());
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.ISSUE);
-        ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
+        ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);*/
+/*
         boolean contractIssueProcessSuccess = utxoSmartContract.execute(utxoAction.getContractAddress(), data, TxProcessTypeEnum.VALIDATE);
 
         System.out.println("Issue true===============================" + contractIssueProcessSuccess);
+*/
 
 
 
-     /*   utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
+/*       utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
         utxoAction.setInputList(new ArrayList<>());
         utxoAction.setOutputList(outputList);
         ExecuteContextData data1 =new UTXOExecuteContextData().setAction(utxoAction);
-        boolean contractNormalProcessSuccess = utxoSmartContract.execute(utxoAction.getContract(), data1, TxProcessTypeEnum.VALIDATE);
+        boolean contractNormalProcessSuccess = utxoSmartContract.execute(utxoAction.getContractAddress(), data1, TxProcessTypeEnum.VALIDATE);
 
-        System.out.println("Normal false==============================="+contractNormalProcessSuccess);
-*/
+        System.out.println("Normal false==============================="+contractNormalProcessSuccess);*/
+
 
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
         utxoAction.setInputList(inputList);

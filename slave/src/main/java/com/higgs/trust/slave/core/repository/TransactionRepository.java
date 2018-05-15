@@ -59,6 +59,7 @@ import java.util.List;
         List<TransactionReceipt> receipts = new ArrayList<>(transactionPOS.size());
         for (TransactionPO transactionPO : transactionPOS) {
             TransactionReceipt receipt = new TransactionReceipt();
+            receipt.setTxId(transactionPO.getTxId());
             receipt.setResult(StringUtils.equals(transactionPO.getExecuteResult(),"1")?true:false);
             receipt.setErrorCode(transactionPO.getErrorCode());
             receipts.add(receipt);

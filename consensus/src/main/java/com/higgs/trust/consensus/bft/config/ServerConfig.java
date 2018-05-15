@@ -80,7 +80,7 @@ public class ServerConfig
     @Value("${copycat.server.sessionTimeout:5000}")
     private Long sessionTimeout;
 
-    @Value("${copycat.server.backlog:50}")
+    @Value("${copycat.server.backlog:1000}")
     private Integer backlog;
 
     @Override
@@ -109,7 +109,7 @@ public class ServerConfig
         });
 
         builder.withTransport(NettyTransport.builder()
-                .withAcceptBacklog(Math.min(backlog,500))
+                .withAcceptBacklog(Math.min(backlog,1000))
                 .withRequestTimeout(1500)
                 .withThreads(nettyThreadNum).build());
         builder.withElectionTimeout(Duration.ofMillis(electionTimeout))

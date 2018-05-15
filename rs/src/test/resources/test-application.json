@@ -83,6 +83,9 @@
         "limit": 200
       }
     },
+    "utxo": {
+      "display": 2
+    },
     "package": {
       "pending" : 1000
     },
