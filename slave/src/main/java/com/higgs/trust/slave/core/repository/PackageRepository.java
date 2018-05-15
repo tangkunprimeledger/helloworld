@@ -155,8 +155,8 @@ import java.util.Set;
      * @param statusSet
      * @return
      */
-    public Long getMinHeight(Set<String> statusSet) {
-        return packageDao.getMinHeightWithStatus(statusSet);
+    public Long getMinHeight(Set<String> statusSet, Long maxBlockHeight) {
+        return packageDao.getMinHeightWithStatus(statusSet, maxBlockHeight);
     }
 
     /**
@@ -176,8 +176,8 @@ import java.util.Set;
      * @param statusSet
      * @return
      */
-    public long count(Set<String> statusSet) {
-        return packageDao.countWithStatus(statusSet);
+    public long count(Set<String> statusSet, Long maxBlockHeight) {
+        return packageDao.countWithStatus(statusSet, maxBlockHeight);
     }
 
     /**

@@ -72,14 +72,16 @@ import java.util.Set;
      * query min package height with status
      *
      * @param statusSet
+     * @param maxBlockHeight
      * @return
      */
-    Long getMinHeightWithStatus(@Param("statusSet") Set<String> statusSet);
+    Long getMinHeightWithStatus(@Param("statusSet") Set<String> statusSet, @Param("maxBlockHeight") Long maxBlockHeight);
 
     /**
      * query min package height with status and start height
      *
      * @param statusSet
+     * @param startHeight
      * @return
      */
     Long getMinHeightWithHeightAndStatus(@Param("startHeight") Long startHeight,
@@ -89,7 +91,8 @@ import java.util.Set;
      * count how much package
      *
      * @param statusSet
+     * @param maxBlockHeight
      * @return
      */
-    Long countWithStatus(@Param("statusSet") Set<String> statusSet);
+    Long countWithStatus(@Param("statusSet") Set<String> statusSet, @Param("maxBlockHeight") Long maxBlockHeight);
 }

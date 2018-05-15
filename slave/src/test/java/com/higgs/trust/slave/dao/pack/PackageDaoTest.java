@@ -88,7 +88,7 @@ public class PackageDaoTest extends BaseTest {
         Set<String> statusSet = new HashSet<>();
 //        statusSet.add(PackageStatusEnum.SUBMIT_CONSENSUS_SUCCESS.getCode());
         statusSet.add(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS.getCode());
-        long height = packageDao.getMinHeightWithStatus(statusSet);
+        long height = packageDao.getMinHeightWithStatus(statusSet, 2L);
 
         Assert.assertEquals(2, height);
     }
@@ -98,7 +98,7 @@ public class PackageDaoTest extends BaseTest {
 //        statusSet.add(PackageStatusEnum.SUBMIT_CONSENSUS_SUCCESS.getCode());
         statusSet.add(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS.getCode());
 
-        long count = packageDao.countWithStatus(statusSet);
-        Assert.assertEquals(2, count);
+        long count = packageDao.countWithStatus(statusSet, 2L);
+        Assert.assertEquals(1, count);
     }
 }
