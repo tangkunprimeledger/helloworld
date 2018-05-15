@@ -124,7 +124,7 @@ public class TxOutRepository {
         List<UTXOVO> utxovoList = convertPOListToVOList(list);
         vo.setPreUTXOVO(utxovoList);
 
-        if (i == 0) {
+        if (i == 1) {
             return;
         } else {
             i -= 1;
