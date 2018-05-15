@@ -151,16 +151,7 @@ public class BillServiceHelper {
             }
         }
 
-        //send and get callback result
-        RespData<?> respData = null;
-        try {
-            respData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.ISSUE_UTXO, coreTransaction);
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                respData = requestIdempotent(billCreateVO.getRequestId());
-            }
-        }
-        return respData;
+        return submitTx(BizTypeEnum.ISSUE_UTXO, coreTransaction);
     }
 
 
@@ -245,23 +236,23 @@ public class BillServiceHelper {
                 }
             }
         }
-
-        //send and get callback result
-        RespData<?> respData = null;
-        try {
-            respData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.TRANSFER_UTXO, coreTransaction);
-        } catch (Throwable e) {
-            if (e.getCause() instanceof RsCoreException) {
-                //TODO 当 为  RsCoreErrorEnum.RS_CORE_IDEMPOTENT  时 不需要回滚，则异常不需要往外抛
-                respData = requestIdempotent(billTransferVO.getRequestId());
-            } else {
-                throw e;
-            }
-
-        }
-        return respData;
+        return submitTx(BizTypeEnum.TRANSFER_UTXO, coreTransaction);
     }
 
+    /**
+     * 发送交易到rs-core
+     */
+    private RespData<?> submitTx (BizTypeEnum bizType,CoreTransaction coreTransaction){
+        //send and get callback result
+        try {
+            coreTransactionService.submitTx(bizType, coreTransaction);
+        } catch (RsCoreException e) {
+            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
+                return requestIdempotent(coreTransaction.getTxId());
+            }
+        }
+        return new RespData<>();
+    }
 
     /**
      * update request status

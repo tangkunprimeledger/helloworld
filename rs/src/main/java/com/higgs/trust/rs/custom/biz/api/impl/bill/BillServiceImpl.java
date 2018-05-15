@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.custom.biz.api.impl.bill;
 
+import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.custom.api.bill.BillService;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
@@ -30,6 +31,9 @@ public class BillServiceImpl implements BillService {
 
     @Autowired
     private RsBlockChainService rsBlockChainService;
+
+    @Autowired
+    private CoreTransactionService coreTransactionService;
 
     /**
      * 创建票据方法
@@ -64,6 +68,10 @@ public class BillServiceImpl implements BillService {
                     return respData;
                 }
             });
+            if(!respData.isSuccess()){
+                return respData;
+            }
+            respData = coreTransactionService.syncWait(billCreateVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("create bill error", e);
             respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
@@ -106,6 +114,10 @@ public class BillServiceImpl implements BillService {
                     return respData;
                 }
             });
+            if(!respData.isSuccess()){
+                return respData;
+            }
+            respData =  coreTransactionService.syncWait(billTransferVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("transfer bill error", e);
             respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
