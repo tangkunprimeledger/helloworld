@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Slf4j
+@RequestMapping(value = "/bill")
 public class BillController {
     @Autowired
     private BillService billService;
