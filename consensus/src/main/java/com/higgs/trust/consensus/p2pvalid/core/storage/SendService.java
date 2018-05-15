@@ -29,7 +29,9 @@ import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-@Component @Slf4j public class SendService {
+@Component
+@Slf4j
+public class SendService {
 
     private static final Integer COMMAND_QUEUED_SEND = 0;
     private static final Integer COMMAND_QUEUED_GC = 1;
@@ -37,27 +39,39 @@ import java.util.concurrent.locks.ReentrantLock;
     private static final Integer SEND_NODE_WAIT_SEND = 0;
     private static final Integer SEND_NODE_ACK = 1;
 
-    @Autowired private SendCommandDao sendCommandDao;
+    @Autowired
+    private SendCommandDao sendCommandDao;
 
-    @Autowired private SendNodeDao sendNodeDao;
+    @Autowired
+    private SendNodeDao sendNodeDao;
 
-    @Autowired private QueuedSendDao queuedSendDao;
+    @Autowired
+    private QueuedSendDao queuedSendDao;
 
-    @Autowired private QueuedSendDelayDao queuedSendDelayDao;
+    @Autowired
+    private QueuedSendDelayDao queuedSendDelayDao;
 
-    @Autowired private QueuedSendGcDao queuedSendGcDao;
+    @Autowired
+    private QueuedSendGcDao queuedSendGcDao;
 
-    @Autowired private TransactionTemplate txRequired;
+    @Autowired
+    private TransactionTemplate txRequired;
 
-    @Autowired private ClusterInfo clusterInfo;
+    @Autowired
+    private ClusterInfo clusterInfo;
 
-    @Autowired private P2pConsensusClient p2pConsensusClient;
+    @Autowired
+    private P2pConsensusClient p2pConsensusClient;
 
-    @Value("${p2p.send.gc.interval:6000}") private Long gcInterval;
+    @Value("${p2p.send.gc.interval:6000}")
+    private Long gcInterval;
 
-    @Value("${p2p.send.increase.delay.interval:3000}") private Long delayIncreaseInterval;
+    @Value("${p2p.send.increase.delay.interval:3000}")
+    private Long delayIncreaseInterval;
 
-    @Value("${p2p.send.delay.max:7200000}") private Long delayDelayMax;
+    @Value("${p2p.send.delay.max:7200000}")
+    private Long delayDelayMax;
+
 
     /**
      * send lock
@@ -81,7 +95,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
     private ExecutorService sendExecutorService;
 
-    @PostConstruct public void initThreadPool() {
+    @PostConstruct
+    public void initThreadPool() {
         new ThreadPoolExecutor(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
             Thread thread = new Thread(r);
             thread.setName("command send thread");
@@ -104,12 +119,12 @@ import java.util.concurrent.locks.ReentrantLock;
         }).scheduleWithFixedDelay(this::gc, gcInterval, gcInterval, TimeUnit.MILLISECONDS);
 
         sendExecutorService =
-            new ThreadPoolExecutor(4, 10, 3600, TimeUnit.SECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
-                Thread thread = new Thread(r);
-                thread.setName("command send thread");
-                thread.setDaemon(true);
-                return thread;
-            });
+                new ThreadPoolExecutor(4, 10, 3600, TimeUnit.SECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
+                    Thread thread = new Thread(r);
+                    thread.setName("command send thread executor");
+                    thread.setDaemon(true);
+                    return thread;
+                });
 
     }
 
@@ -125,13 +140,13 @@ import java.util.concurrent.locks.ReentrantLock;
         }
 
         txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
                 SendCommandPO sendCommand = new SendCommandPO();
                 sendCommand.setAckNodeNum(0);
                 sendCommand.setGcThreshold(clusterInfo.clusterNodeNames().size());
                 sendCommand.setNodeName(clusterInfo.myNodeName());
-                sendCommand
-                    .setCommandSign(SignUtils.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
+                sendCommand.setCommandSign(SignUtils.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
                 sendCommand.setMessageDigest(validCommand.getMessageDigestHash());
                 sendCommand.setStatus(COMMAND_QUEUED_SEND);
                 sendCommand.setRetrySendNum(0);
@@ -190,11 +205,21 @@ import java.util.concurrent.locks.ReentrantLock;
 
                         //delete with transactions
                         txRequired.execute(new TransactionCallbackWithoutResult() {
-                            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                                queuedSendDao.deleteByMessageDigest(queuedSend.getMessageDigest());
-                                checkGc(sendCommand);
+                            @Override
+                            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                            queuedSendDao.deleteByMessageDigest(queuedSend.getMessageDigest());
+                            checkGc(sendCommand);
                             }
                         });
+
+                        delaySendLock.lock();
+                        try{
+                            delaySendCondition.signal();
+                        }catch (Exception e){
+                            log.error("{}", e);
+                        }finally {
+                            delaySendLock.unlock();
+                        }
 
                     } finally {
                         TraceUtils.closeSpan(span);
@@ -206,6 +231,7 @@ import java.util.concurrent.locks.ReentrantLock;
         }
     }
 
+
     /**
      * send delay command
      */
@@ -213,11 +239,10 @@ import java.util.concurrent.locks.ReentrantLock;
         while (true) {
             try {
                 List<QueuedSendDelayPO> queuedSendDelayList = takeDelaySendList();
-                queuedSendDelayList.forEach((queuedSendDelay) -> {
+                queuedSendDelayList.forEach((queuedSendDelay)->{
                     Span span = TraceUtils.createSpan();
-                    try {
-                        SendCommandPO sendCommand =
-                            sendCommandDao.queryByMessageDigest(queuedSendDelay.getMessageDigest());
+                    try{
+                        SendCommandPO sendCommand = sendCommandDao.queryByMessageDigest(queuedSendDelay.getMessageDigest());
                         if (null == sendCommand) {
                             escapeQueuedDelaySend(queuedSendDelay);
                             return;
@@ -226,13 +251,23 @@ import java.util.concurrent.locks.ReentrantLock;
 
                         //delete with transactions
                         txRequired.execute(new TransactionCallbackWithoutResult() {
-                            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                            @Override
+                            protected void doInTransactionWithoutResult(TransactionStatus status) {
                                 queuedSendDelayDao.deleteByMessageDigest(queuedSendDelay.getMessageDigest());
                                 checkGc(sendCommand);
                             }
                         });
 
-                    } finally {
+                        delaySendLock.lock();
+                        try{
+                            delaySendCondition.signal();
+                        }catch (Exception e){
+                            log.error("{}", e);
+                        }finally {
+                            delaySendLock.unlock();
+                        }
+
+                    }finally {
                         TraceUtils.closeSpan(span);
                     }
                 });
@@ -247,18 +282,16 @@ import java.util.concurrent.locks.ReentrantLock;
      * @return List<QueuedSendDelayPO>
      */
     private List<QueuedSendDelayPO> takeDelaySendList() {
-        List<QueuedSendDelayPO> queuedSendDelayList =
-            queuedSendDelayDao.queryListBySendTime(System.currentTimeMillis());
-
         delaySendLock.lock();
-        try {
-            while (CollectionUtils.isEmpty(queuedSendDelayList)) {
+        List<QueuedSendDelayPO> queuedSendDelayList = queuedSendDelayDao.queryListBySendTime(System.currentTimeMillis());
+        try{
+            while(CollectionUtils.isEmpty(queuedSendDelayList)){
                 delaySendCondition.await(10, TimeUnit.SECONDS);
                 queuedSendDelayList = queuedSendDelayDao.queryListBySendTime(System.currentTimeMillis());
             }
-        } catch (Exception e) {
+        }catch (Exception e){
             log.error("{}", e);
-        } finally {
+        }finally {
             delaySendLock.unlock();
         }
         return queuedSendDelayList;
@@ -266,13 +299,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
     /**
      * send command
-     *
      * @param sendCommand
      */
-    public void sendCommand(SendCommandPO sendCommand) {
+    public void sendCommand(SendCommandPO sendCommand){
         log.info("send command {}", sendCommand);
         List<SendNodePO> sendNodeList =
-            sendNodeDao.queryByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_WAIT_SEND);
+                sendNodeDao.queryByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_WAIT_SEND);
         CountDownLatch countDownLatch = new CountDownLatch(sendNodeList.size());
 
         sendNodeList.forEach((sendNode) -> {
@@ -283,44 +315,43 @@ import java.util.concurrent.locks.ReentrantLock;
                     validCommandWrap.setCommandClass(sendCommand.getValidCommand().getClass());
                     validCommandWrap.setFromNode(sendCommand.getNodeName());
                     validCommandWrap.setSign(sendCommand.getCommandSign());
-                    validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parse(sendCommand.getValidCommand()));
-                    ValidResponseWrap<? extends ResponseCommand> responseWrap =
-                        p2pConsensusClient.send(sendNode.getToNodeName(), validCommandWrap);
-                    if (responseWrap.isSucess()) {
-                        int count = sendNodeDao
-                            .transStatus(sendNode.getMessageDigest(), sendNode.getToNodeName(), SEND_NODE_WAIT_SEND,
-                                SEND_NODE_ACK);
+                    validCommandWrap.setValidCommand((ValidCommand<?>) JSON.parse(sendCommand.getValidCommand()));
+                    ValidResponseWrap<? extends ResponseCommand> sendValidResponse = p2pConsensusClient.send(sendNode.getToNodeName(), validCommandWrap);
+
+                    if(sendValidResponse.isSucess()){
+                        int count = sendNodeDao.transStatus(sendNode.getMessageDigest(), sendNode.getToNodeName(), SEND_NODE_WAIT_SEND, SEND_NODE_ACK);
                         if (count != 1) {
                             throw new RuntimeException("trans send node status failed when apply! count: " + count);
                         }
-                    } else {
-                        log.error("send command to node failed:{}", sendNode, responseWrap.getMessage());
+                        log.info("send command to node success {} ", sendNode);
+                    }else{
+                        log.error("send command to node failed {}, error {} ", sendNode, sendValidResponse.getMessage());
                     }
-                    log.info("send command to node success:{} ", sendNode);
 
                 } catch (Throwable throwable) {
-                    log.error("send to node error:{} ", sendNode, throwable);
+                    log.error("send to node error {}", sendNode, throwable);
                 } finally {
                     countDownLatch.countDown();
                 }
             });
         });
 
-        try {
+        try{
             countDownLatch.await();
         } catch (InterruptedException e) {
             log.error("send count down latch is interrupted", e);
         }
 
         //count ack num avoid send executors concurrence
-        int ackNodeNum = sendNodeDao.countByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_ACK);
+        int ackNodeNum =
+                sendNodeDao.countByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_ACK);
 
         //just count without lock because of send function executes serially
         //TODO 如果未来并发执行，锁sendCommand然后再count
         sendCommand.setAckNodeNum(ackNodeNum);
     }
 
-    public void checkGc(SendCommandPO sendCommand) {
+    public void checkGc(SendCommandPO sendCommand){
         sendCommandDao.updateAckNodeNum(sendCommand.getMessageDigest(), sendCommand.getAckNodeNum());
 
         if (sendCommand.getAckNodeNum() >= sendCommand.getGcThreshold()) {
@@ -331,21 +362,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
             Long delayTime = (sendCommand.getRetrySendNum() + 1) * delayIncreaseInterval;
             delayTime = Math.min(delayTime, delayDelayMax);
-            queuedDelay(sendCommand, delayTime);
+            queuedDelay(sendCommand,delayTime);
 
-            log.info("ack node num {} < gc threshold {}, add to delay send queue {}", sendCommand.getAckNodeNum(),
-                sendCommand.getGcThreshold(), sendCommand);
-
-            delaySendLock.lock();
-            try {
-                delaySendCondition.signal();
-            } catch (Exception e) {
-                log.error("{}", e);
-            } finally {
-                delaySendLock.unlock();
-            }
+            log.info("ack node num {} < gc threshold {}, add to delay send queue {}",
+                    sendCommand.getAckNodeNum(), sendCommand.getGcThreshold(), sendCommand);
         }
     }
+
 
     /**
      * send gc, please guaranteed thread safe
@@ -356,7 +379,8 @@ import java.util.concurrent.locks.ReentrantLock;
             return;
         }
         txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
                 List<String> deleteMessageDigestList = new ArrayList<>();
                 queuedSendGcList.forEach((queuedSendGc) -> {
                     deleteMessageDigestList.add(queuedSendGc.getMessageDigest());
@@ -381,8 +405,8 @@ import java.util.concurrent.locks.ReentrantLock;
      * @return List<QueuedSendPO>
      */
     private List<QueuedSendPO> takeSendList() {
-        List<QueuedSendPO> queuedSendList = queuedSendDao.querySendList();
         sendLock.lock();
+        List<QueuedSendPO> queuedSendList = queuedSendDao.querySendList();
         try {
             while (CollectionUtils.isEmpty(queuedSendList)) {
                 sendCondition.await(10, TimeUnit.SECONDS);
@@ -399,7 +423,8 @@ import java.util.concurrent.locks.ReentrantLock;
     private void escapeQueuedSend(QueuedSendPO queuedSend) {
         //delete with transactions
         txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
                 log.warn("escape send command is null of messageDigest {}", queuedSend);
                 queuedSendDao.deleteByMessageDigest(queuedSend.getMessageDigest());
             }
@@ -409,7 +434,8 @@ import java.util.concurrent.locks.ReentrantLock;
     private void escapeQueuedDelaySend(QueuedSendDelayPO queuedSendDelay) {
         //delete with transactions
         txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
                 log.warn("escape send delay command is null of messageDigest {}", queuedSendDelay);
                 queuedSendDelayDao.deleteByMessageDigest(queuedSendDelay.getMessageDigest());
             }
@@ -434,7 +460,8 @@ import java.util.concurrent.locks.ReentrantLock;
         queuedSendGcDao.add(queuedSendGcPO);
         int count = sendCommandDao.transStatus(sendCommand.getMessageDigest(), COMMAND_QUEUED_SEND, COMMAND_QUEUED_GC);
         if (count != 1) {
-            throw new RuntimeException("trans send command status failed when mark gc! count: " + count);
+            throw new RuntimeException(
+                    "trans send command status failed when mark gc! count: " + count);
         }
     }
 
