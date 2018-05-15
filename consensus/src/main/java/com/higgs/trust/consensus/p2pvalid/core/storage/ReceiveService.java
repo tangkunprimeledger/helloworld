@@ -267,7 +267,7 @@ public class ReceiveService {
 
             applyDelayLock.lock();
             try{
-                applyCondition.signal();
+                applyDelayCondition.signal();
             }catch (Exception e){
                 log.error("{}", e);
             }finally {
@@ -331,8 +331,8 @@ public class ReceiveService {
      * @return
      */
     private List<QueuedApplyPO> takeApplyList() {
-        List<QueuedApplyPO> queuedApplyList = queuedApplyDao.queryApplyList();
         applyLock.lock();
+        List<QueuedApplyPO> queuedApplyList = queuedApplyDao.queryApplyList();
         try {
             while (CollectionUtils.isEmpty(queuedApplyList)) {
                 applyCondition.await(5, TimeUnit.SECONDS);
@@ -352,8 +352,8 @@ public class ReceiveService {
      * @return
      */
     private List<QueuedApplyDelayPO> takeApplyDelayList() {
-        List<QueuedApplyDelayPO> queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
         applyDelayLock.lock();
+        List<QueuedApplyDelayPO> queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
         try {
             while (CollectionUtils.isEmpty(queuedApplyDelayList)) {
                 applyDelayCondition.await(10, TimeUnit.SECONDS);

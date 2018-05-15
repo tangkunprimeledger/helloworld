@@ -119,7 +119,7 @@ public class SendService {
         sendExecutorService =
                 new ThreadPoolExecutor(4, 10, 3600, TimeUnit.SECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
                     Thread thread = new Thread(r);
-                    thread.setName("command send thread");
+                    thread.setName("command send thread executor");
                     thread.setDaemon(true);
                     return thread;
                 });
@@ -210,6 +210,15 @@ public class SendService {
                             }
                         });
 
+                        delaySendLock.lock();
+                        try{
+                            delaySendCondition.signal();
+                        }catch (Exception e){
+                            log.error("{}", e);
+                        }finally {
+                            delaySendLock.unlock();
+                        }
+
                     } finally {
                         TraceUtils.closeSpan(span);
                     }
@@ -247,6 +256,15 @@ public class SendService {
                             }
                         });
 
+                        delaySendLock.lock();
+                        try{
+                            delaySendCondition.signal();
+                        }catch (Exception e){
+                            log.error("{}", e);
+                        }finally {
+                            delaySendLock.unlock();
+                        }
+
                     }finally {
                         TraceUtils.closeSpan(span);
                     }
@@ -262,9 +280,8 @@ public class SendService {
      * @return List<QueuedSendDelayPO>
      */
     private List<QueuedSendDelayPO> takeDelaySendList() {
-        List<QueuedSendDelayPO> queuedSendDelayList = queuedSendDelayDao.queryListBySendTime(System.currentTimeMillis());
-
         delaySendLock.lock();
+        List<QueuedSendDelayPO> queuedSendDelayList = queuedSendDelayDao.queryListBySendTime(System.currentTimeMillis());
         try{
             while(CollectionUtils.isEmpty(queuedSendDelayList)){
                 delaySendCondition.await(10, TimeUnit.SECONDS);
@@ -343,15 +360,6 @@ public class SendService {
 
             log.info("ack node num {} < gc threshold {}, add to delay send queue {}",
                     sendCommand.getAckNodeNum(), sendCommand.getGcThreshold(), sendCommand);
-
-            delaySendLock.lock();
-            try{
-                delaySendCondition.signal();
-            }catch (Exception e){
-                log.error("{}", e);
-            }finally {
-                delaySendLock.unlock();
-            }
         }
     }
 
@@ -391,8 +399,8 @@ public class SendService {
      * @return List<QueuedSendPO>
      */
     private List<QueuedSendPO> takeSendList() {
-        List<QueuedSendPO> queuedSendList = queuedSendDao.querySendList();
         sendLock.lock();
+        List<QueuedSendPO> queuedSendList = queuedSendDao.querySendList();
         try {
             while (CollectionUtils.isEmpty(queuedSendList)) {
                 sendCondition.await(10, TimeUnit.SECONDS);
