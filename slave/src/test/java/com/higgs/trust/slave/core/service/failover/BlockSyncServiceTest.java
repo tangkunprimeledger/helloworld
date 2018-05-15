@@ -24,7 +24,6 @@ import java.util.List;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.*;
@@ -211,20 +210,20 @@ import static org.testng.Assert.*;
 
     @Test public void testGetClusterHeight() {
         Long result = 1L;
-        when(clusterService.getClusterHeight(anyInt(), anyLong())).thenReturn(result, null);
-        assertEquals(blockSyncService.getClusterHeight(1, 1L), result);
-        assertNull(blockSyncService.getClusterHeight(1, 1L));
+        when(clusterService.getClusterHeight(anyInt())).thenReturn(result, null);
+        assertEquals(blockSyncService.getClusterHeight(1), result);
+        assertNull(blockSyncService.getClusterHeight(1));
     }
 
     @Test public void testGetClusterHeight2() {
         Long result = 1L;
-        when(clusterService.getClusterHeight(anyInt(), anyLong())).thenReturn(result, null);
+        when(clusterService.getClusterHeight(anyInt())).thenReturn(result, null);
         assertEquals(blockSyncService.getClusterHeight(1), result);
         assertNull(blockSyncService.getClusterHeight(1));
     }
 
     @Test public void testBftValidating() {
-        when(clusterService.validatingHeader(any(BlockHeader.class), anyLong())).thenReturn(null, false, true);
+        when(clusterService.validatingHeader(any(BlockHeader.class))).thenReturn(null, false, true);
         assertNull(blockSyncService.bftValidating(mock(BlockHeader.class)));
         assertFalse(blockSyncService.bftValidating(mock(BlockHeader.class)));
         assertTrue(blockSyncService.bftValidating(mock(BlockHeader.class)));

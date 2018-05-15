@@ -59,12 +59,6 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired private SyncService syncService;
 
-    @Autowired private P2pHandlerImpl p2pHandler;
-
-    @Autowired private BlockRepository blockRepository;
-
-    @Autowired private BlockService blockService;
-
     /**
      * replicate sorted package to the cluster
      *
@@ -172,48 +166,6 @@ import java.util.concurrent.TimeUnit;
             } catch (Throwable e) {
                 log.error("package's async process failed after package replicated", e);
             }
-        }
-    }
-
-    /**
-     * handle the commit and submit p2p consensus for cluster height
-     *
-     * @return
-     */
-    public void getClusterHeight(ConsensusCommit<ClusterHeightCmd> commit) {
-        try {
-            ClusterHeightCmd operation = commit.operation();
-            List<Long> maxHeights = blockRepository.getMaxHeight(operation.get());
-            maxHeights.forEach(height -> {
-                try {
-                    p2pHandler.submit(new ValidClusterHeightCmd(operation.getRequestId(), height));
-                } catch (Exception e) {
-                    log.error("consensus submit error:", e);
-                }
-            });
-        } finally {
-            commit.close();
-        }
-    }
-
-    /**
-     * handle the commit and submit p2p consensus for the result of validating block header
-     *
-     * @return
-     */
-    public void validHeader(ConsensusCommit<BlockHeaderCmd> commit) {
-        try {
-            BlockHeaderCmd operation = commit.operation();
-            BlockHeader header = operation.get();
-            BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
-            boolean result = blockHeader != null && blockService.compareBlockHeader(header, blockHeader);
-            try {
-                p2pHandler.submit(new ValidBlockHeaderCmd(operation.getRequestId(), header, result));
-            } catch (Exception e) {
-                log.error("consensus submit error:", e);
-            }
-        } finally {
-            commit.close();
         }
     }
 

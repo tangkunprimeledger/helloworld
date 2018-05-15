@@ -23,16 +23,10 @@ public class ConsensusClientTest extends BftBaseTest{
 
             CompletableFuture completableFuture = consensusClient.submit(new StringCommand("test consensusClient with String command" + new Random().nextInt(10000)));
             try {
-                Thread.sleep(2000);
-                completableFuture.get(2, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (TimeoutException e) {
-                e.printStackTrace();
+                completableFuture.get();
+            } catch (Exception e) {
+                log.error("submit error {}", e);
             }
-            System.out.println(10000);
 //        }
     }
 }

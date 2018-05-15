@@ -172,20 +172,10 @@
             <artifactId>shazamcrest</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>cn.primeledger.pl</groupId>
-            <artifactId>cas-realm-crypto</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>cn.primeledger.pl</groupId>
-            <artifactId>cas-realm-crypto</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
     <build>
-        <finalName>slave</finalName>
+        <finalName>rs</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -219,4 +209,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

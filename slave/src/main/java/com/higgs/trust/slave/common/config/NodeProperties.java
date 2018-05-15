@@ -32,6 +32,11 @@ import org.springframework.stereotype.Component;
     private long consensusWaitTime = 30 * 1000;
 
     /**
+     * the try times of self check
+     */
+    private int selfCheckTimes = 60;
+
+    /**
      * the private key of node
      */
     private String privateKey;

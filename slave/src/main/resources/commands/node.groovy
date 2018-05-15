@@ -1,14 +1,22 @@
 package commands
 
+import com.higgs.trust.common.utils.SignUtils
+import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient
+import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap
+import com.higgs.trust.consensus.p2pvalid.core.storage.SyncSendService
 import com.higgs.trust.slave.common.enums.NodeStateEnum
 import com.higgs.trust.slave.core.managment.NodeState
+import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService
 import com.higgs.trust.slave.core.service.failover.SelfCheckingService
 import lombok.extern.slf4j.Slf4j
+import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
+
+import java.util.concurrent.ConcurrentHashMap
 
 /*
  * Copyright (c) 2013-2017, suimi
@@ -20,15 +28,31 @@ class node {
 
     @Usage('show the node info')
     @Command
-    def info(InvocationContext context) {
+    def info(InvocationContext context, @Usage("show the info until the end") @Option(names = ["t"]) Boolean isTill) {
+        if (isTill) {
+            while (true) {
+                printInfo(context)
+                context.flush()
+                Thread.sleep(1000)
+            }
+        } else {
+            printInfo(context)
+        }
+    }
+
+    def printInfo(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
         def blockService = beans.getBean(BlockService.class)
+        def packageRepository = beans.getBean(PackageRepository.class)
         context.provide([name: "Name", value: nodeState.nodeName])
         context.provide([name: "Master", value: nodeState.masterName])
         context.provide([name: "isMaster", value: nodeState.master])
         context.provide([name: "State", value: nodeState.state])
-        context.provide([name: "Height", value: blockService.getMaxHeight().toString()])
+        context.provide([name: "Block Height", value: blockService.getMaxHeight().toString()])
+        context.provide([name: "Package Height", value: packageRepository.getMaxHeight().toString()])
+        context.provide([name: "Time", value: DateFormatUtils.format(System.currentTimeMillis(), "yyyy-MM-dd HH:mm:ss.SSS")])
+        out.println("")
     }
 
     @Usage('show the current state of node')
@@ -43,18 +67,19 @@ class node {
     @Command
     def height(InvocationContext context,
                @Usage("will show the cluster height")
-               @Option(names = ["c", "cluster"]) Boolean isCluster,
-               @Usage("set the waiting time in milliseconds for consensus")
-               @Option(names = ["t", "waiting"]) Integer time) {
+               @Option(names = ["c", "cluster"]) Boolean isCluster, @Option(names = ["a", "all"]) Boolean isAll) {
 
         BeanFactory beans = context.attributes['spring.beanfactory']
+        if (isAll) {
+            def clusterService = beans.getBean(ClusterService.class)
+            def map = clusterService.getAllClusterHeight()
+            map.entrySet().forEach({ entry -> context.provide([name: entry.key, value: entry.value]) })
+            return
+        }
         def height
         if (isCluster) {
             def clusterService = beans.getBean(ClusterService.class)
-            if (time == null) {
-                time = 2000
-            }
-            height = clusterService.getClusterHeight(1, time)
+            height = clusterService.getClusterHeight(1)
             if (height == null) {
                 out.println("Failed to get cluster height, please try again")
                 return
