@@ -57,17 +57,7 @@ import java.util.List;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
     @Autowired private LazyTraceThreadPoolTaskExecutor traceThreadPoolTaskExecutor;
 
-    @Override public RespData syncSubmitTxForPersisted(BizTypeEnum bizType, CoreTransaction coreTx) {
-        submitTx(bizType, coreTx);
-        return syncWait(coreTx.getTxId(), false);
-    }
-
-    @Override public RespData syncSubmitTxForEnd(BizTypeEnum bizType, CoreTransaction coreTx) {
-        submitTx(bizType, coreTx);
-        return syncWait(coreTx.getTxId(), true);
-    }
-
-    private RespData syncWait(String key, boolean forEnd) {
+    @Override public RespData syncWait(String key, boolean forEnd) {
         RespData respData = null;
         try {
             if (forEnd) {
