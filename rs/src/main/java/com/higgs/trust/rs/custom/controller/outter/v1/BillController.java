@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2018/5/12
  */
 
-@RestController
+@RestController(value = "/v1/bill")
 @Slf4j
 public class BillController {
     @Autowired
