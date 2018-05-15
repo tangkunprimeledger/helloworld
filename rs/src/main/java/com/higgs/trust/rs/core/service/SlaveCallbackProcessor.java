@@ -77,7 +77,6 @@ import org.springframework.transaction.support.TransactionTemplate;
                     log.error("[onValidated]call back handler is not register");
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
                 }
-                CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(),false);
                 //callback custom rs
                 txCallbackHandler.onPersisted(BizTypeEnum.fromCode(po.getBizType()),respData);
             }
@@ -110,7 +109,6 @@ import org.springframework.transaction.support.TransactionTemplate;
                     log.error("[onClusterPersisted]call back handler is not register");
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
                 }
-                CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(),false);
                 //callback custom rs
                 txCallbackHandler.onEnd(BizTypeEnum.fromCode(po.getBizType()),respData);
             }
