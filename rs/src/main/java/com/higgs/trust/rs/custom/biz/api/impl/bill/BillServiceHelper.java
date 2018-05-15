@@ -5,11 +5,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
+import com.higgs.trust.rs.custom.api.enums.RequestEnum;
+import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.RequestDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.custom.dao.po.RequestPO;
+import com.higgs.trust.rs.custom.exceptions.BillException;
 import com.higgs.trust.rs.custom.util.converter.BillConvertor;
 import com.higgs.trust.rs.custom.util.converter.CoreTransactionConvertor;
 import com.higgs.trust.rs.custom.util.converter.RequestConvertor;
@@ -40,8 +44,6 @@ import java.util.List;
 @Service
 @Slf4j
 public class BillServiceHelper {
-    @Autowired
-    private RequestDao requestDao;
 
     @Autowired
     private UTXOActionConvertor utxoActionConvertor;
@@ -57,6 +59,12 @@ public class BillServiceHelper {
 
     @Autowired
     private RsConfig rsConfig;
+
+    @Autowired
+    private RsBlockChainService rsBlockChainService;
+
+    @Autowired
+    private RequestDao requestDao;
 
     /**
      * requestIdempotent
@@ -180,8 +188,9 @@ public class BillServiceHelper {
         List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
 
         if (CollectionUtils.isEmpty(receivableBillPOList) || receivableBillPOList.size() > 1) {
-            log.error("build Transfer Bill WithIdentity  ActionList  error, receivableBillPOList: {}", receivableBillPOList);
-            throw new RuntimeException("build Transfer Bill WithIdentity  ActionList  error for receivableBillPOList is null or receivableBillPOList size bigger than 1");
+            log.error("build Transfer Bill WithIdentity  ActionList  error for receivableBillPOList is null or receivableBillPOList size bigger than 1," +
+                    "build Transfer Bill WithIdentity  ActionList  error, receivableBillPOList: {}", receivableBillPOList);
+            throw new BillException(RespCodeEnum.BILL_TRANSFER_INVALID_PARAM);
         }
         ReceivableBillPO receivableBill = receivableBillPOList.get(0);
 
@@ -236,6 +245,40 @@ public class BillServiceHelper {
         RespData rsRespData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.TRANSFER_UTXO, coreTransaction);
         BeanUtils.copyProperties(rsRespData, respData);
         return respData;
+    }
+
+    /**
+     * check whether the identity is existed in blockChain
+     *
+     * @param identity
+     * @return
+     */
+    public boolean isExistedIdentity(String identity ,String txId) {
+        try {
+            return rsBlockChainService.isExistedIdentity(identity);
+        } catch (Throwable e) {
+            updateRequestStatus(txId, RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
+            throw e;
+        }
+    }
+
+    /**
+     * update request status
+     *
+     * @param txId
+     * @param fromStatus
+     * @param toStatus
+     * @param respCode
+     * @param msg
+     */
+    public void updateRequestStatus(String txId, String fromStatus, String toStatus, String respCode, String msg) {
+        //update process status from process to done
+        int isUpdated = requestDao.updateStatusByRequestId(txId, fromStatus, toStatus, respCode, msg);
+
+        if (0 == isUpdated) {
+            log.error("update request status  for requestId :{} , to status: {} is failed!", txId, toStatus);
+            throw new RuntimeException("update request  status failed!");
+        }
     }
 
 

@@ -2,6 +2,7 @@ package com.higgs.trust.rs.custom.biz.rscore.callback.handler;
 
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
+import com.higgs.trust.rs.custom.biz.api.impl.bill.BillServiceHelper;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.RequestDao;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -35,6 +36,8 @@ public class TransferBillCallbackHandler {
     private ReceivableBillDao receivableBillDao;
     @Autowired
     private RequestDao requestDao;
+    @Autowired
+    private BillServiceHelper billServiceHelper;
 
     public void process(RespData<CoreTransaction> respData) {
         try {
@@ -80,14 +83,9 @@ public class TransferBillCallbackHandler {
                             }
                         }
                     }
+
                     //update process status from process to done
-                    int isUpdated = requestDao.updateStatusByRequestId(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
-
-                    if (0 == isUpdated) {
-                        log.error("update request status  for requestId :{} , to status: {} is failed!", coreTransaction.getTxId(), RequestEnum.DONE.getCode());
-                        throw new RuntimeException("update request  status failed!");
-                    }
-
+                    billServiceHelper.updateRequestStatus(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
                 }
             });
         } catch (Throwable e) {

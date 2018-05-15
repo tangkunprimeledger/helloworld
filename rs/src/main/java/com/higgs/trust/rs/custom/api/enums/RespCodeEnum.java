@@ -33,7 +33,8 @@ public enum RespCodeEnum {
     PARAM_ADDRESS_NOT_VALID("100", "022", "地址或公钥格式不合法"),
     IDENTITY_NOT_EXIST("100", "023", "存证信息不存在"),
 
-
+    BILL_HOLDER_NOT_EXISTED("200", "001", "票据持有人不存在"),
+    BILL_TRANSFER_INVALID_PARAM("200", "002", "转账票据不存在或者可以转的票据超过一个"),
 
     SYS_LIMITED("500", "003", "系统限流，请稍后重试"),
     SYS_FAIL_RETRY("500", "001", "系统繁忙，请稍后重试"),
