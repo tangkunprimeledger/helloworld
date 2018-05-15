@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1/blockchain")
 @RestController
 @Slf4j
+@CrossOrigin
 public class RsBlockChainController {
     @Autowired
     private AccountInfoService accountInfoService;

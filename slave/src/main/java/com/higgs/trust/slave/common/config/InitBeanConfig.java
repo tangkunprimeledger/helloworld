@@ -9,10 +9,12 @@ import com.higgs.trust.slave.common.constant.Constant;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
+import org.springframework.cloud.sleuth.instrument.async.LazyTraceThreadPoolTaskExecutor;
 import org.springframework.cloud.sleuth.instrument.async.TraceableExecutorService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -76,4 +78,16 @@ import java.util.concurrent.*;
     @Bean public HashBlockingMap clusterPersistedResultMap() {
         return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
+
+    @Bean public LazyTraceThreadPoolTaskExecutor traceExecutorPool() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(10);
+        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.setQueueCapacity(10);
+        threadPoolTaskExecutor.setThreadNamePrefix("TraceExecutor-");
+        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
+
 }

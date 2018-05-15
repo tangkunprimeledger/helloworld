@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.custom.controller.outter.v1;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.api.identity.IdentityService;
 import com.higgs.trust.rs.custom.api.vo.identity.IdentityRequestVO;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -54,7 +56,7 @@ public class IdentityController {
     }
 
     @RequestMapping(value = "/query/key")
-    public RespData queryIdentityByKey(String key) {
+    public RespData queryIdentityByKey(@RequestBody String key) {
         log.info("[queryIdentityByKey] query request receive. {}", key);
 
         if (StringUtils.isBlank(key)) {
@@ -63,12 +65,12 @@ public class IdentityController {
         }
 
         log.info("[queryIdentityByKey] query request handle start. key={}", key);
-        return identityService.queryIdentityByKey(key);
+        return identityService.queryIdentityByKey(JSON.parseObject(key).getString("key"));
     }
 
 
     @RequestMapping(value = "/query/reqNo")
-    public RespData queryIdentityByReqNo(String reqNo) {
+    public RespData queryIdentityByReqNo(@RequestBody String reqNo) {
         log.info("[queryIdentityByReqNo] query request receive. {}", reqNo);
 
         if (StringUtils.isBlank(reqNo)) {
@@ -77,6 +79,6 @@ public class IdentityController {
         }
 
         log.info("[queryIdentityByReqNo] query request handle start. reqNo={}", reqNo);
-        return identityService.queryIdentityByReqNo(reqNo);
+        return identityService.queryIdentityByReqNo(JSON.parseObject(reqNo).getString("reqNo"));
     }
 }

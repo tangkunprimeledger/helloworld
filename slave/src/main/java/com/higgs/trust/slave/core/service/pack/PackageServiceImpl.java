@@ -141,8 +141,8 @@ import java.util.Set;
                 add(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS.getCode());
                 add(PackageStatusEnum.VALIDATED.getCode());
             }};
-            Long minPackHeight = packageRepository.getMinHeight(statusSet);
-            long count = packageRepository.count(statusSet);
+            Long minPackHeight = packageRepository.getMinHeight(statusSet, maxBlockHeight);
+            long count = packageRepository.count(statusSet, maxBlockHeight);
 
             //if pending package number is too large, will stop creating package
             if (count >= PACKAGE_PENDING_COUNT) {
