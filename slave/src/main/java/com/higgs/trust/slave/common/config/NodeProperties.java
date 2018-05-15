@@ -22,19 +22,9 @@ import org.springframework.stereotype.Component;
     private String masterName = DEFAULT_NODE_NAME;
 
     /**
-     * the dir of consensus
-     */
-    private String consensusDir = "/tmp/higgs/trust/consensus";
-
-    /**
-     * the milliseconds for waiting the consensus result
-     */
-    private long consensusWaitTime = 30 * 1000;
-
-    /**
      * the try times of self check
      */
-    private int selfCheckTimes = 60;
+    private int selfCheckTimes = 100;
 
     /**
      * the private key of node

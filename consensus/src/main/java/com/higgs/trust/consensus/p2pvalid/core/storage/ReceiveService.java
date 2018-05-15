@@ -332,18 +332,19 @@ public class ReceiveService {
      */
     private List<QueuedApplyPO> takeApplyList() {
         applyLock.lock();
-        List<QueuedApplyPO> queuedApplyList = queuedApplyDao.queryApplyList();
         try {
+            List<QueuedApplyPO> queuedApplyList = queuedApplyDao.queryApplyList();
             while (CollectionUtils.isEmpty(queuedApplyList)) {
                 applyCondition.await(5, TimeUnit.SECONDS);
                 queuedApplyList = queuedApplyDao.queryApplyList();
             }
+            return queuedApplyList;
         } catch (Exception e) {
             log.error("take apply list error", e);
         } finally {
             applyLock.unlock();
         }
-        return queuedApplyList;
+        return new ArrayList<>();
     }
 
     /**
@@ -353,18 +354,19 @@ public class ReceiveService {
      */
     private List<QueuedApplyDelayPO> takeApplyDelayList() {
         applyDelayLock.lock();
-        List<QueuedApplyDelayPO> queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
         try {
+            List<QueuedApplyDelayPO> queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
             while (CollectionUtils.isEmpty(queuedApplyDelayList)) {
                 applyDelayCondition.await(10, TimeUnit.SECONDS);
                 queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
             }
+            return queuedApplyDelayList;
         } catch (Exception e) {
             log.error("take apply delay list error", e);
         } finally {
             applyDelayLock.unlock();
         }
-        return queuedApplyDelayList;
+        return new ArrayList<>();
     }
 
     private void
