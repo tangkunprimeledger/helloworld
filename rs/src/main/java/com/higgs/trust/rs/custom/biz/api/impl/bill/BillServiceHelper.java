@@ -4,10 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
+import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
+import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
-import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.RequestDao;
@@ -28,7 +29,6 @@ import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -152,7 +152,14 @@ public class BillServiceHelper {
         }
 
         //send and get callback result
-        RespData<?> respData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.ISSUE_UTXO, coreTransaction);
+        RespData<?> respData = null;
+        try {
+            respData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.ISSUE_UTXO, coreTransaction);
+        } catch (RsCoreException e) {
+            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
+                respData = requestIdempotent(billCreateVO.getRequestId());
+            }
+        }
         return respData;
     }
 
@@ -188,8 +195,7 @@ public class BillServiceHelper {
         List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
 
         if (CollectionUtils.isEmpty(receivableBillPOList) || receivableBillPOList.size() > 1) {
-            log.error("build Transfer Bill WithIdentity  ActionList  error for receivableBillPOList is null or receivableBillPOList size bigger than 1," +
-                    "build Transfer Bill WithIdentity  ActionList  error, receivableBillPOList: {}", receivableBillPOList);
+            log.error("build Transfer Bill WithIdentity  ActionList  error for receivableBillPOList is null or receivableBillPOList size bigger than 1," + "build Transfer Bill WithIdentity  ActionList  error, receivableBillPOList: {}", receivableBillPOList);
             throw new BillException(RespCodeEnum.BILL_TRANSFER_INVALID_PARAM);
         }
         ReceivableBillPO receivableBill = receivableBillPOList.get(0);
@@ -212,7 +218,6 @@ public class BillServiceHelper {
      * @return
      */
     public RespData<?> buildTransferBillAndSend(boolean isIdentityExist, BillTransferVO billTransferVO) {
-        RespData<?> respData = new RespData<>();
         List<Action> actionList = null;
         if (isIdentityExist) {
             actionList = utxoActionConvertor.buildTransferBillActionList(billTransferVO);
@@ -242,25 +247,21 @@ public class BillServiceHelper {
         }
 
         //send and get callback result
-        RespData rsRespData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.TRANSFER_UTXO, coreTransaction);
-        BeanUtils.copyProperties(rsRespData, respData);
+        RespData<?> respData = null;
+        try {
+            respData = coreTransactionService.syncSubmitTxForEnd(BizTypeEnum.TRANSFER_UTXO, coreTransaction);
+        } catch (Throwable e) {
+            if (e.getCause() instanceof RsCoreException) {
+                //TODO 当 为  RsCoreErrorEnum.RS_CORE_IDEMPOTENT  时 不需要回滚，则异常不需要往外抛
+                respData = requestIdempotent(billTransferVO.getRequestId());
+            } else {
+                throw e;
+            }
+
+        }
         return respData;
     }
 
-    /**
-     * check whether the identity is existed in blockChain
-     *
-     * @param identity
-     * @return
-     */
-    public boolean isExistedIdentity(String identity ,String txId) {
-        try {
-            return rsBlockChainService.isExistedIdentity(identity);
-        } catch (Throwable e) {
-            updateRequestStatus(txId, RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
-            throw e;
-        }
-    }
 
     /**
      * update request status

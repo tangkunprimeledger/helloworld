@@ -3,13 +3,15 @@ package com.higgs.trust.rs.custom.biz.api.impl.bill;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.custom.api.bill.BillService;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
-import com.higgs.trust.rs.custom.exceptions.BillException;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * bill service impl
@@ -22,6 +24,13 @@ import org.springframework.stereotype.Service;
 public class BillServiceImpl implements BillService {
     @Autowired
     private BillServiceHelper billServiceHelper;
+
+    @Autowired
+    TransactionTemplate txRequired;
+
+    @Autowired
+    private RsBlockChainService rsBlockChainService;
+
     /**
      * 创建票据方法
      *
@@ -32,21 +41,29 @@ public class BillServiceImpl implements BillService {
     public RespData<?> create(BillCreateVO billCreateVO) {
         RespData<?> respData = null;
         try {
-            //初步幂等校验
-            respData = billServiceHelper.requestIdempotent(billCreateVO.getRequestId());
-            if (null != respData) {
-                return respData;
-            }
-            //请求入库
-            respData = billServiceHelper.insertRequest(billCreateVO);
-            if (null != respData) {
-                return respData;
-            }
-            //identity 是否存在
-            boolean isIdentityExist = billServiceHelper.isExistedIdentity(billCreateVO.getHolder(), billCreateVO.getRequestId());
+            //开启事务
+            respData = txRequired.execute(new TransactionCallback<RespData>() {
+                @Override
+                public RespData doInTransaction(TransactionStatus txStatus) {
+                    //初步幂等校验
+                    RespData<?> respData = null;
+                    respData = billServiceHelper.requestIdempotent(billCreateVO.getRequestId());
+                    if (null != respData) {
+                        return respData;
+                    }
+                    //请求入库
+                    respData = billServiceHelper.insertRequest(billCreateVO);
+                    if (null != respData) {
+                        return respData;
+                    }
+                    //identity 是否存在
+                    boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billCreateVO.getHolder());
 
-            //组装UTXO,CoreTransaction,签名，下发
-            respData = billServiceHelper.buildCreateBillAndSend(isIdentityExist, billCreateVO);
+                    //组装UTXO,CoreTransaction，下发
+                    respData = billServiceHelper.buildCreateBillAndSend(isIdentityExist, billCreateVO);
+                    return respData;
+                }
+            });
         } catch (Throwable e) {
             log.error("create bill error", e);
             respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
@@ -66,21 +83,29 @@ public class BillServiceImpl implements BillService {
     public RespData<?> transfer(BillTransferVO billTransferVO) {
         RespData<?> respData = null;
         try {
-            //初步幂等校验
-            respData = billServiceHelper.requestIdempotent(billTransferVO.getRequestId());
-            if (null != respData) {
-                return respData;
-            }
-            //请求入库
-            respData = billServiceHelper.insertRequest(billTransferVO);
-            if (null != respData) {
-                return respData;
-            }
-            //identity 是否存在
-            boolean isIdentityExist = billServiceHelper.isExistedIdentity(billTransferVO.getNextHolder(), billTransferVO.getRequestId());
+            //开启事务
+            respData = txRequired.execute(new TransactionCallback<RespData>() {
+                @Override
+                public RespData doInTransaction(TransactionStatus txStatus) {
+                    //初步幂等校验
+                    RespData<?> respData = null;
+                    respData = billServiceHelper.requestIdempotent(billTransferVO.getRequestId());
+                    if (null != respData) {
+                        return respData;
+                    }
+                    //请求入库
+                    respData = billServiceHelper.insertRequest(billTransferVO);
+                    if (null != respData) {
+                        return respData;
+                    }
+                    //identity 是否存在
+                    boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billTransferVO.getNextHolder());
 
-            //组装UTXO,CoreTransaction,签名，下发
-            respData = billServiceHelper.buildTransferBillAndSend(isIdentityExist, billTransferVO);
+                    //组装UTXO,CoreTransaction，下发
+                    respData = billServiceHelper.buildTransferBillAndSend(isIdentityExist, billTransferVO);
+                    return respData;
+                }
+            });
         } catch (Throwable e) {
             log.error("transfer bill error", e);
             respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
