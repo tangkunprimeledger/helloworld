@@ -27,8 +27,7 @@ import java.util.Locale;
 
     private List<StateChangeListener> stateListeners = new ArrayList<>();
 
-    //todo:suimi change state to Starting
-    @Getter private NodeStateEnum state = NodeStateEnum.Running;
+    @Getter private NodeStateEnum state = NodeStateEnum.Starting;
 
     /**
      * 当前节点是否为master
@@ -61,17 +60,11 @@ import java.util.Locale;
      */
     @Getter private String prefix;
 
-    /**
-     * waiting time for consensus
-     */
-    @Getter private long consensusWaitTime;
-
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
         this.privateKey = properties.getPrivateKey();
         this.masterPubKey = properties.getMasterPubKey();
         this.prefix = properties.getPrefix();
-        this.consensusWaitTime = properties.getConsensusWaitTime();
         this.changeMaster(properties.getMasterName());
     }
 

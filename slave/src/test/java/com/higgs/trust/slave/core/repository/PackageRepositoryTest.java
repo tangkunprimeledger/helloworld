@@ -136,16 +136,16 @@ public class PackageRepositoryTest extends BaseTest {
         Set<String> statusSet = new HashSet<>();
         statusSet.add(PackageStatusEnum.INIT.getCode());
         statusSet.add(PackageStatusEnum.RECEIVED.getCode());
-        Long height = packageRepository.getMinHeight(statusSet);
+        Long height = packageRepository.getMinHeight(statusSet, 9L);
 
-        Assert.assertEquals(3L, height.longValue());
+        Assert.assertEquals(9L, height.longValue());
     }
 
     @Test public void count() {
         Set<String> statusSet = new HashSet<>();
         statusSet.add(PackageStatusEnum.INIT.getCode());
         statusSet.add(PackageStatusEnum.RECEIVED.getCode());
-        long count = packageRepository.count(statusSet);
+        long count = packageRepository.count(statusSet, 7L);
 
         Assert.assertEquals(1, count);
     }

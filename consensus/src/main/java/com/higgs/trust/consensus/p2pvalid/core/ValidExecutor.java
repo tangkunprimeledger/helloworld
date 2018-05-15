@@ -1,5 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
+import org.omg.CORBA.portable.ValueBase;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,16 +24,15 @@ public class ValidExecutor {
         return registry.keySet();
     }
 
-    public <T extends ValidCommand<U>, U extends Serializable> void register(Class<T> type,
-                                                                             Consumer<ValidCommit> consumer) {
-        registry.put(type, (Function<ValidCommit, Void>) commit -> {
+    public <T extends ValidCommand<U>, U extends Serializable> void register(Class<T> type, Consumer<ValidBaseCommit> consumer) {
+        registry.put(type, (Function<ValidBaseCommit, Void>)commit -> {
             consumer.accept(commit);
             return null;
         });
     }
 
-    public <T extends ValidCommand<U>, U extends Serializable> U execute(ValidCommit commit) {
+    public Object execute(ValidBaseCommit commit) {
         Function function = registry.get(commit.type());
-        return (U) function.apply(commit);
+        return function.apply(commit);
     }
 }

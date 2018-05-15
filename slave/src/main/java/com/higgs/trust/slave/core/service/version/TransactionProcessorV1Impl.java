@@ -69,6 +69,9 @@ import java.util.*;
         CoreTransaction coreTx = transactionData.getCurrentTransaction().getCoreTx();
         log.info("[process]coreTx:{}", coreTx);
         List<Action> actionList = coreTx.getActionList();
+        if (actionList == null) {
+            return;
+        }
         //sort by index
         Collections.sort(actionList, new Comparator<Action>() {
             @Override public int compare(Action o1, Action o2) {

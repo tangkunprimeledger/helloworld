@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.core.repository;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.vo.UTXOVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -8,12 +10,13 @@ import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.dao.utxo.TxOutDao;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * txOut repository
@@ -77,11 +80,37 @@ public class TxOutRepository {
             return null;
         }
 
-        List<UTXOVO> utxovoList = BeanConvertor.convertList(list, UTXOVO.class);
+
+        List<UTXOVO> utxovoList = convertPOListToVOList(list);
 
         for (UTXOVO vo : utxovoList) {
             queryTxOutBySTxId(vo, txId, DISPLAY);
         }
+        return utxovoList;
+    }
+
+    private List<UTXOVO> convertPOListToVOList(List<TxOutPO> list) {
+
+        List<UTXOVO> utxovoList = new ArrayList<>();
+        list.forEach(txOutPO -> {
+            UTXOVO vo = BeanConvertor.convertBean(txOutPO, UTXOVO.class);
+
+            if (!StringUtils.isBlank(txOutPO.getState())) {
+                try {
+                    JSONObject jsonObject = JSONObject.parseObject(txOutPO.getState());
+
+                    Map<String, String> stateMap= new HashMap<>();
+                    for (String key : jsonObject.keySet()) {
+                        stateMap.put(key, jsonObject.getString(key));
+                    }
+                    vo.setState(stateMap);
+                } catch (Exception e) {
+                    //do nothing
+                }
+            }
+            utxovoList.add(vo);
+        });
+
         return utxovoList;
     }
 
@@ -92,10 +121,10 @@ public class TxOutRepository {
             return;
         }
 
-        List<UTXOVO> utxovoList = BeanConvertor.convertList(list, UTXOVO.class);
+        List<UTXOVO> utxovoList = convertPOListToVOList(list);
         vo.setPreUTXOVO(utxovoList);
 
-        if (i == 0) {
+        if (i == 1) {
             return;
         } else {
             i -= 1;

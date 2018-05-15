@@ -100,6 +100,9 @@
           <foreach collection="statusSet" index="index" item="item" open="(" separator="," close=")">
               #{item}
           </foreach>
+        <if test="maxBlockHeight != null">
+            and height > #{maxBlockHeight}
+        </if>
     </select>
 
     <select id="getMinHeightWithHeightAndStatus" resultType="java.lang.Long" parameterType="object">
@@ -117,6 +120,9 @@
         <foreach collection="statusSet" index="index" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
+        <if test="maxBlockHeight != null">
+            and height > #{maxBlockHeight}
+        </if>
     </select>
 
     <select id="queryByHeightForUpdate" resultMap="baseResultMap" parameterType="java.lang.Long">

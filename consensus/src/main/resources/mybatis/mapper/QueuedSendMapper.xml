@@ -38,7 +38,7 @@
     <select id="querySendList" resultMap="baseResultMap">
         select
         <include refid="baseColumnList" />
-        from queued_send order by id limit 10;
+        from queued_send order by id limit 10
     </select>
 
     <!-- 根据messageDigest查询 -->

@@ -106,7 +106,7 @@
       "useHttpChannel":false,
       "schedule":{
         "processInit":50,
-        "submitSlave":50
+        "submitSlave":500
       },
       "syncRequestTimeout":1000
     },

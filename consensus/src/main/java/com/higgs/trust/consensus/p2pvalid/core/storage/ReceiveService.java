@@ -267,7 +267,7 @@ public class ReceiveService {
 
             applyDelayLock.lock();
             try{
-                applyCondition.signal();
+                applyDelayCondition.signal();
             }catch (Exception e){
                 log.error("{}", e);
             }finally {
@@ -331,19 +331,20 @@ public class ReceiveService {
      * @return
      */
     private List<QueuedApplyPO> takeApplyList() {
-        List<QueuedApplyPO> queuedApplyList = queuedApplyDao.queryApplyList();
         applyLock.lock();
         try {
+            List<QueuedApplyPO> queuedApplyList = queuedApplyDao.queryApplyList();
             while (CollectionUtils.isEmpty(queuedApplyList)) {
                 applyCondition.await(5, TimeUnit.SECONDS);
                 queuedApplyList = queuedApplyDao.queryApplyList();
             }
+            return queuedApplyList;
         } catch (Exception e) {
             log.error("take apply list error", e);
         } finally {
             applyLock.unlock();
         }
-        return queuedApplyList;
+        return new ArrayList<>();
     }
 
     /**
@@ -352,19 +353,20 @@ public class ReceiveService {
      * @return
      */
     private List<QueuedApplyDelayPO> takeApplyDelayList() {
-        List<QueuedApplyDelayPO> queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
         applyDelayLock.lock();
         try {
+            List<QueuedApplyDelayPO> queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
             while (CollectionUtils.isEmpty(queuedApplyDelayList)) {
                 applyDelayCondition.await(10, TimeUnit.SECONDS);
                 queuedApplyDelayList = queuedApplyDelayDao.queryListByApplyTime(System.currentTimeMillis());
             }
+            return queuedApplyDelayList;
         } catch (Exception e) {
             log.error("take apply delay list error", e);
         } finally {
             applyDelayLock.unlock();
         }
-        return queuedApplyDelayList;
+        return new ArrayList<>();
     }
 
     private void
