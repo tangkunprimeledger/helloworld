@@ -33,6 +33,17 @@ import java.util.List;
     }
 
     /**
+     * 从startHeight开始获取size个blockheader
+     *
+     * @param startHeight 开始高度
+     * @param size        数量
+     * @return blockheader列表
+     */
+    public List<BlockHeader> getHeadersFromNode(long startHeight, int size, String nodeName) {
+        return blockChainClient.getBlockHeadersFromNode(nodeName, startHeight, size);
+    }
+
+    /**
      * 从startHeight开始获取size个block
      *
      * @param startHeight 开始高度
@@ -44,13 +55,14 @@ import java.util.List;
     }
 
     /**
-     * bft验证blockheader
+     * 从startHeight开始获取size个block
      *
-     * @param blockHeader blockheader
-     * @return 协议验证结果, if timeout will return null
+     * @param startHeight 开始高度
+     * @param size        数量
+     * @return blockheader列表
      */
-    public Boolean bftValidating(BlockHeader blockHeader) {
-        return bftValidating(blockHeader, nodeState.getConsensusWaitTime());
+    public List<Block> getBlocksFromNode(long startHeight, int size, String nodeName) {
+        return blockChainClient.getBlocksFromNode(nodeName, startHeight, size);
     }
 
     /**
@@ -59,8 +71,8 @@ import java.util.List;
      * @param blockHeader blockheader
      * @return 协议验证结果, if timeout will return null
      */
-    public Boolean bftValidating(BlockHeader blockHeader, long waitTime) {
-        Boolean aBoolean = clusterService.validatingHeader(blockHeader, waitTime);
+    public Boolean bftValidating(BlockHeader blockHeader) {
+        Boolean aBoolean = clusterService.validatingHeader(blockHeader);
         if (log.isDebugEnabled()) {
             log.debug("the blockheader:{} validated result by bft :{}", blockHeader.getHeight(), aBoolean);
         }
@@ -73,16 +85,7 @@ import java.util.List;
      * @return
      */
     public Long getClusterHeight(int size) {
-        return getClusterHeight(size, nodeState.getConsensusWaitTime());
-    }
-
-    /**
-     * get the cluster height
-     *
-     * @return
-     */
-    public Long getClusterHeight(int size, long waitTime) {
-        Long clusterHeight = clusterService.getClusterHeight(size, waitTime);
+        Long clusterHeight = clusterService.getClusterHeight(size);
         if (log.isDebugEnabled()) {
             log.debug("get the cluster height:{}", clusterHeight);
         }

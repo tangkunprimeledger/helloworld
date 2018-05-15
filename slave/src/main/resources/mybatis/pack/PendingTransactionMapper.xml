@@ -74,7 +74,7 @@
         select
         <include refid="baseColumnList"/>
         from pending_transaction
-        where status=#{status}  order by create_time asc limit #{limit}
+        where status=#{status} limit #{limit}
     </select>
     <!-- 以上为工具自动生成 -->
 

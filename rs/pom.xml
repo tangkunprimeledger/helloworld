@@ -172,15 +172,42 @@
             <artifactId>shazamcrest</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>cn.primeledger.pl</groupId>
-            <artifactId>cas-realm-crypto</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>cn.primeledger.pl</groupId>
-            <artifactId>cas-realm-crypto</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
+
+    <build>
+        <finalName>rs</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.higgs.trust</groupId>
+                                    <artifactId>rs</artifactId>
+                                    <type>jar</type>
+                                    <destFileName>trust.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>../target/</outputDirectory>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

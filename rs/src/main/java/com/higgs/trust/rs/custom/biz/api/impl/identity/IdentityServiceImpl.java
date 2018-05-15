@@ -22,6 +22,7 @@ import com.higgs.trust.rs.custom.model.convertor.identity.POToBOConvertor;
 import com.higgs.trust.rs.custom.model.convertor.identity.POToVOConvertor;
 import com.higgs.trust.rs.custom.util.Profiler;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +53,8 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired TransactionTemplate txRequired;
 
     @Autowired private CoreTransactionService coreTransactionService;
+
+    @Autowired private NodeState nodeState;
 
     @Override public RespData acceptRequest(IdentityRequest identityRequest) {
         if (null == identityRequest) {
@@ -269,7 +272,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         coreTx.setBizModel(bizModel);
         coreTx.setPolicyId("api.user.storageIdentity");
         coreTx.setTxId(identityRequest.getReqNo());
-        coreTx.setSender("TRUST-NODE97");
+        coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTransactionService.submitTx(BizTypeEnum.STORAGE, coreTx);
         log.info("[asyncSendToSlave]: end handle , reqNo = {}", identityRequest.getReqNo());

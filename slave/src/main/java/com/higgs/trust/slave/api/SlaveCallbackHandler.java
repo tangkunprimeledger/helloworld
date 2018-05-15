@@ -12,9 +12,9 @@ import com.higgs.trust.slave.model.bo.TransactionReceipt;
 public interface SlaveCallbackHandler {
     /**
      * on tx validated
-     * @param txId
+     * @param coreTx
      */
-    void onValidated(String txId);
+    void onValidated(CoreTransaction coreTx);
 
     /**
      * on tx persisted

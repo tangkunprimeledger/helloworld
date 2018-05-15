@@ -3,7 +3,6 @@ package com.higgs.trust.slave._interface;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.JsonFileUtil;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;

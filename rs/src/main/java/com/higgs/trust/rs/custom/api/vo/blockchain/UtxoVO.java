@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Setter
 @Getter
@@ -19,7 +20,7 @@ public class UtxoVO extends BaseBO{
 
     private String identity;
 
-    private String state;
+    private Map<String, String> state;
 
     private String contractAddress;
 
