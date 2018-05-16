@@ -106,7 +106,7 @@ import java.util.concurrent.locks.ReentrantLock;
         }).scheduleWithFixedDelay(this::gc, gcInterval, gcInterval, TimeUnit.MILLISECONDS);
 
         sendExecutorService =
-            new ThreadPoolExecutor(20, 200, 3600, TimeUnit.SECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
+            new ThreadPoolExecutor(20, 80, 3600, TimeUnit.SECONDS, new LinkedBlockingQueue<>(5000), (r) -> {
                 Thread thread = new Thread(r);
                 thread.setName("command send thread executor");
                 thread.setDaemon(true);
