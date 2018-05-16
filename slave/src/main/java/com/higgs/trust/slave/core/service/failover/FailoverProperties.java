@@ -14,17 +14,17 @@ import org.springframework.stereotype.Component;
     /**
      * the package size of keep  when package cache overstep of threshold
      */
-    private int keepSize = 1;
+    private int keepSize = 10;
 
     /**
      * the size of blockheader which get from other node
      */
-    private int headerStep = 100;
+    private int headerStep = 200;
 
     /**
      * the size of block which get from other node
      */
-    private int blockStep = 10;
+    private int blockStep = 50;
 
     /**
      * the try times for getting the block or blockheader from other node
