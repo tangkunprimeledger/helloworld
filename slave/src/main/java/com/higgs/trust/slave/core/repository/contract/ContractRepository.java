@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Contract Repository
  * @author duhongming
@@ -36,6 +38,16 @@ public class ContractRepository {
                     contract);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
         }
+    }
+
+    public Long queryCount(Long height, String txId) {
+        Long rowCount = contractDao.getQueryCount(height, txId);
+        return rowCount;
+    }
+
+    public List<Contract> query(Long height, String txId, int pageIndex, int pageSize) {
+        List<ContractPO> list = contractDao.query(height, txId, (pageIndex - 1) * pageSize, pageSize);
+        return BeanConvertor.convertList(list, Contract.class);
     }
 
     public Contract queryByAddress(String address) {

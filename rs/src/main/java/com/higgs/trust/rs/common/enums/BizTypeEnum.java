@@ -13,7 +13,7 @@ public enum BizTypeEnum {
     ISSUE_UTXO("ISSUE_UTXO","ISSUE UTXO"),
     TRANSFER_UTXO("TRANSFER_UTXO","TRANSFER  UTXO"),
     NOP("NOP", "NO OPERATION"),
-    ;
+    CREATING_CONTRACT("CREATING_CONTRACT", "CREATING CONTRACT");
 
     private String code;
     private String desc;

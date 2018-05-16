@@ -37,5 +37,35 @@
         FROM contract WHERE address=#{address}
     </select>
 
+    <!-- get query count -->
+    <select id="getQueryCount" resultType="java.lang.Long">
+        SELECT
+          COUNT(1)
+        FROM contract
+        WHERE 1=1
+        <if test="height != null">
+            and block_height = #{height}
+        </if>
+        <if test="txId != null">
+            and tx_id = #{txId}
+        </if>
+    </select>
+
+    <!-- query list -->
+    <select id="query" resultMap="baseResultMap">
+        SELECT
+        <include refid="baseColumnList"/>
+        FROM contract
+        WHERE 1=1
+        <if test="height != null">
+            and block_height = #{height}
+        </if>
+        <if test="txId != null">
+            and tx_id = #{txId}
+        </if>
+        ORDER BY id DESC
+        LIMIT #{startIndex}, #{endIndex}
+    </select>
+
 
 </mapper>

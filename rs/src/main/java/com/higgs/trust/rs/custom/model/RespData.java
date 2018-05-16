@@ -42,6 +42,21 @@ public class RespData<T> implements java.io.Serializable {
 		this.msg = respCodeEnum.getMsg();
 	}
 
+	public static <T> RespData<T> success(T data) {
+		RespData<T> respData = new RespData<T>();
+		respData.setCode("000");
+		respData.setData(data);
+		return respData;
+	}
+
+	public static <T> RespData<T> error(String respCode, String message, T data) {
+		RespData<T> respData = new RespData<T>();
+		respData.setCode(respCode);
+		respData.setMsg(message);
+		respData.setData(data);
+		return respData;
+	}
+
 	public T getData() {
 		return data;
 	}
