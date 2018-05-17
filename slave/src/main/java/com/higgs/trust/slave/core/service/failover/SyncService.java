@@ -34,8 +34,8 @@ import java.util.List;
     /**
      * 自动同步区块
      */
-    public void sync() {
-        if (!nodeState.isState(NodeStateEnum.AutoSync)) {
+    public void autoSync() {
+        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
             return;
         }
         log.info("auto sync starting ...");
@@ -68,14 +68,9 @@ import java.util.List;
                 //如果没有package接收，根据latestHeight判断是否在阈值内，否则，根据cache判断
             } while (cache.getMinHeight() <= clusterHeight ? clusterHeight > currentHeight + properties.getThreshold() :
                 currentHeight + 1 < cache.getMinHeight());
-        } catch (SlaveException e) {
-            log.error("auto sync block failed:{}", e.getCode().getDescription(), e);
-            nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
-            return;
         } catch (Exception e) {
-            log.error("auto sync block failed.", e);
             nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
-            return;
+            throw e;
         }
         nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
     }

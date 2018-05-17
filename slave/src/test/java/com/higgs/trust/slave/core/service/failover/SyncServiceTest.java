@@ -53,37 +53,38 @@ import static org.testng.Assert.assertEquals;
     @BeforeMethod public void beforeMethod() {
         MockitoAnnotations.initMocks(this);
         reset(properties, nodeState);
-        when(nodeState.isState(NodeStateEnum.AutoSync)).thenReturn(true);
         when(nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)).thenReturn(true);
         when(blockRepository.getMaxHeight()).thenReturn(currentHeight);
+        when(properties.getHeaderStep()).thenReturn(10);
     }
 
     @Test public void testSyncNotState() {
-        when(nodeState.isState(NodeStateEnum.AutoSync)).thenReturn(false);
-        syncService.sync();
+        when(nodeState.isState(NodeStateEnum.AutoSync,NodeStateEnum.ArtificialSync)).thenReturn(false);
+        syncService.autoSync();
         verify(blockRepository, times(0)).getMaxHeight();
     }
 
     @Test public void testSyncGetClusterHeightFailed() {
         when(blockSyncService.getClusterHeight(anyInt())).thenReturn(null);
-        syncService.sync();
+        try {
+            syncService.autoSync();
+        }catch (SlaveException e) {
+            assertEquals(e.getCode(), SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
+        }
         verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
-        verify(nodeState, times(0)).isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync);
     }
 
     @Test public void testSyncInThreshold() {
         when(blockSyncService.getClusterHeight(anyInt())).thenReturn(101L);
         when(properties.getThreshold()).thenReturn(100);
-        syncService.sync();
+        syncService.autoSync();
         verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
-        verify(nodeState, times(0)).isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync);
     }
 
     @Test public void testSyncOutThreshold() {
         when(blockSyncService.getClusterHeight(anyInt())).thenReturn(102L);
         when(properties.getThreshold()).thenReturn(100);
-        syncService.sync();
-        verify(nodeState, times(1)).isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync);
+        syncService.autoSync();
         verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
     }
 
@@ -355,7 +356,7 @@ import static org.testng.Assert.assertEquals;
         when(block.getBlockHeader()).thenReturn(theader);
         when(pack.getCurrentBlock()).thenReturn(block);
         when(packageService.createPackContext(any())).thenReturn(pack);
-        syncService.sync();
+        syncService.autoSync();
         verify(nodeState, times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
     }
 

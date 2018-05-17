@@ -6,15 +6,12 @@ import com.higgs.trust.slave.core.managment.NodeState
 import com.higgs.trust.slave.core.repository.BlockRepository
 import com.higgs.trust.slave.core.scheduler.FailoverSchedule
 import com.higgs.trust.slave.core.service.block.BlockService
+import com.higgs.trust.slave.core.service.failover.SelfCheckingService
 import com.higgs.trust.slave.core.service.failover.SyncService
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.StringUtils
-import org.crsh.cli.Argument
-import org.crsh.cli.Command
-import org.crsh.cli.Option
-import org.crsh.cli.Required
-import org.crsh.cli.Usage
+import org.crsh.cli.*
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
 
@@ -36,6 +33,28 @@ class failover {
         blockRepository.deleteTempHeader(Long.parseLong(height), type)
         out.println("delete successful")
     }
+
+    @Usage('auto sync the batch blocks, get the blocks from other node and validate block by raft/b2p channel and execute it, this option will auto change the node state.')
+    @Command
+    def autoSync(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def syncService = beans.getBean(SyncService.class)
+        def nodeState = beans.getBean(NodeState.class)
+        if (!nodeState.isState(NodeStateEnum.ArtificialSync)) {
+            out.println("Node state is $nodeState.state, not allowed auto sync block")
+            return
+        }
+        def selfCheckService = beans.getBean(SelfCheckingService.class)
+        def result = selfCheckService.selfCheck(3)
+        if (!result) {
+            out.println("self check failed, please check the current block")
+            return
+        }
+        syncService.autoSync()
+        def height = blockService.getMaxHeight().toString()
+        out.println("auto sync blocks successful, current height:$height")
+    }
+
 
     @Usage('sync batch blocks, get the blocks from other node and validate block by raft/b2p channel and execute it')
     @Command

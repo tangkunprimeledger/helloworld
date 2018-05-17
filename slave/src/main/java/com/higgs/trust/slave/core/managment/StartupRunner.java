@@ -5,6 +5,7 @@ package com.higgs.trust.slave.core.managment;
 
 import com.higgs.trust.slave.core.service.failover.SelfCheckingService;
 import com.higgs.trust.slave.core.service.failover.SyncService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/4/24
  */
-@Component public class StartupRunner implements CommandLineRunner {
+@Slf4j @Component public class StartupRunner implements CommandLineRunner {
 
     @Autowired private SelfCheckingService selfCheckingService;
     @Autowired private SyncService syncService;
@@ -21,7 +22,11 @@ import org.springframework.stereotype.Component;
     @Override public void run(String... strings) {
         boolean check = selfCheckingService.check();
         if (check) {
-            syncService.sync();
+            try {
+                syncService.autoSync();
+            } catch (Exception e) {
+                log.error("Auto sync block failed.", e);
+            }
         }
     }
 }
