@@ -51,6 +51,7 @@ class failover {
             return
         }
         syncService.autoSync()
+        def blockService = beans.getBean(BlockService.class)
         def height = blockService.getMaxHeight().toString()
         out.println("auto sync blocks successful, current height:$height")
     }
