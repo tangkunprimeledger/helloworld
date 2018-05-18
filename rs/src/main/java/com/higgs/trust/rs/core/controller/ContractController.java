@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.controller;
 
 import com.higgs.trust.rs.core.api.ContractService;
+import com.higgs.trust.rs.core.bo.ContractInvokeRequest;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -40,6 +41,19 @@ import org.springframework.web.bind.annotation.*;
         }
         String txId = "0x00000000" + code.hashCode() + System.currentTimeMillis();
         RespData result = contractService.deploy(txId, code);
+        return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
+    }
+
+    @PostMapping(path = "/invoke")
+    public RespData<String> invoke(@RequestBody ContractInvokeRequest invokeRequest) {
+        if (invokeRequest == null) {
+            return fail(null, "", "invalid invokeRequest");
+        }
+        if (StringUtils.isEmpty(invokeRequest.getAddress())) {
+            return fail(null, "", "address is empty");
+        }
+        String txId = "0x10000000" + invokeRequest.getAddress().hashCode() + System.currentTimeMillis();
+        RespData result = contractService.invoke(txId, invokeRequest.getAddress(), invokeRequest.getBizArgs());
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
     }
 

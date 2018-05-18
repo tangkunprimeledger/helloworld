@@ -20,6 +20,7 @@ import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
+import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,19 @@ import java.util.List;
         return coreTx;
     }
 
+    private CoreTransaction buildCoreTx(String txId, Action action) {
+        List<Action> actionList = new ArrayList<>(1);
+        actionList.add(action);
+
+        CoreTransaction coreTx = new CoreTransaction();
+        coreTx.setTxId(txId);
+        coreTx.setActionList(actionList);
+        coreTx.setVersion(VersionEnum.V1.getCode());
+        coreTx.setSender(nodeState.getNodeName());
+        coreTx.setPolicyId(InitPolicyEnum.CONTRACT_ISSUE.getPolicyId());
+        return coreTx;
+    }
+
     private ContractCreationAction buildAction(String code) {
         ContractCreationAction creationAction = new ContractCreationAction();
         creationAction.setCode(code);
@@ -59,6 +73,15 @@ import java.util.List;
         creationAction.setIndex(0);
         creationAction.setLanguage("javascript");
         return creationAction;
+    }
+
+    private ContractInvokeAction buildInvokeAction(String address, Object... args) {
+        ContractInvokeAction invokeAction = new ContractInvokeAction();
+        invokeAction.setAddress(address);
+        invokeAction.setArgs(args);
+        invokeAction.setIndex(0);
+        invokeAction.setType(ActionTypeEnum.TRIGGER_CONTRACT);
+        return invokeAction;
     }
 
     @Override
@@ -83,5 +106,21 @@ import java.util.List;
         List<com.higgs.trust.slave.model.bo.contract.Contract> list = contractRepository.query(height, txId, pageIndex, pageSize);
         result.setData(BeanConvertor.convertList(list, ContractVO.class));
         return result;
+    }
+
+    @Override
+    public RespData invoke(String txId, String address, Object... args) {
+        ContractInvokeAction action = buildInvokeAction(address, args);
+        CoreTransaction coreTx = buildCoreTx(txId, action);
+        try {
+            coreTransactionService.submitTx(BizTypeEnum.INVOKE_CONTRACT, coreTx);
+        } catch (RsCoreException e) {
+            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
+                RequestPO requestPO = requestDao.queryByRequestId(txId);
+                return RespData.error(requestPO.getRespCode(), "RS_CORE_IDEMPOTENT", txId);
+            }
+        }
+        com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
+        return respData.isSuccess() ? RespData.success(respData.getData()) : RespData.error(respData.getRespCode(), respData.getMsg(), respData.getData());
     }
 }
