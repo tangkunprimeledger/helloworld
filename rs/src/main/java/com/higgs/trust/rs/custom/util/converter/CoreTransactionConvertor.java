@@ -39,4 +39,21 @@ public class CoreTransactionConvertor {
         coreTransaction.setPolicyId(InitPolicyEnum.UTXO_ISSUE.getPolicyId());
         return coreTransaction;
     }
+
+    /**
+     * build core transaction
+     * @param txId
+     * @param actionList
+     * @return
+     */
+    public CoreTransaction buildCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList, String policyId) {
+        CoreTransaction coreTransaction = new CoreTransaction();
+        coreTransaction.setTxId(txId);
+        coreTransaction.setBizModel(bizModel);
+        coreTransaction.setActionList(actionList);
+        coreTransaction.setVersion(VersionEnum.V1.getCode());
+        coreTransaction.setSender(nodeState.getNodeName());
+        coreTransaction.setPolicyId(policyId);
+        return coreTransaction;
+    }
 }
