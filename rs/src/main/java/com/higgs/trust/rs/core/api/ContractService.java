@@ -29,4 +29,12 @@ public interface ContractService {
      * @return
      */
     PageVO<ContractVO> queryList(Long height, String txId, Integer pageIndex, Integer pageSize);
+
+    /**
+     * invoke contract
+     * @param txId
+     * @param address
+     * @param args
+     */
+    RespData invoke(String txId, String address, Object... args);
 }
