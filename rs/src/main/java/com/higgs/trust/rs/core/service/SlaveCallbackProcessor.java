@@ -94,10 +94,17 @@ import org.springframework.transaction.support.TransactionTemplate;
 
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                int r = coreTransactionDao.updateStatus(tx.getTxId(), CoreTxStatusEnum.VALIDATED.getCode(),
+                CoreTxStatusEnum fromStatus = CoreTxStatusEnum.VALIDATED;
+                //TODO:liuyu 临时方案,由于failover时，没有执行onValidated
+                if(StringUtils.equals(po.getStatus(),CoreTxStatusEnum.WAIT.getCode())){
+                    fromStatus = CoreTxStatusEnum.WAIT;
+                    log.info("[onPersisted]current status is not VALIDATED by txId:{}",tx.getTxId());
+                    log.info("[onPersisted]change current status to WAIT by txId:{}",tx.getTxId());
+                }
+                int r = coreTransactionDao.updateStatus(tx.getTxId(), fromStatus.getCode(),
                     CoreTxStatusEnum.PERSISTED.getCode());
                 if (r != 1) {
-                    log.error("[onValidated] update tx status is fail,txId:{},from:{},to:{}",tx.getTxId(), CoreTxStatusEnum.VALIDATED,
+                    log.error("[onValidated] update tx status is fail,txId:{},from:{},to:{}",tx.getTxId(),fromStatus,
                         CoreTxStatusEnum.PERSISTED);
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
