@@ -58,13 +58,18 @@ import org.springframework.transaction.support.TransactionTemplate;
         if (!sendBySelf(coreTx.getSender())) {
             return;
         }
-
+        CoreTransactionPO po = coreTransactionDao.queryByTxId(coreTx.getTxId(), false);
+        if(po == null){
+            //TODO:liuyu 需要考虑failover
+            log.warn("[onValidated]query core transaction is null by txId:{}",coreTx.getTxId());
+            return;
+        }
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 int r = coreTransactionDao.updateStatus(coreTx.getTxId(), CoreTxStatusEnum.WAIT.getCode(),
                     CoreTxStatusEnum.VALIDATED.getCode());
                 if (r != 1) {
-                    log.error("[onValidated] update tx status is fail from:{},to:{}", CoreTxStatusEnum.WAIT,
+                    log.error("[onValidated] update tx status is fail,txId:{}, from:{},to:{}",coreTx.getTxId(), CoreTxStatusEnum.WAIT,
                         CoreTxStatusEnum.VALIDATED);
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
@@ -80,12 +85,19 @@ import org.springframework.transaction.support.TransactionTemplate;
             return;
         }
 
+        CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(), false);
+        if(po == null){
+            //TODO:liuyu 需要考虑failover
+            log.warn("[onPersisted]query core transaction is null by txId:{}",tx.getTxId());
+            return;
+        }
+
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 int r = coreTransactionDao.updateStatus(tx.getTxId(), CoreTxStatusEnum.VALIDATED.getCode(),
                     CoreTxStatusEnum.PERSISTED.getCode());
                 if (r != 1) {
-                    log.error("[onValidated] update tx status is fail from:{},to:{}", CoreTxStatusEnum.VALIDATED,
+                    log.error("[onValidated] update tx status is fail,txId:{},from:{},to:{}",tx.getTxId(), CoreTxStatusEnum.VALIDATED,
                         CoreTxStatusEnum.PERSISTED);
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
@@ -94,7 +106,6 @@ import org.springframework.transaction.support.TransactionTemplate;
                     log.error("[onValidated]call back handler is not register");
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
                 }
-                CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(), false);
                 //callback custom rs
                 txCallbackHandler.onPersisted(BizTypeEnum.fromCode(po.getBizType()), respData);
             }
@@ -115,12 +126,19 @@ import org.springframework.transaction.support.TransactionTemplate;
             return;
         }
 
+        CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(), false);
+        if(po == null){
+            //TODO:liuyu 需要考虑failover
+            log.warn("[onClusterPersisted]query core transaction is null by txId:{}",tx.getTxId());
+            return;
+        }
+
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 int r = coreTransactionDao
                     .updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED.getCode(), CoreTxStatusEnum.END.getCode());
                 if (r != 1) {
-                    log.error("[onClusterPersisted] update tx status is fail from:{},to:{}", CoreTxStatusEnum.PERSISTED,
+                    log.error("[onClusterPersisted] update tx status is fail,txId:{},from:{},to:{}",tx.getTxId(), CoreTxStatusEnum.PERSISTED,
                         CoreTxStatusEnum.END);
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
@@ -129,7 +147,6 @@ import org.springframework.transaction.support.TransactionTemplate;
                     log.error("[onClusterPersisted]call back handler is not register");
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
                 }
-                CoreTransactionPO po = coreTransactionDao.queryByTxId(tx.getTxId(), false);
                 //callback custom rs
                 txCallbackHandler.onEnd(BizTypeEnum.fromCode(po.getBizType()), respData);
             }
