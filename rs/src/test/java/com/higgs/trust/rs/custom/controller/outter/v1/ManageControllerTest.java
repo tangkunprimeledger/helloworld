@@ -24,12 +24,13 @@ public class ManageControllerTest {
 
 
 
-    @Test public void testRegisterRs() throws Exception {
+    @Test
+    public void testRegisterRs() throws Exception {
         String url = "http://localhost:7070/v1/manage/rs/register";
         RegisterRsVO registerRsVO = new RegisterRsVO();
-        registerRsVO.setRequestId("1");
-        registerRsVO.setRsId("11");
-        registerRsVO.setPubKey("pubkkkk");
+        registerRsVO.setRequestId("13");
+        registerRsVO.setRsId("11r");
+        registerRsVO.setPubKey("pubkkkk4444");
         registerRsVO.setDesc("2018年5月18日15:41:09");
 
         String params = JSON.toJSONString(registerRsVO);
@@ -46,10 +47,11 @@ public class ManageControllerTest {
 
         RegisterPolicyVO registerPolicyVO = new RegisterPolicyVO();
         registerPolicyVO.setRequestId(UUID.randomUUID().toString());
-        registerPolicyVO.setPolicyId("11");
-        registerPolicyVO.setPolicyName("policyhhhh");
+        registerPolicyVO.setPolicyId(UUID.randomUUID().toString().replaceAll("-",""));
+        registerPolicyVO.setPolicyName(UUID.randomUUID().toString());
         List list = new ArrayList();
-        list.add("TRUST-NODE-111");
+        list.add("TRUST-NODE-112");
+
         registerPolicyVO.setRsIds(list);
 
         String params = JSON.toJSONString(registerPolicyVO);
@@ -58,6 +60,83 @@ public class ManageControllerTest {
 
         String res = OkHttpClientManager.postAsString(url, params);
 
+        System.out.println("res.data:" + res);
+    }
+//rsList多个
+    @Test public void testRegisterPolicy1() throws Exception {
+        String url = "http://localhost:7070/v1/manage/policy/register";
+
+        RegisterPolicyVO registerPolicyVO = new RegisterPolicyVO();
+        registerPolicyVO.setRequestId(UUID.randomUUID().toString());
+        registerPolicyVO.setPolicyId(UUID.randomUUID().toString().replaceAll("-",""));
+        registerPolicyVO.setPolicyName(UUID.randomUUID().toString());
+        List list = new ArrayList();
+        list.add("TRUST-NODE-113");
+        list.add("TRUST-NODE-114");
+        registerPolicyVO.setRsIds(list);
+
+        String params = JSON.toJSONString(registerPolicyVO);
+
+        System.out.println("request.params:" + params);
+
+        String res = OkHttpClientManager.postAsString(url, params);
+
+        System.out.println("res.data:" + res);
+    }
+//rsList为空
+    @Test public void testRegisterPolicy2() throws Exception {
+        String url = "http://localhost:7070/v1/manage/policy/register";
+
+        RegisterPolicyVO registerPolicyVO = new RegisterPolicyVO();
+        registerPolicyVO.setRequestId(UUID.randomUUID().toString());
+        registerPolicyVO.setPolicyId(UUID.randomUUID().toString().replaceAll("-",""));
+        registerPolicyVO.setPolicyName(UUID.randomUUID().toString());
+        List list = new ArrayList();
+        registerPolicyVO.setRsIds(list);
+        String params = JSON.toJSONString(registerPolicyVO);
+
+        System.out.println("request.params:" + params);
+
+        String res = OkHttpClientManager.postAsString(url, params);
+
+        System.out.println("res.data:" + res);
+    }
+//policyID已存在
+    @Test public void testRegisterPolicy3() throws Exception {
+        String url = "http://localhost:7070/v1/manage/policy/register";
+
+        RegisterPolicyVO registerPolicyVO = new RegisterPolicyVO();
+        registerPolicyVO.setRequestId(UUID.randomUUID().toString());
+        registerPolicyVO.setPolicyId("11");
+        registerPolicyVO.setPolicyName(UUID.randomUUID().toString());
+        List list = new ArrayList();
+        list.add("TRUST-NODE-113");
+        list.add("TRUST-NODE-114");
+        registerPolicyVO.setRsIds(list);
+
+        String params = JSON.toJSONString(registerPolicyVO);
+
+        System.out.println("request.params:" + params);
+
+        String res = OkHttpClientManager.postAsString(url, params);
+        System.out.println("res.data:" + res);
+    }
+
+    //policyID为空
+    @Test public void testRegisterPolicy4() throws Exception {
+        String url = "http://localhost:7070/v1/manage/policy/register";
+
+        RegisterPolicyVO registerPolicyVO = new RegisterPolicyVO();
+        registerPolicyVO.setRequestId(UUID.randomUUID().toString());
+        registerPolicyVO.setPolicyId("");
+        registerPolicyVO.setPolicyName(UUID.randomUUID().toString());
+        List list = new ArrayList();
+        list.add("TRUST-NODE-113");
+        list.add("TRUST-NODE-114");
+        registerPolicyVO.setRsIds(list);
+        String params = JSON.toJSONString(registerPolicyVO);
+        System.out.println("request.params:" + params);
+        String res = OkHttpClientManager.postAsString(url, params);
         System.out.println("res.data:" + res);
     }
 }
