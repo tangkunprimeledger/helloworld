@@ -2,6 +2,7 @@ package com.higgs.trust.rs.custom.biz.rscore.callback.handler;
 
 import com.higgs.trust.rs.custom.api.enums.BankChainExceptionCodeEnum;
 import com.higgs.trust.rs.custom.api.enums.CustomExceptionCodeEnum;
+import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestStatusEnum;
 import com.higgs.trust.rs.custom.dao.RequestDao;
 import com.higgs.trust.rs.custom.dao.po.RequestPO;
@@ -49,7 +50,7 @@ import org.springframework.transaction.support.TransactionTemplate;
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                     log.info("[process] transaction start，reqNo={}", reqNo);
-                    requestDao.updateStatusByRequestId(requestPO.getRequestId(), RequestStatusEnum.INIT.getCode(),
+                    requestDao.updateStatusByRequestId(requestPO.getRequestId(), RequestEnum.PROCESS.getCode(),
                         requestPO.getStatus(), respData.getRespCode(), respData.getMsg());
                     log.info("[process] transaction success，reqNo={}", reqNo);
                 }
