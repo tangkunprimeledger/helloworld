@@ -74,7 +74,7 @@ class failover {
         if (StringUtils.isBlank(fromNode)) {
             syncService.sync(Long.parseLong(startHeight), size)
             def height = blockService.getMaxHeight().toString()
-            out.println("sync blocks from $fromNode successful, current height:$height")
+            out.println("sync blocks successful, current height:$height")
         } else {
             def clusterInfo = beans.getBean(ClusterInfo.class)
             if (!clusterInfo.clusterNodeNames().contains(fromNode)) {
@@ -83,7 +83,7 @@ class failover {
             }
             syncService.sync(Long.parseLong(startHeight), size, fromNode)
             def height = blockService.getMaxHeight().toString()
-            out.println("sync blocks successful, current height:$height")
+            out.println("sync blocks from $fromNode successful, current height:$height")
         }
     }
 
