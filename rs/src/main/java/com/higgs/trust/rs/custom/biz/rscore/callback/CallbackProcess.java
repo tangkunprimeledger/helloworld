@@ -3,9 +3,7 @@ package com.higgs.trust.rs.custom.biz.rscore.callback;
 import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
-import com.higgs.trust.rs.custom.biz.rscore.callback.handler.CreateBillCallbackHandler;
-import com.higgs.trust.rs.custom.biz.rscore.callback.handler.StorageIdentityCallbackHandler;
-import com.higgs.trust.rs.custom.biz.rscore.callback.handler.TransferBillCallbackHandler;
+import com.higgs.trust.rs.custom.biz.rscore.callback.handler.*;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +23,8 @@ import org.springframework.stereotype.Service;
     @Autowired private StorageIdentityCallbackHandler storageIdentityCallbackHandler;
     @Autowired private CreateBillCallbackHandler createBillCallbackHandler;
     @Autowired private TransferBillCallbackHandler transferBillCallbackHandler;
+    @Autowired private RegisterPolicyCallbackHandler registerPolicyCallbackHandler;
+    @Autowired private RegisterRsCallbackHandler registerRsCallbackHandler;
 
     @Override public void afterPropertiesSet() throws Exception {
         txCallbackRegistor.registCallback(this);
@@ -58,6 +58,12 @@ import org.springframework.stereotype.Service;
                 break;
             case TRANSFER_UTXO:
                 transferBillCallbackHandler.process(respData);
+                break;
+            case REGISTER_RS:
+                registerRsCallbackHandler.process(respData);
+                break;
+            case REGISTER_POLICY:
+                registerPolicyCallbackHandler.process(respData);
                 break;
             case NOP:
                 break;
