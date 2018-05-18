@@ -35,7 +35,7 @@ import java.util.List;
      * 自动同步区块
      */
     public void autoSync() {
-        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
+        if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
         log.info("auto sync starting ...");

@@ -40,7 +40,7 @@ class failover {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def syncService = beans.getBean(SyncService.class)
         def nodeState = beans.getBean(NodeState.class)
-        if (!nodeState.isState(NodeStateEnum.ArtificialSync)) {
+        if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             out.println("Node state is $nodeState.state, not allowed auto sync block")
             return
         }
