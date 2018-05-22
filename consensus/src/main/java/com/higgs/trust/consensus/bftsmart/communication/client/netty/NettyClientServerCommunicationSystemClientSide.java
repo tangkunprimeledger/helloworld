@@ -541,9 +541,6 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                 
                 this.futureLock.lock();
                 if (this.remainingFutures > 0) {
-                    
-                    Logger.println("(SyncListener.waitForChannels)  There are still " + this.remainingFutures + " channel operations pending, waiting to complete");
-                    System.out.println("(SyncListener.waitForChannels)  There are still " + this.remainingFutures + " channel operations pending, waiting to complete");
                     try {
                         this.enoughCompleted.await(1000, TimeUnit.MILLISECONDS); // timeout if a malicous replica refuses to acknowledge the operation as completed
                     } catch (InterruptedException ex) {
@@ -552,8 +549,6 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                     
                 }
                 
-                Logger.println("(SyncListener.waitForChannels)  All channel operations completed or timed out");
-                System.out.println("(SyncListener.waitForChannels)  All channel operations completed or timed out");
                 this.remainingFutures = n;
                 
                 this.futureLock.unlock();

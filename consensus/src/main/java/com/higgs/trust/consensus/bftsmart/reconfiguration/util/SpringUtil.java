@@ -3,9 +3,11 @@ package com.higgs.trust.consensus.bftsmart.reconfiguration.util;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 @Component
+@DependsOn("smartConfig")
 public class SpringUtil implements ApplicationContextAware {
 
 
@@ -16,6 +18,7 @@ public class SpringUtil implements ApplicationContextAware {
         if(SpringUtil.applicationContext == null) {
             SpringUtil.applicationContext = applicationContext;
         }
+        System.out.println("----------------- applicationContext -------------------");
     }
 
     //获取applicationContext

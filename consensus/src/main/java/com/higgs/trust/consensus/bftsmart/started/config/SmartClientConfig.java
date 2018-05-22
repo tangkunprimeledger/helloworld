@@ -17,7 +17,7 @@ public class SmartClientConfig {
     private String myClientId;
 
 
-    @Bean
+    @Bean(name = "smartClient")
     @DependsOn("server")
     public ConsensusClient consensusClient() {
         if (!StringUtils.isEmpty(myClientId)) {

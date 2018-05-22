@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
-
 @Configuration
 @ConditionalOnExpression("'${bftSmart.systemConfigs.myId}' != ''")
 public class SmartServerConfig {
@@ -18,7 +16,7 @@ public class SmartServerConfig {
     private String myId;
 
     @Bean("server")
-    @DependsOn("smartConfig")
+    @DependsOn("springUtil")
     public Server getServer() {
         System.out.println(myId);
         if (!StringUtils.isEmpty(myId)) {

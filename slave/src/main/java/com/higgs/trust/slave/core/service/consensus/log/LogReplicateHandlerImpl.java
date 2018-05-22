@@ -6,6 +6,7 @@ import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.bft.core.ConsensusClient;
 import com.higgs.trust.consensus.bft.core.ConsensusCommit;
 import com.higgs.trust.consensus.bft.core.template.AbstractConsensusStateMachine;
+import com.higgs.trust.consensus.bftsmart.started.SmartAbstractConsensusStateMachine;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
@@ -24,6 +25,7 @@ import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.convert.PackageConvert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
@@ -34,13 +36,13 @@ import java.util.concurrent.TimeUnit;
  * @Description: replicate the sorted package to cluster
  * @author: pengdi
  **/
-@Slf4j @Service public class LogReplicateHandlerImpl extends AbstractConsensusStateMachine
+@Slf4j @Service public class LogReplicateHandlerImpl extends SmartAbstractConsensusStateMachine
     implements LogReplicateHandler {
     @Autowired PropertiesConfig propertiesConfig;
     /**
      * client from the log replicate consensus layer
      */
-    @Autowired ConsensusClient consensusClient;
+    @Autowired @Qualifier("smartClient") ConsensusClient consensusClient;
 
     @Autowired PackageService packageService;
 

@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
-@Configuration("smartConfig")
+@Configuration()
 @ConfigurationProperties(prefix = "bftSmart.systemConfigs")
 public class SmartConfig {
 
@@ -57,5 +57,9 @@ public class SmartConfig {
 
     public void setStateMachineClass(String stateMachineClass) {
         this.stateMachineClass = stateMachineClass;
+    }
+
+    public SmartConfig() {
+        System.out.println("----------------------- smart config---------------------");
     }
 }

@@ -25,8 +25,8 @@ public class ManageControllerTest {
 
 
     @Test public void testRegisterRs() throws Exception {
-//        String url = "http://localhost:7070/v1/manage/rs/register";
-        String url = "http://192.168.11.197:7070/v1/manage/rs/register";
+        String url = "http://localhost:7070/v1/manage/rs/register";
+//        String url = "http://192.168.11.197:7070/v1/manage/rs/register";
         RegisterRsVO registerRsVO = new RegisterRsVO();
         registerRsVO.setRequestId("13");
         registerRsVO.setRsId("11r");
@@ -43,8 +43,8 @@ public class ManageControllerTest {
     }
 
     @Test public void testRegisterPolicy() throws Exception {
-//        String url = "http://localhost:7070/v1/manage/policy/register";
-        String url = "http://192.168.11.197:7070/v1/manage/policy/register";
+        String url = "http://localhost:7070/v1/manage/policy/register";
+//        String url = "http://192.168.11.197:7070/v1/manage/policy/register";
 
         RegisterPolicyVO registerPolicyVO = new RegisterPolicyVO();
         registerPolicyVO.setRequestId(UUID.randomUUID().toString());
