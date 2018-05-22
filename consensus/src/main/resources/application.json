@@ -46,7 +46,7 @@
         "system.bft": true
       },
       "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030",
-      "stateMachineClass": "com.higgs.trust.consensus.bftsmart.started.example.StringStateMachine"
+      "stateMachineClass": ""
     }
   }
 }

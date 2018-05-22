@@ -4,7 +4,6 @@ import com.higgs.trust.consensus.bft.core.template.AbstractConsensusCommand;
 import com.higgs.trust.consensus.bftsmart.reconfiguration.util.SpringUtil;
 import com.higgs.trust.consensus.bftsmart.started.SmartAbstractConsensusStateMachine;
 import com.higgs.trust.consensus.bftsmart.started.config.SmartConfig;
-import com.higgs.trust.consensus.bftsmart.started.example.StringStateMachine;
 import com.higgs.trust.consensus.bftsmart.tom.MessageContext;
 import com.higgs.trust.consensus.bftsmart.tom.ServiceReplica;
 import com.higgs.trust.consensus.bftsmart.tom.server.defaultservices.DefaultRecoverable;
