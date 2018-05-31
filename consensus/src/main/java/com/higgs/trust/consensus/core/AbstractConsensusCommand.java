@@ -1,6 +1,6 @@
-package com.higgs.trust.consensus.bft.core.template;
+package com.higgs.trust.consensus.core;
 
-import com.higgs.trust.consensus.bft.core.ConsensusCommand;
+import com.higgs.trust.consensus.core.ConsensusCommand;
 import io.atomix.copycat.Command;
 
 /**

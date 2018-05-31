@@ -1,4 +1,4 @@
-package com.higgs.trust.consensus.bft.core;
+package com.higgs.trust.consensus.core;
 
 import java.util.concurrent.CompletableFuture;
 

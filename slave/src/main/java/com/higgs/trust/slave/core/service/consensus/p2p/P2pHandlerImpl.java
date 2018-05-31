@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
 import com.higgs.trust.common.utils.SignUtils;
-import com.higgs.trust.consensus.bft.core.ConsensusClient;
+import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.*;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;

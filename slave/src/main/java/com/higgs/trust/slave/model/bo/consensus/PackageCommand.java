@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.model.bo.consensus;
 
-import com.higgs.trust.consensus.bft.core.template.AbstractConsensusCommand;
+import com.higgs.trust.consensus.core.AbstractConsensusCommand;
 import com.higgs.trust.slave.api.vo.PackageVO;
 
 /**
