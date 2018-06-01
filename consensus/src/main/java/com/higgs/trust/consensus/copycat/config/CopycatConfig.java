@@ -38,7 +38,7 @@ import java.util.List;
     @Autowired private StateMachine stateMachine;
 
     @Bean public ConsensusClient consensusClient() {
-        String server = copycatProperties.getServer();
+        String server = copycatProperties.getClient();
         log.info("copycat servers : {}", server);
 
         List<Address> addressList = new ArrayList<>();
@@ -52,7 +52,7 @@ import java.util.List;
         client.connect(addressList);
         return new CopycatClientAdapter(client);
     }
-
+    
     @Bean public AbstractCommitReplicateComposite replicateComposite() {
         return new CopyCatCommitReplicateComposite();
     }

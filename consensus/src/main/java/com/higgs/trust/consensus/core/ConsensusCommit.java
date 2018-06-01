@@ -4,4 +4,6 @@ public interface ConsensusCommit<T> {
     T operation();
 
     void close();
+
+    boolean isClosed();
 }

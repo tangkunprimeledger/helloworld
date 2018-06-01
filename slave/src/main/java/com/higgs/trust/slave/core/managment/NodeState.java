@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.managment;
 
+import com.higgs.trust.consensus.core.TermInfo;
 import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -7,6 +8,7 @@ import com.higgs.trust.slave.common.exception.FailoverExecption;
 import com.higgs.trust.slave.core.managment.listener.MasterChangeListener;
 import com.higgs.trust.slave.core.managment.listener.StateChangeListener;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -59,6 +61,10 @@ import java.util.Locale;
      * prefix of node name
      */
     @Getter private String prefix;
+
+    @Getter private long currentTerm;
+
+    @Getter @Setter private List<TermInfo> terms = new ArrayList<>();
 
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();

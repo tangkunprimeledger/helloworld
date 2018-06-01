@@ -2,9 +2,11 @@ package com.higgs.trust.consensus.core;
 
 import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.consensus.common.TraceUtils;
-import io.atomix.copycat.Operation;
+import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
+import com.higgs.trust.consensus.core.filter.CompositeCommandFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -18,6 +20,8 @@ import java.util.function.Function;
 @Slf4j public abstract class AbstractCommitReplicateComposite implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
+
+    @Autowired private CompositeCommandFilter filter;
 
     private Map<Class<?>, Function<ConsensusCommit<?>, ?>> classFunctionMap = new HashMap<>();
 
@@ -107,10 +111,14 @@ import java.util.function.Function;
     private Function wrapVoidMethod(Object obj, Method method) {
         return c -> {
             Consumer consumer = t -> {
-                ConsensusCommit<? extends Operation> consensusCommit = commitAdapter(t);
+                ConsensusCommit<? extends AbstractConsensusCommand> consensusCommit = commitAdapter(t);
                 Span span = null;
-                if (consensusCommit.operation() instanceof AbstractConsensusCommand) {
-                    span = TraceUtils.createSpan(((AbstractConsensusCommand)consensusCommit.operation()).getTraceId());
+                if (consensusCommit.operation() != null) {
+                    span = TraceUtils.createSpan(consensusCommit.operation().getTraceId());
+                }
+                filter.doFilter(consensusCommit);
+                if (consensusCommit.isClosed()) {
+                    return;
                 }
                 while (true) {
                     try {
@@ -137,10 +145,14 @@ import java.util.function.Function;
      */
     private Function wrapValueMethod(Object obj, Method method) {
         return c -> {
-            ConsensusCommit<? extends Operation> consensusCommit = commitAdapter(c);
+            ConsensusCommit<? extends AbstractConsensusCommand> consensusCommit = commitAdapter(c);
             Span span = null;
-            if (consensusCommit.operation() instanceof AbstractConsensusCommand) {
-                span = TraceUtils.createSpan(((AbstractConsensusCommand)consensusCommit.operation()).getTraceId());
+            if (consensusCommit.operation() != null) {
+                span = TraceUtils.createSpan(consensusCommit.operation().getTraceId());
+            }
+            filter.doFilter(consensusCommit);
+            if (consensusCommit.isClosed()) {
+                return null;
             }
             while (true) {
                 try {

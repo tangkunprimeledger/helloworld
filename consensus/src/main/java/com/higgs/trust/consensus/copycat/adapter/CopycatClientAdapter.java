@@ -1,8 +1,8 @@
 package com.higgs.trust.consensus.copycat.adapter;
 
 import com.higgs.trust.consensus.core.ConsensusClient;
-import com.higgs.trust.consensus.core.ConsensusCommand;
-import com.higgs.trust.consensus.core.AbstractConsensusCommand;
+import com.higgs.trust.consensus.core.command.ConsensusCommand;
+import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.common.TraceUtils;
 import io.atomix.copycat.Command;
 import io.atomix.copycat.client.CopycatClient;

@@ -1,5 +1,7 @@
 package com.higgs.trust.consensus.core;
 
+import com.higgs.trust.consensus.core.command.ConsensusCommand;
+
 import java.util.concurrent.CompletableFuture;
 
 /**

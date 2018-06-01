@@ -1,6 +1,6 @@
 package com.higgs.trust.consensus.copycat.example;
 
-import com.higgs.trust.consensus.core.AbstractConsensusCommand;
+import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 
 /**
  * The actual command you will use to consensus

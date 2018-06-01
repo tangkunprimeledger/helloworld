@@ -1,6 +1,5 @@
-package com.higgs.trust.consensus.core;
+package com.higgs.trust.consensus.core.command;
 
-import com.higgs.trust.consensus.core.ConsensusCommand;
 import io.atomix.copycat.Command;
 
 /**

@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 
 @Configuration @ConfigurationProperties(prefix = "copycat.server") @Getter @Setter public class CopycatProperties {
 
-    private String server;
+    private String client;
 
     @NotNull(message = "address can not be null") private String address;
 
