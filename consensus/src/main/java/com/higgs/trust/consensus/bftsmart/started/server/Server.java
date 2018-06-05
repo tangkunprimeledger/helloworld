@@ -101,28 +101,28 @@ public class Server extends DefaultRecoverable {
         ObjectInput objectInput = null;
         try {
             objectInput = new ObjectInputStream(in);
-            AbstractConsensusCommand AbstractConsensusCommand = (com.higgs.trust.consensus.bft.core.template.AbstractConsensusCommand)objectInput.readObject();
+            AbstractConsensusCommand abstractConsensusCommand = (com.higgs.trust.consensus.bft.core.template.AbstractConsensusCommand)objectInput.readObject();
             //共识结束，回调客户端
-            if (Objects.nonNull(AbstractConsensusCommand)) {
-                if (machine.valueOperationMap.containsKey(AbstractConsensusCommand.getClass())) {
-                    Function function = machine.valueOperationMap.get(AbstractConsensusCommand.getClass());
+            if (Objects.nonNull(abstractConsensusCommand)) {
+                if (machine.valueOperationMap.containsKey(abstractConsensusCommand.getClass())) {
+                    Function function = machine.valueOperationMap.get(abstractConsensusCommand.getClass());
                     if (function != null) {
-                        function.apply(AbstractConsensusCommand);
+                        function.apply(abstractConsensusCommand);
                     } else {
                         System.out.println("未注册相应的处理方法1");
-                        log.info("The corresponding method is not registered.-- {}",AbstractConsensusCommand.getClass().getSimpleName());
+                        log.info("The corresponding method is not registered.-- {}",abstractConsensusCommand.getClass().getSimpleName());
                     }
-                } else if (machine.voidOperationMap.containsKey(AbstractConsensusCommand.getClass())) {
-                    Consumer consumer = machine.voidOperationMap.get(AbstractConsensusCommand.getClass());
+                } else if (machine.voidOperationMap.containsKey(abstractConsensusCommand.getClass())) {
+                    Consumer consumer = machine.voidOperationMap.get(abstractConsensusCommand.getClass());
                     if (consumer != null) {
-                        consumer.accept(AbstractConsensusCommand);
+                        consumer.accept(abstractConsensusCommand);
                     } else {
                         System.out.println("未注册相应的处理方法2");
-                        log.info("The corresponding method is not registered.-- {}",AbstractConsensusCommand.getClass().getSimpleName());
+                        log.info("The corresponding method is not registered.-- {}",abstractConsensusCommand.getClass().getSimpleName());
                     }
                 } else {
                     System.out.println("未注册相应的处理方法3");
-                    log.info("The corresponding method is not registered.-- {}",AbstractConsensusCommand.getClass().getSimpleName());
+                    log.info("The corresponding method is not registered.-- {}",abstractConsensusCommand.getClass().getSimpleName());
                 }
             }
             return null;
