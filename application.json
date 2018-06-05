@@ -8,7 +8,7 @@
     }
   },
   "logging": {
-    "config": "classpath:logback-dev.xml"
+    "config": "classpath:logback.xml"
   },
   "management": {
     "port": 6060,
