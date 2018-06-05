@@ -2,16 +2,11 @@ package com.higgs.trust.contract;
 
 public class ContractApiService {
 
-    private ExecuteContext context;
-
     public ContractApiService() {
     }
 
     protected ExecuteContext getContext() {
-        if (context == null) {
-            context = ExecuteContext.getCurrent();
-        }
-        return context;
+        return ExecuteContext.getCurrent();
     }
 
     public ExecuteContextData getContextData() {
