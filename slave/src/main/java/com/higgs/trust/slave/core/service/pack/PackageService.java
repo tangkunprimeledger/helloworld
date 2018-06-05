@@ -94,11 +94,4 @@ public interface PackageService {
      */
     void remove(Package pack);
 
-    /**
-     * get package signature
-     *
-     * @param packageVO
-     * @return
-     */
-    String getSign(PackageVO packageVO);
 }

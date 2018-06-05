@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,6 +26,18 @@ import java.util.concurrent.atomic.AtomicInteger;
         });
 
     @Override public <T extends ResponseCommand> T send(ValidCommand<?> validCommand) {
+        ConcurrentHashMap<String, CommandCounter<T>> resultMap = sendAndHandle(validCommand);
+        for (Map.Entry<String, CommandCounter<T>> entry : resultMap.entrySet()) {
+            CommandCounter<T> value = entry.getValue();
+            if (value.getCounter().get() >= (2 * clusterInfo.faultNodeNum() + 1)) {
+                return value.getCommand();
+            }
+        }
+        return null;
+    }
+
+    private <T extends ResponseCommand> ConcurrentHashMap<String, CommandCounter<T>> sendAndHandle(
+        ValidCommand<?> validCommand) {
         log.debug("sync send command {}", validCommand);
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(validCommand.getClass());
@@ -64,13 +77,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         } catch (InterruptedException e) {
             log.error("send count down latch is interrupted", e);
         }
-        for (Map.Entry<String, CommandCounter<T>> entry : resultMap.entrySet()) {
-            CommandCounter<T> value = entry.getValue();
-            if (value.getCounter().get() >= (2 * clusterInfo.faultNodeNum() + 1)) {
-                return value.getCommand();
-            }
-        }
-        return null;
+        return resultMap;
     }
 
     private <T extends ResponseCommand> void fetchCommand(ConcurrentHashMap<String, CommandCounter<T>> resultMap,

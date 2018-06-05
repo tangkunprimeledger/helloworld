@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.managment;
 
-import com.higgs.trust.consensus.core.TermInfo;
 import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -8,7 +7,6 @@ import com.higgs.trust.slave.common.exception.FailoverExecption;
 import com.higgs.trust.slave.core.managment.listener.MasterChangeListener;
 import com.higgs.trust.slave.core.managment.listener.StateChangeListener;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -20,6 +18,8 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component @Scope("singleton") @Slf4j public class NodeState implements InitializingBean {
 
@@ -30,6 +30,11 @@ import java.util.Locale;
     private List<StateChangeListener> stateListeners = new ArrayList<>();
 
     @Getter private NodeStateEnum state = NodeStateEnum.Starting;
+
+    /**
+     * has the master heartbeat
+     */
+    @Getter private AtomicBoolean masterHeartbeat = new AtomicBoolean(false);
 
     /**
      * 当前节点是否为master
@@ -44,7 +49,7 @@ import java.util.Locale;
     /**
      * master名
      */
-    @Getter private String masterName;
+    @Getter private String masterName = MASTER_NA;
 
     /**
      * private key
@@ -62,16 +67,17 @@ import java.util.Locale;
      */
     @Getter private String prefix;
 
-    @Getter private long currentTerm;
+    @Getter private long currentTerm = 0;
 
-    @Getter @Setter private List<TermInfo> terms = new ArrayList<>();
+    @Getter private List<TermInfo> terms = new ArrayList<>();
+
+    public static final String MASTER_NA = "N/A";
 
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
         this.privateKey = properties.getPrivateKey();
         this.masterPubKey = properties.getMasterPubKey();
         this.prefix = properties.getPrefix();
-        this.changeMaster(properties.getMasterName());
     }
 
     /**
@@ -182,6 +188,86 @@ import java.util.Locale;
      */
     public String notMeNodeNameReg() {
         return "(?!" + this.nodeName.toUpperCase(Locale.ROOT) + ")" + this.prefix.toUpperCase(Locale.ROOT) + "(\\S)*";
+    }
+
+    /**
+     * reset the terms of node, it's called by consensus level, will change the master name and current term
+     *
+     * @param infos
+     */
+    synchronized void resetTerms(List<TermInfo> infos) {
+        this.terms = infos;
+        if (terms == null || terms.isEmpty()) {
+            currentTerm = 0;
+            changeMaster(MASTER_NA);
+        } else {
+            TermInfo termInfo = terms.get(infos.size() - 1);
+            currentTerm = termInfo.getTerm();
+            changeMaster(termInfo.getMasterName());
+        }
+    }
+
+    /**
+     * get the terminfo
+     *
+     * @param term
+     * @return
+     */
+    private Optional<TermInfo> getTermInfo(long term) {
+        return terms.stream().filter(termInfo -> term == termInfo.getTerm()).findFirst();
+    }
+
+    /**
+     * start new term
+     *
+     * @param term
+     * @param masterName
+     */
+    public void startNewTerm(long term, String masterName) {
+        currentTerm = term;
+        Optional<TermInfo> termInfo = getTermInfo(term - 1);
+        long startHeight = 1;
+        if (termInfo.isPresent()) {
+            startHeight = termInfo.get().getEndHeight() + 1;
+        }
+        TermInfo newTerm = TermInfo.builder().term(term).masterName(masterName).startHeight(startHeight)
+            .endHeight(TermInfo.INIT_END_HEIGHT).build();
+        terms.add(newTerm);
+        changeMaster(masterName);
+    }
+
+    /**
+     * check if the package height belong the term
+     *
+     * @param term
+     * @param masterName
+     * @param packageHeight
+     * @return
+     */
+    public boolean isTermHeight(long term, String masterName, long packageHeight) {
+        Optional<TermInfo> optional = getTermInfo(term);
+        if (!optional.isPresent()) {
+            return false;
+        }
+        TermInfo termInfo = optional.get();
+        if (!termInfo.getMasterName().equalsIgnoreCase(masterName)) {
+            return false;
+        }
+        if (term == currentTerm) {
+            return termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :
+                packageHeight == termInfo.getEndHeight() + 1;
+        } else {
+            return termInfo.getStartHeight() <= packageHeight && termInfo.getEndHeight() >= packageHeight;
+        }
+    }
+
+    public void resetEndHeight(long packageHeight) {
+        Optional<TermInfo> termInfo = getTermInfo(currentTerm);
+        termInfo.get().setEndHeight(packageHeight);
+    }
+
+    public void setMasterHeartbeat(boolean hasHeartbeat) {
+        masterHeartbeat.getAndSet(hasHeartbeat);
     }
 
 }

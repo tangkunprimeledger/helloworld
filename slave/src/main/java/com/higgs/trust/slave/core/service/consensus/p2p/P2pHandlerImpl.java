@@ -14,12 +14,17 @@ import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
+import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService;
 import com.higgs.trust.slave.core.service.pack.PackageLock;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.consensus.*;
+import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerify;
+import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyCmd;
+import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyResponse;
+import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyResponseCmd;
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +43,9 @@ import java.util.concurrent.ExecutorService;
 @Slf4j @Service public class P2pHandlerImpl extends ValidConsensus implements P2pHandler, ClusterService {
     @Autowired private PropertiesConfig propertiesConfig;
 
-    @Autowired private ConsensusClient consensusClient;
-
     @Autowired private PackageProcess packageProcess;
+
+    @Autowired private PackageRepository packageRepository;
 
     @Autowired private ExecutorService packageThreadPool;
 
@@ -327,6 +332,30 @@ import java.util.concurrent.ExecutorService;
         BlockHeaderCmd command = new BlockHeaderCmd(header);
         ResponseCommand<?> responseCommand = this.submitSync(command);
         return responseCommand == null ? null : (Boolean)responseCommand.get();
+    }
+
+    /**
+     * handle the consensus result of validating block header
+     *
+     * @param commit
+     */
+    public ChangeMasterVerifyResponseCmd handleChangeMasterVerify(ValidSyncCommit<ChangeMasterVerifyCmd> commit) {
+        ChangeMasterVerifyCmd operation = commit.operation();
+        ChangeMasterVerify verify = operation.get();
+        boolean changeMaster = false;
+        if (!nodeState.getMasterHeartbeat().get() && verify.getTerm() == nodeState.getCurrentTerm() + 1) {
+            Long maxHeight = packageRepository.getMaxHeight();
+            maxHeight = maxHeight == null ? 0 : maxHeight;
+            if (verify.getPackageHeight() >= maxHeight) {
+                changeMaster = true;
+            }
+        }
+        ChangeMasterVerifyResponse response =
+            new ChangeMasterVerifyResponse(verify.getTerm(), nodeState.getNodeName(), verify.getProposer(),
+                verify.getPackageHeight(), changeMaster);
+        String sign = SignUtils.sign(response.getSignValue(), nodeState.getPrivateKey());
+        response.setSign(sign);
+        return new ChangeMasterVerifyResponseCmd(operation.messageDigest(), response);
     }
 
 }

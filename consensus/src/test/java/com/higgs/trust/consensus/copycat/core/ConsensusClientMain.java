@@ -1,7 +1,5 @@
 package com.higgs.trust.consensus.copycat.core;
 
-import com.higgs.trust.consensus.copycat.example.StringCommandReplicator;
-import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.copycat.client.ConnectionStrategies;
@@ -12,7 +10,6 @@ import io.atomix.copycat.server.CopycatServer;
 import io.atomix.copycat.server.storage.Storage;
 import io.atomix.copycat.server.storage.StorageLevel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -39,7 +36,7 @@ import java.util.List;
 
     private static void startServer(Address address, List<Address> clusterAddress) {
 
-        CopycateStateMachine stateMachine = new CopycateStateMachine(new CopyCatCommitReplicateComposite());
+        CopycatStateMachine stateMachine = new CopycatStateMachine(new CopyCatCommitReplicateComposite());
         Address addressT = address;
         CopycatServer.Builder builder = CopycatServer.builder(addressT);
         builder.withStateMachine(() -> stateMachine);

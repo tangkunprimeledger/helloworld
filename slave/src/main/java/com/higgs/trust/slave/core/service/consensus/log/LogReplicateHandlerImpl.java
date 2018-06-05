@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
+import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
@@ -7,14 +8,17 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
+import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
+import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired RsPubKeyRepository rsPubKeyRepository;
 
+    @Autowired NodeState nodeState;
+
     /**
      * replicate sorted package to the cluster
      *
@@ -58,7 +64,10 @@ import java.util.concurrent.TimeUnit;
 
         // replicate package to all nodes
         log.info("package starts to distribute to each node through consensus layer");
-        PackageCommand packageCommand = new PackageCommand(packageVO);
+        PackageCommand packageCommand =
+            new PackageCommand(nodeState.getCurrentTerm(), nodeState.getMasterName(), packageVO);
+        String signValue = packageCommand.getSignValue();
+        packageCommand.setSign(SignUtils.sign(signValue, nodeState.getPrivateKey()));
 
         CompletableFuture future = consensusClient.submit(packageCommand);
         try {
@@ -69,5 +78,13 @@ import java.util.concurrent.TimeUnit;
         }
 
         log.info("package has been sent to consensus layer");
+    }
+
+    @Override public void changeMaster(long term, Map<String, ChangeMasterVerifyResponse> verifies) {
+
+    }
+
+    @Override public void masterHeartbeat() {
+
     }
 }

@@ -1,24 +1,19 @@
-package com.higgs.trust.slave.model.bo.consensus;
+/*
+ * Copyright (c) 2013-2017, suimi
+ */
+package com.higgs.trust.slave.model.bo.consensus.master;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
-import com.higgs.trust.slave.api.vo.PackageVO;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
- * @Description:
- * @author: pengdi
- **/
-@Getter @Setter public class PackageCommand extends SignatureCommand<PackageVO> {
+ * @author suimi
+ * @date 2018/6/5
+ */
+public class MasterHeartbeatCommand extends SignatureCommand<Long> {
 
-    /**
-     * term
-     */
-    private Long term;
-
+    private static final long serialVersionUID = 4579567364750332581L;
     /**
      * master name
      */
@@ -29,8 +24,9 @@ import org.hibernate.validator.constraints.NotEmpty;
      */
     @NotEmpty @JSONField(label = "sign") private String sign;
 
-    public PackageCommand(Long term, String masterName, PackageVO value) {
-        super(value);
+    public MasterHeartbeatCommand(long term, String masterName) {
+        super(term);
+        this.masterName = masterName;
     }
 
     @Override public String getNodeName() {
@@ -38,7 +34,7 @@ import org.hibernate.validator.constraints.NotEmpty;
     }
 
     @Override public String getSignValue() {
-        return JSON.toJSONString(get());
+        return masterName + get();
     }
 
     @Override public String getSignature() {

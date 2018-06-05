@@ -40,4 +40,20 @@ import org.springframework.stereotype.Component;
      * the node name prefix
      */
     private String prefix;
+
+    /**
+     * the time of master heartbeat
+     */
+    private int masterHeartbeat = 1000;
+
+    /**
+     * the min ratio of change master to master heartbeat
+     */
+    private int changeMasterMinRatio = 2;
+
+    /**
+     * the max ratio of change master to master heartbeat
+     */
+    private int changeMasterMaxRatio = 3;
+
 }

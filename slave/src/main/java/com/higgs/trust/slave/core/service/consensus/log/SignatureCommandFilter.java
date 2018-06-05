@@ -10,6 +10,7 @@ import com.higgs.trust.consensus.core.command.SignatureCommand;
 import com.higgs.trust.consensus.core.filter.CommandFilter;
 import com.higgs.trust.consensus.core.filter.CommandFilterChain;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/6/1
  */
-@Order(2) @Component public class SignatureCommandFilter implements CommandFilter {
+@Order(1) @Component @Slf4j public class SignatureCommandFilter implements CommandFilter {
 
     @Autowired private ClusterInfo clusterInfo;
 
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Component;
             boolean verify = SignUtils
                 .verify(command.getSignValue(), command.getSignature(), clusterInfo.pubKey(command.getNodeName()));
             if (!verify) {
+                log.warn("command sign verify failed.");
                 commit.close();
                 return;
             }

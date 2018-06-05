@@ -2,9 +2,10 @@ package com.higgs.trust.consensus.copycat.config;
 
 import com.higgs.trust.consensus.copycat.adapter.CopycatClientAdapter;
 import com.higgs.trust.consensus.copycat.core.CopyCatCommitReplicateComposite;
-import com.higgs.trust.consensus.copycat.core.CopycateStateMachine;
+import com.higgs.trust.consensus.copycat.core.CopycatStateMachine;
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusClient;
+import com.higgs.trust.consensus.core.ConsensusSnapshot;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.copycat.client.ConnectionStrategies;
@@ -18,6 +19,7 @@ import io.atomix.copycat.server.storage.StorageLevel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -52,13 +54,15 @@ import java.util.List;
         client.connect(addressList);
         return new CopycatClientAdapter(client);
     }
-    
+
     @Bean public AbstractCommitReplicateComposite replicateComposite() {
         return new CopyCatCommitReplicateComposite();
     }
 
-    @Bean public CopycateStateMachine stateMachine(AbstractCommitReplicateComposite commitReplicateComposite) {
-        return new CopycateStateMachine(commitReplicateComposite);
+    @ConditionalOnBean(ConsensusSnapshot.class) @Bean
+    public CopycatStateMachine stateMachine(AbstractCommitReplicateComposite commitReplicateComposite,
+        ConsensusSnapshot snapshot) {
+        return new CopycatStateMachine(commitReplicateComposite, snapshot);
     }
 
     private void start(CopycatProperties properties, StateMachine stateMachine) {

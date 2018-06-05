@@ -46,13 +46,6 @@ import org.springframework.transaction.support.TransactionTemplate;
         }
 
         PackageVO packageVO = PackageConvert.convertPackToPackVO(pack);
-        String sign = packageService.getSign(packageVO);
-        if (StringUtils.isEmpty(sign)) {
-            log.error("get signature failed.");
-            //TODO 添加告警
-            return;
-        }
-        packageVO.setSign(sign);
 
         //send package to log replicate consensus layer
         logReplicateHandler.replicatePackage(packageVO);

@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.ExecutorService;
 
 @Replicator
-@Slf4j @Component public class CommitReplicate {
+@Slf4j @Component public class PackageCommitReplicate {
 
     @Autowired PackageService packageService;
 
@@ -68,28 +68,6 @@ import java.util.concurrent.ExecutorService;
         if (!result.isSuccess()) {
             log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
-        // verify signature
-        try {
-            String verifyString = JSON.toJSONString(packageVO, Labels.excludes("sign"));
-            //get master node public key
-            RsPubKey rsPubKey = rsPubKeyRepository.queryByRsId(nodeState.getMasterName());
-            if (null == rsPubKey) {
-                log.error("cannot acquire rsPubKey. rsId={}", nodeState.getMasterName());
-                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED);
-            }
-            boolean verify = SignUtils.verify(verifyString, packageVO.getSign(), rsPubKey.getPubKey());
-            if (!verify) {
-                log.error("package verify signature failed.");
-                commit.close();
-                //TODO 添加告警
-                return;
-            }
-        } catch (Throwable e) {
-            log.error("verify signature exception. {}", e.getMessage());
-            //TODO 添加告警
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED, e);
         }
 
         // receive package
