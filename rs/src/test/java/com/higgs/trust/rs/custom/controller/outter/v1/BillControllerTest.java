@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.Random;
 
 @Slf4j
 public class BillControllerTest {
@@ -20,12 +19,12 @@ public class BillControllerTest {
 
         BillCreateVO billCreateVO = new BillCreateVO();
         billCreateVO.setAmount(new BigDecimal("100000000000000"));
-        billCreateVO.setBillId("1234567890");
+        billCreateVO.setBillId("1234567893444530");
         billCreateVO.setBizModel("23231231");
         billCreateVO.setDueDate("2018-05-15 03:25:00");
         billCreateVO.setFinalPayerId("chao");
         billCreateVO.setHolder("ling");
-        billCreateVO.setRequestId("lingchao1234567");
+        billCreateVO.setRequestId("lingchao1234567" + System.currentTimeMillis());
 
         String params = JSON.toJSONString(billCreateVO);
 
@@ -40,21 +39,20 @@ public class BillControllerTest {
     @Test
     public void testTransfer() throws Exception {
 
-            BillTransferVO billTransferVO = new BillTransferVO();
-            billTransferVO.setBillId("1234567890");
-            billTransferVO.setBizModel("dasdasdas");
-            billTransferVO.setNextHolder("chaoguo");
-            billTransferVO.setRequestId("billTransfer" + System.currentTimeMillis());
+        BillTransferVO billTransferVO = new BillTransferVO();
+        billTransferVO.setBillId("1234567893444530");
+        billTransferVO.setBizModel("dasdasdas");
+        billTransferVO.setNextHolder("chaoguo");
+        billTransferVO.setRequestId("billTransfer" + System.currentTimeMillis());
 
-            String params = JSON.toJSONString(billTransferVO);
+        String params = JSON.toJSONString(billTransferVO);
 
-            //  System.out.println("request.params:" + params);
-            long start = System.currentTimeMillis();
-            String res = OkHttpClientManager.postAsString(url + "transfer", params);
-            long end = System.currentTimeMillis();
-            log.info("total cost : {} ms", end - start);
-            log.info("res.data:{}", res);
-
+        //  System.out.println("request.params:" + params);
+        long start = System.currentTimeMillis();
+        String res = OkHttpClientManager.postAsString(url + "transfer", params);
+        long end = System.currentTimeMillis();
+        log.info("total cost : {} ms", end - start);
+        log.info("res.data:{}", res);
 
 
     }
