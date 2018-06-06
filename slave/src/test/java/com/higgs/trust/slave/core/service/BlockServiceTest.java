@@ -53,7 +53,7 @@ public class BlockServiceTest extends IntegrateBaseTest {
                 action.setIndex(i);
                 actions.add(action);
             }
-            CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, k, InitPolicyEnum.REGISTER);
+            CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, k, InitPolicyEnum.REGISTER_POLICY);
             SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
             txs.add(tx);
         }

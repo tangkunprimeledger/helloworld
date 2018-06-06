@@ -138,15 +138,15 @@ import java.util.List;
     }
 
     public boolean checkActions(CoreTransaction coreTx) {
-        if(CollectionUtils.isEmpty(coreTx.getActionList())) {
+        if (CollectionUtils.isEmpty(coreTx.getActionList())) {
             return true;
         }
-
-        if (InitPolicyEnum.REGISTER.getPolicyId().equals(coreTx.getPolicyId())
-                && coreTx.getActionList().size() > 1) {
-            return false;
+        if (coreTx.getActionList().size() > 1) {
+            if (InitPolicyEnum.REGISTER_POLICY.getPolicyId().equals(coreTx.getPolicyId()) || InitPolicyEnum.REGISTER_RS
+                .getPolicyId().equals(coreTx.getPolicyId())) {
+                return false;
+            }
         }
-
         return checkActionsIndex(coreTx.getActionList());
     }
 

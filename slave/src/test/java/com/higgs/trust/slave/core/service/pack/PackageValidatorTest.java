@@ -83,7 +83,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
 //        unfreezeAction.setIndex(1);
 //        actions.add(unfreezeAction);
 
-        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 3, InitPolicyEnum.REGISTER);
+        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 3, InitPolicyEnum.REGISTER_POLICY);
         SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
         txs.add(tx);
 

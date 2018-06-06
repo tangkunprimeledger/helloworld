@@ -24,6 +24,6 @@ import java.util.List;
     /**
      * the list that store signatures
      */
-    @NotEmpty private List<String> signatureList;
+    @NotEmpty private List<SignInfo> signatureList;
 
 }

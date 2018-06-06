@@ -248,6 +248,8 @@ IF NOT EXISTS `policy` (
 	`policy_id` VARCHAR (32) NOT NULL COMMENT 'policyID',
 	`policy_name` VARCHAR (64) NOT NULL COMMENT 'policy name',
 	`rs_ids` VARCHAR (1024) NOT NULL COMMENT 'the id list create related to rs',
+	`decision_type` VARCHAR (16) NOT NULL COMMENT 'the decision type for vote ,1.FULL_VOTE,2.ONE_VOTE',
+	`contract_addr` VARCHAR (64) DEFAULT NULL COMMENT 'the contract address for vote rule',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_policy` (`policy_id`)
@@ -275,6 +277,7 @@ IF NOT EXISTS `transaction` (
 	`version` VARCHAR (32) NOT NULL COMMENT 'the version create the tx',
 	`block_height` BIGINT (20) NOT NULL COMMENT 'the block height create the tx',
 	`block_time` datetime (3) NOT NULL COMMENT 'the create time create the block for the tx',
+	`send_time` datetime (3) NOT NULL COMMENT 'the transaction create time',
 	`action_datas` varchar(4096) DEFAULT NULL COMMENT 'the action list by json',
 	`sign_datas` varchar(4096) DEFAULT NULL COMMENT 'the signatures by json',
 	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',

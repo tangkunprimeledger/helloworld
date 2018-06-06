@@ -35,7 +35,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
     public void testValidate() throws Exception {
         ContractInvokeAction action = createContractInvokeAction();
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER)
+                .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
                 .addAction(action)
                 .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
                 .signature(ActionDataMockBuilder.privateKey1)
@@ -57,7 +57,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
     public void testPersist() throws Exception {
         Action action = createContractInvokeAction();
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER)
+                .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
                 .addAction(action)
                 .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
                 .signature(ActionDataMockBuilder.privateKey1)
@@ -85,7 +85,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
         JSONObject bizModel = new JSONObject();
         bizModel.put("data", action);
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER)
+                .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
                 .addAction(action)
                 .setBizModel(bizModel)
                 .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))

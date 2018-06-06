@@ -339,7 +339,7 @@ import static org.testng.Assert.assertEquals;
      */
     protected String getPolicyId(Map<?,?> param){
         String pid = String.valueOf(param.get("policyId"));
-        return StringUtils.isEmpty(pid)?InitPolicyEnum.REGISTER.getPolicyId():pid;
+        return StringUtils.isEmpty(pid)?InitPolicyEnum.REGISTER_POLICY.getPolicyId():pid;
     }
     /**
      * package data 的 封装
