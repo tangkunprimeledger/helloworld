@@ -48,11 +48,15 @@ import java.util.concurrent.TimeUnit;
             masterHeartbeatTimer.cancel(true);
         }
         long delay = nodeProperties.getMasterHeartbeat();
-        masterHeartbeatTimer =
-            executor.schedule(() -> logReplicateHandler.masterHeartbeat(), delay, TimeUnit.MILLISECONDS);
+        masterHeartbeatTimer = executor.schedule(this::sendMasterHeartbeat, delay, TimeUnit.MILLISECONDS);
     }
 
-    public void cancelMasterHeart() {
+    private void sendMasterHeartbeat() {
+        logReplicateHandler.masterHeartbeat();
+        resetMasterHeartbeat();
+    }
+
+    private void cancelMasterHeart() {
         log.debug("cancel master heartbeat timeout");
         if (masterHeartbeatTimer != null) {
             masterHeartbeatTimer.cancel(true);

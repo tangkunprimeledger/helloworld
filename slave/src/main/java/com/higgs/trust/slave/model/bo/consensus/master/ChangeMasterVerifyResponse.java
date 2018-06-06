@@ -3,10 +3,7 @@
  */
 package com.higgs.trust.slave.model.bo.consensus.master;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -14,7 +11,8 @@ import java.io.Serializable;
  * @author suimi
  * @date 2018/6/5
  */
-@Data @NoArgsConstructor @RequiredArgsConstructor public class ChangeMasterVerifyResponse implements Serializable {
+@Data @NoArgsConstructor @RequiredArgsConstructor @ToString(exclude = {"sign"}) public class ChangeMasterVerifyResponse
+    implements Serializable {
 
     private static final long serialVersionUID = -6091022260408731431L;
 

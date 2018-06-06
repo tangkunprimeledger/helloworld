@@ -1,5 +1,6 @@
 package com.higgs.trust.consensus.copycat.core;
 
+import com.higgs.trust.consensus.core.ConsensusSnapshot;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.copycat.client.ConnectionStrategies;
@@ -35,8 +36,16 @@ import java.util.List;
     }
 
     private static void startServer(Address address, List<Address> clusterAddress) {
+        CopycatStateMachine stateMachine =
+            new CopycatStateMachine(new CopyCatCommitReplicateComposite(), new ConsensusSnapshot() {
+                @Override public String getSnapshot() {
+                    return null;
+                }
 
-        CopycatStateMachine stateMachine = new CopycatStateMachine(new CopyCatCommitReplicateComposite());
+                @Override public void installSnapshot(String snapshot) {
+
+                }
+            });
         Address addressT = address;
         CopycatServer.Builder builder = CopycatServer.builder(addressT);
         builder.withStateMachine(() -> stateMachine);

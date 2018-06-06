@@ -5,8 +5,11 @@ package com.higgs.trust.slave.model.bo.consensus.master;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
+import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -15,7 +18,8 @@ import java.util.Map;
  * @author suimi
  * @date 2018/6/5
  */
-@Getter public class ChangeMasterCommand extends SignatureCommand<Map<String, ChangeMasterVerifyResponse>> {
+@ToString(callSuper = true, exclude = {"sign"}) @Getter public class ChangeMasterCommand
+    extends AbstractConsensusCommand<Map<String, ChangeMasterVerifyResponse>> implements SignatureCommand {
 
     private static final long serialVersionUID = -7339518785030498480L;
     /**
@@ -29,21 +33,14 @@ import java.util.Map;
     private String masterName;
 
     /**
-     * the package height
-     */
-    private long packageHeight;
-
-    /**
      * signature
      */
-    private String sign;
+    @Setter private String sign;
 
-    public ChangeMasterCommand(long term, String masterName, long packageHeight,
-        Map<String, ChangeMasterVerifyResponse> value) {
+    public ChangeMasterCommand(long term, String masterName, Map<String, ChangeMasterVerifyResponse> value) {
         super(value);
         this.term = term;
         this.masterName = masterName;
-        this.packageHeight = packageHeight;
     }
 
     @Override public String getNodeName() {
@@ -52,7 +49,7 @@ import java.util.Map;
 
     @Override public String getSignValue() {
         StringBuffer sb = new StringBuffer();
-        sb.append(term).append(masterName).append(packageHeight);
+        sb.append(term).append(masterName);
         get().values().stream().sorted(Comparator.comparing(ChangeMasterVerifyResponse::getVoter))
             .forEach(r -> sb.append(r.getSign()));
         return Hashing.sha256().hashString(sb.toString(), Charsets.UTF_8).toString();

@@ -17,11 +17,6 @@ import org.springframework.stereotype.Component;
     private String nodeName = DEFAULT_NODE_NAME;
 
     /**
-     * the name of master
-     */
-    private String masterName = DEFAULT_NODE_NAME;
-
-    /**
      * the try times of self check
      */
     private int selfCheckTimes = 100;

@@ -3,14 +3,13 @@
  */
 package com.higgs.trust.consensus.core.command;
 
+import lombok.ToString;
+
 /**
  * @author suimi
  * @date 2018/6/1
  */
-public abstract class SignatureCommand<T> extends AbstractConsensusCommand<T> {
-    public SignatureCommand(T value) {
-        super(value);
-    }
+public interface SignatureCommand{
 
     public abstract String getNodeName();
 

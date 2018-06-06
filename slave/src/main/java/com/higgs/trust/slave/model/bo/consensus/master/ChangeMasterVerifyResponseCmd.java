@@ -4,12 +4,16 @@
 package com.higgs.trust.slave.model.bo.consensus.master;
 
 import com.higgs.trust.slave.model.bo.consensus.IdValidCommand;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * @author suimi
  * @date 2018/6/5
  */
-public class ChangeMasterVerifyResponseCmd extends IdValidCommand<ChangeMasterVerifyResponse> {
+@Getter @Setter @NoArgsConstructor public class ChangeMasterVerifyResponseCmd
+    extends IdValidCommand<ChangeMasterVerifyResponse> {
     private static final long serialVersionUID = 7506595686406239636L;
 
     public ChangeMasterVerifyResponseCmd(String requestId, ChangeMasterVerifyResponse changeMasterVerifyResponse) {

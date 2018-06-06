@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/6/1
  */
-@Order(0) @Component @Slf4j public class LogCommandFilter implements CommandFilter {
+@Order(0)
+@Component @Slf4j public class LogCommandFilter implements CommandFilter {
     @Override
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
         AbstractConsensusCommand operation = commit.operation();

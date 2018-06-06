@@ -3,15 +3,17 @@
  */
 package com.higgs.trust.slave.model.bo.consensus.master;
 
-import com.alibaba.fastjson.annotation.JSONField;
+import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
-import org.hibernate.validator.constraints.NotEmpty;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * @author suimi
  * @date 2018/6/5
  */
-public class MasterHeartbeatCommand extends SignatureCommand<Long> {
+@ToString(callSuper = true, exclude = {"sign"}) public class MasterHeartbeatCommand
+    extends AbstractConsensusCommand<Long> implements SignatureCommand {
 
     private static final long serialVersionUID = 4579567364750332581L;
     /**
@@ -22,7 +24,7 @@ public class MasterHeartbeatCommand extends SignatureCommand<Long> {
     /**
      * signature
      */
-    @NotEmpty @JSONField(label = "sign") private String sign;
+    @Setter private String sign;
 
     public MasterHeartbeatCommand(long term, String masterName) {
         super(term);

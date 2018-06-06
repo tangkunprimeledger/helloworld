@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.slave.core.service.consensus.log;
+package com.higgs.trust.slave.core.service.consensus.filter;
 
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
@@ -9,6 +9,7 @@ import com.higgs.trust.consensus.core.filter.CommandFilter;
 import com.higgs.trust.consensus.core.filter.CommandFilterChain;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.managment.master.ChangeMasterService;
+import com.higgs.trust.slave.core.managment.master.MasterHeartbeatService;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Component;
     @Autowired private NodeState nodeState;
 
     @Autowired private ChangeMasterService changeMasterService;
+
+    @Autowired private MasterHeartbeatService masterHeartbeatService;
 
     @Override
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
@@ -39,6 +42,9 @@ import org.springframework.stereotype.Component;
             if (term == nodeState.getCurrentTerm()) {
                 nodeState.resetEndHeight(height);
                 changeMasterService.renewHeartbeatTimeout();
+                if (nodeState.isMaster()) {
+                    masterHeartbeatService.resetMasterHeartbeat();
+                }
             }
         }
         chain.doFilter(commit);

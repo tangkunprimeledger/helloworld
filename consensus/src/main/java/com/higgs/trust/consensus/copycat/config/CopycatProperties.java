@@ -15,8 +15,6 @@ import javax.validation.constraints.NotNull;
 
     @NotNull(message = "cluster can not be null") private String cluster;
 
-    @NotNull(message = "stateMachineClass can not be null") private String stateMachineClass;
-
     private Integer nettyThreadNum = 10;
 
     private String logDir = "copycat/logs";

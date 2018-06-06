@@ -21,11 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.EventListener;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -33,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration @Slf4j @ConditionalOnExpression("!'${copycat.server.cluster:}'.isEmpty()") public class CopycatConfig
-    implements ApplicationListener {
+    implements ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired private CopycatProperties copycatProperties;
 
@@ -103,9 +105,7 @@ import java.util.List;
         server.bootstrap(clusterAddress);
     }
 
-    @Override public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof ContextStartedEvent) {
-            start(copycatProperties, stateMachine);
-        }
+    @Override public void onApplicationEvent(ApplicationReadyEvent event) {
+        start(copycatProperties, stateMachine);
     }
 }

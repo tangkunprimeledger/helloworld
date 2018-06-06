@@ -10,23 +10,25 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.slave.common.config.NodeProperties;
+import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.managment.listener.MasterChangeListener;
+import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerify;
 import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyCmd;
 import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyResponse;
 import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyResponseCmd;
+import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.SetUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import javax.xml.soap.Node;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -47,6 +49,8 @@ import java.util.concurrent.TimeUnit;
     @Autowired private P2pConsensusClient p2pConsensusClient;
 
     @Autowired private PackageRepository packageRepository;
+
+    @Autowired private BlockRepository blockRepository;
 
     @Autowired private NodeState nodeState;
 
@@ -104,6 +108,7 @@ import java.util.concurrent.TimeUnit;
             return;
         }
         logReplicateHandler.changeMaster(nodeState.getCurrentTerm() + 1, responseMap);
+        resetHeartbeatTimeout();
     }
 
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
@@ -147,12 +152,36 @@ import java.util.concurrent.TimeUnit;
         return SignUtils.verify(response.getSignValue(), response.getSign(), pubKey);
     }
 
+    /**
+     * is the current node  qualified for master
+     *
+     * @return
+     */
     private boolean hasQualify() {
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            return false;
+        }
+        Long blockHeight = blockRepository.getMaxHeight();
+        Long packageHeight = packageRepository.getMaxHeight();
+        packageHeight = packageHeight == null ? 0 : packageHeight;
+        if (blockHeight >= packageHeight) {
+            return true;
+        }
+        List<PackageStatusEnum> packageStatusEnums = Arrays.asList(PackageStatusEnum.values());
+        HashSet statusSet = new HashSet<>(packageStatusEnums);
+        long count = packageRepository.count(statusSet, blockHeight);
+        if (count >= packageHeight - blockHeight) {
+            return true;
+        }
+
         return false;
     }
 
     @Override public void masterChanged(String masterName) {
-        renewHeartbeatTimeout();
+        if (NodeState.MASTER_NA.equalsIgnoreCase(masterName)) {
+            nodeState.setMasterHeartbeat(false);
+        }
+        resetHeartbeatTimeout();
     }
 
     @Override public void afterPropertiesSet() {

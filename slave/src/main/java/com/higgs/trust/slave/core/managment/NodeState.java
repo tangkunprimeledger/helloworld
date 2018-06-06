@@ -4,6 +4,7 @@ import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.FailoverExecption;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.managment.listener.MasterChangeListener;
 import com.higgs.trust.slave.core.managment.listener.StateChangeListener;
 import lombok.Getter;
@@ -224,11 +225,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
      * @param masterName
      */
     public void startNewTerm(long term, String masterName) {
+        if (term != currentTerm + 1) {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_MASTER_TERM_INCORRECT);
+        }
         currentTerm = term;
-        Optional<TermInfo> termInfo = getTermInfo(term - 1);
-        long startHeight = 1;
-        if (termInfo.isPresent()) {
-            startHeight = termInfo.get().getEndHeight() + 1;
+        Optional<TermInfo> optional = getTermInfo(term - 1);
+        long startHeight = 2;
+        if (optional.isPresent()) {
+            TermInfo termInfo = optional.get();
+            long endHeight = termInfo.getEndHeight();
+            startHeight = endHeight == TermInfo.INIT_END_HEIGHT ? termInfo.getStartHeight() : endHeight + 1;
         }
         TermInfo newTerm = TermInfo.builder().term(term).masterName(masterName).startHeight(startHeight)
             .endHeight(TermInfo.INIT_END_HEIGHT).build();
@@ -262,8 +268,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
 
     public void resetEndHeight(long packageHeight) {
-        Optional<TermInfo> termInfo = getTermInfo(currentTerm);
-        termInfo.get().setEndHeight(packageHeight);
+        Optional<TermInfo> optional = getTermInfo(currentTerm);
+        TermInfo termInfo = optional.get();
+        boolean verify =
+            termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :
+                packageHeight == termInfo.getEndHeight() + 1;
+        if (verify) {
+            termInfo.setEndHeight(packageHeight);
+        } else {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT);
+        }
+    }
+
+    public void endTerm() {
+        if (isMaster()) {
+            changeMaster(MASTER_NA);
+        } else {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_MASTER_NODE_INCORRECT);
+        }
     }
 
     public void setMasterHeartbeat(boolean hasHeartbeat) {

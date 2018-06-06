@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.slave.core.service.consensus.log;
+package com.higgs.trust.slave.core.service.consensus.filter;
 
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.core.ConsensusCommit;
@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
             SignatureCommand command = (SignatureCommand)commit.operation();
             boolean verify = SignUtils
                 .verify(command.getSignValue(), command.getSignature(), clusterInfo.pubKey(command.getNodeName()));
+            log.debug("command sign verify:{}", verify);
             if (!verify) {
                 log.warn("command sign verify failed.");
                 commit.close();

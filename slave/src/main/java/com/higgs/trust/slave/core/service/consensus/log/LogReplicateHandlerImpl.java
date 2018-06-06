@@ -9,19 +9,21 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.core.managment.master.MasterHeartbeatService;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
+import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterCommand;
 import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyResponse;
+import com.higgs.trust.slave.model.bo.consensus.master.MasterHeartbeatCommand;
+import com.netflix.discovery.converters.Auto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * @Description: replicate the sorted package to cluster
@@ -81,10 +83,26 @@ import java.util.concurrent.TimeUnit;
     }
 
     @Override public void changeMaster(long term, Map<String, ChangeMasterVerifyResponse> verifies) {
-
+        log.info("change master, term:{}", term);
+        ChangeMasterCommand command = new ChangeMasterCommand(term, nodeState.getNodeName(), verifies);
+        command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        CompletableFuture future = consensusClient.submit(command);
+        try {
+            future.get(800, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("change master failed!", e);
+        }
     }
 
     @Override public void masterHeartbeat() {
-
+        MasterHeartbeatCommand command =
+            new MasterHeartbeatCommand(nodeState.getCurrentTerm(), nodeState.getNodeName());
+        command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        CompletableFuture future = consensusClient.submit(command);
+        try {
+            future.get(800, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("master heartbeat failed!", e);
+        }
     }
 }
