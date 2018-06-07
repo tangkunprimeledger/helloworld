@@ -7,12 +7,13 @@ package com.higgs.trust.slave.api.enums.manage;
  *
  */
 public enum InitPolicyEnum {
-    REGISTER_POLICY("REGISTER_POLICY", "000000", "register policy"),
-    REGISTER_RS("REGISTER_RS", "000001", "register rs"),
-    UTXO_ISSUE("UTXO_ISSUE", "000002", "utxo issue"),
-    UTXO_DESTROY("UTXO_DESTROY", "000003", "utxo destroy"),
-    CONTRACT_ISSUE("CONTRACT_ISSUE", "000004", "contract issue"),
-    CONTRACT_DESTROY("CONTRACT_DESTROY", "000005", "contract destroy");
+    STORAGE("STORAGE", "000000", "storage policy"),
+    REGISTER_POLICY("REGISTER_POLICY", "000001", "register policy"),
+    REGISTER_RS("REGISTER_RS", "000002", "register rs"),
+    UTXO_ISSUE("UTXO_ISSUE", "000003", "utxo issue"),
+    UTXO_DESTROY("UTXO_DESTROY", "000004", "utxo destroy"),
+    CONTRACT_ISSUE("CONTRACT_ISSUE", "000005", "contract issue"),
+    CONTRACT_DESTROY("CONTRACT_DESTROY", "000006", "contract destroy");
 
     private String type;
 

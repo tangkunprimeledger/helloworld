@@ -1,23 +1,23 @@
 package com.higgs.trust.rs.core.service;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.higgs.trust.common.utils.BeanConvertor;
-import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.config.RsConfig;
-import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
-import com.higgs.trust.rs.core.api.TxCallbackRegistor;
+import com.higgs.trust.rs.core.api.VoteService;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
+import com.higgs.trust.rs.core.api.enums.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
-import com.higgs.trust.rs.core.dao.CoreTransactionDao;
+import com.higgs.trust.rs.core.bo.VoteReceipt;
+import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
+import com.higgs.trust.rs.core.repository.CoreTxRepository;
+import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
+import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
-import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
@@ -26,14 +26,13 @@ import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -46,17 +45,19 @@ import java.util.List;
 
 @Service @Slf4j public class CoreTransactionServiceImpl implements CoreTransactionService {
     @Autowired private TransactionTemplate txRequired;
-    @Autowired private CoreTransactionDao coreTransactionDao;
-    @Autowired private PolicyRepository policyRepository;
     @Autowired private RsConfig rsConfig;
+    @Autowired private CoreTxRepository coreTxRepository;
+    @Autowired private VoteRuleRepository voteRuleRepository;
+    @Autowired private VoteReceiptRepository voteReceiptRepository;
+    @Autowired private VoteService voteService;
+    @Autowired private PolicyRepository policyRepository;
     @Autowired private BlockChainService blockChainService;
-    @Autowired private TxCallbackRegistor txCallbackRegistor;
+    @Autowired private RsCoreCallbackHandler rsCoreCallbackHandler;
     @Autowired private SignServiceImpl signService;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
     @Autowired private ThreadPoolTaskExecutor txSubmitExecutorPool;
     @Autowired private ThreadPoolTaskExecutor txProcessExecutorPool;
-
 
     @Override public RespData syncWait(String key, boolean forEnd) {
         RespData respData = null;
@@ -82,7 +83,7 @@ import java.util.List;
         return respData;
     }
 
-    @Override public void submitTx(BizTypeEnum bizType, CoreTransaction coreTx) {
+    @Override public void submitTx(CoreTransaction coreTx) {
         log.info("[submitTx]{}", coreTx);
         if (coreTx == null) {
             log.error("[submitTx] the tx is null");
@@ -94,51 +95,20 @@ import java.util.List;
             log.error("[submitTx] param validate is fail,first msg:{}", validateResult.getFirstMsg());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
-        //check bizType
-        if (bizType == null) {
-            log.error("[submitTx] bizType is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_BIZ_TYPE_IS_NULL);
-        }
-        //sign tx for self
-        RespData<String> signRespData = signService.signTx(coreTx);
-        //check sign data of self
-        if (!signRespData.isSuccess()) {
-            log.error("[submitTx] self sign tx has error:{}", signRespData);
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
-        }
-        //check sign data of self
-        String signData = signRespData.getData();
-        if (StringUtils.isEmpty(signData)) {
-            log.error("[submitTx] self sign data is empty");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
-        }
-        //convert po
-        CoreTransactionPO po = coreTransactionDao.queryByTxId(coreTx.getTxId(), false);
+        //check by txId
+        CoreTransactionPO po = coreTxRepository.queryByTxId(coreTx.getTxId(), false);
         if (po != null) {
             log.info("[submitTx]is idempotent txId:{}", coreTx.getTxId());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
-        //convert po
-        po = BeanConvertor.convertBean(coreTx, CoreTransactionPO.class);
-        po.setBizType(bizType.getCode());
-        po.setVersion(coreTx.getVersion());
-        if (coreTx.getBizModel() != null) {
-            po.setBizModel(coreTx.getBizModel().toJSONString());
+        //sign tx for self
+        SignInfo signInfo = signService.signTx(coreTx);
+        if (signInfo == null) {
+            log.error("[submitTx] self sign data is empty");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
-        String actionDataJSON = JSON.toJSONString(coreTx.getActionList());
-        po.setActionDatas(actionDataJSON);
-        List<String> signDatas = new ArrayList<>();
-        signDatas.add(signData);
-        String signDataJSON = JSON.toJSONString(signDatas);
-        po.setSignDatas(signDataJSON);
-        po.setStatus(CoreTxStatusEnum.INIT.getCode());
-        po.setCreateTime(new Date());
-        try {
-            coreTransactionDao.add(po);
-        } catch (DuplicateKeyException e) {
-            log.error("[submitTx]has idempotent error");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
-        }
+        //save to db
+        coreTxRepository.add(coreTx, signInfo);
         //process by async
         txProcessExecutorPool.execute(new Runnable() {
             @Override public void run() {
@@ -150,16 +120,21 @@ import java.util.List;
     @Override public void processInitTx(String txId) {
         log.info("[processInitTx]txId:{}", txId);
         final CoreTxBO[] finalTx = {null};
+        final VotePatternEnum[] finalVotePattern = {null};
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                CoreTransactionPO po = coreTransactionDao.queryByTxId(txId, true);
+                CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
+                if (!StringUtils.equals(po.getStatus(), CoreTxStatusEnum.INIT.getCode())) {
+                    log.info("[processInitTx]the coreTx status is not INIT txId:{}", txId);
+                    return;
+                }
                 Date lockTime = po.getLockTime();
                 if (lockTime != null && lockTime.after(new Date())) {
                     log.info("[processInitTx]should skip this tx by lock time:{}", lockTime);
                     return;
                 }
                 //convert bo
-                CoreTxBO bo = convertTxBO(po);
+                CoreTxBO bo = coreTxRepository.convertTxBO(po);
                 String policyId = bo.getPolicyId();
                 log.info("[processInitTx]policyId:{}", policyId);
                 Policy policy = policyRepository.getPolicyById(policyId);
@@ -169,119 +144,149 @@ import java.util.List;
                         RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
                     return;
                 }
-                List<String> otherSignDatas = null;
-                try {
-                    otherSignDatas = getOtherSignDatas(bo, policy.getRsIds());
-                } catch (Throwable t) {
-                    log.error("[processInitTx]getSignDataByOther is fail", t);
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_TX_GET_OTHER_SIGN_ERROR);
+                //query vote rule
+                VoteRule voteRule = voteRuleRepository.queryByPolicyId(policyId);
+                if (voteRule == null) {
+                    log.error("[processInitTx]get voteRule is null by policyId:{}", policyId);
+                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
+                        RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR);
                     return;
                 }
-                //when require other rs sign
-                if (!CollectionUtils.isEmpty(otherSignDatas)) {
-                    List<String> signDatas = bo.getSignDatas();
-                    signDatas.addAll(otherSignDatas);
-                    String signJSON = JSON.toJSONString(signDatas);
-                    //update sign data
-                    int r = coreTransactionDao.updateSignDatas(txId, signJSON);
-                    if (r != 1) {
-                        log.error("[processInitTx]updateSignDatas is fail txId:{}", txId);
-                        throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_SIGN_DATAS_FAILED);
-                    }
-                    //should set for async submit
-                    bo.setSignDatas(signDatas);
-                    log.info("[processInitTx]updateSignDatas is success txId:{}", txId);
+                //vote pattern
+                VotePatternEnum votePattern = voteRule.getVotePattern();
+                if (votePattern == null) {
+                    log.error("[processInitTx]votePattern is empty");
+                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
+                        RsCoreErrorEnum.RS_CORE_VOTE_PATTERN_NOT_EXISTS_ERROR);
+                    return;
                 }
-                //update status to WAIT
-                int r = coreTransactionDao
-                    .updateStatus(txId, CoreTxStatusEnum.INIT.getCode(), CoreTxStatusEnum.WAIT.getCode());
-                if (r != 1) {
-                    log.error("[processInitTx]update status from INIT to END is fail txId:{}", txId);
-                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
+                //get required voters from saved sign info
+                List<String> voters = voteService.getVoters(bo.getSignDatas(), policy.getRsIds());
+                if (CollectionUtils.isEmpty(voters)) {
+                    log.info("[processInitTx]required voters is empty txId:{}", bo.getTxId());
+                    //still submit to slave
+                    coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+                    return;
+                }
+                //request voting
+                List<VoteReceipt> receipts = voteService.requestVoting(bo, voters, votePattern);
+                //if receipts is empty,should retry
+                if (CollectionUtils.isEmpty(receipts)) {
+                    log.error("[processInitTx]voting receipts is empty by SYNC txId:{}", bo.getTxId());
+                    return;
+                }
+                //get sign info from receipts
+                List<SignInfo> signInfos = voteService.getSignInfos(receipts);
+                signInfos.addAll(bo.getSignDatas());
+                //update signDatas
+                coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
+                //save already voting result for SYNC pattern
+                if (votePattern == VotePatternEnum.SYNC) {
+                    voteReceiptRepository.batchAdd(receipts);
+                }
+                //when there is failure as net-timeout,should retry
+                if (receipts.size() < voters.size()) {
+                    log.error("[processInitTx]receipts.size:{} is less than voters.size:{} txId:{}", receipts.size(),
+                        voters.size(), bo.getTxId());
+                    return;
+                }
+                //check vote decision for SYNC pattern
+                if (votePattern == VotePatternEnum.SYNC) {
+                    //add them when have last receipts
+                    List<VoteReceipt> lastReceipts = voteReceiptRepository.queryByTxId(bo.getTxId());
+                    if (!CollectionUtils.isEmpty(lastReceipts)) {
+                        receipts.addAll(lastReceipts);
+                    }
+                    //get decision result from receipts
+                    boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
+                    log.info("[processInitTx]decision:{}", decision);
+                    if (!decision) {
+                        toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL);
+                        return;
+                    }
+                    //change status to WAIT for SYNC pattern
+                    coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+                } else {
+                    //change status to NEED_VOTE for ASYNC pattern
+                    coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.NEED_VOTE);
+                }
+                if (!CollectionUtils.isEmpty(signInfos)) {
+                    bo.setSignDatas(signInfos);
                 }
                 finalTx[0] = bo;
+                finalVotePattern[0] = votePattern;
             }
         });
-        //submit by async
-        txSubmitExecutorPool.execute(new Runnable() {
-            @Override public void run() {
-                submitToSlave(Lists.newArrayList(finalTx[0]));
-            }
-        });
+        VotePatternEnum votePattern = finalVotePattern[0];
+        if (votePattern == VotePatternEnum.SYNC) {
+            //submit by async
+            txSubmitExecutorPool.execute(new Runnable() {
+                @Override public void run() {
+                    submitToSlave(Lists.newArrayList(finalTx[0]));
+                }
+            });
+        }
         log.info("[processInitTx]is success");
     }
 
-    /**
-     * convert transaction PO to BO
-     *
-     * @param po
-     * @return
-     */
-    private CoreTxBO convertTxBO(CoreTransactionPO po) {
-        CoreTxBO bo = BeanConvertor.convertBean(po, CoreTxBO.class);
-        if (bo == null) {
-            return null;
-        }
-        String bizType = po.getBizType();
-        bo.setBizType(BizTypeEnum.fromCode(bizType));
-        String version = po.getVersion();
-        bo.setVersion(VersionEnum.getBizTypeEnumBycode(version));
-        String bizModel = po.getBizModel();
-        bo.setBizModel(JSON.parseObject(bizModel));
-        String signJSON = po.getSignDatas();
-        bo.setSignDatas(JSON.parseArray(signJSON, String.class));
-        String actionJSON = po.getActionDatas();
-        bo.setActionList(JSON.parseArray(actionJSON, Action.class));
-        return bo;
-    }
-
-    /**
-     * convert transaction BO to VO
-     *
-     * @param bo
-     * @return
-     */
-    private CoreTransaction convertTxVO(CoreTxBO bo) {
-        CoreTransaction vo = BeanConvertor.convertBean(bo, CoreTransaction.class);
-        if (vo == null) {
-            return null;
-        }
-        if (bo.getVersion() != null) {
-            vo.setVersion(bo.getVersion().getCode());
-        }
-        return vo;
-    }
-
-    /**
-     * get sign data by other rs
-     *
-     * @param bo
-     * @param rsIds
-     * @return
-     */
-    private List<String> getOtherSignDatas(CoreTxBO bo, List<String> rsIds) {
-        List<String> otherRs = new ArrayList<>(rsIds.size() - 1);
-        for (String rs : rsIds) {
-            //filter self
-            if (!StringUtils.equals(rs.toUpperCase(), rsConfig.getRsName().toUpperCase())) {
-                otherRs.add(rs);
+    @Override public void processNeedVoteTx(String txId) {
+        log.info("[processNeedVoteTx]txId:{}", txId);
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
+                if (!StringUtils.equals(po.getStatus(), CoreTxStatusEnum.NEED_VOTE.getCode())) {
+                    log.info("[processNeedVoteTx]the coreTx status is not NEED_VOTE txId:{}", txId);
+                    return;
+                }
+                Date lockTime = po.getLockTime();
+                if (lockTime != null && lockTime.after(new Date())) {
+                    log.info("[processNeedVoteTx]should skip this tx by lock time:{}", lockTime);
+                    return;
+                }
+                //convert bo
+                CoreTxBO bo = coreTxRepository.convertTxBO(po);
+                String policyId = bo.getPolicyId();
+                log.info("[processNeedVoteTx]policyId:{}", policyId);
+                Policy policy = policyRepository.getPolicyById(policyId);
+                if (policy == null) {
+                    log.error("[processNeedVoteTx]get policy is null by policyId:{}", policyId);
+                    toEndAndCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
+                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
+                    return;
+                }
+                List<String> rsIds = policy.getRsIds();
+                if (CollectionUtils.isEmpty(rsIds)) {
+                    log.error("[processNeedVoteTx]rsIds is empty by txId:{}", bo.getTxId());
+                    toEndAndCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
+                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR);
+                    return;
+                }
+                //query receipts by txId
+                List<VoteReceipt> receipts = voteReceiptRepository.queryByTxId(bo.getTxId());
+                if (CollectionUtils.isEmpty(receipts)) {
+                    log.error("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
+                    return;
+                }
+                if (receipts.size() < rsIds.size() - 1) {
+                    log.error("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
+                        rsIds.size(), bo.getTxId());
+                    return;
+                }
+                //get decision result
+                boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
+                log.info("[processNeedVoteTx]decision:{}", decision);
+                if (!decision) {
+                    toEndAndCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL);
+                    return;
+                }
+                List<SignInfo> signInfos = voteService.getSignInfos(receipts);
+                signInfos.addAll(bo.getSignDatas());
+                coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
+                //change status to WAIT for SYNC pattern
+                coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);
             }
-        }
-        if (CollectionUtils.isEmpty(otherRs)) {
-            log.info("[getOtherSignDatas]required other sign rs is empty");
-            return null;
-        }
-        List<String> signDatas = new ArrayList<>();
-        for (String rs : otherRs) {
-            //to sign by other rs
-            String sign = signService.requestSign(rs, convertTxVO(bo));
-            signDatas.add(sign);
-        }
-        if (CollectionUtils.isEmpty(signDatas)) {
-            log.error("[getOtherSignDatas]request other sign data is empty");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_GET_OTHER_SIGN_ERROR);
-        }
-        return signDatas;
+        });
+        log.info("[processNeedVoteTx]is success");
     }
 
     /**
@@ -308,21 +313,12 @@ import java.util.List;
     private void toEndAndCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RespData respData) {
         //save execute result and error code
         String txId = bo.getTxId();
-        coreTransactionDao.saveExecuteResult(txId, CoreTxResultEnum.FAIL.getCode(), respData.getRespCode());
+        coreTxRepository.saveExecuteResult(txId, CoreTxResultEnum.FAIL, respData.getRespCode());
         //update status from INIT to END
-        int r = coreTransactionDao.updateStatus(txId, from.getCode(), CoreTxStatusEnum.END.getCode());
-        if (r != 1) {
-            log.error("[toEndStatusForFail]policy is null,update status from INIT to END is fail txId:{}", txId);
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
-        }
-        TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
-        if (txCallbackHandler == null) {
-            log.error("[toEndStatusForFail]call back handler is not register");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
-        }
-        respData.setData(convertTxVO(bo));
+        coreTxRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
+        respData.setData(coreTxRepository.convertTxVO(bo));
         //callback custom rs
-        txCallbackHandler.onEnd(bo.getBizType(), respData);
+        rsCoreCallbackHandler.onEnd(respData);
         //同步通知
         try {
             persistedResultMap.put(bo.getTxId(), respData);
@@ -338,13 +334,13 @@ import java.util.List;
     @Override public void submitToSlave() {
         //max size
         int maxSize = 20;
-        List<CoreTransactionPO> list = coreTransactionDao.queryByStatus(CoreTxStatusEnum.WAIT.getCode(), 0, maxSize);
+        List<CoreTransactionPO> list = coreTxRepository.queryByStatus(CoreTxStatusEnum.WAIT, 0, maxSize);
         if (CollectionUtils.isEmpty(list)) {
             return;
         }
         List<CoreTxBO> boList = new ArrayList<>(list.size());
         for (CoreTransactionPO po : list) {
-            boList.add(convertTxBO(po));
+            boList.add(coreTxRepository.convertTxBO(po));
         }
         //submit
         submitToSlave(boList);
@@ -370,8 +366,8 @@ import java.util.List;
             for (TransactionVO txVo : txsOfFail) {
                 //dont need
                 if (!txVo.getRetry()) {
-                    CoreTransactionPO po = coreTransactionDao.queryByTxId(txVo.getTxId(), false);
-                    CoreTxBO bo = convertTxBO(po);
+                    CoreTransactionPO po = coreTxRepository.queryByTxId(txVo.getTxId(), false);
+                    CoreTxBO bo = coreTxRepository.convertTxBO(po);
                     //end
                     RespData mRes = new RespData();
                     //set error code
@@ -397,7 +393,7 @@ import java.util.List;
         List<SignedTransaction> txs = new ArrayList<>(list.size());
         for (CoreTxBO bo : list) {
             SignedTransaction tx = new SignedTransaction();
-            CoreTransaction coreTx = convertTxVO(bo);
+            CoreTransaction coreTx = coreTxRepository.convertTxVO(bo);
             tx.setCoreTx(coreTx);
             tx.setSignatureList(bo.getSignDatas());
             txs.add(tx);

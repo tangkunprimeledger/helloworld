@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.rs.core.dao.VoteRequestRecordDao">
+	<!-- Result Map -->
+	<resultMap id="baseResultMap" type="com.higgs.trust.rs.core.dao.po.VoteRequestRecordPO">
+		<result column="id" property="id" />
+		<result column="tx_id" property="txId" />
+		<result column="sender" property="sender" />
+		<result column="tx_data" property="txData" />
+		<result column="sign" property="sign" />
+		<result column="vote_result" property="voteResult" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+	<!-- vote_request_record table all fields -->
+	<sql id="baseColumnList">
+		id,tx_id,sender,tx_data,sign,vote_result,create_time,update_time
+	</sql>
+	<!-- 查询条件 -->
+	<sql id="baseWhereClause">
+		where 1=1
+		<trim suffixOverrides=",">
+			<if test="id != null">
+				and id=#{id}
+			</if>
+			<if test="txId != null and txId != ''">
+				and tx_id=#{txId}
+			</if>
+			<if test="sender != null and sender != ''">
+				and sender=#{sender}
+			</if>
+			<if test="txData != null">
+				and tx_data=#{txData}
+			</if>
+			<if test="sign != null">
+				and sign=#{sign}
+			</if>
+			<if test="voteResult != null and voteResult != ''">
+				and vote_result=#{voteResult}
+			</if>
+			<if test="createTime != null">
+				and create_time=#{createTime}
+			</if>
+			<if test="updateTime != null">
+				and update_time=#{updateTime}
+			</if>
+		</trim>
+	</sql>
+	<!-- 插入记录 -->
+	<insert id="add" parameterType="Object">
+		insert into
+		vote_request_record(id,tx_id,sender,tx_data,sign,vote_result,create_time,update_time)
+		values(#{id},#{txId},#{sender},#{txData},#{sign},#{voteResult},now(),now())
+	</insert>
+	<!-- 删除记录 -->
+	<delete id="delete" parameterType="Object">
+		delete from vote_request_record where
+		id=#{id}
+	</delete>
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from vote_request_record where id=#{id}
+	</select>
+	<!-- 列表总数 -->
+	<select id="queryByCount" resultType="java.lang.Integer"
+		parameterType="Object">
+		select count(1) from vote_request_record
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 查询列表 -->
+	<select id="queryByList" resultMap="baseResultMap"
+		parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from vote_request_record
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 以上为工具自动生成 -->
+
+	<!--query  by transaction id-->
+	<select id="queryByTxId" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from vote_request_record where tx_id=#{txId}
+	</select>
+
+	<!--set vote result-->
+	<update id="setVoteResult" parameterType="Object">
+		update vote_request_record
+		set sign=#{sign},vote_result=#{voteResult},update_time=now(3)
+		where tx_id=#{txId} and voteResult='INIT'
+	</update>
+
+</mapper>

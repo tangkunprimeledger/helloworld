@@ -5,7 +5,6 @@
 	<resultMap id="baseResultMap" type="com.higgs.trust.rs.core.dao.po.CoreTransactionPO">
 		<result column="id" property="id" />
 		<result column="tx_id" property="txId" />
-		<result column="biz_type" property="bizType" />
 		<result column="policy_id" property="policyId" />
 		<result column="lock_time" property="lockTime" />
 		<result column="sender" property="sender" />
@@ -21,7 +20,7 @@
 	</resultMap>
 	<!-- core_transaction table all fields -->
 	<sql id="baseColumnList">
-		id,tx_id,biz_type,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,status,execute_result,error_code,create_time,update_time
+		id,tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,status,execute_result,error_code,create_time,update_time
 	</sql>
 	<!-- 查询条件 -->
 	<sql id="baseWhereClause">
@@ -32,9 +31,6 @@
 			</if>
 			<if test="txId != null and txId != ''">
 				and tx_id=#{txId}
-			</if>
-			<if test="bizType != null and bizType != ''">
-				and biz_type=#{bizType}
 			</if>
 			<if test="policyId != null and policyId != ''">
 				and policy_id=#{policyId}
@@ -77,8 +73,8 @@
 	<!-- 插入记录 -->
 	<insert id="add" parameterType="Object">
 		insert into
-		core_transaction(id,tx_id,biz_type,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,status,execute_result,error_code,create_time,update_time)
-		values(#{id},#{txId},#{bizType},#{policyId},#{lockTime},#{sender},#{version},#{bizModel},#{actionDatas},#{signDatas},#{status},#{executeResult},#{errorCode},now(),now())
+		core_transaction(id,tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,status,execute_result,error_code,create_time,update_time)
+		values(#{id},#{txId},#{policyId},#{lockTime},#{sender},#{version},#{bizModel},#{actionDatas},#{signDatas},#{status},#{executeResult},#{errorCode},now(),now())
 	</insert>
 	<!-- 删除记录 -->
 	<delete id="delete" parameterType="Object">

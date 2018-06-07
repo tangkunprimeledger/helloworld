@@ -74,7 +74,7 @@ public class RsManageServiceImpl implements RsManageService{
                         coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),
                             null,
                             buildRsActionList(registerRsVO),
-                            InitPolicyEnum.REGISTER.getPolicyId()));
+                            InitPolicyEnum.REGISTER_RS.getPolicyId()));
                 }
             });
 
@@ -128,7 +128,7 @@ public class RsManageServiceImpl implements RsManageService{
                         coreTransactionConvertor.buildCoreTransaction(registerPolicyVO.getRequestId(),
                             null,
                             buildPolicyActionList(registerPolicyVO),
-                            InitPolicyEnum.REGISTER.getPolicyId()));
+                            InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
                 }
             });
 

@@ -9,8 +9,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum CoreTxStatusEnum {
     INIT("INIT","the init status"),
+    NEED_VOTE("NEED_VOTE","need vote by async"),
     WAIT("WAIT","wait submit to slave"),
-    VALIDATED("VALIDATED","slave validated"),
     PERSISTED("PERSISTED","slave persisted"),
     END("END","the end status");
 

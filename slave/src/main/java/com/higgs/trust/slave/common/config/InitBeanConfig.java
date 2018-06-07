@@ -4,10 +4,8 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.common.constant.Constant;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
@@ -22,7 +20,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -82,22 +79,6 @@ import java.util.concurrent.*;
         return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
 
-    @Bean public Deque<SignedTransaction> pendingTxQueue() {
-        return new ConcurrentLinkedDeque<>();
-    }
-
-    @Bean public ConcurrentLinkedHashMap existTxMap() {
-        return new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE).build();
-    }
-
-    @Bean public Long packHeight() {
-        return new Long(null);
-    }
-
-    @Bean public BlockingQueue<Package> pendingPack() {
-        return new LinkedBlockingDeque<>();
-    }
-
     @Bean public ThreadPoolTaskExecutor txProcessExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
@@ -118,4 +99,23 @@ import java.util.concurrent.*;
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
+    @Bean public ThreadPoolTaskExecutor syncVotingExecutorPool() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(20);
+        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.setQueueCapacity(5000);
+        threadPoolTaskExecutor.setThreadNamePrefix("syncVotingExecutor-");
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
+
+    @Bean public ThreadPoolTaskExecutor asyncVotingExecutorPool() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(20);
+        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.setQueueCapacity(5000);
+        threadPoolTaskExecutor.setThreadNamePrefix("asyncVotingExecutorPool-");
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
 }
