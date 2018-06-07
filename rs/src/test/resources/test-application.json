@@ -95,7 +95,8 @@
         "process": 100,
         "submit": 1000
       }
-    }
+    },
+    "useMySQL":true
   },
   "runMode": "MOCK",
   "logging": {
@@ -106,6 +107,7 @@
       "useHttpChannel":false,
       "schedule":{
         "processInit":50,
+        "processNeedVote":5000,
         "submitSlave":500
       },
       "syncRequestTimeout":1000

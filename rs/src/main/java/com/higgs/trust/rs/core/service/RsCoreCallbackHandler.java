@@ -1,0 +1,74 @@
+package com.higgs.trust.rs.core.service;
+
+import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.rs.common.TxCallbackHandler;
+import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
+import com.higgs.trust.rs.common.exception.RsCoreException;
+import com.higgs.trust.rs.core.api.TxCallbackRegistor;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author liuyu
+ * @description
+ * @date 2018-06-07
+ */
+@Component @Slf4j public class RsCoreCallbackHandler implements TxCallbackHandler{
+    @Autowired private TxCallbackRegistor txCallbackRegistor;
+
+    private TxCallbackHandler getCallbackHandler(){
+        TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
+        if (txCallbackHandler == null) {
+            log.error("[getCallbackHandler]call back handler is not register");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
+        }
+        return txCallbackHandler;
+    }
+    @Override public void onPersisted(RespData<CoreTransaction> respData) {
+        TxCallbackHandler callbackHandler = getCallbackHandler();
+        callbackHandler.onPersisted(respData);
+    }
+
+    @Override public void onEnd(RespData<CoreTransaction> respData) {
+        CoreTransaction coreTransaction = respData.getData();
+        String policyId = coreTransaction.getPolicyId();
+        InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
+        switch (policyEnum) {
+            case REGISTER_POLICY:
+                processRegisterPolicy(respData);
+                return;
+            case REGISTER_RS:
+                return;
+            case UTXO_ISSUE:
+                return;
+            case UTXO_DESTROY:
+                return;
+            case CONTRACT_ISSUE:
+                return;
+            case CONTRACT_DESTROY:
+                return;
+        }
+        TxCallbackHandler callbackHandler = getCallbackHandler();
+        callbackHandler.onEnd(respData);
+    }
+
+    /**
+     * process regist policy
+     *
+     * @param respData
+     */
+    private void processRegisterPolicy(RespData<CoreTransaction> respData){
+        if(!respData.isSuccess()){
+            log.info("[processRegisterPolicy]register policy is fail,code:{}",respData.getRespCode());
+            return;
+        }
+        CoreTransaction coreTransaction = respData.getData();
+        JSONObject jsonObject = coreTransaction.getBizModel();
+        //TODO:liuyu  parse and save policy rule
+    }
+
+}
