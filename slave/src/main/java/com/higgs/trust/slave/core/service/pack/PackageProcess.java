@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.pack;
 
-import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
@@ -15,8 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author tangfashuang
@@ -36,12 +33,6 @@ import java.util.concurrent.ExecutorService;
     @Autowired
     private TransactionTemplate txNested;
 
-    @Autowired
-    private PackageLock packageLock;
-
-    @Autowired
-    private ExecutorService packageThreadPool;
-
     /**
      * package process logic
      *
@@ -58,10 +49,9 @@ import java.util.concurrent.ExecutorService;
                         return;
                     }
 
-                    //process only deal the package with status RECEIVED and WAIT_VALIDATE_CONSENSUS  in DB
-                    PackageStatusEnum packageStatusEnum = pack.getStatus();
-                    if (packageStatusEnum == PackageStatusEnum.RECEIVED || packageStatusEnum == PackageStatusEnum.WAIT_VALIDATE_CONSENSUS) {
-                        packageFSM(pack);
+                    //process only deal the package with status RECEIVED in DB
+                    if (pack.getStatus() == PackageStatusEnum.RECEIVED) {
+                        doProcess(pack);
                     }
                 } catch (SlaveException e) {
                     transactionStatus.setRollbackOnly();
@@ -87,78 +77,9 @@ import java.util.concurrent.ExecutorService;
         process(pack.getHeight());
     }
 
-    private void packageFSM(Package pack) {
-        //package status equals 'WAIT_VALIDATE_CONSENSUS' or 'PERSISTING'will jump out recycle
-        while ((PackageStatusEnum.PERSISTING != pack.getStatus())) {
-            switch (pack.getStatus()) {
-                case RECEIVED:
-                    doValidate(pack);
-                    pack.setStatus(PackageStatusEnum.VALIDATING);
-                    break;
-                case VALIDATING:
-                    doValidatingToConsensus(pack);
-                    return;
-                case WAIT_VALIDATE_CONSENSUS:
-                    doValidated(pack);
-                    pack.setStatus(PackageStatusEnum.VALIDATED);
-                    break;
-                case VALIDATED:
-                    doPersist(pack);
-                    pack.setStatus(PackageStatusEnum.PERSISTING);
-                    break;
-                case PERSISTING:
-                    doAsyncPersistingToConsensus(pack);
-                    return;
-                default:
-                    log.error("package status is invalid, status={}", pack.getStatus());
-                    throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NO_SUCH_STATUS);
-            }
-
-        }
-    }
-
-    private void doValidate(Package pack) {
+    private void doProcess(Package pack) {
         // if package status is not 'RECEIVED', return directly.
         if (PackageStatusEnum.RECEIVED != pack.getStatus()) {
-            return;
-        }
-
-        // check next package height
-        Long maxBlockHeight = blockRepository.getMaxHeight();
-        if (!pack.getHeight().equals(maxBlockHeight + 1)) {
-            log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(), maxBlockHeight + 1);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
-        }
-
-        PackContext packContext = packageService.createPackContext(pack);
-        // do validate
-        packageService.validating(packContext);
-    }
-
-
-    private void doValidatingToConsensus(Package pack) {
-        // if package status is not 'VALIDATING', return directly.
-        if (PackageStatusEnum.VALIDATING != pack.getStatus()) {
-            return;
-        }
-        packageService.validateConsensus(pack);
-        // update status
-        packageService.statusChange(pack, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS);
-    }
-
-
-    private void doValidated(Package pack) {
-        // if package status is not 'WAIT_VALIDATE_CONSENSUS', return directly.
-        if (PackageStatusEnum.WAIT_VALIDATE_CONSENSUS != pack.getStatus()) {
-            return;
-        }
-        packageService.validated(pack);
-    }
-
-
-    private void doPersist(Package pack) {
-        // if package status is not 'VALIDATED', return directly.
-        if (PackageStatusEnum.VALIDATED != pack.getStatus()) {
             return;
         }
 
@@ -171,34 +92,7 @@ import java.util.concurrent.ExecutorService;
 
         PackContext packContext = packageService.createPackContext(pack);
         // do persist
-        packageService.persisting(packContext);
-        // update status
-        packageService.statusChange(pack, PackageStatusEnum.WAIT_VALIDATE_CONSENSUS, PackageStatusEnum.PERSISTING);
-    }
-
-
-    private void doAsyncPersistingToConsensus(Package pack) {
-        // if package status is not 'PERSISTING', return directly.
-        if (PackageStatusEnum.PERSISTING != pack.getStatus()) {
-            return;
-        }
-        packageThreadPool.execute(new AsyncPackagePersistingToConsensus(pack.getHeight()));
-    }
-
-
-    /**
-     * thread for async package PersistingToConsensus
-     */
-    private class AsyncPackagePersistingToConsensus implements Runnable {
-        private Long height;
-
-        public AsyncPackagePersistingToConsensus(Long height) {
-            this.height = height;
-        }
-
-        @Override public void run() {
-            packageLock.lockPersistingAndSubmit(height);
-        }
+        packageService.process(packContext);
     }
 
 }

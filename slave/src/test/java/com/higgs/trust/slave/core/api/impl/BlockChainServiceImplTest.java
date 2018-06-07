@@ -158,7 +158,7 @@ public class BlockChainServiceImplTest extends BaseTest{
         signList.add(sign1);
         signList.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList);
+//        signedTx1.setSignatureList(signList);
 
         System.out.println("signedTx1: " + JSONObject.toJSONString(signedTx1));
 
@@ -193,7 +193,7 @@ public class BlockChainServiceImplTest extends BaseTest{
         signList.add(sign1);
         signList.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList);
+//        signedTx1.setSignatureList(signList);
 
         signedTxList.add(signedTx1);
 
@@ -223,7 +223,7 @@ public class BlockChainServiceImplTest extends BaseTest{
         signList.add(sign1);
         signList.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList);
+//        signedTx1.setSignatureList(signList);
 
         signedTxList.add(signedTx1);
 
@@ -253,7 +253,7 @@ public class BlockChainServiceImplTest extends BaseTest{
         signList.add(sign1);
       //  signList.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList);
+//        signedTx1.setSignatureList(signList);
 
         signedTxList.add(signedTx1);
 
@@ -282,7 +282,7 @@ public class BlockChainServiceImplTest extends BaseTest{
         signList.add(sign1);
          signList.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList);
+//        signedTx1.setSignatureList(signList);
 
         signedTxList.add(signedTx1);
 

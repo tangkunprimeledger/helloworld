@@ -70,7 +70,7 @@ import java.util.Set;
         //check policy id
         CoreTransaction coreTx = actionData.getCurrentTransaction().getCoreTx();
         InitPolicyEnum register = InitPolicyEnum.getInitPolicyEnumByPolicyId(coreTx.getPolicyId());
-        if (!InitPolicyEnum.REGISTER.equals(register)) {
+        if (!InitPolicyEnum.REGISTER_POLICY.equals(register)) {
             log.error("[RegisterRSHandler.process] policy id is not for register policy");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }

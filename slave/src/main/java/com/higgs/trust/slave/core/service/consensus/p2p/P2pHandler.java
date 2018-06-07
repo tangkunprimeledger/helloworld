@@ -13,12 +13,5 @@ public interface P2pHandler {
      *
      * @param header
      */
-    void sendValidating(BlockHeader header);
-
-    /**
-     * send validating result to p2p consensus layer
-     *
-     * @param header
-     */
     void sendPersisting(BlockHeader header);
 }

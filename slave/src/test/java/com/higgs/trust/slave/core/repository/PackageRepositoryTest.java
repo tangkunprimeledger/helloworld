@@ -82,7 +82,7 @@ public class PackageRepositoryTest extends BaseTest {
         signList.add(sign1);
         signList.add(sign2);
         signedTransaction.setCoreTx(coreTx1);
-        signedTransaction.setSignatureList(signList);
+//        signedTransaction.setSignatureList(signList);
 
         return signedTransaction;
     }

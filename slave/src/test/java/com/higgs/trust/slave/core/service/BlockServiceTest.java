@@ -33,16 +33,6 @@ public class BlockServiceTest extends IntegrateBaseTest {
         System.out.println("max.height:" + height);
     }
 
-    @Test public void storeTempHeader() {
-        BlockHeader header = new BlockHeader();
-        BlockHeaderTypeEnum headerTypeEnum = BlockHeaderTypeEnum.TEMP_TYPE;
-        blockService.storeTempHeader(header, headerTypeEnum);
-    }
-
-    @Test public void getTempHeader() {
-
-    }
-
     @Test public void persistBlock() throws Exception {
         List<SignedTransaction> txs = new ArrayList<>();
         for (int k = 0; k < 2; k++) {
@@ -53,7 +43,7 @@ public class BlockServiceTest extends IntegrateBaseTest {
                 action.setIndex(i);
                 actions.add(action);
             }
-            CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, k, InitPolicyEnum.REGISTER);
+            CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, k, InitPolicyEnum.REGISTER_POLICY);
             SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
             txs.add(tx);
         }

@@ -3,24 +3,20 @@ package com.higgs.trust.slave.core.service.transaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.TransactionData;
 
+import java.util.Map;
+
 /**
  * @Description:
  * @author: pengdi
  **/
 public interface TransactionExecutor {
-    /**
-     * validate all transactions,return validate results and validatedDatas
-     *
-     * @param transactionData
-     * @return
-     */
-    TransactionReceipt validate(TransactionData transactionData);
 
     /**
      * persist all transactions,return validate results and persistedDatas
      *
      * @param transactionData
+     * @param rsPubKeyMap
      * @return
      */
-    TransactionReceipt persist(TransactionData transactionData);
+    TransactionReceipt process(TransactionData transactionData, Map<String, String> rsPubKeyMap);
 }

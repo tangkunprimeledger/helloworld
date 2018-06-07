@@ -17,17 +17,7 @@ public interface PendingState {
      * @param transactions
      * @return
      */
-    public List<TransactionVO> addPendingTransactions(List<SignedTransaction> transactions);
-
-    /**
-     * Add new transactions into pending transaction pool
-     *
-     * @param transactions
-     * @param status
-     * @param height
-     * @return
-     */
-    public void addPendingTransactions(List<SignedTransaction> transactions, PendingTxStatusEnum status, Long height);
+    List<TransactionVO> addPendingTransactions(List<SignedTransaction> transactions);
 
     /**
      * Get a specified number(count) of transactions
@@ -35,7 +25,7 @@ public interface PendingState {
      * @param count
      * @return
      */
-    public List<SignedTransaction> getPendingTransactions(int count);
+    List<SignedTransaction> getPendingTransactions(int count);
 
     /**
      * Mark the transactions as packaged
@@ -44,7 +34,7 @@ public interface PendingState {
      * @param height
      * @return
      */
-    public int packagePendingTransactions(List<SignedTransaction> signedTransactions, Long height);
+    int packagePendingTransactions(List<SignedTransaction> signedTransactions, Long height);
 
     /**
      * Get packaged transactions based on block height
@@ -52,5 +42,7 @@ public interface PendingState {
      * @param height
      * @return
      */
-    public List<SignedTransaction> getPackagedTransactions(Long height);
+    List<SignedTransaction> getPackagedTransactions(Long height);
+
+    void addPendingTxsToQueueFirst(List<SignedTransaction> signedTransactions);
 }

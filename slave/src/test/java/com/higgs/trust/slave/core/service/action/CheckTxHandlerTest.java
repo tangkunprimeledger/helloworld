@@ -70,10 +70,10 @@ public class CheckTxHandlerTest extends BaseTest {
         signList.add(sign1);
         signList.add(sign2);
         signList.add(sign3);
-        stx.setSignatureList(signList);
+//        stx.setSignatureList(signList);
 
         //        checkTxHandler.verifySignatures(stx);
-        Assert.assertEquals(true, checkTxHandler.verifySignatures(stx));
+        Assert.assertEquals(true, checkTxHandler.verifySignatures(stx, null));
     }
 
     @Test

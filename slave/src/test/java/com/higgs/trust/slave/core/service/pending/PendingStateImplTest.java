@@ -71,7 +71,7 @@ public class PendingStateImplTest extends BaseTest {
         signList1.add(sign1);
         signList1.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList1);
+//        signedTx1.setSignatureList(signList1);
 
 
 
@@ -102,7 +102,7 @@ public class PendingStateImplTest extends BaseTest {
         signList2.add(sign3);
         signList2.add(sign4);
         signedTx2.setCoreTx(coreTx2);
-        signedTx2.setSignatureList(signList2);
+//        signedTx2.setSignatureList(signList2);
 
         signedTxList.add(signedTx1);
         signedTxList.add(signedTx2);
@@ -111,10 +111,6 @@ public class PendingStateImplTest extends BaseTest {
     @Test public void addPendingTransactions() {
         List<TransactionVO> voList = pendingState.addPendingTransactions(signedTxList);
         Assert.assertEquals(1, voList.size());
-    }
-
-    @Test public void addPendingTransactions1() {
-        pendingState.addPendingTransactions(signedTxList, PendingTxStatusEnum.PACKAGED, 4L);
     }
 
     @Test public void getPendingTransactions() {

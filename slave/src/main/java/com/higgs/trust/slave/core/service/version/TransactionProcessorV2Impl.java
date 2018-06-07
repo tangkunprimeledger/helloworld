@@ -20,6 +20,6 @@ import org.springframework.stereotype.Component;
         txProcessorHolder.registVerisonProcessor(VersionEnum.V2, this);
     }
 
-    @Override public void process(TransactionData transactionData, TxProcessTypeEnum processTypeEnum) {
+    @Override public void process(TransactionData transactionData) {
     }
 }

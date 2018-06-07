@@ -39,8 +39,7 @@ import java.util.List;
     }
 
      @Override
-    public BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
-        List<TransactionReceipt> txReceipts) {
+    public BlockHeader buildHeader(PackageData packageData, List<TransactionReceipt> txReceipts) {
         Profiler.enter("[getMaxHeight and getBlockHeader]");
         //query max height from db
         Long maxHeight = getMaxHeight();
@@ -65,12 +64,8 @@ import java.util.List;
         blockHeader.setVersion(BlockVersionEnum.V1.getCode());
         Profiler.enter("[buildRootHash]");
         //build all root hash for block header
-        StateRootHash stateRootHash = null;
-        if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-            stateRootHash = snapshotRootHashBuilder.build(packageData, txReceipts);
-        } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-            stateRootHash = dbRootHashBuilder.build(packageData, txReceipts);
-        }
+        StateRootHash stateRootHash = snapshotRootHashBuilder.build(packageData, txReceipts);
+
         Profiler.release();
         blockHeader.setStateRootHash(stateRootHash);
         //to calculate the hash of block header
@@ -82,16 +77,6 @@ import java.util.List;
         return blockHeader;
     }
 
-     @Override
-    public void storeTempHeader(BlockHeader header, BlockHeaderTypeEnum headerTypeEnum) {
-        blockRepository.saveTempHeader(header, headerTypeEnum);
-    }
-
-     @Override
-    public BlockHeader getTempHeader(Long height, BlockHeaderTypeEnum headerTypeEnum) {
-        return blockRepository.getTempHeader(height, headerTypeEnum);
-    }
-
     /**
      * get final persisted block header
      *
@@ -99,7 +84,9 @@ import java.util.List;
      * @return
      */
      @Override public BlockHeader getHeader(Long height) {
-        return blockRepository.getTempHeader(height, BlockHeaderTypeEnum.TEMP_TYPE);
+        Block block = blockRepository.getBlock(height);
+
+        return (block == null) ? null : block.getBlockHeader();
     }
 
     @Override public Block buildBlock(PackageData packageData, BlockHeader blockHeader) {
@@ -127,6 +114,7 @@ import java.util.List;
 
      @Override
     public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
+        //TODO rocks db
         blockRepository.saveBlock(block, txReceipts);
     }
 

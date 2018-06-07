@@ -248,6 +248,8 @@ IF NOT EXISTS `policy` (
 	`policy_id` VARCHAR (32) NOT NULL COMMENT 'policyID',
 	`policy_name` VARCHAR (64) NOT NULL COMMENT 'policy name',
 	`rs_ids` VARCHAR (1024) NOT NULL COMMENT 'the id list create related to rs',
+	`decision_type` VARCHAR (16) NOT NULL COMMENT 'the decision type for vote ,1.FULL_VOTE,2.ONE_VOTE',
+	`contract_addr` VARCHAR (64) DEFAULT NULL COMMENT 'the contract address for vote rule',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_policy` (`policy_id`)
@@ -275,6 +277,7 @@ IF NOT EXISTS `transaction` (
 	`version` VARCHAR (32) NOT NULL COMMENT 'the version create the tx',
 	`block_height` BIGINT (20) NOT NULL COMMENT 'the block height create the tx',
 	`block_time` datetime (3) NOT NULL COMMENT 'the create time create the block for the tx',
+	`send_time` datetime (3) NOT NULL COMMENT 'the transaction create time',
 	`action_datas` varchar(4096) DEFAULT NULL COMMENT 'the action list by json',
 	`sign_datas` varchar(4096) DEFAULT NULL COMMENT 'the signatures by json',
 	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
@@ -311,7 +314,7 @@ IF NOT EXISTS `tx_out` (
 
 CREATE TABLE IF NOT EXISTS `queued_apply` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
   KEY `idx_message_digest` (`message_digest`)
@@ -323,7 +326,7 @@ CREATE TABLE IF NOT EXISTS `queued_apply` (
 
 CREATE TABLE IF NOT EXISTS `queued_apply_delay` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `apply_time` bigint(20) NOT NULL,
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
@@ -337,7 +340,7 @@ CREATE TABLE IF NOT EXISTS `queued_apply_delay` (
 
 CREATE TABLE IF NOT EXISTS `queued_receive_gc` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `gc_time` bigint(1) unsigned NOT NULL DEFAULT '0' COMMENT 'gc time',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
@@ -351,7 +354,7 @@ CREATE TABLE IF NOT EXISTS `queued_receive_gc` (
 
 CREATE TABLE IF NOT EXISTS `queued_send` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
   KEY `idx_message_digest` (`message_digest`)
@@ -363,7 +366,7 @@ CREATE TABLE IF NOT EXISTS `queued_send` (
 
 CREATE TABLE IF NOT EXISTS `queued_send_delay` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `send_time` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'requeued to send',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
@@ -377,7 +380,7 @@ CREATE TABLE IF NOT EXISTS `queued_send_delay` (
 
 CREATE TABLE IF NOT EXISTS `queued_send_gc` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `gc_time` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'gc time',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   PRIMARY KEY (`id`),
@@ -391,7 +394,7 @@ CREATE TABLE IF NOT EXISTS `queued_send_gc` (
 
 CREATE TABLE IF NOT EXISTS `receive_command` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `valid_command` varchar(3072) NOT NULL COMMENT 'valid command',
   `command_class` varchar(255) NOT NULL DEFAULT '' COMMENT 'command class',
   `node_name` varchar(255) NOT NULL DEFAULT '' COMMENT 'node name',
@@ -413,7 +416,7 @@ CREATE TABLE IF NOT EXISTS `receive_command` (
 
 CREATE TABLE IF NOT EXISTS `receive_node` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `from_node_name` varchar(64) NOT NULL COMMENT 'from node name',
   `command_sign` varchar(512) NOT NULL DEFAULT '' COMMENT 'command sign',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
@@ -427,7 +430,7 @@ CREATE TABLE IF NOT EXISTS `receive_node` (
 
 CREATE TABLE IF NOT EXISTS `send_command` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `valid_command` varchar(3072) NOT NULL COMMENT 'valid command',
   `node_name` varchar(255) NOT NULL DEFAULT '' COMMENT 'node name',
   `command_sign` varchar(512) NOT NULL DEFAULT '' COMMENT 'command sign',
@@ -449,7 +452,7 @@ CREATE TABLE IF NOT EXISTS `send_command` (
 
 CREATE TABLE IF NOT EXISTS `send_node` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(512) NOT NULL COMMENT 'message digest',
+  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `to_node_name` varchar(64) NOT NULL DEFAULT '' COMMENT 'from node name',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-wait to send , 1- ack',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',

@@ -54,7 +54,7 @@ import org.springframework.stereotype.Component;
         //check policy id
         CoreTransaction coreTx = actionData.getCurrentTransaction().getCoreTx();
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(coreTx.getPolicyId());
-        if (!InitPolicyEnum.REGISTER.equals(initPolicyEnum)) {
+        if (!InitPolicyEnum.REGISTER_RS.equals(initPolicyEnum)) {
             log.error("[RegisterRSHandler.process] policy id is not for register rs");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }

@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Map;
 
 /**
  * @Description:
@@ -40,6 +41,11 @@ import javax.validation.constraints.NotNull;
     private Action currentAction;
 
     /**
+     * rs and public key map
+     */
+    private Map<String, String> rsPubKeyMap;
+
+    /**
      * package context constructor only
      *
      * @param pack
@@ -50,6 +56,7 @@ import javax.validation.constraints.NotNull;
         this.block = block;
         this.currentTransaction = null;
         this.currentAction = null;
+        this.rsPubKeyMap = null;
     }
 
     /**
@@ -100,6 +107,14 @@ import javax.validation.constraints.NotNull;
      */
     @Override public void setCurrentBlock(Block block) {
         this.block = block;
+    }
+
+    @Override public void setRsPubKeyMap(Map<String, String> rsPubKeyMap) {
+        this.rsPubKeyMap = rsPubKeyMap;
+    }
+
+    @Override public Map<String, String> getRsPubKeyMap() {
+        return rsPubKeyMap;
     }
 
     /**
