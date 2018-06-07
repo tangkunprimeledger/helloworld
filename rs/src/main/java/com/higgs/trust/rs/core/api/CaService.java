@@ -16,7 +16,7 @@ public interface CaService {
      * @param user
      * @return   
      */  
-    void initKeyPair(String user);
+    void authKeyPair(String user);
     
     /** 
      * @desc construct ca tx and send to slave

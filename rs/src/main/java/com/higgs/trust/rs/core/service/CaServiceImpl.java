@@ -53,7 +53,7 @@ import java.util.Map;
      * @return
      * @desc generate pubKey and PriKey ,then insert into db
      */
-    @Override public void initKeyPair(String user) {
+    @Override public void authKeyPair(String user) {
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[initKeyPair] invalid node name");
