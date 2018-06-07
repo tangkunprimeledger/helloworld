@@ -18,7 +18,8 @@ public enum SnapshotBizKeyEnum {
     DATA_IDENTITY("DATA_IDENTITY", "dataIdentity core Snapshot"),
     UTXO("UTXO", "UTXO core Snapshot"), MANAGE("MANAGE", "manage  Snapshot"),
     MERKLE_TREE("MERKLE_TREE", "merkle tree  Snapshot"),
-    OTHER("OTHER", "other  Snapshot"),;
+    OTHER("OTHER", "other  Snapshot"),
+    CA("CA", "ca Snapshot"),;
 
     String code;
     String desc;

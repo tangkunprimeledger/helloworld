@@ -28,6 +28,12 @@ public enum RsCoreErrorEnum {
     RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET("205", "tx core tx callback not set", false),
     RS_CORE_TX_SYNC_EXECUTE_FAILED("206", "rs core tx sync execute failed", false),
     RS_CORE_TX_GET_OTHER_SIGN_ERROR("207", "tx core get other sign data error", false),
+
+
+    RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
+    RS_CORE_WRITE_FILE_ERROR("302", "rs core write file error", false),
+    RS_CORE_CA_NOT_EXIST_ERROR("303", "rs core ca not exist error", false),
+    RS_CORE_INVALID_NODE_NAME_EXIST_ERROR("304", "rs core invalid node name error", false),
     ;
     //@formatter:on
 

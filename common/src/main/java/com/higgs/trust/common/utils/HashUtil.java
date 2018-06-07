@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.custom.util;
+package com.higgs.trust.common.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,10 +92,11 @@ public class HashUtil {
     }
 
     public static void main(String[] args) {
-//        String s = getSHA256S("abcdef");
-//        System.out.println(s);
-        String hash = getHashForFile(new File("/Users/liuyu/Downloads/327a761a9cdc803fcabd791309099730.gz"));
-        System.out.println(hash);
+        String s = getSHA256S("abcdef");
+        System.out.println(s);
+        System.out.println(s.length());
+//        String hash = getHashForFile(new File("/Users/liuyu/Downloads/327a761a9cdc803fcabd791309099730.gz"));
+//        System.out.println(hash);
 
     }
 }

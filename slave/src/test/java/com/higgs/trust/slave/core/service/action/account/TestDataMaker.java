@@ -160,6 +160,7 @@ public class TestDataMaker {
         rootHash.setPolicyRootHash("policy-hash");
         rootHash.setRsRootHash("rs-root-hash");
         rootHash.setContractRootHash("contract-hash");
+        rootHash.setCaRootHash("ca-hash");
         blockHeader.setStateRootHash(rootHash);
         return blockHeader;
     }

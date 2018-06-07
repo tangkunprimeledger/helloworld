@@ -168,6 +168,9 @@ import java.util.List;
         if (!StringUtils.equals(rootHash1.getRsRootHash(), rootHash2.getRsRootHash())) {
             return false;
         }
+        if (!StringUtils.equals(rootHash1.getCaRootHash(), rootHash2.getCaRootHash())) {
+            return false;
+        }
         return true;
     }
 
@@ -195,6 +198,7 @@ import java.util.List;
         builder.append(function.hashString(getSafety(stateRootHash.getContractRootHash()), Charsets.UTF_8));
         builder.append(function.hashString(getSafety(stateRootHash.getPolicyRootHash()), Charsets.UTF_8));
         builder.append(function.hashString(getSafety(stateRootHash.getRsRootHash()), Charsets.UTF_8));
+        builder.append(function.hashString(getSafety(stateRootHash.getCaRootHash()), Charsets.UTF_8));
         String hash = function.hashString(builder.toString(), Charsets.UTF_8).toString();
         return hash;
     }

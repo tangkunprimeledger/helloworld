@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.config.ConfigDao">
+
+	<insert id="insertConfig" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+		INSERT INTO config(version,
+				valid,
+				pub_key,
+				pri_key,
+				node_name,
+				create_time,
+				update_time)
+		VALUES (#{version},
+				#{valid},
+				#{pubKey},
+				#{priKey},
+				#{nodeName},
+				now(3),
+				now(3))
+	</insert>
+
+
+	<update id="updateConfig" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+		UPDATE config SET
+		update_time=now(3),
+		<if test="valid != null and valid!=''">
+			valid=#{valid},
+		</if>
+		<if test="pubKey != null and pubKey!=''">
+			pub_key=#{pubKey},
+		</if>
+		<if test="priKey != null and priKey!=''">
+			pri_key=#{priKey},
+		</if>
+		<if test="tmpPubKey != null and tmpPubKey!=''">
+			tmp_pub_key=#{tmpPubKey},
+		</if>
+		<if test="tmpPriKey != null and tmpPriKey!=''">
+			tmp_pri_key=#{tmpPriKey}
+		</if>
+		WHERE `node_name`=#{nodeName}
+	</update>
+
+
+	<select id="getConfig" parameterType="java.lang.String"
+			resultType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+		SELECT    version as version,
+								valid as valid,
+								pub_key as pubKey,
+								pri_key as priKey,
+								node_name as nodeName,
+								create_time as createTime,
+								update_time as updateTime
+		      FROM config WHERE `node_name`=#{nodeName}
+	</select>
+
+</mapper>

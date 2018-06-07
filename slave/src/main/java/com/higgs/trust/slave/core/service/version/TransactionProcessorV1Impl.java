@@ -9,6 +9,10 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.contract.AccountContractBindingRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.account.*;
+import com.higgs.trust.slave.core.service.action.ca.CaAuthHandler;
+import com.higgs.trust.slave.core.service.action.ca.CaCancelHandler;
+import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
+import com.higgs.trust.slave.core.service.action.ca.CaUpdateHandler;
 import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
 import com.higgs.trust.slave.core.service.action.contract.ContractCreationHandler;
 import com.higgs.trust.slave.core.service.action.contract.ContractInvokeHandler;
@@ -60,6 +64,10 @@ import java.util.*;
     @Autowired private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
     @Autowired private AccountContractBindingRepository accountContractBindingRepository;
     @Autowired private StandardSmartContract standardSmartContract;
+    @Autowired private CaAuthHandler caAuthHandler;
+    @Autowired private CaCancelHandler caCancelHandler;
+    @Autowired private CaUpdateHandler caUpdateHandler;
+    @Autowired private CaInitHandler caInitHandler;
 
     @Override public void afterPropertiesSet() throws Exception {
         txProcessorHolder.registVerisonProcessor(VersionEnum.V1, this);
@@ -137,6 +145,14 @@ import java.util.*;
                 return contractInvokeHandler;
             case REGISTER_CONTRACT:
                 return contractCreationHandler;
+            case CA_AUTH:
+                return caAuthHandler;
+            case CA_CANCEL:
+                return caCancelHandler;
+            case CA_UPDATE:
+                return caUpdateHandler;
+            case CA_INIT:
+                return caInitHandler;
             default:
         }
         log.error("[getHandlerByType] action type not exist exception, actionType={}", JSON.toJSONString(typeEnum));
