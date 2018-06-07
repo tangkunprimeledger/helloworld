@@ -5,6 +5,7 @@ import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
+import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -28,6 +29,12 @@ import org.springframework.stereotype.Component;
         }
         return txCallbackHandler;
     }
+
+    @Override public void onVote(VotingRequest votingRequest) {
+        TxCallbackHandler callbackHandler = getCallbackHandler();
+        callbackHandler.onVote(votingRequest);
+    }
+
     @Override public void onPersisted(RespData<CoreTransaction> respData) {
         TxCallbackHandler callbackHandler = getCallbackHandler();
         callbackHandler.onPersisted(respData);

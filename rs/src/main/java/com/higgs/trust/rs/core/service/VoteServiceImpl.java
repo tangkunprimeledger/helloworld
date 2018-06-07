@@ -55,6 +55,7 @@ import java.util.concurrent.Future;
     @Autowired private VoteReceiptRepository voteReceiptRepository;
     @Autowired private ServiceProviderClient serviceProviderClient;
     @Autowired private SignService signService;
+    @Autowired private RsCoreCallbackHandler rsCoreCallbackHandler;
 
     @Autowired private ThreadPoolTaskExecutor syncVotingExecutorPool;
     @Autowired private ThreadPoolTaskExecutor asyncVotingExecutorPool;
@@ -113,8 +114,8 @@ import java.util.concurrent.Future;
                     if (StringUtils.equals(votingRequest.getVotePattern(), VotePatternEnum.SYNC.getCode())) {
                         VoteResultEnum voteResult = VoteResultEnum.AGREE;
                         try {
-                            //TODO:liuyu callback custom rs
-
+                            //callback custom rs
+                            rsCoreCallbackHandler.onVote(votingRequest);
                         } catch (Throwable e) {
                             log.error("[acceptVoting]callback custom has error", e);
                             voteResult = VoteResultEnum.DISAGREE;
