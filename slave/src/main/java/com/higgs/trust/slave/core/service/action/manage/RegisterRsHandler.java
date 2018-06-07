@@ -1,13 +1,10 @@
 package com.higgs.trust.slave.core.service.action.manage;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.datahandler.manage.RsDBHandler;
-import com.higgs.trust.slave.core.service.datahandler.manage.RsHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.RsSnapshotHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.context.ActionData;
@@ -24,20 +21,11 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j @Component public class RegisterRsHandler implements ActionHandler {
 
-    @Autowired private RsDBHandler rsDBHandler;
-
     @Autowired private RsSnapshotHandler rsSnapshotHandler;
 
-    @Override public void validate(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.VALIDATE);
-    }
-
-    @Override public void persist(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.PERSIST);
-    }
-
-    private void process(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
-        log.info("[RegisterRSHandler.process] start, actionData: {}, processType: {} ", actionData, processTypeEnum);
+    @Override
+    public void process(ActionData actionData) {
+        log.info("[RegisterRSHandler.process] start, actionData: {} ", actionData);
 
         RegisterRS bo = (RegisterRS)actionData.getCurrentAction();
         if (null == bo) {
@@ -59,20 +47,13 @@ import org.springframework.stereotype.Component;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        RsHandler rsHandler = null;
-        if (TxProcessTypeEnum.VALIDATE == processTypeEnum) {
-            rsHandler = rsSnapshotHandler;
-        } else if (TxProcessTypeEnum.PERSIST == processTypeEnum) {
-            rsHandler = rsDBHandler;
-        }
-
-        RsPubKey rsPubKey = rsHandler.getRsPubKey(bo.getRsId());
+        RsPubKey rsPubKey = rsSnapshotHandler.getRsPubKey(bo.getRsId());
         if (rsPubKey != null) {
             log.warn("rsPubKey already exists. {}", rsPubKey);
             throw new SlaveException(SlaveErrorEnum.SLAVE_RS_EXISTS_ERROR);
         }
 
-        rsHandler.registerRsPubKey(bo);
+            rsSnapshotHandler.registerRsPubKey(bo);
         log.info("[RegisterRSHandler.process] finish");
     }
 

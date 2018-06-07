@@ -7,18 +7,12 @@ import com.higgs.trust.slave.model.bo.context.ActionData;
  * @author: pengdi
  **/
 public interface ActionHandler {
-    /**
-     * the logic for the action
-     *
-     * @param actionData
-     */
-    void validate(ActionData actionData);
 
     /**
      * the storage for the action
      *
      * @param actionData
      */
-    void persist(ActionData actionData);
+    void process(ActionData actionData);
 
 }
