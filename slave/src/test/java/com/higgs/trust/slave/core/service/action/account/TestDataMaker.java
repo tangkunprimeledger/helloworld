@@ -142,7 +142,7 @@ public class TestDataMaker {
         List<String> signedList = new ArrayList<>();
         signedList.add(sign);
         signedList.add(sign1);
-        signedTransaction.setSignatureList(signedList);
+//        signedTransaction.setSignatureList(signedList);
         return  signedTransaction;
     }
 

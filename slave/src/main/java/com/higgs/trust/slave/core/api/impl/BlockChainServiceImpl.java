@@ -57,7 +57,7 @@ public class BlockChainServiceImpl implements BlockChainService {
     @Override
     public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
-        List<TransactionVO> transactionVOList = new ArrayList<>();
+        List<TransactionVO> transactionVOList;
         // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
             if (nodeState.isState(NodeStateEnum.Running)) {
@@ -102,7 +102,7 @@ public class BlockChainServiceImpl implements BlockChainService {
     }
 
     private List<TransactionVO> buildTxVOList(List<SignedTransaction> transactions) {
-        log.warn("master node status is not running. cannot receive tx");
+        log.warn("master node status is not running. can not receive tx");
         List<TransactionVO> transactionVOList = new ArrayList<>();
         transactions.forEach(signedTx -> {
             TransactionVO txVO = new TransactionVO();

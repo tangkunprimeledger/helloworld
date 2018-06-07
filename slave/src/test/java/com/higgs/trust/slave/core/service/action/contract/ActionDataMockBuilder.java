@@ -75,7 +75,7 @@ public class ActionDataMockBuilder {
         if (null != this.currentSignedTransaction) {
             String data = JSON.toJSONString(this.currentSignedTransaction.getCoreTx());
             try {
-                this.currentSignedTransaction.getSignatureList().add(SignUtils.sign(data, privateKey));
+//                this.currentSignedTransaction.getSignatureList().add(SignUtils.sign(data, privateKey));
             } catch (Exception e) {
                 e.printStackTrace();
             }

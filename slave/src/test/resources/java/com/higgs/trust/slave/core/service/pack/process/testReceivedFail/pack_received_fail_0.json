@@ -1,0 +1,12 @@
+{
+  "测试ID": 0,
+  "body": {
+    "height": 2,
+    "packageTime": 1526389791011,
+    "signedTxList": [
+    ],
+    "status": "RECEIVED"
+  },
+  "assert": "package txs is empty error[SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR]",
+  "comment": "Package-process接口测试-交易列表为空"
+}

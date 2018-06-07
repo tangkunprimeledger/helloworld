@@ -94,7 +94,6 @@ public class RsPubKeyRepository {
     public RsPubKey convertActionToRsPubKey(RegisterRS registerRS){
         RsPubKey rsPubKey = new RsPubKey();
         rsPubKey.setRsId(registerRS.getRsId());
-        rsPubKey.setDesc(registerRS.getDesc());
         rsPubKey.setPubKey(registerRS.getPubKey());
         return rsPubKey;
     }

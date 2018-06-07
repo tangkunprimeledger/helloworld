@@ -58,7 +58,7 @@ import org.springframework.stereotype.Service;
         return engineManager;
     }
 
-    private Object execute(String address, String instanceId, ExecuteContextData data, TxProcessTypeEnum processType, Object... args) {
+    private Object execute(String address, String instanceId, ExecuteContextData data, Object... args) {
         Contract contract = snapshotAgent.get(address);
         if (null == contract) {
             log.error("contract not fond: {}", address);
@@ -72,7 +72,7 @@ import org.springframework.stereotype.Service;
         contractEntity.setAddress(contract.getAddress());
 
         context.setContract(contractEntity);
-        context.setValidateStage(processType == TxProcessTypeEnum.VALIDATE);
+//        context.setValidateStage(processType == TxProcessTypeEnum.VALIDATE);
 
         ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
         Object result = engine.execute("main", args);
@@ -88,7 +88,7 @@ import org.springframework.stereotype.Service;
         }
     }
 
-    public Object execute(AccountContractBinding binding, ExecuteContextData data, TxProcessTypeEnum processType) {
+    public Object execute(AccountContractBinding binding, ExecuteContextData data) {
         Profiler.enter(String.format("execute contract at %s", binding.getContractAddress()));
         try {
             if (binding == null) {
@@ -96,7 +96,7 @@ import org.springframework.stereotype.Service;
                 return null;
             }
             Object args = com.alibaba.fastjson.JSON.parse(binding.getArgs());
-            return execute(binding.getContractAddress(), binding.getHash(), data, processType, args);
+            return execute(binding.getContractAddress(), binding.getHash(), data, args);
         } finally {
             Profiler.release();
         }

@@ -60,6 +60,8 @@ import java.util.Locale;
      */
     @Getter private String prefix;
 
+    @Getter private long term;
+
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
         this.privateKey = properties.getPrivateKey();

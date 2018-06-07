@@ -15,7 +15,6 @@ import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
-import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -193,29 +192,11 @@ import java.util.List;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        packageService.validating(packContext);
-        BlockHeader consensusHeader =
-            blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
-        if (consensusHeader == null) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST);
-        }
-        boolean validated =
-            blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), consensusHeader);
-        if (validated) {
-            BlockHeader persistHeader =
-                blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE);
-            if (persistHeader == null) {
-                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST);
-            }
-            packContext = packageService.createPackContext(pack);
-            packageService.persisting(packContext);
-            boolean persistValid =
-                blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), persistHeader);
-            if (!persistValid) {
-                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID);
-            }
-        } else {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_VALIDATE_RESULT_INVALID);
+        packageService.process(packContext);
+        boolean persistValid =
+            blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), blockRepository.getBlockHeader(pack.getHeight()));
+        if (!persistValid) {
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID);
         }
     }
 }

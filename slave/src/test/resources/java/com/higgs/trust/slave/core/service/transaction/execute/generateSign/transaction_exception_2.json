@@ -1,0 +1,50 @@
+{
+  "测试ID": 0,
+  "body": {
+    "coreTx": {
+      "actionList": [
+        {
+          "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+          "index": 0,
+          "policyId": "test-policy-0002",
+          "policyName": "测试policy注册",
+          "rsIds": [
+            "TRUST-NODE97",
+            "TRUST-NODE100"
+          ],
+          "type": "REGISTER_POLICY"
+        }, {
+          "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+          "index": 0,
+          "policyId": "test-policy-0003",
+          "policyName": "测试policy注册2",
+          "rsIds": [
+            "TRUST-NODE97",
+            "TRUST-NODE100"
+          ],
+          "type": "REGISTER_POLICY"
+        }
+      ],
+      "bizModel": {
+
+      },
+      "lockTime": 1525232969688,
+      "txId": "tx_id_REGISTER_POLICY",
+      "policyId": "test-policy-1",
+      "sender": "TRUST-TEST1",
+      "version": "1.0.0"
+    },
+    "signatureList": [
+      "Sj6T2nmKojhUnnXd1jqQ+f2nCI1+qvVI7ZH7dfZMaHy87j2WtsB964dWeFr9wa6dbXunrOIP5mRVH9lYK94c5DYYtG6dWCeLAGm+QuXXz7twmMDyDP3jbpan4C907dKECRGGticiRnFcCZ9gX1aYux6OdRwPgr74yFaDmKbT5dU="
+    ]
+  },
+
+  "beforeSql": [
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`)VALUES('TRUST-NODE31', 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLDDNiZKp0AAjfkVKkReFJFufF546YwPkT+JpwOLg/Sgo5SXk8b2NMhw6rLyGol6+xntEAdVQCqtMYrdgVh31VP15Ttbaivnmu2MaKHqIJbzpHXYiYmE2VDYyjOQIbbRvedD6c65nlHJfWBhGfw8CinnvvLamg1nSBBwZ6ZTuplQIDAQAB', 'TRUST-NODE97-desc', '2018-05-15 16:22:47.607')"
+  ],
+  "assert": null,
+  "afterSql": [
+    "truncate table rs_pub_key"
+  ],
+  "comment": "交易execute接口测试-action校验失败-action_index重复"
+}

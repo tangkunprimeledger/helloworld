@@ -27,8 +27,8 @@ public class test{
 
  public  static  void main(String[] args) throws Exception {
      List<SignedTransaction> signedTransactions = makeRegisterPolicyTxs();
-     System.out.println("sing1+pubk1:" + SignUtils.verify(JSON.toJSONString(signedTransactions.get(0).getCoreTx()), signedTransactions.get(0).getSignatureList().get(0), pubk1));
-     System.out.println("sing2+pubk2:" +  SignUtils.verify(JSON.toJSONString(signedTransactions.get(0).getCoreTx()), signedTransactions.get(0).getSignatureList().get(1), pubk2));
+//     System.out.println("sing1+pubk1:" + SignUtils.verify(JSON.toJSONString(signedTransactions.get(0).getCoreTx()), signedTransactions.get(0).getSignatureList().get(0), pubk1));
+//     System.out.println("sing2+pubk2:" +  SignUtils.verify(JSON.toJSONString(signedTransactions.get(0).getCoreTx()), signedTransactions.get(0).getSignatureList().get(1), pubk2));
  }
 
     private static List<SignedTransaction> makeOpenAccountTxs() throws Exception {

@@ -23,9 +23,4 @@ public class RsPubKey extends BaseBO {
      * public key
      */
     private String pubKey;
-
-    /**
-     * description of the rs
-     */
-    private String desc;
 }
