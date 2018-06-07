@@ -37,6 +37,12 @@ public enum RsCoreErrorEnum {
     RS_CORE_VOTE_ALREADY_HAS_RESULT_ERROR("214", "voteRequestRecord result already has error", false),
     RS_CORE_VOTE_RECEIPTING_HAS_ERROR("215", "vote receipting has error", false),
     RS_CORE_TX_NOT_EXIST_ERROR("216", "core_tx not exist error", false),
+
+
+    RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
+    RS_CORE_WRITE_FILE_ERROR("302", "rs core write file error", false),
+    RS_CORE_CA_NOT_EXIST_ERROR("303", "rs core ca not exist error", false),
+    RS_CORE_INVALID_NODE_NAME_EXIST_ERROR("304", "rs core invalid node name error", false),
     ;
     //@formatter:on
 
