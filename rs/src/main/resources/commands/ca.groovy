@@ -37,7 +37,7 @@ class ca {
                   @Usage("user") @Required @Argument String user) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def caService = beans.getBean(CaService.class)
-        caService.initKeyPair(user)
+        caService.authKeyPair(user)
         out.println("send CA auth tx successful, user= $user")
     }
 
@@ -59,6 +59,15 @@ class ca {
         def caService = beans.getBean(CaService.class)
         caService.cancelKeyPair(user)
         out.println("send CA cancel tx successful, user= $user")
+    }
+
+    @Usage('init CA')
+    @Command
+    def initCA(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def caService = beans.getBean(CaService.class)
+        caService.initKeyPair()
+        out.println("send CA init tx successful")
     }
 
 }

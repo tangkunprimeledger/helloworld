@@ -3,17 +3,15 @@ package com.higgs.trust.rs.core.integration;
 import com.higgs.trust.common.feign.FeignRibbonConstants;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.model.bo.BlockHeader;
-import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.config.Config;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
- * @desc TODO  
  * @author WangQuanzhou
+ * @desc TODO
  * @date 2018/6/5 16:59
  */
 @FeignClient("${higgs.trust.prefix}") public interface CaClient {
@@ -21,27 +19,34 @@ import java.util.List;
     /**
      * send ca auth request
      *
-     * @return
      * @param nodeNameReg
      * @param caVO
+     * @return
      */
     @RequestMapping(value = "/ca/auth", method = RequestMethod.POST) RespData<String> caAuth(
         @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody CaVO caVO);
 
-    /** 
+    /**
+     * @param caVO
+     * @return
      * @desc send ca update request
-     * @param   caVO
-     * @return   
-     */  
+     */
     @RequestMapping(value = "/ca/update", method = RequestMethod.POST) RespData<String> caUpdate(
         @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody CaVO caVO);
 
-
     /**
-     * @desc send ca cancel request
-     * @param   caVO
+     * @param caVO
      * @return
+     * @desc send ca cancel request
      */
     @RequestMapping(value = "/ca/cancel", method = RequestMethod.POST) RespData<String> caCancel(
         @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody CaVO caVO);
+
+    /**
+     * @param
+     * @return
+     * @desc send ca cancel request
+     */
+    @RequestMapping(value = "/ca/init", method = RequestMethod.POST) RespData<String> caInit(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName);
 }

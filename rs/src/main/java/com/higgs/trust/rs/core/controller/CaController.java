@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
      * @param caVO
      * @return
      */
-    @RequestMapping(value = "/ca/auth") RespData<String> caUpdate(@RequestBody CaVO caVO) {
+    @RequestMapping(value = "/ca/update") RespData<String> caUpdate(@RequestBody CaVO caVO) {
         return caService.updateCaTx(caVO);
     }
 
@@ -47,7 +47,17 @@ import org.springframework.web.bind.annotation.RestController;
      * @param caVO
      * @return
      */
-    @RequestMapping(value = "/ca/auth") RespData<String> caCancel(@RequestBody CaVO caVO) {
+    @RequestMapping(value = "/ca/cancel") RespData<String> caCancel(@RequestBody CaVO caVO) {
         return caService.cancelCaTx(caVO);
+    }
+
+    /**
+     * init ca transaction
+     *
+     * @param
+     * @return
+     */
+    @RequestMapping(value = "/ca/init") RespData<String> caInit() {
+        return caService.initCaTx();
     }
 }

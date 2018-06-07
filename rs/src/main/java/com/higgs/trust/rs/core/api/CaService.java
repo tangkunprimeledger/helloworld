@@ -16,32 +16,56 @@ public interface CaService {
      * @param user
      * @return   
      */  
-    void initKeyPair(String user);
+    void authKeyPair(String user);
     
     /** 
-     * @desc construct ca tx and send to slave
+     * @desc construct ca auth tx and send to slave
      * @param
      * @return   
      */  
     RespData authCaTx(CaVO caVO);
 
     /** 
-     * @desc update pubKey and PriKey ,then insert into db
+     * @desc update pubKey and priKey ,then insert into db
      * @param user
      * @return
      */  
     void updateKeyPair(String user);
 
     /** 
-     * @desc TODO 
+     * @desc construct ca update tx and send to slave
      * @param
      * @return   
      */  
     RespData updateCaTx(CaVO caVO);
 
+    /**
+     * @desc  cancel pubKey and PriKey ,then update db
+     * @param
+     * @return
+     */
     void cancelKeyPair(String user);
 
+    /** 
+     * @desc construct ca cancel tx and send to slave
+     * @param
+     * @return   
+     */  
     RespData cancelCaTx(CaVO caVO);
+
+    /**
+     * @desc cluster init start, init cluster ca infor
+     * @param
+     * @return
+     */
+    void initKeyPair();
+
+    /** 
+     * @desc construct ca init tx and send to slave
+     * @param
+     * @return   
+     */  
+    RespData initCaTx();
 
     /** 
      * @desc after ca tx has bean authoritied by the current cluster, then update table config column valid to TRUE
