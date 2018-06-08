@@ -1,6 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
-import com.higgs.trust.rs.core.api.enums.VotePatternEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.vo.ReceiptRequest;

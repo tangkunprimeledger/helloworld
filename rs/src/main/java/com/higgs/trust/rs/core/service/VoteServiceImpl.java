@@ -8,7 +8,7 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.core.api.VoteService;
-import com.higgs.trust.rs.core.api.enums.VotePatternEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;

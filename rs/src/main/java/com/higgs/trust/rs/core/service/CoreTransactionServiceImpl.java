@@ -8,7 +8,7 @@ import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.VoteService;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
-import com.higgs.trust.rs.core.api.enums.VotePatternEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRule;

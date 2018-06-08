@@ -2,7 +2,7 @@ package com.higgs.trust.rs.core.repository;
 
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
-import com.higgs.trust.rs.core.api.enums.VotePatternEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.dao.VoteRuleDao;
 import com.higgs.trust.rs.core.dao.po.VoteRulePO;
