@@ -264,11 +264,11 @@ import java.util.List;
                 //query receipts by txId
                 List<VoteReceipt> receipts = voteReceiptRepository.queryByTxId(bo.getTxId());
                 if (CollectionUtils.isEmpty(receipts)) {
-                    log.error("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
+                    log.info("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
                     return;
                 }
                 if (receipts.size() < rsIds.size() - 1) {
-                    log.error("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
+                    log.info("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
                         rsIds.size(), bo.getTxId());
                     return;
                 }
@@ -281,6 +281,7 @@ import java.util.List;
                 }
                 List<SignInfo> signInfos = voteService.getSignInfos(receipts);
                 signInfos.addAll(bo.getSignDatas());
+                //save sign info
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
                 //change status to WAIT for SYNC pattern
                 coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);

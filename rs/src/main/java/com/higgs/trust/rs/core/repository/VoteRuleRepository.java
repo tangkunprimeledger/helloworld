@@ -2,6 +2,7 @@ package com.higgs.trust.rs.core.repository;
 
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.dao.VoteRuleDao;
@@ -54,6 +55,15 @@ import java.util.Date;
      * @return
      */
     public VoteRule queryByPolicyId(String policyId) {
+        InitPolicyEnum initPolicy = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
+        if(initPolicy != null){
+            VoteRule voteRule = new VoteRule();
+            voteRule.setPolicyId(policyId);
+            voteRule.setVotePattern(initPolicy.getVotePattern());
+            //default callback all
+            voteRule.setCallbackType(CallbackTypeEnum.ALL);
+            return voteRule;
+        }
         if (!rsConfig.isUseMySQL()) {
             //TODO: liuyu for rocksdb handler
             return null;
