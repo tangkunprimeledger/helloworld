@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.core.api.enums;
+package com.higgs.trust.slave.api.enums.manage;
 
 import org.apache.commons.lang3.StringUtils;
 
