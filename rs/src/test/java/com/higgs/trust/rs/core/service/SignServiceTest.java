@@ -3,6 +3,7 @@ package com.higgs.trust.rs.core.service;
 import com.higgs.trust.IntegrateBaseTest;
 import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -16,8 +17,7 @@ public class SignServiceTest extends IntegrateBaseTest{
     @Test
     public void testSign(){
         CoreTransaction coreTx = new CoreTransaction();
-        String rsName = "TRUST-NODE98";//"10.200.172.98";//
-        String rs = signService.requestSign(rsName,coreTx);
-        System.out.println("rs---->:" + rs);
+        SignInfo signInfo = signService.signTx(coreTx);
+        System.out.println("---->:" + signInfo);
     }
 }
