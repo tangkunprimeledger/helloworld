@@ -8,7 +8,6 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.core.api.VoteService;
-import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
@@ -21,6 +20,7 @@ import com.higgs.trust.rs.core.repository.VoteReqRecordRepository;
 import com.higgs.trust.rs.core.vo.ReceiptRequest;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -229,10 +229,6 @@ import java.util.concurrent.Future;
             log.error("[acceptReceipt]has error", e);
             respData.setCode(RsCoreErrorEnum.RS_CORE_UNKNOWN_EXCEPTION.getCode());
             respData.setMsg(RsCoreErrorEnum.RS_CORE_UNKNOWN_EXCEPTION.getDescription());
-        }
-        if(respData.isSuccess()){
-            //TODO:liuyu async call process NEED_VOTE tx
-
         }
         return respData;
     }

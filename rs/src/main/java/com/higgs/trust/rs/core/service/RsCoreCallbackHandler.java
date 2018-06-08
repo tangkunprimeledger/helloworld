@@ -24,11 +24,11 @@ import org.springframework.stereotype.Component;
  * @description
  * @date 2018-06-07
  */
-@Component @Slf4j public class RsCoreCallbackHandler implements TxCallbackHandler{
+@Component @Slf4j public class RsCoreCallbackHandler implements TxCallbackHandler {
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private VoteRuleRepository voteRuleRepository;
 
-    private TxCallbackHandler getCallbackHandler(){
+    private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
         if (txCallbackHandler == null) {
             log.error("[getCallbackHandler]call back handler is not register");
@@ -79,16 +79,23 @@ import org.springframework.stereotype.Component;
      *
      * @param respData
      */
-    private void processRegisterPolicy(RespData<CoreTransaction> respData){
-        if(!respData.isSuccess()){
-            log.info("[processRegisterPolicy]register policy is fail,code:{}",respData.getRespCode());
+    private void processRegisterPolicy(RespData<CoreTransaction> respData) {
+        if (!respData.isSuccess()) {
+            log.info("[processRegisterPolicy]register policy is fail,code:{}", respData.getRespCode());
             return;
         }
         CoreTransaction coreTransaction = respData.getData();
+        //check
+        VoteRule voteRule = voteRuleRepository.queryByPolicyId(coreTransaction.getPolicyId());
+        if (voteRule != null) {
+            log.info("[processRegisterPolicy]voteRule already exist policyId:{},txId:{}", coreTransaction.getPolicyId(),
+                coreTransaction.getTxId());
+            return;
+        }
         JSONObject jsonObject = coreTransaction.getBizModel();
         // parse and save policy rule
         VoteRuleVO voteRuleVO = JSON.parseObject(jsonObject.toJSONString(), VoteRuleVO.class);
-        VoteRule voteRule = new VoteRule();
+        voteRule = new VoteRule();
         voteRule.setPolicyId(coreTransaction.getPolicyId());
         voteRule.setVotePattern(VotePatternEnum.fromCode(voteRuleVO.getVotePattern()));
         voteRule.setCallbackType(CallbackTypeEnum.fromCode(voteRuleVO.getCallbackType()));
