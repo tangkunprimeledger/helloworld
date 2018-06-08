@@ -15,7 +15,7 @@ public interface CaHandler {
      * @return
      * @desc insert CA into db
      */
-    void saveCa(Ca ca);
+    void authCa(Ca ca);
 
     /**
      * @param ca
@@ -23,6 +23,13 @@ public interface CaHandler {
      * @desc update CA information
      */
     void updateCa(Ca ca);
+
+    /**
+     * @param ca
+     * @return
+     * @desc cancel CA information
+     */
+    void cancelCa(Ca ca);
 
     /**
      * @param nodeName

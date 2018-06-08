@@ -27,11 +27,11 @@ import java.util.List;
     void updateCa(CaPO caPO);
 
     /**
-     * @param caPO
+     * @param user
      * @return CaPO
      * @desc get CA information by nodeName
      */
-    CaPO getCa(CaPO caPO);
+    CaPO getCa(String user);
 
     /** 
      * @desc get all CA information

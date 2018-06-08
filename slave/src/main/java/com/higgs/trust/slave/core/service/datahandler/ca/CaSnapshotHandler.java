@@ -2,6 +2,8 @@ package com.higgs.trust.slave.core.service.datahandler.ca;
 
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
+import com.higgs.trust.slave.core.service.snapshot.agent.ClusterConfigAgent;
+import com.higgs.trust.slave.core.service.snapshot.agent.ClusterNodeAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +18,15 @@ import org.springframework.stereotype.Service;
 
     @Autowired private CaSnapshotAgent caSnapshotAgent;
     @Autowired MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
+    @Autowired ClusterConfigAgent clusterConfigAgent;
+    @Autowired ClusterNodeAgent clusterNodeAgent;
 
     /**
      * @param ca
      * @return
      * @desc insert CA into db
      */
-    @Override public void saveCa(Ca ca) {
-
+    @Override public void authCa(Ca ca) {
         // operation merkle tree
         merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
 
@@ -36,6 +39,15 @@ import org.springframework.stereotype.Service;
      * @desc update CA information
      */
     @Override public void updateCa(Ca ca) {
+
+    }
+
+    /**
+     * @param ca
+     * @return
+     * @desc cancel CA information
+     */
+    @Override public void cancelCa(Ca ca) {
 
     }
 
