@@ -67,22 +67,22 @@ import java.util.Map;
     }
 
     /**
-     * the method to bachInsert data into db
+     * the method to batchInsert data into db
      *
      * @param insertMap
      * @return
      */
-    @Override public boolean bachInsert(Map<Object, Object> insertMap) {
+    @Override public boolean batchInsert(Map<Object, Object> insertMap) {
         return false;
     }
 
     /**
-     * the method to bachUpdate data into db
+     * the method to batchUpdate data into db
      *
      * @param updateMap
      * @return
      */
-    @Override public boolean bachUpdate(Map<Object, Object> updateMap) {
+    @Override public boolean batchUpdate(Map<Object, Object> updateMap) {
         return false;
     }
 
