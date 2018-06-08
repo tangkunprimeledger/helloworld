@@ -13,7 +13,10 @@ public enum InitPolicyEnum {
     UTXO_ISSUE("UTXO_ISSUE", "000003", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"utxo issue"),
     UTXO_DESTROY("UTXO_DESTROY", "000004", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"utxo destroy"),
     CONTRACT_ISSUE("CONTRACT_ISSUE", "000005", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"contract issue"),
-    CONTRACT_DESTROY("CONTRACT_DESTROY", "000006",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "contract destroy");
+    CONTRACT_DESTROY("CONTRACT_DESTROY", "000006",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "contract destroy"),
+    CA_AUTH("CA_AUTH", "000007",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA AUTH"),
+    CA_UPDATE("CA_UPDATE", "000008",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA UPDATE"),
+    CA_CANCEL("CA_CANCEL", "000009",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA CANCEL"),;
 
     private String type;
 

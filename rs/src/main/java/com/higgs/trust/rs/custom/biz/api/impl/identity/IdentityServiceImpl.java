@@ -1,7 +1,6 @@
 package com.higgs.trust.rs.custom.biz.api.impl.identity;
 
 import com.alibaba.fastjson.JSONObject;
-import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.custom.api.enums.ActionTypeEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestStatusEnum;
@@ -22,6 +21,7 @@ import com.higgs.trust.rs.custom.model.convertor.identity.POToBOConvertor;
 import com.higgs.trust.rs.custom.model.convertor.identity.POToVOConvertor;
 import com.higgs.trust.rs.custom.util.Profiler;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +69,7 @@ import org.springframework.transaction.support.TransactionTemplate;
             Profiler.start("[acceptRequest] accept request start");
 
             BankChainRequestPO bankChainRequestPO = new BankChainRequestPO();
-            bankChainRequestPO.setBizType(BizTypeEnum.STORAGE.getCode());
+            bankChainRequestPO.setBizType(InitPolicyEnum.STORAGE.getType());
             bankChainRequestPO.setReqNo(identityRequest.getReqNo());
             bankChainRequestPO.setStatus(RequestStatusEnum.INIT.getCode());
             try {
@@ -258,7 +258,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
         log.info("[asyncSendToSlave]: start handle , reqNo = {}", identityRequest.getReqNo());
         //2.获取policyId
-//        String policyId = policyDao.queryByPolicyId("api.user.storageIdentity");
+        //        String policyId = policyDao.queryByPolicyId("api.user.storageIdentity");
 
         //3.组装bizModel
         JSONObject bizModel = new JSONObject();

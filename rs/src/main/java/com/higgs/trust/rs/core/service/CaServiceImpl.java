@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
-import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
@@ -13,6 +12,7 @@ import com.higgs.trust.rs.core.integration.CaClient;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.managment.NodeState;
@@ -248,7 +248,7 @@ import java.util.*;
         coreTx.setTxId(caVO.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
-        coreTx.setPolicyId(BizTypeEnum.CA_AUTH.getCode());
+        coreTx.setPolicyId(InitPolicyEnum.CA_AUTH.getPolicyId());
         coreTx.setActionList(buildAuthActionList(caVO));
         return coreTx;
     }
@@ -271,7 +271,7 @@ import java.util.*;
         coreTx.setTxId(caVO.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
-        coreTx.setPolicyId(BizTypeEnum.CA_UPDATE.getCode());
+        coreTx.setPolicyId(InitPolicyEnum.CA_UPDATE.getPolicyId());
         coreTx.setActionList(buildUpdateActionList(caVO));
         return coreTx;
     }
@@ -294,7 +294,7 @@ import java.util.*;
         coreTx.setTxId(caVO.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
-        coreTx.setPolicyId(BizTypeEnum.CA_UPDATE.getCode());
+        coreTx.setPolicyId(InitPolicyEnum.CA_CANCEL.getPolicyId());
         coreTx.setActionList(buildCancelActionList(caVO));
         return coreTx;
     }
@@ -304,28 +304,6 @@ import java.util.*;
         CaAction caAction = new CaAction();
         caAction.setUser(caVO.getUser());
         caAction.setType(ActionTypeEnum.CA_CANCEL);
-        caAction.setIndex(0);
-        actions.add(caAction);
-        return actions;
-    }
-
-    private CoreTransaction constructInitCoreTx(Map map, String user) {
-        CoreTransaction coreTx = new CoreTransaction();
-        String pubKey = configRepository.getConfig(user).getPubKey();
-        coreTx.setTxId(HashUtil.getSHA256S(pubKey));
-        coreTx.setSender(nodeState.getNodeName());
-        coreTx.setVersion(VersionEnum.V1.getCode());
-        coreTx.setPolicyId(BizTypeEnum.CA_INIT.getCode());
-        coreTx.setActionList(buildInitActionList(map, user));
-        return coreTx;
-    }
-
-    private List<Action> buildInitActionList(Map map, String user) {
-        List<Action> actions = new ArrayList<>();
-        CaAction caAction = new CaAction();
-        caAction.setUser(user);
-        caAction.setType(ActionTypeEnum.CA_INIT);
-        caAction.setData(JSON.toJSONString(map));
         caAction.setIndex(0);
         actions.add(caAction);
         return actions;
