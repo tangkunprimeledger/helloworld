@@ -81,26 +81,26 @@ public class FreezeSnapshotAgent implements CacheLoader {
     }
 
     /**
-     * the method to bachInsert data into db
+     * the method to batchInsert data into db
      *
      * @param insertMap
      * @return
      */
     //TODO to implements your own bachInsert method for db
     @Override
-    public boolean bachInsert(Map<Object, Object> insertMap) {
+    public boolean batchInsert(Map<Object, Object> insertMap) {
         return false;
     }
 
     /**
-     * the method to bachUpdate data into db
+     * the method to batchUpdate data into db
      *
      * @param updateMap
      * @return
      */
     //TODO to implements your own bachUpdate method for db
     @Override
-    public boolean bachUpdate(Map<Object, Object> updateMap) {
+    public boolean batchUpdate(Map<Object, Object> updateMap) {
         return false;
     }
 

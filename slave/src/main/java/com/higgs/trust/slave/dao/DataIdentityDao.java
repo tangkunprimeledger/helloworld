@@ -4,6 +4,8 @@ import com.higgs.trust.slave.dao.po.DataIdentityPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author liuyu
  * @description data identity DAO
@@ -17,4 +19,12 @@ import org.apache.ibatis.annotations.Param;
      * @return
      */
     DataIdentityPO queryByIdentity(@Param("identity") String identity);
+
+    /**
+     * batch insert
+     *
+     * @param dataIdentityPOList
+     * @return
+     */
+    int batchInsert( List<DataIdentityPO> dataIdentityPOList);
 }

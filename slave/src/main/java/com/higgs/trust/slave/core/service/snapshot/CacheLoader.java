@@ -17,17 +17,17 @@ public interface CacheLoader {
     Object query(Object object);
 
     /**
-     * the method to bachInsert data into db
+     * the method to batchInsert data into db
      * @param insertMap
      * @return
      */
-    boolean bachInsert(Map<Object, Object> insertMap);
+    boolean batchInsert(Map<Object, Object> insertMap);
 
     /**
-     * the method to bachUpdate data into db
+     * the method to batchUpdate data into db
      * @param updateMap
      * @return
      */
-    boolean bachUpdate(Map<Object, Object> updateMap);
+    boolean batchUpdate(Map<Object, Object> updateMap);
 
 }

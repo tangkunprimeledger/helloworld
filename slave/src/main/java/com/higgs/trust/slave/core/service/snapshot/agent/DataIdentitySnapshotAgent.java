@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
@@ -14,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,9 +37,13 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
         return (T) snapshot.get(SnapshotBizKeyEnum.DATA_IDENTITY, key);
     }
 
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
-    private void put(Object key, Object object) {
-        ///snapshot.put(SnapshotBizKeyEnum.DATA_IDENTITY,key,object);
+    /**
+     * insert  object into the snapshot
+     * @param key
+     * @param value
+     */
+    private void insert(Object key, Object value){
+        snapshot.insert(SnapshotBizKeyEnum.DATA_IDENTITY, key, value);
     }
 
     /**
@@ -45,7 +53,7 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
      * @return
      */
     public DataIdentity getDataIdentity(String identity) {
-        return get(new DataIdentityCachKey(identity));
+        return get(new DataIdentityCacheKey(identity));
     }
 
     /**
@@ -54,7 +62,7 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
      * @param dataIdentity
      */
     public void saveDataIdentity(DataIdentity dataIdentity) {
-        put(new DataIdentityCachKey(dataIdentity.getIdentity()), dataIdentity);
+        insert(new DataIdentityCacheKey(dataIdentity.getIdentity()), dataIdentity);
     }
 
     /**
@@ -62,8 +70,8 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
      */
     @Override
     public Object query(Object object) {
-        if (object instanceof DataIdentityCachKey) {
-            DataIdentityCachKey key = (DataIdentityCachKey) object;
+        if (object instanceof DataIdentityCacheKey) {
+            DataIdentityCacheKey key = (DataIdentityCacheKey) object;
             return dataIdentityRepository.queryDataIdentity(key.getIdentity());
         }
         log.error("not found load function for cache key:{}", object);
@@ -71,26 +79,38 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
     }
 
     /**
-     * the method to bachInsert data into db
+     * the method to batchInsert data into db
      *
      * @param insertMap
      * @return
      */
-    //TODO to implements your own bachInsert method for db
     @Override
-    public boolean bachInsert(Map<Object, Object> insertMap) {
-        return false;
+    public boolean batchInsert(Map<Object, Object> insertMap) {
+        if (insertMap.isEmpty()){
+            return true;
+        }
+
+        //get bach insert data
+        List<DataIdentity> dataIdentityList = new ArrayList<>();
+        for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
+            if (!(entry.getKey() instanceof  DataIdentityCacheKey)){
+                log.error("insert key is not the type of TxOutCacheKey error");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+            }
+            dataIdentityList.add((DataIdentity)entry.getValue());
+        }
+
+        return dataIdentityRepository.batchInsert(dataIdentityList);
     }
 
     /**
-     * the method to bachUpdate data into db
+     * the method to batchUpdate data into db
      *
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
     @Override
-    public boolean bachUpdate(Map<Object, Object> updateMap) {
+    public boolean batchUpdate(Map<Object, Object> updateMap) {
         return false;
     }
 
@@ -101,7 +121,7 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DataIdentityCachKey extends BaseBO {
+    public static class DataIdentityCacheKey extends BaseBO {
         private String identity;
     }
 }

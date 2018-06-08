@@ -69,6 +69,7 @@ public enum SlaveErrorEnum {
     SLAVE_SNAPSHOT_DATA_EXIST_EXCEPTION("521", "insert data is existed exception", false),
     SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION("522", "insert data type error exception", false),
     SLAVE_DATA_NOT_INSERT_EXCEPTION("523", "data not insert  exception", false),
+    SLAVE_SNAPSHOT_FLUSH_DATA_EXCEPTION("524", "snapshot flush data exception", false),
 
 
     SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION("600", "slave merkle param not valid exception", false),

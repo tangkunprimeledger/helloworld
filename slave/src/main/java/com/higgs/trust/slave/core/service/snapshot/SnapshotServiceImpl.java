@@ -662,12 +662,13 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
     /**
      * put data into package inner cache
+     *
      * @param innerCache
      * @param innerEntry
      * @param snapshotBizKeyEnum
      */
     //TODO lingchao check whether cover all case to put into data
-    private void putDataIntoPackageCache( ConcurrentHashMap<String, Value> innerCache , Map.Entry<String, Value> innerEntry, SnapshotBizKeyEnum snapshotBizKeyEnum){
+    private void putDataIntoPackageCache(ConcurrentHashMap<String, Value> innerCache, Map.Entry<String, Value> innerEntry, SnapshotBizKeyEnum snapshotBizKeyEnum) {
 
         //txCache value is insert status
         boolean isInsert = StringUtils.equals(innerEntry.getValue().getStatus(), SnapshotValueStatusEnum.INSERT.getCode());
@@ -684,39 +685,37 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into packageCache", snapshotBizKeyEnum, innerEntry.getKey(), innerEntry.getValue());
 
         //if the txCache value is insert status and there is data in package cache or global cache or db, it is a exception
-        if (isInsert && isExistedInPackageOrGlobalOrDB){
+        if (isInsert && isExistedInPackageOrGlobalOrDB) {
             log.error("Insert snapshotBizKeyEnum: {} , innerKey : {} into packageCache duplicate key exception", snapshotBizKeyEnum, innerEntry.getKey());
             throw new DuplicateKeyException("Insert data into packageCache duplicate key exception");
         }
 
         //if the txCache value is insert status and there is no data in package cache or global cache or db, put data into packageCache
-        if (isInsert && !isExistedInPackageOrGlobalOrDB){
+        if (isInsert && !isExistedInPackageOrGlobalOrDB) {
             innerCache.put(innerEntry.getKey(), innerEntry.getValue());
         }
 
         //if the txCache value is update status and there is no data in package cache and global cache and db, throw exception
-        if(!isInsert && !isExistedInPackageOrGlobalOrDB){
+        if (!isInsert && !isExistedInPackageOrGlobalOrDB) {
             log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated is not exist in packageCache and globalCache and DB", snapshotBizKeyEnum, innerEntry.getKey());
             throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is not exist in packageCache and globalCache and DB");
         }
         //if the txCache value is update status and there is data in package cache and  db, and package status is update . put data into packageCache
         //TODO lingchao may not get whether there is data in DB
-        if(!isInsert && isExistedInPackageCache && isExistedInGlobalCache
-                && !StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())){
+        if (!isInsert && isExistedInPackageCache && isExistedInGlobalCache && !StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
             innerCache.put(innerEntry.getKey(), innerEntry.getValue());
         }
 
 
         //if the txCache value is update status and there is data in package cache and  db, and package status is update . put data into packageCache
         //TODO lingchao may not get whether there is data in DB
-        if(!isInsert && !isExistedInPackageCache && isExistedInGlobalCache){
+        if (!isInsert && !isExistedInPackageCache && isExistedInGlobalCache) {
             innerCache.put(innerEntry.getKey(), innerEntry.getValue());
         }
 
         //if the txCache value is update status and there is data in package cache and  db, and package status is insert . put data into packageCache
         //TODO lingchao may not get whether there is data in DB
-        if(!isInsert && isExistedInPackageCache && isExistedInGlobalCache
-                && StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())){
+        if (!isInsert && isExistedInPackageCache && isExistedInGlobalCache && StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
             innerCache.put(innerEntry.getKey(), buildValue(innerEntry.getValue().getObject(), SnapshotValueStatusEnum.INSERT.getCode()));
         }
     }
@@ -757,8 +756,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
                 Value value = innerEntry.getValue();
 
                 //if data status is insert and there is data in global cache or db
-                if (StringUtils.equals(value.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())
-                        && null != getDataFromGlobalCache(snapshotBizKeyEnum, JSON.parse(innerEntry.getKey()))){
+                if (StringUtils.equals(value.getStatus(), SnapshotValueStatusEnum.INSERT.getCode()) && null != getDataFromGlobalCache(snapshotBizKeyEnum, JSON.parse(innerEntry.getKey()))) {
                     log.error("Insert snapshotBizKeyEnum: {} , innerKey : {} into globalCache exception, the data to be insert is  exist in globalCache or DB", snapshotBizKeyEnum, innerEntry.getKey());
                     throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_EXIST_EXCEPTION, "Insert data into globalCache  exception, the data to be insert is  existed in globalCache or DB");
                 }
@@ -774,10 +772,10 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     /**
      * flush data into db
      */
-    private void flushDataIntoDB(){
+    private void flushDataIntoDB() {
         log.info("Start to flush data into db");
         for (Map.Entry<SnapshotBizKeyEnum, ConcurrentHashMap<String, Value>> outerEntry : packageCache.entrySet()) {
-           //key and value
+            //key and value
             SnapshotBizKeyEnum snapshotBizKeyEnum = outerEntry.getKey();
             ConcurrentHashMap<String, Value> innerMap = outerEntry.getValue();
 
@@ -803,26 +801,30 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             // foreach inner map to flush data
             for (Map.Entry<String, Value> innerEntry : innerMap.entrySet()) {
                 Value value = innerEntry.getValue();
-                Object keyObject = JSON.parse( innerEntry.getKey());
+                Object keyObject = JSON.parse(innerEntry.getKey());
                 //if data status is insert put it into  insertMap  else into updateMap
-                if (StringUtils.equals(value.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())){
+                if (StringUtils.equals(value.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
                     insertMap.put(keyObject, value.getObject());
-                }else {
+                } else {
                     updateMap.put(keyObject, value.getObject());
                 }
                 log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into flush map ", snapshotBizKeyEnum, innerEntry.getKey(), value);
             }
+            try {
 
-            //flush insert data into db
-            if (!insertMap.isEmpty() && !cacheLoader.bachInsert(insertMap)){
-                 log.error("Flush data for bachInsert db failed error");
-                 throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_INSERT_EXCEPTION);
-            }
+                //flush insert data into db
+                if (!insertMap.isEmpty() && !cacheLoader.batchInsert(insertMap)) {
+                    log.error("Flush data for batchInsert db failed error");
+                    throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_INSERT_EXCEPTION);
+                }
 
-            //flush update data into db
-            if (!updateMap.isEmpty() && !cacheLoader.bachUpdate(updateMap)){
-                log.error("Flush data for bachUpdate db failed error");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_UPDATE_EXCEPTION);
+                //flush update data into db
+                if (!updateMap.isEmpty() && !cacheLoader.batchUpdate(updateMap)) {
+                    log.error("Flush data for batchUpdate db failed error");
+                    throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_UPDATE_EXCEPTION);
+                }
+            } catch (Throwable e) {
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_FLUSH_DATA_EXCEPTION);
             }
         }
         log.info("End of flushing data into db");
