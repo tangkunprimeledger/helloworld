@@ -70,6 +70,10 @@ import org.springframework.stereotype.Component;
         callbackHandler.onEnd(respData);
     }
 
+    @Override public void onFailOver(RespData<CoreTransaction> respData) {
+
+    }
+
     /**
      * process register-policy
      *
