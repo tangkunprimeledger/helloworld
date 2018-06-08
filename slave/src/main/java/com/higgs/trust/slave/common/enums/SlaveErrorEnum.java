@@ -64,6 +64,8 @@ public enum SlaveErrorEnum {
     SLAVE_ACTION_NOT_EXISTS_EXCEPTION("517", "action not exists exception", false),
     SLAVE_SNAPSHOT_CACHE_SIZE_NOT_ENOUGH_EXCEPTION("518", "snapshot cache size not enough exception", false),
     SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION("519", "snapshot get no lock exception", false),
+    SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION("520", "update data not exist exception", false),
+    SLAVE_SNAPSHOT_DATA_EXIST_EXCEPTION("521", "insert data is existed exception", false),
 
 
     SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION("600", "slave merkle param not valid exception", false),

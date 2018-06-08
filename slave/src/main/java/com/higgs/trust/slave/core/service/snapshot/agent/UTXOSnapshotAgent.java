@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * UTXO snapshot agent
@@ -27,7 +28,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class UTXOSnapshotAgent implements CacheLoader{
+public class UTXOSnapshotAgent implements CacheLoader {
 
     @Autowired
     private TxOutRepository txOutRepository;
@@ -37,25 +38,29 @@ public class UTXOSnapshotAgent implements CacheLoader{
 
     /**
      * get data from snapshot
+     *
      * @param key
      * @param <T>
      * @return
      */
-    private <T> T get(Object key){
-        return (T)snapshot.get(SnapshotBizKeyEnum.UTXO ,key);
+    private <T> T get(Object key) {
+        return (T) snapshot.get(SnapshotBizKeyEnum.UTXO, key);
     }
 
     /**
      * put data to snapshot
+     *
      * @param key
      * @param object
      */
-    private void put(Object key,Object object){
-        snapshot.put(SnapshotBizKeyEnum.UTXO, key, object);
+    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
+    private void put(Object key, Object object) {
+        // snapshot.put(SnapshotBizKeyEnum.UTXO, key, object);
     }
 
-    /**     * add data into snapshot
-
+    /**
+     * add data into snapshot
+     * <p>
      * query UTXO by txId, index and actionIndex
      *
      * @param txId
@@ -67,7 +72,7 @@ public class UTXOSnapshotAgent implements CacheLoader{
         TxOutCacheKey txOutCacheKey = new TxOutCacheKey(txId, index, actionIndex);
         TxOutPO txOutPO = get(txOutCacheKey);
         UTXO utxo = BeanConvertor.convertBean(txOutPO, UTXO.class);
-        if (null != txOutPO){
+        if (null != txOutPO) {
             utxo.setState(JSON.parseObject(txOutPO.getState()));
         }
         return utxo;
@@ -76,8 +81,8 @@ public class UTXOSnapshotAgent implements CacheLoader{
     /**
      * @param txOutPOList
      */
-    public boolean batchInsertTxOut(List<TxOutPO> txOutPOList){
-        for (TxOutPO txOutPO : txOutPOList){
+    public boolean batchInsertTxOut(List<TxOutPO> txOutPOList) {
+        for (TxOutPO txOutPO : txOutPOList) {
             TxOutCacheKey txOutCacheKey = new TxOutCacheKey(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex());
             put(txOutCacheKey, txOutPO);
         }
@@ -86,10 +91,11 @@ public class UTXOSnapshotAgent implements CacheLoader{
 
     /**
      * update data in the snapshot
+     *
      * @param txOutPOList
      */
-    public boolean bachUpdateTxOut(List<TxOutPO> txOutPOList){
-        for (TxOutPO txOutPO : txOutPOList){
+    public boolean bachUpdateTxOut(List<TxOutPO> txOutPOList) {
+        for (TxOutPO txOutPO : txOutPOList) {
             TxOutCacheKey txOutCacheKey = new TxOutCacheKey(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex());
             put(txOutCacheKey, txOutPO);
         }
@@ -98,18 +104,42 @@ public class UTXOSnapshotAgent implements CacheLoader{
 
     /**
      * query from db
+     *
      * @param object
      * @return
      */
     @Override
-    public Object query(Object object){
-            TxOutCacheKey txOutCacheKey = (TxOutCacheKey)object;
-            return txOutRepository.queryTxOut(txOutCacheKey.getTxId(), txOutCacheKey.getIndex(), txOutCacheKey.getActionIndex());
+    public Object query(Object object) {
+        TxOutCacheKey txOutCacheKey = (TxOutCacheKey) object;
+        return txOutRepository.queryTxOut(txOutCacheKey.getTxId(), txOutCacheKey.getIndex(), txOutCacheKey.getActionIndex());
+    }
+
+    /**
+     * the method to bachInsert data into db
+     *
+     * @param insertMap
+     * @return
+     */
+    //TODO to implements your own bachInsert method for db
+    @Override
+    public boolean bachInsert(Map<Object, Object> insertMap) {
+        return false;
+    }
+
+    /**
+     * the method to bachUpdate data into db
+     *
+     * @param updateMap
+     * @return
+     */
+    //TODO to implements your own bachUpdate method for db
+    @Override
+    public boolean bachUpdate(Map<Object, Object> updateMap) {
+        return false;
     }
 
     /**
      * TxOutCacheKey
-     *
      */
     @Getter
     @Setter
@@ -130,7 +160,6 @@ public class UTXOSnapshotAgent implements CacheLoader{
          */
         private Integer actionIndex;
     }
-
 
 
 }
