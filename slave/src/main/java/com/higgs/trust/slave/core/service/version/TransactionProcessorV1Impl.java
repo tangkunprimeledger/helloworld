@@ -97,8 +97,7 @@ import java.util.*;
             //execute contract
             exeContract(action, transactionData.parseActionData());
             //execute action
-
-            actionHandler.validate(transactionData.parseActionData());
+            actionHandler.process(transactionData.parseActionData());
         }
     }
 
