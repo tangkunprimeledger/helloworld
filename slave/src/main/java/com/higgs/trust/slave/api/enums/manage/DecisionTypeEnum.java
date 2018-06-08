@@ -6,7 +6,7 @@ package com.higgs.trust.slave.api.enums.manage;
  * @date 2018-06-06
  */
 public enum DecisionTypeEnum {
-    FULL_VOTE("FULL_VOTE","require all vote"),ONE_VOTE("ONE_VOTE","only one vote")
+    FULL_VOTE("FULL_VOTE","require all vote"),ONE_VOTE("ONE_VOTE","just one vote")
     ;
     private String code;
     private String desc;

@@ -21,7 +21,8 @@ public enum SlaveErrorEnum {
     SLAVE_IDEMPOTENT("101", "request idempotent", false),
     SLAVE_TX_VERIFY_SIGNATURE_FAILED("102", "transaction verify signature failed", false),
     SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED("103", "package verify master node signature failed", false),
-    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("103", "package sign signature failed", false),
+    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("104", "package sign signature failed", false),
+    SLAVE_TX_VERIFY_SIGNATURE_PUB_KEY_NOT_EXIST("105", "transaction verify signature cannot acquire public key", false),
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         查询相关[300-399]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//

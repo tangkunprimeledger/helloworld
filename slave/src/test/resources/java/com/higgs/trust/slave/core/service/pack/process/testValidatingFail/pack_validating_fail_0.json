@@ -1,0 +1,65 @@
+{
+  "测试ID": 0,
+  "body": {
+    "height": 2,
+    "packageTime": 1526389791011,
+    "signedTxList": [
+      {
+        "coreTx": {
+          "actionList": [
+            {
+              "@type": "com.higgs.trust.slave.model.bo.action.DataIdentityAction",
+              "chainOwner": "BANK_CHAIN",
+              "dataOwner": "TRUST-NODE33",
+              "identity": "lingssd724498110",
+              "index": 0,
+              "type": "CREATE_DATA_IDENTITY"
+            },
+            {
+              "@type": "com.higgs.trust.slave.model.bo.action.UTXOAction",
+              "contractAddress": "1234567",
+              "index": 1,
+              "inputList": null,
+              "outputList": [
+                {
+                  "actionIndex": 1,
+                  "identity": "lingssd724498110",
+                  "index": 0,
+                  "state": {
+                    "@type": "com.alibaba.fastjson.JSONObject",
+                    "amount": 10000000,
+                    "billId": "12345724498110",
+                    "dueDate": "2018-05-17 03:25:00",
+                    "finalPayerId": "chaosssd"
+                  }
+                }
+              ],
+              "stateClass": "com.alibaba.fastjson.JSONObject",
+              "type": "UTXO",
+              "utxoActionType": "ISSUE"
+            }
+          ],
+          "bizModel": {
+            "@type": "com.alibaba.fastjson.JSONObject",
+            "billId": "12345724498110",
+            "bizModel": "dasdasdas",
+            "nextHolder": "chaoguossd724498110",
+            "requestId": "billTransfer1526374482003724498110"
+          },
+          "lockTime": null,
+          "policyId": "000001",
+          "sender": "TRUST-NODE33",
+          "txId": "lingchao1234567724498110",
+          "version": "1.0.0"
+        },
+        "signatureList": [
+          "YnPvuSy+zhO5LKxfFlzoarvstCZLvOsazkU++j257XPMDwkoxh7+FmKetK7Xo/k9a6iebeT1XkbdmlvPI2PtA2FYBz0V5fFP/EibJ0IYmNoA0ytpIE438FXxkJ7pYYFcOSsv4Pizg1FapBLDLFUqR9/aYd6Nxem57KZSb2mEhB0=",
+          "FjmvghooGGXmc7RmLdjgBUqts5PsdmlivYMJ+o1oy6J4myB1j1+Nq5rfM3GTT8RwXKmlWZRWWnO4z+QbuEbISCwjcZ9lEmYFm/UvsrTdxUISSOL1cCYvbg9Z88++WHVa1nKxHp91IeG8LHJxZgfVOipjil3WXaywWkGnO6/vxYo="
+        ]
+      }
+    ],
+    "status": "VALIDATING"
+  },
+  "assert": "package block hash is null error[SLAVE_PACKAGE_HEADER_IS_NULL_ERROR]",
+  "comment": "Package-process-validating状态接口测试-temp_header为空"
+}

@@ -2,13 +2,15 @@ package com.higgs.trust.slave.core.service.version;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.repository.contract.AccountContractBindingRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.account.*;
+import com.higgs.trust.slave.core.service.action.ca.CaAuthHandler;
+import com.higgs.trust.slave.core.service.action.ca.CaCancelHandler;
+import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
+import com.higgs.trust.slave.core.service.action.ca.CaUpdateHandler;
 import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
 import com.higgs.trust.slave.core.service.action.contract.ContractCreationHandler;
 import com.higgs.trust.slave.core.service.action.contract.ContractInvokeHandler;
@@ -58,14 +60,17 @@ import java.util.*;
     @Autowired private ContractInvokeHandler contractInvokeHandler;
     @Autowired private AccountContractBindingHandler accountContractBindingHandler;
     @Autowired private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
-    @Autowired private AccountContractBindingRepository accountContractBindingRepository;
     @Autowired private StandardSmartContract standardSmartContract;
+    @Autowired private CaAuthHandler caAuthHandler;
+    @Autowired private CaCancelHandler caCancelHandler;
+    @Autowired private CaUpdateHandler caUpdateHandler;
+    @Autowired private CaInitHandler caInitHandler;
 
     @Override public void afterPropertiesSet() throws Exception {
         txProcessorHolder.registVerisonProcessor(VersionEnum.V1, this);
     }
 
-    @Override public void process(TransactionData transactionData, TxProcessTypeEnum processTypeEnum) {
+    @Override public void process(TransactionData transactionData) {
         CoreTransaction coreTx = transactionData.getCurrentTransaction().getCoreTx();
         log.info("[process]coreTx:{}", coreTx);
         List<Action> actionList = coreTx.getActionList();
@@ -90,13 +95,10 @@ import java.util.*;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACTION_HANDLER_IS_NOT_EXISTS_EXCEPTION);
             }
             //execute contract
-            exeContract(action, processTypeEnum, transactionData.parseActionData());
+            exeContract(action, transactionData.parseActionData());
             //execute action
-            if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-                actionHandler.validate(transactionData.parseActionData());
-            } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-                actionHandler.persist(transactionData.parseActionData());
-            }
+
+            actionHandler.validate(transactionData.parseActionData());
         }
     }
 
@@ -137,6 +139,14 @@ import java.util.*;
                 return contractInvokeHandler;
             case REGISTER_CONTRACT:
                 return contractCreationHandler;
+            case CA_AUTH:
+                return caAuthHandler;
+            case CA_CANCEL:
+                return caCancelHandler;
+            case CA_UPDATE:
+                return caUpdateHandler;
+            case CA_INIT:
+                return caInitHandler;
             default:
         }
         log.error("[getHandlerByType] action type not exist exception, actionType={}", JSON.toJSONString(typeEnum));
@@ -144,7 +154,7 @@ import java.util.*;
             "[getHandlerByType] action type not exist exception");
     }
 
-    private void exeContract(Action action, TxProcessTypeEnum processTypeEnum, ActionData actionData) {
+    private void exeContract(Action action, ActionData actionData) {
         List<String> accountNos = new ArrayList<>();
         switch (action.getType()) {
             case FREEZE:
@@ -180,11 +190,7 @@ import java.util.*;
         }
         for (String accountNo : accountNos) {
             List<AccountContractBinding> bindingList = null;
-            if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-                bindingList = accountContractBindingSnapshotAgent.getListByAccount(accountNo);
-            } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-                bindingList = accountContractBindingRepository.queryListByAccountNo(accountNo);
-            }
+            bindingList = accountContractBindingSnapshotAgent.getListByAccount(accountNo);
             if (CollectionUtils.isEmpty(bindingList)) {
                 continue;
             }
@@ -193,7 +199,7 @@ import java.util.*;
                 StandardExecuteContextData standardExecuteContextData = new StandardExecuteContextData();
                 standardExecuteContextData.setAction(actionData);
                 //execute
-                standardSmartContract.execute(binding, standardExecuteContextData, processTypeEnum);
+                standardSmartContract.execute(binding, standardExecuteContextData);
             }
         }
     }

@@ -99,4 +99,23 @@ import java.util.concurrent.*;
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
+    @Bean public ThreadPoolTaskExecutor syncVotingExecutorPool() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(20);
+        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.setQueueCapacity(5000);
+        threadPoolTaskExecutor.setThreadNamePrefix("syncVotingExecutor-");
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
+
+    @Bean public ThreadPoolTaskExecutor asyncVotingExecutorPool() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(20);
+        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.setQueueCapacity(5000);
+        threadPoolTaskExecutor.setThreadNamePrefix("asyncVotingExecutorPool-");
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
 }

@@ -1,13 +1,10 @@
 package com.higgs.trust.slave.core.service.action.manage;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.datahandler.manage.PolicyDBHandler;
-import com.higgs.trust.slave.core.service.datahandler.manage.PolicyHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.PolicySnapshotHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.context.ActionData;
@@ -29,22 +26,11 @@ import java.util.Set;
 @Slf4j @Component public class RegisterPolicyHandler implements ActionHandler {
 
     @Autowired
-    private PolicyDBHandler policyDBHandler;
-
-    @Autowired
     private PolicySnapshotHandler policySnapshotHandler;
 
-    @Override public void validate(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.VALIDATE);
-    }
-
-    @Override public void persist(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.PERSIST);
-    }
-
-    private void process(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
-        log.info("[RegisterPolicyHandler.process] start, actionData:{}, processType: {}",
-            actionData, processTypeEnum);
+    @Override
+    public void process(ActionData actionData) {
+        log.info("[RegisterPolicyHandler.process] start, actionData:{}", actionData);
 
         RegisterPolicy bo = (RegisterPolicy)actionData.getCurrentAction();
         if (null == bo) {
@@ -82,19 +68,12 @@ import java.util.Set;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        PolicyHandler policyHandler = null;
-        if (TxProcessTypeEnum.VALIDATE == processTypeEnum) {
-            policyHandler = policySnapshotHandler;
-        } else if (TxProcessTypeEnum.PERSIST == processTypeEnum) {
-            policyHandler = policyDBHandler;
-        }
-
-        Policy policy = policyHandler.getPolicy(bo.getPolicyId());
+        Policy policy = policySnapshotHandler.getPolicy(bo.getPolicyId());
         if (policy != null) {
             log.error("policy already exists. {}", policy);
             throw new SlaveException(SlaveErrorEnum.SLAVE_POLICY_EXISTS_ERROR);
         }
-        policyHandler.registerPolicy(bo);
+        policySnapshotHandler.registerPolicy(bo);
 
         log.info("[RegisterPolicyHandler.process] finish");
     }

@@ -20,8 +20,6 @@ import java.util.List;
  * @date 2018-04-19
  */
 public class PackageValidatorTest extends IntegrateBaseTest {
-    @Autowired PackageValidator packageValidator;
-    @Autowired PackagePersistor packagePersistor;
 
     @BeforeTest
     public void before(){
@@ -92,9 +90,9 @@ public class PackageValidatorTest extends IntegrateBaseTest {
 
         PackContext packContext = new PackContext(pack,block);
 
-        packageValidator.validating(packContext);
+//        packageValidator.validating(packContext);
 
-        packagePersistor.persisting(packContext);
+//        packagePersistor.persisting(packContext);
 
     }
 }

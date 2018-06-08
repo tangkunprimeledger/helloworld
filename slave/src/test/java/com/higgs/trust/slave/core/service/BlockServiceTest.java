@@ -33,16 +33,6 @@ public class BlockServiceTest extends IntegrateBaseTest {
         System.out.println("max.height:" + height);
     }
 
-    @Test public void storeTempHeader() {
-        BlockHeader header = new BlockHeader();
-        BlockHeaderTypeEnum headerTypeEnum = BlockHeaderTypeEnum.TEMP_TYPE;
-        blockService.storeTempHeader(header, headerTypeEnum);
-    }
-
-    @Test public void getTempHeader() {
-
-    }
-
     @Test public void persistBlock() throws Exception {
         List<SignedTransaction> txs = new ArrayList<>();
         for (int k = 0; k < 2; k++) {

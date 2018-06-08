@@ -312,7 +312,7 @@ IF NOT EXISTS `tx_out` (
 # Structure for table "queued_apply"
 #
 
-CREATE TABLE `queued_apply` (
+CREATE TABLE IF NOT EXISTS `queued_apply` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
@@ -324,7 +324,7 @@ CREATE TABLE `queued_apply` (
 # Structure for table "queued_apply_delay"
 #
 
-CREATE TABLE `queued_apply_delay` (
+CREATE TABLE IF NOT EXISTS `queued_apply_delay` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `apply_time` bigint(20) NOT NULL,
@@ -338,7 +338,7 @@ CREATE TABLE `queued_apply_delay` (
 # Structure for table "queued_receive_gc"
 #
 
-CREATE TABLE `queued_receive_gc` (
+CREATE TABLE IF NOT EXISTS `queued_receive_gc` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `gc_time` bigint(1) unsigned NOT NULL DEFAULT '0' COMMENT 'gc time',
@@ -352,7 +352,7 @@ CREATE TABLE `queued_receive_gc` (
 # Structure for table "queued_send"
 #
 
-CREATE TABLE `queued_send` (
+CREATE TABLE IF NOT EXISTS `queued_send` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
@@ -364,7 +364,7 @@ CREATE TABLE `queued_send` (
 # Structure for table "queued_send_delay"
 #
 
-CREATE TABLE `queued_send_delay` (
+CREATE TABLE IF NOT EXISTS `queued_send_delay` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `send_time` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'requeued to send',
@@ -378,7 +378,7 @@ CREATE TABLE `queued_send_delay` (
 # Structure for table "queued_send_gc"
 #
 
-CREATE TABLE `queued_send_gc` (
+CREATE TABLE IF NOT EXISTS `queued_send_gc` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `gc_time` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'gc time',
@@ -392,7 +392,7 @@ CREATE TABLE `queued_send_gc` (
 # Structure for table "receive_command"
 #
 
-CREATE TABLE `receive_command` (
+CREATE TABLE IF NOT EXISTS `receive_command` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `valid_command` varchar(3072) NOT NULL COMMENT 'valid command',
@@ -414,7 +414,7 @@ CREATE TABLE `receive_command` (
 # Structure for table "receive_node"
 #
 
-CREATE TABLE `receive_node` (
+CREATE TABLE IF NOT EXISTS `receive_node` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `from_node_name` varchar(64) NOT NULL COMMENT 'from node name',
@@ -428,7 +428,7 @@ CREATE TABLE `receive_node` (
 # Structure for table "send_command"
 #
 
-CREATE TABLE `send_command` (
+CREATE TABLE IF NOT EXISTS `send_command` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `valid_command` varchar(3072) NOT NULL COMMENT 'valid command',
@@ -450,7 +450,7 @@ CREATE TABLE `send_command` (
 # Structure for table "send_node"
 #
 
-CREATE TABLE `send_node` (
+CREATE TABLE IF NOT EXISTS `send_node` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
   `to_node_name` varchar(64) NOT NULL DEFAULT '' COMMENT 'from node name',
@@ -462,3 +462,57 @@ CREATE TABLE `send_node` (
 
 INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)
 VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3));
+
+CREATE TABLE IF NOT EXISTS `ca` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `version` varchar(32) NOT NULL COMMENT 'version',
+  `period` datetime(3) NOT NULL COMMENT 'period',
+  `valid` varchar(32) NOT NULL COMMENT 'valid flag TRUE/FALSE',
+  `pub_key` varchar(255) NOT NULL COMMENT 'pub key',
+  `user` varchar(32) NOT NULL COMMENT 'CA user',
+  `usage` varchar(64) COMMENT 'CA usage',
+  `height` BIGINT (20) NOT NULL COMMENT 'block height which CA tx in',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  `update_time` datetime(3) NOT NULL COMMENT 'update time',
+  PRIMARY KEY (`id`),
+  KEY `idx_user` (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds CA info';
+
+
+
+CREATE TABLE IF NOT EXISTS `config` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `version` varchar(32) NOT NULL COMMENT 'version',
+  `valid` varchar(32) NOT NULL COMMENT 'valid flag TRUE/FALSE',
+  `pub_key` varchar(255) NOT NULL COMMENT 'pub key',
+  `pri_key` varchar(1024) NOT NULL COMMENT 'pri key',
+  `tmp_pub_key` varchar(255) COMMENT 'temp pub key',
+  `tmp_pri_key` varchar(1024) COMMENT 'temp pri key',
+  `node_name` varchar(32) NOT NULL COMMENT 'node name',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  `update_time` datetime(3) NOT NULL COMMENT 'update time',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds nodeself configuration';
+
+
+
+CREATE TABLE IF NOT EXISTS `cluster_config` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `cluster_name` varchar(32) NOT NULL COMMENT 'cluster name',
+  `node_num` int NOT NULL COMMENT 'node num',
+  `fault_num` int NOT NULL COMMENT 'fault num',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  `update_time` datetime(3) NOT NULL COMMENT 'update time',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds cluster configuration';
+
+
+CREATE TABLE IF NOT EXISTS `cluster_node` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `node_name` varchar(32) NOT NULL COMMENT 'node name',
+  `p2p_status` varchar(32) NOT NULL COMMENT 'p2p status',
+  `rs_status` varchar(32) NOT NULL COMMENT 'rs status',
+  `create_time` datetime(3) NOT NULL COMMENT 'create time',
+  `update_time` datetime(3) NOT NULL COMMENT 'update time',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds cluster node configuration';

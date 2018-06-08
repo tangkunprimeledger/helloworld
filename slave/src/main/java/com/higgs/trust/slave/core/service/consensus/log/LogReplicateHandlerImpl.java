@@ -20,7 +20,6 @@ import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.convert.PackageConvert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,17 +73,40 @@ import java.util.concurrent.TimeUnit;
 
         // replicate package to all nodes
         log.info("package starts to distribute to each node through consensus layer");
-        PackageCommand packageCommand = new PackageCommand(packageVO);
 
-        CompletableFuture future = consensusClient.submit(packageCommand);
-        try {
-            future.get(800, TimeUnit.MILLISECONDS);
-        } catch (Throwable e) {
-            log.error("replicate log failed!");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED, e);
+        PackageCommand packageCommand = buildPackageCommand(packageVO);
+
+        Object obj = null;
+        while (obj == null) {
+
+            CompletableFuture future = consensusClient.submit(packageCommand);
+            try {
+                obj = future.get(800, TimeUnit.MILLISECONDS);
+            } catch (Throwable e) {
+                log.error("replicate log failed!", e);
+                //TODO 添加告警
+            }
+        }
+        log.info("package has been sent to consensus layer");
+    }
+
+    private PackageCommand buildPackageCommand(PackageVO packageVO) {
+        PackageCommand packageCommand = new PackageCommand(packageVO);
+        packageCommand.setMasterName(nodeState.getMasterName());
+        packageCommand.setTerm(nodeState.getTerm());
+
+        // set signature
+        while (null == packageCommand.getSign()) {
+            try {
+                String dataString = JSON.toJSONString(packageCommand, Labels.excludes("sign"));
+                packageCommand.setSign(SignUtils.sign(dataString, nodeState.getPrivateKey()));
+            } catch (Exception e) {
+                log.error("packageCommand sign exception. ", e);
+                //TODO 添加告警
+            }
         }
 
-        log.info("package has been sent to consensus layer");
+        return packageCommand;
     }
 
     /**
@@ -114,28 +136,6 @@ import java.util.concurrent.TimeUnit;
         if (!result.isSuccess()) {
             log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
-        // verify signature
-        try {
-            String verifyString = JSON.toJSONString(packageVO, Labels.excludes("sign"));
-            //get master node public key
-            RsPubKey rsPubKey = rsPubKeyRepository.queryByRsId(nodeState.getMasterName());
-            if (null == rsPubKey) {
-                log.error("cannot acquire rsPubKey. rsId={}", nodeState.getMasterName());
-                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED);
-            }
-            boolean verify = SignUtils.verify(verifyString, packageVO.getSign(), rsPubKey.getPubKey());
-            if (!verify) {
-                log.error("package verify signature failed.");
-                commit.close();
-                //TODO 添加告警
-                return;
-            }
-        } catch (Throwable e) {
-            log.error("verify signature exception. {}", e.getMessage());
-            //TODO 添加告警
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED, e);
         }
 
         // receive package

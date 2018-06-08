@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.service.block.hash;
 
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.merkle.MerkleService;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
@@ -39,8 +40,12 @@ import java.util.List;
             return DEFAULT_HASH_FLAG;
         }
         for (SignedTransaction tx : txs) {
-            List<String> signDatas = tx.getSignatureList();
-            Collections.sort(signDatas);
+            List<SignInfo> signDatas = tx.getSignatureList();
+            Collections.sort(signDatas, new Comparator<SignInfo>() {
+                @Override public int compare(SignInfo o1, SignInfo o2) {
+                    return o1.getOwner().equals(o2.getOwner()) ? 1 : 0;
+                }
+            });
             tx.setSignatureList(signDatas);
         }
         Collections.sort(txs, new Comparator<SignedTransaction>() {

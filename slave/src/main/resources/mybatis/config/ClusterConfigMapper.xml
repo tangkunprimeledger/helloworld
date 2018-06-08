@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.config.ClusterConfigDao">
+
+	<insert id="insertClusterConfig" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+		INSERT INTO cluster_config(cluster_name,
+				node_num,
+				fault_num,
+				create_time,
+				update_time)
+		VALUES (#{clusterName},
+				#{nodeNum},
+				#{faultNum},
+				now(3),
+				now(3))
+	</insert>
+
+
+	<update id="updateClusterConfig" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+		UPDATE cluster_config SET
+		update_time=now(3),
+		<if test="nodeNum != null and nodeNum!=''">
+			node_num=#{nodeNum},
+		</if>
+		<if test="faultNum != null and faultNum!=''">
+			fault_num=#{faultNum}
+		</if>
+		WHERE `cluster_name`=#{clusterName}
+	</update>
+
+
+	<select id="getClusterConfig" parameterType="java.lang.String"
+			resultType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+		SELECT    cluster_name as clusterName,
+								node_num as nodeNum,
+								fault_num as faultNum,
+								create_time as createTime,
+								update_time as updateTime
+		      FROM cluster_config WHERE `cluster_name`=#{clusterName}
+	</select>
+
+</mapper>

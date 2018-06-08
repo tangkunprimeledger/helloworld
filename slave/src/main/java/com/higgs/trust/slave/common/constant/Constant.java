@@ -25,4 +25,8 @@ public class Constant {
 
     public static final int MAX_BLOCKING_QUEUE_SIZE = 10000;
 
+    public static final int MAX_PENDING_TX_QUEUE_SIZE = 2000;
+
+    public static final int MAX_EXIST_MAP_SIZE = 10000;
+
 }

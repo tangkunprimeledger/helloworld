@@ -27,7 +27,6 @@ public class RsPubKeyRepositoryTest extends BaseTest {
         rsPubKey = new RsPubKey();
         rsPubKey.setRsId("rs-test3");
         rsPubKey.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQ801oyESemN3Sk+GdPP0LlDI49zhUoLfKg/WRYE9014pOOKJT+ztIFSYi/rQbQrqrFup1NgVrdkv9f0phlatXcXKNVUglPw5O0XgUzEcmQTsX83TJ2k1jG4jvhE6HSZd3kGytZoiclW4O4S3u7P/MYh+wBrCpKaVuhguyqW+MyQIDAQAB");
-        rsPubKey.setDesc("rs-test3-RsPubKey");
     }
 
     @Test public void queryAll() {
@@ -53,7 +52,6 @@ public class RsPubKeyRepositoryTest extends BaseTest {
         rsPubKeyRepository.save(rsPubKey);
         RsPubKey rsPubKey1 = rsPubKeyRepository.queryByRsId(rsPubKey.getRsId());
         Assert.assertEquals(rsPubKey.getPubKey(), rsPubKey1.getPubKey());
-        Assert.assertEquals(rsPubKey.getDesc(), rsPubKey1.getDesc());
     }
 
     @Test public void convertActionToRsPubKey() {
@@ -63,7 +61,6 @@ public class RsPubKeyRepositoryTest extends BaseTest {
         registerRS.setPubKey("test-public-key");
 
         RsPubKey rs = rsPubKeyRepository.convertActionToRsPubKey(registerRS);
-        Assert.assertEquals(rs.getDesc(), registerRS.getDesc());
         Assert.assertEquals(rs.getPubKey(), registerRS.getPubKey());
         Assert.assertEquals(rs.getRsId(), registerRS.getRsId());
 

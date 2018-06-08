@@ -8,7 +8,7 @@ package com.higgs.trust.slave.api.enums;
 public enum MerkleTypeEnum {
     ACCOUNT("ACCOUNT", "account type"), CONTRACT("CONTRACT", "contract type"),
     TX("TX", "transaction type"), TX_RECEIEPT("TX_RECEIEPT", "txReceiept type"),
-    POLICY("POLICY", "policy type"), RS("RS", "rs type"), ;
+    POLICY("POLICY", "policy type"), RS("RS", "rs type"), CA("CA", "CA type"),;
 
     String code;
     String desc;
