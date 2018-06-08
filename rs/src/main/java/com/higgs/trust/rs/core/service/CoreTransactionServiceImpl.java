@@ -108,7 +108,7 @@ import java.util.List;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
         //save to db
-        coreTxRepository.add(coreTx, signInfo);
+        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo),CoreTxStatusEnum.INIT);
         //process by async
         txProcessExecutorPool.execute(new Runnable() {
             @Override public void run() {
@@ -396,9 +396,12 @@ import java.util.List;
      */
     private List<SignedTransaction> makeTxs(List<CoreTxBO> list) {
         List<SignedTransaction> txs = new ArrayList<>(list.size());
+        Date currentDate = new Date();
         for (CoreTxBO bo : list) {
             SignedTransaction tx = new SignedTransaction();
             CoreTransaction coreTx = coreTxRepository.convertTxVO(bo);
+            //reset sendTime
+            coreTx.setSendTime(currentDate);
             tx.setCoreTx(coreTx);
             tx.setSignatureList(bo.getSignDatas());
             txs.add(tx);

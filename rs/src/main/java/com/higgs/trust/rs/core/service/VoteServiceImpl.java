@@ -115,6 +115,8 @@ import java.util.concurrent.Future;
                     if (StringUtils.equals(votingRequest.getVotePattern(), VotePatternEnum.SYNC.getCode())) {
                         VoteResultEnum voteResult = VoteResultEnum.AGREE;
                         try {
+                            //TODO:liuyu check self node status
+
                             //callback custom rs
                             rsCoreCallbackHandler.onVote(votingRequest);
                         } catch (Throwable e) {
@@ -162,6 +164,8 @@ import java.util.concurrent.Future;
             log.info("[receiptVote]voteRequestRecord is already has result txId:{}", txId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_ALREADY_HAS_RESULT_ERROR);
         }
+        //TODO:liuyu check self node status
+
         VoteResultEnum voteResult = agree ? VoteResultEnum.AGREE : VoteResultEnum.DISAGREE;
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {

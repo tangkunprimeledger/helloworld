@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,26 +35,23 @@ import java.util.List;
      * create new core_transaction
      *
      * @param coreTx
-     * @param signInfo
+     * @param signInfos
      */
-    public void add(CoreTransaction coreTx, SignInfo signInfo) {
+    public void add(CoreTransaction coreTx, List<SignInfo> signInfos,CoreTxStatusEnum statusEnum) {
         if (!rsConfig.isUseMySQL()) {
             //TODO: liuyu for rocksdb handler
             return;
         }
         CoreTransactionPO po = BeanConvertor.convertBean(coreTx, CoreTransactionPO.class);
-        po.setSender(rsConfig.getRsName());
         po.setVersion(coreTx.getVersion());
         if (coreTx.getBizModel() != null) {
             po.setBizModel(coreTx.getBizModel().toJSONString());
         }
         String actionDataJSON = JSON.toJSONString(coreTx.getActionList());
         po.setActionDatas(actionDataJSON);
-        List<SignInfo> signDatas = new ArrayList<>();
-        signDatas.add(signInfo);
-        String signDataJSON = JSON.toJSONString(signDatas);
+        String signDataJSON = JSON.toJSONString(signInfos);
         po.setSignDatas(signDataJSON);
-        po.setStatus(CoreTxStatusEnum.INIT.getCode());
+        po.setStatus(statusEnum == null ? CoreTxStatusEnum.INIT.getCode() : statusEnum.getCode());
         po.setCreateTime(new Date());
         try {
             coreTransactionDao.add(po);

@@ -29,4 +29,11 @@ public interface TxCallbackHandler {
      * @param respData
      */
     void onEnd(RespData<CoreTransaction> respData);
+
+    /**
+     * on fail over call back
+     *
+     * @param respData
+     */
+    void onFailOver(RespData<CoreTransaction> respData);
 }

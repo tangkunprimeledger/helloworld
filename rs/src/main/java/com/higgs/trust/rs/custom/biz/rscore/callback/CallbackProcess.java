@@ -1,11 +1,9 @@
 package com.higgs.trust.rs.custom.biz.rscore.callback;
 
 import com.higgs.trust.rs.common.TxCallbackHandler;
-import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.rs.custom.biz.rscore.callback.handler.*;
-import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +74,10 @@ import org.springframework.stereotype.Service;
 //                break;
 //        }
         log.info("[onEnd] end process");
+    }
+
+    @Override public void onFailOver(RespData<CoreTransaction> respData) {
+
     }
 
 }
