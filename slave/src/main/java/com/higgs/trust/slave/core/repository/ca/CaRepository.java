@@ -47,9 +47,7 @@ import java.util.List;
      * @desc get CA information by nodeName
      */
     public Ca getCa(String user) {
-        CaPO caPO = new CaPO();
-        caPO.setUser(user);
-        caPO = caDao.getCa(caPO);
+        CaPO caPO = caDao.getCa(user);
         Ca newCa = new Ca();
         BeanUtils.copyProperties(caPO, newCa);
         return newCa;

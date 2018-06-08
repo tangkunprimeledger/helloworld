@@ -5,7 +5,6 @@ import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.model.bo.BaseBO;
-import com.higgs.trust.slave.model.bo.DataIdentity;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,7 +21,7 @@ import java.util.Map;
  * @desc ca snapshot agent
  * @date 2018/6/6 11:29
  */
-@Slf4j @Component public class CaSnapshotAgent implements CacheLoader {
+@Slf4j @Component public class ClusterConfigAgent implements CacheLoader {
 
     @Autowired SnapshotService snapshot;
     @Autowired CaRepository caRepository;
@@ -51,14 +50,14 @@ import java.util.Map;
      * @param ca
      */
     public void saveCa(Ca ca) {
-        put(new CaSnapshotAgent.CaCachKey(ca.getUser()), ca);
+        put(new ClusterConfigAgent.CaCachKey(ca.getUser()), ca);
     }
 
     /**
      * when cache is not exists,load from db
      */
     @Override public Object query(Object object) {
-        if (object instanceof CaSnapshotAgent.CaCachKey) {
+        if (object instanceof ClusterConfigAgent.CaCachKey) {
             CaCachKey key = (CaCachKey)object;
             return caRepository.getCa(key.getUser());
         }

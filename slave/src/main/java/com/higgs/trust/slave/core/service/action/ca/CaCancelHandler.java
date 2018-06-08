@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.service.action.ca;
 
 import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.datahandler.ca.CaDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import lombok.extern.slf4j.Slf4j;

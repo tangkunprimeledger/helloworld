@@ -274,7 +274,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         coreTx.setTxId(identityRequest.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
-        coreTransactionService.submitTx(BizTypeEnum.STORAGE, coreTx);
+        coreTransactionService.submitTx(coreTx);
         log.info("[asyncSendToSlave]: end handle , reqNo = {}", identityRequest.getReqNo());
     }
 }
