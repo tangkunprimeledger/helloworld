@@ -146,6 +146,9 @@ import java.util.*;
                 "[cancelKeyPair] invalid node name");
         }
 
+
+        // TODO 注销CA之前，应该检测RS是否下线，下线就可以注销，否则不可以
+
         // TODO 注销CA之前，应该检测CA是否存在，存在就可以注销，否则不可以
 
         //set pubKey and priKey to invalid

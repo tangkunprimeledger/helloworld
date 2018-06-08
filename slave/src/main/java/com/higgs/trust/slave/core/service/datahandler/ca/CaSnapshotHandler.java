@@ -39,7 +39,8 @@ import org.springframework.stereotype.Service;
      * @desc update CA information
      */
     @Override public void updateCa(Ca ca) {
-
+        // TODO 要怎么操作数据库进行clusterConfig和clusterNode信息的变更
+        merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
     }
 
     /**
@@ -48,7 +49,10 @@ import org.springframework.stereotype.Service;
      * @desc cancel CA information
      */
     @Override public void cancelCa(Ca ca) {
-
+        // operation merkle tree
+        merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
+        // TODO 要怎么操作数据库进行clusterConfig和clusterNode信息的变更
+        caSnapshotAgent.saveCa(ca);
     }
 
     /**
