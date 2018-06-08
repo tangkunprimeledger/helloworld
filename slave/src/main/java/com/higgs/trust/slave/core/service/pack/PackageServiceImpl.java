@@ -425,9 +425,9 @@ import java.util.List;
             //callback business
             log.info("[callbackRS]start callback rs txId:{}", txId);
             if(isClusterPersisted){
-                callbackHandler.onClusterPersisted(respData);
+                callbackHandler.onClusterPersisted(respData,tx.getSignatureList());
             }else{
-                callbackHandler.onPersisted(respData);
+                callbackHandler.onPersisted(respData,tx.getSignatureList());
             }
             log.info("[callbackRS]end callback rs txId:{}", txId);
         }
