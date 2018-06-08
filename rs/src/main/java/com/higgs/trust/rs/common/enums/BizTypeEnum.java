@@ -21,6 +21,7 @@ public enum BizTypeEnum {
     CA_AUTH("CA_AUTH", "CA AUTH"),
     CA_UPDATE("CA_UPDATE", "CA UPDATE"),
     CA_CANCEL("CA_CANCEL", "CA CANCEL"),
+    CA_INIT("CA_INIT", "CA INIT"),
     ;
 
 

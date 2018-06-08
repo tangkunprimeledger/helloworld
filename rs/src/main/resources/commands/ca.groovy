@@ -66,7 +66,7 @@ class ca {
     def initCA(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def caService = beans.getBean(CaService.class)
-        caService.initKeyPair()
+        caService.initStart()
         out.println("send CA init tx successful")
     }
 

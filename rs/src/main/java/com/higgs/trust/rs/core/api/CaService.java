@@ -5,38 +5,38 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.config.Config;
 
 /**
- * @desc TODO  
+ * @desc TODO
  * @author WangQuanzhou
  * @date 2018/6/5 15:40
- */  
+ */
 public interface CaService {
 
-    /** 
+    /**
      * @desc generate pubKey and PriKey ,then insert into db
      * @param user
-     * @return   
-     */  
+     * @return
+     */
     void authKeyPair(String user);
-    
-    /** 
+
+    /**
      * @desc construct ca auth tx and send to slave
      * @param
-     * @return   
-     */  
+     * @return
+     */
     RespData authCaTx(CaVO caVO);
 
-    /** 
+    /**
      * @desc update pubKey and priKey ,then insert into db
      * @param user
      * @return
-     */  
-    void updateKeyPair(String user);
+     */
+    RespData updateKeyPair(String user);
 
-    /** 
+    /**
      * @desc construct ca update tx and send to slave
      * @param
-     * @return   
-     */  
+     * @return
+     */
     RespData updateCaTx(CaVO caVO);
 
     /**
@@ -44,33 +44,33 @@ public interface CaService {
      * @param
      * @return
      */
-    void cancelKeyPair(String user);
-
-    /** 
-     * @desc construct ca cancel tx and send to slave
-     * @param
-     * @return   
-     */  
-    RespData cancelCaTx(CaVO caVO);
+    RespData cancelKeyPair(String user);
 
     /**
-     * @desc cluster init start, init cluster ca infor
+     * @desc construct ca cancel tx and send to slave
      * @param
      * @return
      */
-    void initKeyPair();
+    RespData cancelCaTx(CaVO caVO);
 
     /** 
+     * @desc TODO 
+     * @param
+     * @return   
+     */  
+    RespData<String> initStart();
+
+    /**
      * @desc construct ca init tx and send to slave
      * @param
-     * @return   
-     */  
+     * @return
+     */
     RespData initCaTx();
 
-    /** 
+    /**
      * @desc after ca tx has bean authoritied by the current cluster, then update table config column valid to TRUE
      * @param
-     * @return   
-     */  
+     * @return
+     */
     void callbackCa();
 }
