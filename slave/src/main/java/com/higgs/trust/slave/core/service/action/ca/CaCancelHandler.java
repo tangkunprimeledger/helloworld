@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author WangQuanzhou
  * @desc cancel ca handler
@@ -14,28 +17,12 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j @Component public class CaCancelHandler implements ActionHandler {
 
-    @Autowired CaDBHandler caDBHandler;
     @Autowired CaSnapshotHandler caSnapshotHandler;
 
-    /**
-     * the logic for the action
-     *
-     * @param actionData
-     */
-    @Override public void validate(ActionData actionData) {
+    @Override
+    public void process(ActionData actionData){
 
     }
 
-    /**
-     * the storage for the action
-     *
-     * @param actionData
-     */
-    @Override public void persist(ActionData actionData) {
 
-    }
-
-    private void process(ActionData actionData,TxProcessTypeEnum processTypeEnum){
-
-    }
 }

@@ -14,28 +14,15 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j @Component public class CaUpdateHandler implements ActionHandler {
 
-    @Autowired CaDBHandler caDBHandler;
     @Autowired CaSnapshotHandler caSnapshotHandler;
 
-    /**
-     * the logic for the action
-     *
-     * @param actionData
-     */
-    @Override public void validate(ActionData actionData) {
-
-    }
 
     /**
      * the storage for the action
      *
      * @param actionData
      */
-    @Override public void persist(ActionData actionData) {
-
-    }
-
-    private void process(ActionData actionData,TxProcessTypeEnum processTypeEnum){
+    @Override public void process(ActionData actionData) {
 
     }
 }

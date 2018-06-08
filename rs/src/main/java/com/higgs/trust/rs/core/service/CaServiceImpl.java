@@ -18,6 +18,7 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
+import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
@@ -44,12 +45,13 @@ import java.util.*;
     public static final String PUB_KEY = "pubKey";
     public static final String PRI_KEY = "priKey";
 
-    @Autowired ConfigRepository configRepository;
-    @Autowired CaRepository caRepository;
-    @Autowired NodeState nodeState;
+    @Autowired private ConfigRepository configRepository;
+    @Autowired private CaRepository caRepository;
+    @Autowired private NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private ClusterInfo clusterInfo;
+    @Autowired private CaInitHandler caInitHandler;
     @Value("${bftSmart.systemConfigs.myId}") private String myId;
 
     /**
@@ -211,11 +213,9 @@ import java.util.*;
 
         // construct tx and send to slave
         try {
-            coreTransactionService.submitTx(constructInitCoreTx(CaMap, nodeState.getNodeName()));
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                log.error("create bill error", e);
-            }
+            caInitHandler.process(CaMap);
+        } catch (Throwable e) {
+            // TODO 抛出异常？？？
         }
 
     }

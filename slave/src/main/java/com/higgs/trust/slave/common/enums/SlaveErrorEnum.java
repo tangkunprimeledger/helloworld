@@ -118,6 +118,9 @@ public enum SlaveErrorEnum {
     SLAVE_PACKAGE_REPLICATE_FAILED("834", "package replicated to consensus failed", false),
     SLAVE_PACKAGE_CALLBACK_ERROR("835", "package callback rs has error", false),
     SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR("836", "rs callback not register error", false),
+
+
+    SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),
     ;
     //@formatter:on
 
