@@ -2,6 +2,7 @@ package com.higgs.trust.rs.core.api;
 
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.Config;
 
 /**
@@ -73,4 +74,11 @@ public interface CaService {
      * @return
      */
     void callbackCa();
+
+    /** 
+     * @desc acquire CA information by user
+     * @param user
+     * @return   
+     */  
+    Ca acquireCa(String user);
 }

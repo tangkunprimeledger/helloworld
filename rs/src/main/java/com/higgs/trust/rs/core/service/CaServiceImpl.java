@@ -16,9 +16,11 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +45,7 @@ import java.util.*;
     public static final String PRI_KEY = "priKey";
 
     @Autowired ConfigRepository configRepository;
+    @Autowired CaRepository caRepository;
     @Autowired NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
@@ -72,7 +75,7 @@ import java.util.*;
 
     /**
      * @return
-     * @desc construct ca tx and send to slave
+     * @desc construct ca auth tx and send to slave
      */
     @Override public RespData authCaTx(CaVO caVO) {
         //send and get callback result
@@ -89,7 +92,7 @@ import java.util.*;
 
     /**
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc update pubKey and PriKey ,then insert into db
      */
     @Override public RespData updateKeyPair(String user) {
 
@@ -104,13 +107,13 @@ import java.util.*;
 
         CaVO caVO = generateTmpKeyPair();
 
-        // send CA auth request
+        // send CA update request
         return updateCaTx(caVO);
     }
 
     /**
      * @return
-     * @desc construct ca tx and send to slave
+     * @desc construct ca update tx and send to slave
      */
     @Override public RespData updateCaTx(CaVO caVO) {
         // TODO 更新CA的过程中应该伴随着RS节点的下线和上线过程，或者是该RS节点先暂停给交易签名，CA更新完成后，再重新恢复签名
@@ -130,7 +133,7 @@ import java.util.*;
 
     /**
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc cancel ca
      */
     @Override public RespData cancelKeyPair(String user) {
 
@@ -155,13 +158,13 @@ import java.util.*;
         caVO.setReqNo(HashUtil.getSHA256S(pubKey));
         caVO.setUser(nodeState.getNodeName());
 
-        // send CA auth request
+        // send CA cancel request
         return cancelCaTx(caVO);
     }
 
     /**
      * @return
-     * @desc construct ca tx and send to slave
+     * @desc construct ca cancel tx and send to slave
      */
     @Override public RespData cancelCaTx(CaVO caVO) {
         //send and get callback result
@@ -207,7 +210,6 @@ import java.util.*;
         });
 
         // construct tx and send to slave
-        //send and get callback result
         try {
             coreTransactionService.submitTx(constructInitCoreTx(CaMap, nodeState.getNodeName()));
         } catch (RsCoreException e) {
@@ -230,6 +232,15 @@ import java.util.*;
      */
     @Override public void callbackCa() {
 
+    }
+
+    /**
+     * @param user
+     * @return Ca
+     * @desc acquire CA information by user
+     */
+    @Override public Ca acquireCa(String user) {
+        return caRepository.getCa(user);
     }
 
     private CoreTransaction constructAuthCoreTx(CaVO caVO) {
