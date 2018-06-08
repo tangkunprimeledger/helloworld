@@ -1,12 +1,18 @@
 package com.higgs.trust.rs.core.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
+import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
+import com.higgs.trust.rs.core.bo.VoteRule;
+import com.higgs.trust.rs.core.repository.VoteRuleRepository;
+import com.higgs.trust.rs.core.vo.VoteRuleVO;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +26,7 @@ import org.springframework.stereotype.Component;
  */
 @Component @Slf4j public class RsCoreCallbackHandler implements TxCallbackHandler{
     @Autowired private TxCallbackRegistor txCallbackRegistor;
+    @Autowired private VoteRuleRepository voteRuleRepository;
 
     private TxCallbackHandler getCallbackHandler(){
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -64,7 +71,7 @@ import org.springframework.stereotype.Component;
     }
 
     /**
-     * process regist policy
+     * process register-policy
      *
      * @param respData
      */
@@ -75,7 +82,12 @@ import org.springframework.stereotype.Component;
         }
         CoreTransaction coreTransaction = respData.getData();
         JSONObject jsonObject = coreTransaction.getBizModel();
-        //TODO:liuyu  parse and save policy rule
+        // parse and save policy rule
+        VoteRuleVO voteRuleVO = JSON.parseObject(jsonObject.toJSONString(), VoteRuleVO.class);
+        VoteRule voteRule = new VoteRule();
+        voteRule.setPolicyId(coreTransaction.getPolicyId());
+        voteRule.setVotePattern(VotePatternEnum.fromCode(voteRuleVO.getVotePattern()));
+        voteRule.setCallbackType(CallbackTypeEnum.fromCode(voteRuleVO.getCallbackType()));
+        voteRuleRepository.add(voteRule);
     }
-
 }

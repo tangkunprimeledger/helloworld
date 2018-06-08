@@ -37,6 +37,7 @@ public enum RsCoreErrorEnum {
     RS_CORE_VOTE_ALREADY_HAS_RESULT_ERROR("214", "voteRequestRecord result already has error", false),
     RS_CORE_VOTE_RECEIPTING_HAS_ERROR("215", "vote receipting has error", false),
     RS_CORE_TX_NOT_EXIST_ERROR("216", "core_tx not exist error", false),
+    RS_CORE_VOTE_NOT_STATUS_ERROR("217", "core_tx status is error", false),
 
 
     RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
