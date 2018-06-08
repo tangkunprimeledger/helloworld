@@ -7,8 +7,6 @@ import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.datahandler.account.AccountDBHandler;
-import com.higgs.trust.slave.core.service.datahandler.account.AccountHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
@@ -28,47 +26,28 @@ import java.math.BigDecimal;
  */
 @Slf4j @Component public class AccountUnFreezeHandler implements ActionHandler {
     @Autowired AccountSnapshotHandler accountSnapshotHandler;
-    @Autowired AccountDBHandler accountDBHandler;
 
-    @Override public void validate(ActionData actionData) {
-        log.info("[accountUnFreeze.validate] is start");
-        process(actionData, TxProcessTypeEnum.VALIDATE);
-        log.info("[accountUnFreeze.validate] is success");
-    }
-
-    @Override public void persist(ActionData actionData) {
-        log.info("[accountUnFreeze.persist] is start");
-        process(actionData, TxProcessTypeEnum.PERSIST);
-        log.info("[accountUnFreeze.persist] is success");
-    }
-
-    private void process(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
+    @Override public void process(ActionData actionData) {
         AccountUnFreeze bo = (AccountUnFreeze)actionData.getCurrentAction();
         if (bo == null) {
             log.error("[accountUnFreeze.validate] convert action to accountUnFreezeBO is error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         //
-        unFreeze(bo,actionData.getCurrentBlock().getBlockHeader().getHeight(),processTypeEnum);
+        unFreeze(bo,actionData.getCurrentBlock().getBlockHeader().getHeight());
     }
 
-    public void unFreeze(AccountUnFreeze bo,Long blockHeight,TxProcessTypeEnum processTypeEnum){
+    public void unFreeze(AccountUnFreeze bo,Long blockHeight){
         //validate param
         BeanValidateResult validateResult = BeanValidator.validate(bo);
         if (!validateResult.isSuccess()) {
             log.error("[accountUnFreeze.process] param validate is fail,first msg:{}", validateResult.getFirstMsg());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-        AccountHandler accountHandler = null;
-        if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-            accountHandler = accountSnapshotHandler;
-        } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-            accountHandler = accountDBHandler;
-        }
         Profiler.enter("[validateForUnFreeze]");
         //validate business
         //check record is exists
-        AccountFreezeRecord freezeRecord = accountHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
+        AccountFreezeRecord freezeRecord = accountSnapshotHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
         if (freezeRecord == null) {
             log.error("[accountUnFreeze.process] freezeRecord is not exists flowNo:{},accountNo:{}", bo.getBizFlowNo(),
                 bo.getAccountNo());
@@ -88,7 +67,7 @@ import java.math.BigDecimal;
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
         }
         //get by accountNo
-        AccountInfo accountInfo = accountHandler.getAccountInfo(bo.getAccountNo());
+        AccountInfo accountInfo = accountSnapshotHandler.getAccountInfo(bo.getAccountNo());
         if (accountInfo == null) {
             log.error("[accountUnFreeze.process] account info is not exists by accountNo:{}", bo.getAccountNo());
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_IS_NOT_EXISTS_ERROR);
@@ -109,7 +88,7 @@ import java.math.BigDecimal;
         log.info("[accountUnFreeze.process] after-freeze-account:{}", afterOfAccount);
         //unfreeze
         Profiler.enter("[persistForUnFreeze]");
-        accountHandler.unfreeze(bo, freezeRecord, blockHeight);
+        accountSnapshotHandler.unfreeze(bo, freezeRecord, blockHeight);
         Profiler.release();
     }
 

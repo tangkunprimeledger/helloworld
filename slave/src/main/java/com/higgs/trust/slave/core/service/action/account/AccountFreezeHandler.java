@@ -10,16 +10,14 @@ import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
-import com.higgs.trust.slave.core.service.datahandler.account.AccountDBHandler;
-import com.higgs.trust.slave.core.service.datahandler.account.AccountHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
-import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.account.AccountFreeze;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBindingAction;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,23 +32,10 @@ import java.math.BigDecimal;
  */
 @Slf4j @Component public class AccountFreezeHandler implements ActionHandler {
     @Autowired AccountSnapshotHandler accountSnapshotHandler;
-    @Autowired AccountDBHandler accountDBHandler;
     @Autowired AccountContractBindingHandler accountContractBindingHandler;
     @Autowired ContractRepository contractRepository;
 
-    @Override public void validate(ActionData actionData) {
-        log.info("[accountFreeze.validate] is start");
-        process(actionData, TxProcessTypeEnum.VALIDATE);
-        log.info("[accountFreeze.validate] is success");
-    }
-
-    @Override public void persist(ActionData actionData) {
-        log.info("[accountFreeze.persist] is start");
-        process(actionData, TxProcessTypeEnum.PERSIST);
-        log.info("[accountFreeze.persist] is success");
-    }
-
-    private void process(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
+    @Override public void process(ActionData actionData) {
         AccountFreeze bo = (AccountFreeze)actionData.getCurrentAction();
         if (bo == null) {
             log.error("[accountFreeze.validate] convert action to AccountFreeze is error");
@@ -62,17 +47,11 @@ import java.math.BigDecimal;
             log.error("[accountFreeze.validate] param validate is fail,first msg:{}", validateResult.getFirstMsg());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-        AccountHandler accountHandler = null;
-        if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-            accountHandler = accountSnapshotHandler;
-        } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-            accountHandler = accountDBHandler;
-        }
         Profiler.enter("[validateForFreeze]");
         AccountFreeze newBo = BeanConvertor.convertBean(bo, AccountFreeze.class);
         try {
             //validate business
-            AccountInfo accountInfo = accountHandler.getAccountInfo(newBo.getAccountNo());
+            AccountInfo accountInfo = accountSnapshotHandler.getAccountInfo(newBo.getAccountNo());
             if (accountInfo == null) {
                 log.error("[accountFreeze.validate] account info is not exists by accountNo:{}", newBo.getAccountNo());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_IS_NOT_EXISTS_ERROR);
@@ -90,11 +69,11 @@ import java.math.BigDecimal;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
             }
             //bind contract address
-            String contractBindHash = bindContract(actionData, newBo, processTypeEnum);
+            String contractBindHash = bindContract(actionData, newBo);
             newBo.setContractAddr(contractBindHash);
             //check record is already exists
             AccountFreezeRecord freezeRecord =
-                accountHandler.getAccountFreezeRecord(newBo.getBizFlowNo(), newBo.getAccountNo());
+                accountSnapshotHandler.getAccountFreezeRecord(newBo.getBizFlowNo(), newBo.getAccountNo());
             if (freezeRecord != null) {
                 log.error("[accountFreeze.validate] freezeRecord is already exists flowNo:{},accountNo:{}",
                     bo.getBizFlowNo(), bo.getAccountNo());
@@ -105,7 +84,7 @@ import java.math.BigDecimal;
         }
         //freeze
         Profiler.enter("[persistForFreeze]");
-        accountHandler.freeze(newBo, actionData.getCurrentBlock().getBlockHeader().getHeight());
+        accountSnapshotHandler.freeze(newBo, actionData.getCurrentBlock().getBlockHeader().getHeight());
         Profiler.release();
     }
 
@@ -113,9 +92,8 @@ import java.math.BigDecimal;
      * bind contract address
      *
      * @param accountFreeze
-     * @param processTypeEnum
      */
-    private String bindContract(ActionData actionData, AccountFreeze accountFreeze, TxProcessTypeEnum processTypeEnum) {
+    private String bindContract(ActionData actionData, AccountFreeze accountFreeze) {
         if (StringUtils.isEmpty(accountFreeze.getContractAddr())) {
             return null;
         }
@@ -137,7 +115,7 @@ import java.math.BigDecimal;
         log.info("[accountFreeze.bindContract] contractArgs:{}", accountFreeze.getContractArgs());
         //bind contract
         AccountContractBinding accountContractBinding =
-            accountContractBindingHandler.process(action, blockHeight, txId, processTypeEnum);
+            accountContractBindingHandler.process(action, blockHeight, txId);
         return accountContractBinding.getHash();
     }
 }

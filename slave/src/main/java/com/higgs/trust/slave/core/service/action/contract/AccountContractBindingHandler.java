@@ -10,10 +10,10 @@ import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.snapshot.agent.AccountContractBindingSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
-import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBindingAction;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,21 +53,19 @@ import java.util.Date;
         return null;
     }
 
-    private boolean addressIsExist(String address, TxProcessTypeEnum processType) {
-        Contract contract = processType == TxProcessTypeEnum.VALIDATE
-                ? contractSnapshotAgent.get(address)
-                : contractRepository.queryByAddress(address);
+    private boolean addressIsExist(String address) {
+        Contract contract =  contractSnapshotAgent.get(address);
         return contract != null;
     }
 
-    private void check(AccountContractBindingAction action, TxProcessTypeEnum processType) {
+    private void check(AccountContractBindingAction action) {
         BeanValidateResult validateResult = BeanValidator.validate(action);
         if (!validateResult.isSuccess()) {
             log.error("ContractBinding param validate is fail,first msg:{}", validateResult.getFirstMsg());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, validateResult.getFirstMsg());
         }
 
-        if (!addressIsExist(action.getContractAddress(), processType)) {
+        if (!addressIsExist(action.getContractAddress())) {
             log.error("ContractBinding contract not exist {}", action.getContractAddress());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("contract not exist %s", action.getContractAddress()));
         }
@@ -100,22 +98,19 @@ import java.util.Date;
         return binding;
     }
 
-    private void process(ActionData actionData, TxProcessTypeEnum processType) {
+    @Override public void process(ActionData actionData) {
         if (!(actionData.getCurrentAction() instanceof AccountContractBindingAction)) {
             throw new IllegalArgumentException("action need a type of AccountContractBindingAction");
         }
         AccountContractBindingAction action = (AccountContractBindingAction) actionData.getCurrentAction();
-        check(action, processType);
+        check(action);
         long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
-        process(action, blockHeight, txId, processType);
+        process(action, blockHeight, txId);
     }
 
-    private boolean exist(String hash, TxProcessTypeEnum processType) {
-        if (processType == TxProcessTypeEnum.VALIDATE) {
-            return snapshotAgent.getBinding(hash) != null;
-        }
-        return repository.queryByHash(hash) != null;
+    private boolean exist(String hash) {
+        return snapshotAgent.getBinding(hash) != null;
     }
 
     /**
@@ -123,33 +118,19 @@ import java.util.Date;
      * @param action
      * @param blockHeight
      * @param txId
-     * @param processType
      * @return
      */
-    public AccountContractBinding process(final AccountContractBindingAction action, long blockHeight, String txId, final TxProcessTypeEnum processType) {
+    public AccountContractBinding process(final AccountContractBindingAction action, long blockHeight, String txId) {
         if (action == null) {
             log.error("action is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, "action is null");
         }
 
         AccountContractBinding contractBinding = getAccountContractBinding(action, blockHeight, txId);
-        if (this.exist(contractBinding.getHash(), processType)) {
+        if (this.exist(contractBinding.getHash())) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("AccountContractBinding already exist: %s", contractBinding));
         }
-
-        if (processType == TxProcessTypeEnum.VALIDATE) {
-            snapshotAgent.put(contractBinding);
-        } else {
-            repository.add(contractBinding);
-        }
+        snapshotAgent.put(contractBinding);
         return contractBinding;
-    }
-
-    @Override public void validate(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.VALIDATE);
-    }
-
-    @Override public void persist(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.PERSIST);
     }
 }

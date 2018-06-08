@@ -6,8 +6,6 @@ import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.datahandler.account.AccountDBHandler;
-import com.higgs.trust.slave.core.service.datahandler.account.AccountHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
@@ -24,18 +22,9 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j @Component public class OpenAccountHandler implements ActionHandler {
     @Autowired AccountSnapshotHandler accountSnapshotHandler;
-    @Autowired AccountDBHandler accountDBHandler;
 
-    @Override public void validate(ActionData actionData) {
-        process(actionData,TxProcessTypeEnum.VALIDATE);
-    }
-
-    @Override public void persist(ActionData actionData) {
-        process(actionData,TxProcessTypeEnum.PERSIST);
-    }
-
-    private void process(ActionData actionData,TxProcessTypeEnum processTypeEnum){
-        log.info("[openAccount.process] is start prosessType:{}",processTypeEnum);
+    @Override public void process(ActionData actionData){
+        log.info("[openAccount.process] is start ");
         OpenAccount bo = (OpenAccount)actionData.getCurrentAction();
         if (bo == null) {
             log.error("[openAccount.process] convert action to OpenAccountBo is error");
@@ -47,22 +36,16 @@ import org.springframework.stereotype.Component;
             log.error("[openAccount.process] param validate is fail,first msg:{}", validateResult.getFirstMsg());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-        AccountHandler accountHandler = null;
-        if(processTypeEnum == TxProcessTypeEnum.VALIDATE){
-            accountHandler = accountSnapshotHandler;
-        }else if(processTypeEnum == TxProcessTypeEnum.PERSIST){
-            accountHandler = accountDBHandler;
-        }
         Profiler.enter("[validateForOpenAccount]");
         // validate business
         // check accountNo
-        AccountInfo accountInfo = accountHandler.getAccountInfo(bo.getAccountNo());
+        AccountInfo accountInfo = accountSnapshotHandler.getAccountInfo(bo.getAccountNo());
         if (accountInfo != null) {
             log.error("[openAccount.process] is idempotent for accountNo:{}", bo.getAccountNo());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
         // check currency
-        CurrencyInfo currencyInfo = accountHandler.queryCurrency(bo.getCurrency());
+        CurrencyInfo currencyInfo = accountSnapshotHandler.queryCurrency(bo.getCurrency());
         if (currencyInfo == null) {
             log.error("[openAccount.process] currency:{} is not exists", bo.getCurrency());
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_CURRENCY_NOT_EXISTS_ERROR);
@@ -70,7 +53,7 @@ import org.springframework.stereotype.Component;
         Profiler.release();
         //process business
         Profiler.enter("[persistForOpenAccount]");
-        accountHandler.openAccount(bo);
+        accountSnapshotHandler.openAccount(bo);
         Profiler.release();
         log.info("[openAccount.process] is success");
     }
