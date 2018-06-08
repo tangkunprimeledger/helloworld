@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;

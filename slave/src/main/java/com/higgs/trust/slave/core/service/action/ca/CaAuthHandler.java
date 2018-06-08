@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
@@ -9,13 +8,9 @@ import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
-import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityHandler;
-import com.higgs.trust.slave.model.bo.DataIdentity;
-import com.higgs.trust.slave.model.bo.action.DataIdentityAction;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.context.ActionData;
-import com.higgs.trust.slave.model.convert.DataIdentityConvert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.service.contract;
 
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.contract.ContractBaseTest;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;

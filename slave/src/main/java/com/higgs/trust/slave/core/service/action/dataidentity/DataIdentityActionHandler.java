@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.dataidentity;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.model.bo.action.DataIdentityAction;
 import com.higgs.trust.slave.model.bo.context.ActionData;

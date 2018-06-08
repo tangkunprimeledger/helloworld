@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.action.contract;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
