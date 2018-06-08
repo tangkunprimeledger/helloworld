@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;

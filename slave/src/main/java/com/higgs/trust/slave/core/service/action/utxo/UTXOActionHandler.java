@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.utxo;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import lombok.extern.slf4j.Slf4j;
@@ -22,27 +21,16 @@ public class UTXOActionHandler implements ActionHandler {
 
 
     /**
-     * action validate
+     * action process
      *
      * @param actionData
      */
     @Override
-    public void validate(ActionData actionData) {
+    public void process(ActionData actionData) {
         log.info("[UTXOAction.validate] is starting!");
-        utxoActionService.process(actionData, TxProcessTypeEnum.VALIDATE);
+        utxoActionService.process(actionData);
         log.info("[UTXOAction.validate] is success!");
     }
 
-    /**
-     * perisisit
-     *
-     * @param actionData
-     */
-    @Override
-    public void persist(ActionData actionData) {
-        log.info("[UTXOAction.persist] is starting!");
-        utxoActionService.process(actionData, TxProcessTypeEnum.PERSIST);
-        log.info("[UTXOAction.persist] is success!");
-    }
 
 }
