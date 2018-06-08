@@ -19,7 +19,6 @@ public class UTXOActionHandler implements ActionHandler {
     @Autowired
     private UTXOActionService utxoActionService;
 
-
     /**
      * action process
      *
@@ -27,9 +26,9 @@ public class UTXOActionHandler implements ActionHandler {
      */
     @Override
     public void process(ActionData actionData) {
-        log.info("[UTXOAction.validate] is starting!");
+        log.info("[UTXOAction.process] is starting!");
         utxoActionService.process(actionData);
-        log.info("[UTXOAction.validate] is success!");
+        log.info("[UTXOAction.process] is success!");
     }
 
 

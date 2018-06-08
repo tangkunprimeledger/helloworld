@@ -3,7 +3,10 @@ package com.higgs.trust.slave.core.service.snapshot.agent;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
+import com.higgs.trust.slave.core.service.datahandler.utxo.UTXODBHandler;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
@@ -17,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +40,9 @@ public class UTXOSnapshotAgent implements CacheLoader {
     @Autowired
     private SnapshotService snapshot;
 
+    @Autowired
+    private UTXODBHandler utxodbHandler;
+
     /**
      * get data from snapshot
      *
@@ -48,14 +55,21 @@ public class UTXOSnapshotAgent implements CacheLoader {
     }
 
     /**
-     * put data to snapshot
-     *
+     * insert  object into the snapshot
      * @param key
-     * @param object
+     * @param value
      */
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
-    private void put(Object key, Object object) {
-        // snapshot.put(SnapshotBizKeyEnum.UTXO, key, object);
+   private void insert(Object key, Object value){
+       snapshot.insert(SnapshotBizKeyEnum.UTXO, key, value);
+   }
+
+    /**
+     * update  object into the snapshot
+     * @param key
+     * @param value
+     */
+    private void update(Object key, Object value){
+        snapshot.update(SnapshotBizKeyEnum.UTXO, key, value);
     }
 
     /**
@@ -84,7 +98,7 @@ public class UTXOSnapshotAgent implements CacheLoader {
     public boolean batchInsertTxOut(List<TxOutPO> txOutPOList) {
         for (TxOutPO txOutPO : txOutPOList) {
             TxOutCacheKey txOutCacheKey = new TxOutCacheKey(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex());
-            put(txOutCacheKey, txOutPO);
+            insert(txOutCacheKey, txOutPO);
         }
         return true;
     }
@@ -97,7 +111,7 @@ public class UTXOSnapshotAgent implements CacheLoader {
     public boolean bachUpdateTxOut(List<TxOutPO> txOutPOList) {
         for (TxOutPO txOutPO : txOutPOList) {
             TxOutCacheKey txOutCacheKey = new TxOutCacheKey(txOutPO.getTxId(), txOutPO.getIndex(), txOutPO.getActionIndex());
-            put(txOutCacheKey, txOutPO);
+            update(txOutCacheKey, txOutPO);
         }
         return true;
     }
@@ -120,10 +134,23 @@ public class UTXOSnapshotAgent implements CacheLoader {
      * @param insertMap
      * @return
      */
-    //TODO to implements your own bachInsert method for db
     @Override
     public boolean bachInsert(Map<Object, Object> insertMap) {
-        return false;
+        if (insertMap.isEmpty()){
+            return true;
+        }
+
+        //get bach insert data
+        List<TxOutPO> txOutPOList = new ArrayList<>();
+        for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
+            if (!(entry.getKey() instanceof  TxOutCacheKey)){
+                log.error("insert key is not the type of TxOutCacheKey error");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+            }
+            txOutPOList.add((TxOutPO)entry.getValue());
+        }
+
+        return utxodbHandler.batchInsert(txOutPOList);
     }
 
     /**
@@ -132,10 +159,23 @@ public class UTXOSnapshotAgent implements CacheLoader {
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
     @Override
     public boolean bachUpdate(Map<Object, Object> updateMap) {
-        return false;
+        if (updateMap.isEmpty()){
+            return true;
+        }
+
+        //get bach update data
+        List<TxOutPO> txOutPOList = new ArrayList<>();
+        for (Map.Entry<Object, Object> entry : updateMap.entrySet()) {
+            if (!(entry.getKey() instanceof  TxOutCacheKey)){
+                log.error("update key is not the type of TxOutCacheKey error");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+            }
+            txOutPOList.add((TxOutPO)entry.getValue());
+        }
+
+        return utxodbHandler.batchUpdate(txOutPOList);
     }
 
     /**

@@ -20,20 +20,12 @@ public class DataIdentityActionHandler implements ActionHandler {
     private DataIdentityService dataIdentityService;
 
     @Override
-    public void validate(ActionData actionData) {
-        log.info("[ DataIdentityAction.validate] is starting");
-        dataIdentityService.process(actionData, TxProcessTypeEnum.VALIDATE);
-        log.info("[ DataIdentityAction.validate] is end");
-
+    public void process(ActionData actionData) {
+        log.info("[ DataIdentityAction.process] is starting");
+        dataIdentityService.process(actionData);
+        log.info("[ DataIdentityAction.process] is end");
     }
 
-    @Override
-    public void persist(ActionData actionData) {
-        DataIdentityAction dataIdentityAction = (DataIdentityAction) actionData.getCurrentAction();
-        log.info("[ DataIdentityAction.persist] is start, params:{}", dataIdentityAction);
-        dataIdentityService.process(actionData, TxProcessTypeEnum.PERSIST);
-        log.info("[DataIdentityAction.persist] is success");
-    }
 
 
 }

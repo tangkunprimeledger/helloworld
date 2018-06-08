@@ -814,12 +814,15 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             }
 
             //flush insert data into db
-            if (!insertMap.isEmpty()){
-                cacheLoader.bachInsert(insertMap);
+            if (!insertMap.isEmpty() && !cacheLoader.bachInsert(insertMap)){
+                 log.error("Flush data for bachInsert db failed error");
+                 throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_INSERT_EXCEPTION);
             }
+
             //flush update data into db
-            if (!updateMap.isEmpty()){
-                cacheLoader.bachUpdate(updateMap);
+            if (!updateMap.isEmpty() && !cacheLoader.bachUpdate(updateMap)){
+                log.error("Flush data for bachUpdate db failed error");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_UPDATE_EXCEPTION);
             }
         }
         log.info("End of flushing data into db");

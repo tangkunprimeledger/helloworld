@@ -55,11 +55,7 @@ public class UTXOActionService {
     @Autowired
     private UTXOSnapshotHandler utxoSnapshotHandler;
     @Autowired
-    private UTXODBHandler utxoDBHandler;
-    @Autowired
     private DataIdentitySnapshotHandler dataIdentitySnapshotHandler;
-    @Autowired
-    private DataIdentityDBHandler dataIdentityDBHandler;
     @Autowired
     private PolicySnapshotHandler policySnapshotHandler;
     @Autowired
@@ -81,7 +77,7 @@ public class UTXOActionService {
         try {
             BeanValidator.validate(utxoAction).failThrow();
         } catch (IllegalArgumentException e) {
-            log.error("Convert and validate utxoAction is error .msg={}", e.getMessage());
+            log.error("Convert and process utxoAction is error .msg={}", e.getMessage());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
