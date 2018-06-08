@@ -74,6 +74,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     @Autowired
     private ContractStateSnapshotAgent contractStateSnapshotAgent;
 
+    @Autowired
+    private CaSnapshotAgent caSnapshotAgent;
+
 
     /**
      * cache  for snapshot cacheLoader
@@ -146,6 +149,10 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //register CONTRACT STATE cache loader
             log.debug("Register CONTRACT STATE cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.CONTRACT_SATE, contractStateSnapshotAgent);
+
+            //registerCA cache loader
+            log.debug("Register CA cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.CA, caSnapshotAgent);
         } finally {
             log.debug("unlock lock  for init snapshot");
             lock.unlock();
