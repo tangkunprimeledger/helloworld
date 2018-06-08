@@ -5,8 +5,6 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.datahandler.ca.CaDBHandler;
-import com.higgs.trust.slave.core.service.datahandler.ca.CaHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
@@ -23,30 +21,11 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j @Component public class CaAuthHandler implements ActionHandler {
 
-    @Autowired CaDBHandler caDBHandler;
     @Autowired CaSnapshotHandler caSnapshotHandler;
 
-    /**
-     * the logic for the action
-     *
-     * @param actionData
-     */
-    @Override public void validate(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.VALIDATE);
-    }
-
-    /**
-     * the storage for the action
-     *
-     * @param actionData
-     */
-    @Override public void persist(ActionData actionData) {
-        process(actionData,TxProcessTypeEnum.PERSIST);
-    }
-
-    private void process(ActionData actionData,TxProcessTypeEnum processTypeEnum){
+    @Override public void process(ActionData actionData) {
         // convert action and validate it
-        CaAction caAction = (CaAction) actionData.getCurrentAction();
+        CaAction caAction = (CaAction)actionData.getCurrentAction();
         log.info("[CaAuthHandler.process] is start,params:{}", caAction);
         try {
             BeanValidator.validate(caAction).failThrow();
@@ -55,27 +34,18 @@ import org.springframework.stereotype.Component;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, e);
         }
 
-
-        //data operate type
-        CaHandler caHandler = null;
-        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
-            caHandler = caSnapshotHandler;
-        }
-        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
-            caHandler = caDBHandler;
-        }
-
         //validate idempotent
-        Ca ca = caHandler.getCa(caAction.getUser());
+        Ca ca = caSnapshotHandler.getCa(caAction.getUser());
         if (null != ca) {
-            log.error("[CaAuthHandler.process] idempotent exception, nodeName={}, pubKey={}", caAction.getUser(), caAction.getPubKey());
+            log.error("[CaAuthHandler.process] idempotent exception, nodeName={}, pubKey={}", caAction.getUser(),
+                caAction.getPubKey());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
 
         Profiler.enter("[DataIdentity.save]");
         ca = new Ca();
         BeanUtils.copyProperties(caAction, ca);
-        caHandler.saveCa(ca);
+        caSnapshotHandler.authCa(ca);
         Profiler.release();
     }
 }

@@ -12,6 +12,6 @@ import lombok.Setter;
 @Getter @Setter public class ClusterNode extends BaseBO {
 
     private String nodeName;
-    private String p2pStatus;
-    private String rsStatus;
+    private boolean p2pStatus;
+    private boolean rsStatus;
 }
