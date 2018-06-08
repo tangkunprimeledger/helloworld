@@ -66,13 +66,8 @@ import org.springframework.stereotype.Component;
             case CONTRACT_DESTROY:
                 return;
         }
-        //call custom rs handler
         TxCallbackHandler callbackHandler = getCallbackHandler();
         callbackHandler.onEnd(respData);
-    }
-
-    @Override public void onFailOver(RespData<CoreTransaction> respData) {
-
     }
 
     /**
@@ -86,15 +81,10 @@ import org.springframework.stereotype.Component;
             return;
         }
         CoreTransaction coreTransaction = respData.getData();
-        VoteRule voteRule = voteRuleRepository.queryByPolicyId(coreTransaction.getPolicyId());
-        if(voteRule != null){
-            log.info("[processRegisterPolicy]voteRule is already exist,txId:{}",coreTransaction.getTxId());
-            return;
-        }
         JSONObject jsonObject = coreTransaction.getBizModel();
         // parse and save policy rule
         VoteRuleVO voteRuleVO = JSON.parseObject(jsonObject.toJSONString(), VoteRuleVO.class);
-        voteRule = new VoteRule();
+        VoteRule voteRule = new VoteRule();
         voteRule.setPolicyId(coreTransaction.getPolicyId());
         voteRule.setVotePattern(VotePatternEnum.fromCode(voteRuleVO.getVotePattern()));
         voteRule.setCallbackType(CallbackTypeEnum.fromCode(voteRuleVO.getCallbackType()));

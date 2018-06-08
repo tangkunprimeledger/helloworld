@@ -173,7 +173,6 @@ import java.util.List;
                 //if receipts is empty,should retry
                 if (CollectionUtils.isEmpty(receipts)) {
                     log.error("[processInitTx]voting receipts is empty by SYNC txId:{}", bo.getTxId());
-                    //TODO:liuyu add monitor
                     return;
                 }
                 //get sign info from receipts
@@ -189,7 +188,6 @@ import java.util.List;
                 if (receipts.size() < voters.size()) {
                     log.error("[processInitTx]receipts.size:{} is less than voters.size:{} txId:{}", receipts.size(),
                         voters.size(), bo.getTxId());
-                    //TODO:liuyu add monitor
                     return;
                 }
                 //check vote decision for SYNC pattern
@@ -201,8 +199,7 @@ import java.util.List;
                     }
                     //get decision result from receipts
                     boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
-                    log.info("[processInitTx]txId:{},receipts:{}", txId, receipts);
-                    log.info("[processInitTx]txId:{},decision:{}", txId, decision);
+                    log.info("[processInitTx]decision:{}", decision);
                     if (!decision) {
                         toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL);
                         return;
@@ -267,25 +264,23 @@ import java.util.List;
                 //query receipts by txId
                 List<VoteReceipt> receipts = voteReceiptRepository.queryByTxId(bo.getTxId());
                 if (CollectionUtils.isEmpty(receipts)) {
-                    log.debug("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
+                    log.error("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
                     return;
                 }
                 if (receipts.size() < rsIds.size() - 1) {
-                    log.debug("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
+                    log.error("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
                         rsIds.size(), bo.getTxId());
                     return;
                 }
                 //get decision result
                 boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
-                log.info("[processNeedVoteTx]txId:{},receipts:{}", txId, receipts);
-                log.info("[processNeedVoteTx]txId:{},decision:{}", txId, decision);
+                log.info("[processNeedVoteTx]decision:{}", decision);
                 if (!decision) {
                     toEndAndCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL);
                     return;
                 }
                 List<SignInfo> signInfos = voteService.getSignInfos(receipts);
                 signInfos.addAll(bo.getSignDatas());
-                //save sign info
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
                 //change status to WAIT for SYNC pattern
                 coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);

@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.service;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
@@ -15,9 +16,11 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +45,7 @@ import java.util.*;
     public static final String PRI_KEY = "priKey";
 
     @Autowired ConfigRepository configRepository;
+    @Autowired CaRepository caRepository;
     @Autowired NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
@@ -71,14 +75,12 @@ import java.util.*;
 
     /**
      * @return
-     * @desc construct ca tx and send to slave
+     * @desc construct ca auth tx and send to slave
      */
     @Override public RespData authCaTx(CaVO caVO) {
-        RespData respData;
-
         //send and get callback result
         try {
-            coreTransactionService.submitTx(BizTypeEnum.CA_AUTH, constructAuthCoreTx(caVO));
+            coreTransactionService.submitTx(constructAuthCoreTx(caVO));
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 log.error("create bill error", e);
@@ -90,9 +92,9 @@ import java.util.*;
 
     /**
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc update pubKey and PriKey ,then insert into db
      */
-    @Override public void updateKeyPair(String user) {
+    @Override public RespData updateKeyPair(String user) {
 
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
@@ -103,49 +105,23 @@ import java.util.*;
 
         // TODO 更新CA之前，应该检测CA是否存在，存在就可以更新，否则不可以
 
-        // generate pubKey and priKey
-        Map<String, String> map = null;
-        try {
-            map = KeyGeneratorUtils.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            log.error("[updateKeyPair] generate pubKey/priKey has error, no such algorithm");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
-                "[updateKeyPair] generate pubKey/priKey has error, no such algorithm");
-        }
-        String pubKey = map.get(PUB_KEY);
-        String priKey = map.get(PRI_KEY);
-        //store temp pubKey and priKey
-        Config config = new Config();
-        config.setNodeName(nodeState.getNodeName());
-        config.setTmpPubKey(pubKey);
-        config.setTmpPriKey(priKey);
-        configRepository.updateConfig(config);
+        CaVO caVO = generateTmpKeyPair();
 
-        //construct caVO
-        CaVO caVO = new CaVO();
-        caVO.setVersion(VersionEnum.V1.getCode());
-        caVO.setPeriod(new Date());
-        caVO.setPubKey(pubKey);
-        caVO.setReqNo(HashUtil.getSHA256S(pubKey));
-        caVO.setUsage("consensus");
-        caVO.setUser(nodeState.getNodeName());
-
-        // send CA auth request
-        caClient.caUpdate(nodeState.getNodeName(), caVO);
+        // send CA update request
+        return updateCaTx(caVO);
     }
 
     /**
      * @return
-     * @desc construct ca tx and send to slave
+     * @desc construct ca update tx and send to slave
      */
     @Override public RespData updateCaTx(CaVO caVO) {
         // TODO 更新CA的过程中应该伴随着RS节点的下线和上线过程，或者是该RS节点先暂停给交易签名，CA更新完成后，再重新恢复签名
 
-        RespData respData;
         //send and get callback result
         try {
             // TODO 需要重写构造coretx的方法，是CA更新类型的交易
-            coreTransactionService.submitTx(BizTypeEnum.CA_UPDATE, constructUpdateCoreTx(caVO));
+            coreTransactionService.submitTx(constructUpdateCoreTx(caVO));
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 log.error("create bill error", e);
@@ -157,9 +133,9 @@ import java.util.*;
 
     /**
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc cancel ca
      */
-    @Override public void cancelKeyPair(String user) {
+    @Override public RespData cancelKeyPair(String user) {
 
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
@@ -182,26 +158,36 @@ import java.util.*;
         caVO.setReqNo(HashUtil.getSHA256S(pubKey));
         caVO.setUser(nodeState.getNodeName());
 
-        // send CA auth request
-        caClient.caCancel(nodeState.getNodeName(), caVO);
+        // send CA cancel request
+        return cancelCaTx(caVO);
     }
 
     /**
      * @return
-     * @desc construct ca tx and send to slave
+     * @desc construct ca cancel tx and send to slave
      */
     @Override public RespData cancelCaTx(CaVO caVO) {
-        RespData respData;
-
         //send and get callback result
         try {
-            coreTransactionService.submitTx(BizTypeEnum.CA_CANCEL, constructCancelCoreTx(caVO));
+            coreTransactionService.submitTx(constructCancelCoreTx(caVO));
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 log.error("create bill error", e);
                 return new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
         }
+        return new RespData<>();
+    }
+
+    /**
+     * @return
+     * @desc 每个节点都需要调用initKeyPair()方法
+     */
+    @Override public RespData<String> initStart() {
+        List<String> nodeList = clusterInfo.clusterNodeNames();
+        nodeList.forEach((nodeName) -> {
+            initKeyPair();
+        });
         return new RespData<>();
     }
 
@@ -213,7 +199,7 @@ import java.util.*;
      * 3、各个节点返回各个公钥
      * 4、将所有的公钥组装在一起，下发交易
      */
-    @Override public void initKeyPair() {
+    private void initKeyPair() {
         List<String> nodeList = clusterInfo.clusterNodeNames();
         Map CaMap = new HashMap();
         // acquire all Node's pubKey
@@ -223,33 +209,21 @@ import java.util.*;
             CaMap.put(nodeName, pubKey);
         });
 
-        // construct
+        // construct tx and send to slave
+        try {
+            coreTransactionService.submitTx(constructInitCoreTx(CaMap, nodeState.getNodeName()));
+        } catch (RsCoreException e) {
+            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
+                log.error("create bill error", e);
+            }
+        }
 
     }
 
     @Override public RespData<String> initCaTx() {
-        // generate pubKey and priKey
-        Map<String, String> map = null;
-        try {
-            map = KeyGeneratorUtils.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            log.error("[initKeyPair] generate pubKey/priKey has error, no such algorithm");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
-                "[initKeyPair] generate pubKey/priKey has error, no such algorithm");
-        }
-        String pubKey = map.get(PUB_KEY);
-        String priKey = map.get(PRI_KEY);
-        //store pubKey and priKey
-        Config config = new Config();
-        config.setNodeName(nodeState.getNodeName());
-        config.setPubKey(pubKey);
-        config.setPriKey(priKey);
-        config.setValid("FALSE");
-        config.setVersion(VersionEnum.V1.getCode());
-        configRepository.insertConfig(config);
-
-        RespData<String> respData = new RespData<>(pubKey);
-        return respData;
+        // acquire pubKey from DB
+        String pubKey = configRepository.getConfig(nodeState.getNodeName()).getPubKey();
+        return new RespData<>(pubKey);
     }
 
     /**
@@ -260,7 +234,16 @@ import java.util.*;
 
     }
 
-    public CoreTransaction constructAuthCoreTx(CaVO caVO) {
+    /**
+     * @param user
+     * @return Ca
+     * @desc acquire CA information by user
+     */
+    @Override public Ca acquireCa(String user) {
+        return caRepository.getCa(user);
+    }
+
+    private CoreTransaction constructAuthCoreTx(CaVO caVO) {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId(caVO.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
@@ -283,7 +266,7 @@ import java.util.*;
         return actions;
     }
 
-    public CoreTransaction constructUpdateCoreTx(CaVO caVO) {
+    private CoreTransaction constructUpdateCoreTx(CaVO caVO) {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId(caVO.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
@@ -306,7 +289,7 @@ import java.util.*;
         return actions;
     }
 
-    public CoreTransaction constructCancelCoreTx(CaVO caVO) {
+    private CoreTransaction constructCancelCoreTx(CaVO caVO) {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId(caVO.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
@@ -321,6 +304,28 @@ import java.util.*;
         CaAction caAction = new CaAction();
         caAction.setUser(caVO.getUser());
         caAction.setType(ActionTypeEnum.CA_CANCEL);
+        caAction.setIndex(0);
+        actions.add(caAction);
+        return actions;
+    }
+
+    private CoreTransaction constructInitCoreTx(Map map, String user) {
+        CoreTransaction coreTx = new CoreTransaction();
+        String pubKey = configRepository.getConfig(user).getPubKey();
+        coreTx.setTxId(HashUtil.getSHA256S(pubKey));
+        coreTx.setSender(nodeState.getNodeName());
+        coreTx.setVersion(VersionEnum.V1.getCode());
+        coreTx.setPolicyId(BizTypeEnum.CA_INIT.getCode());
+        coreTx.setActionList(buildInitActionList(map, user));
+        return coreTx;
+    }
+
+    private List<Action> buildInitActionList(Map map, String user) {
+        List<Action> actions = new ArrayList<>();
+        CaAction caAction = new CaAction();
+        caAction.setUser(user);
+        caAction.setType(ActionTypeEnum.CA_INIT);
+        caAction.setData(JSON.toJSONString(map));
         caAction.setIndex(0);
         actions.add(caAction);
         return actions;
@@ -366,6 +371,38 @@ import java.util.*;
         config.setValid("FALSE");
         config.setVersion(VersionEnum.V1.getCode());
         configRepository.insertConfig(config);
+
+        //construct caVO
+        CaVO caVO = new CaVO();
+        caVO.setVersion(VersionEnum.V1.getCode());
+        caVO.setPeriod(new Date());
+        caVO.setPubKey(pubKey);
+        caVO.setReqNo(HashUtil.getSHA256S(pubKey));
+        caVO.setUsage("consensus");
+        caVO.setUser(nodeState.getNodeName());
+
+        return caVO;
+    }
+
+    public CaVO generateTmpKeyPair() {
+
+        // generate temp pubKey and priKey and insert into db
+        Map<String, String> map = null;
+        try {
+            map = KeyGeneratorUtils.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            log.error("[updateKeyPair] generate pubKey/priKey has error, no such algorithm");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
+                "[updateKeyPair] generate pubKey/priKey has error, no such algorithm");
+        }
+        String pubKey = map.get(PUB_KEY);
+        String priKey = map.get(PRI_KEY);
+        //store temp pubKey and priKey
+        Config config = new Config();
+        config.setNodeName(nodeState.getNodeName());
+        config.setTmpPubKey(pubKey);
+        config.setTmpPriKey(priKey);
+        configRepository.updateConfig(config);
 
         //construct caVO
         CaVO caVO = new CaVO();

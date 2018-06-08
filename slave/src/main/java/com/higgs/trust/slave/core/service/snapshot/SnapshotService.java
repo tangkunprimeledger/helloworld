@@ -9,10 +9,6 @@ import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
  * @create 2018年04月12日21:48
  */
 public interface SnapshotService {
-    /**
-     * register all the caches to packageSnapshot,only run when the application is starting.
-     */
-    void init();
 
     /**
      * start the snapshot transaction.Tag isOpenTransaction to be true.
@@ -21,6 +17,11 @@ public interface SnapshotService {
 
     /**
      * clear packageCache and txCache
+     */
+    void clear();
+
+    /**
+     * clear globalCache and packageCache and txCache
      */
     void destroy();
 
@@ -35,13 +36,20 @@ public interface SnapshotService {
     Object get(SnapshotBizKeyEnum key1, Object key2);
 
     /**
-     * put object into the snapshot  txCache
-     *
+     * insert  object into the snapshot  txCache
      * @param key1
      * @param key2
+     * @param value
      */
-    void put(SnapshotBizKeyEnum key1, Object key2, Object value);
+    void insert(SnapshotBizKeyEnum key1, Object key2, Object value);
 
+    /**
+     * update  object into the snapshot  txCache
+     * @param key1
+     * @param key2
+     * @param value
+     */
+    void update(SnapshotBizKeyEnum key1, Object key2, Object value);
     /**
      * 1. copy the txCache to packageCache
      * 2.clear txCache
@@ -54,4 +62,10 @@ public interface SnapshotService {
      * 2.tag the isOpenTransaction to be false
      */
     void rollback();
+
+    /**
+     * 1.flush data into globalCache
+     * 2.flush data into db
+     */
+    void flush();
 }

@@ -4,7 +4,6 @@ import com.higgs.trust.contract.ExecuteContext;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.contract.ExecuteEngine;
 import com.higgs.trust.contract.ExecuteEngineManager;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;

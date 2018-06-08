@@ -11,10 +11,12 @@ import java.util.Date;
  * @author WangQuanzhou
  * @date 2018/6/5 16:15    
  */
-@Getter @Setter public class CaAction extends Action {
+@Getter @Setter public class CaAction<T> extends Action {
     private String version;
 
     private Date period;
+
+    private T data;
 
     private String valid;
 

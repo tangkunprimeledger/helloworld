@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
      * @return
      */
     public Ca getCa(String user) {
-        return get(new CaCachKey(user));
+        return get(new CaCacheKey(user));
     }
 
     /**
@@ -49,15 +49,15 @@ import org.springframework.stereotype.Component;
      * @param ca
      */
     public void saveCa(Ca ca) {
-        put(new CaSnapshotAgent.CaCachKey(ca.getUser()), ca);
+        put(new CaSnapshotAgent.CaCacheKey(ca.getUser()), ca);
     }
 
     /**
      * when cache is not exists,load from db
      */
     @Override public Object query(Object object) {
-        if (object instanceof CaSnapshotAgent.CaCachKey) {
-            CaCachKey key = (CaCachKey)object;
+        if (object instanceof CaSnapshotAgent.CaCacheKey) {
+            CaCacheKey key = (CaCacheKey)object;
             return caRepository.getCa(key.getUser());
         }
         log.error("not found load function for cache key:{}", object);
@@ -67,7 +67,7 @@ import org.springframework.stereotype.Component;
     /**
      * the cache key of data identity
      */
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class CaCachKey extends BaseBO {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class CaCacheKey extends BaseBO {
         private String user;
     }
 }

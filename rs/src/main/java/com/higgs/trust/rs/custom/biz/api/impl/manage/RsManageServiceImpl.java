@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.custom.biz.api.impl.manage;
 
+import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
@@ -25,6 +26,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.higgs.trust.rs.common.enums.BizTypeEnum.REGISTER_POLICY;
+import static com.higgs.trust.rs.common.enums.BizTypeEnum.REGISTER_RS;
 
 /**
  * @author tangfashuang
@@ -66,7 +70,8 @@ public class RsManageServiceImpl implements RsManageService{
                     //todo check slave rsId idempotent
 
                     //组装UTXO,CoreTransaction，下发
-                    return submitTx(coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),
+                    return submitTx(REGISTER_RS,
+                        coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),
                             null,
                             buildRsActionList(registerRsVO),
                             InitPolicyEnum.REGISTER_RS.getPolicyId()));
@@ -119,7 +124,7 @@ public class RsManageServiceImpl implements RsManageService{
                     //todo check slave rsId idempotent
 
                     //组装UTXO,CoreTransaction，下发
-                    return submitTx(
+                    return submitTx(REGISTER_POLICY,
                         coreTransactionConvertor.buildCoreTransaction(registerPolicyVO.getRequestId(),
                             null,
                             buildPolicyActionList(registerPolicyVO),
@@ -160,10 +165,10 @@ public class RsManageServiceImpl implements RsManageService{
     /**
      * 发送交易到rs-core
      */
-    private RespData<?> submitTx (CoreTransaction coreTransaction){
+    private RespData<?> submitTx (BizTypeEnum bizType,CoreTransaction coreTransaction){
         //send and get callback result
         try {
-            coreTransactionService.submitTx(coreTransaction);
+            coreTransactionService.submitTx(bizType, coreTransaction);
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 return requestHelper.requestIdempotent(coreTransaction.getTxId());

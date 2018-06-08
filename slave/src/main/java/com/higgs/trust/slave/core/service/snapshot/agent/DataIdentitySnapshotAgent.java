@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
@@ -14,21 +16,36 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author liuyu
  * @description an agent for data identity snapshot
  * @date 2018-04-09
  */
-@Slf4j @Component public class DataIdentitySnapshotAgent implements CacheLoader {
-    @Autowired SnapshotService snapshot;
-    @Autowired DataIdentityRepository dataIdentityRepository;
+@Slf4j
+@Component
+public class DataIdentitySnapshotAgent implements CacheLoader {
+    @Autowired
+    SnapshotService snapshot;
+    @Autowired
+    DataIdentityRepository dataIdentityRepository;
 
-    private <T> T get(Object key){
-        return (T)snapshot.get(SnapshotBizKeyEnum.DATA_IDENTITY,key);
+    private <T> T get(Object key) {
+        return (T) snapshot.get(SnapshotBizKeyEnum.DATA_IDENTITY, key);
     }
-    private void put(Object key,Object object){
-        snapshot.put(SnapshotBizKeyEnum.DATA_IDENTITY,key,object);
+
+    /**
+     * insert  object into the snapshot
+     * @param key
+     * @param value
+     */
+    private void insert(Object key, Object value){
+        snapshot.insert(SnapshotBizKeyEnum.DATA_IDENTITY, key, value);
     }
+
     /**
      * query data identity
      *
@@ -36,7 +53,7 @@ import org.springframework.stereotype.Component;
      * @return
      */
     public DataIdentity getDataIdentity(String identity) {
-        return get(new DataIdentityCachKey(identity));
+        return get(new DataIdentityCacheKey(identity));
     }
 
     /**
@@ -45,15 +62,16 @@ import org.springframework.stereotype.Component;
      * @param dataIdentity
      */
     public void saveDataIdentity(DataIdentity dataIdentity) {
-        put(new DataIdentityCachKey(dataIdentity.getIdentity()), dataIdentity);
+        insert(new DataIdentityCacheKey(dataIdentity.getIdentity()), dataIdentity);
     }
 
     /**
      * when cache is not exists,load from db
      */
-    @Override public Object query(Object object) {
-        if (object instanceof DataIdentityCachKey) {
-            DataIdentityCachKey key = (DataIdentityCachKey)object;
+    @Override
+    public Object query(Object object) {
+        if (object instanceof DataIdentityCacheKey) {
+            DataIdentityCacheKey key = (DataIdentityCacheKey) object;
             return dataIdentityRepository.queryDataIdentity(key.getIdentity());
         }
         log.error("not found load function for cache key:{}", object);
@@ -61,9 +79,49 @@ import org.springframework.stereotype.Component;
     }
 
     /**
+     * the method to batchInsert data into db
+     *
+     * @param insertMap
+     * @return
+     */
+    @Override
+    public boolean batchInsert(Map<Object, Object> insertMap) {
+        if (insertMap.isEmpty()){
+            return true;
+        }
+
+        //get bach insert data
+        List<DataIdentity> dataIdentityList = new ArrayList<>();
+        for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
+            if (!(entry.getKey() instanceof  DataIdentityCacheKey)){
+                log.error("insert key is not the type of TxOutCacheKey error");
+                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+            }
+            dataIdentityList.add((DataIdentity)entry.getValue());
+        }
+
+        return dataIdentityRepository.batchInsert(dataIdentityList);
+    }
+
+    /**
+     * the method to batchUpdate data into db
+     *
+     * @param updateMap
+     * @return
+     */
+    @Override
+    public boolean batchUpdate(Map<Object, Object> updateMap) {
+        return false;
+    }
+
+    /**
      * the cache key of data identity
      */
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class DataIdentityCachKey extends BaseBO {
-       private String identity;
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DataIdentityCacheKey extends BaseBO {
+        private String identity;
     }
 }

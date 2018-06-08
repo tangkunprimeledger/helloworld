@@ -8,7 +8,7 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.core.api.VoteService;
-import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
@@ -21,7 +21,6 @@ import com.higgs.trust.rs.core.repository.VoteReqRecordRepository;
 import com.higgs.trust.rs.core.vo.ReceiptRequest;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
-import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -179,9 +178,8 @@ import java.util.concurrent.Future;
                 //update result
                 voteReqRecordRepository.setVoteResult(txId, sign, voteResult);
                 try {
-                    RespData<String> respData =
-                        receipting(voteRequestRecord.getSender(), makeVoteReceipt(txId, sign, voteResult));
-                    if (!respData.isSuccess()) {
+                    RespData<String> respData = receipting(voteRequestRecord.getSender(), makeVoteReceipt(txId, sign, voteResult));
+                    if(!respData.isSuccess()){
                         throw new RsCoreException(RsCoreErrorEnum.getByCode(respData.getRespCode()));
                     }
                 } catch (Throwable e) {
@@ -200,14 +198,6 @@ import java.util.concurrent.Future;
             respData.setCode(RsCoreErrorEnum.RS_CORE_TX_NOT_EXIST_ERROR.getCode());
             respData.setMsg(RsCoreErrorEnum.RS_CORE_TX_NOT_EXIST_ERROR.getDescription());
             log.error("[acceptReceipt] query core tx not exist by txId:{}", receiptRequest.getTxId());
-            return respData;
-        }
-        //only process NEED_VOTE status
-        if (!StringUtils.equals(coreTransactionPO.getStatus(), CoreTxStatusEnum.NEED_VOTE.getCode())) {
-            respData.setCode(RsCoreErrorEnum.RS_CORE_VOTE_NOT_STATUS_ERROR.getCode());
-            respData.setMsg(RsCoreErrorEnum.RS_CORE_VOTE_NOT_STATUS_ERROR.getDescription());
-            log.error("[acceptReceipt] core tx`s status:{} is not NEED_VOTE by txId:{}", coreTransactionPO.getStatus(),
-                receiptRequest.getTxId());
             return respData;
         }
         //check
@@ -239,6 +229,10 @@ import java.util.concurrent.Future;
             log.error("[acceptReceipt]has error", e);
             respData.setCode(RsCoreErrorEnum.RS_CORE_UNKNOWN_EXCEPTION.getCode());
             respData.setMsg(RsCoreErrorEnum.RS_CORE_UNKNOWN_EXCEPTION.getDescription());
+        }
+        if(respData.isSuccess()){
+            //TODO:liuyu async call process NEED_VOTE tx
+
         }
         return respData;
     }
@@ -360,7 +354,7 @@ import java.util.concurrent.Future;
         ReceiptRequest request = BeanConvertor.convertBean(voteReceipt, ReceiptRequest.class);
         request.setVoteResult(voteReceipt.getVoteResult().getCode());
         if (!useHttpChannel) {
-            return serviceProviderClient.receipting(sender, request);
+           return serviceProviderClient.receipting(sender, request);
         }
         String url = "http://" + sender + ":" + rsConfig.getServerPort() + "/receipting";
         log.info("[receipting.byHttp]url:" + url);
@@ -368,7 +362,7 @@ import java.util.concurrent.Future;
         log.info("[receipting.byHttp]paramJSON:" + paramJSON);
         String resultJSON = OkHttpClientManager.postAsString(url, paramJSON, rsConfig.getSyncRequestTimeout() / 2);
         log.info("[receipting.byHttp]resultJSON:" + resultJSON);
-        return JSON.parseObject(resultJSON, RespData.class);
+        return JSON.parseObject(resultJSON,RespData.class);
     }
 
     /**

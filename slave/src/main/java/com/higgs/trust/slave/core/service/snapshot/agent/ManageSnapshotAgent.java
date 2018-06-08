@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 /**
  * @author tangfashuang
  * @description an agent for policy and rs snapshot
@@ -27,7 +29,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ManageSnapshotAgent implements CacheLoader {
 
-    @Autowired private SnapshotService snapshot;
+    @Autowired
+    private SnapshotService snapshot;
 
     @Autowired
     private PolicyRepository policyRepository;
@@ -35,28 +38,60 @@ public class ManageSnapshotAgent implements CacheLoader {
     @Autowired
     private RsPubKeyRepository rsPubKeyRepository;
 
-    private <T> T get(Object key){
-        return (T)snapshot.get(SnapshotBizKeyEnum.MANAGE,key);
-    }
-    private void put(Object key,Object object){
-        snapshot.put(SnapshotBizKeyEnum.MANAGE,key,object);
+    private <T> T get(Object key) {
+        return (T) snapshot.get(SnapshotBizKeyEnum.MANAGE, key);
     }
 
-    @Override public Object query(Object obj) {
+    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
+    private void put(Object key, Object object) {
+
+        //snapshot.put(SnapshotBizKeyEnum.MANAGE,key,object);
+    }
+
+    @Override
+    public Object query(Object obj) {
         if (obj instanceof PolicyCacheKey) {
-            PolicyCacheKey policyCacheKey = (PolicyCacheKey)obj;
+            PolicyCacheKey policyCacheKey = (PolicyCacheKey) obj;
             return policyRepository.getPolicyById(policyCacheKey.getPolicyId());
         } else if (obj instanceof RsPubKeyCacheKey) {
-            RsPubKeyCacheKey rsPubKeyCacheKey = (RsPubKeyCacheKey)obj;
+            RsPubKeyCacheKey rsPubKeyCacheKey = (RsPubKeyCacheKey) obj;
             return rsPubKeyRepository.queryByRsId(rsPubKeyCacheKey.getRsId());
         }
 
         return null;
     }
 
-    public Policy getPolicy(String policyId) { return get(new PolicyCacheKey(policyId));}
+    /**
+     * the method to batchInsert data into db
+     *
+     * @param insertMap
+     * @return
+     */
+    //TODO to implements your own bachInsert method for db
+    @Override
+    public boolean batchInsert(Map<Object, Object> insertMap) {
+        return false;
+    }
 
-    public RsPubKey getRsPubKey(String rsId) { return get(new PolicyCacheKey(rsId));}
+    /**
+     * the method to batchUpdate data into db
+     *
+     * @param updateMap
+     * @return
+     */
+    //TODO to implements your own bachUpdate method for db
+    @Override
+    public boolean batchUpdate(Map<Object, Object> updateMap) {
+        return false;
+    }
+
+    public Policy getPolicy(String policyId) {
+        return get(new PolicyCacheKey(policyId));
+    }
+
+    public RsPubKey getRsPubKey(String rsId) {
+        return get(new PolicyCacheKey(rsId));
+    }
 
     public Policy registerPolicy(RegisterPolicy registerPolicy) {
         Policy policy = policyRepository.convertActionToPolicy(registerPolicy);
@@ -73,14 +108,22 @@ public class ManageSnapshotAgent implements CacheLoader {
     /**
      * the cache key of policy
      */
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class PolicyCacheKey extends BaseBO {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PolicyCacheKey extends BaseBO {
         private String policyId;
     }
 
     /**
      * the cache key of rsPubKey
      */
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class RsPubKeyCacheKey extends BaseBO {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RsPubKeyCacheKey extends BaseBO {
         private String rsId;
     }
 }

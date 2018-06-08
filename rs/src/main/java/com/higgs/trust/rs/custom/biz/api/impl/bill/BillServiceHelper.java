@@ -3,6 +3,7 @@ package com.higgs.trust.rs.custom.biz.api.impl.bill;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.config.RsConfig;
+import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
@@ -150,7 +151,7 @@ public class BillServiceHelper {
             }
         }
 
-        return submitTx(coreTransaction);
+        return submitTx(BizTypeEnum.ISSUE_UTXO, coreTransaction);
     }
 
 
@@ -235,16 +236,16 @@ public class BillServiceHelper {
                 }
             }
         }
-        return submitTx(coreTransaction);
+        return submitTx(BizTypeEnum.TRANSFER_UTXO, coreTransaction);
     }
 
     /**
      * 发送交易到rs-core
      */
-    private RespData<?> submitTx (CoreTransaction coreTransaction){
+    private RespData<?> submitTx (BizTypeEnum bizType,CoreTransaction coreTransaction){
         //send and get callback result
         try {
-            coreTransactionService.submitTx(coreTransaction);
+            coreTransactionService.submitTx(bizType, coreTransaction);
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 return requestIdempotent(coreTransaction.getTxId());

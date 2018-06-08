@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.core.service.contract;
 
 import com.higgs.trust.contract.*;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.common.util.Profiler;

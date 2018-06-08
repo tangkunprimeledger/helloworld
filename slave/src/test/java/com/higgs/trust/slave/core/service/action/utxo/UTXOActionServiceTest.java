@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.action.utxo;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
