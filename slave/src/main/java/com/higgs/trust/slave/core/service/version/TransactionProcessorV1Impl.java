@@ -15,6 +15,7 @@ import com.higgs.trust.slave.core.service.action.contract.AccountContractBinding
 import com.higgs.trust.slave.core.service.action.contract.ContractCreationHandler;
 import com.higgs.trust.slave.core.service.action.contract.ContractInvokeHandler;
 import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityActionHandler;
+import com.higgs.trust.slave.core.service.action.manage.CancelRsHandler;
 import com.higgs.trust.slave.core.service.action.manage.RegisterPolicyHandler;
 import com.higgs.trust.slave.core.service.action.manage.RegisterRsHandler;
 import com.higgs.trust.slave.core.service.action.utxo.UTXOActionHandler;
@@ -64,6 +65,7 @@ import java.util.*;
     @Autowired private CaAuthHandler caAuthHandler;
     @Autowired private CaCancelHandler caCancelHandler;
     @Autowired private CaUpdateHandler caUpdateHandler;
+    @Autowired private CancelRsHandler cancelRsHandler;
 
     @Override public void afterPropertiesSet() throws Exception {
         txProcessorHolder.registVerisonProcessor(VersionEnum.V1, this);
@@ -125,6 +127,8 @@ import java.util.*;
                 return accountOperationHandler;
             case REGISTER_RS:
                 return registerRsHandler;
+            case RS_CANCEL:
+                return cancelRsHandler;
             case REGISTER_POLICY:
                 return registerPolicyHandler;
             case ISSUE_CURRENCY:

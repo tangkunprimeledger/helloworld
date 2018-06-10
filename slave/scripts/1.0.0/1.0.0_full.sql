@@ -256,15 +256,15 @@ IF NOT EXISTS `policy` (
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'business policy';
 
 CREATE TABLE
-IF NOT EXISTS `rs_pub_key` (
+IF NOT EXISTS `rs_node` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`rs_id` VARCHAR (32) NOT NULL COMMENT 'rs ID',
-	`pub_key` VARCHAR (255) NOT NULL COMMENT 'public key',
 	`desc` VARCHAR (128) NOT NULL COMMENT 'business RS description',
+	`status` VARCHAR (32) NOT NULL COMMENT 'rs status',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_rs` (`rs_id`)
-) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the related between rs and public key';
+) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'rs node info';
 
 CREATE TABLE
 IF NOT EXISTS `transaction` (

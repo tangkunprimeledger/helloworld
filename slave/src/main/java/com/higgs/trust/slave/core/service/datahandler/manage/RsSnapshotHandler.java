@@ -3,8 +3,9 @@ package com.higgs.trust.slave.core.service.datahandler.manage;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.agent.ManageSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
+import com.higgs.trust.slave.model.bo.manage.CancelRS;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
+import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,19 +23,24 @@ public class RsSnapshotHandler implements RsHandler {
     @Autowired
     private MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
 
-    @Override public RsPubKey getRsPubKey(String rsId) {
-        return manageSnapshotAgent.getRsPubKey(rsId);
+    @Override public RsNode getRsNode(String rsId) {
+        return manageSnapshotAgent.getRsNode(rsId);
     }
 
-    @Override public void registerRsPubKey(RegisterRS registerRS) {
-        RsPubKey rsPubKey = manageSnapshotAgent.registerRs(registerRS);
+    @Override public void registerRsNode(RegisterRS registerRS) {
+        RsNode rsNode = manageSnapshotAgent.registerRs(registerRS);
 
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.RS);
 
         if (null == merkleTree) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.RS, new Object[] {rsPubKey});
+            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.RS, new Object[] {rsNode});
         } else {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, rsPubKey);
+            merkleTreeSnapshotAgent.appendChild(merkleTree, rsNode);
         }
+    }
+
+    //TODO update rs node status
+    @Override public void cancelRsNode(CancelRS cancelRS) {
+
     }
 }

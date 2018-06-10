@@ -17,6 +17,7 @@ import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
@@ -28,6 +29,7 @@ import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.PackageData;
+import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.convert.PackageConvert;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: package service
@@ -72,6 +75,8 @@ import java.util.List;
     @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
 
     @Autowired private P2pHandler p2pHandler;
+
+    @Autowired private RsNodeRepository rsNodeRepository;
 
     @Value("${trust.package.pending:1000}")
     private int PACKAGE_PENDING_COUNT;
@@ -204,9 +209,15 @@ import java.util.List;
      */
     @Override public PackContext createPackContext(Package pack) {
         Block block = blockService.buildDummyBlock(pack.getHeight(), pack.getPackageTime());
-        //TODO 设置公私钥
-        
-        return new PackContext(pack, block);
+
+        PackContext packContext = new PackContext(pack, block);
+        //set rsId and public key map
+        List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
+        if (!CollectionUtils.isEmpty(rsPubKeyList)) {
+            packContext.setRsPubKeyMap(rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
+        }
+
+        return packContext;
     }
 
 

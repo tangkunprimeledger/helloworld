@@ -9,7 +9,7 @@ import com.higgs.trust.slave.dao.manage.PolicyDao;
 import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
+import com.higgs.trust.slave.model.bo.manage.RsNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +29,7 @@ import java.util.List;
     @Autowired private PolicyDao policyDao;
 
     @Autowired
-    private RsPubKeyRepository rsPubKeyRepository;
+    private RsNodeRepository rsNodeRepository;
 
     public Policy getPolicyById(String policyId) {
 
@@ -41,15 +41,15 @@ import java.util.List;
         PolicyPO policy;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if (null != initPolicyEnum) {
-            List<RsPubKey> rsPubKeyList = rsPubKeyRepository.queryAll();
-            if (CollectionUtils.isEmpty(rsPubKeyList)) {
+            List<RsNode> rsNodeList = rsNodeRepository.queryAll();
+            if (CollectionUtils.isEmpty(rsNodeList)) {
                 return null;
             }
             policy = new PolicyPO();
             policy.setPolicyId(policyId);
             policy.setPolicyName(initPolicyEnum.getType());
             List<String> rsIdList = new ArrayList<>();
-            rsPubKeyList.forEach(rsPubKey->{rsIdList.add(rsPubKey.getRsId());});
+            rsNodeList.forEach(rsNode->{rsIdList.add(rsNode.getRsId());});
             policy.setRsIds(JSON.toJSONString(rsIdList));
         } else {
             policy = policyDao.queryByPolicyId(policyId);

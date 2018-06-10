@@ -14,7 +14,7 @@ public enum ActionTypeEnum {
         "trigger contract action"), REGISTER_RS("REGISTER_RS", "register RS action"), REGISTER_POLICY("REGISTER_POLICY",
         "register policy action"), CREATE_DATA_IDENTITY("CREATE_DATA_IDENTITY", "create data identity"), ISSUE_CURRENCY(
         "ISSUE_CURRENCY", "issue new currency"), CA_AUTH("CA_AUTH", "ca auth"), CA_CANCEL("CA_CANCEL",
-        "ca cancel"), CA_UPDATE("CA_UPDATE", "ca update"),;
+        "ca cancel"), CA_UPDATE("CA_UPDATE", "ca update"), RS_CANCEL("RS_CANCEL", "cancel rs"),;
 
     String code;
     String desc;

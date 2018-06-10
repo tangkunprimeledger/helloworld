@@ -119,8 +119,9 @@ import java.util.*;
             return true;
         }
         if (coreTx.getActionList().size() > 1) {
-            if (InitPolicyEnum.REGISTER_POLICY.getPolicyId().equals(coreTx.getPolicyId()) || InitPolicyEnum.REGISTER_RS
-                .getPolicyId().equals(coreTx.getPolicyId())) {
+            if (InitPolicyEnum.REGISTER_POLICY.getPolicyId().equals(coreTx.getPolicyId())
+                || InitPolicyEnum.REGISTER_RS.getPolicyId().equals(coreTx.getPolicyId())
+                || InitPolicyEnum.CANCEL_RS.getPolicyId().equals(coreTx.getPolicyId())) {
                 return false;
             }
         }

@@ -14,7 +14,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.NodeState;
-import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
+import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.core.service.failover.SyncService;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired PackageProcess packageProcess;
 
-    @Autowired RsPubKeyRepository rsPubKeyRepository;
+    @Autowired RsNodeRepository rsNodeRepository;
 
     @Autowired private NodeState nodeState;
 

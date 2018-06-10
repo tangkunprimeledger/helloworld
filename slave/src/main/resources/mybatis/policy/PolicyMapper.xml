@@ -64,5 +64,14 @@
         from policy where policy_id=#{policyId}
     </select>
 
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into
+        policy(policy_id,policy_name,rs_ids,create_time)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#({item.policyId}, #{item.policyName}, #{item.rsIds}, now(3)))
+        </foreach>>
+    </insert>
+
 
 </mapper>

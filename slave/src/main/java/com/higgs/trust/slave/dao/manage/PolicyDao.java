@@ -4,6 +4,8 @@ import com.higgs.trust.slave.dao.BaseDao;
 import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
  * @author tangfashuang
  * @date 2018/03/28
@@ -17,4 +19,12 @@ import org.apache.ibatis.annotations.Mapper;
      * @return
      */
     PolicyPO queryByPolicyId(String policyId);
+
+    /**
+     * batch insert
+     *
+     * @param policyPOList
+     * @return
+     */
+    int batchInsert(List<PolicyPO> policyPOList);
 }

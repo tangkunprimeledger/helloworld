@@ -16,8 +16,8 @@ public enum InitPolicyEnum {
     CONTRACT_DESTROY("CONTRACT_DESTROY", "000006",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "contract destroy"),
     CA_AUTH("CA_AUTH", "000007",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA AUTH"),
     CA_UPDATE("CA_UPDATE", "000008",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA UPDATE"),
-    CA_CANCEL("CA_CANCEL", "000009",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA CANCEL"),;
-
+    CA_CANCEL("CA_CANCEL", "000009",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA CANCEL"),
+    CANCEL_RS("CANCEL_RS", "000007", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "cancel rs");
     private String type;
 
     private String policyId;

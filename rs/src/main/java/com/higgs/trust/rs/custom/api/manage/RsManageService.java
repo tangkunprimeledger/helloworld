@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.custom.api.manage;
 
+import com.higgs.trust.rs.custom.api.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterRsVO;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -24,4 +25,11 @@ public interface RsManageService {
      * @return
      */
     RespData registerPolicy(RegisterPolicyVO registerPolicyVO);
+
+    /**
+     * cancel RS
+     * @param cancelRsVO
+     * @return
+     */
+    RespData cancelRs(CancelRsVO cancelRsVO);
 }

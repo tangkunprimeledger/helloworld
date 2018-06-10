@@ -61,6 +61,11 @@ import java.util.Set;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
+        if (!rsIdSet.contains(coreTx.getSender())) {
+            log.error("[RegisterRSHandler.process] rsIds must have sender self");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
         // check if default policyId
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(bo.getPolicyId());
         if (null != initPolicyEnum) {

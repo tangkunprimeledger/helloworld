@@ -6,6 +6,7 @@ import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.rs.custom.biz.rscore.callback.handler.*;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.manage.CancelRS;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
     @Autowired private TransferBillCallbackHandler transferBillCallbackHandler;
     @Autowired private RegisterPolicyCallbackHandler registerPolicyCallbackHandler;
     @Autowired private RegisterRsCallbackHandler registerRsCallbackHandler;
+    @Autowired private CancelRsCallbackHandler cancelRsCallbackHandler;
 
     @Override public void afterPropertiesSet() throws Exception {
         txCallbackRegistor.registCallback(this);
@@ -67,6 +69,9 @@ import org.springframework.stereotype.Service;
 //                break;
 //            case REGISTER_POLICY:
 //                registerPolicyCallbackHandler.process(respData);
+//                break;
+//            case CANCEL_RS:
+//                cancelRsCallbackHandler.process(respData);
 //                break;
 //            case NOP:
 //                break;
