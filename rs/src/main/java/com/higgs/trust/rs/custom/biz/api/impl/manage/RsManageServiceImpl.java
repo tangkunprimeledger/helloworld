@@ -1,9 +1,11 @@
 package com.higgs.trust.rs.custom.biz.api.impl.manage;
 
+import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.vo.VoteRuleVO;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.api.manage.RsManageService;
@@ -13,6 +15,7 @@ import com.higgs.trust.rs.custom.api.vo.manage.RegisterRsVO;
 import com.higgs.trust.rs.custom.biz.api.impl.RequestHelper;
 import com.higgs.trust.rs.custom.util.converter.CoreTransactionConvertor;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.managment.NodeState;
@@ -186,9 +189,13 @@ public class RsManageServiceImpl implements RsManageService{
                     }
 
                     //组装UTXO,CoreTransaction，下发
+
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
+                    jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
                     return submitTx(
                         coreTransactionConvertor.buildCoreTransaction(registerPolicyVO.getRequestId(),
-                            null,
+                            jsonObject,
                             buildPolicyActionList(registerPolicyVO),
                             InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
                 }
@@ -322,6 +329,7 @@ public class RsManageServiceImpl implements RsManageService{
         RegisterPolicy registerPolicy = new RegisterPolicy();
         registerPolicy.setPolicyId(registerPolicyVO.getPolicyId());
         registerPolicy.setPolicyName(registerPolicyVO.getPolicyName());
+        registerPolicy.setDecisionType(DecisionTypeEnum.getBycode(registerPolicyVO.getDecisionType()));
         registerPolicy.setRsIds(registerPolicyVO.getRsIds());
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);

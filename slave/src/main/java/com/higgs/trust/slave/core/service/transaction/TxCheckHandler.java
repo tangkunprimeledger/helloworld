@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.service.transaction;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -36,6 +37,7 @@ import java.util.*;
             //get policy
             InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(ctx.getPolicyId());
             List<RsPubKey> rsPubKeyList;
+            DecisionTypeEnum decisionType;
             if (policyEnum == null) {
                 Policy policy = policyRepository.getPolicyById(ctx.getPolicyId());
 
@@ -43,9 +45,11 @@ import java.util.*;
                     log.error("acquire policy failed. policyId={}", ctx.getPolicyId());
                     return false;
                 }
+                decisionType = policy.getDecisionType();
                 rsPubKeyList = getRsPubKeyList(rsPubKeys, policy.getRsIds());
             } else {
                 // default policy
+                decisionType = policyEnum.getDecisionType();
                 rsPubKeyList = getRsPubKeyList(rsPubKeys, null);
             }
 
@@ -54,7 +58,7 @@ import java.util.*;
                 return true;
             }
 
-            return verifyRsSign(ctx, signedTransaction.getSignatureList(), rsPubKeyList);
+            return verifyRsSign(ctx, signedTransaction.getSignatureList(), rsPubKeyList, decisionType);
         } catch (Throwable e) {
             log.error("verify signatures exception. ", e);
             return false;
@@ -89,29 +93,41 @@ import java.util.*;
         return rsPubKeyList;
     }
 
-    private boolean verifyRsSign(CoreTransaction ctx, List<SignInfo> signatureList, List<RsPubKey> rsPubKeyList) {
+    private boolean verifyRsSign(CoreTransaction ctx, List<SignInfo> signatureList, List<RsPubKey> rsPubKeyList,
+        DecisionTypeEnum decisionType) {
+        boolean flag = false;
         try {
-
             Map<String, String> signedMap = SignInfo.makeSignMap(signatureList);
+            if (DecisionTypeEnum.FULL_VOTE == decisionType) {
 
-            //check if size of signatureList less than rsIdList
-            if (rsPubKeyList.size() > signatureList.size()) {
-                log.error("signature size is less than need");
-                return false;
-            }
-
-            //verify signature
-            for (RsPubKey rsPubKey : rsPubKeyList) {
-                if (null != rsPubKey && !SignUtils
-                    .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
+                //check if size of signatureList less than rsIdList
+                if (rsPubKeyList.size() > signatureList.size()) {
+                    log.error("signature size is less than need");
                     return false;
                 }
+
+                //verify signature
+                for (RsPubKey rsPubKey : rsPubKeyList) {
+                    if (null != rsPubKey && !SignUtils
+                        .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
+                        return false;
+                    }
+                }
+                flag = true;
+            } else if(DecisionTypeEnum.ONE_VOTE == decisionType) {
+                for (RsPubKey rsPubKey : rsPubKeyList) {
+                    if (null != rsPubKey && SignUtils
+                        .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
+                        return true;
+                    }
+                }
+                flag = false;
             }
         } catch (Throwable e) {
             log.error("verify signature exception. ", e);
             return false;
         }
-        return true;
+        return flag;
     }
 
     public boolean checkActions(CoreTransaction coreTx) {

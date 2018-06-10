@@ -5,6 +5,7 @@ import com.higgs.trust.slave.dao.po.manage.RsNodePO;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
+import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -100,6 +101,7 @@ import java.util.List;
         RsNode rsNode = new RsNode();
         rsNode.setRsId(registerRS.getRsId());
         rsNode.setDesc(registerRS.getDesc());
+        rsNode.setStatus(RsNodeStatusEnum.COMMON.getCode());
         return rsNode;
     }
 
@@ -113,5 +115,13 @@ import java.util.List;
         RsNodePO rsNodePO = new RsNodePO();
         BeanUtils.copyProperties(rsNode, rsNodePO);
         return rsNodePO;
+    }
+
+    public void batchUpdate(List<RsNodePO> rsNodePOList) {
+        rsNodeDao.batchUpdate(rsNodePOList);
+    }
+
+    public void batchInsert(List<RsNodePO> rsNodePOList) {
+        rsNodeDao.batchInsert(rsNodePOList);
     }
 }

@@ -108,7 +108,6 @@ public class ManageSnapshotAgent implements CacheLoader {
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
     @Override
     public boolean batchUpdate(Map<Object, Object> updateMap) {
         if (updateMap.isEmpty()) {
@@ -145,6 +144,10 @@ public class ManageSnapshotAgent implements CacheLoader {
         RsNode rsNode = rsNodeRepository.convertActionToRsNode(registerRS);
         insert(new RsNodeCacheKey(rsNode.getRsId()), rsNode);
         return rsNode;
+    }
+
+    public void updateRs(RsNode rsNode) {
+        update(new RsNodeCacheKey(rsNode.getRsId()), rsNode);
     }
 
     /**

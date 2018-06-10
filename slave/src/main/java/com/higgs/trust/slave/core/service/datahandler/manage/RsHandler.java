@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.datahandler.manage;
 import com.higgs.trust.slave.model.bo.manage.CancelRS;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
+import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 
 /**
  * @author tangfashuang
@@ -24,8 +25,9 @@ public interface RsHandler {
     void registerRsNode(RegisterRS registerRS);
 
     /**
-     * cancel rs
-     * @param cancelRS
+     * update rs node status
+     * @param rsId
+     * @param rsNodeStatusEnum
      */
-    void cancelRsNode(CancelRS cancelRS);
+    void updateRsNode(String rsId, RsNodeStatusEnum rsNodeStatusEnum);
 }

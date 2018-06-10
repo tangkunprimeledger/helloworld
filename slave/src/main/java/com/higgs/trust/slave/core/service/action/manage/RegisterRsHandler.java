@@ -67,12 +67,17 @@ import org.springframework.stereotype.Component;
         }
 
         RsNode rsNode = rsSnapshotHandler.getRsNode(rsId);
-        if (rsNode != null
-            && StringUtils.equals(rsNode.getStatus(), RsNodeStatusEnum.COMMON.getCode())) {
-            log.warn("rsNode already exists. rsId={}", rsId);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_RS_EXISTS_ERROR);
+        if (rsNode != null) {
+            if (StringUtils.equals(rsNode.getStatus(), RsNodeStatusEnum.COMMON.getCode())) {
+                log.warn("rsNode already exists. rsId={}", rsId);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_RS_EXISTS_ERROR);
+            } else {
+                rsSnapshotHandler.updateRsNode(rsId, RsNodeStatusEnum.COMMON);
+            }
+        } else {
+            rsSnapshotHandler.registerRsNode(bo);
         }
-        rsSnapshotHandler.registerRsNode(bo);
+
         log.info("[RegisterRSHandler.process] finish");
     }
 

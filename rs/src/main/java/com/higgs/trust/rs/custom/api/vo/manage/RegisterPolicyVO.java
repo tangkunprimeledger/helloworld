@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -34,6 +35,19 @@ public class RegisterPolicyVO extends BaseVO {
     @NotBlank
     @Length(max = 64)
     private String policyName;
+
+    /**
+     * rs vote pattern 1.SYNC 2.ASYNC
+     */
+    @NotNull private String votePattern;
+
+    /**
+     * callback type of slave 1.ALL 2.SELF
+     */
+    @NotNull private String callbackType;
+
+    @NotNull
+    private String decisionType;
 
     /**
      * rs ids of related to policy

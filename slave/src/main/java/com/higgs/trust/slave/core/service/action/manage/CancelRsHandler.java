@@ -79,7 +79,7 @@ public class CancelRsHandler implements ActionHandler {
         }
 
         //TODO snapshot
-        rsSnapshotHandler.cancelRsNode(bo);
+        rsSnapshotHandler.updateRsNode(rsId, RsNodeStatusEnum.CANCELED);
         log.info("[CancelRSHandler.process] finish");
     }
 }

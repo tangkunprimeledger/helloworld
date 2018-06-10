@@ -32,7 +32,7 @@ public class CancelRsCallbackHandler {
 
         if (null == respData || null == respData.getData()) {
             log.error("[process] cancel RS callback error, respData or respData.getData() is null");
-            throw new BankChainException(BankChainExceptionCodeEnum.IdentityCallbackProcessException,
+            throw new CustomException(CustomExceptionCodeEnum.RegisterRsCallbackProcessException,
                 "[process] cancel RS callback error, respData or respData.getData() is null");
         }
 
