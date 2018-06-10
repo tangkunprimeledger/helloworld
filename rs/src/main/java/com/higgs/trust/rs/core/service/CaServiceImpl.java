@@ -1,6 +1,5 @@
 package com.higgs.trust.rs.core.service;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
@@ -54,6 +53,8 @@ import java.util.*;
     @Autowired private CaInitHandler caInitHandler;
     @Value("${bftSmart.systemConfigs.myId}") private String myId;
 
+
+    // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
     /**
      * @return
      * @desc generate pubKey and PriKey ,then insert into db
@@ -61,12 +62,19 @@ import java.util.*;
     @Override public void authKeyPair(String user) {
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
-            log.error("[initKeyPair] invalid node name");
+            log.error("[authKeyPair] invalid node name");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
-                "[initKeyPair] invalid node name");
+                "[authKeyPair] invalid node name");
         }
 
-        // TODO 注册CA之前，应该检测CA是否存在
+        // CA existence check
+        Ca ca = caRepository.getCa(user);
+        if (null != ca) {
+            log.error("[authKeyPair] ca information for node={} already exist, pubKey={}", ca.getUser(),
+                ca.getPubKey());
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_ALREADY_EXIST_ERROR,
+                "[authKeyPair] ca information already exist");
+        }
 
         // generate pubKey and priKey
         CaVO caVO = generateKeyPair();
@@ -83,11 +91,9 @@ import java.util.*;
         //send and get callback result
         try {
             coreTransactionService.submitTx(constructAuthCoreTx(caVO));
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                log.error("create bill error", e);
-                return new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
-            }
+        } catch (Throwable e) {
+            log.error("send auth CA transaction error", e);
+            return new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
         }
         return new RespData<>();
     }
@@ -105,8 +111,15 @@ import java.util.*;
                 "[updateKeyPair] invalid node name");
         }
 
-        // TODO 更新CA之前，应该检测CA是否存在，存在就可以更新，否则不可以
+        // CA existence check
+        Ca ca = caRepository.getCa(user);
+        if (null == ca) {
+            log.error("[updateKeyPair] ca information for node={} ", user);
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_NOT_EXIST_ERROR,
+                "[updateKeyPair] ca information doesn't exist");
+        }
 
+        // generate temp pubKey and priKey, insert into db
         CaVO caVO = generateTmpKeyPair();
 
         // send CA update request
@@ -122,13 +135,10 @@ import java.util.*;
 
         //send and get callback result
         try {
-            // TODO 需要重写构造coretx的方法，是CA更新类型的交易
             coreTransactionService.submitTx(constructUpdateCoreTx(caVO));
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                log.error("create bill error", e);
-                return new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
-            }
+        } catch (Throwable e) {
+            log.error("send auth CA transaction error", e);
+            return new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
         }
         return new RespData<>();
     }
@@ -146,15 +156,20 @@ import java.util.*;
                 "[cancelKeyPair] invalid node name");
         }
 
-
         // TODO 注销CA之前，应该检测RS是否下线，下线就可以注销，否则不可以
 
-        // TODO 注销CA之前，应该检测CA是否存在，存在就可以注销，否则不可以
+        // CA existence check
+        Ca ca = caRepository.getCa(user);
+        if (null == ca) {
+            log.error("[updateKeyPair] ca information for node={} ", user);
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_NOT_EXIST_ERROR,
+                "[updateKeyPair] ca information doesn't exist");
+        }
 
         //set pubKey and priKey to invalid
         Config config = new Config();
         config.setNodeName(nodeState.getNodeName());
-        config.setValid("FALSE");
+        config.setValid(false);
         configRepository.updateConfig(config);
 
         //construct caVO
@@ -175,18 +190,16 @@ import java.util.*;
         //send and get callback result
         try {
             coreTransactionService.submitTx(constructCancelCoreTx(caVO));
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                log.error("create bill error", e);
-                return new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
-            }
+        } catch (Throwable e) {
+            log.error("send cancel CA transaction error", e);
+            return new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
         }
         return new RespData<>();
     }
 
     /**
      * @return
-     * @desc 每个节点都需要调用initKeyPair()方法
+     * @desc execute command initStart on one node, it will call each node in thr cluster to execute command initKeyPair
      */
     @Override public RespData<String> initStart() {
         List<String> nodeList = clusterInfo.clusterNodeNames();
@@ -199,10 +212,7 @@ import java.util.*;
     /**
      * @param
      * @return
-     * @desc 1、请求所有节点
-     * 2、各个节点生成公私钥
-     * 3、各个节点返回各个公钥
-     * 4、将所有的公钥组装在一起，下发交易
+     * @desc
      */
     private void initKeyPair() {
         List<String> nodeList = clusterInfo.clusterNodeNames();
@@ -224,6 +234,8 @@ import java.util.*;
     }
 
     @Override public RespData<String> initCaTx() {
+        // TODO 公私钥的生成会在集群自检时，发现没有创世块，那么就应该生成公私钥
+
         // acquire pubKey from DB
         String pubKey = configRepository.getConfig(nodeState.getNodeName()).getPubKey();
         return new RespData<>(pubKey);
@@ -338,9 +350,9 @@ import java.util.*;
         try {
             map = KeyGeneratorUtils.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
-            log.error("[initKeyPair] generate pubKey/priKey has error, no such algorithm");
+            log.error("[generateKeyPair] generate pubKey/priKey has error, no such algorithm");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
-                "[initKeyPair] generate pubKey/priKey has error, no such algorithm");
+                "[generateKeyPair] generate pubKey/priKey has error, no such algorithm");
         }
         String pubKey = map.get(PUB_KEY);
         String priKey = map.get(PRI_KEY);
@@ -349,14 +361,14 @@ import java.util.*;
         config.setNodeName(nodeState.getNodeName());
         config.setPubKey(pubKey);
         config.setPriKey(priKey);
-        config.setValid("FALSE");
+        config.setValid(false);
         config.setVersion(VersionEnum.V1.getCode());
         configRepository.insertConfig(config);
 
         //construct caVO
         CaVO caVO = new CaVO();
         caVO.setVersion(VersionEnum.V1.getCode());
-        caVO.setPeriod(new Date());
+        caVO.setPeriod(calculatePeriod());
         caVO.setPubKey(pubKey);
         caVO.setReqNo(HashUtil.getSHA256S(pubKey));
         caVO.setUsage("consensus");
@@ -365,16 +377,16 @@ import java.util.*;
         return caVO;
     }
 
-    public CaVO generateTmpKeyPair() {
+    private CaVO generateTmpKeyPair() {
 
         // generate temp pubKey and priKey and insert into db
         Map<String, String> map = null;
         try {
             map = KeyGeneratorUtils.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
-            log.error("[updateKeyPair] generate pubKey/priKey has error, no such algorithm");
+            log.error("[generateTmpKeyPair] generate pubKey/priKey has error, no such algorithm");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
-                "[updateKeyPair] generate pubKey/priKey has error, no such algorithm");
+                "[generateTmpKeyPair] generate pubKey/priKey has error, no such algorithm");
         }
         String pubKey = map.get(PUB_KEY);
         String priKey = map.get(PRI_KEY);
@@ -388,13 +400,20 @@ import java.util.*;
         //construct caVO
         CaVO caVO = new CaVO();
         caVO.setVersion(VersionEnum.V1.getCode());
-        caVO.setPeriod(new Date());
+        caVO.setPeriod(calculatePeriod());
         caVO.setPubKey(pubKey);
         caVO.setReqNo(HashUtil.getSHA256S(pubKey));
         caVO.setUsage("consensus");
         caVO.setUser(nodeState.getNodeName());
 
         return caVO;
+    }
+
+    private Date calculatePeriod() {
+        Calendar calendar = Calendar.getInstance();
+        // default 1 year later
+        calendar.add(Calendar.YEAR, 1);
+        return calendar.getTime();
     }
 
 }

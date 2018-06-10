@@ -38,7 +38,7 @@
 		<if test="tmpPriKey != null and tmpPriKey!=''">
 			tmp_pri_key=#{tmpPriKey}
 		</if>
-		WHERE `node_name`=#{nodeName}
+		WHERE `node_name`=#{nodeName} and valid != #{valid}
 	</update>
 
 

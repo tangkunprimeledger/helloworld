@@ -1,5 +1,8 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
@@ -30,9 +33,15 @@ import org.springframework.stereotype.Component;
 
         // convert action and validate it
         CaAction caAction = (CaAction)actionData.getCurrentAction();
-        caHelper.validate(caAction);
 
-        Profiler.enter("[DataIdentity.save]");
+        if (!caHelper.validate(caAction, ActionTypeEnum.CA_CANCEL)) {
+            log.error("[CaCancelHandler.process] actionData validate error, user={}, pubKey={}", caAction.getUser(),
+                caAction.getPubKey());
+            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_VALIDATE_ERROR,
+                "[CaCancelHandler.process] actionData validate error");
+        }
+
+        Profiler.enter("[CaCancelHandler.cancelCa]");
         Ca ca = new Ca();
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.cancelCa(ca);

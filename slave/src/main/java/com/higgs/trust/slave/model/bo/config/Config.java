@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter @Setter public class Config extends BaseBO {
     private String version;
 
-    private String valid;
+    private boolean valid;
 
     private String pubKey;
 

@@ -31,6 +31,8 @@ import org.springframework.stereotype.Service;
         merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
 
         caSnapshotAgent.saveCa(ca);
+
+        // TODO 更新clusterConfig和clusterNode信息
     }
 
     /**

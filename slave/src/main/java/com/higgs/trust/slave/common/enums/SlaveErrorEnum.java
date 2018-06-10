@@ -124,6 +124,7 @@ public enum SlaveErrorEnum {
 
 
     SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),
+    SLAVE_CA_VALIDATE_ERROR("901", "slave ca validate error", false),
     ;
     //@formatter:on
 

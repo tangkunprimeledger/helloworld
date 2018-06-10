@@ -64,7 +64,6 @@ import java.util.*;
     @Autowired private CaAuthHandler caAuthHandler;
     @Autowired private CaCancelHandler caCancelHandler;
     @Autowired private CaUpdateHandler caUpdateHandler;
-    @Autowired private CaInitHandler caInitHandler;
 
     @Override public void afterPropertiesSet() throws Exception {
         txProcessorHolder.registVerisonProcessor(VersionEnum.V1, this);
@@ -144,8 +143,6 @@ import java.util.*;
                 return caCancelHandler;
             case CA_UPDATE:
                 return caUpdateHandler;
-            case CA_INIT:
-                return caInitHandler;
             default:
         }
         log.error("[getHandlerByType] action type not exist exception, actionType={}", JSON.toJSONString(typeEnum));

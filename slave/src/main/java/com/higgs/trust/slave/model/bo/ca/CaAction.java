@@ -18,7 +18,7 @@ import java.util.Date;
 
     private T data;
 
-    private String valid;
+    private boolean valid;
 
     private String pubKey;
 

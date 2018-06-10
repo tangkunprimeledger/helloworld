@@ -544,6 +544,8 @@ import java.util.concurrent.ConcurrentHashMap;
         if (null != nodeMap) {
             merkleNode = nodeMap.get(key);
         }
+
+        // TODO 如果数据全是放在内存，那么下面的数据库查找操作将会删去
         if (null == merkleNode) {
             log.info("[getMerkleNodeByIndex] merkleNode doesn't exist in nodeMap, start to query db, key={}, type={}",
                 key, type);
@@ -660,6 +662,7 @@ import java.util.concurrent.ConcurrentHashMap;
             }
         }
 
+        // TODO 如果数据全是放在内存，那么下面的数据库查找操作将会删去
         if (leafIndex == -1L || null == merkleNode) {
             log.info(
                 "[getMerkleNodeByHash] merkleNode doesn't exist in nodeMap, start to query db, nodeHash={},type={}",
