@@ -38,19 +38,7 @@ import org.springframework.stereotype.Service;
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
             return false;
         }
-        if (nodeState.isMaster()) {
-            boolean masterChecked = masterCheck();
-            log.info("master checked result:{}", masterChecked);
-            if (masterChecked) {
-                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Running);
-            } else {
-                log.error("Node master check not pass");
-                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
-                return false;
-            }
-        } else {
-            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-        }
+        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
         return true;
     }
 

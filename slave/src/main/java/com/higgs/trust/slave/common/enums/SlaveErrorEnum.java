@@ -28,7 +28,7 @@ public enum SlaveErrorEnum {
     SLAVE_CONSENSUS_GET_RESULT_FAILED("301", "get the consensus result failed.", true),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         Failover相关[400-499]                           //
+    //                         Failover相关[400-450]                           //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     SLAVE_FAILOVER_STATE_NOT_ALLOWED("400", "node state not allowed current operation ", false),
     SLAVE_FAILOVER_STATE_CHANGE_FAILED("401", "node state change failed ", false),
@@ -41,6 +41,13 @@ public enum SlaveErrorEnum {
     SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID("416", "the package of block persist result invalid after failover block.", false),
     SLAVE_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST("417","consensus validate result not exist",false),
     SLAVE_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST("418","consensus persist result not exist",false),
+
+    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
+    //                         业务master相关[450-500]                           //
+    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
+    SLAVE_MASTER_TERM_INCORRECT("451","the term is incorrect",false),
+    SLAVE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT("452","the package height is incorrect",false),
+    SLAVE_MASTER_NODE_INCORRECT("453","the master node is incorrect",false),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         内部处理相关[500-699]                            //

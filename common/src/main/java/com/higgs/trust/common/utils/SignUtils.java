@@ -54,8 +54,6 @@ import java.security.spec.X509EncodedKeySpec;
      */
     public static String sign(String dataString, String privateKey) {
         try {
-            log.info("sign data string:{}", dataString);
-
             //解码私钥
             byte[] keyBytes = decryptBASE64(privateKey);
             //构造PKCS8EncodedKeySpec对象
