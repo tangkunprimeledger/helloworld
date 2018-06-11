@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.snapshot.agent;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
@@ -40,10 +39,11 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
 
     /**
      * insert  object into the snapshot
+     *
      * @param key
      * @param value
      */
-    private void insert(Object key, Object value){
+    private void insert(Object key, Object value) {
         snapshot.insert(SnapshotBizKeyEnum.DATA_IDENTITY, key, value);
     }
 
@@ -71,12 +71,13 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
      */
     @Override
     public Object query(Object object) {
-        if (object instanceof DataIdentityCacheKey) {
-            DataIdentityCacheKey key = (DataIdentityCacheKey) object;
-            return dataIdentityRepository.queryDataIdentity(key.getIdentity());
+        if (!(object instanceof UTXOSnapshotAgent.TxOutCacheKey)) {
+            log.error("object {} is not the type of DataIdentityCacheKey error", object);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
         }
-        log.error("not found load function for cache key:{}", object);
-        return null;
+        DataIdentityCacheKey key = (DataIdentityCacheKey) object;
+        return dataIdentityRepository.queryDataIdentity(key.getIdentity());
+
     }
 
     /**
@@ -87,18 +88,18 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
      */
     @Override
     public boolean batchInsert(Map<Object, Object> insertMap) {
-        if (insertMap.isEmpty()){
+        if (insertMap.isEmpty()) {
             return true;
         }
 
         //get bach insert data
         List<DataIdentity> dataIdentityList = new ArrayList<>();
         for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
-            if (!(entry.getKey() instanceof  DataIdentityCacheKey)){
+            if (!(entry.getKey() instanceof DataIdentityCacheKey)) {
                 log.error("insert key is not the type of TxOutCacheKey error");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
-            dataIdentityList.add((DataIdentity)entry.getValue());
+            dataIdentityList.add((DataIdentity) entry.getValue());
         }
 
         return dataIdentityRepository.batchInsert(dataIdentityList);
@@ -112,7 +113,7 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
      */
     @Override
     public boolean batchUpdate(Map<Object, Object> updateMap) {
-        return false;
+        return true;
     }
 
     /**
