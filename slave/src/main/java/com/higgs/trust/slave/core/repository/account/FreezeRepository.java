@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.repository.account;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.dao.account.AccountDetailFreezeDao;
 import com.higgs.trust.slave.dao.account.AccountFreezeRecordDao;
 import com.higgs.trust.slave.dao.account.AccountInfoDao;
@@ -46,11 +47,12 @@ import java.util.List;
 
     /**
      * build a new record
+     *
      * @param accountFreeze
      * @param blockHeight
      * @return
      */
-    public AccountFreezeRecord build(AccountFreeze accountFreeze,Long blockHeight){
+    public AccountFreezeRecord build(AccountFreeze accountFreeze, Long blockHeight) {
         AccountFreezeRecord accountFreezeRecord = new AccountFreezeRecord();
         accountFreezeRecord.setBizFlowNo(accountFreeze.getBizFlowNo());
         accountFreezeRecord.setAccountNo(accountFreeze.getAccountNo());
@@ -60,13 +62,15 @@ import java.util.List;
         accountFreezeRecord.setCreateTime(new Date());
         return accountFreezeRecord;
     }
+
     /**
      * create new account freeze record
      *
      * @param accountFreezeRecord
      */
-    public void createFreezeRecord(AccountFreezeRecord accountFreezeRecord){
-        AccountFreezeRecordPO accountFreezeRecordPO = BeanConvertor.convertBean(accountFreezeRecord,AccountFreezeRecordPO.class);
+    public void createFreezeRecord(AccountFreezeRecord accountFreezeRecord) {
+        AccountFreezeRecordPO accountFreezeRecordPO =
+            BeanConvertor.convertBean(accountFreezeRecord, AccountFreezeRecordPO.class);
         try {
             accountFreezeRecordDao.add(accountFreezeRecordPO);
         } catch (DuplicateKeyException e) {
@@ -84,12 +88,13 @@ import java.util.List;
      * @param amount
      */
     public void freeze(String accountNo, BigDecimal amount) {
-        int r = accountInfoDao.freeze(accountNo,amount);
+        int r = accountInfoDao.freeze(accountNo, amount);
         if (r != 1) {
             log.error("[freeze] freeze is fail accountNo:{}", accountNo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_FREEZE_ERROR);
         }
     }
+
     /**
      * unfreeze balance for account
      *
@@ -97,7 +102,7 @@ import java.util.List;
      * @param amount
      */
     public void unfreeze(String accountNo, BigDecimal amount) {
-        int r = accountInfoDao.unfreeze(accountNo,amount);
+        int r = accountInfoDao.unfreeze(accountNo, amount);
         if (r != 1) {
             log.error("[unfreeze] unfreeze is fail accountNo:{}", accountNo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_FREEZE_ERROR);
@@ -109,8 +114,9 @@ import java.util.List;
      *
      * @param accountDetailFreeze
      */
-    public void createFreezeDetail(AccountDetailFreeze accountDetailFreeze){
-        AccountDetailFreezePO detailFreeze = BeanConvertor.convertBean(accountDetailFreeze,AccountDetailFreezePO.class);
+    public void createFreezeDetail(AccountDetailFreeze accountDetailFreeze) {
+        AccountDetailFreezePO detailFreeze =
+            BeanConvertor.convertBean(accountDetailFreeze, AccountDetailFreezePO.class);
         accountDetailFreezeDao.add(detailFreeze);
     }
 
@@ -121,7 +127,7 @@ import java.util.List;
      * @param amount
      */
     public void decreaseAmount(Long id, BigDecimal amount) {
-        int r = accountFreezeRecordDao.decreaseAmount(id,amount);
+        int r = accountFreezeRecordDao.decreaseAmount(id, amount);
         if (r != 1) {
             log.error("[decreaseAmount] unfreeze is fail recordId:{}", id);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_UNFREEZE_ERROR);
@@ -134,19 +140,24 @@ import java.util.List;
      * @param accountFreezeRecords
      */
     public void batchInsert(List<AccountFreezeRecord> accountFreezeRecords) {
-        if(CollectionUtils.isEmpty(accountFreezeRecords)){
+        if (CollectionUtils.isEmpty(accountFreezeRecords)) {
             return;
         }
-        List<AccountFreezeRecordPO> list = BeanConvertor.convertList(accountFreezeRecords,AccountFreezeRecordPO.class);
-        try{
+        List<AccountFreezeRecordPO> list = BeanConvertor.convertList(accountFreezeRecords, AccountFreezeRecordPO.class);
+        try {
+            Profiler.enter("[batchInsert accountFreezeRecords]");
             int r = accountFreezeRecordDao.batchInsert(list);
-            if(r != accountFreezeRecords.size()){
+            Profiler.release();
+            if (r != accountFreezeRecords.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
             }
-        }catch (DuplicateKeyException e){
+        } catch (DuplicateKeyException e) {
             log.error("[batchInsert] has idempotent for accountFreezeRecords:{}", accountFreezeRecords);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        } finally {
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 
@@ -156,14 +167,21 @@ import java.util.List;
      * @param accountFreezeRecords
      */
     public void batchUpdate(List<AccountFreezeRecord> accountFreezeRecords) {
-        if(CollectionUtils.isEmpty(accountFreezeRecords)){
+        if (CollectionUtils.isEmpty(accountFreezeRecords)) {
             return;
         }
-        List<AccountFreezeRecordPO> list = BeanConvertor.convertList(accountFreezeRecords,AccountFreezeRecordPO.class);
-        int r = accountFreezeRecordDao.batchUpdate(list);
-        if(r != accountFreezeRecords.size()){
-            log.info("[batchUpdate]the number of update rows is different from the original number");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+        List<AccountFreezeRecordPO> list = BeanConvertor.convertList(accountFreezeRecords, AccountFreezeRecordPO.class);
+        try {
+            Profiler.enter("[batchUpdate accountFreezeRecords]");
+            int r = accountFreezeRecordDao.batchUpdate(list);
+            Profiler.release();
+            if (r != accountFreezeRecords.size()) {
+                log.info("[batchUpdate]the number of update rows is different from the original number");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+            }
+        } finally {
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 
@@ -179,7 +197,9 @@ import java.util.List;
         }
         List<AccountDetailFreezePO> list = BeanConvertor.convertList(detailFreezes, AccountDetailFreezePO.class);
         try {
+            Profiler.enter("[batchInsert detailFreeze]");
             int r = accountDetailFreezeDao.batchInsert(list);
+            Profiler.release();
             if (r != detailFreezes.size()) {
                 log.info("[batchInsertDetailFreezes]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -187,6 +207,9 @@ import java.util.List;
         } catch (DuplicateKeyException e) {
             log.error("[batchInsertDetailFreezes] has idempotent for detailFreezes:{}", detailFreezes);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        } finally {
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 }

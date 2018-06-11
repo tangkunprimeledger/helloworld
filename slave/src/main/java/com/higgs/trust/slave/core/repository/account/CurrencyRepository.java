@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.repository.account;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.dao.account.CurrencyInfoDao;
 import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
 import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
@@ -77,7 +78,9 @@ import java.util.List;
         }
         List<CurrencyInfoPO> list = BeanConvertor.convertList(currencyInfos, CurrencyInfoPO.class);
         try {
+            Profiler.enter("[batchInsert currencyInfo]");
             int r = currencyInfoDao.batchInsert(list);
+            Profiler.release();
             if (r != currencyInfos.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -85,6 +88,9 @@ import java.util.List;
         } catch (DuplicateKeyException e) {
             log.error("[batchInsert] has idempotent for currencyInfos:{}", currencyInfos);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        } finally {
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 }
