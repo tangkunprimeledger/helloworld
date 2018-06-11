@@ -6,6 +6,7 @@ import com.higgs.trust.slave.api.enums.account.ChangeDirectionEnum;
 import com.higgs.trust.slave.api.vo.AccountInfoVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.dao.account.AccountDcRecordDao;
 import com.higgs.trust.slave.dao.account.AccountDetailDao;
@@ -188,7 +189,9 @@ import java.util.List;
         }
         List<AccountInfoPO> list = BeanConvertor.convertList(accountInfos, AccountInfoPO.class);
         try {
+            Profiler.enter("[batchInsert accountInfo]");
             int r = accountInfoDao.batchInsert(list);
+            Profiler.release();
             if (r != accountInfos.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -196,6 +199,9 @@ import java.util.List;
         } catch (DuplicateKeyException e) {
             log.error("[batchInsert] has idempotent for accountInfos:{}", accountInfos);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        } finally {
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 
@@ -210,10 +216,17 @@ import java.util.List;
             return;
         }
         List<AccountInfoPO> list = BeanConvertor.convertList(accountInfos, AccountInfoPO.class);
-        int r = accountInfoDao.batchUpdate(list);
-        if (r != accountInfos.size()) {
-            log.info("[batchUpdate]the number of update rows is different from the original number");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+        try {
+            Profiler.enter("[batchUpdate accountInfo]");
+            int r = accountInfoDao.batchUpdate(list);
+            Profiler.release();
+            if (r != accountInfos.size()) {
+                log.info("[batchUpdate]the number of update rows is different from the original number");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+            }
+        } finally {
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 
@@ -222,14 +235,16 @@ import java.util.List;
      *
      * @param accountDetails
      */
-    public void batchInsertAccountDetail(List<AccountDetail> accountDetails){
+    public void batchInsertAccountDetail(List<AccountDetail> accountDetails) {
         if (CollectionUtils.isEmpty(accountDetails)) {
             log.info("[batchInsertAccountDetail] accountDetails is empty");
             return;
         }
         List<AccountDetailPO> list = BeanConvertor.convertList(accountDetails, AccountDetailPO.class);
         try {
+            Profiler.enter("[batchInsert accountDetail]");
             int r = accountDetailDao.batchInsert(list);
+            Profiler.release();
             if (r != accountDetails.size()) {
                 log.info("[batchInsertAccountDetail]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -237,6 +252,9 @@ import java.util.List;
         } catch (DuplicateKeyException e) {
             log.error("[batchInsertAccountDetail] has idempotent for accountDetails:{}", accountDetails);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        } finally {
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 
@@ -252,7 +270,9 @@ import java.util.List;
         }
         List<AccountDcRecordPO> list = BeanConvertor.convertList(dcRecords, AccountDcRecordPO.class);
         try {
+            Profiler.enter("[batchInsert accountDcRecords]");
             int r = accountDcRecordDao.batchInsert(list);
+            Profiler.release();
             if (r != dcRecords.size()) {
                 log.info("[batchInsertDcRecords]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -260,6 +280,9 @@ import java.util.List;
         } catch (DuplicateKeyException e) {
             log.error("[batchInsertDcRecords] has idempotent for dcRecords:{}", dcRecords);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        } finally {
+            Profiler.release();
+            Profiler.logDump();
         }
     }
 }
