@@ -4,8 +4,11 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
@@ -20,6 +23,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -47,6 +51,22 @@ import java.util.concurrent.*;
         TransactionTemplate tx = new TransactionTemplate(platformTransactionManager);
         tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return tx;
+    }
+
+    @Bean public Deque<SignedTransaction> pendingTxQueue() {
+        return new ConcurrentLinkedDeque<>();
+    }
+
+    @Bean public ConcurrentLinkedHashMap existTxMap() {
+        return new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE).build();
+    }
+
+    @Bean public Long packHeight() {
+        return new Long(0);
+    }
+
+    @Bean public BlockingQueue<Package> pendingPack() {
+        return new LinkedBlockingDeque<>();
     }
 
     @Bean public ExecutorService packageThreadPool() {
