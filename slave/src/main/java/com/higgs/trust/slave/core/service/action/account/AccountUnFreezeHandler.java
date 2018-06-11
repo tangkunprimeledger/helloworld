@@ -4,8 +4,6 @@ import com.higgs.trust.contract.ExecuteContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
@@ -29,21 +27,11 @@ import java.math.BigDecimal;
 
     @Override public void process(ActionData actionData) {
         AccountUnFreeze bo = (AccountUnFreeze)actionData.getCurrentAction();
-        if (bo == null) {
-            log.error("[accountUnFreeze.validate] convert action to accountUnFreezeBO is error");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
         //
         unFreeze(bo,actionData.getCurrentBlock().getBlockHeader().getHeight());
     }
 
     public void unFreeze(AccountUnFreeze bo,Long blockHeight){
-        //validate param
-        BeanValidateResult validateResult = BeanValidator.validate(bo);
-        if (!validateResult.isSuccess()) {
-            log.error("[accountUnFreeze.process] param validate is fail,first msg:{}", validateResult.getFirstMsg());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
         Profiler.enter("[validateForUnFreeze]");
         //validate business
         //check record is exists
