@@ -42,8 +42,7 @@ import java.math.BigDecimal;
         bo.setRemark(remark);
 
         ActionData actionData = getContextData(StandardExecuteContextData.class).getAction();
-        TxProcessTypeEnum processTypeEnum = getContext().isValidateStage() ? TxProcessTypeEnum.VALIDATE : TxProcessTypeEnum.PERSIST;
 
-        accountUnFreezeHandler.unFreeze(bo,actionData.getCurrentBlock().getBlockHeader().getHeight(),processTypeEnum);
+        accountUnFreezeHandler.unFreeze(bo,actionData.getCurrentBlock().getBlockHeader().getHeight());
     }
 }

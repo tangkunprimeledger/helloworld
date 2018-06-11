@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
         manager.registerService("ctx", contextService);
         manager.setDbStateStore(new ContractStateStore() {
             private ContractStateStore getContractStateStore() {
+                // TODO delete isValidateStage
                 if (ExecuteContext.getCurrent().isValidateStage()) {
                     return contractStateSnapshotAgent;
                 }
@@ -78,10 +79,10 @@ import org.springframework.stereotype.Service;
         return result;
     }
 
-    public Object execute(String address, ExecuteContextData data, TxProcessTypeEnum processType, Object... args) {
+    public Object execute(String address, ExecuteContextData data, Object... args) {
         try {
             Profiler.enter(String.format("execute contract at %s", address));
-            return execute(address, address, data, processType, args);
+            return execute(address, address, data, args);
         } finally {
             Profiler.release();
         }

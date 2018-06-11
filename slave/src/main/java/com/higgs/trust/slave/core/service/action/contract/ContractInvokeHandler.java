@@ -34,33 +34,22 @@ import org.springframework.util.StringUtils;
         }
     }
 
-    private void process(ActionData actionData, TxProcessTypeEnum processType) {
+    private void processInternal(ActionData actionData) {
         if (!(actionData.getCurrentAction() instanceof ContractInvokeAction)) {
             throw new IllegalArgumentException("action need a type of ContractInvokeAction");
         }
         ContractInvokeAction invokeAction = (ContractInvokeAction) actionData.getCurrentAction();
         this.check(invokeAction);
         ExecuteContextData data = new StandardExecuteContextData().put("ActionData", actionData);
-        smartContract.execute(invokeAction.getAddress(), data, processType, invokeAction.getArgs());
+        smartContract.execute(invokeAction.getAddress(), data, invokeAction.getArgs());
     }
 
     @Override
-    public void validate(ActionData actionData) {
-        log.debug("start invoke contract on validate process");
-        Profiler.enter("ContractInvokeHandler validate");
+    public void process(ActionData actionData) {
+        log.debug("start invoke contract process");
+        Profiler.enter("ContractInvokeHandler process");
         try {
-            process(actionData, TxProcessTypeEnum.VALIDATE);
-        } finally {
-            Profiler.release();
-        }
-    }
-
-    @Override
-    public void persist(ActionData actionData) {
-        log.debug("start invoke contract on persist process");
-        Profiler.enter("ContractInvokeHandler persist");
-        try {
-            process(actionData, TxProcessTypeEnum.PERSIST);
+            processInternal(actionData);
         } finally {
             Profiler.release();
         }
