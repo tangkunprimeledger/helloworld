@@ -94,8 +94,8 @@ import static org.testng.Assert.assertEquals;
             if(!StringUtils.isEmpty(policyId) && !StringUtils.equals("null",policyId)){
                 packContext.getCurrentTransaction().getCoreTx().setPolicyId(policyId);
             }
-            actionHandler.validate(packContext);
-            actionHandler.persist(packContext);
+         //   actionHandler.validate(packContext);
+          //  actionHandler.persist(packContext);
         } catch (Exception e) {
             log.info("has error:{}", e.getMessage());
             assertEquals(e.getMessage(), assertData);

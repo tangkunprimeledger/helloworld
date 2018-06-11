@@ -110,7 +110,6 @@ public class DataIdentityActionHandlerTest  {
                 return dataIdentityAction;
             }
         };
-        dataIdentityActionHandler.persist(ActionData);
     }
 
 }

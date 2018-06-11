@@ -46,8 +46,6 @@ public abstract class BaseTest
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
         //toJSONString的时候记录Class的name
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
-
-        snapshotService.init();
     }
 
     @AfterClass public void runAfter() {
