@@ -88,4 +88,12 @@ import java.util.List;
      * @return
      */
     long countAccountInfoWithOwner(@Param("accountNo") String accountNo, @Param("dataOwner") String dataOwner);
+
+    /**
+     * batch insert
+     *
+     * @param list
+     * @return
+     */
+    int batchInsert(@Param("list")List<AccountInfoPO> list);
 }

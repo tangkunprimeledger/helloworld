@@ -17,9 +17,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,9 +46,11 @@ public class AccountSnapshotAgent implements CacheLoader {
         return (T) snapshot.get(SnapshotBizKeyEnum.ACCOUNT, key);
     }
 
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
-    private void put(Object key, Object object) {
-        //snapshot.put(SnapshotBizKeyEnum.ACCOUNT, key, object);
+    private void insert(Object key, Object object) {
+        snapshot.insert(SnapshotBizKeyEnum.ACCOUNT, key, object);
+    }
+    private void update(Object key, Object object) {
+        snapshot.update(SnapshotBizKeyEnum.ACCOUNT, key, object);
     }
 
     /**
@@ -77,7 +82,7 @@ public class AccountSnapshotAgent implements CacheLoader {
         // account info
         AccountInfo accountInfo = accountRepository.buildAccountInfo(bo);
         //save account info to snapshot
-        put(new AccountCacheKey(accountInfo.getAccountNo()), accountInfo);
+        insert(new AccountCacheKey(accountInfo.getAccountNo()), accountInfo);
         // data identity
         DataIdentity dataIdentity = DataIdentityConvert.buildDataIdentity(bo.getAccountNo(), bo.getChainOwner(), bo.getDataOwner());
         // save snapshot
@@ -91,7 +96,7 @@ public class AccountSnapshotAgent implements CacheLoader {
      * @param accountInfo
      */
     public void updateAccountInfo(AccountInfo accountInfo) {
-        put(new AccountCacheKey(accountInfo.getAccountNo()), accountInfo);
+        update(new AccountCacheKey(accountInfo.getAccountNo()), accountInfo);
     }
 
     /**
@@ -101,7 +106,7 @@ public class AccountSnapshotAgent implements CacheLoader {
      */
     public void issueCurrency(IssueCurrency bo) {
         CurrencyInfo currencyInfo = currencyRepository.buildCurrencyInfo(bo.getCurrencyName(), bo.getRemark());
-        put(new CurrencyInfoCacheKey(bo.getCurrencyName()), currencyInfo);
+        insert(new CurrencyInfoCacheKey(bo.getCurrencyName()), currencyInfo);
     }
 
     /**
@@ -129,10 +134,28 @@ public class AccountSnapshotAgent implements CacheLoader {
      * @param insertMap
      * @return
      */
-    //TODO to implements your own bachInsert method for db
     @Override
     public boolean batchInsert(Map<Object, Object> insertMap) {
-        return false;
+        if(insertMap == null || insertMap.isEmpty()){
+            log.info("[batchInsert]insertMap is empty");
+            return true;
+        }
+        List<AccountInfo> accountInfos = new ArrayList<>();
+        List<CurrencyInfo> currencyInfos = new ArrayList<>();
+        for(Object key : insertMap.keySet()){
+            if (key instanceof AccountCacheKey) {
+                accountInfos.add((AccountInfo)insertMap.get(key));
+            }else if (key instanceof CurrencyInfoCacheKey){
+                currencyInfos.add((CurrencyInfo)insertMap.get(key));
+            }
+        }
+        if(!CollectionUtils.isEmpty(accountInfos)){
+            accountRepository.batchInsert(accountInfos);
+        }
+        if(!CollectionUtils.isEmpty(currencyInfos)){
+            currencyRepository.batchInsert(currencyInfos);
+        }
+        return true;
     }
 
     /**
@@ -141,12 +164,23 @@ public class AccountSnapshotAgent implements CacheLoader {
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
     @Override
     public boolean batchUpdate(Map<Object, Object> updateMap) {
-        return false;
+        if(updateMap == null || updateMap.isEmpty()){
+            log.info("[updateMap]updateMap is empty");
+            return true;
+        }
+        List<AccountInfo> accountInfos = new ArrayList<>();
+        for(Object key : updateMap.keySet()){
+            if (key instanceof AccountCacheKey) {
+                accountInfos.add((AccountInfo)updateMap.get(key));
+            }
+        }
+        if(!CollectionUtils.isEmpty(accountInfos)){
+            accountRepository.batchUpdate(accountInfos);
+        }
+        return true;
     }
-
 
     /**
      * the cache key of account info

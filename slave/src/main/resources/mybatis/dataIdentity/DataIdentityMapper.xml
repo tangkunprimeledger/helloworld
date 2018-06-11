@@ -67,7 +67,7 @@
         VALUES
         <foreach collection="list" item="item" index="index"
                  separator=",">
-            (#{identity},#{chainOwner},#{dataOwner},now(3))
+            (#{item.identity},#{item.chainOwner},#{item.dataOwner},now(3))
         </foreach>
     </insert>
 

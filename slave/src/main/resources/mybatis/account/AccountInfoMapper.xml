@@ -193,4 +193,13 @@
         </foreach>
     </select>
 
+    <!--batch insert-->
+    <insert id ="batchInsert" parameterType="java.util.List" >
+        insert into account_info
+        (id,account_no,currency,balance,freeze_amount,fund_direction,detail_no,detail_freeze_no,status,create_time,update_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.id},#{item.accountNo},#{item.currency},#{item.balance},#{item.freezeAmount},#{item.fundDirection},#{item.detailNo},#{item.detailFreezeNo},#{item.status},now(3),now(3))
+        </foreach>
+    </insert>
 </mapper>

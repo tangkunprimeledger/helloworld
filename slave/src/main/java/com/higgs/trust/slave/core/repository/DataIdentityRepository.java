@@ -61,13 +61,11 @@ public class DataIdentityRepository {
      * @param dataIdentityList
      */
     public boolean batchInsert(List<DataIdentity> dataIdentityList) {
-
-        List<DataIdentityPO> dataIdentityPOList = new ArrayList<>();
-        for(DataIdentity dataIdentity : dataIdentityList){
-            DataIdentityPO dataIdentityPO = BeanConvertor.convertBean(dataIdentity, DataIdentityPO.class);
-            dataIdentityPOList.add(dataIdentityPO);
+        if(CollectionUtils.isEmpty(dataIdentityList)){
+            log.info("dataIdentityList is empty");
+            return true;
         }
-
+        List<DataIdentityPO> dataIdentityPOList = BeanConvertor.convertList(dataIdentityList,DataIdentityPO.class);
         try {
           return  dataIdentityPOList.size() == dataIdentityDao.batchInsert(dataIdentityPOList);
         } catch (DuplicateKeyException e) {
@@ -89,5 +87,4 @@ public class DataIdentityRepository {
         }
         return true;
     }
-
 }
