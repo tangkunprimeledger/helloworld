@@ -1,20 +1,31 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
+import com.higgs.trust.consensus.p2pvalid.annotation.P2pvalidReplicator;
 import com.higgs.trust.consensus.p2pvalid.core.storage.SendService;
 import com.higgs.trust.consensus.p2pvalid.core.storage.SyncSendService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.*;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
  * @author cwy
  */
-@Slf4j public abstract class ValidConsensus {
+@Component @Slf4j public class ValidConsensus implements ApplicationContextAware {
 
     private ValidExecutor executor;
+
+    private ApplicationContext applicationContext;
 
     @Autowired private SendService sendService;
 
@@ -22,7 +33,6 @@ import java.util.function.Function;
 
     public ValidConsensus() {
         executor = new ValidExecutor();
-        config();
     }
 
     public final void submit(ValidCommand<?> command) {
@@ -37,20 +47,19 @@ import java.util.function.Function;
         return executor;
     }
 
-    public void config() {
-        registerOperations();
-    }
-
     /**
      * Registers operations for the class.
      */
-    private void registerOperations() {
-        Class<?> type = getClass();
-        for (Method method : type.getMethods()) {
-            if (isOperationMethod(method)) {
-                registerMethod(method);
+    @PostConstruct public void registerOperations() {
+        Map<String, Object> withAnnotation = applicationContext.getBeansWithAnnotation(P2pvalidReplicator.class);
+        withAnnotation.values().stream().forEach(object -> {
+            Class<?> type = object.getClass();
+            for (Method method : type.getMethods()) {
+                if (isOperationMethod(method)) {
+                    registerMethod(object, method);
+                }
             }
-        }
+        });
     }
 
     /**
@@ -64,11 +73,11 @@ import java.util.function.Function;
     /**
      * Registers an operation for the given method.
      */
-    private void registerMethod(Method method) {
+    private void registerMethod(Object object, Method method) {
         Type genericType = method.getGenericParameterTypes()[0];
         Class<?> argumentType = resolveArgument(genericType);
         if (argumentType != null && ValidCommand.class.isAssignableFrom(argumentType)) {
-            registerMethod(argumentType, method);
+            registerMethod(object, method, argumentType);
         }
     }
 
@@ -108,29 +117,29 @@ import java.util.function.Function;
     /**
      * Registers the given method for the given operation type.
      */
-    private void registerMethod(Class<?> type, Method method) {
+    private void registerMethod(Object object, Method method, Class<?> type) {
         Class<?> returnType = method.getReturnType();
         if (returnType == void.class || returnType == Void.class) {
-            registerVoidMethod(type, method);
+            registerVoidMethod(object, method, type);
         } else {
-            registerValueMethod(type, method);
+            registerValueMethod(object, method, type);
         }
     }
 
     /**
      * Registers an operation with a void return value.
      */
-    @SuppressWarnings("unchecked") private void registerVoidMethod(Class type, Method method) {
-        executor.register(type, wrapVoidMethod(method));
+    @SuppressWarnings("unchecked") private void registerVoidMethod(Object object, Method method, Class type) {
+        executor.register(type, wrapVoidMethod(object, method));
     }
 
     /**
      * Wraps a void method.
      */
-    private Consumer wrapVoidMethod(Method method) {
+    private Consumer wrapVoidMethod(Object object, Method method) {
         return c -> {
             try {
-                method.invoke(this, c);
+                method.invoke(object, c);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -140,20 +149,24 @@ import java.util.function.Function;
     /**
      * Registers an operation with a non-void return value.
      */
-    @SuppressWarnings("unchecked") private void registerValueMethod(Class type, Method method) {
-        executor.register(type, wrapValueMethod(method));
+    @SuppressWarnings("unchecked") private void registerValueMethod(Object object, Method method, Class type) {
+        executor.register(type, wrapValueMethod(object, method));
     }
 
     /**
      * Wraps a value method.
      */
-    private Function wrapValueMethod(Method method) {
+    private Function wrapValueMethod(Object object, Method method) {
         return c -> {
             try {
-                return method.invoke(this, c);
+                return method.invoke(object, c);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         };
+    }
+
+    @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

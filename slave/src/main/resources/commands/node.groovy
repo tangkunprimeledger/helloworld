@@ -1,22 +1,16 @@
 package commands
 
-import com.higgs.trust.common.utils.SignUtils
-import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient
-import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap
-import com.higgs.trust.consensus.p2pvalid.core.storage.SyncSendService
 import com.higgs.trust.slave.common.enums.NodeStateEnum
 import com.higgs.trust.slave.core.managment.NodeState
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
-import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService
+import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
 import com.higgs.trust.slave.core.service.failover.SelfCheckingService
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
-
-import java.util.concurrent.ConcurrentHashMap
 
 /*
  * Copyright (c) 2013-2017, suimi
@@ -82,14 +76,14 @@ class node {
 
         BeanFactory beans = context.attributes['spring.beanfactory']
         if (isAll) {
-            def clusterService = beans.getBean(ClusterService.class)
+            def clusterService = beans.getBean(IClusterService.class)
             def map = clusterService.getAllClusterHeight()
             map.entrySet().forEach({ entry -> context.provide([name: entry.key, value: entry.value]) })
             return
         }
         def height
         if (isCluster) {
-            def clusterService = beans.getBean(ClusterService.class)
+            def clusterService = beans.getBean(IClusterService.class)
             height = clusterService.getClusterHeight(1)
             if (height == null) {
                 out.println("Failed to get cluster height, please try again")
