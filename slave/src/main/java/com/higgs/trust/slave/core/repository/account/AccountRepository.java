@@ -199,6 +199,67 @@ import java.util.List;
         }
     }
 
+    /**
+     * batch update
+     *
+     * @param accountInfos
+     */
     public void batchUpdate(List<AccountInfo> accountInfos) {
+        if (CollectionUtils.isEmpty(accountInfos)) {
+            log.info("[batchUpdate] accountInfos is empty");
+            return;
+        }
+        List<AccountInfoPO> list = BeanConvertor.convertList(accountInfos, AccountInfoPO.class);
+        int r = accountInfoDao.batchUpdate(list);
+        if (r != accountInfos.size()) {
+            log.info("[batchUpdate]the number of update rows is different from the original number");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+        }
+    }
+
+    /**
+     * batch insert account detail
+     *
+     * @param accountDetails
+     */
+    public void batchInsertAccountDetail(List<AccountDetail> accountDetails){
+        if (CollectionUtils.isEmpty(accountDetails)) {
+            log.info("[batchInsertAccountDetail] accountDetails is empty");
+            return;
+        }
+        List<AccountDetailPO> list = BeanConvertor.convertList(accountDetails, AccountDetailPO.class);
+        try {
+            int r = accountDetailDao.batchInsert(list);
+            if (r != accountDetails.size()) {
+                log.info("[batchInsertAccountDetail]the number of update rows is different from the original number");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+            }
+        } catch (DuplicateKeyException e) {
+            log.error("[batchInsertAccountDetail] has idempotent for accountDetails:{}", accountDetails);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        }
+    }
+
+    /**
+     * batch insert DC record
+     *
+     * @param dcRecords
+     */
+    public void batchInsertDcRecords(List<AccountDcRecord> dcRecords) {
+        if (CollectionUtils.isEmpty(dcRecords)) {
+            log.info("[batchInsertDcRecords] dcRecords is empty");
+            return;
+        }
+        List<AccountDcRecordPO> list = BeanConvertor.convertList(dcRecords, AccountDcRecordPO.class);
+        try {
+            int r = accountDcRecordDao.batchInsert(list);
+            if (r != dcRecords.size()) {
+                log.info("[batchInsertDcRecords]the number of update rows is different from the original number");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+            }
+        } catch (DuplicateKeyException e) {
+            log.error("[batchInsertDcRecords] has idempotent for dcRecords:{}", dcRecords);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        }
     }
 }

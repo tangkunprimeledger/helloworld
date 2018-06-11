@@ -63,6 +63,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     private AccountSnapshotAgent accountSnapshotAgent;
 
     @Autowired
+    private AccountDetailSnapshotAgent accountDetailSnapshotAgent;
+
+    @Autowired
     private FreezeSnapshotAgent freezeSnapshotAgent;
 
     @Autowired
@@ -133,6 +136,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //register ACCOUNT cache loader
             log.debug("Register ACCOUNT cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT, accountSnapshotAgent);
+
+            log.debug("Register ACCOUNT_DETAIL cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT_DETAIL, accountDetailSnapshotAgent);
 
             //register ACCOUNT cache loader
             log.debug("Register FREEZE cache loader");

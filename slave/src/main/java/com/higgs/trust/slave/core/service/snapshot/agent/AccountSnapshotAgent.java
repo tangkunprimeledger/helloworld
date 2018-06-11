@@ -137,7 +137,6 @@ public class AccountSnapshotAgent implements CacheLoader {
     @Override
     public boolean batchInsert(Map<Object, Object> insertMap) {
         if(insertMap == null || insertMap.isEmpty()){
-            log.info("[batchInsert]insertMap is empty");
             return true;
         }
         List<AccountInfo> accountInfos = new ArrayList<>();

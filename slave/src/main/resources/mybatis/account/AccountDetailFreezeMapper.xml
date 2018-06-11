@@ -62,7 +62,7 @@
     <insert id="add" parameterType="Object">
 		insert into
 		account_detail_freeze(id,biz_flow_no,account_no,block_height,freeze_detail_no,freeze_type,amount,before_amount,after_amount,remark,create_time)
-		values(#{id},#{bizFlowNo},#{accountNo},#{blockHeight},#{freezeDetailNo},#{freezeType},#{amount},#{beforeAmount},#{afterAmount},#{remark},now())
+		values(#{id},#{bizFlowNo},#{accountNo},#{blockHeight},#{freezeDetailNo},#{freezeType},#{amount},#{beforeAmount},#{afterAmount},#{remark},now(3))
 	</insert>
     <!-- 删除记录 -->
     <delete id="delete" parameterType="Object">
@@ -91,5 +91,12 @@
     </select>
     <!-- 以上为工具自动生成 -->
 
-
+    <!--batch insert-->
+    <insert id ="batchInsert" parameterType="java.util.List" >
+        insert into account_detail_freeze(id,biz_flow_no,account_no,block_height,freeze_detail_no,freeze_type,amount,before_amount,after_amount,remark,create_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.id},#{item.bizFlowNo},#{item.accountNo},#{item.blockHeight},#{item.freezeDetailNo},#{item.freezeType},#{item.amount},#{item.beforeAmount},#{item.afterAmount},#{item.remark},now(3))
+        </foreach>
+    </insert>
 </mapper>

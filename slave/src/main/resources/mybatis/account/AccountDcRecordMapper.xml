@@ -42,7 +42,7 @@
     <insert id="add" parameterType="Object">
 		insert into
 		account_dc_record(id,biz_flow_no,account_no,dc_flag,amount,create_time)
-		values(#{id},#{bizFlowNo},#{accountNo},#{dcFlag},#{amount},#{createTime})
+		values(#{id},#{bizFlowNo},#{accountNo},#{dcFlag},#{amount},now(3))
 	</insert>
     <!-- 删除记录 -->
     <delete id="delete" parameterType="Object">
@@ -71,5 +71,13 @@
     </select>
     <!-- 以上为工具自动生成 -->
 
+    <!--batch insert-->
+    <insert id ="batchInsert" parameterType="java.util.List" >
+        insert into account_dc_record(id,biz_flow_no,account_no,dc_flag,amount,create_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.id},#{item.bizFlowNo},#{item.accountNo},#{item.dcFlag},#{item.amount},now(3))
+        </foreach>
+    </insert>
 
 </mapper>

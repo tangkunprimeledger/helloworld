@@ -11,9 +11,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,21 +24,20 @@ import java.util.Map;
  * @description an agent for account freeze snapshot
  * @date 2018-04-09
  */
-@Slf4j
-@Component
-public class FreezeSnapshotAgent implements CacheLoader {
-    @Autowired
-    SnapshotService snapshot;
-    @Autowired
-    FreezeRepository freezeRepository;
+@Slf4j @Component public class FreezeSnapshotAgent implements CacheLoader {
+    @Autowired SnapshotService snapshot;
+    @Autowired FreezeRepository freezeRepository;
 
     private <T> T get(Object key) {
-        return (T) snapshot.get(SnapshotBizKeyEnum.FREEZE, key);
+        return (T)snapshot.get(SnapshotBizKeyEnum.FREEZE, key);
     }
 
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
-    private void put(Object key, Object object) {
-        //snapshot.put(SnapshotBizKeyEnum.FREEZE,key,object);
+    private void insert(Object key, Object object) {
+        snapshot.insert(SnapshotBizKeyEnum.FREEZE, key, object);
+    }
+
+    private void update(Object key, Object object) {
+        snapshot.update(SnapshotBizKeyEnum.FREEZE, key, object);
     }
 
     /**
@@ -55,7 +57,8 @@ public class FreezeSnapshotAgent implements CacheLoader {
      * @param accountFreezeRecord
      */
     public void createAccountFreezeRecord(AccountFreezeRecord accountFreezeRecord) {
-        put(new FreezeCacheKey(accountFreezeRecord.getBizFlowNo(), accountFreezeRecord.getAccountNo()), accountFreezeRecord);
+        insert(new FreezeCacheKey(accountFreezeRecord.getBizFlowNo(), accountFreezeRecord.getAccountNo()),
+            accountFreezeRecord);
     }
 
     /**
@@ -64,16 +67,16 @@ public class FreezeSnapshotAgent implements CacheLoader {
      * @param accountFreezeRecord
      */
     public void updateAccountFreezeRecord(AccountFreezeRecord accountFreezeRecord) {
-        put(new FreezeCacheKey(accountFreezeRecord.getBizFlowNo(), accountFreezeRecord.getAccountNo()), accountFreezeRecord);
+        update(new FreezeCacheKey(accountFreezeRecord.getBizFlowNo(), accountFreezeRecord.getAccountNo()),
+            accountFreezeRecord);
     }
 
     /**
      * when cache is not exists,load from db
      */
-    @Override
-    public Object query(Object object) {
+    @Override public Object query(Object object) {
         if (object instanceof FreezeCacheKey) {
-            FreezeCacheKey key = (FreezeCacheKey) object;
+            FreezeCacheKey key = (FreezeCacheKey)object;
             return freezeRepository.queryByFlowNoAndAccountNo(key.getBizFlowNo(), key.getAccountNo());
         }
         log.error("not found load function for cache key:{}", object);
@@ -86,10 +89,15 @@ public class FreezeSnapshotAgent implements CacheLoader {
      * @param insertMap
      * @return
      */
-    //TODO to implements your own bachInsert method for db
-    @Override
-    public boolean batchInsert(Map<Object, Object> insertMap) {
-        return false;
+    @Override public boolean batchInsert(Map<Object, Object> insertMap) {
+        if (insertMap == null || insertMap.isEmpty()) {
+            return true;
+        }
+        List<AccountFreezeRecord> accountFreezeRecords = getFromMap(insertMap);
+        if (!CollectionUtils.isEmpty(accountFreezeRecords)) {
+            freezeRepository.batchInsert(accountFreezeRecords);
+        }
+        return true;
     }
 
     /**
@@ -98,20 +106,36 @@ public class FreezeSnapshotAgent implements CacheLoader {
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
-    @Override
-    public boolean batchUpdate(Map<Object, Object> updateMap) {
-        return false;
+    @Override public boolean batchUpdate(Map<Object, Object> updateMap) {
+        if (updateMap == null || updateMap.isEmpty()) {
+            return true;
+        }
+        List<AccountFreezeRecord> accountFreezeRecords = getFromMap(updateMap);
+        if (!CollectionUtils.isEmpty(accountFreezeRecords)) {
+            freezeRepository.batchUpdate(accountFreezeRecords);
+        }
+        return true;
     }
 
     /**
+     * get list from map
+     *
+     * @param map
+     * @return
+     */
+    private List<AccountFreezeRecord> getFromMap(Map<Object, Object> map){
+        List<AccountFreezeRecord> accountFreezeRecords = new ArrayList<>();
+        for (Object key : map.keySet()) {
+            if (key instanceof FreezeCacheKey) {
+                accountFreezeRecords.add((AccountFreezeRecord)map.get(key));
+            }
+        }
+        return accountFreezeRecords;
+    }
+    /**
      * the cache key of freeze info
      */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class FreezeCacheKey extends BaseBO {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class FreezeCacheKey extends BaseBO {
         private String bizFlowNo;
         private String accountNo;
     }
