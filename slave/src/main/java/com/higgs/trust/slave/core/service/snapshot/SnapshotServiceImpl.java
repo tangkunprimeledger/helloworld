@@ -217,9 +217,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear packageCache and txCache
             clearTempCache();
-
-            //check whether snapshot transaction has been started.
-            isOpenTransactionException();
         } finally {
             log.debug("Unlock lock for clear snapshot!");
             lock.unlock();
@@ -262,9 +259,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
                 LoadingCache<String, Object> innerMap = outerEntry.getValue();
                 innerMap.invalidateAll();
             }
-
-            //check whether snapshot transaction has been started.
-            isOpenTransactionException();
         } finally {
             log.debug("Unlock lock for destroy snapshot!");
             lock.unlock();
@@ -441,9 +435,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear txCache
             txCache.clear();
-
-            //check whether snapshot transaction has been started.
-            isOpenTransactionException();
         } finally {
             log.debug("Unlock lock for commit!");
             lock.unlock();
@@ -475,9 +466,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear txCache
             txCache.clear();
-
-            //check whether snapshot transaction has been started.
-            isOpenTransactionException();
         } finally {
             log.info("Unlock lock for rollback!");
             lock.unlock();
@@ -517,9 +505,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear packageCache and txCache
             clearTempCache();
-
-            //check whether snapshot transaction has been started.
-            isOpenTransactionException();
         } finally {
             log.info("Unlock lock for flush!");
             lock.unlock();
