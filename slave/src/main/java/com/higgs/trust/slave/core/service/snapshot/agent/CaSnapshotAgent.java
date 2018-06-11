@@ -86,7 +86,7 @@ import java.util.Map;
      * @return
      */
     public ClusterConfig getClusterConfig(String clusterName) {
-        return get(new CaCacheKey(clusterName));
+        return get(new ClusterConfigCacheKey(clusterName));
     }
 
     /**
@@ -96,7 +96,7 @@ import java.util.Map;
      * @return
      */
     public ClusterNode getClusterNode(String nodeName) {
-        return get(new CaCacheKey(nodeName));
+        return get(new ClusterNodeCacheKey(nodeName));
     }
 
     /**
@@ -105,7 +105,7 @@ import java.util.Map;
      * @param ca
      */
     public void saveCa(Ca ca) {
-        insert(new CaSnapshotAgent.CaCacheKey(ca.getUser()), ca);
+        insert(new CaCacheKey(ca.getUser()), ca);
     }
 
     /**
@@ -114,7 +114,7 @@ import java.util.Map;
      * @param ca
      */
     public void updateCa(Ca ca) {
-        update(new CaSnapshotAgent.CaCacheKey(ca.getUser()), ca);
+        update(new CaCacheKey(ca.getUser()), ca);
     }
 
     /**
@@ -123,7 +123,7 @@ import java.util.Map;
      * @param clusterConfig
      */
     public void saveClusterConfig(ClusterConfig clusterConfig) {
-        insert(new CaSnapshotAgent.ClusterConfigCacheKey(clusterConfig.getClusterName()), clusterConfig);
+        insert(new ClusterConfigCacheKey(clusterConfig.getClusterName()), clusterConfig);
     }
 
     /**
@@ -132,7 +132,7 @@ import java.util.Map;
      * @param clusterConfig
      */
     public void updateClusterConfig(ClusterConfig clusterConfig) {
-        update(new CaSnapshotAgent.CaCacheKey(clusterConfig.getClusterName()), clusterConfig);
+        update(new ClusterConfigCacheKey(clusterConfig.getClusterName()), clusterConfig);
     }
 
     /**
@@ -141,7 +141,7 @@ import java.util.Map;
      * @param clusterNode
      */
     public void saveClusterNode(ClusterNode clusterNode) {
-        insert(new CaSnapshotAgent.ClusterConfigCacheKey(clusterNode.getNodeName()), clusterNode);
+        insert(new ClusterNodeCacheKey(clusterNode.getNodeName()), clusterNode);
     }
 
     /**
@@ -150,7 +150,7 @@ import java.util.Map;
      * @param clusterNode
      */
     public void updateClusterNode(ClusterNode clusterNode) {
-        update(new CaSnapshotAgent.CaCacheKey(clusterNode.getNodeName()), clusterNode);
+        update(new ClusterNodeCacheKey(clusterNode.getNodeName()), clusterNode);
     }
 
     /**
