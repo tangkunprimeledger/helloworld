@@ -86,7 +86,7 @@ import java.util.concurrent.*;
         log.info("change master, term:{}", term);
         ChangeMasterCommand command = new ChangeMasterCommand(term, nodeState.getNodeName(), verifies);
         command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
-        CompletableFuture future = consensusClient.submit(command);
+        CompletableFuture<Map<String, ChangeMasterVerifyResponse>> future = consensusClient.submit(command);
         try {
             future.get(800, TimeUnit.MILLISECONDS);
         } catch (Exception e) {

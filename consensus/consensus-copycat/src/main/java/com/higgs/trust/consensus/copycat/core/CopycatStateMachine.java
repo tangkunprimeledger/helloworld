@@ -32,14 +32,11 @@ import java.util.function.Function;
 
     @Override public void snapshot(SnapshotWriter writer) {
         String snapshot = this.snapshot.getSnapshot();
-        log.info("write snapshot:{}", snapshot);
-        writer.writeUTF8(snapshot).flush().close();
+        writer.writeUTF8(snapshot).flush();
     }
 
     @Override public void install(SnapshotReader reader) {
         String snapshot = reader.readUTF8();
-        log.info("read snapshot:{}", snapshot);
         this.snapshot.installSnapshot(snapshot);
-        reader.close();
     }
 }
