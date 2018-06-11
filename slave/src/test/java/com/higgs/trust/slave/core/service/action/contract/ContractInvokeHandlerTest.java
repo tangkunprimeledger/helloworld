@@ -47,7 +47,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
 
         System.out.println(JSON.toJSONString(packContext.getCurrentTransaction()));
         snapshot.startTransaction();
-        invokeHandler.validate(packContext);
+        invokeHandler.process(packContext);
         Assert.isTrue(snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE,
                 new ContractStateSnapshotAgent.ContractStateCacheKey(action.getAddress())) != null, "");
         snapshot.commit();
@@ -64,7 +64,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
                 .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
-        invokeHandler.persist(packContext);
+        invokeHandler.process(packContext);
     }
 
     public static void main(String[] args) {
