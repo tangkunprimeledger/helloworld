@@ -9,6 +9,7 @@ import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
@@ -40,7 +41,9 @@ import java.util.List;
      * @desc update clusterNode
      */
     public void updateClusterNode(ClusterNode clusterNode) {
-
+        ClusterNodePO clusterNodePO = new ClusterNodePO();
+        BeanUtils.copyProperties(clusterNode,clusterNodePO);
+        clusterNodeDao.updateClusterNode(clusterNodePO);
     }
 
     /**

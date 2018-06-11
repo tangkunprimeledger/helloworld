@@ -39,7 +39,9 @@ import java.util.List;
      * @desc update ClusterConfig
      */
     public void updateClusterConfig(ClusterConfig clusterConfig) {
-
+        ClusterConfigPO clusterConfigPO = new ClusterConfigPO();
+        BeanUtils.copyProperties(clusterConfig,clusterConfigPO);
+        clusterConfigDao.updateClusterConfig(clusterConfigPO);
     }
 
     /**
