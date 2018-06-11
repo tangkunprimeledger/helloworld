@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.service.snapshot.agent;
 
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
@@ -95,7 +96,7 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
         for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
             if (!(entry.getKey() instanceof  DataIdentityCacheKey)){
                 log.error("insert key is not the type of TxOutCacheKey error");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
             dataIdentityList.add((DataIdentity)entry.getValue());
         }
