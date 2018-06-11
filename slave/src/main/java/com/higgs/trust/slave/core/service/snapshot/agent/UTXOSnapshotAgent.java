@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXODBHandler;
@@ -124,6 +125,10 @@ public class UTXOSnapshotAgent implements CacheLoader {
      */
     @Override
     public Object query(Object object) {
+        if (!(object instanceof  TxOutCacheKey)){
+            log.error("object {} is not the type of TxOutCacheKey error", object);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+        }
         TxOutCacheKey txOutCacheKey = (TxOutCacheKey) object;
         return txOutRepository.queryTxOut(txOutCacheKey.getTxId(), txOutCacheKey.getIndex(), txOutCacheKey.getActionIndex());
     }
@@ -145,7 +150,7 @@ public class UTXOSnapshotAgent implements CacheLoader {
         for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
             if (!(entry.getKey() instanceof  TxOutCacheKey)){
                 log.error("insert key is not the type of TxOutCacheKey error");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
             txOutPOList.add((TxOutPO)entry.getValue());
         }
@@ -170,7 +175,7 @@ public class UTXOSnapshotAgent implements CacheLoader {
         for (Map.Entry<Object, Object> entry : updateMap.entrySet()) {
             if (!(entry.getKey() instanceof  TxOutCacheKey)){
                 log.error("update key is not the type of TxOutCacheKey error");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
             txOutPOList.add((TxOutPO)entry.getValue());
         }
