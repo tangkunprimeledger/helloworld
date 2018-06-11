@@ -52,6 +52,7 @@ import java.util.concurrent.TimeUnit;
     }
 
     private void sendMasterHeartbeat() {
+        log.debug("send master heartbeat");
         logReplicateHandler.masterHeartbeat();
         resetMasterHeartbeat();
     }

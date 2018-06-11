@@ -42,4 +42,8 @@ import lombok.ToString;
     @Override public String getSignature() {
         return sign;
     }
+
+    @Override public CompactionMode compaction() {
+        return CompactionMode.QUORUM;
+    }
 }
