@@ -19,6 +19,8 @@ import com.higgs.trust.consensus.bftsmart.communication.server.ServerConnection;
 import com.higgs.trust.consensus.bftsmart.reconfiguration.views.View;
 
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -86,19 +88,19 @@ public class ViewManager {
         }
     }
 
-    public void addServer(int id, String ip, int port) {
+    public void addServer(int id, String ip, int port, byte[] sign) {
         this.controller.getStaticConf().addHostInfo(id, ip, port);
-        rec.addServer(id, ip, port);
+        rec.addServer(id, ip, port, sign);
         addIds.add(id);
     }
 
-    public void removeServer(int id) {
-        rec.removeServer(id);
+    public void removeServer(int id, byte[] sign) {
+        rec.removeServer(id, sign);
     }
 
-    public void setF(int f) {
-        rec.setF(f);
-    }
+//    public void setF(int f) {
+//        rec.setF(f);
+//    }
 
     public void executeUpdates() {
         connect();
@@ -153,40 +155,69 @@ public class ViewManager {
 
         ViewManager viewManager = null;
 
-        if (args.length > 0) {
-            viewManager = new ViewManager(args[0]);
-        } else {
-            viewManager = new ViewManager("");
-        }
-        
-        Scanner scan = new Scanner(System.in);
-        String str = null;
-        do {
-            str = scan.nextLine();
-            String cmd = "";
-            int arg = -1;
-            try {
-                StringTokenizer token = new StringTokenizer(str);
-                cmd = token.nextToken();
-                arg = Integer.parseInt(token.nextToken());
-            } catch (Exception e) {
-            }
+//        if (args.length > 0) {
+//            viewManager = new ViewManager(args[0]);
+//        } else {
+//            viewManager = new ViewManager("");
+//        }
+//
+//        Scanner scan = new Scanner(System.in);
+//        String str = null;
+//        do {
+//            str = scan.nextLine();
+//            String cmd = "";
+//            int arg = -1;
+//            try {
+//                StringTokenizer token = new StringTokenizer(str);
+//                cmd = token.nextToken();
+//                arg = Integer.parseInt(token.nextToken());
+//            } catch (Exception e) {
+//            }
+//
+//            if (arg >= 0) {
+//                if (cmd.equals("add")) {
+//
+//                    int port = (arg * 10) + 11000;
+//                    viewManager.addServer(arg, "127.0.0.1", port);
+//                } else if (cmd.equals("rem")) {
+//                    viewManager.removeServer(arg);
+//                }
+//
+//                viewManager.executeUpdates();
+//            }
+//
+//        } while (!str.equals("exit"));
+//        viewManager.close();
+//        System.exit(0);
 
-            if (arg >= 0) {
-                if (cmd.equals("add")) {
+        try {
+            ServerSocket ss = new ServerSocket(11100);
+            System.out.println("启动服务器....");
+            while (true) {
+                Socket s = ss.accept();
+                System.out.println("客户端:"+s.getInetAddress().getLocalHost()+"已连接到服务器");
 
-                    int port = (arg * 10) + 11000;
-                    viewManager.addServer(arg, "127.0.0.1", port);
-                } else if (cmd.equals("rem")) {
-                    viewManager.removeServer(arg);
+                ObjectInputStream objectInputStream = new ObjectInputStream(s.getInputStream());
+                RCMessage rcMessage = (RCMessage) objectInputStream.readObject();
+                if (rcMessage != null) {
+                    if ("add".equals(rcMessage.getOperation())) {
+                        viewManager.addServer(rcMessage.getNum(), rcMessage.getIp(), rcMessage.getPort(), rcMessage.getSignature());
+                    } else if ("rem".equals(rcMessage.getOperation())) {
+                        viewManager.removeServer(rcMessage.getNum(), rcMessage.getSignature());
+                    }
                 }
 
+                objectInputStream.close();
+                s.close();
+                ss.close();
                 viewManager.executeUpdates();
             }
-
-        } while (!str.equals("exit"));
-        viewManager.close();
-        System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+//        viewManager.close();
     }
     
 }

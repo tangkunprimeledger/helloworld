@@ -41,25 +41,27 @@ public class Reconfiguration {
         }
     }
     
-    public void addServer(int id, String ip, int port){
-        this.setReconfiguration(ServerViewController.ADD_SERVER, id + ":" + ip + ":" + port);
+    public void addServer(int id, String ip, int port, byte[] sign){
+        this.setReconfiguration(ServerViewController.ADD_SERVER, id + ":" + ip + ":" + port, sign);
     }
     
-    public void removeServer(int id){
-        this.setReconfiguration(ServerViewController.REMOVE_SERVER, String.valueOf(id));
+    public void removeServer(int id, byte[] sign){
+        this.setReconfiguration(ServerViewController.REMOVE_SERVER, String.valueOf(id), sign);
     }
     
 
-    public void setF(int f){
-      this.setReconfiguration(ServerViewController.CHANGE_F,String.valueOf(f));
-    }
+//    public void setF(int f, byte[] sign, String nodeName){
+//      this.setReconfiguration(ServerViewController.CHANGE_F,String.valueOf(f), sign, nodeName);
+//    }
     
     
-    public void setReconfiguration(int prop, String value){
+    public void setReconfiguration(int prop, String value, byte[] sign){
         if(request == null){
             //request = new ReconfigureRequest(proxy.getViewManager().getStaticConf().getProcessId());
             request = new ReconfigureRequest(id);
         }
+        request.setNumber(Integer.valueOf(value));
+        request.setOtherSignature(sign);
         request.setProperty(prop, value);
     }
     

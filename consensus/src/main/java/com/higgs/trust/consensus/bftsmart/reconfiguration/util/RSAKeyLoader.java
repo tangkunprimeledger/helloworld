@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.higgs.trust.consensus.bftsmart.reconfiguration.util;
 
+import oracle.jrockit.jfr.StringConstantPool;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.BufferedReader;
@@ -94,7 +95,12 @@ public class RSAKeyLoader {
 		PublicKey ret = getPublicKeyFromString(key);
 		return ret;
 	}
-        
+
+	//TODO zyf add
+	public PublicKey loadPublicKey(String pubKeyStr) throws Exception {
+    	return getPublicKeyFromString(pubKeyStr);
+	}
+
 	public PublicKey loadPublicKey() throws Exception {
             
                 if (defaultKeys) {                    

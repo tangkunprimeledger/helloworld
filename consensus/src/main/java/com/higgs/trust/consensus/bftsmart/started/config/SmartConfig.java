@@ -13,11 +13,11 @@ public class SmartConfig {
 
     private String hostsConfig;
 
+    private String ttpPubKey;
+
     private String myId;
 
     private String myClientId;
-
-    private String stateMachineClass;
 
     public Map<String, String> getConfigs() {
         return configs;
@@ -51,12 +51,12 @@ public class SmartConfig {
         this.myClientId = myClientId;
     }
 
-    public String getStateMachineClass() {
-        return stateMachineClass;
+    public String getTtpPubKey() {
+        return ttpPubKey;
     }
 
-    public void setStateMachineClass(String stateMachineClass) {
-        this.stateMachineClass = stateMachineClass;
+    public void setTtpPubKey(String ttpPubKey) {
+        this.ttpPubKey = ttpPubKey;
     }
 
     public SmartConfig() {

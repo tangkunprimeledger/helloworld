@@ -1,7 +1,7 @@
 package com.higgs.trust.consensus.bftsmart.started.config;
 
-import com.higgs.trust.consensus.bft.core.ConsensusClient;
 import com.higgs.trust.consensus.bftsmart.started.client.Client;
+import com.higgs.trust.consensus.core.ConsensusClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

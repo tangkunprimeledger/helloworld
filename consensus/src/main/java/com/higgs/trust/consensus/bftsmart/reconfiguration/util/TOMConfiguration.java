@@ -503,6 +503,16 @@ public class TOMConfiguration extends Configuration {
         }
 
     }
+    //TODO zyf add
+    public PublicKey getRSAPublicKey(String pubKeyStr) {
+        try {
+            return rsaLoader.loadPublicKey(pubKeyStr);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            return null;
+        }
+
+    }
     
     public PrivateKey getRSAPrivateKey() {
         try {

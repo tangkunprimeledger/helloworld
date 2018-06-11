@@ -15,11 +15,14 @@ limitations under the License.
 */
 package com.higgs.trust.consensus.bftsmart.reconfiguration;
 
+import com.higgs.trust.consensus.bftsmart.reconfiguration.util.SpringUtil;
 import com.higgs.trust.consensus.bftsmart.reconfiguration.views.View;
+import com.higgs.trust.consensus.bftsmart.started.config.SmartConfig;
 import com.higgs.trust.consensus.bftsmart.tom.core.TOMLayer;
 import com.higgs.trust.consensus.bftsmart.tom.core.messages.TOMMessage;
 import com.higgs.trust.consensus.bftsmart.tom.util.TOMUtil;
 
+import javax.swing.*;
 import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -102,8 +105,12 @@ public class ServerViewController extends ViewController {
 
     public void enqueueUpdate(TOMMessage up) {
         ReconfigureRequest request = (ReconfigureRequest) TOMUtil.getObject(up.getContent());
-        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getSender()),
-                request.toString().getBytes(), request.getSignature())) {
+        //TODO 修改过，获取配置中的TTP公钥验签
+        SmartConfig smartConfig = SpringUtil.getBean(SmartConfig.class);
+//        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getSender()),
+        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(smartConfig.getTtpPubKey()),
+                request.toString().getBytes(), request.getSignature()) && TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getNumber()),
+                request.toString().getBytes(), request.getOtherSignature())) {
             if (request.getSender() == getStaticConf().getTTPId()) {
                 this.updates.add(up);
             } else {
@@ -217,6 +224,13 @@ public class ServerViewController extends ViewController {
  
             }
         }
+        //TODO 自动修改F值
+        if (nextV.length < 4) {
+            f = 0;
+        } else {
+            f = (nextV.length - 1) / 3;
+        }
+
 
         if (f < 0) {
             f = currentView.getF();

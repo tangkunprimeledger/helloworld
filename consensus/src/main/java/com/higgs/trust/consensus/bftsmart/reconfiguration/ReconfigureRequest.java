@@ -31,11 +31,30 @@ public class ReconfigureRequest implements Externalizable{
     private int sender;
     private Hashtable<Integer,String> properties = new Hashtable<Integer,String>();
     private byte[] signature;
+    private byte[] otherSignature;
+    private int number;
     
     
     public ReconfigureRequest() {
     }
-    
+
+    public byte[] getOtherSignature() {
+        return otherSignature;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    public void setOtherSignature(byte[] otherSignature) {
+        this.otherSignature = otherSignature;
+    }
+
+
     public ReconfigureRequest(int sender) {
         this.sender = sender;
     }
@@ -81,7 +100,10 @@ public class ReconfigureRequest implements Externalizable{
         
         out.writeInt(signature.length);
         out.write(signature);
-       
+        //TODO modify
+        out.writeInt(otherSignature.length);
+        out.write(otherSignature);
+        out.writeInt(number);
     }
 
      
@@ -99,7 +121,10 @@ public class ReconfigureRequest implements Externalizable{
         
         this.signature = new byte[in.readInt()];
         in.read(this.signature);
-        
+        //TODO modify
+        this.otherSignature = new byte[in.readInt()];
+        in.read(this.otherSignature);
+        this.number = in.readInt();
     }
     
     

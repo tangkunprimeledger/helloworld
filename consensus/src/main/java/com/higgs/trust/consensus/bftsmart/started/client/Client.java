@@ -1,8 +1,8 @@
 package com.higgs.trust.consensus.bftsmart.started.client;
 
-import com.higgs.trust.consensus.bft.core.ConsensusClient;
-import com.higgs.trust.consensus.bft.core.ConsensusCommand;
 import com.higgs.trust.consensus.bftsmart.tom.ServiceProxy;
+import com.higgs.trust.consensus.core.ConsensusClient;
+import com.higgs.trust.consensus.core.command.ConsensusCommand;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -43,10 +43,11 @@
         "system.totalordermulticast.global_checkpoint_period": "120000",
         "system.totalordermulticast.checkpoint_to_disk": false,
         "system.totalordermulticast.sync_ckp": false,
-        "system.bft": true
+        "system.bft": true,
+        "system.ttp.id": "7001"
       },
-      "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030",
-      "stateMachineClass": ""
+      "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030,7001 127.0.0.1 11100",
+      "ttpPubKey": ""
     }
   }
 }
