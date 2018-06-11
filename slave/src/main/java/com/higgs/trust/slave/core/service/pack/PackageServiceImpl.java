@@ -272,6 +272,7 @@ import java.util.stream.Collectors;
             p2pHandler.sendPersisting(dbHeader);
             Profiler.release();
         } catch (Throwable e) {
+            snapshotService.clear();
             log.error("[package.process]has unknown error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_PERSISTING_ERROR, e);
         } finally {

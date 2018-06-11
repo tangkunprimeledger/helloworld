@@ -20,6 +20,28 @@
 	</insert>
 
 
+	<insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+		INSERT INTO
+			ca(version,
+			valid,
+			pub_key,
+			pri_key,
+			node_name,
+			create_time,
+			update_time)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.version},
+			#{item.valid},
+			#{item.pubKey},
+			#{item.pri_key},
+			#{item.node_name},
+			now(3),
+			now(3))
+		</foreach>
+	</insert>
+
+
 	<update id="updateConfig" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
 		UPDATE config SET
 		update_time=now(3),
@@ -39,6 +61,66 @@
 			tmp_pri_key=#{tmpPriKey}
 		</if>
 		WHERE `node_name`=#{nodeName} and valid != #{valid}
+	</update>
+
+
+	<update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+		UPDATE config
+		<trim prefix="SET" suffixOverrides=",">
+			<!-- set update_time -->
+			<trim prefix="`update_time` = CASE" suffix="END">
+				<foreach collection="list" item="item">
+					WHEN `node_name`=#{nodeName} and valid != #{valid}
+					THEN now(3)
+				</foreach>
+				ELSE `update_time`
+			</trim>
+			<!-- set valid -->
+			<trim prefix="`valid` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+							WHEN `node_name`=#{item.nodeName} and valid != #{item.valid} and #{item.valid} != null and #{item.valid} !=''
+							THEN #{item.valid}
+				</foreach>
+				  ELSE `valid`
+			</trim>
+			<!-- set pubKey -->
+			<trim prefix="`pubKey` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `node_name`=#{item.nodeName} and valid != #{item.valid} and #{item.pubKey} != null and #{item.pubKey} !=''
+							THEN #{item.pubKey}
+				</foreach>
+				  ELSE `pubKey`
+			</trim>
+			<!-- set priKey -->
+			<trim prefix="`priKey` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `node_name`=#{item.nodeName} and valid != #{item.valid} and #{item.priKey} != null and #{item.priKey} !=''
+							THEN #{item.priKey}
+				</foreach>
+				  ELSE `priKey`
+			</trim>
+			<!-- set tmpPubKey -->
+			<trim prefix="`tmpPubKey` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `node_name`=#{item.nodeName} and valid != #{item.valid} and #{item.tmpPubKey} != null and #{item.tmpPubKey} !=''
+							THEN #{item.tmpPubKey}
+				</foreach>
+				  ELSE `tmpPubKey`
+			</trim>
+			<!-- set tmpPriKey -->
+			<trim prefix="`tmpPriKey` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `node_name`=#{item.nodeName} and valid != #{item.valid} and #{item.tmpPriKey} != null and #{item.tmpPriKey} !=''
+							THEN #{item.tmpPriKey}
+				</foreach>
+				  ELSE `tmpPriKey`
+			</trim>
+		</trim>
+		<where>
+			<foreach collection="list" item="item" separator="or" open="(" close=")">
+				`node_name`=#{item.nodeName} and valid != #{item.valid}
+			</foreach>
+		</where>
 	</update>
 
 

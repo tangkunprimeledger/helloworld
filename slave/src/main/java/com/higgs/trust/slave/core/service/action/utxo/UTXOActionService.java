@@ -74,12 +74,6 @@ public class UTXOActionService {
         UTXOAction utxoAction = (UTXOAction) actionData.getCurrentAction();
         String policyId = actionData.getCurrentTransaction().getCoreTx().getPolicyId();
         log.info("[Start to deal with utxoAction,params:{}", utxoAction);
-        try {
-            BeanValidator.validate(utxoAction).failThrow();
-        } catch (IllegalArgumentException e) {
-            log.error("Convert and process utxoAction is error .msg={}", e.getMessage());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
 
         // validate UTXOActionType
         boolean isLegalUTXOActionType = validateUTXOActionType(utxoAction, policyId);
@@ -218,7 +212,6 @@ public class UTXOActionService {
                 return false;
             }
         }
-
         return true;
     }
 

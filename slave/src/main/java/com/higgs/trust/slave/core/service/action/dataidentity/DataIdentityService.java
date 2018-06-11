@@ -41,12 +41,6 @@ public class DataIdentityService {
         // convert action and validate it
         DataIdentityAction dataIdentityAction = (DataIdentityAction) actionData.getCurrentAction();
         log.info("[ DataIdentityAction.validate] is start,params:{}", dataIdentityAction);
-        try {
-            BeanValidator.validate(dataIdentityAction).failThrow();
-        } catch (IllegalArgumentException e) {
-            log.error("Convert and validate dataIdentityAction is error .msg={}", e.getMessage());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, e);
-        }
 
         //data operate type
         DataIdentityHandler dataIdentityHandler = dataIdentitySnapshotHandler;

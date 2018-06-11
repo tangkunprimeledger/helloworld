@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.service.snapshot.agent;
 
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.repository.RsNodeRepository;
@@ -89,7 +90,7 @@ public class ManageSnapshotAgent implements CacheLoader {
                 policyPOList.add((PolicyPO)entry.getValue());
             } else {
                 log.error("insert key is not type of RsNodeCacheKey or PolicyCacheKey");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
         }
         if (!CollectionUtils.isEmpty(rsNodePOList)) {
@@ -120,7 +121,7 @@ public class ManageSnapshotAgent implements CacheLoader {
                 rsNodePOList.add((RsNodePO)entry.getValue());
             } else {
                 log.error("insert key is not type of RsNodeCacheKey");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
         }
         if (!CollectionUtils.isEmpty(rsNodePOList)) {

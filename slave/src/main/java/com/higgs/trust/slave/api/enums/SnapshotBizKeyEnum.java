@@ -11,6 +11,7 @@ import lombok.Getter;
 @Getter
 public enum SnapshotBizKeyEnum {
     ACCOUNT("ACCOUNT", "account core Snapshot"),
+    ACCOUNT_DETAIL("ACCOUNT_DETAIL", "account detail Snapshot"),
     FREEZE("FREEZE", "freeze core Snapshot"),
     CONTRACT("CONTRACT", "contract core Snapshot"),
     ACCOUNT_CONTRACT_BIND("ACCOUNT_CONTRACT_BIND", "account contract binding Snapshot"),

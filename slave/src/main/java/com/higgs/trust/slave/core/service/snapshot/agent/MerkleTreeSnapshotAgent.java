@@ -35,11 +35,12 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
         return (T) snapshot.get(SnapshotBizKeyEnum.MERKLE_TREE, key);
     }
 
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
-    private void put(Object key, Object object) {
-        //snapshot.put(SnapshotBizKeyEnum.MERKLE_TREE, key, object);
+    private void insert(Object key, Object object) {
+        snapshot.insert(SnapshotBizKeyEnum.MERKLE_TREE, key, object);
     }
-
+    private void update(Object key, Object object) {
+        snapshot.update(SnapshotBizKeyEnum.MERKLE_TREE, key, object);
+    }
     /**
      * get merkle tree from snapshot,if is not exist,should build
      *
@@ -59,7 +60,7 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      */
     public MerkleTree buildMerleTree(MerkleTypeEnum typeEnum, Object[] datas) {
         MerkleTree merkleTree = merkleService.build(typeEnum, Arrays.asList(datas));
-        put(new MerkleTreeCacheKey(typeEnum), merkleTree);
+        insert(new MerkleTreeCacheKey(typeEnum), merkleTree);
         return merkleTree;
     }
 
@@ -71,7 +72,7 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      */
     public void appendChild(MerkleTree merkleTree, Object _new) {
         merkleService.add(merkleTree, _new);
-        put(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
+        insert(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
     }
 
     /**
@@ -83,7 +84,7 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      */
     public void modifyMerkleTree(MerkleTree merkleTree, Object _old, Object _new) {
         merkleService.update(merkleTree, _old, _new);
-        put(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
+        update(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
     }
 
     /**
@@ -105,10 +106,9 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      * @param insertMap
      * @return
      */
-    //TODO to implements your own bachInsert method for db
     @Override
     public boolean batchInsert(Map<Object, Object> insertMap) {
-        return false;
+        return true;
     }
 
     /**
@@ -117,10 +117,9 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
     @Override
     public boolean batchUpdate(Map<Object, Object> updateMap) {
-        return false;
+        return true;
     }
 
     /**

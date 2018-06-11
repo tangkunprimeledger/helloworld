@@ -63,6 +63,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     private AccountSnapshotAgent accountSnapshotAgent;
 
     @Autowired
+    private AccountDetailSnapshotAgent accountDetailSnapshotAgent;
+
+    @Autowired
     private FreezeSnapshotAgent freezeSnapshotAgent;
 
     @Autowired
@@ -134,6 +137,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             log.debug("Register ACCOUNT cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT, accountSnapshotAgent);
 
+            log.debug("Register ACCOUNT_DETAIL cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.ACCOUNT_DETAIL, accountDetailSnapshotAgent);
+
             //register ACCOUNT cache loader
             log.debug("Register FREEZE cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.FREEZE, freezeSnapshotAgent);
@@ -176,10 +182,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         try {
             log.debug("Get lock success, go to start transaction!");
             //check whether snapshot transaction has been started.
-            if (isOpenTransaction) {
-                log.info("The snapshot transaction has been started ! Please don't start it again!");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_HAS_STARTED_EXCEPTION);
-            }
+            isOpenTransactionException();
 
             //clear txCache
             log.debug("Clear txCache");
@@ -322,7 +325,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * @param value
      */
     @Override
-    //TODO lingchao 是否加锁?
     public void insert(SnapshotBizKeyEnum key1, Object key2, Object value) {
         Profiler.enter("[Snapshot.insert]");
         try {
@@ -346,6 +348,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             Value putValue = buildValue(value, SnapshotValueStatusEnum.INSERT.getCode());
             innerMap.put(innerKey, (Value) transferValue(putValue));
 
+            //check whether snapshot transaction has been started.
+            isNotOpenTransactionException();
             log.info("End of insert data {} into txCache for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
         } finally {
             Profiler.release();
@@ -360,7 +364,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * @param value
      */
     @Override
-    //TODO lingchao 是否加锁?
     public void update(SnapshotBizKeyEnum key1, Object key2, Object value) {
         Profiler.enter("[Snapshot.update]");
         try {
@@ -392,6 +395,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //put data into
             innerMap.put(innerKey, (Value) transferValue(putValue));
+            //check whether snapshot transaction has been started.
+            isNotOpenTransactionException();
             log.info("End of update data {} with status {} into txCache for snapshotBizKeyEnum:{}, bizKey:{}", value, putValue.getStatus(), key1, key2);
         } finally {
             Profiler.release();
@@ -415,10 +420,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         try {
             log.debug("Get lock success, go to commit!");
             //check whether snapshot transaction has been started.
-            if (!isOpenTransaction) {
-                log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-            }
+            isNotOpenTransactionException();
 
             //close transaction first,if not there may be some data put into cache after clearing data
             closeTransaction();
@@ -457,10 +459,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         try {
             log.debug("Get lock success, go to rollback!");
             //check whether snapshot transaction has been started.
-            if (!isOpenTransaction) {
-                log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-            }
+            isNotOpenTransactionException();
 
             //close transaction,if not there may be some data put into cache after clearing data
             closeTransaction();
@@ -491,10 +490,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         try {
             log.debug("Get lock success, go to flush!");
             //check whether snapshot transaction has been started.
-            if (isOpenTransaction) {
-                log.info("The snapshot transaction has not been closed ! So we can't deal with flush");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-            }
+            isOpenTransactionException();
 
             //check whether snapshot packageCache is empty.
             if (packageCache.isEmpty()) {
@@ -507,8 +503,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //flush data into BD
             flushDataIntoDB();
 
-            //clear packageCache
-            packageCache.clear();
+            //clear packageCache and txCache
+            clearTempCache();
         } finally {
             log.info("Unlock lock for flush!");
             lock.unlock();
@@ -644,7 +640,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             }
 
             //check whether inner map is empty.
-            if (outerEntry.getValue().isEmpty()) {
+            if (innerMap.isEmpty()) {
                 log.info("The inner map for Snapshot txCache key :  {}  is empty. jump to next txCache key", snapshotBizKeyEnum);
                 continue;
             }
@@ -670,63 +666,90 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     /**
      * put data into package inner cache
      *
-     * @param innerCache
-     * @param innerEntry
+     * @param packageInnerCache
+     * @param txCacheInnerEntry
      * @param snapshotBizKeyEnum
      */
     //TODO lingchao check whether cover all case to put into data
-    private void putDataIntoPackageCache(ConcurrentHashMap<String, Value> innerCache, Map.Entry<String, Value> innerEntry, SnapshotBizKeyEnum snapshotBizKeyEnum) {
+    private void putDataIntoPackageCache(ConcurrentHashMap<String, Value> packageInnerCache, Map.Entry<String, Value> txCacheInnerEntry, SnapshotBizKeyEnum snapshotBizKeyEnum) {
 
+        String innerKey = txCacheInnerEntry.getKey();
+        Value innerValue = txCacheInnerEntry.getValue();
+
+        Object keyObject = JSON.parse(innerKey);
         //txCache value is insert status
-        boolean isInsert = StringUtils.equals(innerEntry.getValue().getStatus(), SnapshotValueStatusEnum.INSERT.getCode());
+        boolean isInsert = StringUtils.equals(innerValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode());
         //data in PackageCache
-        Value packageValue = getDataFromPackageCache(snapshotBizKeyEnum, innerEntry.getKey());
+        Value packageValue = getDataFromPackageCache(snapshotBizKeyEnum, keyObject);
         boolean isExistedInPackageCache = null != packageValue;
-        //TODO lingchao may not get whether there is data in DB
         //data in GlobalCache
-        Object globalValue = getDataFromGlobalCache(snapshotBizKeyEnum, innerEntry.getKey());
+        Object globalValue = getDataFromGlobalCache(snapshotBizKeyEnum, keyObject);
         boolean isExistedInGlobalCache = null != globalValue;
         //data in PackageCache or GlobalCache or DB
         boolean isExistedInPackageOrGlobalOrDB = isExistedInPackageCache || isExistedInGlobalCache;
 
-        log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into packageCache", snapshotBizKeyEnum, innerEntry.getKey(), innerEntry.getValue());
+        log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into packageCache", snapshotBizKeyEnum, innerKey, innerValue);
 
         //if the txCache value is insert status and there is data in package cache or global cache or db, it is a exception
         if (isInsert && isExistedInPackageOrGlobalOrDB) {
-            log.error("Insert snapshotBizKeyEnum: {} , innerKey : {} into packageCache duplicate key exception", snapshotBizKeyEnum, innerEntry.getKey());
+            log.error("Insert snapshotBizKeyEnum: {} , innerKey : {} into packageCache duplicate key exception", snapshotBizKeyEnum, innerKey);
             throw new DuplicateKeyException("Insert data into packageCache duplicate key exception");
         }
 
         //if the txCache value is insert status and there is no data in package cache or global cache or db, put data into packageCache
         if (isInsert && !isExistedInPackageOrGlobalOrDB) {
-            innerCache.put(innerEntry.getKey(), innerEntry.getValue());
+            packageInnerCache.put(innerKey, innerValue);
+            return;
         }
 
+
+        // check whether data in db
+        boolean isExistedInDB = isExistInDB(snapshotBizKeyEnum, keyObject);
         //if the txCache value is update status and there is no data in package cache and global cache and db, throw exception
-        if (!isInsert && !isExistedInPackageOrGlobalOrDB) {
-            log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated is not exist in packageCache and globalCache and DB", snapshotBizKeyEnum, innerEntry.getKey());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is not exist in packageCache and globalCache and DB");
+        //it is not exist in db and status is not update , step will not go to last. so we do not need to check  again.
+        if (!isExistedInDB){
+            log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated is not exist in packageCache and globalCache and DB", snapshotBizKeyEnum, innerKey);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is not exist in  DB");
         }
+
+        //if the txCache value is update status and there is data in package cache and  db, and package status is insert . put data into packageCache  with insert status
+        if (isExistedInPackageCache && StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
+            packageInnerCache.put(innerKey, buildValue(innerValue.getObject(), SnapshotValueStatusEnum.INSERT.getCode()));
+            return;
+        }
+
         //if the txCache value is update status and there is data in package cache and  db, and package status is update . put data into packageCache
-        //TODO lingchao may not get whether there is data in DB
-        if (!isInsert && isExistedInPackageCache && isExistedInGlobalCache && !StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
-            innerCache.put(innerEntry.getKey(), innerEntry.getValue());
+        if (isExistedInPackageCache && !StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
+            packageInnerCache.put(innerKey, innerValue);
+            return;
         }
 
-
-        //if the txCache value is update status and there is data in package cache and  db, and package status is update . put data into packageCache
-        //TODO lingchao may not get whether there is data in DB
-        if (!isInsert && !isExistedInPackageCache && isExistedInGlobalCache) {
-            innerCache.put(innerEntry.getKey(), innerEntry.getValue());
+        //if the txCache value is update status and there is no data in package cache ,and has data in db . put data into packageCache
+        if (!isExistedInPackageCache) {
+            packageInnerCache.put(innerKey, innerValue);
+            return;
         }
 
-        //if the txCache value is update status and there is data in package cache and  db, and package status is insert . put data into packageCache
-        //TODO lingchao may not get whether there is data in DB
-        if (!isInsert && isExistedInPackageCache && isExistedInGlobalCache && StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
-            innerCache.put(innerEntry.getKey(), buildValue(innerEntry.getValue().getObject(), SnapshotValueStatusEnum.INSERT.getCode()));
-        }
     }
 
+
+    /**
+     * check whether the data is existed in db
+     * @param snapshotBizKeyEnum
+     * @param key
+     * @return
+     */
+    private boolean isExistInDB(SnapshotBizKeyEnum snapshotBizKeyEnum, Object key){
+        //check whether there is snapshotBizKeyEnum in cacheLoaderCache
+        if (!cacheLoaderCache.containsKey(snapshotBizKeyEnum)) {
+            log.error("There is no key:{} for cacheLoader in cacheLoaderCache!", snapshotBizKeyEnum);
+            //TODO lingchao 加监控
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
+        }
+        //cacheLoader to query data
+        CacheLoader cacheLoader = cacheLoaderCache.get(snapshotBizKeyEnum);
+        return null != cacheLoader.query(key);
+    }
 
     /**
      * copy data from packageCache to globalCache
@@ -787,7 +810,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             ConcurrentHashMap<String, Value> innerMap = outerEntry.getValue();
 
             //check whether inner map is empty.
-            if (outerEntry.getValue().isEmpty()) {
+            if (innerMap.isEmpty()) {
                 log.info("The inner map for Snapshot core key :  {}  is empty. jump to next core key", snapshotBizKeyEnum);
                 continue;
             }
@@ -903,10 +926,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         }
 
         //check whether snapshot transaction has been started.
-        if (!isOpenTransaction) {
-            log.info("The snapshot transaction has not been started ! So we can't deal with put data operation");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-        }
+        isNotOpenTransactionException();
 
         //check where there is key1 in txCache, if not put a inner map as the value
         if (!txCache.containsKey(key1)) {
@@ -915,4 +935,23 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         }
     }
 
+    /**
+     * check is open transaction and throw exception
+     */
+    private void isOpenTransactionException(){
+        if (isOpenTransaction) {
+            log.info("The snapshot transaction has been started ! So we can't deal with rollback");
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_HAS_STARTED_EXCEPTION);
+        }
+    }
+
+    /**
+     * check is not open transaction and throw exception
+     */
+    private void isNotOpenTransactionException(){
+        if (!isOpenTransaction) {
+            log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
+        }
+    }
 }

@@ -96,4 +96,12 @@ import java.util.List;
      * @return
      */
     int batchInsert(@Param("list")List<AccountInfoPO> list);
+
+    /**
+     * batch update
+     *
+     * @param list
+     * @return
+     */
+    int batchUpdate(@Param("list")List<AccountInfoPO> list);
 }
