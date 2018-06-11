@@ -3,8 +3,6 @@ package com.higgs.trust.slave.core.service.action.account;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
@@ -26,16 +24,6 @@ import org.springframework.stereotype.Component;
     @Override public void process(ActionData actionData){
         log.info("[openAccount.process] is start ");
         OpenAccount bo = (OpenAccount)actionData.getCurrentAction();
-        if (bo == null) {
-            log.error("[openAccount.process] convert action to OpenAccountBo is error");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-        // validate param
-        BeanValidateResult validateResult = BeanValidator.validate(bo);
-        if (!validateResult.isSuccess()) {
-            log.error("[openAccount.process] param validate is fail,first msg:{}", validateResult.getFirstMsg());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
         Profiler.enter("[validateForOpenAccount]");
         // validate business
         // check accountNo

@@ -5,8 +5,6 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
@@ -37,16 +35,6 @@ import java.math.BigDecimal;
 
     @Override public void process(ActionData actionData) {
         AccountFreeze bo = (AccountFreeze)actionData.getCurrentAction();
-        if (bo == null) {
-            log.error("[accountFreeze.validate] convert action to AccountFreeze is error");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-        //validate param
-        BeanValidateResult validateResult = BeanValidator.validate(bo);
-        if (!validateResult.isSuccess()) {
-            log.error("[accountFreeze.validate] param validate is fail,first msg:{}", validateResult.getFirstMsg());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
         Profiler.enter("[validateForFreeze]");
         AccountFreeze newBo = BeanConvertor.convertBean(bo, AccountFreeze.class);
         try {
