@@ -119,7 +119,7 @@ import java.util.List;
         return initPolicyEnum.getType();
     }
 
-    public void batchInsert(List<PolicyPO> policyPOList) {
-        policyDao.batchInsert(policyPOList);
+    public int batchInsert(List<PolicyPO> policyPOList) {
+        return policyDao.batchInsert(policyPOList);
     }
 }

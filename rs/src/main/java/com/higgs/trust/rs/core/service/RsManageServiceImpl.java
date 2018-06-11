@@ -1,14 +1,13 @@
-package com.higgs.trust.rs.custom.biz.api.impl.manage;
+package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
-import com.higgs.trust.rs.core.vo.VoteRuleVO;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
-import com.higgs.trust.rs.custom.api.manage.RsManageService;
+import com.higgs.trust.rs.core.api.RsManageService;
 import com.higgs.trust.rs.custom.api.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterRsVO;
@@ -112,11 +111,6 @@ public class RsManageServiceImpl implements RsManageService{
                 log.error("register rs error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if(!respData.isSuccess()){
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(registerRsVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register rs error", e);
             respData = new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
@@ -205,11 +199,6 @@ public class RsManageServiceImpl implements RsManageService{
                 log.error("register policy error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if(!respData.isSuccess()){
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(registerPolicyVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register policy error", e);
             respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(),
@@ -257,11 +246,6 @@ public class RsManageServiceImpl implements RsManageService{
                 log.error("register rs error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if(!respData.isSuccess()){
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(cancelRsVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register rs error", e);
             respData = new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());

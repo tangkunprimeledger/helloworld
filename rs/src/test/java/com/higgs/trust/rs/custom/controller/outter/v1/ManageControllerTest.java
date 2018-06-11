@@ -30,7 +30,6 @@ public class ManageControllerTest {
         RegisterRsVO registerRsVO = new RegisterRsVO();
         registerRsVO.setRequestId("13");
         registerRsVO.setRsId("11r");
-        registerRsVO.setPubKey("pubkkkk4444");
         registerRsVO.setDesc("2018年5月18日15:41:09");
 
         String params = JSON.toJSONString(registerRsVO);

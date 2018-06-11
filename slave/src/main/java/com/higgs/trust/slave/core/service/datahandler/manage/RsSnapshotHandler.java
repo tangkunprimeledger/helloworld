@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.datahandler.manage;
 
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.snapshot.agent.ManageSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.model.bo.manage.CancelRS;
@@ -42,8 +44,12 @@ public class RsSnapshotHandler implements RsHandler {
 
     @Override public void updateRsNode(String rsId, RsNodeStatusEnum rsNodeStatusEnum) {
         RsNode rsNode = manageSnapshotAgent.getRsNode(rsId);
-        rsNode.setStatus(rsNodeStatusEnum.getCode());
 
+        if (null == rsNode) {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
+        }
+
+        rsNode.setStatus(rsNodeStatusEnum.getCode());
         manageSnapshotAgent.updateRs(rsNode);
 
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.RS);
