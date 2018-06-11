@@ -38,20 +38,20 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
         return code;
     }
 
-    public boolean executeFile(String codeFile, TxProcessTypeEnum processType) {
-        String address = createContract(codeFile, processType);
+    public boolean executeFile(String codeFile) {
+        String address = createContract(codeFile);
         UTXOExecuteContextData contextData = new UTXOExecuteContextData();
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setInputList(new ArrayList<TxIn>(0));
         contextData.setAction(utxoAction);
-        return utxoSmartContract.execute(address, contextData, TxProcessTypeEnum.VALIDATE);
+        return utxoSmartContract.execute(address, contextData);
     }
 
-    public void executeFileWithException(String codeFile, TxProcessTypeEnum processType, Class expectedException, String expectedExceptionMessage) {
-        String address = createContract(codeFile, processType);
+    public void executeFileWithException(String codeFile, Class expectedException, String expectedExceptionMessage) {
+        String address = createContract(codeFile);
         UTXOExecuteContextData contextData = new UTXOExecuteContextData();
         try {
-            utxoSmartContract.execute(address, contextData, TxProcessTypeEnum.VALIDATE);
+            utxoSmartContract.execute(address, contextData);
         } catch (Exception ex) {
             ex.printStackTrace();
             if (ex.getClass() == expectedException) {
@@ -62,7 +62,7 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
         }
     }
 
-    private String createContract(String filePath, TxProcessTypeEnum processType) {
+    private String createContract(String filePath) {
         String code = getCodeFromFile(filePath);
         Contract contract = new Contract();
         contract.setBlockHeight(1L);
@@ -74,11 +74,7 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
         contract.setVersion("0.1");
         contract.setCreateTime(new Date());
 
-        if (processType == TxProcessTypeEnum.VALIDATE) {
-            contractSnapshotAgent.put(contract.getAddress(), contract);
-        } else {
-            contractRepository.deploy(contract);
-        }
+        contractRepository.deploy(contract);
         return contract.getAddress();
     }
 
@@ -93,7 +89,7 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
     public void testExecute_code_empty() {
         ExecuteContextData contextData = new UTXOExecuteContextData();
         try {
-            utxoSmartContract.execute(null, contextData, TxProcessTypeEnum.VALIDATE);
+            utxoSmartContract.execute(null, contextData);
         } catch (IllegalArgumentException ex) {
             Assert.assertEquals(ex.getMessage(), "argument code is empty");
         }
@@ -103,7 +99,7 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
     public void testExecute_contextData_null() {
         ExecuteContextData contextData = new UTXOExecuteContextData();
         try {
-            utxoSmartContract.execute("function verify() {}", null, TxProcessTypeEnum.VALIDATE);
+            utxoSmartContract.execute("function verify() {}", null);
         } catch (IllegalArgumentException ex) {
             Assert.assertEquals(ex.getMessage(), "contextData is null");
         }
@@ -113,7 +109,7 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
     public void testExecute_processType_null() {
         ExecuteContextData contextData = new UTXOExecuteContextData();
         try {
-            utxoSmartContract.execute("function verify() {}", contextData, null);
+            utxoSmartContract.execute("function verify() {}", contextData);
         } catch (IllegalArgumentException ex) {
             Assert.assertEquals(ex.getMessage(), "processType is null");
         }
@@ -122,26 +118,26 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
     @Test
     public void testExecute_Validate() {
         snapshotService.startTransaction();
-        boolean result = executeFile("utxo_normal_return_true.js", TxProcessTypeEnum.VALIDATE);
+        boolean result = executeFile("utxo_normal_return_true.js");
         Assert.assertTrue(result);
 
-        result = executeFile("utxo_normal_retrun_false.js", TxProcessTypeEnum.VALIDATE);
+        result = executeFile("utxo_normal_retrun_false.js");
         Assert.assertFalse(result);
 
-        executeFileWithException("utxo_exception_return_object.js", TxProcessTypeEnum.VALIDATE, ClassCastException.class, "jdk.nashorn.api.scripting.ScriptObjectMirror cannot be cast to java.lang.Boolean");
-        executeFileWithException("utxo_exception_return_number.js", TxProcessTypeEnum.VALIDATE, ClassCastException.class, "java.lang.Integer cannot be cast to java.lang.Boolean");
+        executeFileWithException("utxo_exception_return_object.js",  ClassCastException.class, "jdk.nashorn.api.scripting.ScriptObjectMirror cannot be cast to java.lang.Boolean");
+        executeFileWithException("utxo_exception_return_number.js", ClassCastException.class, "java.lang.Integer cannot be cast to java.lang.Boolean");
         snapshotService.commit();
     }
 
     @Test
     public void testExecute_Persist() {
-        boolean result = executeFile("utxo_normal_return_true.js", TxProcessTypeEnum.PERSIST);
+        boolean result = executeFile("utxo_normal_return_true.js");
         Assert.assertTrue(result);
 
-        result = executeFile("utxo_normal_retrun_false.js", TxProcessTypeEnum.PERSIST);
+        result = executeFile("utxo_normal_retrun_false.js");
         Assert.assertFalse(result);
 
-        executeFileWithException("utxo_exception_return_object.js", TxProcessTypeEnum.PERSIST, ClassCastException.class, "jdk.nashorn.api.scripting.ScriptObjectMirror cannot be cast to java.lang.Boolean");
-        executeFileWithException("utxo_exception_return_number.js", TxProcessTypeEnum.PERSIST, ClassCastException.class, "java.lang.Integer cannot be cast to java.lang.Boolean");
+        executeFileWithException("utxo_exception_return_object.js", ClassCastException.class, "jdk.nashorn.api.scripting.ScriptObjectMirror cannot be cast to java.lang.Boolean");
+        executeFileWithException("utxo_exception_return_number.js", ClassCastException.class, "java.lang.Integer cannot be cast to java.lang.Boolean");
     }
 }
