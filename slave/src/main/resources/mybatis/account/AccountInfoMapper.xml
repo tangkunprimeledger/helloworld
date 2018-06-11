@@ -193,4 +193,49 @@
         </foreach>
     </select>
 
+    <!--batch insert-->
+    <insert id ="batchInsert" parameterType="java.util.List" >
+        insert into account_info
+        (id,account_no,currency,balance,freeze_amount,fund_direction,detail_no,detail_freeze_no,status,create_time,update_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.id},#{item.accountNo},#{item.currency},#{item.balance},#{item.freezeAmount},#{item.fundDirection},#{item.detailNo},#{item.detailFreezeNo},#{item.status},now(3),now(3))
+        </foreach>
+    </insert>
+
+    <!-- batch update -->
+    <update id="batchUpdate" parameterType="java.util.List">
+        UPDATE account_info
+        <trim prefix="SET" suffixOverrides=",">
+            <!-- set balance -->
+            <trim prefix="`balance` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `account_no` = #{item.accountNo}
+                    THEN #{item.balance}
+                </foreach>
+                ELSE `balance`
+            </trim>
+            <!-- set freezeAmount -->
+            <trim prefix="`freeze_amount` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `account_no` = #{item.accountNo}
+                    THEN #{item.freezeAmount}
+                </foreach>
+                ELSE `freeze_amount`
+            </trim>
+            <!-- set update_time -->
+            <trim prefix="`update_time` = CASE" suffix="END">
+                <foreach collection="list" item="item">
+                    WHEN `account_no` = #{item.accountNo}
+                    THEN now(3)
+                </foreach>
+                ELSE `update_time`
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" item="item" separator="or" open="(" close=")">
+                `account_no` = #{item.accountNo}
+            </foreach>
+        </where>
+    </update>
 </mapper>

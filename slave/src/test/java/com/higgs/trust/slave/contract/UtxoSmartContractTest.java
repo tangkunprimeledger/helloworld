@@ -48,7 +48,7 @@ public class UtxoSmartContractTest extends BaseTest {
 
         action.setIndex(1);
         ExecuteContextData data = new UTXOExecuteContextData().setAction(action);
-        boolean isOk = smartContract.execute(code, data, TxProcessTypeEnum.PERSIST);
+        boolean isOk = smartContract.execute(code, data);
         Assert.assertTrue(isOk, "verify result");
     }
 
@@ -68,7 +68,7 @@ public class UtxoSmartContractTest extends BaseTest {
 
         action.setIndex(1);
         ExecuteContextData data = new UTXOExecuteContextData().setAction(action);
-        boolean isOk = smartContract.execute(code, data, TxProcessTypeEnum.PERSIST);
+        boolean isOk = smartContract.execute(code, data);
         Assert.assertTrue(isOk, "verify result");
     }
 }

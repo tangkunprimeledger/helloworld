@@ -23,8 +23,8 @@ import java.util.List;
     /**
      * batch insert
      *
-     * @param dataIdentityPOList
+     * @param list
      * @return
      */
-    int batchInsert( List<DataIdentityPO> dataIdentityPOList);
+    int batchInsert(@Param("list") List<DataIdentityPO> list);
 }

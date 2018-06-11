@@ -47,7 +47,7 @@ public class ContractCreationHandlerTest extends IntegrateBaseTest {
 
 
         snapshot.startTransaction();
-        creationHandler.validate(packContext);
+        creationHandler.process(packContext);
         Contract contract = agent.get("e6f21e41de78458a509abde3ead213502e365adfc7c3c217d428878fc1ff37a6");
         snapshot.commit();
         Assert.isTrue(contract != null);
@@ -66,9 +66,9 @@ public class ContractCreationHandlerTest extends IntegrateBaseTest {
                 .build();
 
         System.out.println(JSON.toJSONString(packContext.getCurrentTransaction()));
-        creationHandler.persist(packContext);
+        creationHandler.process(packContext);
         try {
-            creationHandler.persist(packContext);
+            creationHandler.process(packContext);
             Assert.isTrue(false);
         } catch (Exception ex) {
         }

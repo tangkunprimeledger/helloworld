@@ -40,8 +40,8 @@ public class AccountContractBindingHandlerTest extends IntegrateBaseTest {
 
 
         snapshot.startTransaction();
-        actionHandler.validate(packContext);
-        actionHandler.validate(packContext);
+        actionHandler.process(packContext);
+        actionHandler.process(packContext);
         snapshot.commit();
     }
 
@@ -56,6 +56,6 @@ public class AccountContractBindingHandlerTest extends IntegrateBaseTest {
                 .makeBlockHeader()
                 .build();
 
-        actionHandler.persist(packContext);
+        actionHandler.process(packContext);
     }
 }

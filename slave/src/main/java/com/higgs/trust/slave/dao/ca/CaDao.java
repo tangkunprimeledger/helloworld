@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.dao.ca;
 
+import com.higgs.trust.slave.dao.BaseDao;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * @desc CA dao
  * @date 2018/6/5 10:18
  */
-@Mapper public interface CaDao {
+@Mapper public interface CaDao extends BaseDao {
 
     /**
      * @param caPO
@@ -33,11 +34,27 @@ import java.util.List;
      */
     CaPO getCa(String user);
 
-    /** 
-     * @desc get all CA information
+    /**
      * @param
-     * @return   
-     */  
+     * @return
+     * @desc get all CA information
+     */
     List<CaPO> getAllCa();
+
+    /**
+     * batch insert
+     *
+     * @param caPOList
+     * @return
+     */
+    int batchInsert(List<CaPO> caPOList);
+
+    /**
+     * batch update
+     *
+     * @param caPOList
+     * @return
+     */
+    int batchUpdate(List<CaPO> caPOList);
 
 }

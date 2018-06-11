@@ -12,12 +12,14 @@ import com.higgs.trust.slave.model.bo.account.AccountDetailFreeze;
 import com.higgs.trust.slave.model.bo.account.AccountFreeze;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author liuyu
@@ -123,6 +125,68 @@ import java.util.Date;
         if (r != 1) {
             log.error("[decreaseAmount] unfreeze is fail recordId:{}", id);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_UNFREEZE_ERROR);
+        }
+    }
+
+    /**
+     * batch insert
+     *
+     * @param accountFreezeRecords
+     */
+    public void batchInsert(List<AccountFreezeRecord> accountFreezeRecords) {
+        if(CollectionUtils.isEmpty(accountFreezeRecords)){
+            return;
+        }
+        List<AccountFreezeRecordPO> list = BeanConvertor.convertList(accountFreezeRecords,AccountFreezeRecordPO.class);
+        try{
+            int r = accountFreezeRecordDao.batchInsert(list);
+            if(r != accountFreezeRecords.size()){
+                log.info("[batchInsert]the number of update rows is different from the original number");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+            }
+        }catch (DuplicateKeyException e){
+            log.error("[batchInsert] has idempotent for accountFreezeRecords:{}", accountFreezeRecords);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        }
+    }
+
+    /**
+     * batch update
+     *
+     * @param accountFreezeRecords
+     */
+    public void batchUpdate(List<AccountFreezeRecord> accountFreezeRecords) {
+        if(CollectionUtils.isEmpty(accountFreezeRecords)){
+            return;
+        }
+        List<AccountFreezeRecordPO> list = BeanConvertor.convertList(accountFreezeRecords,AccountFreezeRecordPO.class);
+        int r = accountFreezeRecordDao.batchUpdate(list);
+        if(r != accountFreezeRecords.size()){
+            log.info("[batchUpdate]the number of update rows is different from the original number");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+        }
+    }
+
+    /**
+     * batch insert detail freeze
+     *
+     * @param detailFreezes
+     */
+    public void batchInsertDetailFreezes(List<AccountDetailFreeze> detailFreezes) {
+        if (CollectionUtils.isEmpty(detailFreezes)) {
+            log.info("[batchInsertDetailFreezes] detailFreezes is empty");
+            return;
+        }
+        List<AccountDetailFreezePO> list = BeanConvertor.convertList(detailFreezes, AccountDetailFreezePO.class);
+        try {
+            int r = accountDetailFreezeDao.batchInsert(list);
+            if (r != detailFreezes.size()) {
+                log.info("[batchInsertDetailFreezes]the number of update rows is different from the original number");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+            }
+        } catch (DuplicateKeyException e) {
+            log.error("[batchInsertDetailFreezes] has idempotent for detailFreezes:{}", detailFreezes);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
     }
 }

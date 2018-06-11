@@ -15,6 +15,22 @@
 				now(3))
 	</insert>
 
+	<insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+		INSERT INTO cluster_config(cluster_name,
+			node_num,
+			fault_num,
+			create_time,
+			update_time)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.clusterName},
+			#{item.nodeNum},
+			#{item.faultNum},
+			now(3),
+			now(3))
+		</foreach>
+	</insert>
+
 
 	<update id="updateClusterConfig" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
 		UPDATE cluster_config SET
@@ -26,6 +42,41 @@
 			fault_num=#{faultNum}
 		</if>
 		WHERE `cluster_name`=#{clusterName}
+	</update>
+
+
+	<update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+		<trim prefix="SET" suffixOverrides=",">
+			<!-- set update_time -->
+			<trim prefix="`update_time` = CASE" suffix="END">
+				<foreach collection="list" item="item">
+					WHEN `node_name`=#{nodeName} and valid != #{valid}
+					THEN now(3)
+				</foreach>
+				ELSE `update_time`
+			</trim>
+			<!-- set node_num -->
+			<trim prefix="`node_num` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `cluster_name`=#{item.clusterName} and #{item.p2pStatus} != null and #{item.p2pStatus}! =''
+					THEN #{item.nodeNum}
+				</foreach>
+				ELSE `nodeNum`
+			</trim>
+			<!-- set faultNum -->
+			<trim prefix="`fault_num` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `cluster_name`=#{item.clusterName} and #{item.faultNum} != null and #{item.faultNum}! =''
+					THEN #{item.faultNum}
+				</foreach>
+				ELSE `fault_num`
+			</trim>
+		</trim>
+		<where>
+			<foreach collection="list" item="item" separator="or" open="(" close=")">
+				`cluster_name`=#{item.clusterName}
+			</foreach>
+		</where>
 	</update>
 
 

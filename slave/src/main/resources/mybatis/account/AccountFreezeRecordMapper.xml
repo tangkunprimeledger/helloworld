@@ -89,4 +89,49 @@
 		set amount=amount-#{amount},update_time=now(3)
 		where id=#{id} and amount - #{amount} >= 0
 	</update>
+
+    <!--batch insert-->
+    <insert id ="batchInsert" parameterType="java.util.List" >
+        insert into account_freeze_record(id,biz_flow_no,account_no,block_height,contract_addr,amount,create_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.id},#{item.bizFlowNo},#{item.accountNo},#{item.blockHeight},#{item.contractAddr},#{item.amount},now(3))
+        </foreach>
+    </insert>
+
+    <!-- batch update -->
+    <update id="batchUpdate" parameterType="java.util.List">
+        UPDATE account_freeze_record
+        <trim prefix="SET" suffixOverrides=",">
+            <!-- set balance -->
+            <trim prefix="`amount` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `account_no` = #{item.accountNo} AND `biz_flow_no` = #{item.bizFlowNo}
+                    THEN #{item.amount}
+                </foreach>
+                ELSE `amount`
+            </trim>
+            <!-- set freezeAmount -->
+            <trim prefix="`contract_addr` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `account_no` = #{item.accountNo} AND `biz_flow_no` = #{item.bizFlowNo}
+                    THEN #{item.contractAddr}
+                </foreach>
+                ELSE `contract_addr`
+            </trim>
+            <!-- set update_time -->
+            <trim prefix="`update_time` = CASE" suffix="END">
+                <foreach collection="list" item="item">
+                    WHEN `account_no` = #{item.accountNo} AND `biz_flow_no` = #{item.bizFlowNo}
+                    THEN now(3)
+                </foreach>
+                ELSE `update_time`
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" item="item" separator="or" open="(" close=")">
+                `account_no` = #{item.accountNo} AND `biz_flow_no` = #{item.bizFlowNo}
+            </foreach>
+        </where>
+    </update>
 </mapper>
