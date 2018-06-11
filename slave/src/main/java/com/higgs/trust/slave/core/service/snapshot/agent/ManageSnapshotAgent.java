@@ -94,13 +94,13 @@ public class ManageSnapshotAgent implements CacheLoader {
             }
         }
         if (!CollectionUtils.isEmpty(rsNodePOList)) {
-            rsNodeRepository.batchInsert(rsNodePOList);
+            return rsNodeRepository.batchInsert(rsNodePOList) == rsNodePOList.size();
         }
 
         if (!CollectionUtils.isEmpty(policyPOList)) {
-            policyRepository.batchInsert(policyPOList);
+            return policyRepository.batchInsert(policyPOList) == policyPOList.size();
         }
-        return false;
+        return true;
     }
 
     /**

@@ -51,7 +51,6 @@ public class PendingStateImplTest extends BaseTest {
         registerRS1.setDesc("rs-test4-desc");
         registerRS1.setType(ActionTypeEnum.REGISTER_RS);
         registerRS1.setIndex(1);
-     //   registerRS1.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxk7MQV0kyb4IIWez5l4PrxAPHujW+gQR3J3vbfnAb/Dy9BSoM0y27zn9oTFtn8p1KBppc2xQtH4ViQ5XpoFFA8sCmuZM6LXFn9Gd1LHUbQUj/AbLWyru3gD+PHwQ+Cd0y/PO4gBD4qD6WKKIHf7Nxl+dBnTNE1jNGflMVvdY1FQIDAQAB");
 
         CoreTransaction coreTx1 = new CoreTransaction();
         List<Action> registerRsList1 = new ArrayList<>();
@@ -82,7 +81,6 @@ public class PendingStateImplTest extends BaseTest {
         registerRS2.setDesc("rs-test5-desc");
         registerRS2.setIndex(1);
         registerRS2.setType(ActionTypeEnum.REGISTER_RS);
-  //      registerRS2.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxk7MQV0kyb4IIWez5l4PrxAPHujW+gQR3J3vbfnAb/Dy9BSoM0y27zn9oTFtn8p1KBppc2xQtH4ViQ5XpoFFA8sCmuZM6LXFn9Gd1LHUbQUj/AbLWyru3gD+PHwQ+Cd0y/PO4gBD4qD6WKKIHf7Nxl+dBnTNE1jNGflMVvdY1FQIDAQAB");
 
         CoreTransaction coreTx2 = new CoreTransaction();
         List<Action> registerRsList2 = new ArrayList<>();

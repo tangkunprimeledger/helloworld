@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author tangfashuang
  * @date 2018/03/28
- * @desc register RS datahandler
+ * @desc register RS handler
  */
 @Slf4j @Component public class RegisterRsHandler implements ActionHandler {
 
@@ -35,12 +35,6 @@ import org.springframework.stereotype.Component;
         RegisterRS bo = (RegisterRS)actionData.getCurrentAction();
         if (null == bo) {
             log.error("[RegisterRSHandler.process] convert to RegisterRS failed");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
-        // validate param
-        if (!BeanValidator.validate(bo).isSuccess()) {
-            log.error("[RegisterRSHandler.process] param validate is fail");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 

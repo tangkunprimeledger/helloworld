@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * @Description:
@@ -141,5 +142,6 @@ import java.util.List;
                 log.error("add transaction to pendingTxQueue exception. ", e);
             }
         });
+        System.out.println("pendingTxQueue.size = " + pendingTxQueue.size());
     }
 }
