@@ -15,10 +15,11 @@ import com.higgs.trust.slave.model.bo.context.ActionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataIdentityActionHandlerTest  {
+public class DataIdentityActionHandlerTest  extends BaseTest {
     @Autowired
     private DataIdentityActionHandler dataIdentityActionHandler;
     @Autowired
@@ -27,8 +28,8 @@ public class DataIdentityActionHandlerTest  {
     private DataIdentitySnapshotAgent dataIdentitySnapshotAgent;
     @Test
     public void testValidate() throws Exception {
-       // snapshotService.destroy();
-       // snapshotService.startTransaction();
+       snapshotService.clear();
+        snapshotService.startTransaction();
         List<DataIdentity> list =  new ArrayList<>();
         DataIdentity dataIdentity1 = new DataIdentity();
         dataIdentity1.setIdentity("12321");
@@ -75,9 +76,10 @@ public class DataIdentityActionHandlerTest  {
                 return dataIdentityAction;
             }
         };
-     //   dataIdentityActionHandler.validate(ActionData);
-    //    snapshotService.commit();
-     //   System.out.println("9999999999"+dataIdentitySnapshotAgent.getDataIdentity("12312312321"));
+        dataIdentityActionHandler.process(ActionData);
+       snapshotService.commit();
+        snapshotService.flush();
+       System.out.println("9999999999"+dataIdentitySnapshotAgent.getDataIdentity("12312312321"));
 
     }
 
