@@ -176,10 +176,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         try {
             log.debug("Get lock success, go to start transaction!");
             //check whether snapshot transaction has been started.
-            if (isOpenTransaction) {
-                log.info("The snapshot transaction has been started ! Please don't start it again!");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_HAS_STARTED_EXCEPTION);
-            }
+            isOpenTransactionException();
 
             //clear txCache
             log.debug("Clear txCache");
@@ -214,6 +211,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear packageCache and txCache
             clearTempCache();
+
+            //check whether snapshot transaction has been started.
+            isOpenTransactionException();
         } finally {
             log.debug("Unlock lock for clear snapshot!");
             lock.unlock();
@@ -256,6 +256,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
                 LoadingCache<String, Object> innerMap = outerEntry.getValue();
                 innerMap.invalidateAll();
             }
+
+            //check whether snapshot transaction has been started.
+            isOpenTransactionException();
         } finally {
             log.debug("Unlock lock for destroy snapshot!");
             lock.unlock();
@@ -345,6 +348,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             Value putValue = buildValue(value, SnapshotValueStatusEnum.INSERT.getCode());
             innerMap.put(innerKey, (Value) transferValue(putValue));
 
+            //check whether snapshot transaction has been started.
+            isNotOpenTransactionException();
             log.info("End of insert data {} into txCache for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
         } finally {
             Profiler.release();
@@ -390,6 +395,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //put data into
             innerMap.put(innerKey, (Value) transferValue(putValue));
+            //check whether snapshot transaction has been started.
+            isNotOpenTransactionException();
             log.info("End of update data {} with status {} into txCache for snapshotBizKeyEnum:{}, bizKey:{}", value, putValue.getStatus(), key1, key2);
         } finally {
             Profiler.release();
@@ -413,10 +420,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         try {
             log.debug("Get lock success, go to commit!");
             //check whether snapshot transaction has been started.
-            if (!isOpenTransaction) {
-                log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-            }
+            isNotOpenTransactionException();
 
             //close transaction first,if not there may be some data put into cache after clearing data
             closeTransaction();
@@ -431,6 +435,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear txCache
             txCache.clear();
+
+            //check whether snapshot transaction has been started.
+            isOpenTransactionException();
         } finally {
             log.debug("Unlock lock for commit!");
             lock.unlock();
@@ -455,16 +462,16 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         try {
             log.debug("Get lock success, go to rollback!");
             //check whether snapshot transaction has been started.
-            if (!isOpenTransaction) {
-                log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-            }
+            isNotOpenTransactionException();
 
             //close transaction,if not there may be some data put into cache after clearing data
             closeTransaction();
 
             //clear txCache
             txCache.clear();
+
+            //check whether snapshot transaction has been started.
+            isOpenTransactionException();
         } finally {
             log.info("Unlock lock for rollback!");
             lock.unlock();
@@ -489,10 +496,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         try {
             log.debug("Get lock success, go to flush!");
             //check whether snapshot transaction has been started.
-            if (isOpenTransaction) {
-                log.info("The snapshot transaction has not been closed ! So we can't deal with flush");
-                throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-            }
+            isOpenTransactionException();
 
             //check whether snapshot packageCache is empty.
             if (packageCache.isEmpty()) {
@@ -507,6 +511,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear packageCache and txCache
             clearTempCache();
+
+            //check whether snapshot transaction has been started.
+            isOpenTransactionException();
         } finally {
             log.info("Unlock lock for flush!");
             lock.unlock();
@@ -928,10 +935,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         }
 
         //check whether snapshot transaction has been started.
-        if (!isOpenTransaction) {
-            log.info("The snapshot transaction has not been started ! So we can't deal with put data operation");
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
-        }
+        isNotOpenTransactionException();
 
         //check where there is key1 in txCache, if not put a inner map as the value
         if (!txCache.containsKey(key1)) {
@@ -940,4 +944,23 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         }
     }
 
+    /**
+     * check is open transaction and throw exception
+     */
+    private void isOpenTransactionException(){
+        if (isOpenTransaction) {
+            log.info("The snapshot transaction has been started ! So we can't deal with rollback");
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_HAS_STARTED_EXCEPTION);
+        }
+    }
+
+    /**
+     * check is not open transaction and throw exception
+     */
+    private void isNotOpenTransactionException(){
+        if (!isOpenTransaction) {
+            log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
+        }
+    }
 }
