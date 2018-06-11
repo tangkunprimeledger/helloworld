@@ -1,7 +1,10 @@
 package com.higgs.trust.slave.dao.config;
 
+import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @author WangQuanzhou
@@ -30,4 +33,20 @@ import org.apache.ibatis.annotations.Mapper;
      * @desc get ClusterConfig by cluster name
      */
     ClusterConfigPO getClusterConfig(String clusterName);
+
+    /**
+     * batch insert
+     *
+     * @param clusterConfigPOList
+     * @return
+     */
+    int batchInsert(List<ClusterConfigPO> clusterConfigPOList);
+
+    /**
+     * batch update
+     *
+     * @param clusterConfigPOList
+     * @return
+     */
+    int batchUpdate(List<ClusterConfigPO> clusterConfigPOList);
 }

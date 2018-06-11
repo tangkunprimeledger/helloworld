@@ -2,10 +2,10 @@ package com.higgs.trust.slave.core.service.datahandler.ca;
 
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
-import com.higgs.trust.slave.core.service.snapshot.agent.ClusterConfigAgent;
-import com.higgs.trust.slave.core.service.snapshot.agent.ClusterNodeAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.model.bo.ca.Ca;
+import com.higgs.trust.slave.model.bo.config.ClusterConfig;
+import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +18,11 @@ import org.springframework.stereotype.Service;
 
     @Autowired private CaSnapshotAgent caSnapshotAgent;
     @Autowired MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
-    @Autowired ClusterConfigAgent clusterConfigAgent;
-    @Autowired ClusterNodeAgent clusterNodeAgent;
 
     /**
      * @param ca
      * @return
-     * @desc insert CA into db
+     * @desc insert CA into cache
      */
     @Override public void authCa(Ca ca) {
         // operation merkle tree
@@ -32,7 +30,20 @@ import org.springframework.stereotype.Service;
 
         caSnapshotAgent.saveCa(ca);
 
-        // TODO 更新clusterConfig和clusterNode信息
+        ClusterNode clusterNode = new ClusterNode();
+        clusterNode.setNodeName(ca.getUser());
+        clusterNode.setP2pStatus(true);
+        clusterNode.setRsStatus(false);
+        caSnapshotAgent.saveClusterNode(clusterNode);
+
+        ClusterConfig oldClusterConfig = caSnapshotAgent.getClusterConfig("TRUST");
+        ClusterConfig clusterConfig = new ClusterConfig();
+        // TODO 集群名称应该从配置动态读取
+        clusterConfig.setClusterName(oldClusterConfig.getClusterName());
+        clusterConfig.setNodeNum(oldClusterConfig.getNodeNum() + 1);
+        clusterConfig.setFaultNum(oldClusterConfig.getNodeNum() / 3);
+        caSnapshotAgent.updateClusterConfig(clusterConfig);
+
     }
 
     /**
@@ -41,8 +52,10 @@ import org.springframework.stereotype.Service;
      * @desc update CA information
      */
     @Override public void updateCa(Ca ca) {
-        // TODO 要怎么操作数据库进行clusterConfig和clusterNode信息的变更
         merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
+
+        caSnapshotAgent.updateCa(ca);
+
     }
 
     /**
@@ -53,8 +66,22 @@ import org.springframework.stereotype.Service;
     @Override public void cancelCa(Ca ca) {
         // operation merkle tree
         merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
-        // TODO 要怎么操作数据库进行clusterConfig和clusterNode信息的变更
-        caSnapshotAgent.saveCa(ca);
+
+        caSnapshotAgent.updateCa(ca);
+
+        ClusterNode clusterNode = new ClusterNode();
+        clusterNode.setNodeName(ca.getUser());
+        clusterNode.setP2pStatus(false);
+        clusterNode.setRsStatus(false);
+        caSnapshotAgent.updateClusterNode(clusterNode);
+
+        ClusterConfig oldClusterConfig = caSnapshotAgent.getClusterConfig("TRUST");
+        ClusterConfig clusterConfig = new ClusterConfig();
+        // TODO 集群名称应该从配置动态读取
+        clusterConfig.setClusterName(oldClusterConfig.getClusterName());
+        clusterConfig.setNodeNum(oldClusterConfig.getNodeNum() - 1);
+        clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
+        caSnapshotAgent.updateClusterConfig(clusterConfig);
     }
 
     /**

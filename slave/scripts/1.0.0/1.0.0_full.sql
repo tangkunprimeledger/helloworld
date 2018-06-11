@@ -471,7 +471,6 @@ CREATE TABLE IF NOT EXISTS `ca` (
   `pub_key` varchar(255) NOT NULL COMMENT 'pub key',
   `user` varchar(32) NOT NULL COMMENT 'CA user',
   `usage` varchar(64) COMMENT 'CA usage',
-  `height` BIGINT (20) NOT NULL COMMENT 'block height which CA tx in',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',
   PRIMARY KEY (`id`),
