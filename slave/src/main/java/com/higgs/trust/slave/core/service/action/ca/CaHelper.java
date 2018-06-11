@@ -15,12 +15,6 @@ import org.springframework.stereotype.Component;
     public boolean validate(CaAction caAction, ActionTypeEnum type) {
         // convert action and validate it
         log.info("[CaAuthHandler.process] is start,params:{}", caAction);
-        try {
-            BeanValidator.validate(caAction).failThrow();
-        } catch (IllegalArgumentException e) {
-            log.error("Convert and validate caAction is error .msg={}", e.getMessage());
-            return false;
-        }
 
         //validate idempotent
         Ca ca = caSnapshotHandler.getCa(caAction.getUser());
