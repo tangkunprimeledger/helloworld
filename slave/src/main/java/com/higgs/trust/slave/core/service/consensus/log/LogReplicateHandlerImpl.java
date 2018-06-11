@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.consensus.log;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -46,6 +47,8 @@ import java.util.concurrent.*;
 
     @Autowired NodeState nodeState;
 
+    @Autowired NodeProperties properties;
+
     /**
      * replicate sorted package to the cluster
      *
@@ -73,7 +76,7 @@ import java.util.concurrent.*;
 
         CompletableFuture future = consensusClient.submit(packageCommand);
         try {
-            future.get(800, TimeUnit.MILLISECONDS);
+            future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Throwable e) {
             log.error("replicate log failed!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED, e);
@@ -88,7 +91,7 @@ import java.util.concurrent.*;
         command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
         CompletableFuture<Map<String, ChangeMasterVerifyResponse>> future = consensusClient.submit(command);
         try {
-            future.get(800, TimeUnit.MILLISECONDS);
+            future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("change master failed!", e);
         }
@@ -100,7 +103,7 @@ import java.util.concurrent.*;
         command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
         CompletableFuture future = consensusClient.submit(command);
         try {
-            future.get(800, TimeUnit.MILLISECONDS);
+            future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("master heartbeat failed!", e);
         }

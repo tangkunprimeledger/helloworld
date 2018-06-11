@@ -55,8 +55,6 @@ class node {
         context.provide([Name: "Package Height", Value: packageRepository.getMaxHeight().toString()])
         context.provide([Name: "Time", Value: DateFormatUtils.format(System.currentTimeMillis(), "yyyy-MM-dd HH:mm:ss.SSS")])
         out.println("")
-        nodeState.getTerms().forEach({ t -> context.provide(Term: t.term, StartHeight: t.startHeight, EndHeight: t.endHeight, MasterName: t.masterName) })
-        out.println("")
     }
 
     @Usage('show the current state of node')
@@ -65,6 +63,15 @@ class node {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
         out.println("Node is $nodeState.state")
+    }
+
+    @Usage('show the terms of cluster')
+    @Command
+    def terms(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def nodeState = beans.getBean(NodeState.class)
+        nodeState.getTerms().forEach({ t -> context.provide(Term: t.term, StartHeight: t.startHeight, EndHeight: t.endHeight, MasterName: t.masterName) })
+        out.println("")
     }
 
     @Usage('show the current height of node')

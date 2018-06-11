@@ -204,7 +204,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
         } else {
             TermInfo termInfo = terms.get(infos.size() - 1);
             currentTerm = termInfo.getTerm();
-            changeMaster(termInfo.getMasterName());
+            if (!nodeName.equalsIgnoreCase(termInfo.getMasterName())) {
+                changeMaster(termInfo.getMasterName());
+            } else {
+                if (masterName.equalsIgnoreCase(nodeName)) {
+                    changeMaster(termInfo.getMasterName());
+                } else {
+                    changeMaster(MASTER_NA);
+                }
+            }
         }
     }
 
