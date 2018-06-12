@@ -705,27 +705,47 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
         // check whether data in db
         boolean isExistedInDB = isExistInDB(snapshotBizKeyEnum, keyObject);
-        //if the txCache value is update status and there is no data in package cache and global cache and db, throw exception
-        //it is not exist in db and status is not update , step will not go to last. so we do not need to check  again.
-        if (!isExistedInDB){
-            log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated is not exist in packageCache and globalCache and DB", snapshotBizKeyEnum, innerKey);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is not exist in  DB");
+
+        //if there is data in global  cache and no data in db it is a exception
+        //this case exclude  a error so we only use isExistedInGlobalCache to judge  whether there is data in the db after this case
+        if(isExistedInGlobalCache && !isExistedInDB){
+            log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated not exist in  DB  but in globalCache", snapshotBizKeyEnum, innerKey);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is not exist in  DB  but in globalCache");
         }
 
-        //if the txCache value is update status and there is data in package cache and  db, and package status is insert . put data into packageCache  with insert status
-        if (isExistedInPackageCache && StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
+        // if the txCache value is update status and there is no data in package cache and db, throw exception
+        if (!isExistedInPackageOrGlobalOrDB){
+            log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated is not exist in packageCache  and DB", snapshotBizKeyEnum, innerKey);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is not exist  in packageCache and DB");
+        }
+
+        //if the txCache value is update status and there is data in package cache but not in db, and package status is insert . put data into packageCache  with insert status
+        if (isExistedInPackageCache && StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode()) && !isExistedInGlobalCache) {
             packageInnerCache.put(innerKey, buildValue(innerValue.getObject(), SnapshotValueStatusEnum.INSERT.getCode()));
             return;
         }
 
+
+        //if the txCache value is update status and there is data in package cache but not in db, and package status is update .throw exception
+        if (isExistedInPackageCache && !StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode()) && !isExistedInGlobalCache) {
+            log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated is in package cache but not in db  exception", snapshotBizKeyEnum, innerKey);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is in package cache but not in db exception");
+        }
+
+        //if the txCache value is update status and there is data in package cache and db, and package status is insert .throw exception
+        if (isExistedInPackageCache && StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode()) && isExistedInGlobalCache) {
+            log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated is in package cache and db, and package status is insert exception", snapshotBizKeyEnum, innerKey);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is in package cache and db, and package status is insert exception .Package status should be update");
+        }
+
         //if the txCache value is update status and there is data in package cache and  db, and package status is update . put data into packageCache
-        if (isExistedInPackageCache && !StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
+        if (isExistedInPackageCache && !StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())  && isExistedInGlobalCache) {
             packageInnerCache.put(innerKey, innerValue);
             return;
         }
 
         //if the txCache value is update status and there is no data in package cache ,and has data in db . put data into packageCache
-        if (!isExistedInPackageCache) {
+        if (!isExistedInPackageCache && isExistedInGlobalCache) {
             packageInnerCache.put(innerKey, innerValue);
             return;
         }
@@ -854,6 +874,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
                     throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_UPDATE_EXCEPTION);
                 }
             } catch (Throwable e) {
+                log.error("Flush db exception",e);
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_FLUSH_DATA_EXCEPTION);
             }
         }
