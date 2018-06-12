@@ -1,10 +1,12 @@
 package com.higgs.trust.slave.common.enums;
 
+import com.higgs.trust.common.exception.ErrorInfo;
+
 /**
  * @Description:
  * @author: pengdi
  **/
-public enum SlaveErrorEnum {
+public enum SlaveErrorEnum implements ErrorInfo {
     //@formatter:off
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                      公共类错误码[000-099,999]                           //
@@ -15,23 +17,22 @@ public enum SlaveErrorEnum {
     SLAVE_CONFIGURATION_ERROR("000", "配置错误", true),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         请求校检[100-299]                                //
+    //                         请求校检[200-299]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    SLAVE_PARAM_VALIDATE_ERROR("100", "param validate error", false),
-    SLAVE_IDEMPOTENT("101", "request idempotent", false),
-    SLAVE_TX_VERIFY_SIGNATURE_FAILED("102", "transaction verify signature failed", false),
-    SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED("103", "package verify master node signature failed", false),
-    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("103", "package sign signature failed", false),
+    SLAVE_PARAM_VALIDATE_ERROR("200", "param validate error", false),
+    SLAVE_IDEMPOTENT("201", "request idempotent", false),
+    SLAVE_TX_VERIFY_SIGNATURE_FAILED("202", "transaction verify signature failed", false),
+    SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED("203", "package verify master node signature failed", false),
+    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("203", "package sign signature failed", false),
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         查询相关[300-399]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     SLAVE_CONSENSUS_GET_RESULT_FAILED("301", "get the consensus result failed.", true),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         Failover相关[400-499]                           //
+    //                         Failover相关[400-500]                           //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     SLAVE_FAILOVER_STATE_NOT_ALLOWED("400", "node state not allowed current operation ", false),
-    SLAVE_FAILOVER_STATE_CHANGE_FAILED("401", "node state change failed ", false),
     SLAVE_FAILOVER_START_HEIGHT_ERROR("410", "the start height error, please check", false),
     SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED("411", "get and validating the blocks from other node failed", false),
     SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED("412", "get and validating the block headers from other node failed", false),

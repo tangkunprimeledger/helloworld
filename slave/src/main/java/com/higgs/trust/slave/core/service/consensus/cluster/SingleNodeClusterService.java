@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.service.consensus.cluster;
 
 import com.higgs.trust.slave.common.SingleNodeConditional;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Primary @Service @Conditional(SingleNodeConditional.class) @Slf4j public class SingleNodeClusterService
-    implements ClusterService {
+    implements IClusterService {
 
     @Autowired private BlockRepository blockRepository;
 

@@ -1,10 +1,10 @@
 package com.higgs.trust.slave.core.service.failover;
 
-import com.higgs.trust.slave.common.config.NodeProperties;
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
+import com.higgs.trust.config.node.NodeProperties;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.FailoverExecption;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.model.bo.Block;
@@ -38,19 +38,7 @@ import org.springframework.stereotype.Service;
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
             return false;
         }
-        if (nodeState.isMaster()) {
-            boolean masterChecked = masterCheck();
-            log.info("master checked result:{}", masterChecked);
-            if (masterChecked) {
-                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Running);
-            } else {
-                log.error("Node master check not pass");
-                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
-                return false;
-            }
-        } else {
-            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-        }
+        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
         return true;
     }
 
@@ -81,17 +69,5 @@ import org.springframework.stereotype.Service;
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
         }
         return false;
-    }
-
-    /**
-     * 检查是否能胜任master
-     *
-     * @return
-     */
-    public boolean masterCheck() {
-        log.info("Starting master checking ...");
-        log.debug("need todo ....");
-        //todo:suimi 发送空包，获取最新高度比较
-        return true;
     }
 }

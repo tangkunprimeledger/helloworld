@@ -31,18 +31,5 @@ import java.util.List;
      */
     @NotNull private Long height;
 
-    /**
-     * term
-     */
-    private Long term;
 
-    /**
-     * master name
-     */
-    private String masterName;
-
-    /**
-     * signature
-     */
-    @NotEmpty @JSONField(label = "sign") private String sign;
 }

@@ -1,15 +1,12 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.Labels;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.higgs.trust.common.utils.SignUtils;
-import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
@@ -352,16 +349,6 @@ import java.util.Set;
          * 4.通过pendingState删除交易
          * 5.提交事务
          */
-    }
-
-    @Override public String getSign(PackageVO packageVO) {
-        try {
-            String dataString = JSON.toJSONString(packageVO, Labels.excludes("sign"));
-            return SignUtils.sign(dataString, nodeState.getPrivateKey());
-        } catch (Exception e) {
-            log.error("package sign exception. ", e);
-            return null;
-        }
     }
 
     /**

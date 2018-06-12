@@ -1,9 +1,9 @@
 package com.higgs.trust.slave.core.service.failover;
 
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.block.hash.TxRootHashBuilder;
-import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService;
+import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -19,7 +19,7 @@ import java.util.List;
     @Autowired private BlockChainClient blockChainClient;
     @Autowired private TxRootHashBuilder txRootHashBuilder;
     @Autowired private NodeState nodeState;
-    @Autowired private ClusterService clusterService;
+    @Autowired private IClusterService clusterService;
 
     /**
      * 从startHeight开始获取size个blockheader

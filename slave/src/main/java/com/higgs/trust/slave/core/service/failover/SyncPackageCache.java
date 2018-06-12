@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.service.failover;
 
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.config.node.NodeState;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

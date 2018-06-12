@@ -1,8 +1,10 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
+import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.config.node.NodeProperties;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.slave.api.vo.PackageVO;
-import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
@@ -24,7 +26,6 @@ import java.util.concurrent.TimeUnit;
  * @author: pengdi
  **/
 @Slf4j @Service public class LogReplicateHandlerImpl implements LogReplicateHandler {
-    @Autowired PropertiesConfig propertiesConfig;
     /**
      * client from the log replicate consensus layer
      */
@@ -37,6 +38,10 @@ import java.util.concurrent.TimeUnit;
     @Autowired PackageProcess packageProcess;
 
     @Autowired RsPubKeyRepository rsPubKeyRepository;
+
+    @Autowired NodeState nodeState;
+
+    @Autowired NodeProperties properties;
 
     /**
      * replicate sorted package to the cluster
@@ -58,11 +63,14 @@ import java.util.concurrent.TimeUnit;
 
         // replicate package to all nodes
         log.info("package starts to distribute to each node through consensus layer");
-        PackageCommand packageCommand = new PackageCommand(packageVO);
+        PackageCommand packageCommand =
+            new PackageCommand(nodeState.getCurrentTerm(), nodeState.getMasterName(), packageVO);
+        String signValue = packageCommand.getSignValue();
+        packageCommand.setSign(SignUtils.sign(signValue, nodeState.getPrivateKey()));
 
         CompletableFuture future = consensusClient.submit(packageCommand);
         try {
-            future.get(800, TimeUnit.MILLISECONDS);
+            future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Throwable e) {
             log.error("replicate log failed!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED, e);
@@ -70,4 +78,6 @@ import java.util.concurrent.TimeUnit;
 
         log.info("package has been sent to consensus layer");
     }
+
+
 }
