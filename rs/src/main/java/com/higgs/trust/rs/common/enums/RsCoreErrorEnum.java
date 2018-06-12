@@ -38,6 +38,7 @@ public enum RsCoreErrorEnum {
     RS_CORE_VOTE_RECEIPTING_HAS_ERROR("215", "vote receipting has error", false),
     RS_CORE_TX_NOT_EXIST_ERROR("216", "core_tx not exist error", false),
     RS_CORE_CALLBACK_NOT_EXISTS_ERROR("217", "callback type is error", false),
+    RS_CORE_RS_STATUS_NOT_COMMON_ERROR("218", "rs status not common error", false),
 
     RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
     RS_CORE_WRITE_FILE_ERROR("302", "rs core write file error", false),

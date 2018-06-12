@@ -6,9 +6,11 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.VoteService;
+import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
@@ -145,8 +147,19 @@ import java.util.List;
                         RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
                     return;
                 }
-                //query vote rule
-                VoteRule voteRule = voteRuleRepository.queryByPolicyId(policyId);
+                // vote rule
+                VoteRule voteRule = null;
+                //from default
+                InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
+                if (initPolicyEnum != null) {
+                    voteRule = new VoteRule();
+                    voteRule.setPolicyId(policyId);
+                    voteRule.setVotePattern(initPolicyEnum.getVotePattern());
+                    voteRule.setCallbackType(CallbackTypeEnum.ALL);
+                }else{
+                    //query vote rule
+                    voteRule = voteRuleRepository.queryByPolicyId(policyId);
+                }
                 if (voteRule == null) {
                     log.error("[processInitTx]get voteRule is null by policyId:{}", policyId);
                     toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,

@@ -21,7 +21,7 @@ import java.util.List;
  * @description
  * @date 2018-05-13
  */
-public class CoreTxServiceTest extends IntegrateBaseTest{
+public class CoreTxServiceTest extends IntegrateBaseTest {
     @Autowired private CoreTransactionService coreTransactionService;
 
     @Test
