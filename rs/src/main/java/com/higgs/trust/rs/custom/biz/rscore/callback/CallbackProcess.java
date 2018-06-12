@@ -1,12 +1,11 @@
 package com.higgs.trust.rs.custom.biz.rscore.callback;
 
-import com.higgs.trust.rs.common.TxCallbackHandler;
+import com.higgs.trust.rs.core.callback.TxCallbackHandler;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.rs.custom.biz.rscore.callback.handler.*;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.manage.CancelRS;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +80,7 @@ import org.springframework.stereotype.Service;
         log.info("[onEnd] end process");
     }
 
-    @Override public void onFailOver(RespData<CoreTransaction> respData) {
+    @Override public void onFailover(RespData<CoreTransaction> respData) {
 
     }
 

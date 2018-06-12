@@ -12,6 +12,7 @@ import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRequestRecord;
+import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.integration.ServiceProviderClient;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
@@ -55,7 +56,7 @@ import java.util.concurrent.Future;
     @Autowired private VoteReceiptRepository voteReceiptRepository;
     @Autowired private ServiceProviderClient serviceProviderClient;
     @Autowired private SignService signService;
-    @Autowired private RsCoreCallbackHandler rsCoreCallbackHandler;
+    @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
 
     @Autowired private ThreadPoolTaskExecutor syncVotingExecutorPool;
     @Autowired private ThreadPoolTaskExecutor asyncVotingExecutorPool;
