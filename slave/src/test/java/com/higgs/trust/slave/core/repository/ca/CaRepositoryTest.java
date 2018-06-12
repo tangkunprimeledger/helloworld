@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 public class CaRepositoryTest extends BaseTest {
 
@@ -47,6 +49,17 @@ public class CaRepositoryTest extends BaseTest {
     }
 
     @Test public void testBatchInsert() throws Exception {
+        List list =new LinkedList();
+        Ca ca = new Ca();
+        ca.setPeriod(new Date());
+        ca.setPubKey("123");
+        ca.setUsage("consensus");
+        ca.setUser("wqz");
+        ca.setValid(true);
+        ca.setVersion(VersionEnum.V1.getCode());
+        list.add(ca);
+        caRepository.batchInsert(list);
+        System.out.println("结束");
     }
 
     @Test public void testBatchUpdate() throws Exception {

@@ -34,12 +34,12 @@
 			update_time)
 		VALUES
 		<foreach collection="list" item="item" index="index" separator=",">
-			(#{version},
-				#{period},
-				#{valid},
-				#{pubKey},
-				#{user},
-				#{usage},
+			(#{item.version},
+				#{item.period},
+				#{item.valid},
+				#{item.pubKey},
+				#{item.user},
+				#{item.usage},
 				now(3),
 				now(3))
 		</foreach>
