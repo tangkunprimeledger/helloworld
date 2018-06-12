@@ -15,31 +15,21 @@ import java.util.List;
  * @date 2018/04/11 19:41
  * @desc receive from master or master send other node
  */
-@Getter
-@Setter
-public class PackageVO extends BaseBO{
+@Getter @Setter public class PackageVO extends BaseBO {
     /**
      * transaction list
      */
-    @NotEmpty
-    private List<SignedTransaction> signedTxList;
+    @NotEmpty private List<SignedTransaction> signedTxList;
 
     /**
      * create package time
      */
-    @NotNull
-    private Long packageTime;
+    @NotNull private Long packageTime;
 
     /**
      * block height
      */
-    @NotNull
-    private Long height;
+    @NotNull private Long height;
 
-    /**
-     * signature
-     */
-    @NotEmpty
-    @JSONField(label = "sign")
-    private String sign;
+
 }
