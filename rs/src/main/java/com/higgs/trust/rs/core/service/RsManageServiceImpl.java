@@ -5,6 +5,7 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.core.api.RsManageService;
@@ -16,6 +17,7 @@ import com.higgs.trust.rs.custom.util.converter.CoreTransactionConvertor;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
@@ -181,9 +183,17 @@ public class RsManageServiceImpl implements RsManageService{
                             respData.getRespCode(), respData.getMsg());
                         return respData;
                     }
-
-                    //组装UTXO,CoreTransaction，下发
-
+                    if(VotePatternEnum.fromCode(registerPolicyVO.getVotePattern()) == null){
+                        RsCoreErrorEnum coreErrorEnum = RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR;
+                        log.error("register policy has error:{}",coreErrorEnum);
+                        return new RespData(coreErrorEnum.getCode(),coreErrorEnum.getDescription());
+                    }
+                    if(CallbackTypeEnum.fromCode(registerPolicyVO.getCallbackType()) == null){
+                        RsCoreErrorEnum coreErrorEnum = RsCoreErrorEnum.RS_CORE_CALLBACK_NOT_EXISTS_ERROR;
+                        log.error("register policy has error:{}",coreErrorEnum);
+                        return new RespData(coreErrorEnum.getCode(),coreErrorEnum.getDescription());
+                    }
+                    //组装CoreTransaction，下发
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
                     jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
