@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.custom.biz.api.impl.manage;
+package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -175,8 +175,7 @@ import java.util.List;
                         return respData;
                     }
 
-                    //组装UTXO,CoreTransaction，下发
-
+                    //组装CoreTransaction，下发
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
                     jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
