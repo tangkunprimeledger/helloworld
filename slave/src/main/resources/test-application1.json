@@ -80,7 +80,7 @@
         "minIdle": 1,
         "password": "root",
         "time-between-eviction-runs-millis": 60000,
-        "url": "jdbc:mysql://192.168.99.100:3307/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
+        "url": "jdbc:mysql://localhost:3307/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
       },
       "type": "com.alibaba.druid.pool.DruidDataSource"
