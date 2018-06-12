@@ -35,7 +35,6 @@ import static org.testng.Assert.*;
         nodeState = new NodeState();
         MockitoAnnotations.initMocks(this);
         when(properties.getNodeName()).thenReturn(nodeName);
-        when(properties.getMasterName()).thenReturn(nodeName);
         when(properties.getPrefix()).thenReturn(prefix);
         nodeState.afterPropertiesSet();
     }

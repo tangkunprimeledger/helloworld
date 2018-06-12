@@ -38,19 +38,7 @@ import org.springframework.stereotype.Service;
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
             return false;
         }
-        if (nodeState.isMaster()) {
-            boolean masterChecked = masterCheck();
-            log.info("master checked result:{}", masterChecked);
-            if (masterChecked) {
-                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Running);
-            } else {
-                log.error("Node master check not pass");
-                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
-                return false;
-            }
-        } else {
-            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-        }
+        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
         return true;
     }
 
@@ -81,17 +69,5 @@ import org.springframework.stereotype.Service;
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
         }
         return false;
-    }
-
-    /**
-     * 检查是否能胜任master
-     *
-     * @return
-     */
-    public boolean masterCheck() {
-        log.info("Starting master checking ...");
-        log.debug("need todo ....");
-        //todo:suimi 发送空包，获取最新高度比较
-        return true;
     }
 }

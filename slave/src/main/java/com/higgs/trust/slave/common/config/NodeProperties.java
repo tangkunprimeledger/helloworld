@@ -17,11 +17,6 @@ import org.springframework.stereotype.Component;
     private String nodeName = DEFAULT_NODE_NAME;
 
     /**
-     * the name of master
-     */
-    private String masterName = DEFAULT_NODE_NAME;
-
-    /**
      * the try times of self check
      */
     private int selfCheckTimes = 100;
@@ -40,4 +35,25 @@ import org.springframework.stereotype.Component;
      * the node name prefix
      */
     private String prefix;
+
+    /**
+     * the wait time for command consensus
+     */
+    private long consensusWaitTime = 800L;
+
+    /**
+     * the time of master heartbeat
+     */
+    private int masterHeartbeat = 1000;
+
+    /**
+     * the min ratio of change master to master heartbeat
+     */
+    private int changeMasterMinRatio = 2;
+
+    /**
+     * the max ratio of change master to master heartbeat
+     */
+    private int changeMasterMaxRatio = 3;
+
 }
