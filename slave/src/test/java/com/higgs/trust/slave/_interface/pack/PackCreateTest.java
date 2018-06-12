@@ -27,26 +27,26 @@ public class PackCreateTest extends InterfaceCommonTest{
     }
 
     @Test(dataProvider = "defaultProvider", priority = 1) public void fail(Map<?, ?> param) {
-        log.info("[paramValidate]param:{}", param);
+        log.info("[fail]param:{}", param);
         executeBeforeSql(param);
 
-        Package pack = packageService.create(getTxList(param));
+        Package pack = packageService.create(getTxList(param), null);
         assertEquals(pack, param.get("assert"));
 
         executeAfterSql(param);
     }
 
     @Test(dataProvider = "defaultProvider", priority = 2) public void success(Map<?, ?> param) {
-        log.info("[testRegular]param:{}", param);
-        Package pack = packageService.create(getTxList(param));
+        log.info("[success]param:{}", param);
+        Package pack = packageService.create(getTxList(param), null);
         assertEquals(String.valueOf(pack.getHeight()), getAssertData(param));
     }
 
     @Test(dataProvider = "defaultProvider", priority = 2) public void successWithCondition(Map<?, ?> param) {
-        log.info("[testRegular]param:{}", param);
+        log.info("[successWithCondition]param:{}", param);
         executeBeforeSql(param);
 
-        Package pack = packageService.create(getTxList(param));
+        Package pack = packageService.create(getTxList(param), null);
 
         assertEquals(String.valueOf(pack.getHeight()), getAssertData(param));
 

@@ -87,38 +87,7 @@ import java.util.Date;
         return creationAction;
     }
 
-    @Override public void validate(ActionData actionData) {
-        log.trace("validate... start process contract creation");
-        Profiler.enter("ContractCreationHandler validate");
-        try {
-            ContractCreationAction creationAction = getAndCheckAction(actionData);
-            Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
-            String sender = actionData.getCurrentTransaction().getCoreTx().getSender();
-            String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
-            String address = generateAddress(blockHeight, sender, txId, creationAction);
-
-            Contract contract = snapshotAgent.get(address);
-            if (null != contract) {
-                Profiler.release();
-                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BLOCK_HEIGHT_UNEQUAL_ERROR);
-            }
-
-            contract = new Contract();
-            contract.setAddress(address);
-            contract.setBlockHeight(blockHeight);
-            contract.setTxId(txId);
-            contract.setActionIndex(actionData.getCurrentAction().getIndex());
-            contract.setLanguage(creationAction.getLanguage());
-            contract.setCode(creationAction.getCode());
-            contract.setCreateTime(new Date());
-            contract.setVersion("0.1");
-            snapshotAgent.put(address, contract);
-        } finally {
-            Profiler.release();
-        }
-    }
-
-    @Override public void persist(ActionData actionData) {
+    @Override public void process(ActionData actionData) {
         log.debug("persist... start process contract creation");
         Profiler.enter("ContractCreationHandler persist");
         try{

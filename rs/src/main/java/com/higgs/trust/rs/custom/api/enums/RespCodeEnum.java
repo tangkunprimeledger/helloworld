@@ -32,6 +32,12 @@ public enum RespCodeEnum {
     PUBKEY_OR_ADDRESS_CHECK_VALID("100", "009", "公钥与地址不匹配"),
     PARAM_ADDRESS_NOT_VALID("100", "022", "地址或公钥格式不合法"),
     IDENTITY_NOT_EXIST("100", "023", "存证信息不存在"),
+    RS_ID_NOT_MATCH_NODE_NAME("100", "024", "节点名称与注册RS不匹配"),
+    CA_IS_NOT_EXIST_OR_IS_NOT_VALID("100", "025", "未注册CA或者CA不可用"),
+    RS_NODE_ALREADY_EXIST("100", "026", "RS节点已经注册"),
+    POLICY_RS_IDS_MUST_HAVE_SENDER("100", "027", "policy发起方必须包含在policy的rsIds中"),
+    POLICY_ALREADY_EXIST("100", "028", "policy已经存在"),
+    RS_NODE_NOT_EXIST_OR_RS_NODE_ALREADY_CANCELED("100", "029", "RS节点不存在或状态已经注销"),
 
     BILL_HOLDER_NOT_EXISTED("200", "001", "票据持有人不存在"),
     BILL_TRANSFER_INVALID_PARAM("200", "002", "转账票据不存在或者可以转的票据超过一个"),

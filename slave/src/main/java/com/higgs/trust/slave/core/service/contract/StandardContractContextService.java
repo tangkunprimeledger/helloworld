@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.contract;
 import com.higgs.trust.contract.ContractApiService;
 import com.higgs.trust.contract.ExecuteContext;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.service.action.account.AccountUnFreezeHandler;
 import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
 import com.higgs.trust.slave.model.bo.context.ActionData;
@@ -43,8 +42,7 @@ import java.math.BigDecimal;
         bo.setRemark(remark);
 
         ActionData actionData = getContextData(StandardExecuteContextData.class).getAction();
-        TxProcessTypeEnum processTypeEnum = getContext().isValidateStage() ? TxProcessTypeEnum.VALIDATE : TxProcessTypeEnum.PERSIST;
 
-        accountUnFreezeHandler.unFreeze(bo,actionData.getCurrentBlock().getBlockHeader().getHeight(),processTypeEnum);
+        accountUnFreezeHandler.unFreeze(bo,actionData.getCurrentBlock().getBlockHeader().getHeight());
     }
 }

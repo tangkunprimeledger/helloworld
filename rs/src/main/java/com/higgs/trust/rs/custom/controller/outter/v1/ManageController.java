@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.custom.controller.outter.v1;
 
 import com.higgs.trust.rs.custom.api.manage.RsManageService;
+import com.higgs.trust.rs.custom.api.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterRsVO;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
@@ -41,6 +42,23 @@ public class ManageController {
         }
 
         return rsManageService.registerRs(registerRsVO);
+    }
+
+    /**
+     *
+     * @param cancelRsVO
+     * @return
+     */
+    @RequestMapping("/rs/cancel")
+    public RespData cancelRs(@RequestBody @Valid CancelRsVO cancelRsVO, BindingResult result) {
+        log.info("[ManageController.cancelRs] cancel rs request receive. {}", cancelRsVO);
+
+        if (result.hasErrors()) {
+            log.error("[ManageController.cancelRs] cancel rs request param is invalid, errMsg={}", result.getAllErrors());
+            return new RespData(RespCodeEnum.PARAM_NOT_VALID);
+        }
+
+        return rsManageService.cancelRs(cancelRsVO);
     }
 
     @RequestMapping("/policy/register")

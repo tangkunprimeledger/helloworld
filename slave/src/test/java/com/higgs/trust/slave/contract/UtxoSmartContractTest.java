@@ -3,7 +3,6 @@ package com.higgs.trust.slave.contract;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.UTXOSmartContract;
 import com.higgs.trust.slave.core.service.contract.UTXOSmartContractImpl;
@@ -49,7 +48,7 @@ public class UtxoSmartContractTest extends BaseTest {
 
         action.setIndex(1);
         ExecuteContextData data = new UTXOExecuteContextData().setAction(action);
-        boolean isOk = smartContract.execute(code, data, TxProcessTypeEnum.PERSIST);
+        boolean isOk = smartContract.execute(code, data);
         Assert.assertTrue(isOk, "verify result");
     }
 
@@ -69,7 +68,7 @@ public class UtxoSmartContractTest extends BaseTest {
 
         action.setIndex(1);
         ExecuteContextData data = new UTXOExecuteContextData().setAction(action);
-        boolean isOk = smartContract.execute(code, data, TxProcessTypeEnum.PERSIST);
+        boolean isOk = smartContract.execute(code, data);
         Assert.assertTrue(isOk, "verify result");
     }
 }

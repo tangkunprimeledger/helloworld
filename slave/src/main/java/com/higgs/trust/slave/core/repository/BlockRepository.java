@@ -75,6 +75,7 @@ import java.util.List;
         rootHash.setPolicyRootHash(blockPO.getPolicyRootHash());
         rootHash.setContractRootHash(blockPO.getContractRootHash());
         rootHash.setAccountRootHash(blockPO.getAccountRootHash());
+        rootHash.setCaRootHash(blockPO.getCaRootHash());
         blockHeader.setStateRootHash(rootHash);
         block.setBlockHeader(blockHeader);
         if (height == 1) {
@@ -113,6 +114,7 @@ import java.util.List;
             rootHash.setPolicyRootHash(blockPO.getPolicyRootHash());
             rootHash.setContractRootHash(blockPO.getContractRootHash());
             rootHash.setAccountRootHash(blockPO.getAccountRootHash());
+            rootHash.setCaRootHash(blockPO.getCaRootHash());
             blockHeader.setStateRootHash(rootHash);
             block.setBlockHeader(blockHeader);
             if (blockPO.getHeight() == 1) {
@@ -153,6 +155,7 @@ import java.util.List;
             rootHash.setPolicyRootHash(blockPO.getPolicyRootHash());
             rootHash.setContractRootHash(blockPO.getContractRootHash());
             rootHash.setAccountRootHash(blockPO.getAccountRootHash());
+            rootHash.setCaRootHash(blockPO.getCaRootHash());
             blockHeader.setStateRootHash(rootHash);
             headers.add(blockHeader);
         });
@@ -241,6 +244,7 @@ import java.util.List;
         blockPO.setContractRootHash(rootHash.getContractRootHash());
         blockPO.setPolicyRootHash(rootHash.getPolicyRootHash());
         blockPO.setRsRootHash(rootHash.getRsRootHash());
+        blockPO.setCaRootHash(rootHash.getCaRootHash());
         List<SignedTransaction> txs = block.getSignedTxList();
 
         //add transaction number to block table

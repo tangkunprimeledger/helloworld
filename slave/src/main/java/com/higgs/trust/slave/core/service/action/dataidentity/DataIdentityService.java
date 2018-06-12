@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.dataidentity;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
@@ -32,35 +31,19 @@ import java.util.Set;
 public class DataIdentityService {
     @Autowired
     private DataIdentitySnapshotHandler dataIdentitySnapshotHandler;
-    @Autowired
-    private DataIdentityDBHandler dataIdentityDBHandler;
-
 
     /**
      * deal action with different TxProcessTypeEnum (data from db of snapshot)
      *
      * @param actionData
-     * @param processTypeEnum
      */
-    public void process(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
+    public void process(ActionData actionData) {
         // convert action and validate it
         DataIdentityAction dataIdentityAction = (DataIdentityAction) actionData.getCurrentAction();
         log.info("[ DataIdentityAction.validate] is start,params:{}", dataIdentityAction);
-        try {
-            BeanValidator.validate(dataIdentityAction).failThrow();
-        } catch (IllegalArgumentException e) {
-            log.error("Convert and validate dataIdentityAction is error .msg={}", e.getMessage());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, e);
-        }
 
         //data operate type
-        DataIdentityHandler dataIdentityHandler = null;
-        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
-            dataIdentityHandler = dataIdentitySnapshotHandler;
-        }
-        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
-            dataIdentityHandler = dataIdentityDBHandler;
-        }
+        DataIdentityHandler dataIdentityHandler = dataIdentitySnapshotHandler;
 
         //validate idempotent
         DataIdentity dataIdentity = dataIdentityHandler.getDataIdentity(dataIdentityAction.getIdentity());

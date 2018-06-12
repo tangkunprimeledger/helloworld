@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.context.PackContext;
@@ -19,7 +20,7 @@ public interface PackageService {
      * @param signedTransactions
      * @return
      */
-    Package create(List<SignedTransaction> signedTransactions);
+    Package create(List<SignedTransaction> signedTransactions, Long packHeight);
 
     /**
      * package status change function
@@ -46,46 +47,11 @@ public interface PackageService {
     PackContext createPackContext(Package pack);
 
     /**
-     * execute package validating
-     *
-     * @param packContext
-     */
-    void validating(PackContext packContext);
-
-    /**
-     * get validate result and submit consensus layer
-     *
-     * @param pack
-     */
-    void validateConsensus(Package pack);
-
-    /**
-     * receive validate final result from consensus layer
-     *
-     * @param pack
-     */
-    void validated(Package pack);
-
-    /**
      * execute package persisting
      *
      * @param packContext
      */
-    void persisting(PackContext packContext);
-
-    /**
-     * get persist result and submit consensus layer
-     *
-     * @param pack
-     */
-    void persistConsensus(Package pack);
-
-    /**
-     * receive persist final result from consensus layer
-     *
-     * @param pack
-     */
-    void persisted(Package pack);
+    void process(PackContext packContext);
 
     /**
      * remove the package if it is done
@@ -94,4 +60,26 @@ public interface PackageService {
      */
     void remove(Package pack);
 
+    /**
+     * get package signature
+     *
+     * @param packageVO
+     * @return
+     */
+    String getSign(PackageVO packageVO);
+
+    /**
+     * submit package to consensus
+     * @param pack
+     */
+    void submitConsensus(Package pack);
+
+<<<<<<< HEAD
+=======
+    /**
+     * persisted
+     * @param header
+     */
+    void persisted(BlockHeader header);
+>>>>>>> dev_0610_ca
 }

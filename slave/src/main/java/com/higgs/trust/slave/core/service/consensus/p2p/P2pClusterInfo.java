@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.core.managment.NodeState;
-import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
+import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ import java.util.Map;
 
     @Autowired NodeState nodeState;
 
-    @Autowired RsPubKeyRepository rsPubKeyRepository;
+    @Autowired RsNodeRepository rsNodeRepository;
 
     @Autowired P2pClusterInfo(PropertiesConfig propertiesConfig) {
         p2pCluster = JSON.parseObject(propertiesConfig.getP2pClusterJson(), new TypeReference<Map<String, String>>() {

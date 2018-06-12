@@ -1,19 +1,20 @@
 package com.higgs.trust.slave.core.service.action.manage;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
+import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.datahandler.manage.RsDBHandler;
-import com.higgs.trust.slave.core.service.datahandler.manage.RsHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.RsSnapshotHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
+import com.higgs.trust.slave.model.bo.manage.RsNode;
+import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,20 +25,12 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j @Component public class RegisterRsHandler implements ActionHandler {
 
-    @Autowired private RsDBHandler rsDBHandler;
-
     @Autowired private RsSnapshotHandler rsSnapshotHandler;
 
-    @Override public void validate(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.VALIDATE);
-    }
+    @Autowired private CaRepository caRepository;
 
-    @Override public void persist(ActionData actionData) {
-        process(actionData, TxProcessTypeEnum.PERSIST);
-    }
-
-    private void process(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
-        log.info("[RegisterRSHandler.process] start, actionData: {}, processType: {} ", actionData, processTypeEnum);
+    @Override public void process(ActionData actionData) {
+        log.info("[RegisterRSHandler.process] start, actionData: {} ", actionData);
 
         RegisterRS bo = (RegisterRS)actionData.getCurrentAction();
         if (null == bo) {
@@ -51,28 +44,40 @@ import org.springframework.stereotype.Component;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        //check policy id
+        //check rsId and sender
         CoreTransaction coreTx = actionData.getCurrentTransaction().getCoreTx();
+        String rsId = bo.getRsId();
+        if (!StringUtils.equals(rsId, coreTx.getSender())) {
+            log.error("[RegisterRSHandler.process] register rsId:{} is not equals transaction sender: {}", rsId,
+                coreTx.getSender());
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        //check policy id
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(coreTx.getPolicyId());
-        if (!InitPolicyEnum.REGISTER.equals(initPolicyEnum)) {
+        if (!InitPolicyEnum.REGISTER_RS.equals(initPolicyEnum)) {
             log.error("[RegisterRSHandler.process] policy id is not for register rs");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        RsHandler rsHandler = null;
-        if (TxProcessTypeEnum.VALIDATE == processTypeEnum) {
-            rsHandler = rsSnapshotHandler;
-        } else if (TxProcessTypeEnum.PERSIST == processTypeEnum) {
-            rsHandler = rsDBHandler;
+        Ca ca = caRepository.getCa(rsId);
+        if (null == ca || !ca.isValid()) {
+            log.error("[RegisterRSHandler.process] ca not register or is not valid which rsId={}", rsId);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        RsPubKey rsPubKey = rsHandler.getRsPubKey(bo.getRsId());
-        if (rsPubKey != null) {
-            log.warn("rsPubKey already exists. {}", rsPubKey);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_RS_EXISTS_ERROR);
+        RsNode rsNode = rsSnapshotHandler.getRsNode(rsId);
+        if (rsNode != null) {
+            if (StringUtils.equals(rsNode.getStatus(), RsNodeStatusEnum.COMMON.getCode())) {
+                log.warn("rsNode already exists. rsId={}", rsId);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_RS_EXISTS_ERROR);
+            } else {
+                rsSnapshotHandler.updateRsNode(rsId, RsNodeStatusEnum.COMMON);
+            }
+        } else {
+            rsSnapshotHandler.registerRsNode(bo);
         }
 
-        rsHandler.registerRsPubKey(bo);
         log.info("[RegisterRSHandler.process] finish");
     }
 

@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.pack;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.model.bo.Package;
@@ -28,7 +29,8 @@ public class PackageServiceImplTest extends BaseTest{
 
     @Test public void receive() {
         Package pack = packageRepository.load(2L);
-        packageService.receive(pack);
+        System.out.println(JSON.toJSONString(pack));
+//        packageService.receive(pack);
     }
 
     @Test public void validating() {

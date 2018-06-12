@@ -53,6 +53,10 @@ public class RequestHelper {
         return respData;
     }
 
+    public void updateRequest(String requestId, RequestEnum fromStatus, RequestEnum toStatus, String respCode, String respMsg) {
+        requestDao.updateStatusByRequestId(requestId, fromStatus.getCode(), toStatus.getCode(), respCode, respMsg);
+    }
+
     private RequestPO buildRequestPO(String requestId, Object obj) {
         RequestPO requestPO = new RequestPO();
         requestPO.setRequestId(requestId);

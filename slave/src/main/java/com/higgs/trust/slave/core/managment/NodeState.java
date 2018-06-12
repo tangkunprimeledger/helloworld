@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
     private List<StateChangeListener> stateListeners = new ArrayList<>();
 
-    @Getter private NodeStateEnum state = NodeStateEnum.Starting;
+    @Getter private NodeStateEnum state = NodeStateEnum.Running;
 
     /**
      * has the master heartbeat
@@ -68,11 +68,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
      */
     @Getter private String prefix;
 
+<<<<<<< HEAD
     @Getter private long currentTerm = 0;
 
     @Getter private List<TermInfo> terms = new ArrayList<>();
 
     public static final String MASTER_NA = "N/A";
+=======
+    @Getter private long term;
+>>>>>>> dev_0610_ca
 
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();

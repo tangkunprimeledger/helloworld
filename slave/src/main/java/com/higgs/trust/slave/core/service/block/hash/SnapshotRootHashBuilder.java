@@ -47,6 +47,7 @@ import java.util.List;
         String contractRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT));
         String policyRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.POLICY));
         String rsRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.RS));
+        String caRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CA));
         StateRootHash stateRootHash = new StateRootHash();
         stateRootHash.setTxRootHash(txRootHash);
         stateRootHash.setTxReceiptRootHash(txReceiptHash);
@@ -54,6 +55,7 @@ import java.util.List;
         stateRootHash.setContractRootHash(contractRootHash);
         stateRootHash.setPolicyRootHash(policyRootHash);
         stateRootHash.setRsRootHash(rsRootHash);
+        stateRootHash.setCaRootHash(caRootHash);
         return stateRootHash;
     }
 }

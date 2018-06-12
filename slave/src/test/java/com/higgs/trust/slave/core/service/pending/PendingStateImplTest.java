@@ -51,7 +51,7 @@ public class PendingStateImplTest extends BaseTest {
         registerRS1.setDesc("rs-test4-desc");
         registerRS1.setType(ActionTypeEnum.REGISTER_RS);
         registerRS1.setIndex(1);
-        registerRS1.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxk7MQV0kyb4IIWez5l4PrxAPHujW+gQR3J3vbfnAb/Dy9BSoM0y27zn9oTFtn8p1KBppc2xQtH4ViQ5XpoFFA8sCmuZM6LXFn9Gd1LHUbQUj/AbLWyru3gD+PHwQ+Cd0y/PO4gBD4qD6WKKIHf7Nxl+dBnTNE1jNGflMVvdY1FQIDAQAB");
+     //   registerRS1.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxk7MQV0kyb4IIWez5l4PrxAPHujW+gQR3J3vbfnAb/Dy9BSoM0y27zn9oTFtn8p1KBppc2xQtH4ViQ5XpoFFA8sCmuZM6LXFn9Gd1LHUbQUj/AbLWyru3gD+PHwQ+Cd0y/PO4gBD4qD6WKKIHf7Nxl+dBnTNE1jNGflMVvdY1FQIDAQAB");
 
         CoreTransaction coreTx1 = new CoreTransaction();
         List<Action> registerRsList1 = new ArrayList<>();
@@ -71,7 +71,7 @@ public class PendingStateImplTest extends BaseTest {
         signList1.add(sign1);
         signList1.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList1);
+//        signedTx1.setSignatureList(signList1);
 
 
 
@@ -82,7 +82,7 @@ public class PendingStateImplTest extends BaseTest {
         registerRS2.setDesc("rs-test5-desc");
         registerRS2.setIndex(1);
         registerRS2.setType(ActionTypeEnum.REGISTER_RS);
-        registerRS2.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxk7MQV0kyb4IIWez5l4PrxAPHujW+gQR3J3vbfnAb/Dy9BSoM0y27zn9oTFtn8p1KBppc2xQtH4ViQ5XpoFFA8sCmuZM6LXFn9Gd1LHUbQUj/AbLWyru3gD+PHwQ+Cd0y/PO4gBD4qD6WKKIHf7Nxl+dBnTNE1jNGflMVvdY1FQIDAQAB");
+  //      registerRS2.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxk7MQV0kyb4IIWez5l4PrxAPHujW+gQR3J3vbfnAb/Dy9BSoM0y27zn9oTFtn8p1KBppc2xQtH4ViQ5XpoFFA8sCmuZM6LXFn9Gd1LHUbQUj/AbLWyru3gD+PHwQ+Cd0y/PO4gBD4qD6WKKIHf7Nxl+dBnTNE1jNGflMVvdY1FQIDAQAB");
 
         CoreTransaction coreTx2 = new CoreTransaction();
         List<Action> registerRsList2 = new ArrayList<>();
@@ -102,7 +102,7 @@ public class PendingStateImplTest extends BaseTest {
         signList2.add(sign3);
         signList2.add(sign4);
         signedTx2.setCoreTx(coreTx2);
-        signedTx2.setSignatureList(signList2);
+//        signedTx2.setSignatureList(signList2);
 
         signedTxList.add(signedTx1);
         signedTxList.add(signedTx2);
@@ -111,10 +111,6 @@ public class PendingStateImplTest extends BaseTest {
     @Test public void addPendingTransactions() {
         List<TransactionVO> voList = pendingState.addPendingTransactions(signedTxList);
         Assert.assertEquals(1, voList.size());
-    }
-
-    @Test public void addPendingTransactions1() {
-        pendingState.addPendingTransactions(signedTxList, PendingTxStatusEnum.PACKAGED, 4L);
     }
 
     @Test public void getPendingTransactions() {

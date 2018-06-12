@@ -21,7 +21,8 @@ public enum SlaveErrorEnum {
     SLAVE_IDEMPOTENT("101", "request idempotent", false),
     SLAVE_TX_VERIFY_SIGNATURE_FAILED("102", "transaction verify signature failed", false),
     SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED("103", "package verify master node signature failed", false),
-    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("103", "package sign signature failed", false),
+    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("104", "package sign signature failed", false),
+    SLAVE_TX_VERIFY_SIGNATURE_PUB_KEY_NOT_EXIST("105", "transaction verify signature cannot acquire public key", false),
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         查询相关[300-399]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
@@ -71,6 +72,12 @@ public enum SlaveErrorEnum {
     SLAVE_ACTION_NOT_EXISTS_EXCEPTION("517", "action not exists exception", false),
     SLAVE_SNAPSHOT_CACHE_SIZE_NOT_ENOUGH_EXCEPTION("518", "snapshot cache size not enough exception", false),
     SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION("519", "snapshot get no lock exception", false),
+    SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION("520", "update data not exist exception", false),
+    SLAVE_SNAPSHOT_DATA_EXIST_EXCEPTION("521", "insert data is existed exception", false),
+    SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION("522", "insert data type error exception", false),
+    SLAVE_DATA_NOT_INSERT_EXCEPTION("523", "data not insert  exception", false),
+    SLAVE_SNAPSHOT_FLUSH_DATA_EXCEPTION("524", "snapshot flush data exception", false),
+    SLAVE_RS_NOT_EXISTS_ERROR("525", "RS is not exist", false),
 
 
     SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION("600", "slave merkle param not valid exception", false),
@@ -122,6 +129,11 @@ public enum SlaveErrorEnum {
     SLAVE_PACKAGE_REPLICATE_FAILED("834", "package replicated to consensus failed", false),
     SLAVE_PACKAGE_CALLBACK_ERROR("835", "package callback rs has error", false),
     SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR("836", "rs callback not register error", false),
+    SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR("837", "slave batch insert rows different error", false),
+
+
+    SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),
+    SLAVE_CA_VALIDATE_ERROR("901", "slave ca validate error", false),
     ;
     //@formatter:on
 

@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.pending;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.slave.api.vo.TransactionVO;
+import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -24,6 +27,10 @@ import java.util.List;
     @Autowired private PendingTxRepository pendingTxRepository;
 
     @Autowired private TransactionRepository transactionRepository;
+
+    @Autowired private Deque<SignedTransaction> pendingTxQueue;
+
+    @Autowired private ConcurrentLinkedHashMap existTxMap;
 
     /**
      * add pending transaction to db
@@ -54,17 +61,8 @@ import java.util.List;
                 return;
             }
 
-            // pending transaction idempotent check
-            if (pendingTxRepository.isExist(txId)) {
-                log.warn("pending transaction idempotent, txId={}", txId);
-                transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
-                transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
-                transactionVO.setRetry(true);
-                transactionVOList.add(transactionVO);
-                return;
-            }
-
             // chained transaction idempotent check, cannot retry
+            //TODO rocks db isExist method
             if (transactionRepository.isExist(txId)) {
                 log.warn("transaction idempotent, txId={}", txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
@@ -74,30 +72,57 @@ import java.util.List;
                 return;
             }
 
-            // insert db
-            pendingTxRepository.saveWithStatus(signedTransaction, PendingTxStatusEnum.INIT, null);
+            //limit queue size
+            if (pendingTxQueue.size() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
+                log.warn("pending transaction queue size is too large , txId={}", txId);
+                transactionVO.setErrCode(TxSubmitResultEnum.TX_QUEUE_SIZE_TOO_LARGE.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.TX_QUEUE_SIZE_TOO_LARGE.getDesc());
+                transactionVO.setRetry(true);
+                transactionVOList.add(transactionVO);
+                return;
+            }
+
+            //check exist tx map and pending_tx_index
+            //TODO rocks db isExist method
+            if (existTxMap.containsKey(txId) || pendingTxRepository.isExist(txId)) {
+                log.warn("pending transaction idempotent, txId={}", txId);
+                transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
+                transactionVO.setRetry(true);
+                transactionVOList.add(transactionVO);
+                return;
+            }
+
+            //insert memory
+            pendingTxQueue.offerLast(signedTransaction);
+            // key and value all are txId
+            existTxMap.put(signedTransaction.getCoreTx().getTxId(), signedTransaction.getCoreTx().getTxId());
         });
 
         // if all transaction received success, RespData will set data 'null'
-        if (transactionVOList.size() < 1) {
+        if (CollectionUtils.isEmpty(transactionVOList)) {
             return null;
         }
         return transactionVOList;
     }
 
-    @Override
-    public void addPendingTransactions(List<SignedTransaction> transactions, PendingTxStatusEnum status, Long height) {
-        if (CollectionUtils.isEmpty(transactions)) {
-            log.error("no transaction to insert");
-            return;
-        }
-        transactions.forEach(transaction->{
-            pendingTxRepository.saveWithStatus(transaction, status, height);
-        });
-    }
-
     @Override public List<SignedTransaction> getPendingTransactions(int count) {
-        return pendingTxRepository.getTransactionsByStatus(PendingTxStatusEnum.INIT.getCode(), count);
+        if (null == pendingTxQueue.peekFirst()) {
+            return null;
+        }
+
+        int num = 0;
+        List<SignedTransaction> list = new ArrayList<>();
+        while (num < count) {
+            SignedTransaction signedTx = pendingTxQueue.pollFirst();
+            if (null != signedTx) {
+                list.add(signedTx);
+                num++;
+            } else {
+                break;
+            }
+        }
+        return list;
     }
 
     @Override public int packagePendingTransactions(List<SignedTransaction> signedTransactions, Long height) {
@@ -106,5 +131,15 @@ import java.util.List;
 
     @Override public List<SignedTransaction> getPackagedTransactions(Long height) {
         return pendingTxRepository.getTransactionsByHeight(height);
+    }
+
+    @Override public void addPendingTxsToQueueFirst(List<SignedTransaction> signedTransactions) {
+        signedTransactions.forEach(signedTx->{
+            try {
+                pendingTxQueue.offerFirst(signedTx);
+            } catch (Exception e) {
+                log.error("add transaction to pendingTxQueue exception. ", e);
+            }
+        });
     }
 }

@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.service.action.utxo;
 
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.contract.ExecuteContextData;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOStatusEnum;
@@ -17,7 +16,6 @@ import com.higgs.trust.slave.core.service.contract.UTXOSmartContract;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityHandler;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentitySnapshotHandler;
-import com.higgs.trust.slave.core.service.datahandler.manage.PolicyDBHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.PolicyHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.PolicySnapshotHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXODBHandler;
@@ -57,15 +55,9 @@ public class UTXOActionService {
     @Autowired
     private UTXOSnapshotHandler utxoSnapshotHandler;
     @Autowired
-    private UTXODBHandler utxoDBHandler;
-    @Autowired
     private DataIdentitySnapshotHandler dataIdentitySnapshotHandler;
     @Autowired
-    private DataIdentityDBHandler dataIdentityDBHandler;
-    @Autowired
     private PolicySnapshotHandler policySnapshotHandler;
-    @Autowired
-    private PolicyDBHandler policyDBHandler;
     @Autowired
     private PolicyRepository policyRepository;
     @Autowired
@@ -76,29 +68,22 @@ public class UTXOActionService {
      * deal action with different TxProcessTypeEnum (data from db of snapshot)
      *
      * @param actionData
-     * @param processTypeEnum
      */
-    public void process(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
+    public void process(ActionData actionData) {
         // convert action and validate it
         UTXOAction utxoAction = (UTXOAction) actionData.getCurrentAction();
         String policyId = actionData.getCurrentTransaction().getCoreTx().getPolicyId();
         log.info("[Start to deal with utxoAction,params:{}", utxoAction);
-        try {
-            BeanValidator.validate(utxoAction).failThrow();
-        } catch (IllegalArgumentException e) {
-            log.error("Convert and validate utxoAction is error .msg={}", e.getMessage());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
 
         // validate UTXOActionType
-        boolean isLegalUTXOActionType = validateUTXOActionType(utxoAction, policyId, processTypeEnum);
+        boolean isLegalUTXOActionType = validateUTXOActionType(utxoAction, policyId);
         if (!isLegalUTXOActionType) {
             log.error("UTXOActionType is not legal!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
         //validate utxoAction contract address is the same with all the txIn's contract address
-        boolean isLegalContractAddress = isLegalContractAddress(utxoAction.getContractAddress(), utxoAction.getInputList(), processTypeEnum);
+        boolean isLegalContractAddress = isLegalContractAddress(utxoAction.getContractAddress(), utxoAction.getInputList());
         if (!isLegalContractAddress) {
             log.error("utxoAction contract address is not legal!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
@@ -116,7 +101,7 @@ public class UTXOActionService {
 
         // validate data attribution
         Profiler.enter("[UTXO.validateIdentity]");
-        boolean validateIdentitySuccess = validateIdentity(utxoAction, policyId, processTypeEnum);
+        boolean validateIdentitySuccess = validateIdentity(utxoAction, policyId);
         if (!validateIdentitySuccess) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
@@ -124,7 +109,7 @@ public class UTXOActionService {
 
         // double spend check
         Profiler.enter("[UTXO.doubleSpendCheck]");
-        boolean isDoubleSpend = doubleSpendCheck(utxoAction.getInputList(), processTypeEnum);
+        boolean isDoubleSpend = doubleSpendCheck(utxoAction.getInputList());
         if (isDoubleSpend) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_IS_DOUBLE_SPEND_ERROR);
         }
@@ -134,7 +119,7 @@ public class UTXOActionService {
         ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
 
         Profiler.enter("[UTXO.doubleSpendCheck]");
-        boolean contractProcessSuccess = utxoSmartContract.execute(utxoAction.getContractAddress(), data, processTypeEnum);
+        boolean contractProcessSuccess = utxoSmartContract.execute(utxoAction.getContractAddress(), data);
         if (!contractProcessSuccess) {
             log.error("UTXO contract process fail!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_CONTRACT_PROCESS_FAIL_ERROR);
@@ -143,7 +128,7 @@ public class UTXOActionService {
 
         //persist data in memory or in DB
         Profiler.enter("[UTXO.persistData]");
-        persistData(actionData, processTypeEnum);
+        persistData(actionData);
         Profiler.release();
 
     }
@@ -156,7 +141,7 @@ public class UTXOActionService {
      * @param policyId
      * @return
      */
-    private boolean validateUTXOActionType(UTXOAction utxoAction, String policyId, TxProcessTypeEnum processTypeEnum) {
+    private boolean validateUTXOActionType(UTXOAction utxoAction, String policyId) {
         log.info("Start to validate UTXOActionType for UTXO action");
         // inputs and outputs can not be null or empty together
         if (CollectionUtils.isEmpty(utxoAction.getInputList()) && CollectionUtils.isEmpty(utxoAction.getOutputList())) {
@@ -206,19 +191,12 @@ public class UTXOActionService {
      * @param inputList
      * @return
      */
-    private boolean isLegalContractAddress(String contractAddress, List<TxIn> inputList, TxProcessTypeEnum processTypeEnum) {
+    private boolean isLegalContractAddress(String contractAddress, List<TxIn> inputList) {
         log.info("Start to validate Contract Address for UTXO action");
         //data operate type
-        UTXOHandler utxoHandler = null;
-        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
-            utxoHandler = utxoSnapshotHandler;
-        }
-        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
-            utxoHandler = utxoDBHandler;
-        }
-
+        UTXOHandler utxoHandler = utxoSnapshotHandler;
         //check whether the contract is existed in tht block chain
-        boolean isExist = utxoSmartContract.isExist(contractAddress, processTypeEnum);
+        boolean isExist = utxoSmartContract.isExist(contractAddress);
         if (!isExist) {
             return false;
         }
@@ -234,7 +212,6 @@ public class UTXOActionService {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -296,23 +273,13 @@ public class UTXOActionService {
      * @param policyId
      * @return
      */
-    private boolean validateIdentity(UTXOAction action, String policyId, TxProcessTypeEnum processTypeEnum) {
+    private boolean validateIdentity(UTXOAction action, String policyId) {
         log.info("Start to validate identity for UTXO action");
 
         //data operate type
-        UTXOHandler utxoHandler = null;
-        PolicyHandler policyHandler = null;
-        DataIdentityHandler dataIdentityHandler = null;
-        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
-            utxoHandler = utxoSnapshotHandler;
-            policyHandler = policySnapshotHandler;
-            dataIdentityHandler = dataIdentitySnapshotHandler;
-        }
-        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
-            utxoHandler = utxoDBHandler;
-            policyHandler = policyDBHandler;
-            dataIdentityHandler = dataIdentityDBHandler;
-        }
+        UTXOHandler utxoHandler = utxoSnapshotHandler;
+        PolicyHandler policyHandler = policySnapshotHandler;
+        DataIdentityHandler dataIdentityHandler = dataIdentitySnapshotHandler;
 
         // policy rsList
         Policy policy = policyHandler.getPolicy(policyId);
@@ -391,7 +358,7 @@ public class UTXOActionService {
      * @param inputList
      * @return
      */
-    private boolean doubleSpendCheck(List<TxIn> inputList, TxProcessTypeEnum processTypeEnum) {
+    private boolean doubleSpendCheck(List<TxIn> inputList) {
         log.info("Do double Spend Check for inputList:{}", inputList);
         if (CollectionUtils.isEmpty(inputList)) {
             return false;
@@ -408,13 +375,7 @@ public class UTXOActionService {
             }
 
             //data operate type
-            UTXOHandler utxoHandler = null;
-            if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
-                utxoHandler = utxoSnapshotHandler;
-            }
-            if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
-                utxoHandler = utxoDBHandler;
-            }
+            UTXOHandler utxoHandler = utxoSnapshotHandler;
 
             //check whether txIn is double spend in the all the txOut
             log.info("check whether txIn is double spend in the all the txOut");
@@ -458,15 +419,14 @@ public class UTXOActionService {
      * data operation
      *
      * @param actionData
-     * @param processTypeEnum
      */
-    private void persistData(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
+    private void persistData(ActionData actionData) {
         // batch insert UTXO
         log.info("Begin to batch insert UTXO!");
-        batchInsertUTXO(actionData, processTypeEnum);
+        batchInsertUTXO(actionData);
         // batch update STXO
         log.info("Begin to batch update STXO!");
-        batchUpdateSTXO(actionData, processTypeEnum);
+        batchUpdateSTXO(actionData);
     }
 
     /**
@@ -474,7 +434,7 @@ public class UTXOActionService {
      *
      * @param actionData
      */
-    private void batchInsertUTXO(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
+    private void batchInsertUTXO(ActionData actionData) {
         log.info("Start to batchInsert UTXO");
         UTXOAction utxoAction = (UTXOAction) actionData.getCurrentAction();
         List<TxOut> outputList = utxoAction.getOutputList();
@@ -490,13 +450,7 @@ public class UTXOActionService {
 
         //BachInsert data
         log.info("BachInsert data txOutPOList: {}", txOutPOList);
-        UTXOHandler utxoHandler = null;
-        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
-            utxoHandler = utxoSnapshotHandler;
-        }
-        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
-            utxoHandler = utxoDBHandler;
-        }
+        UTXOHandler utxoHandler = utxoSnapshotHandler;
 
         utxoHandler.batchInsert(txOutPOList);
 
@@ -508,7 +462,7 @@ public class UTXOActionService {
      *
      * @param actionData
      */
-    private void batchUpdateSTXO(ActionData actionData, TxProcessTypeEnum processTypeEnum) {
+    private void batchUpdateSTXO(ActionData actionData) {
         log.info("Start to bachUpdate STXO");
         UTXOAction utxoAction = (UTXOAction) actionData.getCurrentAction();
         List<TxIn> inputList = utxoAction.getInputList();
@@ -518,13 +472,7 @@ public class UTXOActionService {
         }
         List<TxOutPO> txOutList = new ArrayList<>();
         for (TxIn txIn : inputList) {
-            TxOutPO txOutPO = null;
-            if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
-                txOutPO = STXOBuilder(txIn, actionData);
-            }
-            if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
-                txOutPO = UTXOConvert.STXOBuilder(txIn, actionData);
-            }
+            TxOutPO txOutPO = STXOBuilder(txIn, actionData);
             if (null == txOutPO) {
                 log.error("STXO  not existed exception！");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_TX_OUT_NOT_EXISTS_ERROR);
@@ -533,13 +481,7 @@ public class UTXOActionService {
         }
 
         //data operation
-        UTXOHandler utxoHandler = null;
-        if (TxProcessTypeEnum.VALIDATE.equals(processTypeEnum)) {
-            utxoHandler = utxoSnapshotHandler;
-        }
-        if (TxProcessTypeEnum.PERSIST.equals(processTypeEnum)) {
-            utxoHandler = utxoDBHandler;
-        }
+        UTXOHandler utxoHandler = utxoSnapshotHandler;
 
         boolean isUpdate = utxoHandler.batchUpdate(txOutList);
         if (!isUpdate) {

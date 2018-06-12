@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.version;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.model.bo.context.TransactionData;
 import org.springframework.beans.factory.InitializingBean;
@@ -20,6 +19,6 @@ import org.springframework.stereotype.Component;
         txProcessorHolder.registVerisonProcessor(VersionEnum.V2, this);
     }
 
-    @Override public void process(TransactionData transactionData, TxProcessTypeEnum processTypeEnum) {
+    @Override public void process(TransactionData transactionData) {
     }
 }

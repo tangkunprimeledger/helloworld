@@ -14,29 +14,64 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 /**
  * @author duhongming
  * @date 2018-04-12
  */
-@Slf4j @Component public class ContractSnapshotAgent implements CacheLoader {
+@Slf4j
+@Component
+public class ContractSnapshotAgent implements CacheLoader {
 
-    @Autowired SnapshotService snapshot;
-    @Autowired private ContractRepository contractRepository;
+    @Autowired
+    SnapshotService snapshot;
+    @Autowired
+    private ContractRepository contractRepository;
 
     public Contract get(String key) {
         return (Contract) snapshot.get(SnapshotBizKeyEnum.CONTRACT, new ContractCacheKey(key));
     }
 
+    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
     public void put(String key, Contract contract) {
-        snapshot.put(SnapshotBizKeyEnum.CONTRACT, new ContractCacheKey(key), contract);
+        //  snapshot.put(SnapshotBizKeyEnum.CONTRACT, new ContractCacheKey(key), contract);
     }
 
-    @Override public Object query(Object object) {
+    @Override
+    public Object query(Object object) {
         ContractCacheKey key = (ContractCacheKey) object;
         return contractRepository.queryByAddress(key.getAddress());
     }
 
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    /**
+     * the method to batchInsert data into db
+     *
+     * @param insertMap
+     * @return
+     */
+    //TODO to implements your own bachInsert method for db
+    @Override
+    public boolean batchInsert(Map<Object, Object> insertMap) {
+        return false;
+    }
+
+    /**
+     * the method to batchUpdate data into db
+     *
+     * @param updateMap
+     * @return
+     */
+    //TODO to implements your own bachUpdate method for db
+    @Override
+    public boolean batchUpdate(Map<Object, Object> updateMap) {
+        return false;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ContractCacheKey extends BaseBO {
         private String address;
     }

@@ -1,0 +1,54 @@
+{
+  "测试ID": 0,
+  "body": {
+    "coreTx": {
+      "actionList": [
+        {
+          "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+          "index": 0,
+          "policyId": "test-policy-0002",
+          "policyName": "测试policy注册",
+          "rsIds": [
+            "TRUST-NODE97",
+            "TRUST-NODE100"
+          ],
+          "type": "REGISTER_POLICY"
+        }
+      ],
+      "bizModel": {
+        "@type": "com.alibaba.fastjson.JSONObject",
+        "data": {
+          "@type": "com.higgs.trust.slave.model.bo.manage.RegisterPolicy",
+          "index": 0,
+          "policyId": "test-policy-0002",
+          "policyName": "测试policy注册",
+          "rsIds": [
+            "TRUST-Test1",
+            "TRUST-Test2"
+          ],
+          "type": "REGISTER_POLICY"
+        }
+      },
+      "lockTime": 1525232969688,
+      "txId": "tx_id_REGISTER_POLICY",
+      "policyId": "000000",
+      "sender": "TRUST-TEST1",
+      "version": "1.0.0"
+    },
+    "signatureList": [
+      "EyiW1bo6ScPuR7tfvMBuaCHQl9fj6fsSPHK/jc34IhrLD3BuRCNOcgYuGvvzGrXEZysTtKmY9udICdYJbvCSvn4qcyzx+h3LVK5ZB8Rhnj0rdQhVXbe9/M3UoUtgvnnliaxnydYEQWThtNbpkDMnY/4NI7NoAoDnBkIO/CZ3E6I="
+    ]
+  },
+  "querySql": ["select * from policy"],
+  "beforeSql": [
+    "INSERT INTO `rs_pub_key` (`rs_id`, `pub_key`, `desc`, `create_time`)VALUES('TRUST-NODE31', 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLDDNiZKp0AAjfkVKkReFJFufF546YwPkT+JpwOLg/Sgo5SXk8b2NMhw6rLyGol6+xntEAdVQCqtMYrdgVh31VP15Ttbaivnmu2MaKHqIJbzpHXYiYmE2VDYyjOQIbbRvedD6c65nlHJfWBhGfw8CinnvvLamg1nSBBwZ6ZTuplQIDAQAB', 'TRUST-NODE97-desc', '2018-05-15 16:22:47.607')"
+  ],
+  "assert": 1,
+  "afterSql": [
+    "truncate table rs_pub_key",
+    "truncate table policy",
+    "truncate table merkle_node",
+    "truncate table merkle_tree"
+  ],
+  "comment": "交易execute接口测试-action校验失败"
+}

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.ca.CaDao">
+
+    <insert id="insertCa" parameterType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		INSERT INTO ca(version,
+								period,
+								valid,
+								pub_key,
+								`user`,
+								`usage`,
+								create_time,
+								update_time)
+					  VALUES (#{version},
+					  			#{period},
+					  			#{valid},
+					  			#{pubKey},
+					  			#{user},
+					  			#{usage},
+					  			now(3),
+					  			now(3))
+	</insert>
+
+
+    <insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		INSERT INTO
+		ca(version,
+			period,
+			valid,
+			pub_key,
+			`user`,
+			`usage`,
+			create_time,
+			update_time)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{version},
+				#{period},
+				#{valid},
+				#{pubKey},
+				#{user},
+				#{usage},
+				now(3),
+				now(3))
+		</foreach>
+	</insert>
+
+
+    <update id="updateCa" parameterType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		UPDATE ca SET
+		            period=#{period},
+		            pub_key=#{pubKey},
+		            update_time=now(3)
+		          WHERE `user`=#{user} and valid=1
+	</update>
+
+
+    <update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		UPDATE ca
+		<trim prefix="SET" suffixOverrides=",">
+			<!-- set period -->
+			<trim prefix="`period` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `user`=#{item.user} and valid=1
+					THEN #{item.period}
+				</foreach>
+				ELSE `period`
+			</trim>
+			<!-- set pub_key -->
+			<trim prefix="`pub_key` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `user`=#{item.user} and valid=1
+					THEN #{item.pubKey}
+				</foreach>
+				ELSE `pub_key`
+			</trim>
+			<!-- set update_time -->
+			<trim prefix="`update_time` = CASE" suffix="END">
+				<foreach collection="list" item="item">
+					WHEN `user`=#{item.user} and valid=1
+					THEN now(3)
+				</foreach>
+				ELSE `update_time`
+			</trim>
+		</trim>
+		<where>
+			<foreach collection="list" item="item" separator="or" open="(" close=")">
+				`user`=#{item.user} and valid=1
+			</foreach>
+		</where>
+	</update>
+
+
+    <select id="getCa" parameterType="java.lang.String"
+            resultType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		SELECT    version as version,
+								period as period,
+								valid as valid,
+								pub_key as pubKey,
+								`user` as `user`,
+								`usage` as `usage`,
+								create_time as createTime,
+								update_time as updateTime
+		      FROM ca WHERE `user`=#{user} and valid=1
+	</select>
+
+    <select id="getAllCa"  resultType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		SELECT    version as version,
+				period as period,
+				valid as valid,
+				pub_key as pubKey,
+				`user` as `user`,
+				`usage` as `usage`,
+				create_time as createTime,
+				update_time as updateTime
+		FROM ca WHERE valid=1
+	</select>
+
+
+</mapper>

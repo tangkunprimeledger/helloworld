@@ -142,7 +142,7 @@ public class TestDataMaker {
         List<String> signedList = new ArrayList<>();
         signedList.add(sign);
         signedList.add(sign1);
-        signedTransaction.setSignatureList(signedList);
+//        signedTransaction.setSignatureList(signedList);
         return  signedTransaction;
     }
 
@@ -160,6 +160,7 @@ public class TestDataMaker {
         rootHash.setPolicyRootHash("policy-hash");
         rootHash.setRsRootHash("rs-root-hash");
         rootHash.setContractRootHash("contract-hash");
+        rootHash.setCaRootHash("ca-hash");
         blockHeader.setStateRootHash(rootHash);
         return blockHeader;
     }

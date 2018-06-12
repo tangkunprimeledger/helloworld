@@ -59,7 +59,6 @@ public abstract class IntegrateBaseTest {
 
     private void initMock() {
         MockitoAnnotations.initMocks(this);
-        snapshotService.init();
     }
 
     protected void runLast() {

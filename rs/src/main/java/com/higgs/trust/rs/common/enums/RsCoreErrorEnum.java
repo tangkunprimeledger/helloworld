@@ -28,6 +28,22 @@ public enum RsCoreErrorEnum {
     RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET("205", "tx core tx callback not set", false),
     RS_CORE_TX_SYNC_EXECUTE_FAILED("206", "rs core tx sync execute failed", false),
     RS_CORE_TX_GET_OTHER_SIGN_ERROR("207", "tx core get other sign data error", false),
+    RS_CORE_VOTE_SET_RESULT_ERROR("208", "set vote result is error", false),
+    RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR("209", "the transaction vote rule is not exists error", false),
+    RS_CORE_VOTE_PATTERN_NOT_EXISTS_ERROR("210", "the transaction vote pattern is not exists error", false),
+    RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR("211", "required voters is empty error", false),
+    RS_CORE_VOTE_DECISION_FAIL("212", "vote decision is fail", false),
+    RS_CORE_VOTE_REQUEST_RECORD_NOT_EXIST("213", "voteRequestRecord is not exist", false),
+    RS_CORE_VOTE_ALREADY_HAS_RESULT_ERROR("214", "voteRequestRecord result already has error", false),
+    RS_CORE_VOTE_RECEIPTING_HAS_ERROR("215", "vote receipting has error", false),
+    RS_CORE_TX_NOT_EXIST_ERROR("216", "core_tx not exist error", false),
+
+
+    RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
+    RS_CORE_WRITE_FILE_ERROR("302", "rs core write file error", false),
+    RS_CORE_CA_NOT_EXIST_ERROR("303", "rs core ca not exist error", false),
+    RS_CORE_CA_ALREADY_EXIST_ERROR("304", "rs core ca already exist error", false),
+    RS_CORE_INVALID_NODE_NAME_EXIST_ERROR("305", "rs core invalid node name error", false),
     ;
     //@formatter:on
 

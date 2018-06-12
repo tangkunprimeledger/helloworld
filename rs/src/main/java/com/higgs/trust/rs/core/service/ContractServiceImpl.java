@@ -1,7 +1,6 @@
 package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.utils.BeanConvertor;
-import com.higgs.trust.rs.common.enums.BizTypeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.ContractService;
@@ -88,7 +87,7 @@ import java.util.List;
     public RespData<?> deploy(String txId, String code) {
         CoreTransaction coreTx = buildCoreTx(txId, code);
         try {
-            coreTransactionService.submitTx(BizTypeEnum.CREATING_CONTRACT, coreTx);
+            coreTransactionService.submitTx(coreTx);
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RequestPO requestPO = requestDao.queryByRequestId(txId);
@@ -113,7 +112,7 @@ import java.util.List;
         ContractInvokeAction action = buildInvokeAction(address, args);
         CoreTransaction coreTx = buildCoreTx(txId, action);
         try {
-            coreTransactionService.submitTx(BizTypeEnum.INVOKE_CONTRACT, coreTx);
+            coreTransactionService.submitTx(coreTx);
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RequestPO requestPO = requestDao.queryByRequestId(txId);

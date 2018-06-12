@@ -135,14 +135,12 @@ import static org.testng.Assert.*;
         when(blockSyncService.getBlocks(height, 1)).thenReturn(blocks);
         doReturn(true).when(blockSyncService).validating(currentHash, block);
 
-        when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
+        when(blockService.getHeader(height)).thenReturn(header);
         PackContext context = mock(PackContext.class);
         when(packageService.createPackContext(any())).thenReturn(context);
         when(context.getCurrentBlock()).thenReturn(block);
 
         when(blockService.compareBlockHeader(header, header)).thenReturn(true);
-
-        when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
         failoverSchedule.failover();
         verify(properties, times(times)).getFailoverStep();
     }
@@ -167,12 +165,12 @@ import static org.testng.Assert.*;
         when(blockSyncService.getBlocks(height, 1)).thenReturn(blocks);
         doReturn(true).when(blockSyncService).validating(currentHash, block);
 
-        when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
+        when(blockService.getHeader(height)).thenReturn(header);
         PackContext context = mock(PackContext.class);
         when(packageService.createPackContext(any())).thenReturn(context);
         when(context.getCurrentBlock()).thenReturn(block);
 
-        when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
+        when(blockService.getHeader(height)).thenReturn(header);
         when(blockService.compareBlockHeader(header, header)).thenReturn(true, false);
         failoverSchedule.failover();
         verify(nodeState, times(1)).changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
@@ -253,7 +251,7 @@ import static org.testng.Assert.*;
 
 
         //no validate header
-        when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(null);
+        when(blockService.getHeader(height)).thenReturn(null);
         try {
             failoverSchedule.failover(height);
         } catch (FailoverExecption e) {
@@ -261,7 +259,7 @@ import static org.testng.Assert.*;
         }
 
         //header compare: validating failed, has validate header
-        when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
+        when(blockService.getHeader(height)).thenReturn(header);
         PackContext context = mock(PackContext.class);
         when(packageService.createPackContext(any())).thenReturn(context);
         when(context.getCurrentBlock()).thenReturn(block);
@@ -275,7 +273,7 @@ import static org.testng.Assert.*;
 
         //header compare: validating passed, no persist header
         when(blockService.compareBlockHeader(header, header)).thenReturn(true);
-        when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(null);
+        when(blockService.getHeader(height)).thenReturn(null);
         try {
             failoverSchedule.failover(height);
         } catch (FailoverExecption e) {
@@ -283,7 +281,7 @@ import static org.testng.Assert.*;
         }
 
         //header compare: validating passed，persisting failed
-        when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
+        when(blockService.getHeader(height)).thenReturn(header);
         when(blockService.compareBlockHeader(header, header)).thenReturn(true, false);
         try {
             failoverSchedule.failover(height);

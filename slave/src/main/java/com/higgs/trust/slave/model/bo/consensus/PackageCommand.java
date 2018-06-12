@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.model.bo.consensus;
 
+<<<<<<< HEAD
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.google.common.base.Charsets;
@@ -13,11 +14,20 @@ import lombok.ToString;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.StringJoiner;
+=======
+import com.alibaba.fastjson.annotation.JSONField;
+import com.higgs.trust.consensus.bft.core.template.AbstractConsensusCommand;
+import com.higgs.trust.slave.api.vo.PackageVO;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
+>>>>>>> dev_0610_ca
 
 /**
  * @Description:
  * @author: pengdi
  **/
+<<<<<<< HEAD
 @ToString(callSuper = true, exclude = {"sign"}) @Getter @Setter public class PackageCommand
     extends AbstractConsensusCommand<PackageVO> implements SignatureCommand {
 
@@ -29,14 +39,30 @@ import java.util.StringJoiner;
     /**
      * master name
      */
+=======
+@Getter
+@Setter
+public class PackageCommand extends AbstractConsensusCommand<PackageVO> {
+
+    private long term;
+
+>>>>>>> dev_0610_ca
     private String masterName;
 
     /**
      * signature
      */
+<<<<<<< HEAD
     @NotEmpty @JSONField(label = "sign") private String sign;
 
     public PackageCommand(Long term, String masterName, PackageVO value) {
+=======
+    @NotEmpty
+    @JSONField(label = "sign")
+    private String sign;
+
+    public PackageCommand(PackageVO value) {
+>>>>>>> dev_0610_ca
         super(value);
         this.term = term;
         this.masterName = masterName;

@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.block;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
@@ -15,7 +14,6 @@ import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.StateRootHash;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.PackageData;
-import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import com.higgs.trust.slave.model.enums.BlockVersionEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,8 +37,7 @@ import java.util.List;
     }
 
      @Override
-    public BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
-        List<TransactionReceipt> txReceipts) {
+    public BlockHeader buildHeader(PackageData packageData, List<TransactionReceipt> txReceipts) {
         Profiler.enter("[getMaxHeight and getBlockHeader]");
         //query max height from db
         Long maxHeight = getMaxHeight();
@@ -65,12 +62,8 @@ import java.util.List;
         blockHeader.setVersion(BlockVersionEnum.V1.getCode());
         Profiler.enter("[buildRootHash]");
         //build all root hash for block header
-        StateRootHash stateRootHash = null;
-        if (processTypeEnum == TxProcessTypeEnum.VALIDATE) {
-            stateRootHash = snapshotRootHashBuilder.build(packageData, txReceipts);
-        } else if (processTypeEnum == TxProcessTypeEnum.PERSIST) {
-            stateRootHash = dbRootHashBuilder.build(packageData, txReceipts);
-        }
+        StateRootHash stateRootHash = snapshotRootHashBuilder.build(packageData, txReceipts);
+
         Profiler.release();
         blockHeader.setStateRootHash(stateRootHash);
         //to calculate the hash of block header
@@ -82,16 +75,6 @@ import java.util.List;
         return blockHeader;
     }
 
-     @Override
-    public void storeTempHeader(BlockHeader header, BlockHeaderTypeEnum headerTypeEnum) {
-        blockRepository.saveTempHeader(header, headerTypeEnum);
-    }
-
-     @Override
-    public BlockHeader getTempHeader(Long height, BlockHeaderTypeEnum headerTypeEnum) {
-        return blockRepository.getTempHeader(height, headerTypeEnum);
-    }
-
     /**
      * get final persisted block header
      *
@@ -99,7 +82,9 @@ import java.util.List;
      * @return
      */
      @Override public BlockHeader getHeader(Long height) {
-        return blockRepository.getTempHeader(height, BlockHeaderTypeEnum.TEMP_TYPE);
+        Block block = blockRepository.getBlock(height);
+
+        return (block == null) ? null : block.getBlockHeader();
     }
 
     @Override public Block buildBlock(PackageData packageData, BlockHeader blockHeader) {
@@ -127,6 +112,7 @@ import java.util.List;
 
      @Override
     public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
+        //TODO rocks db
         blockRepository.saveBlock(block, txReceipts);
     }
 
@@ -168,6 +154,9 @@ import java.util.List;
         if (!StringUtils.equals(rootHash1.getRsRootHash(), rootHash2.getRsRootHash())) {
             return false;
         }
+        if (!StringUtils.equals(rootHash1.getCaRootHash(), rootHash2.getCaRootHash())) {
+            return false;
+        }
         return true;
     }
 
@@ -195,6 +184,7 @@ import java.util.List;
         builder.append(function.hashString(getSafety(stateRootHash.getContractRootHash()), Charsets.UTF_8));
         builder.append(function.hashString(getSafety(stateRootHash.getPolicyRootHash()), Charsets.UTF_8));
         builder.append(function.hashString(getSafety(stateRootHash.getRsRootHash()), Charsets.UTF_8));
+        builder.append(function.hashString(getSafety(stateRootHash.getCaRootHash()), Charsets.UTF_8));
         String hash = function.hashString(builder.toString(), Charsets.UTF_8).toString();
         return hash;
     }

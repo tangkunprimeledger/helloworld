@@ -5,6 +5,8 @@ import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author liuyu
  * @description currency DAO
@@ -18,4 +20,12 @@ import org.apache.ibatis.annotations.Param;
      * @return
      */
     CurrencyInfoPO queryByCurrency(@Param("currency") String currency);
+
+    /**
+     * batch insert
+     *
+     * @param list
+     * @return
+     */
+    int batchInsert(List<CurrencyInfoPO> list);
 }

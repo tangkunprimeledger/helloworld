@@ -33,6 +33,8 @@ import javax.validation.constraints.NotNull;
     
     @NotNull @Value("${rs.custom.contractAddress}") private String contractAddress;
 
+    @NotNull @Value("${trust.useMySQL}") private boolean useMySQL;
+
     @Override public void afterPropertiesSet() throws Exception {
         BeanValidator.validate(this).failThrow();
     }

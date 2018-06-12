@@ -11,14 +11,17 @@ import lombok.Getter;
 @Getter
 public enum SnapshotBizKeyEnum {
     ACCOUNT("ACCOUNT", "account core Snapshot"),
+    ACCOUNT_DETAIL("ACCOUNT_DETAIL", "account detail Snapshot"),
     FREEZE("FREEZE", "freeze core Snapshot"),
     CONTRACT("CONTRACT", "contract core Snapshot"),
     ACCOUNT_CONTRACT_BIND("ACCOUNT_CONTRACT_BIND", "account contract binding Snapshot"),
     CONTRACT_SATE("CONTRACT_SATE", "contract state Snapshot"),
     DATA_IDENTITY("DATA_IDENTITY", "dataIdentity core Snapshot"),
-    UTXO("UTXO", "UTXO core Snapshot"), MANAGE("MANAGE", "manage  Snapshot"),
+    UTXO("UTXO", "UTXO core Snapshot"),
+    MANAGE("MANAGE", "manage  Snapshot"),
     MERKLE_TREE("MERKLE_TREE", "merkle tree  Snapshot"),
-    OTHER("OTHER", "other  Snapshot"),;
+    OTHER("OTHER", "other  Snapshot"),
+    CA("CA", "ca Snapshot"),;
 
     String code;
     String desc;

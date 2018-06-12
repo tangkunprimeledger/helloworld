@@ -4,6 +4,8 @@ import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 
+import java.util.Map;
+
 /**
  * @Description:
  * @author: pengdi
@@ -38,4 +40,8 @@ public interface PackageData extends CommonData {
      * @param block
      */
     void setCurrentBlock(Block block);
+
+    void setRsPubKeyMap(Map<String, String> rsPubKeyMap);
+
+    Map<String, String> getRsPubKeyMap();
 }

@@ -29,9 +29,9 @@ import org.springframework.transaction.support.TransactionTemplate;
     public void process(RespData<CoreTransaction> respData) {
 
         if (null == respData || null == respData.getData()) {
-            log.error("[process] register RS callback error, respData or respData.getData() is null");
-            throw new BankChainException(BankChainExceptionCodeEnum.IdentityCallbackProcessException,
-                "[process] register RS callback error, respData or respData.getData() is null");
+            log.error("[process] register policy callback error, respData or respData.getData() is null");
+            throw new CustomException(CustomExceptionCodeEnum.RegisterPolicyCallbackProcessException,
+                "[process] register policy callback error, respData or respData.getData() is null");
         }
 
         try {

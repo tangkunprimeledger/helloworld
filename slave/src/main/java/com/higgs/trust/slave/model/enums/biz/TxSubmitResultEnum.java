@@ -9,7 +9,8 @@ public enum TxSubmitResultEnum {
     PARAM_INVALID("100000", "transaction param invalid"),
     PENDING_TX_IDEMPOTENT("200000", "pending transaction idempotent"),
     TX_IDEMPOTENT("300000", "transaction idempotent"),
-    NODE_STATE_IS_NOT_RUNNING("400000", "node state is not running");
+    NODE_STATE_IS_NOT_RUNNING("400000", "node state is not running"),
+    TX_QUEUE_SIZE_TOO_LARGE("500000", "pending transaction queue size is too large");
 
     TxSubmitResultEnum(String code, String desc) {
         this.code = code;
