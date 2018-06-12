@@ -42,7 +42,6 @@ class node {
         context.provide([Name: "Name", Value: nodeState.nodeName])
         context.provide([Name: "Master", Value: nodeState.masterName])
         context.provide([Name: "Term", Value: nodeState.getCurrentTerm()])
-        context.provide([Name: "Master Heartbeat", Value: nodeState.getMasterHeartbeat().get()])
         context.provide([Name: "isMaster", Value: nodeState.master])
         context.provide([Name: "State", Value: nodeState.state])
         context.provide([Name: "Block Height", Value: blockService.getMaxHeight().toString()])
@@ -59,14 +58,7 @@ class node {
         out.println("Node is $nodeState.state")
     }
 
-    @Usage('show the terms of cluster')
-    @Command
-    def terms(InvocationContext context) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def nodeState = beans.getBean(NodeState.class)
-        nodeState.getTerms().forEach({ t -> context.provide(Term: t.term, StartHeight: t.startHeight, EndHeight: t.endHeight, MasterName: t.masterName) })
-        out.println("")
-    }
+
 
     @Usage('show the current height of node')
     @Command
@@ -115,14 +107,4 @@ class node {
         nodeState.changeState(from, to)
         out.println("State changed to $nodeState.state")
     }
-
-    @Usage('end the master term')
-    @Command
-    def endTerm(InvocationContext context) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def nodeState = beans.getBean(NodeState.class)
-        nodeState.endTerm()
-        out.println("ended the master term")
-    }
-
 }

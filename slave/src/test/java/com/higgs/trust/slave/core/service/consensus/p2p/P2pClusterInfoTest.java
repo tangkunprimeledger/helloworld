@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.BaseTest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,7 @@ import org.testng.annotations.Test;
 import java.util.List;
 
 @Slf4j public class P2pClusterInfoTest extends BaseTest {
-    @Autowired P2pClusterInfo p2pClusterInfo;
+    @Autowired ClusterInfo p2pClusterInfo;
 
     @Test public void testMyNodeName() throws Exception {
         String myNodeName = p2pClusterInfo.nodeName();

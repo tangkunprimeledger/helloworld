@@ -25,6 +25,10 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-p2pvalid</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-remote-shell</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

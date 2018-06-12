@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.service.consensus.p2p;
 
 import com.higgs.trust.config.node.NodeProperties;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
-import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;

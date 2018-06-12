@@ -51,12 +51,6 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
     @Getter private String privateKey;
 
     /**
-     * master public key
-     */
-
-    @Getter private String masterPubKey;
-
-    /**
      * prefix of node name
      */
     @Getter private String prefix;
@@ -68,7 +62,6 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
         this.privateKey = properties.getPrivateKey();
-        this.masterPubKey = properties.getMasterPubKey();
         this.prefix = properties.getPrefix();
     }
 

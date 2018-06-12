@@ -2,11 +2,8 @@ package com.higgs.trust.config.node;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
-import javax.validation.constraints.NotNull;
 
 @Component @ConfigurationProperties(prefix = "higgs.trust") @Getter @Setter public class NodeProperties {
 
@@ -31,11 +28,6 @@ import javax.validation.constraints.NotNull;
      * the private key of node
      */
     private String privateKey;
-
-    /**
-     * master public key
-     */
-    private String masterPubKey;
 
     /**
      * the node name prefix
