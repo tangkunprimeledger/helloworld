@@ -70,16 +70,4 @@ import org.springframework.stereotype.Service;
         }
         return false;
     }
-
-    /**
-     * 检查是否能胜任master
-     *
-     * @return
-     */
-    public boolean masterCheck() {
-        log.info("Starting master checking ...");
-        log.debug("need todo ....");
-        //todo:suimi 发送空包，获取最新高度比较
-        return true;
-    }
 }

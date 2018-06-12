@@ -1,7 +1,5 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
-import org.omg.CORBA.portable.ValueBase;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

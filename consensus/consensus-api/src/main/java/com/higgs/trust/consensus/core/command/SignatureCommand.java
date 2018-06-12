@@ -11,9 +11,9 @@ import lombok.ToString;
  */
 public interface SignatureCommand{
 
-    public abstract String getNodeName();
+    String getNodeName();
 
-    public abstract String getSignValue();
+    String getSignValue();
 
-    public abstract String getSignature();
+    String getSignature();
 }

@@ -37,6 +37,11 @@ import org.springframework.stereotype.Component;
     private String prefix;
 
     /**
+     * the wait time for command consensus
+     */
+    private long consensusWaitTime = 800L;
+
+    /**
      * the time of master heartbeat
      */
     private int masterHeartbeat = 1000;
