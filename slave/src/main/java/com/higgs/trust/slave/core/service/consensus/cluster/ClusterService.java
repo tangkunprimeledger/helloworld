@@ -4,12 +4,12 @@
 package com.higgs.trust.slave.core.service.consensus.cluster;
 
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.consensus.BlockHeaderCmd;
@@ -66,7 +66,7 @@ import java.util.Map;
         ClusterHeightCmd cmd = new ClusterHeightCmd(requestId, 1);
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
-        validCommandWrap.setFromNode(clusterInfo.myNodeName());
+        validCommandWrap.setFromNode(clusterInfo.nodeName());
         validCommandWrap.setSign(SignUtils.sign(cmd.getMessageDigestHash(), clusterInfo.privateKey()));
         validCommandWrap.setValidCommand(cmd);
         nodeNames.forEach((nodeName) -> {

@@ -17,6 +17,10 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
+            <artifactId>config-api</artifactId>
+        </dependency>
         <!-- mybatis begin -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>

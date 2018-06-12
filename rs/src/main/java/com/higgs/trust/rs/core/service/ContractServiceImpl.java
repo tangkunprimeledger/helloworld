@@ -15,7 +15,7 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;

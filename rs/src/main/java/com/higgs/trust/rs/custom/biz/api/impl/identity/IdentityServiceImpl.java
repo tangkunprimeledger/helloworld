@@ -22,7 +22,7 @@ import com.higgs.trust.rs.custom.model.convertor.identity.POToBOConvertor;
 import com.higgs.trust.rs.custom.model.convertor.identity.POToVOConvertor;
 import com.higgs.trust.rs.custom.util.Profiler;
 import com.higgs.trust.slave.api.enums.VersionEnum;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

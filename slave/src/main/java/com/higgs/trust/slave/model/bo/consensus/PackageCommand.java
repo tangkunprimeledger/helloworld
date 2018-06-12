@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
+import com.higgs.trust.config.node.command.TermCommand;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
 import com.higgs.trust.slave.api.vo.PackageVO;
@@ -19,7 +20,7 @@ import java.util.StringJoiner;
  * @author: pengdi
  **/
 @ToString(callSuper = true, exclude = {"sign"}) @Getter @Setter public class PackageCommand
-    extends AbstractConsensusCommand<PackageVO> implements SignatureCommand {
+    extends AbstractConsensusCommand<PackageVO> implements SignatureCommand, TermCommand {
 
     /**
      * term
@@ -40,6 +41,10 @@ import java.util.StringJoiner;
         super(value);
         this.term = term;
         this.masterName = masterName;
+    }
+
+    @Override public Long getPackageHeight() {
+        return get().getHeight();
     }
 
     @Override public String getNodeName() {

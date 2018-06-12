@@ -16,6 +16,7 @@
         <module>contract</module>
         <module>tester</module>
         <module>registry</module>
+        <module>config</module>
     </modules>
 
     <parent>
@@ -97,6 +98,26 @@
             <dependency>
                 <groupId>com.higgs.trust</groupId>
                 <artifactId>consensus-p2pvalid</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>config-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>config-properties</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>config-super</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

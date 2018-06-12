@@ -1,10 +1,10 @@
 package com.higgs.trust.slave.core.service.failover;
 
-import com.higgs.trust.slave.common.config.NodeProperties;
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
+import com.higgs.trust.config.node.NodeProperties;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.FailoverExecption;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.model.bo.Block;

@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.core.service.failover;
 
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.block.hash.TxRootHashBuilder;
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService;

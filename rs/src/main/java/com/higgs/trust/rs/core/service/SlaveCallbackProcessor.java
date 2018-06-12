@@ -12,7 +12,7 @@ import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.StringUtils;

@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
+import com.higgs.trust.config.node.NodeProperties;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -23,9 +24,9 @@ import org.springframework.stereotype.Service;
 
     @Autowired private ValidConsensus validConsensus;
 
-    @Autowired private PropertiesConfig propertiesConfig;
-
     @Autowired private BlockService blockService;
+
+    @Autowired private NodeProperties properties;
 
     /**
      * send validating result to p2p consensus layer
@@ -48,7 +49,7 @@ import org.springframework.stereotype.Service;
         // send header to p2p consensus
         ValidateCommand validateCommand = new ValidateCommand(header.getHeight(), header);
         log.info("start send validating command to p2p consensus layer, validateCommand : {}", validateCommand);
-        if (propertiesConfig.isMock()) {
+        if (properties.isMock()) {
             // store the validated header result
             blockService.storeTempHeader(header, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
         } else {
@@ -78,7 +79,7 @@ import org.springframework.stereotype.Service;
         // send header to p2p consensus
         PersistCommand persistCommand = new PersistCommand(header.getHeight(), header);
         log.info("start send persisting command to p2p consensus layer, persistCommand : {}", persistCommand);
-        if (propertiesConfig.isMock()) {
+        if (properties.isMock()) {
             // store the persist header result
             blockService.storeTempHeader(header, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE);
         } else {

@@ -3,9 +3,9 @@ package com.higgs.trust.slave.core.service.consensus.p2p;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Lists;
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,7 @@ import java.util.Map;
         return faultNodeNum;
     }
 
-    @Override public String myNodeName() {
+    @Override public String nodeName() {
         return nodeState.getNodeName();
     }
 

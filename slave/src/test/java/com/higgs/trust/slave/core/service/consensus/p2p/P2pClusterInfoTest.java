@@ -12,7 +12,7 @@ import java.util.List;
     @Autowired P2pClusterInfo p2pClusterInfo;
 
     @Test public void testMyNodeName() throws Exception {
-        String myNodeName = p2pClusterInfo.myNodeName();
+        String myNodeName = p2pClusterInfo.nodeName();
         log.info("my node name : {}", myNodeName);
         Assert.assertNotNull(myNodeName);
     }
