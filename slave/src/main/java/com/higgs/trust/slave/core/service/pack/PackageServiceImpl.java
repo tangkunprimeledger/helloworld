@@ -1,11 +1,9 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.Labels;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.PackageVO;
@@ -33,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -48,35 +45,19 @@ import java.util.stream.Collectors;
  * @author: pengdi
  **/
 @Service @Slf4j public class PackageServiceImpl implements PackageService {
-
-    @Autowired private PackageRepository packageRepository;
-
-    @Autowired private BlockRepository blockRepository;
-
-    @Autowired private BlockService blockService;
-
-    @Autowired private NodeState nodeState;
-
-    @Autowired private LogReplicateHandler logReplicateHandler;
-
     @Autowired private TransactionTemplate txRequired;
-
+    @Autowired private PackageRepository packageRepository;
+    @Autowired private BlockRepository blockRepository;
+    @Autowired private BlockService blockService;
+    @Autowired private NodeState nodeState;
+    @Autowired private LogReplicateHandler logReplicateHandler;
     @Autowired private TransactionExecutor transactionExecutor;
-
     @Autowired private SnapshotService snapshotService;
-
     @Autowired private TransactionRepository transactionRepository;
-
     @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
-
     @Autowired private P2pHandler p2pHandler;
-
     @Autowired private RsNodeRepository rsNodeRepository;
-
     @Autowired private PendingTxRepository pendingTxRepository;
-
-    @Value("${trust.package.pending:1000}")
-    private int PACKAGE_PENDING_COUNT;
 
     /**
      * create new package from pending transactions
@@ -118,6 +99,7 @@ import java.util.stream.Collectors;
      * if packHeight is null, return maxBlockHeight.(if exchange master, maxPackHeight must be initialized)
      * if package is null which height = packHeight, then return null
      * else return packHeight
+     *
      * @return
      */
     private Long getHeight(Long packHeight) {
@@ -169,9 +151,12 @@ import java.util.stream.Collectors;
         if (null != packageBO) {
             boolean checkHash = StringUtils.equals(buildPackHash(pack), buildPackHash(packageBO));
             if (!checkHash) {
-                log.error("receive package is not the same as db package");
+                log.error("receive package is not the same as db package. height={}", pack.getHeight());
                 //TODO 添加告警
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
+            } else {
+                log.info("receive package is the same as db package. height={}", pack.getHeight());
+                return;
             }
         }
 
@@ -214,12 +199,12 @@ import java.util.stream.Collectors;
         //set rsId and public key map
         List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
         if (!CollectionUtils.isEmpty(rsPubKeyList)) {
-            packContext.setRsPubKeyMap(rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
+            packContext.setRsPubKeyMap(
+                rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
         }
 
         return packContext;
     }
-
 
     /**
      * execute package persisting, get persist result and submit consensus layer
@@ -227,7 +212,7 @@ import java.util.stream.Collectors;
      * @param packContext
      */
     @Override public void process(PackContext packContext) {
-        log.info("process package start, package context: {}", packContext);
+        log.info("process package start");
         Profiler.start("[PackageService.process.monitor]");
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
@@ -238,50 +223,58 @@ import java.util.stream.Collectors;
 
         try {
             //snapshot transactions should be init
-            snapshotService.destroy();
+            snapshotService.clear();
+
             Profiler.enter("[execute txs]");
             //persist all transactions
             List<TransactionReceipt> txReceipts = executeTransactions(packContext);
             Profiler.release();
+
             Profiler.enter("[build block header]");
             //build a new block hash from db datas
             BlockHeader dbHeader = blockService.buildHeader(packContext, txReceipts);
-            Profiler.enter("[persist block]");
+            Profiler.release();
+
             //build block and save to context
             Block block = blockService.buildBlock(packContext, dbHeader);
             packContext.setCurrentBlock(block);
-            txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    //persist block
-                    blockService.persistBlock(block, txReceipts);
-                }
-            });
+
+            Profiler.enter("[snapshot flush]");
+            snapshotService.flush();
             Profiler.release();
-            //call back business
-            Profiler.enter("[callbackRSForPersisted]");
-            callbackRS(block.getSignedTxList(), txReceipts,false);
+
+            //persist block
+            Profiler.enter("[block flush]");
+            blockService.persistBlock(block, txReceipts);
             Profiler.release();
 
             //persist package
             Profiler.enter("[persist package]");
-            packageRepository.updateStatus(pack.getHeight(), PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+            packageRepository
+                .updateStatus(pack.getHeight(), PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+            Profiler.release();
+
+            //call back business
+            Profiler.enter("[callbackRS]");
+            callbackRS(block.getSignedTxList(), txReceipts, false);
             Profiler.release();
 
             //submit blockHeader to p2p
             Profiler.enter("[submit block header to p2p]");
             p2pHandler.sendPersisting(dbHeader);
             Profiler.release();
+
         } catch (Throwable e) {
-            snapshotService.clear();
+            //snapshot transactions should be destroy
+            snapshotService.destroy();
             log.error("[package.process]has unknown error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_PERSISTING_ERROR, e);
         } finally {
-            //snapshot transactions should be destroy
-            snapshotService.destroy();
             Profiler.release();
             Profiler.logDump();
         }
 
+        //TODO:fashuang for test
         pack.getSignedTxList().forEach(signedTx -> {
             try {
                 AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
@@ -317,7 +310,8 @@ import java.util.stream.Collectors;
                 }
                 //set current transaction and execute
                 packageData.setCurrentTransaction(tx);
-                TransactionReceipt receipt = transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
+                TransactionReceipt receipt =
+                    transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
                 persistedDatas.add(tx);
                 txReceipts.add(receipt);
             } finally {
@@ -352,8 +346,7 @@ import java.util.stream.Collectors;
      *
      * @param header
      */
-    @Override
-    public void persisted(BlockHeader header) {
+    @Override public void persisted(BlockHeader header) {
         /**
          * TODO
          * 1.开启事务
@@ -364,8 +357,7 @@ import java.util.stream.Collectors;
         Profiler.start("[PackageService.persisted] is start");
         Profiler.enter("[start query temp header of CONSENSUS_VALIDATE_TYPE]");
         //gets the block header from db
-        BlockHeader blockHeader =
-            blockService.getHeader(header.getHeight());
+        BlockHeader blockHeader = blockService.getHeader(header.getHeight());
         Profiler.release();
         //check hash
         if (blockHeader == null) {
@@ -380,23 +372,29 @@ import java.util.stream.Collectors;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
         }
         try {
-            //call back business
-            Profiler.enter("[callbackRSForClusterPersisted]");
+            Profiler.enter("[queryTransactions]");
             List<SignedTransaction> txs = transactionRepository.queryTransactions(header.getHeight());
             List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
-            callbackRS(txs, txReceipts,true);
             Profiler.release();
 
-            //update package status ---- PERSISTED
-            Profiler.enter("[updatePackStatus]");
-            packageRepository.updateStatus(blockHeader.getHeight(),
-                PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
-            Profiler.release();
+            txRequired.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    //call back business
+                    Profiler.enter("[callbackRSForClusterPersisted]");
+                    callbackRS(txs, txReceipts, true);
+                    Profiler.release();
 
-        }catch (Throwable e){
+                    //update package status ---- PERSISTED
+                    Profiler.enter("[updatePackStatus]");
+                    packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
+                        PackageStatusEnum.PERSISTED);
+                    Profiler.release();
+                }
+            });
+        } catch (Throwable e) {
             log.error("[package.persisted]callback rs has error", e);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR,e);
-        }finally {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR, e);
+        } finally {
             Profiler.release();
             if (Profiler.getDuration() > 0) {
                 Profiler.logDump();
@@ -407,8 +405,9 @@ import java.util.stream.Collectors;
     /**
      * call back business
      */
-    private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,boolean isClusterPersisted) {
-        log.info("[callbackRS]isClusterPersisted:{}",isClusterPersisted);
+    private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
+        boolean isClusterPersisted) {
+        log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         if (callbackHandler == null) {
             log.warn("[callbackRS]callbackHandler is not register");
@@ -436,10 +435,10 @@ import java.util.stream.Collectors;
             }
             //callback business
             log.info("[callbackRS]start callback rs txId:{}", txId);
-            if(isClusterPersisted){
-                callbackHandler.onClusterPersisted(respData,tx.getSignatureList());
-            }else{
-                callbackHandler.onPersisted(respData,tx.getSignatureList());
+            if (isClusterPersisted) {
+                callbackHandler.onClusterPersisted(respData, tx.getSignatureList());
+            } else {
+                callbackHandler.onPersisted(respData, tx.getSignatureList());
             }
             log.info("[callbackRS]end callback rs txId:{}", txId);
         }
@@ -458,16 +457,6 @@ import java.util.stream.Collectors;
          * 4.通过pendingState删除交易
          * 5.提交事务
          */
-    }
-
-    @Override public String getSign(PackageVO packageVO) {
-        try {
-            String dataString = JSON.toJSONString(packageVO, Labels.excludes("sign"));
-            return SignUtils.sign(dataString, nodeState.getPrivateKey());
-        } catch (Exception e) {
-            log.error("package sign exception. ", e);
-            return null;
-        }
     }
 
     /**

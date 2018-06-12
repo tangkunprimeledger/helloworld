@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.model.bo.manage;
 
 import com.higgs.trust.slave.model.bo.BaseBO;
+import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,7 +23,7 @@ public class RsNode extends BaseBO {
     /**
      * status
      */
-    private String status;
+    private RsNodeStatusEnum status;
 
     /**
      * public key

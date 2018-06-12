@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/4/24
  */
-@Slf4j @Component public class StartupRunner implements CommandLineRunner {
+@Slf4j  public class StartupRunner implements CommandLineRunner {
 
     @Autowired private SelfCheckingService selfCheckingService;
     @Autowired private SyncService syncService;

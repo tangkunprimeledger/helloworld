@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Primary @Service @Conditional(SingleNodeConditional.class) @Slf4j public class SingleNodeClusterService
-    implements ClusterService {
+    implements IClusterService {
 
     @Autowired private BlockRepository blockRepository;
 

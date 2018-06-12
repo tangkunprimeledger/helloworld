@@ -15,9 +15,6 @@ import com.higgs.trust.slave.model.bo.context.TransactionData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
 
@@ -27,7 +24,6 @@ import java.util.Map;
  * @date 2018/3/27 14:54
  */
 @Slf4j @Component public class TransactionExecutorImpl implements TransactionExecutor {
-    @Autowired TransactionTemplate txNested;
     @Autowired TxProcessorHolder processorHolder;
     @Autowired TxCheckHandler txCheckHandler;
     @Autowired SnapshotService snapshot;
@@ -56,9 +52,13 @@ import java.util.Map;
             throw e;
         } catch (SlaveException e) {
             log.error("[TransactionExecutorImpl.persist] has error", e);
+            //snapshot transactions should be rollback
+            snapshot.rollback();
             receipt.setErrorCode(e.getCode().getCode());
         } catch (Throwable e) {
             log.error("[TransactionExecutorImpl.persist] has error", e);
+            //snapshot transactions should be rollback
+            snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
         }
 
@@ -88,11 +88,7 @@ import java.util.Map;
         String version = coreTx.getVersion();
         // get exact handler based on version
         TransactionProcessor processor = processorHolder.getProcessor(VersionEnum.getBizTypeEnumBycode(version));
-        //ensure that all actions are transactional
-        txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                processor.process(transactionData);
-            }
-        });
+        //process tx
+        processor.process(transactionData);
     }
 }

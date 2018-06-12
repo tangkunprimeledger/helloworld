@@ -51,6 +51,9 @@ import java.util.List;
      */
     public Ca getCa(String user) {
         CaPO caPO = caDao.getCa(user);
+        if (null == caPO) {
+            return null;
+        }
         Ca newCa = new Ca();
         BeanUtils.copyProperties(caPO, newCa);
         return newCa;

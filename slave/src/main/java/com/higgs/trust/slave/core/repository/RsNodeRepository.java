@@ -101,13 +101,14 @@ import java.util.List;
         RsNode rsNode = new RsNode();
         rsNode.setRsId(registerRS.getRsId());
         rsNode.setDesc(registerRS.getDesc());
-        rsNode.setStatus(RsNodeStatusEnum.COMMON.getCode());
+        rsNode.setStatus(RsNodeStatusEnum.COMMON);
         return rsNode;
     }
 
     private RsNode convertRsNodePOtoRsNode(RsNodePO rsNodePO) {
         RsNode rsNode = new RsNode();
         BeanUtils.copyProperties(rsNodePO, rsNode);
+        rsNode.setStatus(RsNodeStatusEnum.getByCode(rsNodePO.getStatus()));
         return rsNode;
     }
 

@@ -25,8 +25,11 @@ import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
+import com.higgs.trust.slave.model.bo.manage.RsNode;
+import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +58,7 @@ import java.util.concurrent.Future;
     @Autowired private VoteReqRecordRepository voteReqRecordRepository;
     @Autowired private VoteReceiptRepository voteReceiptRepository;
     @Autowired private ServiceProviderClient serviceProviderClient;
+    @Autowired private RsNodeRepository rsNodeRepository;
     @Autowired private SignService signService;
     @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
 
@@ -115,10 +119,15 @@ import java.util.concurrent.Future;
                     if (StringUtils.equals(votingRequest.getVotePattern(), VotePatternEnum.SYNC.getCode())) {
                         VoteResultEnum voteResult = VoteResultEnum.AGREE;
                         try {
-                            //TODO:liuyu check self node status
-
-                            //callback custom rs
-                            rsCoreCallbackHandler.onVote(votingRequest);
+                            //check self node status
+                            boolean r = checkSelfNodeStatus();
+                            if(r){
+                                //callback custom rs
+                                rsCoreCallbackHandler.onVote(votingRequest);
+                            }else {
+                                log.info("[acceptVoting]self.rs status is not COMMON");
+                                voteResult = VoteResultEnum.DISAGREE;
+                            }
                         } catch (Throwable e) {
                             log.error("[acceptVoting]callback custom has error", e);
                             voteResult = VoteResultEnum.DISAGREE;
@@ -164,8 +173,12 @@ import java.util.concurrent.Future;
             log.info("[receiptVote]voteRequestRecord is already has result txId:{}", txId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_ALREADY_HAS_RESULT_ERROR);
         }
-        //TODO:liuyu check self node status
-
+        //check self node status
+        boolean r = checkSelfNodeStatus();
+        if(!r){
+            log.info("[receiptVote]self.rs status is not COMMON txId:{}", txId);
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_RS_STATUS_NOT_COMMON_ERROR);
+        }
         VoteResultEnum voteResult = agree ? VoteResultEnum.AGREE : VoteResultEnum.DISAGREE;
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
@@ -360,6 +373,18 @@ import java.util.concurrent.Future;
         String resultJSON = OkHttpClientManager.postAsString(url, paramJSON, rsConfig.getSyncRequestTimeout() / 2);
         log.info("[receipting.byHttp]resultJSON:" + resultJSON);
         return JSON.parseObject(resultJSON,RespData.class);
+    }
+
+    /**
+     * check rs status for self
+     * @return
+     */
+    private boolean checkSelfNodeStatus(){
+        RsNode rsNode = rsNodeRepository.queryByRsId(rsConfig.getRsName());
+        if(rsNode == null){
+            return false;
+        }
+        return rsNode.getStatus() == RsNodeStatusEnum.COMMON;
     }
 
     /**
