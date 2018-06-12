@@ -12,7 +12,7 @@
     </resultMap>
     <!-- vote_receipt table all fields -->
     <sql id="baseColumnList">
-		id,tx_id,voter,sign,rote_result,create_time
+		id,tx_id,voter,sign,vote_result,create_time
 	</sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">

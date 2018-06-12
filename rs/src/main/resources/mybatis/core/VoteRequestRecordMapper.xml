@@ -90,7 +90,7 @@
 	<update id="setVoteResult" parameterType="Object">
 		update vote_request_record
 		set sign=#{sign},vote_result=#{voteResult},update_time=now(3)
-		where tx_id=#{txId} and voteResult='INIT'
+		where tx_id=#{txId} and vote_result='INIT'
 	</update>
 
 </mapper>
