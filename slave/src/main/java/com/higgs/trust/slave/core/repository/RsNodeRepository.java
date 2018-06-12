@@ -101,7 +101,7 @@ import java.util.List;
         RsNode rsNode = new RsNode();
         rsNode.setRsId(registerRS.getRsId());
         rsNode.setDesc(registerRS.getDesc());
-        rsNode.setStatus(RsNodeStatusEnum.COMMON.getCode());
+        rsNode.setStatus(RsNodeStatusEnum.COMMON);
         return rsNode;
     }
 

@@ -67,7 +67,7 @@ public class CancelRsHandler implements ActionHandler {
             throw new SlaveException(SlaveErrorEnum.SLAVE_RS_NOT_EXISTS_ERROR);
         }
 
-        if (!StringUtils.equals(rsNode.getStatus(), RsNodeStatusEnum.COMMON.getCode())) {
+        if (rsNode.getStatus() != RsNodeStatusEnum.COMMON) {
             log.warn("rs status is not common. rsId={}", rsId);
             throw new SlaveException(SlaveErrorEnum.SLAVE_RS_EXISTS_ERROR);
         }

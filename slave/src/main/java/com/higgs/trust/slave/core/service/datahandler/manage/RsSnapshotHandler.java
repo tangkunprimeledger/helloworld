@@ -49,7 +49,7 @@ public class RsSnapshotHandler implements RsHandler {
             throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
         }
 
-        rsNode.setStatus(rsNodeStatusEnum.getCode());
+        rsNode.setStatus(rsNodeStatusEnum);
         manageSnapshotAgent.updateRs(rsNode);
 
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.RS);

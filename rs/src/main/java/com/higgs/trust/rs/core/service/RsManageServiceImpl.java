@@ -129,7 +129,7 @@ import java.util.List;
 
         //校验rs节点是否已经注册
         RsNode rsNode = rsNodeRepository.queryByRsId(rsId);
-        if (null != rsNode && StringUtils.equals(RsNodeStatusEnum.COMMON.getCode(), rsNode.getStatus())) {
+        if (null != rsNode && RsNodeStatusEnum.COMMON == rsNode.getStatus()) {
             log.warn("rsNode already exist, rsId={}", rsId);
             return new RespData(RespCodeEnum.RS_NODE_ALREADY_EXIST.getRespCode(),
                 RespCodeEnum.RS_NODE_ALREADY_EXIST.getMsg());
@@ -269,7 +269,7 @@ import java.util.List;
 
         //校验rs节点是否存在且状态是否已注销
         RsNode rsNode = rsNodeRepository.queryByRsId(rsId);
-        if (null == rsNode || StringUtils.equals(RsNodeStatusEnum.CANCELED.getCode(), rsNode.getStatus())) {
+        if (null == rsNode || RsNodeStatusEnum.CANCELED == rsNode.getStatus()) {
             return new RespData(RespCodeEnum.RS_NODE_NOT_EXIST_OR_RS_NODE_ALREADY_CANCELED.getRespCode(),
                 RespCodeEnum.RS_NODE_NOT_EXIST_OR_RS_NODE_ALREADY_CANCELED.getMsg());
         }

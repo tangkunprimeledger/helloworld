@@ -62,7 +62,7 @@ import org.springframework.stereotype.Component;
 
         RsNode rsNode = rsSnapshotHandler.getRsNode(rsId);
         if (rsNode != null) {
-            if (StringUtils.equals(rsNode.getStatus(), RsNodeStatusEnum.COMMON.getCode())) {
+            if (rsNode.getStatus() == RsNodeStatusEnum.COMMON) {
                 log.warn("rsNode already exists. rsId={}", rsId);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_RS_EXISTS_ERROR);
             } else {
