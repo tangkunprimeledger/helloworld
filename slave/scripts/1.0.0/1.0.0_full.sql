@@ -474,7 +474,7 @@ CREATE TABLE IF NOT EXISTS `ca` (
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',
   PRIMARY KEY (`id`),
-  KEY `idx_user` (`user`)
+  UNIQUE KEY `uniq_pub_key` (`pub_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds CA info';
 
 
@@ -490,7 +490,8 @@ CREATE TABLE IF NOT EXISTS `config` (
   `node_name` varchar(32) NOT NULL COMMENT 'node name',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_node` (`node_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds nodeself configuration';
 
 
@@ -502,7 +503,8 @@ CREATE TABLE IF NOT EXISTS `cluster_config` (
   `fault_num` int NOT NULL COMMENT 'fault num',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_cluster` (`cluster_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds cluster configuration';
 
 
@@ -513,5 +515,6 @@ CREATE TABLE IF NOT EXISTS `cluster_node` (
   `rs_status` TINYINT (1) NOT NULL COMMENT 'rs status',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_node` (`node_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds cluster node configuration';
