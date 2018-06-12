@@ -1,6 +1,7 @@
 package com.higgs.trust.consensus.bftsmart.started.config;
 
 import com.higgs.trust.consensus.bftsmart.reconfiguration.SendRCMessage;
+import com.higgs.trust.consensus.bftsmart.reconfiguration.util.RSAKeyLoader;
 import com.higgs.trust.consensus.bftsmart.reconfiguration.util.SpringUtil;
 import com.higgs.trust.consensus.bftsmart.started.server.Server;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
@@ -13,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.util.StringUtils;
 
+import java.security.PublicKey;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
@@ -39,13 +42,18 @@ public class SmartServerConfig implements ConsensusStateMachine {
     public Server getServer() {
         log.info("smart server starting,myid={}", myId);
         if (!StringUtils.isEmpty(myId)) {
+            RSAKeyLoader rsaKeyLoader = new RSAKeyLoader(Integer.valueOf(myId), "", false);
             while (true) {
-                //TODO 循环判断CA是否准备好
-                if (true) {
-                    break;
+                try {
+                    PublicKey publicKey = rsaKeyLoader.loadPublicKey(Integer.valueOf(myId));
+                    if (!Objects.isNull(publicKey)) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    log.debug("CA还未准备好");
                 }
                 try {
-                    TimeUnit.MILLISECONDS.sleep(10);
+                    TimeUnit.MILLISECONDS.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

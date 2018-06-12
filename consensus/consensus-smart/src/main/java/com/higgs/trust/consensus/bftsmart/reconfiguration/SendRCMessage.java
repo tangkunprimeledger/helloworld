@@ -25,11 +25,6 @@ public class SendRCMessage {
     private static final Logger log = LoggerFactory.getLogger(SendRCMessage.class);
     private RCMessage rcMessage;
 
-    public SendRCMessage() {
-        //TODO 初始化CA对象，获取私钥 待处理
-        SpringUtil.getBean("");
-    }
-
     public void add(int num, String ip, int port) {
         if (num < 0) {
             log.error("This value cannot be less than 0: {}", num);
