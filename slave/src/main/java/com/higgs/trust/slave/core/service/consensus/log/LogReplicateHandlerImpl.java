@@ -1,33 +1,27 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.Labels;
 import com.higgs.trust.common.utils.SignUtils;
-import com.higgs.trust.consensus.bft.core.ConsensusClient;
-import com.higgs.trust.consensus.bft.core.ConsensusCommit;
-import com.higgs.trust.consensus.bft.core.template.AbstractConsensusStateMachine;
+import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.common.config.PropertiesConfig;
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.NodeState;
-import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
-import com.higgs.trust.slave.core.service.failover.SyncService;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
-import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
-import com.higgs.trust.slave.model.convert.PackageConvert;
+import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterCommand;
+import com.higgs.trust.slave.model.bo.consensus.master.ChangeMasterVerifyResponse;
+import com.higgs.trust.slave.model.bo.consensus.master.MasterHeartbeatCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,15 +37,11 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired PackageService packageService;
 
-    @Autowired ExecutorService packageThreadPool;
-
     @Autowired PackageProcess packageProcess;
-
-    @Autowired RsPubKeyRepository rsPubKeyRepository;
 
     @Autowired private NodeState nodeState;
 
-    @Autowired private SyncService syncService;
+    @Autowired private NodeProperties properties;
 
     /**
      * replicate sorted package to the cluster
@@ -91,25 +81,6 @@ import java.util.concurrent.TimeUnit;
         }
 
         log.info("package has been sent to consensus layer");
-    }
-
-    private PackageCommand buildPackageCommand(PackageVO packageVO) {
-        PackageCommand packageCommand = new PackageCommand(packageVO);
-        packageCommand.setMasterName(nodeState.getMasterName());
-        packageCommand.setTerm(nodeState.getTerm());
-
-        // set signature
-        while (null == packageCommand.getSign()) {
-            try {
-                String dataString = JSON.toJSONString(packageCommand, Labels.excludes("sign"));
-                packageCommand.setSign(SignUtils.sign(dataString, nodeState.getPrivateKey()));
-            } catch (Exception e) {
-                log.error("packageCommand sign exception. ", e);
-                //TODO 添加告警
-            }
-        }
-
-        return packageCommand;
     }
 
     @Override public void changeMaster(long term, Map<String, ChangeMasterVerifyResponse> verifies) {

@@ -5,7 +5,6 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
-import com.higgs.trust.rs.core.vo.VoteRuleVO;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.api.manage.RsManageService;
@@ -45,33 +44,23 @@ import java.util.List;
  * @date 2018/05/18 11:31
  * @desc rs manage service
  */
-@Service
-@Slf4j
-public class RsManageServiceImpl implements RsManageService{
+@Service @Slf4j public class RsManageServiceImpl implements RsManageService {
 
-    @Autowired
-    private TransactionTemplate txRequired;
+    @Autowired private TransactionTemplate txRequired;
 
-    @Autowired
-    private CoreTransactionService coreTransactionService;
+    @Autowired private CoreTransactionService coreTransactionService;
 
-    @Autowired
-    private CoreTransactionConvertor coreTransactionConvertor;
+    @Autowired private CoreTransactionConvertor coreTransactionConvertor;
 
-    @Autowired
-    private RequestHelper requestHelper;
+    @Autowired private RequestHelper requestHelper;
 
-    @Autowired
-    private NodeState nodeState;
+    @Autowired private NodeState nodeState;
 
-    @Autowired
-    private CaService caService;
+    @Autowired private CaService caService;
 
-    @Autowired
-    private RsNodeRepository rsNodeRepository;
+    @Autowired private RsNodeRepository rsNodeRepository;
 
-    @Autowired
-    private PolicyRepository policyRepository;
+    @Autowired private PolicyRepository policyRepository;
 
     @Override public RespData registerRs(RegisterRsVO registerRsVO) {
         RespData respData;
@@ -101,10 +90,8 @@ public class RsManageServiceImpl implements RsManageService{
                     }
 
                     //组装UTXO,CoreTransaction，下发
-                    return submitTx(coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),
-                            null,
-                            buildRegisterRsActionList(registerRsVO),
-                            InitPolicyEnum.REGISTER_RS.getPolicyId()));
+                    return submitTx(coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(), null,
+                        buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId()));
                 }
             });
 
@@ -113,7 +100,7 @@ public class RsManageServiceImpl implements RsManageService{
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
 
-            if(!respData.isSuccess()){
+            if (!respData.isSuccess()) {
                 return respData;
             }
             respData = coreTransactionService.syncWait(registerRsVO.getRequestId(), true);
@@ -133,7 +120,7 @@ public class RsManageServiceImpl implements RsManageService{
         }
 
         //校验CA是否存在且有效
-        Ca ca = caService.acquireCa(rsId);
+        Ca ca = caService.getCa(rsId);
         if (null == ca || !ca.isValid()) {
             log.error("Ca is null or ca is not valid, rsId={}", rsId);
             return new RespData(RespCodeEnum.CA_IS_NOT_EXIST_OR_IS_NOT_VALID.getRespCode(),
@@ -142,8 +129,7 @@ public class RsManageServiceImpl implements RsManageService{
 
         //校验rs节点是否已经注册
         RsNode rsNode = rsNodeRepository.queryByRsId(rsId);
-        if (null != rsNode
-            && StringUtils.equals(RsNodeStatusEnum.COMMON.getCode(), rsNode.getStatus())) {
+        if (null != rsNode && StringUtils.equals(RsNodeStatusEnum.COMMON.getCode(), rsNode.getStatus())) {
             log.warn("rsNode already exist, rsId={}", rsId);
             return new RespData(RespCodeEnum.RS_NODE_ALREADY_EXIST.getRespCode(),
                 RespCodeEnum.RS_NODE_ALREADY_EXIST.getMsg());
@@ -183,8 +169,9 @@ public class RsManageServiceImpl implements RsManageService{
                     //校验是否可注册policy
                     respData = checkPolicy(registerPolicyVO);
                     if (null != respData) {
-                        requestHelper.updateRequest(registerPolicyVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
-                            respData.getRespCode(), respData.getMsg());
+                        requestHelper
+                            .updateRequest(registerPolicyVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
+                                respData.getRespCode(), respData.getMsg());
                         return respData;
                     }
 
@@ -193,11 +180,9 @@ public class RsManageServiceImpl implements RsManageService{
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
                     jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
-                    return submitTx(
-                        coreTransactionConvertor.buildCoreTransaction(registerPolicyVO.getRequestId(),
-                            jsonObject,
-                            buildPolicyActionList(registerPolicyVO),
-                            InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
+                    return submitTx(coreTransactionConvertor
+                        .buildCoreTransaction(registerPolicyVO.getRequestId(), jsonObject,
+                            buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
                 }
             });
 
@@ -206,14 +191,13 @@ public class RsManageServiceImpl implements RsManageService{
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
 
-            if(!respData.isSuccess()){
+            if (!respData.isSuccess()) {
                 return respData;
             }
             respData = coreTransactionService.syncWait(registerPolicyVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register policy error", e);
-            respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(),
-                RespCodeEnum.SYS_FAIL.getMsg());
+            respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
         }
         return respData;
     }
@@ -246,10 +230,9 @@ public class RsManageServiceImpl implements RsManageService{
                     }
 
                     //组装UTXO,CoreTransaction，下发
-                    return submitTx(coreTransactionConvertor.buildCoreTransaction(cancelRsVO.getRequestId(),
-                        null,
-                        buildCancelRsActionList(cancelRsVO),
-                        InitPolicyEnum.REGISTER_RS.getPolicyId()));
+                    return submitTx(coreTransactionConvertor
+                        .buildCoreTransaction(cancelRsVO.getRequestId(), null, buildCancelRsActionList(cancelRsVO),
+                            InitPolicyEnum.REGISTER_RS.getPolicyId()));
                 }
             });
 
@@ -258,7 +241,7 @@ public class RsManageServiceImpl implements RsManageService{
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
 
-            if(!respData.isSuccess()){
+            if (!respData.isSuccess()) {
                 return respData;
             }
             respData = coreTransactionService.syncWait(cancelRsVO.getRequestId(), true);
@@ -278,7 +261,7 @@ public class RsManageServiceImpl implements RsManageService{
         }
 
         //校验CA是否存在且有效
-        Ca ca = caService.acquireCa(rsId);
+        Ca ca = caService.getCa(rsId);
         if (null == ca || !ca.isValid()) {
             log.error("Ca is null or ca is not valid, rsId={}", rsId);
             return new RespData(RespCodeEnum.CA_IS_NOT_EXIST_OR_IS_NOT_VALID.getRespCode(),
@@ -305,8 +288,6 @@ public class RsManageServiceImpl implements RsManageService{
         actions.add(cancelRs);
         return actions;
     }
-
-
 
     private RespData checkPolicy(RegisterPolicyVO registerPolicyVO) {
         //校验policy发起方是否包含在rsIds中
@@ -340,7 +321,7 @@ public class RsManageServiceImpl implements RsManageService{
     /**
      * 发送交易到rs-core
      */
-    private RespData<?> submitTx (CoreTransaction coreTransaction){
+    private RespData<?> submitTx(CoreTransaction coreTransaction) {
         //send and get callback result
         try {
             coreTransactionService.submitTx(coreTransaction);

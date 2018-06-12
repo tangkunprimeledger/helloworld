@@ -4,6 +4,7 @@ import com.higgs.trust.slave.common.config.NodeProperties;
 import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.FailoverExecption;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.managment.listener.MasterChangeListener;
 import com.higgs.trust.slave.core.managment.listener.StateChangeListener;
 import lombok.Getter;
@@ -18,6 +19,8 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component @Scope("singleton") @Slf4j public class NodeState implements InitializingBean {
 

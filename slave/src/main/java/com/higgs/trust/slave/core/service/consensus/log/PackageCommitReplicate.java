@@ -9,7 +9,6 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.NodeState;
-import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.core.service.failover.SyncService;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -31,14 +30,12 @@ import java.util.concurrent.ExecutorService;
 
     @Autowired PackageProcess packageProcess;
 
-    @Autowired RsPubKeyRepository rsPubKeyRepository;
-
     @Autowired private NodeState nodeState;
 
     @Autowired private SyncService syncService;
 
     /**
-     * package has been replicated by raft/copycat-smart/pbft/etc
+     * package has been replicated by raft/bft-smart/pbft/etc
      *
      * @param commit
      * @return

@@ -1,11 +1,9 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.Labels;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.PackageVO;
@@ -59,8 +57,6 @@ import java.util.stream.Collectors;
     @Autowired private BlockService blockService;
 
     @Autowired private PendingState pendingState;
-
-    @Autowired private NodeState nodeState;
 
     @Autowired private LogReplicateHandler logReplicateHandler;
 
