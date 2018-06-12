@@ -138,7 +138,7 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="io.atomix.copycat" level="info" additivity="false">
+    <logger name="io.atomix.copycat" level="debug" additivity="false">
         <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </logger>
@@ -167,7 +167,25 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <logger name="com.higgs.trust" level="INFO" additivity="false">
+    <logger name="com.higgs.trust" level="debug" additivity="false">
+        <appender-ref ref="BIZ-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <logger name="com.higgs.trust.slave.dao" level="info" additivity="false">
+        <appender-ref ref="BIZ-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <logger name="com.higgs.trust.consensus.p2pvalid.dao" level="info" additivity="false">
+        <appender-ref ref="BIZ-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <logger name="com.higgs.trust.rs.core.dao" level="info" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
         <appender-ref ref="CONSOLE"/>
