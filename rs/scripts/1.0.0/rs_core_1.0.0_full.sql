@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `vote_request_record` (
 	`update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_tx_id` (`tx_id`),
-	KEY `idx_rote_result` (`rote_result`)
+	KEY `idx_vote_result` (`vote_result`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the vote request record';
 
 
