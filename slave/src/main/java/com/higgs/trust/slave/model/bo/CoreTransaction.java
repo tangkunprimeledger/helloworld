@@ -53,11 +53,9 @@ public class CoreTransaction extends BaseBO {
      */
     private Date lockTime;
     /**
-     * transaction create time
+     * transaction send time
      */
-    @NotNull
     private Date sendTime;
-
     /**
      * the tx sender's rsId
      */
