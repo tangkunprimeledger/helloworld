@@ -50,8 +50,9 @@ public interface PackageService {
      * execute package persisting
      *
      * @param packContext
+     * @param isFailover
      */
-    void process(PackContext packContext);
+    void process(PackContext packContext,boolean isFailover);
 
     /**
      * remove the package if it is done

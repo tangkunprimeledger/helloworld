@@ -210,8 +210,9 @@ import java.util.stream.Collectors;
      * execute package persisting, get persist result and submit consensus layer
      *
      * @param packContext
+     * @param isFailover
      */
-    @Override public void process(PackContext packContext) {
+    @Override public void process(PackContext packContext, boolean isFailover) {
         log.info("process package start");
         Profiler.start("[PackageService.process.monitor]");
         Package pack = packContext.getCurrentPackage();
@@ -256,7 +257,7 @@ import java.util.stream.Collectors;
 
             //call back business
             Profiler.enter("[callbackRS]");
-            callbackRS(block.getSignedTxList(), txReceipts, false);
+            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover);
             Profiler.release();
 
             //submit blockHeader to p2p
@@ -381,7 +382,7 @@ import java.util.stream.Collectors;
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                     //call back business
                     Profiler.enter("[callbackRSForClusterPersisted]");
-                    callbackRS(txs, txReceipts, true);
+                    callbackRS(txs, txReceipts, true, false);
                     Profiler.release();
 
                     //update package status ---- PERSISTED
@@ -406,7 +407,7 @@ import java.util.stream.Collectors;
      * call back business
      */
     private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
-        boolean isClusterPersisted) {
+        boolean isClusterPersisted, boolean isFailover) {
         log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         if (callbackHandler == null) {
@@ -432,6 +433,11 @@ import java.util.stream.Collectors;
                     }
                     break;
                 }
+            }
+            if (isFailover) {
+                log.info("[callbackRS]start fail over rs txId:{}", txId);
+                callbackHandler.onFailover(respData, tx.getSignatureList());
+                return;
             }
             //callback business
             log.info("[callbackRS]start callback rs txId:{}", txId);

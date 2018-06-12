@@ -13,13 +13,6 @@ import java.util.List;
  */
 public interface SlaveCallbackHandler {
     /**
-     * on tx validated
-     *
-     * @param coreTx
-     */
-    void onValidated(CoreTransaction coreTx);
-
-    /**
      * on tx persisted
      *
      * @param respData
@@ -34,4 +27,12 @@ public interface SlaveCallbackHandler {
      * @param signInfos
      */
     void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos);
+
+    /**
+     * on failover
+     *
+     * @param respData
+     * @param signInfos
+     */
+    void onFailover(RespData<CoreTransaction> respData, List<SignInfo> signInfos);
 }
