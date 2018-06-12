@@ -24,6 +24,7 @@ import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -53,8 +54,8 @@ import java.util.*;
     @Autowired private CaInitHandler caInitHandler;
     @Value("${bftSmart.systemConfigs.myId}") private String myId;
 
-
     // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
+
     /**
      * @return
      * @desc generate pubKey and PriKey ,then insert into db
@@ -250,12 +251,21 @@ import java.util.*;
     }
 
     /**
-     * @param user
-     * @return Ca
+     * @param caVO
+     * @return
      * @desc acquire CA information by user
      */
-    @Override public Ca acquireCa(String user) {
-        return caRepository.getCa(user);
+    @Override public RespData<Ca> acquireCA(CaVO caVO) {
+        if (null == caVO || null == caVO.getUser()) {
+            return null;
+        }
+        Ca ca = caRepository.getCa(caVO.getUser());
+        if (null == ca) {
+            return null;
+        }
+        RespData resp = new RespData();
+        resp.setData(ca);
+        return resp;
     }
 
     private CoreTransaction constructAuthCoreTx(CaVO caVO) {
@@ -414,6 +424,25 @@ import java.util.*;
         // default 1 year later
         calendar.add(Calendar.YEAR, 1);
         return calendar.getTime();
+    }
+
+    @Override public Ca getCa(String user) {
+        //check nodeName
+        if (!nodeState.getNodeName().equals(user)) {
+            log.error("[cancelKeyPair] invalid node name");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+                "[cancelKeyPair] invalid node name");
+        }
+        CaVO caVO = new CaVO();
+        caVO.setUser(user);
+        RespData resp = caClient.acquireCA(nodeState.getNodeName(), caVO);
+        Ca ca = new Ca();
+        BeanUtils.copyProperties(resp.getData(), ca);
+
+        // TODO CA信息进行写文件操作   写之前应该检测一下CA配置文件是否已经存在
+        fileWriter(ca.getPubKey());
+
+        return ca;
     }
 
 }

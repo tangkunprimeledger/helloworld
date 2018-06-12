@@ -467,7 +467,7 @@ CREATE TABLE IF NOT EXISTS `ca` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `version` varchar(32) NOT NULL COMMENT 'version',
   `period` datetime(3) NOT NULL COMMENT 'period',
-  `valid` varchar(32) NOT NULL COMMENT 'valid flag TRUE/FALSE',
+  `valid` TINYINT (1) NOT NULL COMMENT 'valid flag TRUE/FALSE',
   `pub_key` varchar(255) NOT NULL COMMENT 'pub key',
   `user` varchar(32) NOT NULL COMMENT 'CA user',
   `usage` varchar(64) COMMENT 'CA usage',
@@ -482,7 +482,7 @@ CREATE TABLE IF NOT EXISTS `ca` (
 CREATE TABLE IF NOT EXISTS `config` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `version` varchar(32) NOT NULL COMMENT 'version',
-  `valid` varchar(32) NOT NULL COMMENT 'valid flag TRUE/FALSE',
+  `valid` TINYINT (1) NOT NULL COMMENT 'valid flag TRUE/FALSE',
   `pub_key` varchar(255) NOT NULL COMMENT 'pub key',
   `pri_key` varchar(1024) NOT NULL COMMENT 'pri key',
   `tmp_pub_key` varchar(255) COMMENT 'temp pub key',
@@ -509,8 +509,8 @@ CREATE TABLE IF NOT EXISTS `cluster_config` (
 CREATE TABLE IF NOT EXISTS `cluster_node` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `node_name` varchar(32) NOT NULL COMMENT 'node name',
-  `p2p_status` varchar(32) NOT NULL COMMENT 'p2p status',
-  `rs_status` varchar(32) NOT NULL COMMENT 'rs status',
+  `p2p_status` TINYINT (1) NOT NULL COMMENT 'p2p status',
+  `rs_status` TINYINT (1) NOT NULL COMMENT 'rs status',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',
   PRIMARY KEY (`id`)

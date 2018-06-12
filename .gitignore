@@ -23,7 +23,7 @@ dist/
 nbdist/
 slave/*.log
 */*.log
-copycat
-data
+/copycat
+/data
 .nb-gradle/
 /slave/scripts/1.0.0/slave_1.0.0_full.sql

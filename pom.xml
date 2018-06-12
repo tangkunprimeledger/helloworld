@@ -76,6 +76,32 @@
 
             <dependency>
                 <groupId>com.higgs.trust</groupId>
+                <artifactId>consensus</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>consensus-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>consensus-copycat</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>consensus-smart</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>consensus-p2pvalid</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
                 <artifactId>registry</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -215,6 +241,11 @@
             </dependency>
 
             <!--copycat start-->
+            <dependency>
+                <groupId>io.atomix.copycat</groupId>
+                <artifactId>copycat-protocol</artifactId>
+                <version>${copycat.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.atomix.copycat</groupId>
                 <artifactId>copycat-client</artifactId>

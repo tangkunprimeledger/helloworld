@@ -51,7 +51,7 @@
 		            period=#{period},
 		            pub_key=#{pubKey},
 		            update_time=now(3)
-		          WHERE `user`=#{user} and valid='TRUE'
+		          WHERE `user`=#{user} and valid=1
 	</update>
 
 
@@ -61,7 +61,7 @@
 			<!-- set period -->
 			<trim prefix="`period` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user} and valid='TRUE'
+					WHEN `user`=#{item.user} and valid=1
 					THEN #{item.period}
 				</foreach>
 				ELSE `period`
@@ -69,7 +69,7 @@
 			<!-- set pub_key -->
 			<trim prefix="`pub_key` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user} and valid='TRUE'
+					WHEN `user`=#{item.user} and valid=1
 					THEN #{item.pubKey}
 				</foreach>
 				ELSE `pub_key`
@@ -77,7 +77,7 @@
 			<!-- set update_time -->
 			<trim prefix="`update_time` = CASE" suffix="END">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user} and valid='TRUE'
+					WHEN `user`=#{item.user} and valid=1
 					THEN now(3)
 				</foreach>
 				ELSE `update_time`
@@ -85,7 +85,7 @@
 		</trim>
 		<where>
 			<foreach collection="list" item="item" separator="or" open="(" close=")">
-				`user`=#{item.user} and valid='TRUE'
+				`user`=#{item.user} and valid=1
 			</foreach>
 		</where>
 	</update>
@@ -101,7 +101,7 @@
 								`usage` as `usage`,
 								create_time as createTime,
 								update_time as updateTime
-		      FROM ca WHERE `user`=#{user} and valid='TRUE'
+		      FROM ca WHERE `user`=#{user} and valid=1
 	</select>
 
     <select id="getAllCa"  resultType="com.higgs.trust.slave.dao.po.ca.CaPO">
@@ -113,7 +113,7 @@
 				`usage` as `usage`,
 				create_time as createTime,
 				update_time as updateTime
-		FROM ca WHERE valid='TRUE'
+		FROM ca WHERE valid=1
 	</select>
 
 

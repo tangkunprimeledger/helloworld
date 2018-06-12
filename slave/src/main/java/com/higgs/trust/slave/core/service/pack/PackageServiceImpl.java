@@ -458,16 +458,6 @@ import java.util.stream.Collectors;
          */
     }
 
-    @Override public String getSign(PackageVO packageVO) {
-        try {
-            String dataString = JSON.toJSONString(packageVO, Labels.excludes("sign"));
-            return SignUtils.sign(dataString, nodeState.getPrivateKey());
-        } catch (Exception e) {
-            log.error("package sign exception. ", e);
-            return null;
-        }
-    }
-
     /**
      * build hash for package
      *

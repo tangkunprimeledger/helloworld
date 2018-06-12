@@ -91,7 +91,7 @@
 	</select>
 
     <select id="getNodeNum" resultType="java.lang.Integer">
-		SELECT count(1) from cluster_node WHERE `p2p_status`='TRUE'
+		SELECT count(1) from cluster_node WHERE `p2p_status`=1
 	</select>
 
 </mapper>
