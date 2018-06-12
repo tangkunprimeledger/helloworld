@@ -90,7 +90,6 @@ public class CheckTxHandlerTest extends BaseTest {
         RegisterRS registerRS = new RegisterRS();
         registerRS.setType(ActionTypeEnum.REGISTER_RS);
         registerRS.setIndex(0);
-   //     registerRS.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCkML/JGk5jdeWe3OoM9/+2vMJrbiaoJ9ublgJATub07Og6XwdDX+zeYzh9qTIZIKpHYjpaTaU2/s6CWfgzctvJhx26W/fRgxKGuc73F8cqVOcqzYZq3IdWyWymUIhqF/+TQImvbfypbcXXLOhJlrjkAe/Xy4Sw4MB3lA82DnTNdwIDAQAB");
         registerRS.setDesc("rs-test3-desc");
         registerRS.setRsId("rs-test3");
 

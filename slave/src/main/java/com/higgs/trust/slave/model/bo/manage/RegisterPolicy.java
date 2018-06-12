@@ -45,7 +45,6 @@ import java.util.List;
     /**
      * the contract address for vote rule
      */
-    @NotNull
     private String contractAddr;
 
 }

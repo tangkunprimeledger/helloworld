@@ -117,11 +117,11 @@ import java.util.List;
         return rsNodePO;
     }
 
-    public void batchUpdate(List<RsNodePO> rsNodePOList) {
-        rsNodeDao.batchUpdate(rsNodePOList);
+    public int batchUpdate(List<RsNodePO> rsNodePOList) {
+        return rsNodeDao.batchUpdate(rsNodePOList);
     }
 
-    public void batchInsert(List<RsNodePO> rsNodePOList) {
-        rsNodeDao.batchInsert(rsNodePOList);
+    public int batchInsert(List<RsNodePO> rsNodePOList) {
+        return rsNodeDao.batchInsert(rsNodePOList);
     }
 }

@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.custom.api.manage;
+package com.higgs.trust.rs.core.api;
 
 import com.higgs.trust.rs.custom.api.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;

@@ -10,9 +10,11 @@ import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
+import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.account.OpenAccount;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -24,6 +26,7 @@ import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -44,12 +47,6 @@ public class BlockChainServiceImplTest extends BaseTest{
 
     private static final String priKey1 ="MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAIsMM2JkqnQACN+RUqRF4UkW58XnjpjA+RP4mnA4uD9KCjlJeTxvY0yHDqsvIaiXr7Ge0QB1VAKq0xit2BWHfVU/XlO1tqK+ea7YxooeoglvOkddiJiYTZUNjKM5AhttG950PpzrmeUcl9YGEZ/DwKKee+8tqaDWdIEHBnplO6mVAgMBAAECgYBtrWwCmoDRCw30uv5C0VQIgObE9gdGekB9/kRjbHn4ggBae5gDkaDzxjxNztlv0GYnZqxY/jML/46PEuE06jBzGcOlBuobQJJ38pTg0pnNVHbkTckxfUIr1MYUDhtO18tJZUZuMbYMwwgZ9K9E0N8kjKXk+rRx+BDjlbxNPds6KQJBAMLS/HCXjAfJlzSEWqkBavAKoW+bBhZlkTH+DoNk/KidASgdFBqtPUf5w3U+j8dK4nvt8R9X7zGxRAYXpDGHUucCQQC2tZlmL858suIA/+XfQVGoKOEvLlI5tGNDLXlDaKldY8UZGqxcyKaOsqEWMQnJCUy/0zTariN7kNssptYm04wjAkB3qVlt2lcizVn24rhAh+NjzlO7le8WQIn+t7m4UIWzFsQIHFwlynQSSkEYOTXcRY14avwnsT30Opm6WDj8Rs7PAkBytzqFSmbfLIFyFzmBH0Xhyyj3sqG10WixeQ+2HzSXiljqFjE6YFETL1yszkVSkCA8IKQC2Ws13hF+y5GR9yj5AkBAeUJj/a8wpdxJCufDpoaVUsB/XGK9XCqlGZvSy2TrjWLLBjZ3jiyjTlqIssfqI/IiJ4H2peocDaHXjFT0m+Av";
     private static final String priKey2 ="MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAJE5lYYWx1AE5E0XaxmQvg2putYOrya+Azd+QCHVA0rE8vUiXAuFia7TgjGQjhFO66SrcOJ3W2xSeHw6F1ApvZ8kfLB3ZsZT1e54QaWKU0ae0fcmk9dgrkpaniLCbd3PP8A+UUjwNeexIDjThYSzzatNGg06qdxgSCMc9bX7jwPlAgMBAAECgYA5Vtcmvk+r1IKfvaNX0MJ5eo5+fgXB8jwq6PpBYW2PU/vptctJ8UvPb0t0bnLpepOnzNkhUacTOezAf988k35+gw9Vrh6rXG4x7cZ65qbQOP+Xh0sx3YElyZKUBJzl5CMjNzT5ANc/QdpCD8LOOiPF4xpcHqKih74NGXc8hQv1AQJBAMNm1i6AC/oJM7XDnXPyswNVyjjIG+wi9xBgMGlt8JLH3c7/HblyAPHS/sFnljroVsHOyvoi45aZlIluhZsh6tUCQQC+QygmlnViImHq+MgL6bWaTLjKyTpH6k7zGQxvOxqJlioeWh73wxHAq/depKi8ElMrkEhMBA05ReCJl4Nb8xzRAkA28/HiS/KSVAot4SCj3iqIEpV3mJd5tm+jNFoJHHke3oS71TWH1M79M2if/cDbOkJD6SNea3d0ACcs6185vLUtAkBtrWLw05z5JB7UB/Oxwli4iO+hnlxlZnF6e38Kg8SpeZHwCz18z8tlCPzBZyQJvnqJS1QR1egVku18A4Zqs/txAkAg5kjdDw0v9QoQMr4oHZSuHxaG9I91SRkCPspN8urIg1Wu7cdTKfPdaAtSoU/xp/qpzfX+CPkhv7DoGlBLeo8e";
-
-    private static final String priKey3 = "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBANDzTWjIRJ6Y3dKT4Z08/QuUMjj3OFSgt8qD9ZFgT3TXik44olP7O0gVJiL+tBtCuqsW6nU2BWt2S/1/SmGVq1dxco1VSCU/Dk7ReBTMRyZBOxfzdMnaTWMbiO+ETodJl3eQbK1miJyVbg7hLe7s/8xiH7AGsKkppW6GC7Kpb4zJAgMBAAECgYBORbYLuGmsF4uQ5ICxjDUmbz9ZA5MAcKwomsIU0UUyecN/hcuZNhWA7Rs6JLuHMroGeTEe8zuYg9n3fgV5BL4H96z3SBSrY+BsCf1CxYGXEVCHzlt6g8575MqtxIlqPXnpKr9S1663EtsCCJ93t5rZmMA7z8bUbFRTcrUsajYzAQJBAPynP0a6Pk5JlF0TW5vbzusZb3CsEdPTp39NxlHEx9v/2xuREti1CSVMhdm8ZDdC5hDoETZn4DTiBAF0Z5it6pkCQQDTt9uSFv16v+62yJIz0KE9EUZrLua1BlfTIyvgBZQ6Lp5ORS2S9iVzfOS77mufysbfGSpmD6Oc5ElY2coUy8GxAkAlFB5zMM4IC0Bc0IR3QTECy77RGE+deMhyJGXghjKWlNwBFa9gYmEvOiXCqKVEfurovEYaZ/A9kpXn6L9zZsKxAkAuym+IdfRHcKu9Uc6eDPnVmT/K6G6si15Vl2xW8mS0ByGNgtRzqlrUj0GuFx9KDXKuU81/CO3L+tgK/vceaXnBAkEAk+OjzXA0KXZGKm+O8/Vl8yiJQpuvpuO4cxy4E7nEAjevFip88p4tO03DVxjyq2Az7457q/T+C/Ohr1X9uS/v/Q==";
-
-    private static final String priKey4 ="MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAIsMM2JkqnQACN+RUqRF4UkW58XnjpjA+RP4mnA4uD9KCjlJeTxvY0yHDqsvIaiXr7Ge0QB1VAKq0xit2BWHfVU/XlO1tqK+ea7YxooeoglvOkddiJiYTZUNjKM5AhttG950PpzrmeUcl9YGEZ/DwKKee+8tqaDWdIEHBnplO6mVAgMBAAECgYBtrWwCmoDRCw30uv5C0VQIgObE9gdGekB9/kRjbHn4ggBae5gDkaDzxjxNztlv0GYnZqxY/jML/46PEuE06jBzGcOlBuobQJJ38pTg0pnNVHbkTckxfUIr1MYUDhtO18tJZUZuMbYMwwgZ9K9E0N8kjKXk+rRx+BDjlbxNPds6KQJBAMLS/HCXjAfJlzSEWqkBavAKoW+bBhZlkTH+DoNk/KidASgdFBqtPUf5w3U+j8dK4nvt8R9X7zGxRAYXpDGHUucCQQC2tZlmL858suIA/+XfQVGoKOEvLlI5tGNDLXlDaKldY8UZGqxcyKaOsqEWMQnJCUy/0zTariN7kNssptYm04wjAkB3qVlt2lcizVn24rhAh+NjzlO7le8WQIn+t7m4UIWzFsQIHFwlynQSSkEYOTXcRY14avwnsT30Opm6WDj8Rs7PAkBytzqFSmbfLIFyFzmBH0Xhyyj3sqG10WixeQ+2HzSXiljqFjE6YFETL1yszkVSkCA8IKQC2Ws13hF+y5GR9yj5AkBAeUJj/a8wpdxJCufDpoaVUsB/XGK9XCqlGZvSy2TrjWLLBjZ3jiyjTlqIssfqI/IiJ4H2peocDaHXjFT0m+Av";
-    private static final String priKey5 ="MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAIrjgTKcxdzf4pJf97wOrG6NixxPCIxQ+BLsIHLBgacwuKh5gDYhxRcuq2XCE/HX/Xi4RhL18x7CQ95OU6q4oPFfpevX6zxuBqWzQ7F0FH8KMAc82cbUZmXGV803wgjIVqBtwYkPznftx1v2deRnQVigLHoZlJtr4mgyPFkFF5WJAgMBAAECgYBZf/Gpo8z9YGio2p7R2MLVGvEh9OwVP7gcuXzPdlMOYh8cse8k8u4G2lQo5r/jgMQeHuFJJqTclWMWxnKz+PX8nsWvrjl0VFB9kZGWvcAHZXky0DQ8yActFYuxMZZT8eyFjHJ6kynjLGKpsvyYzDHH7PFPFUbDAMr4FIqt2zGngQJBAN5v9dMklCVGTHZIs5bm3+MINTZmaGa/TYFDj+p7R0oosThx0+uVFTtEhurzMN4V8RNieBleKjIEQNMp6y4lxO0CQQCf2FQSyK26oncARWEvCyjkIhisKRgidoVzJMiX3PTxiz14xDI4zpycEkoG3Y5idKdsoUwC5JUprt3n58nMFbuNAkAwLA0P0f8nZ2cNwsbp6kwYTeHAS0NW5R0y3l/fhx00SUXAFJ6xiVLUyA1z+oDdx+CyswORctwugs9LK+vbzaAtAkAkienmBVOZNywmtrVZcJ6fT5/+MsKeliM5R+5GsK6ZTG/33DlyvOAV2SRs31Z98RaYgWKDwsbKKXv2WAjMCye9AkAMfoZc2AKhgY/URsALVPOggcRybpZiNAo6iZSMSu7JG0Vkc0l2JPje2MTN6NpulikPfghoSDr0fpLbkR4CiVIQ";
-
     @Autowired
     private BlockChainService blockChainService;
 
@@ -105,11 +102,13 @@ public class BlockChainServiceImplTest extends BaseTest{
 
     private List<Action> initPolicy() {
         RegisterPolicy registerPolicy = new RegisterPolicy();
-        registerPolicy.setPolicyId("test-policy-2");
+        registerPolicy.setPolicyId("test-policy-1");
         registerPolicy.setPolicyName("测试注册policy-1");
+        registerPolicy.setDecisionType(DecisionTypeEnum.FULL_VOTE);
+        registerPolicy.setContractAddr(null);
 
         List<String> rsIds = new ArrayList<>();
-        rsIds.add("TRUST-NODE33");
+        rsIds.add("TRUST-TEST1");
         registerPolicy.setRsIds(rsIds);
         registerPolicy.setType(ActionTypeEnum.REGISTER_POLICY);
         registerPolicy.setIndex(0);
@@ -124,7 +123,6 @@ public class BlockChainServiceImplTest extends BaseTest{
         RegisterRS registerRS = new RegisterRS();
         registerRS.setType(ActionTypeEnum.REGISTER_RS);
         registerRS.setIndex(0);
-      //  registerRS.setPubKey("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCkML/JGk5jdeWe3OoM9/+2vMJrbiaoJ9ublgJATub07Og6XwdDX+zeYzh9qTIZIKpHYjpaTaU2/s6CWfgzctvJhx26W/fRgxKGuc73F8cqVOcqzYZq3IdWyWymUIhqF/+TQImvbfypbcXXLOhJlrjkAe/Xy4Sw4MB3lA82DnTNdwIDAQAB");
         registerRS.setDesc("rs-test3-desc");
         registerRS.setRsId("rs-test3");
 
@@ -134,43 +132,58 @@ public class BlockChainServiceImplTest extends BaseTest{
 
 
     @Test
-    public void createPolicyTx() throws Exception {
-
-
-
+    public void createPolicyTx() {
         SignedTransaction signedTx1 = new SignedTransaction();
-
         CoreTransaction coreTx1 = new CoreTransaction();
 
-        coreTx1.setTxId("pending-tx-test-2");
+        coreTx1.setTxId("pending-tx-test-1");
         coreTx1.setActionList(initPolicy());
         coreTx1.setPolicyId("000000");
         coreTx1.setLockTime(new Date());
         coreTx1.setBizModel(new JSONObject());
         coreTx1.setSender("TRUST-NODE31");
         coreTx1.setVersion(VersionEnum.V1.getCode());
+        coreTx1.setSendTime(new Date());
 
-        System.out.println(JSON.toJSONString(coreTx1));
-
-        String sign1 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey4);
-        String sign2 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey5);
-        List<String> signList = new ArrayList<>();
-        signList.add(sign1);
-        signList.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-//        signedTx1.setSignatureList(signList);
-
-        System.out.println("signedTx1: " + JSONObject.toJSONString(signedTx1));
-
-//        System.out.println(JSON.toJSONString(signedTx));
-
-//        signedTx1.setCoreTx(coreTx1);
-//        signedTx1.setSignatureList(signList);
+        signedTx1.setSignatureList(buildSignInfoList(coreTx1));
         signedTxList.add(signedTx1);
 
-        System.out.println("create  Policy tx: "+ JSONObject.toJSONString(signedTxList));
+        SignedTransaction signedTx2 = new SignedTransaction();
+        CoreTransaction coreTx2 = new CoreTransaction();
+
+        coreTx2.setTxId("pending-tx-test-2");
+        coreTx2.setActionList(initPolicy());
+        coreTx2.setPolicyId("000000");
+        coreTx2.setLockTime(new Date());
+        coreTx2.setBizModel(new JSONObject());
+        coreTx2.setSender("TRUST-NODE31");
+        coreTx2.setVersion(VersionEnum.V1.getCode());
+        coreTx2.setSendTime(new Date());
+
+        signedTx2.setCoreTx(coreTx2);
+        signedTx2.setSignatureList(buildSignInfoList(coreTx2));
+        signedTxList.add(signedTx2);
+
+//        System.out.println("create  Policy tx: "+ JSONObject.toJSONString(signedTxList));
     }
 
+    private List<SignInfo> buildSignInfoList(CoreTransaction coreTx) {
+        String sign1 = SignUtils.sign(JSON.toJSONString(coreTx), priKey1);
+        String sign2 = SignUtils.sign(JSON.toJSONString(coreTx), priKey2);
+        List<SignInfo> signList = new ArrayList<>();
+        SignInfo signInfo1 = new SignInfo();
+        signInfo1.setOwner("NODE-TEST1");
+        signInfo1.setSign(sign1);
+        signList.add(signInfo1);
+
+        SignInfo signInfo2 = new SignInfo();
+        signInfo2.setOwner("NODE-TEST2");
+        signInfo2.setSign(sign2);
+        signList.add(signInfo2);
+
+        return signList;
+    }
 
     @Test
     public void createIdentityTx() throws Exception {
@@ -419,10 +432,10 @@ public class BlockChainServiceImplTest extends BaseTest{
     @Test
     public void testSubmitTransaction() {
         try {
-            System.out.println(JSON.toJSONString(signedTx));
-//            RespData respData = blockChainService.submitTransaction(signedTx);
-//            Assert.assertEquals("000000", respData.getRespCode());
-//            Assert.assertEquals("success", respData.getMsg());
+//            System.out.println(JSON.toJSONString(signedTx));
+            RespData respData = blockChainService.submitTransactions(signedTxList);
+            Assert.assertEquals("000000", respData.getRespCode());
+            Assert.assertEquals("success", respData.getMsg());
 //            System.out.println(respData);
         } catch (Throwable e) {
             System.out.println(e);

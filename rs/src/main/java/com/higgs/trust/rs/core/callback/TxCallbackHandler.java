@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.common;
+package com.higgs.trust.rs.core.callback;
 
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -35,5 +35,5 @@ public interface TxCallbackHandler {
      *
      * @param respData
      */
-    void onFailOver(RespData<CoreTransaction> respData);
+    void onFailover(RespData<CoreTransaction> respData);
 }

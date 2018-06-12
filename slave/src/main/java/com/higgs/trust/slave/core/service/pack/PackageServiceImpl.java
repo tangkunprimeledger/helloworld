@@ -15,14 +15,10 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.managment.NodeState;
-import com.higgs.trust.slave.core.repository.BlockRepository;
-import com.higgs.trust.slave.core.repository.PackageRepository;
-import com.higgs.trust.slave.core.repository.RsNodeRepository;
-import com.higgs.trust.slave.core.repository.TransactionRepository;
+import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandler;
-import com.higgs.trust.slave.core.service.pending.PendingState;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.transaction.TransactionExecutor;
 import com.higgs.trust.slave.model.bo.*;
@@ -32,6 +28,7 @@ import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.convert.PackageConvert;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
+import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,8 +55,6 @@ import java.util.stream.Collectors;
 
     @Autowired private BlockService blockService;
 
-    @Autowired private PendingState pendingState;
-
     @Autowired private NodeState nodeState;
 
     @Autowired private LogReplicateHandler logReplicateHandler;
@@ -78,6 +73,8 @@ import java.util.stream.Collectors;
 
     @Autowired private RsNodeRepository rsNodeRepository;
 
+    @Autowired private PendingTxRepository pendingTxRepository;
+
     @Value("${trust.package.pending:1000}")
     private int PACKAGE_PENDING_COUNT;
 
@@ -95,8 +92,6 @@ import java.util.stream.Collectors;
         Long height = getHeight(packHeight);
 
         if (null == height) {
-            //write list of SignedTransaction to pendingTxQueue
-            pendingState.addPendingTxsToQueueFirst(signedTransactions);
             return null;
         }
 
@@ -182,6 +177,11 @@ import java.util.stream.Collectors;
 
         pack.setStatus(PackageStatusEnum.RECEIVED);
         packageRepository.save(pack);
+        //save pendingTx to db
+        pack.getSignedTxList().forEach(signedTransaction -> {
+            pendingTxRepository.saveWithStatus(signedTransaction, PendingTxStatusEnum.PACKAGED, pack.getHeight());
+        });
+
     }
 
     /**

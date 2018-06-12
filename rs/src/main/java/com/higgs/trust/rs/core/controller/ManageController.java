@@ -1,6 +1,6 @@
-package com.higgs.trust.rs.custom.controller.outter.v1;
+package com.higgs.trust.rs.core.controller;
 
-import com.higgs.trust.rs.custom.api.manage.RsManageService;
+import com.higgs.trust.rs.core.api.RsManageService;
 import com.higgs.trust.rs.custom.api.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterRsVO;

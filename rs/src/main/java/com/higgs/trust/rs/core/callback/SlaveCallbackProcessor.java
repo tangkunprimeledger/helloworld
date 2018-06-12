@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.core.service;
+package com.higgs.trust.rs.core.callback;
 
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -14,7 +14,6 @@ import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
-import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,7 @@ import java.util.List;
     @Autowired private TransactionTemplate txRequired;
     @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Autowired private RsCoreCallbackHandler rsCoreCallbackHandler;
+    @Autowired private RsCoreCallbackProcessor rsCoreCallbackProcessor;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
@@ -55,28 +54,28 @@ import java.util.List;
     @Override public void onValidated(CoreTransaction coreTx) {
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData,List<SignInfo> signInfos) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
-        if(callbackType == CallbackTypeEnum.SELF){
+        if (callbackType == CallbackTypeEnum.SELF) {
             //not send by myself, don't execute
             if (!sendBySelf(tx.getSender())) {
                 log.info("[onPersisted]only call self");
                 return;
             }
-        }else{
+        } else {
             log.info("[onPersisted]call all");
             //not send by myself
             if (!sendBySelf(tx.getSender())) {
                 CoreTransactionPO po = coreTxRepository.queryByTxId(tx.getTxId(), false);
                 if (po == null) {
                     //add tx,status=END
-                    coreTxRepository.add(tx,signInfos,CoreTxStatusEnum.END);
+                    coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
                     //callback custom rs
-                    if(isFailOver){
-                        rsCoreCallbackHandler.onFailOver(respData);
-                    }else{
-                        rsCoreCallbackHandler.onPersisted(respData);
+                    if (isFailOver) {
+                        rsCoreCallbackProcessor.onFailover(respData);
+                    } else {
+                        rsCoreCallbackProcessor.onPersisted(respData);
                     }
                 }
                 return;
@@ -84,13 +83,13 @@ import java.util.List;
         }
         //for self
         //process fail over
-        if(isFailOver){
+        if (isFailOver) {
             log.info("[onPersisted]for isFailOver");
             CoreTransactionPO po = coreTxRepository.queryByTxId(tx.getTxId(), false);
             if (po == null) {
                 //add tx,status=END
                 coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
-                rsCoreCallbackHandler.onFailOver(respData);
+                rsCoreCallbackProcessor.onFailover(respData);
             }
             return;
         }
@@ -99,7 +98,7 @@ import java.util.List;
                 //update status
                 coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
                 //callback custom rs
-                rsCoreCallbackHandler.onPersisted(respData);
+                rsCoreCallbackProcessor.onPersisted(respData);
             }
         });
         //同步通知
@@ -110,34 +109,34 @@ import java.util.List;
         }
     }
 
-    @Override public void onClusterPersisted(RespData<CoreTransaction> respData,List<SignInfo> signInfos) {
+    @Override public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
-        if(callbackType == CallbackTypeEnum.SELF){
+        if (callbackType == CallbackTypeEnum.SELF) {
             //not send by myself, don't execute
             if (!sendBySelf(tx.getSender())) {
                 log.info("[onClusterPersisted]only call self");
                 return;
             }
-        }else{
+        } else {
             log.info("[onClusterPersisted]call all");
             //not send by myself
             if (!sendBySelf(tx.getSender())) {
                 CoreTransactionPO po = coreTxRepository.queryByTxId(tx.getTxId(), false);
                 if (po == null) {
                     //add tx,status=END
-                    coreTxRepository.add(tx,signInfos,CoreTxStatusEnum.END);
+                    coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
                 }
                 //callback custom rs
-                if(!isFailOver){
-                    rsCoreCallbackHandler.onEnd(respData);
+                if (!isFailOver) {
+                    rsCoreCallbackProcessor.onEnd(respData);
                 }
                 return;
             }
         }
         //for self
         //process fail over
-        if(isFailOver){
+        if (isFailOver) {
             return;
         }
         txRequired.execute(new TransactionCallbackWithoutResult() {
@@ -145,7 +144,7 @@ import java.util.List;
                 //update status
                 coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
                 //callback custom rs
-                rsCoreCallbackHandler.onEnd(respData);
+                rsCoreCallbackProcessor.onEnd(respData);
             }
         });
         //同步通知

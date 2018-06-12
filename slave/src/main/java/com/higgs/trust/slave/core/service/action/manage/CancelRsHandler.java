@@ -40,12 +40,6 @@ public class CancelRsHandler implements ActionHandler {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        // validate param
-        if (!BeanValidator.validate(bo).isSuccess()) {
-            log.error("[CancelRSHandler.process] param validate is fail");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
         //check rsId and sender
         CoreTransaction coreTx = actionData.getCurrentTransaction().getCoreTx();
         String rsId = bo.getRsId();

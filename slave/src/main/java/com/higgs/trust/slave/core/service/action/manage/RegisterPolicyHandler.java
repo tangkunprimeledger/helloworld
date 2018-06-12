@@ -21,7 +21,7 @@ import java.util.Set;
 /**
  * @author tangfashuang
  * @date 2018/03/28
- * @desc register policy datahandler
+ * @desc register policy handler
  */
 @Slf4j @Component public class RegisterPolicyHandler implements ActionHandler {
 
@@ -35,12 +35,6 @@ import java.util.Set;
         RegisterPolicy bo = (RegisterPolicy)actionData.getCurrentAction();
         if (null == bo) {
             log.error("[RegisterPolicyHandler.process] convert to RegisterPolicy error");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
-        // validate param
-        if (!BeanValidator.validate(bo).isSuccess()) {
-            log.error("[RegisterPolicyHandler.process] param validate failed");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 

@@ -55,7 +55,7 @@ public class CoreTransaction extends BaseBO {
     /**
      * transaction create time
      */
-    @NotBlank
+    @NotNull
     private Date sendTime;
 
     /**

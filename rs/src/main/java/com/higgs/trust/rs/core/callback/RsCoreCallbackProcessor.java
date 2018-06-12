@@ -1,8 +1,7 @@
-package com.higgs.trust.rs.core.service;
+package com.higgs.trust.rs.core.callback;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.higgs.trust.rs.common.TxCallbackHandler;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Component;
  * @description
  * @date 2018-06-07
  */
-@Component @Slf4j public class RsCoreCallbackHandler implements TxCallbackHandler {
+@Component @Slf4j public class RsCoreCallbackProcessor implements TxCallbackHandler {
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private VoteRuleRepository voteRuleRepository;
 
@@ -70,8 +69,17 @@ import org.springframework.stereotype.Component;
         callbackHandler.onEnd(respData);
     }
 
-    @Override public void onFailOver(RespData<CoreTransaction> respData) {
-
+    @Override public void onFailover(RespData<CoreTransaction> respData) {
+        CoreTransaction coreTransaction = respData.getData();
+        String policyId = coreTransaction.getPolicyId();
+        InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
+        switch (policyEnum) {
+            case REGISTER_POLICY:
+                processRegisterPolicy(respData);
+                return;
+        }
+        TxCallbackHandler callbackHandler = getCallbackHandler();
+        callbackHandler.onFailover(respData);
     }
 
     /**
