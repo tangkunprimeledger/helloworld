@@ -17,7 +17,7 @@ import java.util.Date;
 
     private Date period;
 
-    private String valid;
+    private boolean valid;
 
     private String pubKey;
 

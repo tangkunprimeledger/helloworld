@@ -173,7 +173,17 @@
         <appender-ref ref="CONSOLE"/>
     </logger>
 
-    <root level="INFO">
+    <!--<root level="INFO">
+        <appender-ref ref="DEFAULT-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>-->
+
+    <logger name="org.apache.ibatis" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <root level="DEBUG">
         <appender-ref ref="DEFAULT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
         <appender-ref ref="CONSOLE"/>

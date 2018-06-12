@@ -25,8 +25,8 @@ class ca {
     def acquireCA(InvocationContext context,
                   @Usage("user") @Required @Argument String user) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def caRepository = beans.getBean(CaRepository.class)
-        def ca = caRepository.getCa(user)
+        def caService = beans.getBean(CaService.class)
+        def ca = caService.getCa(user)
         out.println("acquire CA successful, user= $ca.user, pubKey= $ca.pubKey")
     }
 

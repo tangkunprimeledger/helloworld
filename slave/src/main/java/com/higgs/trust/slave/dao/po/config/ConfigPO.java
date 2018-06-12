@@ -14,7 +14,7 @@ import java.util.Date;
 @Getter @Setter public class ConfigPO extends BaseEntity {
     private String version;
 
-    private String valid;
+    private boolean valid;
 
     private String pubKey;
 

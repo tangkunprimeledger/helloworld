@@ -77,8 +77,15 @@ public interface CaService {
 
     /** 
      * @desc acquire CA information by user
+     * @param caVO
+     * @return   
+     */
+    RespData<Ca> acquireCA(CaVO caVO);
+
+    /** 
+     * @desc TODO 
      * @param user
      * @return   
      */  
-    Ca acquireCa(String user);
+    Ca getCa(String user);
 }

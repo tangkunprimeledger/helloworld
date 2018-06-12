@@ -27,7 +27,7 @@ import java.util.Locale;
 
     private List<StateChangeListener> stateListeners = new ArrayList<>();
 
-    @Getter private NodeStateEnum state = NodeStateEnum.Starting;
+    @Getter private NodeStateEnum state = NodeStateEnum.Running;
 
     /**
      * 当前节点是否为master

@@ -34,4 +34,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
      */
     @RequestMapping(value = "/ca/init", method = RequestMethod.POST) RespData<String> caInit(
         @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName);
+
+
+    /**
+     * @param
+     * @return
+     * @desc send acqurie ca  request
+     */
+    @RequestMapping(value = "/ca/get", method = RequestMethod.POST) RespData<String> acquireCA(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody CaVO caVO);
 }
