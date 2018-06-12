@@ -71,7 +71,7 @@ public class DataIdentitySnapshotAgent implements CacheLoader {
      */
     @Override
     public Object query(Object object) {
-        if (!(object instanceof UTXOSnapshotAgent.TxOutCacheKey)) {
+        if (!(object instanceof DataIdentityCacheKey)) {
             log.error("object {} is not the type of DataIdentityCacheKey error", object);
             throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
         }

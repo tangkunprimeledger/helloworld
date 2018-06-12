@@ -940,7 +940,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      */
     private void isOpenTransactionException(){
         if (isOpenTransaction) {
-            log.info("The snapshot transaction has been started ! So we can't deal with rollback");
+            log.info("The snapshot transaction has been started ! So we can't deal with this action");
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_HAS_STARTED_EXCEPTION);
         }
     }
@@ -950,7 +950,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      */
     private void isNotOpenTransactionException(){
         if (!isOpenTransaction) {
-            log.info("The snapshot transaction has not been started ! So we can't deal with rollback");
+            log.info("The snapshot transaction has not been started ! So we can't deal with this action");
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
         }
     }
