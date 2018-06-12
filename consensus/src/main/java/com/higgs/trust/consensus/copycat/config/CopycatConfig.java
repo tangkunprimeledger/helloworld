@@ -5,6 +5,7 @@ import com.higgs.trust.consensus.copycat.core.CopyCatCommitReplicateComposite;
 import com.higgs.trust.consensus.copycat.core.CopycateStateMachine;
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusClient;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.copycat.client.ConnectionStrategies;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
@@ -30,12 +32,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Configuration @Slf4j @ConditionalOnExpression("!'${copycat.server.cluster:}'.isEmpty()") public class CopycatConfig
-    implements ApplicationListener {
+@ConditionalOnProperty(prefix = "copycat", name = "server", havingValue = "cluster")
+@Configuration @Slf4j public class CopycatConfig
+    implements ApplicationListener ,ConsensusStateMachine{
 
     @Autowired private CopycatProperties copycatProperties;
 
     @Autowired private StateMachine stateMachine;
+
+    private CopycatServer server;
+
+    @Bean public ConsensusStateMachine consensusStateMachine(){
+        return this;
+    }
 
     @Bean public ConsensusClient consensusClient() {
         String server = copycatProperties.getClient();
@@ -52,7 +61,7 @@ import java.util.List;
         client.connect(addressList);
         return new CopycatClientAdapter(client);
     }
-    
+
     @Bean public AbstractCommitReplicateComposite replicateComposite() {
         return new CopyCatCommitReplicateComposite();
     }
@@ -89,7 +98,8 @@ import java.util.List;
             .withCompactionThreshold(properties.getCompactionThreshold()).build();
 
         builder.withStorage(storage);
-        CopycatServer server = builder.build();
+//        CopycatServer server = builder.build();
+        server = builder.build();
         List<String> clusterList = Arrays.asList(properties.getCluster().split(","));
         List<Address> clusterAddress = new ArrayList<>();
         for (String addressStr : clusterList) {
@@ -103,5 +113,20 @@ import java.util.List;
         if (event instanceof ContextStartedEvent) {
             start(copycatProperties, stateMachine);
         }
+    }
+
+    @Override
+    public void leaveConsensus() {
+        server.leave();
+    }
+
+    @Override
+    public void joinConsensus() {
+
+    }
+
+    @Override
+    public void initStart() {
+
     }
 }
