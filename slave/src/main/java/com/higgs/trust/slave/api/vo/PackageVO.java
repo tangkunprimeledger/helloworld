@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.api.vo;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.Getter;
@@ -28,12 +29,7 @@ import java.util.List;
     /**
      * block height
      */
-<<<<<<< HEAD
     @NotNull private Long height;
 
 
-=======
-    @NotNull
-    private Long height;
->>>>>>> dev_0610_ca
 }

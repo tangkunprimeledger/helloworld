@@ -61,25 +61,14 @@ public interface PackageService {
     void remove(Package pack);
 
     /**
-     * get package signature
-     *
-     * @param packageVO
-     * @return
-     */
-    String getSign(PackageVO packageVO);
-
-    /**
      * submit package to consensus
      * @param pack
      */
     void submitConsensus(Package pack);
 
-<<<<<<< HEAD
-=======
     /**
      * persisted
      * @param header
      */
     void persisted(BlockHeader header);
->>>>>>> dev_0610_ca
 }
