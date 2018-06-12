@@ -38,26 +38,26 @@ public class UTXOActionHandlerTest extends BaseTest {
     private void TestProcess() {
 
         snapshotService.clear();
-
+        snapshotService.destroy();
         snapshotService.startTransaction();
         utxoActionHandler.process(buildActionData());
         snapshotService.commit();
 
-        snapshotService.startTransaction();
+     /*   snapshotService.startTransaction();
         utxoActionHandler.process(buildActionData1());
-        snapshotService.commit();
+        snapshotService.commit();*/
 
         snapshotService.flush();
     }
 
 
-    private ActionData buildActionData() {
+    private ActionData buildDestroyActionData() {
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setContractAddress("1234567");
 
         TxIn txIn = new TxIn();
         txIn.setIndex(0);
-        txIn.setTxId("UTXOlingchao");
+        txIn.setTxId("UTXOlingchao1528799659919");
         txIn.setActionIndex(0);
 
         List<TxIn> inputList = new ArrayList<>();
@@ -75,6 +75,76 @@ public class UTXOActionHandlerTest extends BaseTest {
         TxOut txOut1 = new TxOut();
         JSONObject state1 = new JSONObject();
         state1.put("amount", new BigDecimal("500"));
+        txOut1.setIndex(1);
+        txOut1.setActionIndex(0);
+        txOut1.setIdentity("12312312321");
+        txOut1.setState(state1);
+
+
+        List<TxOut> outList = new ArrayList<>();
+        outList.add(txOut);
+        outList.add(txOut1);
+       // utxoAction.setOutputList(outList);
+        utxoAction.setInputList(inputList);
+        utxoAction.setIndex(0);
+        utxoAction.setUtxoActionType(UTXOActionTypeEnum.DESTRUCTION);
+        utxoAction.setStateClass("12312");
+        utxoAction.setType(ActionTypeEnum.UTXO);
+        SignedTransaction signedTransaction = new SignedTransaction();
+
+        CoreTransaction coreTx = new CoreTransaction();
+        coreTx.setPolicyId("000004");
+        coreTx.setTxId("UTXOlingchao"+System.currentTimeMillis());
+        signedTransaction.setCoreTx(coreTx);
+        ActionData ActionData1 = new ActionData() {
+            @Override
+            public Block getCurrentBlock() {
+                return null;
+            }
+
+            @Override
+            public Package getCurrentPackage() {
+                return null;
+            }
+
+            @Override
+            public SignedTransaction getCurrentTransaction() {
+                return signedTransaction;
+            }
+
+            @Override
+            public Action getCurrentAction() {
+                return utxoAction;
+            }
+        };
+        return ActionData1;
+    }
+
+
+    private ActionData buildActionData() {
+        UTXOAction utxoAction = new UTXOAction();
+        utxoAction.setContractAddress("1234567");
+
+        TxIn txIn = new TxIn();
+        txIn.setIndex(1);
+        txIn.setTxId("UTXOlingchao1528799659919");
+        txIn.setActionIndex(0);
+
+        List<TxIn> inputList = new ArrayList<>();
+        inputList.add(txIn);
+
+
+        TxOut txOut = new TxOut();
+        JSONObject state = new JSONObject();
+        state.put("amount", new BigDecimal("200"));
+        txOut.setIndex(0);
+        txOut.setActionIndex(0);
+        txOut.setIdentity("123123123211");
+        txOut.setState(state);
+
+        TxOut txOut1 = new TxOut();
+        JSONObject state1 = new JSONObject();
+        state1.put("amount", new BigDecimal("300"));
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
         txOut1.setIdentity("12312312321");

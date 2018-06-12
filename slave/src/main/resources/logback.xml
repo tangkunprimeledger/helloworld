@@ -183,7 +183,7 @@
         <appender-ref ref="CONSOLE"/>
     </logger>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="DEFAULT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
         <appender-ref ref="CONSOLE"/>
