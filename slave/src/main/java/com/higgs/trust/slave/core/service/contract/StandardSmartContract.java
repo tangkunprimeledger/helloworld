@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
     @Autowired private StandardContractContextService contextService;
     @Autowired private ContractSnapshotAgent snapshotAgent;
     @Autowired private ContractStateSnapshotAgent contractStateSnapshotAgent;
-    @Autowired private DbContractStateStoreImpl contractStateStore;
 
     private ExecuteEngineManager engineManager;
 
@@ -33,25 +32,18 @@ import org.springframework.stereotype.Service;
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);
         manager.setDbStateStore(new ContractStateStore() {
-            private ContractStateStore getContractStateStore() {
-                // TODO delete isValidateStage
-                if (ExecuteContext.getCurrent().isValidateStage()) {
-                    return contractStateSnapshotAgent;
-                }
-                return contractStateStore;
-            }
             @Override
             public void put(String key, StateManager state) {
                 log.debug("put contract state to db, the key is {}, state size: {}", key, state.getState().size());
-                getContractStateStore().put(key, state);
+                contractStateSnapshotAgent.put(key, state);
             }
             @Override
             public StateManager get(String key) {
-                return getContractStateStore().get(key);
+                return contractStateSnapshotAgent.get(key);
             }
             @Override
             public void remove(String key) {
-                getContractStateStore().remove(key);
+                contractStateSnapshotAgent.remove(key);
             }
         });
         engineManager = manager;

@@ -10,17 +10,52 @@
 
     <!-- contract table all fields -->
     <sql id="baseColumnList">
-        id,address,state
+        id,address,update_time,state
     </sql>
+
+    <!-- batch insert -->
+    <insert id ="batchInsert" parameterType="java.util.Collection" >
+        INSERT INTO contract_state (address, update_time, state)
+        VALUES
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.address}, now(3), #{item.state})
+        </foreach>
+    </insert>
+
+    <!-- batch update -->
+    <update id="batchUpdate" parameterType="java.util.Collection">
+        UPDATE contract_state
+        <trim prefix="SET" suffixOverrides=",">
+            <trim prefix="`state` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `address` = #{item.address}
+                    THEN #{item.state}
+                </foreach>
+                ELSE `state`
+            </trim>
+            <trim prefix="`update_time` = CASE" suffix="END">
+                <foreach collection="list" item="item">
+                    WHEN `address` = #{item.address}
+                    THEN now(3)
+                </foreach>
+                ELSE `update_time`
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" item="item" separator="or" open="(" close=")">
+                `address` = #{item.address}
+            </foreach>
+        </where>
+    </update>
 
     <!-- add -->
     <insert id="add" parameterType="com.higgs.trust.slave.dao.po.contract.ContractStatePO">
-        INSERT INTO contract_state (address, state)
-        VALUES (#{address}, #{state})
+        INSERT INTO contract_state (address, update_time, state)
+        VALUES (#{address}, now(3), #{state})
     </insert>
 
     <insert id="save"  parameterType="com.higgs.trust.slave.dao.po.contract.ContractStatePO">
-        INSERT INTO contract_state (address, state) VALUES (#{address}, #{state})
+        INSERT INTO contract_state (address, update_time, state) VALUES (#{address}, now(3), #{state})
         ON DUPLICATE KEY UPDATE state=#{state}
     </insert>
 

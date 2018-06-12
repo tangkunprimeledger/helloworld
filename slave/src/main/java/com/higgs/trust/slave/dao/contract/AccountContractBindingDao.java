@@ -5,6 +5,7 @@ import com.higgs.trust.slave.dao.po.contract.AccountContractBindingPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -12,6 +13,14 @@ import java.util.List;
  * @date 2018/4/26
  */
 @Mapper public interface AccountContractBindingDao extends BaseDao<AccountContractBindingPO> {
+
+    /**
+     * batch insert
+     * @param list
+     * @return
+     */
+    int batchInsert(Collection<AccountContractBindingPO> list);
+
     /**
      * query AccountContractBinding list by accountNo
      * @param accountNo
