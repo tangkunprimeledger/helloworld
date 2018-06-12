@@ -1,6 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
-import com.higgs.trust.rs.common.TxCallbackHandler;
+import com.higgs.trust.rs.core.callback.TxCallbackHandler;
 import org.springframework.stereotype.Repository;
 
 /**
