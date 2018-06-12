@@ -36,7 +36,7 @@ import java.util.List;
     @Autowired private TransactionTemplate txRequired;
     @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
+    @Autowired private RsCoreCallbackProcessor rsCoreCallbackProcessor;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
@@ -73,9 +73,9 @@ import java.util.List;
                     coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
                     //callback custom rs
                     if (isFailOver) {
-                        rsCoreCallbackHandler.onFailover(respData);
+                        rsCoreCallbackProcessor.onFailover(respData);
                     } else {
-                        rsCoreCallbackHandler.onPersisted(respData);
+                        rsCoreCallbackProcessor.onPersisted(respData);
                     }
                 }
                 return;
@@ -89,7 +89,7 @@ import java.util.List;
             if (po == null) {
                 //add tx,status=END
                 coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
-                rsCoreCallbackHandler.onFailover(respData);
+                rsCoreCallbackProcessor.onFailover(respData);
             }
             return;
         }
@@ -98,7 +98,7 @@ import java.util.List;
                 //update status
                 coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
                 //callback custom rs
-                rsCoreCallbackHandler.onPersisted(respData);
+                rsCoreCallbackProcessor.onPersisted(respData);
             }
         });
         //同步通知
@@ -129,7 +129,7 @@ import java.util.List;
                 }
                 //callback custom rs
                 if (!isFailOver) {
-                    rsCoreCallbackHandler.onEnd(respData);
+                    rsCoreCallbackProcessor.onEnd(respData);
                 }
                 return;
             }
@@ -144,7 +144,7 @@ import java.util.List;
                 //update status
                 coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
                 //callback custom rs
-                rsCoreCallbackHandler.onEnd(respData);
+                rsCoreCallbackProcessor.onEnd(respData);
             }
         });
         //同步通知
