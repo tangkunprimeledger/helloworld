@@ -254,7 +254,7 @@ import static org.testng.Assert.assertEquals;
         when(pack.getCurrentBlock()).thenReturn(block);
         when(packageService.createPackContext(any())).thenReturn(pack);
         syncService.sync(startHeight, size);
-        verify(packageService, times(size)).process(any());
+        verify(packageService, times(size)).process(any(),true);
     }
 
     @Test public void testSyncBlockValidatingFailed() {
