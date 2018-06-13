@@ -21,6 +21,14 @@ public interface MerkleService {
     MerkleTree build(MerkleTypeEnum type, List<Object> dataList);
 
     /**
+     * is exist
+     *
+     * @param merkleTree
+     * @param obj
+     * @return
+     */
+    boolean isExist(MerkleTree merkleTree,Object obj);
+    /**
      * update a merkle tree
      *
      * @param merkleTree

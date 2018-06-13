@@ -52,6 +52,17 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
     }
 
     /**
+     * is exist node
+     *
+     * @param typeEnum
+     * @param obj
+     * @return
+     */
+    public boolean isExist(MerkleTypeEnum typeEnum,Object obj) {
+        return merkleService.isExist(getMerkleTree(typeEnum),obj);
+    }
+
+    /**
      * build an new merkle tree for obj and save to snapshot
      *
      * @param typeEnum
