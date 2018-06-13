@@ -56,6 +56,9 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
     @Getter private String prefix;
 
 
+    @Getter @Setter private long currentTerm = 0;
+
+
     public static final String MASTER_NA = "N/A";
 
     @Override public void afterPropertiesSet() {
