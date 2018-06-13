@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.core.service.action;
+package com.higgs.trust.slave.core.service.action.manage;
 
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;

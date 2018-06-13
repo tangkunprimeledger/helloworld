@@ -36,7 +36,7 @@
     <insert id="add" parameterType="object">
 		insert into
 		policy(policy_id,policy_name,decision_type,contract_addr,rs_ids,create_time)
-		values(#{policyId},#{policyName},#{decisionType},#{contractAddr}#{rsIds},now(3))
+		values(#{policyId},#{policyName},#{decisionType},#{contractAddr},#{rsIds},now(3))
 	</insert>
     <!-- 删除记录 -->
     <delete id="delete" parameterType="object">
@@ -71,7 +71,7 @@
         policy(policy_id,policy_name,decision_type,contract_addr,rs_ids,create_time)
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
-            (#({item.policyId}, #{item.policyName}, #{decisionType},#{contractAddr},#{item.rsIds}, now(3)))
+            (#{item.policyId}, #{item.policyName}, #{item.decisionType},#{item.contractAddr},#{item.rsIds}, now(3))
         </foreach>
     </insert>
 

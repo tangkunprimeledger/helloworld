@@ -78,6 +78,7 @@ public enum SlaveErrorEnum {
     SLAVE_DATA_NOT_INSERT_EXCEPTION("523", "data not insert  exception", false),
     SLAVE_SNAPSHOT_FLUSH_DATA_EXCEPTION("524", "snapshot flush data exception", false),
     SLAVE_RS_NOT_EXISTS_ERROR("525", "RS is not exist", false),
+    SLAVE_RS_ALREADY_CANCELED_ERROR("526", "RS is already canceled exception", false),
 
 
     SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION("600", "slave merkle param not valid exception", false),

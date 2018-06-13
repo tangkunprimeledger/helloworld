@@ -83,7 +83,7 @@ public class ManageSnapshotAgent implements CacheLoader {
 
         List<RsNodePO> rsNodePOList = new ArrayList<>();
         List<PolicyPO> policyPOList = new ArrayList<>();
-        for (Map.Entry entry : insertMap.entrySet()) {
+        for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
             if ((entry.getKey() instanceof  RsNodeCacheKey)) {
                 rsNodePOList.add((RsNodePO)entry.getValue());
             } else if ((entry.getKey() instanceof  PolicyCacheKey)) {
@@ -137,18 +137,22 @@ public class ManageSnapshotAgent implements CacheLoader {
 
     public Policy registerPolicy(RegisterPolicy registerPolicy) {
         Policy policy = policyRepository.convertActionToPolicy(registerPolicy);
-        insert(new PolicyCacheKey(policy.getPolicyId()), policy);
+
+        insert(new PolicyCacheKey(policy.getPolicyId()),
+            policyRepository.convertPolicyToPolicyPO(policy));
         return policy;
     }
 
     public RsNode registerRs(RegisterRS registerRS) {
         RsNode rsNode = rsNodeRepository.convertActionToRsNode(registerRS);
-        insert(new RsNodeCacheKey(rsNode.getRsId()), rsNode);
+        insert(new RsNodeCacheKey(rsNode.getRsId()),
+            rsNodeRepository.convertRsNodeToRsNodePO(rsNode));
         return rsNode;
     }
 
     public void updateRs(RsNode rsNode) {
-        update(new RsNodeCacheKey(rsNode.getRsId()), rsNode);
+        update(new RsNodeCacheKey(rsNode.getRsId()),
+            rsNodeRepository.convertRsNodeToRsNodePO(rsNode));
     }
 
     /**
