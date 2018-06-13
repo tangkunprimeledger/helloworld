@@ -28,17 +28,17 @@ public class DataIdentityActionHandlerTest extends BaseTest {
 
     @Test
     public void testValidate() throws Exception {
-/*        snapshotService.clear();
+       snapshotService.clear();
         snapshotService.destroy();
         snapshotService.startTransaction();
-        List<DataIdentity> list = new ArrayList<>();
+/*        List<DataIdentity> list = new ArrayList<>();
         DataIdentity dataIdentity1 = new DataIdentity();
-        dataIdentity1.setIdentity("12321");
+        dataIdentity1.setIdentity("12321qweqw");
         dataIdentity1.setDataOwner("trust");
         dataIdentity1.setChainOwner("trust");
         list.add(dataIdentity1);
         DataIdentity dataIdentity2 = new DataIdentity();
-        dataIdentity2.setIdentity("12321");
+        dataIdentity2.setIdentity("12321qweqwe");
         dataIdentity2.setDataOwner("trust");
         dataIdentity2.setChainOwner("trust");
         list.add(dataIdentity2);
@@ -47,12 +47,12 @@ public class DataIdentityActionHandlerTest extends BaseTest {
         List<String> rsList = new ArrayList<>();
         rsList.add("RS");
         rsList.add("RS");
-        System.out.println(JSONArray.toJSONString(rsList));
+        System.out.println(JSONArray.toJSONString(rsList));*/
 
         DataIdentityAction dataIdentityAction = new DataIdentityAction();
         dataIdentityAction.setChainOwner("lll");
         dataIdentityAction.setDataOwner("3wew");
-        dataIdentityAction.setIdentity("123123123212221ere1");
+        dataIdentityAction.setIdentity("123123123212221ere112321312");
         dataIdentityAction.setIndex(1);
         dataIdentityAction.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
 
@@ -82,7 +82,7 @@ public class DataIdentityActionHandlerTest extends BaseTest {
         DataIdentityAction dataIdentityAction1 = new DataIdentityAction();
         dataIdentityAction1.setChainOwner("lll");
         dataIdentityAction1.setDataOwner("3wew");
-        dataIdentityAction1.setIdentity("1231231232122332421113242312312");
+        dataIdentityAction1.setIdentity("1231231232122332421112312ww13242312312");
         dataIdentityAction1.setIndex(1);
         dataIdentityAction1.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
         System.out.println(JSONArray.toJSONString(dataIdentityAction));
@@ -110,8 +110,8 @@ public class DataIdentityActionHandlerTest extends BaseTest {
         dataIdentityActionHandler.process(ActionData1);
         snapshotService.rollback();
         snapshotService.commit();
-        snapshotService.flush();*/
-        System.out.println("9999999999" + dataIdentitySnapshotAgent.getDataIdentity("12312312321223324211132423"));
+        snapshotService.flush();
+        System.out.println("9999999999" + dataIdentitySnapshotAgent.getDataIdentity("1231231232122332421112312ww13242312312"));
 
     }
 
