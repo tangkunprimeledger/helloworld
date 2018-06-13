@@ -75,7 +75,7 @@ public class PackageScheduler {
         List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
-            return;
+            return ;
         }
 
         Package pack = packageService.create(signedTransactions, packHeight);
@@ -89,7 +89,7 @@ public class PackageScheduler {
         try {
             //add package to queue
             pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
-            packHeight += 1;
+            packHeight = pack.getHeight();
         } catch (InterruptedException e) {
             log.warn("pending pack offer InterruptedException. ", e);
             pendingState.addPendingTxsToQueueFirst(signedTransactions);

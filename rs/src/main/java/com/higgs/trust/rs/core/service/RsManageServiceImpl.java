@@ -99,11 +99,6 @@ import java.util.List;
                 log.error("register rs error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if (!respData.isSuccess()) {
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(registerRsVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register rs error", e);
             respData = new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
@@ -189,11 +184,6 @@ import java.util.List;
                 log.error("register policy error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if (!respData.isSuccess()) {
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(registerPolicyVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register policy error", e);
             respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
@@ -239,11 +229,6 @@ import java.util.List;
                 log.error("register rs error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if (!respData.isSuccess()) {
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(cancelRsVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register rs error", e);
             respData = new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
