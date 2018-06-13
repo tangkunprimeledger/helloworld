@@ -108,7 +108,6 @@ public class DataIdentityActionHandlerTest extends BaseTest {
             }
         };
         dataIdentityActionHandler.process(ActionData1);
-        snapshotService.rollback();
         snapshotService.commit();
         snapshotService.flush();
         System.out.println("9999999999" + dataIdentitySnapshotAgent.getDataIdentity("1231231232122332421112312ww13242312312"));

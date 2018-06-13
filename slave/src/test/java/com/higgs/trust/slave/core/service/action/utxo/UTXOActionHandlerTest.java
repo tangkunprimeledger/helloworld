@@ -43,9 +43,9 @@ public class UTXOActionHandlerTest extends BaseTest {
         utxoActionHandler.process(buildActionData());
         snapshotService.commit();
 
-     /*   snapshotService.startTransaction();
+        snapshotService.startTransaction();
         utxoActionHandler.process(buildActionData1());
-        snapshotService.commit();*/
+        snapshotService.commit();
 
         snapshotService.flush();
     }
@@ -127,7 +127,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxIn txIn = new TxIn();
         txIn.setIndex(1);
-        txIn.setTxId("UTXOlingchao1528799659919");
+        txIn.setTxId("UTXOlingchaoyiyi");
         txIn.setActionIndex(0);
 
         List<TxIn> inputList = new ArrayList<>();
@@ -136,15 +136,15 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut = new TxOut();
         JSONObject state = new JSONObject();
-        state.put("amount", new BigDecimal("200"));
+        state.put("amount", new BigDecimal("3000"));
         txOut.setIndex(0);
         txOut.setActionIndex(0);
-        txOut.setIdentity("123123123211");
+        txOut.setIdentity("12312312321");
         txOut.setState(state);
 
         TxOut txOut1 = new TxOut();
         JSONObject state1 = new JSONObject();
-        state1.put("amount", new BigDecimal("300"));
+        state1.put("amount", new BigDecimal("500"));
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
         txOut1.setIdentity("12312312321");
@@ -164,7 +164,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setPolicyId("1");
-        coreTx.setTxId("UTXOlingchao"+System.currentTimeMillis());
+        coreTx.setTxId("UTXOlingchaoyiyi凌");
         signedTransaction.setCoreTx(coreTx);
         ActionData ActionData1 = new ActionData() {
             @Override
@@ -197,7 +197,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxIn txIn = new TxIn();
         txIn.setIndex(0);
-        txIn.setTxId("UTXOlingchao");
+        txIn.setTxId("UTXOlingchaoyiyi凌");
         txIn.setActionIndex(0);
 
         List<TxIn> inputList = new ArrayList<>();
@@ -206,7 +206,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut = new TxOut();
         JSONObject state = new JSONObject();
-        state.put("amount", new BigDecimal("2000"));
+        state.put("amount", new BigDecimal("1000"));
         txOut.setIndex(0);
         txOut.setActionIndex(0);
         txOut.setIdentity("12312312321");
@@ -214,7 +214,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut1 = new TxOut();
         JSONObject state1 = new JSONObject();
-        state1.put("amount", new BigDecimal("500"));
+        state1.put("amount", new BigDecimal("2000"));
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
         txOut1.setIdentity("12312312321");
