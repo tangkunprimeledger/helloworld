@@ -23,9 +23,9 @@
 			update_time)
 		VALUES
 		<foreach collection="list" item="item" index="index" separator=",">
-			(#{item.node_name},
-			#{item.p2p_status},
-			#{item.rs_status},
+			(#{item.nodeName},
+			#{item.p2pStatus},
+			#{item.rsStatus},
 			now(3),
 			now(3))
 		</foreach>
@@ -48,28 +48,28 @@
 		UPDATE cluster_node
 		<trim prefix="SET" suffixOverrides=",">
 			<!-- set update_time -->
-			<trim prefix="`update_time` = CASE" suffix="END">
+			<trim prefix="`update_time` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `node_name`=#{nodeName} and valid != #{valid}
+					WHEN `node_name`=#{item.nodeName}
 					THEN now(3)
 				</foreach>
 				ELSE `update_time`
 			</trim>
 			<!-- set p2pStatus -->
-			<trim prefix="`p2pStatus` = CASE" suffix="END,">
+			<trim prefix="`p2p_status` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
 					WHEN `node_name`=#{item.nodeName} and #{item.p2pStatus} != null and #{item.p2pStatus}!=''
 					THEN #{item.p2pStatus}
 				</foreach>
-				ELSE `p2pStatus`
+				ELSE `p2p_status`
 			</trim>
 			<!-- set rsStatus -->
-			<trim prefix="`rsStatus` = CASE" suffix="END,">
+			<trim prefix="`rs_status` = CASE" suffix="END">
 				<foreach collection="list" item="item">
 					WHEN `node_name`=#{item.nodeName} and #{item.rsStatus} != null and #{item.rsStatus}!=''
 					THEN #{item.rsStatus}
 				</foreach>
-				ELSE `rsStatus`
+				ELSE `rs_status`
 			</trim>
 		</trim>
 		<where>

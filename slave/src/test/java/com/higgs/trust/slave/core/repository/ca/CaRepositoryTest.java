@@ -46,22 +46,41 @@ public class CaRepositoryTest extends BaseTest {
     }
 
     @Test public void testGetAllCa() throws Exception {
+        List list = caRepository.getAllCa();
+        System.out.println(list.toString());
     }
 
     @Test public void testBatchInsert() throws Exception {
         List list =new LinkedList();
-        Ca ca = new Ca();
-        ca.setPeriod(new Date());
-        ca.setPubKey("123");
-        ca.setUsage("consensus");
-        ca.setUser("wqz");
-        ca.setValid(true);
-        ca.setVersion(VersionEnum.V1.getCode());
-        list.add(ca);
+        for (int i =10;i<11;i++){
+            Ca ca = new Ca();
+            ca.setPeriod(new Date());
+            ca.setPubKey("test"+i);
+            ca.setUsage("consensus");
+            ca.setUser("lf");
+            ca.setValid(true);
+            ca.setVersion(VersionEnum.V1.getCode());
+            list.add(ca);
+        }
         caRepository.batchInsert(list);
         System.out.println("结束");
     }
 
     @Test public void testBatchUpdate() throws Exception {
+        List list =new LinkedList();
+        for (int i =0;i<1;i++){
+            Ca ca = new Ca();
+            ca.setPeriod(new Date());
+            ca.setPubKey("test"+1000);
+            ca.setUser("wqz");
+            list.add(ca);
+        }
+        Ca ca = new Ca();
+        ca.setPeriod(new Date());
+        ca.setPubKey("test"+10000);
+        ca.setUser("lf");
+        list.add(ca);
+        caRepository.batchUpdate(list);
+        System.out.println("结束");
     }
 }

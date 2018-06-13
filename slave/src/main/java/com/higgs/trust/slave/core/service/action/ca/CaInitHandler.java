@@ -66,7 +66,7 @@ import java.util.Map;
         }
     }
 
-    private Block generateGeniusBlock(Map map) {
+    private Block generateGeniusBlock(Map<String,String> map) {
         Block block = new Block();
         BlockHeader blockHeader = new BlockHeader();
         StateRootHash stateRootHash = new StateRootHash();
