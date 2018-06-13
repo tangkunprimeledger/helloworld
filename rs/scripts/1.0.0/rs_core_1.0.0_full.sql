@@ -63,3 +63,13 @@ CREATE TABLE IF NOT EXISTS `vote_receipt` (
 	KEY `idx_tx_id` (`tx_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the vote receipt';
 
+
+CREATE TABLE IF NOT EXISTS `biz_type` (
+	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+	`policy_id` VARCHAR (32) NOT NULL COMMENT 'policy id',
+	`biz_type` VARCHAR (32) NOT NULL COMMENT 'biz type',
+	`create_time` datetime(3) NOT NULL COMMENT 'create time',
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `uniq_policy_id` (`policy_id`)
+) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table of business type';
+
