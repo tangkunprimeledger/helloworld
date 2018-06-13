@@ -46,8 +46,8 @@ import org.springframework.util.StringUtils;
 
     @Override
     public void process(ActionData actionData) {
-        log.debug("start invoke contract process");
-        Profiler.enter("ContractInvokeHandler process");
+        log.debug("contract invoke start");
+        Profiler.enter("contract invoke");
         try {
             processInternal(actionData);
         } finally {

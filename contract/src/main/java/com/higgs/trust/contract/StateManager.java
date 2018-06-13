@@ -2,12 +2,14 @@ package com.higgs.trust.contract;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.util.IOUtils;
-import jdk.nashorn.api.scripting.AbstractJSObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ *  contract state manager
+ *  @author duhongming
+ */
 public class StateManager {
     private Map<String, Object> state;
     private Map<String, Object> oldState;

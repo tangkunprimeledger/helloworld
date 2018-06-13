@@ -1,9 +1,11 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.repository.contract.AccountContractBindingRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.dao.po.contract.AccountContractBindingPO;
 import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import lombok.AllArgsConstructor;
@@ -13,6 +15,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,28 +47,20 @@ public class AccountContractBindingSnapshotAgent implements CacheLoader {
         return binding;
     }
 
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
     public void putBinding(AccountContractBinding binding) {
-        // snapshot.put(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, new BindingItemCacheKey(binding.getHash()), binding);
+         snapshot.insert(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, new BindingItemCacheKey(binding.getHash()), binding);
     }
 
     public List<AccountContractBinding> getListByAccount(String accountNo) {
         return (List<AccountContractBinding>) snapshot.get(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, new AccountContractBindingCacheKey(accountNo));
     }
 
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
     public void put(String accountNo, List<AccountContractBinding> bindings) {
-        //  snapshot.put(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, new AccountContractBindingCacheKey(accountNo), bindings);
+          snapshot.insert(SnapshotBizKeyEnum.ACCOUNT_CONTRACT_BIND, new AccountContractBindingCacheKey(accountNo), bindings);
     }
 
     public void put(AccountContractBinding binding) {
         this.putBinding(binding);
-        List<AccountContractBinding> list = this.getListByAccount(binding.getAccountNo());
-        if (null == list) {
-            list = new ArrayList<>();
-        }
-        list.add(binding);
-        this.put(binding.getAccountNo(), list);
     }
 
     @Override
@@ -91,10 +86,14 @@ public class AccountContractBindingSnapshotAgent implements CacheLoader {
      * @param insertMap
      * @return
      */
-    //TODO to implements your own bachInsert method for db
     @Override
     public boolean batchInsert(Map<Object, Object> insertMap) {
-        return false;
+        List<AccountContractBindingPO> list = new ArrayList<>(insertMap.size());
+        insertMap.forEach((key, value) -> {
+            AccountContractBinding binding = (AccountContractBinding) value;
+            list.add(BeanConvertor.convertBean(binding, AccountContractBindingPO.class));
+        });
+        return repository.batchInsert(list);
     }
 
     /**
@@ -103,10 +102,9 @@ public class AccountContractBindingSnapshotAgent implements CacheLoader {
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
     @Override
     public boolean batchUpdate(Map<Object, Object> updateMap) {
-        return false;
+        throw new NotImplementedException();
     }
 
 

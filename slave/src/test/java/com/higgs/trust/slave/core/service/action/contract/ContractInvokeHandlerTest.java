@@ -8,6 +8,7 @@ import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.core.service.pack.PackageServiceImpl;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -21,10 +22,11 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
 
     @Autowired private ContractInvokeHandler invokeHandler;
     @Autowired SnapshotService snapshot;
+    @Autowired PackageServiceImpl packageService;
 
     private ContractInvokeAction createContractInvokeAction() {
         ContractInvokeAction action = new ContractInvokeAction();
-        action.setAddress("4835ce31f929a234b2c7bd4aeb195b9134a6f81abc95e6a6f41d6f656d1930da");
+        action.setAddress("e538909ce8eac6e72d1c2caed38024fa095553af000e1c9421a679ee79b49c41");
         //action.setMethod("main");
         action.setIndex(0);
         action.setType(ActionTypeEnum.TRIGGER_CONTRACT);
@@ -32,29 +34,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
     }
 
     @Test
-    public void testValidate() throws Exception {
-        ContractInvokeAction action = createContractInvokeAction();
-        PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
-                .addAction(action)
-                .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
-                .signature(ActionDataMockBuilder.privateKey1)
-                .signature(ActionDataMockBuilder.privateKey2)
-//                .signature(ActionDataMockBuilder.privateKey1)
-//                .signature(ActionDataMockBuilder.privateKey1)
-                .makeBlockHeader()
-                .build();
-
-        System.out.println(JSON.toJSONString(packContext.getCurrentTransaction()));
-        snapshot.startTransaction();
-        invokeHandler.process(packContext);
-        Assert.isTrue(snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE,
-                new ContractStateSnapshotAgent.ContractStateCacheKey(action.getAddress())) != null, "");
-        snapshot.commit();
-    }
-
-    @Test
-    public void testPersist() throws Exception {
+    public void testProcess() {
         Action action = createContractInvokeAction();
         PackContext packContext = ActionDataMockBuilder.getBuilder()
                 .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
@@ -63,8 +43,11 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
                 .signature(ActionDataMockBuilder.privateKey1)
                 .signature(ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
+                .setBlockHeight(10)
                 .build();
-        invokeHandler.process(packContext);
+
+        packageService.process(packContext, true);
+
     }
 
     public static void main(String[] args) {

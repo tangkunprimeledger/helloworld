@@ -191,6 +191,7 @@ CREATE TABLE
 IF NOT EXISTS `contract_state` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`address` VARCHAR (64) NOT NULL COMMENT 'contract address',
+	`update_time` datetime (3) DEFAULT NULL COMMENT 'update time',
 	`state` NVARCHAR (4096) NOT NULL COMMENT 'contract state',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_address` (`address`)
