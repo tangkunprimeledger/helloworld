@@ -1,7 +1,7 @@
 package commands
 
 import com.higgs.trust.rs.core.api.CaService
-import com.higgs.trust.slave.core.repository.ca.CaRepository
+import com.higgs.trust.slave.core.service.ca.CaInitService
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Argument
 import org.crsh.cli.Command
@@ -34,7 +34,7 @@ class ca {
     @Usage('auth CA')
     @Command
     def authCA(InvocationContext context,
-                  @Usage("user") @Required @Argument String user) {
+               @Usage("user") @Required @Argument String user) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def caService = beans.getBean(CaService.class)
         caService.authKeyPair(user)
@@ -44,7 +44,7 @@ class ca {
     @Usage('update CA')
     @Command
     def updateCA(InvocationContext context,
-               @Usage("user") @Required @Argument String user) {
+                 @Usage("user") @Required @Argument String user) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def caService = beans.getBean(CaService.class)
         caService.updateKeyPair(user)
@@ -65,8 +65,8 @@ class ca {
     @Command
     def initCA(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def caService = beans.getBean(CaService.class)
-        caService.initStart()
+        def caInitService = beans.getBean(CaInitService.class)
+        caInitService.initStart()
         out.println("send CA init tx successful")
     }
 

@@ -52,7 +52,7 @@ import java.util.*;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private ClusterInfo clusterInfo;
     @Autowired private CaInitHandler caInitHandler;
-    @Value("${bftSmart.systemConfigs.myId}") private String myId;
+    @Value("${bftSmart.systemConfigs.myId:test}") private String myId;
 
     // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
 
@@ -196,50 +196,6 @@ import java.util.*;
             return new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
         }
         return new RespData<>();
-    }
-
-    /**
-     * @return
-     * @desc execute command initStart on one node, it will call each node in thr cluster to execute command initKeyPair
-     */
-    @Override public RespData<String> initStart() {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        nodeList.forEach((nodeName) -> {
-            initKeyPair();
-        });
-        return new RespData<>();
-    }
-
-    /**
-     * @param
-     * @return
-     * @desc
-     */
-    private void initKeyPair() {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        Map CaMap = new HashMap();
-        // acquire all Node's pubKey
-        nodeList.forEach((nodeName) -> {
-            RespData<String> resp = caClient.caInit(nodeName);
-            String pubKey = resp.getData();
-            CaMap.put(nodeName, pubKey);
-        });
-
-        // construct tx and send to slave
-        try {
-            caInitHandler.process(CaMap);
-        } catch (Throwable e) {
-            // TODO 抛出异常？？？
-        }
-
-    }
-
-    @Override public RespData<String> initCaTx() {
-        // TODO 公私钥的生成会在集群自检时，发现没有创世块，那么就应该生成公私钥
-
-        // acquire pubKey from DB
-        String pubKey = configRepository.getConfig(nodeState.getNodeName()).getPubKey();
-        return new RespData<>(pubKey);
     }
 
     /**
