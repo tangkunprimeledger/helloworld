@@ -34,7 +34,7 @@ public class AccountContractBindingHandlerTest extends IntegrateBaseTest {
                 .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
                 .addAction(action)
                 .setTxId("00000000002")
-                .signature("0x0000000000000000000000000")
+                .signature("", "0x0000000000000000000000000")
                 .makeBlockHeader()
                 .build();
 
@@ -52,7 +52,7 @@ public class AccountContractBindingHandlerTest extends IntegrateBaseTest {
                 .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
                 .addAction(action)
                 .setTxId("0000000000")
-                .signature("0x0000000000000000000000000")
+                .signature("", "0x0000000000000000000000000")
                 .makeBlockHeader()
                 .build();
 

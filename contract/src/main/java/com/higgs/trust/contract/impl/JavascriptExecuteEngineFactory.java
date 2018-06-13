@@ -1,5 +1,6 @@
 package com.higgs.trust.contract.impl;
 
+import com.higgs.trust.contract.ExecuteConfig;
 import com.higgs.trust.contract.ExecuteContext;
 import com.higgs.trust.contract.ExecuteEngine;
 import com.higgs.trust.contract.ExecuteEngineFactory;
@@ -25,7 +26,7 @@ import java.util.Map;
  */
 @Slf4j public class JavascriptExecuteEngineFactory implements ExecuteEngineFactory {
 
-    private static final String engineName = "javascript";
+    private static final String engineName = "nashorn";
 
     private ScriptEngine scriptEngine;
 
@@ -76,11 +77,13 @@ import java.util.Map;
         return bindings;
     }
 
-    @Override public String getEngineName() {
+    @Override
+    public String getEngineName() {
         return engineName;
     }
 
-    @Override public ExecuteEngine getExecuteEngine(String code, Map<String, Object> variables) {
+    @Override
+    public ExecuteEngine createExecuteEngine(String code, Map<String, Object> variables, ExecuteConfig executeConfig) {
         JavascriptExecuteEngine engine = new JavascriptExecuteEngine(newScriptEngine(variables), code);
         return engine;
     }

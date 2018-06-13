@@ -26,7 +26,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
 
     private ContractInvokeAction createContractInvokeAction() {
         ContractInvokeAction action = new ContractInvokeAction();
-        action.setAddress("e538909ce8eac6e72d1c2caed38024fa095553af000e1c9421a679ee79b49c41");
+        action.setAddress("d9d8b61310a3abded4d309b97e63cf7bf60e23a24779c7ff261a4b29bcc81757");
         //action.setMethod("main");
         action.setIndex(0);
         action.setType(ActionTypeEnum.TRIGGER_CONTRACT);
@@ -40,10 +40,10 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
                 .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
                 .addAction(action)
                 .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
-                .signature(ActionDataMockBuilder.privateKey1)
-                .signature(ActionDataMockBuilder.privateKey2)
+                .signature("", ActionDataMockBuilder.privateKey1)
+                .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
-                .setBlockHeight(10)
+                .setBlockHeight(5)
                 .build();
 
         packageService.process(packContext, true);
@@ -77,8 +77,8 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
 //                .signature(ActionDataMockBuilder.privateKey1)
 //                .signature(ActionDataMockBuilder.privateKey1)
 
-                .signature(ActionDataMockBuilder.privateKey1)
-                .signature(ActionDataMockBuilder.privateKey2)
+                .signature("", ActionDataMockBuilder.privateKey1)
+                .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
 

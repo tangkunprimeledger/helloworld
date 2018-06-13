@@ -80,13 +80,13 @@ public class ActionDataMockBuilder {
         return this;
     }
 
-    public ActionDataMockBuilder signature(String privateKey) {
+    public ActionDataMockBuilder signature(String owner, String privateKey) {
         if (null != this.currentSignedTransaction) {
             String data = JSON.toJSONString(this.currentSignedTransaction.getCoreTx());
             try {
                 String sign = SignUtils.sign(data, privateKey);
                 SignInfo signInfo = new SignInfo();
-                signInfo.setOwner("" + privateKey.hashCode());
+                signInfo.setOwner(owner);
                 signInfo.setSign(sign);
                 this.currentSignedTransaction.getSignatureList().add(signInfo);
             } catch (Exception e) {
