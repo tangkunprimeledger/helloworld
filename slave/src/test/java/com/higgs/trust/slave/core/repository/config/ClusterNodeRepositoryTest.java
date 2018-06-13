@@ -39,5 +39,13 @@ public class ClusterNodeRepositoryTest extends BaseTest{
     }
 
     @Test public void testBatchUpdate() throws Exception {
+        List list = new LinkedList();
+        for (int i =0;i<2;i++){
+            ClusterNodePO clusterNodePO = new ClusterNodePO();
+            clusterNodePO.setNodeName("wqz"+i);
+            clusterNodePO.setRsStatus(true);
+            list.add(clusterNodePO);
+        }
+        clusterNodeRepository.batchUpdate(list);
     }
 }

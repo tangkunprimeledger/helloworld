@@ -46,11 +46,12 @@
 
 
 	<update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+		UPDATE cluster_config
 		<trim prefix="SET" suffixOverrides=",">
 			<!-- set update_time -->
 			<trim prefix="`update_time` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `node_name`=#{nodeName} and valid != #{valid}
+					WHEN `cluster_name`=#{item.clusterName}
 					THEN now(3)
 				</foreach>
 				ELSE `update_time`

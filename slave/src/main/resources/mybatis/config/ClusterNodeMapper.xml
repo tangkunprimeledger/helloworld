@@ -58,7 +58,7 @@
 			<!-- set p2pStatus -->
 			<trim prefix="`p2p_status` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `node_name`=#{item.nodeName} and #{item.p2pStatus} != null and #{item.p2pStatus}!=''
+					WHEN `node_name`=#{item.nodeName}
 					THEN #{item.p2pStatus}
 				</foreach>
 				ELSE `p2p_status`
@@ -66,7 +66,7 @@
 			<!-- set rsStatus -->
 			<trim prefix="`rs_status` = CASE" suffix="END">
 				<foreach collection="list" item="item">
-					WHEN `node_name`=#{item.nodeName} and #{item.rsStatus} != null and #{item.rsStatus}!=''
+					WHEN `node_name`=#{item.nodeName}
 					THEN #{item.rsStatus}
 				</foreach>
 				ELSE `rs_status`
