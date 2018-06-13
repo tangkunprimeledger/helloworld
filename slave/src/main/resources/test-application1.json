@@ -1,0 +1,121 @@
+{
+  "runMode": "run",
+  "TRUST": {
+    "ribbon": {
+      "NFLoadBalancerRuleClassName": "com.higgs.trust.common.feign.RequestHeaderRoundRobinRule"
+    }
+  },
+  "consensus": {
+    "p2p": {
+      "cluster": "{\"TRUST-TEST1\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB\",\"TRUST-TEST2\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB\",\"TRUST-TEST3\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB\",\"TRUST-TEST0\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB\"}",
+      "data": {
+        "dir": "/data/home/admin/trust/data/p2p1"
+      },
+      "faultNodeNum": 1
+    }
+  },
+  "copycat": {
+    "client": {
+      "server": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803"
+    },
+    "server": {
+      "address": "127.0.0.1:8801",
+      "cluster": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803",
+      "client": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803",
+      "logDir": "/tmp/higgs/trust/copycat/log1"
+    }
+  },
+  "eureka": {
+    "client": {
+      "enabled": true,
+      "serviceUrl": {
+        "defaultZone": "http://localhost:8761/eureka/"
+      }
+    }
+  },
+  "higgs": {
+    "trust": {
+      "nodeName": "TRUST-TEST1",
+      "prefix": "TRUST",
+      "privateKey": "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAKF72oPKpeBr68PVFk4l/b9DfcrC0WPgBnqPkVAoEmIbuHJs3qRvLNROg5pOGLzYadbdxuBAWrk2XGUrxXOTDkpC92xzk8Hq0utj46f5/uKQ9G6fAennK2d8MIbeHClzoFZgVKn6Ct7NoSiMTffkggK3uU5H/rBFbEClPDIGWZ9zAgMBAAECgYBwOSuV1XpLqZSSZv72Vm6uwg+knpl4CFNYT3fUNdT4u30GgGSF8AE+lkXdMZL9goSjX0L7y52BA6dYY//3nuYZVe9BkvsU5I/Zz8TYqclHWtMPNQipYm5m0vjwC2MR1fxIejpn4Z+fGGfP/VwiXaRUNnEdM/6cQ7bwV/FsEz8O6QJBAOyc3wLSOkCwrFo9zwY83Tkt3a0btX3IaLrAd4Iy3b013XgAJq2EugtKr3OiLOG/xrSxa1d96AYcPYchyccEqN8CQQCutxiqrL6wUW++gr44vhMDGfNneeaI5e+q0LcmVrQiwDWoQOVH4k3V/RmQZMrcOtGODd/ow6VeSxf4sqzLitftAkEA2xo8jHE9zg+L2hioLz+HH16wio9BFdPR3zVAtUkC+iX6ChghuMZSPQiQxcQkSXt7tnEgVClcBOR7uTl5jphrAwJABfgNaK9UKHPvzGNtGkUsIxv829knTiAE6yIMT8wAhXtpmeD1tFn/7MKj3/IBmDqONDs3Hh2pBaqtG/sGukF5FQJAfiOzJw5E+1X2m0ZJyw9lm96qpZo3X0wfHdP87K+vvkVo4O6xrYP8hKHgj9DylMMJxKkO9RKOWDGe8jpP5YXeBw==",
+      "consensusDir": "/tmp/higgs/trust/consensus1"
+    }
+  },
+  "management": {
+    "port": 6061,
+    "security": {
+      "enabled": false
+    },
+    "shell": {
+      "auth.simple.user": {
+        "name": "user",
+        "password": "pwd"
+      },
+      "ssh.port": 2001
+    }
+  },
+  "mybatis": {
+    "configLocation": "classpath:mybatis-config.xml",
+    "mapper-locations": "classpath*:mybatis/**/*Mapper.xml"
+  },
+  "primeJob": {
+    "scheduler": {
+      "instanceName": "slave"
+    }
+  },
+  "server": {
+    "port": 7071
+  },
+  "spring": {
+    "application": {
+      "name": "TRUST-TEST1"
+    },
+    "datasource": {
+      "druid": {
+        "driver-class-name": "com.mysql.jdbc.Driver",
+        "initialSize": 1,
+        "maxActive": 20,
+        "maxWait": 60000,
+        "min-evictable-idle-time-millis": 300000,
+        "minIdle": 1,
+        "password": "root",
+        "time-between-eviction-runs-millis": 60000,
+        "url": "jdbc:mysql://localhost:3307/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
+        "username": "root"
+      },
+      "type": "com.alibaba.druid.pool.DruidDataSource"
+    }
+  },
+  "trust": {
+    "batch": {
+      "tx": {
+        "limit": 200
+      }
+    },
+    "schedule": {
+      "package": {
+        "create": 50,
+        "process": 100,
+        "submit": 1000
+      }
+    }
+  },
+  "logging": {
+    "config": "classpath:logback.xml",
+    "path":"/tmp/log1"
+  },
+  "hystrix": {
+    "command": {
+      "default": {
+        "circuitBreaker.enabled": false,
+        "fallback.enabled": false
+      }
+    },
+    "threadpool": {
+      "default": {
+        "coreSize": 40,
+        "maximumSize": 100
+      }
+    }
+  }
+}

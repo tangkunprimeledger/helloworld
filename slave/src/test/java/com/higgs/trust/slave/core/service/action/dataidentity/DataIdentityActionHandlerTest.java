@@ -18,18 +18,20 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataIdentityActionHandlerTest  {
+public class DataIdentityActionHandlerTest extends BaseTest {
     @Autowired
     private DataIdentityActionHandler dataIdentityActionHandler;
     @Autowired
     private SnapshotService snapshotService;
     @Autowired
     private DataIdentitySnapshotAgent dataIdentitySnapshotAgent;
+
     @Test
     public void testValidate() throws Exception {
-       // snapshotService.destroy();
-       // snapshotService.startTransaction();
-        List<DataIdentity> list =  new ArrayList<>();
+/*        snapshotService.clear();
+        snapshotService.destroy();
+        snapshotService.startTransaction();
+        List<DataIdentity> list = new ArrayList<>();
         DataIdentity dataIdentity1 = new DataIdentity();
         dataIdentity1.setIdentity("12321");
         dataIdentity1.setDataOwner("trust");
@@ -42,7 +44,7 @@ public class DataIdentityActionHandlerTest  {
         list.add(dataIdentity2);
         System.out.println(JSONArray.toJSONString(list));
 
-        List<String> rsList =  new ArrayList<>();
+        List<String> rsList = new ArrayList<>();
         rsList.add("RS");
         rsList.add("RS");
         System.out.println(JSONArray.toJSONString(rsList));
@@ -50,9 +52,10 @@ public class DataIdentityActionHandlerTest  {
         DataIdentityAction dataIdentityAction = new DataIdentityAction();
         dataIdentityAction.setChainOwner("lll");
         dataIdentityAction.setDataOwner("3wew");
-        dataIdentityAction.setIdentity("12312312321");
+        dataIdentityAction.setIdentity("123123123212221ere1");
         dataIdentityAction.setIndex(1);
         dataIdentityAction.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
+
         System.out.println(JSONArray.toJSONString(dataIdentityAction));
         ActionData ActionData = new ActionData() {
             @Override
@@ -75,9 +78,40 @@ public class DataIdentityActionHandlerTest  {
                 return dataIdentityAction;
             }
         };
-     //   dataIdentityActionHandler.validate(ActionData);
-    //    snapshotService.commit();
-     //   System.out.println("9999999999"+dataIdentitySnapshotAgent.getDataIdentity("12312312321"));
+        dataIdentityActionHandler.process(ActionData);
+        DataIdentityAction dataIdentityAction1 = new DataIdentityAction();
+        dataIdentityAction1.setChainOwner("lll");
+        dataIdentityAction1.setDataOwner("3wew");
+        dataIdentityAction1.setIdentity("1231231232122332421113242312312");
+        dataIdentityAction1.setIndex(1);
+        dataIdentityAction1.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
+        System.out.println(JSONArray.toJSONString(dataIdentityAction));
+        ActionData ActionData1 = new ActionData() {
+            @Override
+            public Block getCurrentBlock() {
+                return null;
+            }
+
+            @Override
+            public Package getCurrentPackage() {
+                return null;
+            }
+
+            @Override
+            public SignedTransaction getCurrentTransaction() {
+                return null;
+            }
+
+            @Override
+            public Action getCurrentAction() {
+                return dataIdentityAction1;
+            }
+        };
+        dataIdentityActionHandler.process(ActionData1);
+        snapshotService.rollback();
+        snapshotService.commit();
+        snapshotService.flush();*/
+        System.out.println("9999999999" + dataIdentitySnapshotAgent.getDataIdentity("12312312321223324211132423"));
 
     }
 
