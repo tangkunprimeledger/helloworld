@@ -112,7 +112,7 @@ import java.util.stream.Collectors;
         }
 
         //when exchange master, maxPackHeight must be initialized
-        if (null == packHeight) {
+        if (null == packHeight || 0 == packHeight) {
             return maxBlockHeight;
         }
 

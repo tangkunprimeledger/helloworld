@@ -85,6 +85,7 @@ import java.util.*;
                 if (!StringUtils.isBlank(pubKey)) {
                     rsPubKey.setRsId(rsId);
                     rsPubKey.setPubKey(rsPubKeyMap.get(rsId));
+                    rsPubKeyList.add(rsPubKey);
                 } else {
                     throw new SlaveException(SlaveErrorEnum.SLAVE_TX_VERIFY_SIGNATURE_PUB_KEY_NOT_EXIST);
                 }

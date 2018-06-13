@@ -2,13 +2,16 @@ package com.higgs.trust.slave.core.service.snapshot.agent;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.contract.ContractStateStore;
+import com.higgs.trust.contract.JsonHelper;
 import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.repository.contract.ContractStateRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.dao.po.contract.ContractStatePO;
 import com.higgs.trust.slave.model.bo.BaseBO;
+import com.higgs.trust.slave.model.bo.contract.ContractState;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,16 +43,24 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     @Autowired
     private ContractStateRepository repository;
 
+    private List<ContractStatePO> mapToContractStatePOList(Map<Object, Object> map) {
+        List<ContractStatePO> list = new ArrayList<>(map.size());
+        map.forEach((key, value) -> {
+            ContractState contractState = (ContractState) value;
+            ContractStatePO po = new ContractStatePO();
+            po.setId(contractState.getId());
+            po.setAddress(contractState.getAddress());
+            po.setState(JsonHelper.serialize(contractState.getState()));
+            list.add(po);
+        });
+        return list;
+    }
+
     @Override
     public Object query(Object object) {
         ContractStateCacheKey key = (ContractStateCacheKey) object;
-        Map<String, Object> state = repository.get(key.getAddress());
-        if (state == null) {
-            return null;
-        }
-
-        StateManager stateManager = new StateManager(state, false);
-        return stateManager;
+        ContractState state = repository.getState(key.getAddress());
+        return state;
     }
 
     /**
@@ -56,10 +69,14 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
      * @param insertMap
      * @return
      */
-    //TODO to implements your own bachInsert method for db
     @Override
     public boolean batchInsert(Map<Object, Object> insertMap) {
-        return false;
+        if (insertMap == null || insertMap.size() == 0) {
+            return true;
+        }
+
+        List<ContractStatePO> list = mapToContractStatePOList(insertMap);
+        return repository.batchInsert(list);
     }
 
     /**
@@ -68,54 +85,52 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
     @Override
     public boolean batchUpdate(Map<Object, Object> updateMap) {
-        return false;
+        if (updateMap == null || updateMap.size() == 0) {
+            return true;
+        }
+
+        List<ContractStatePO> list = mapToContractStatePOList(updateMap);
+        return repository.batchUpdate(list);
     }
 
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
     @Override
     public void put(String key, StateManager state) {
         Map<String, Object> newState = state.getState();
-        Map<String, Object> oldState = state.getOldState();
-
-        //  snapshot.put(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key), new StateManager(newState, false));
-
-        final String tempKeyName = "__KEY__";
-        newState.put(tempKeyName, key);
-
-        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT);
-        if (merkleTree == null) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CONTRACT, new Object[]{newState});
-        } else if (oldState == null) {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, newState);
+        ContractStateCacheKey cacheKey = new ContractStateCacheKey(key);
+        ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey);
+        if (contractState == null) {
+            contractState = new ContractState();
+            contractState.setAddress(key);
+            contractState.setState(newState);
+            snapshot.insert(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey, contractState);
         } else {
-            oldState.put(tempKeyName, key);
-            // TODO need optimize
-            if (!JSON.toJSONString(oldState).equals(JSON.toJSONString(newState))) {
-                merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, oldState, newState);
-            }
-            oldState.remove(tempKeyName);
+            contractState.setState(newState);
+            snapshot.update(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey, contractState);
         }
-        newState.remove(tempKeyName);
+
+        // TODO use merkle tree
+
+//        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT);
+//        if (merkleTree == null) {
+//            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CONTRACT, new Object[]{newState});
+//        } else {
+//            merkleTreeSnapshotAgent.appendChild(merkleTree, newState);
+//        }
     }
 
     @Override
     public StateManager get(String key) {
-        StateManager stateManager = (StateManager) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key));
-        if (stateManager == null) {
+        ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key));
+        if (contractState == null) {
             return new StateManager();
         }
-
-        Map<String, Object> newState = new HashMap<>(stateManager.getState().size());
-        stateManager.getState().forEach((k, value) -> newState.put(k, value));
-        return new StateManager(newState);
+        return new StateManager(contractState.getState());
     }
 
     @Override
     public void remove(String key) {
-
     }
 
     @Getter

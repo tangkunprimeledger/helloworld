@@ -52,6 +52,17 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
     }
 
     /**
+     * is exist node
+     *
+     * @param typeEnum
+     * @param obj
+     * @return
+     */
+    public boolean isExist(MerkleTypeEnum typeEnum,Object obj) {
+        return merkleService.isExist(getMerkleTree(typeEnum),obj);
+    }
+
+    /**
      * build an new merkle tree for obj and save to snapshot
      *
      * @param typeEnum
@@ -72,7 +83,7 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      */
     public void appendChild(MerkleTree merkleTree, Object _new) {
         merkleService.add(merkleTree, _new);
-        insert(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
+        update(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
     }
 
     /**

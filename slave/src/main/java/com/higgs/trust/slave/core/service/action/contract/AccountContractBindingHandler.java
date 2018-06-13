@@ -59,12 +59,6 @@ import java.util.Date;
     }
 
     private void check(AccountContractBindingAction action) {
-        BeanValidateResult validateResult = BeanValidator.validate(action);
-        if (!validateResult.isSuccess()) {
-            log.error("ContractBinding param validate is fail,first msg:{}", validateResult.getFirstMsg());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, validateResult.getFirstMsg());
-        }
-
         if (!addressIsExist(action.getContractAddress())) {
             log.error("ContractBinding contract not exist {}", action.getContractAddress());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("contract not exist %s", action.getContractAddress()));

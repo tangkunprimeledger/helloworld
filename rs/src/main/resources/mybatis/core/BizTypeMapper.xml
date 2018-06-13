@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.rs.core.dao.BizTypeDao">
+	<!-- Result Map -->
+	<resultMap id="baseResultMap" type="com.higgs.trust.rs.core.dao.po.BizTypePO">
+		<result column="id" property="id" />
+		<result column="policy_id" property="policyId" />
+		<result column="biz_type" property="bizType" />
+		<result column="create_time" property="createTime" />
+	</resultMap>
+	<!-- biz_type table all fields -->
+	<sql id="baseColumnList">
+		id,policy_id,biz_type,create_time
+	</sql>
+	<!-- 查询条件 -->
+	<sql id="baseWhereClause">
+		where 1=1
+		<trim suffixOverrides=",">
+			<if test="id != null">
+				and id=#{id}
+			</if>
+			<if test="policyId != null and policyId != ''">
+				and policy_id=#{policyId}
+			</if>
+			<if test="bizType != null and bizType != ''">
+				and biz_type=#{bizType}
+			</if>
+			<if test="createTime != null">
+				and create_time=#{createTime}
+			</if>
+		</trim>
+	</sql>
+	<!-- 插入记录 -->
+	<insert id="add" parameterType="Object">
+		insert into
+		biz_type(id,policy_id,biz_type,create_time)
+		values(#{id},#{policyId},#{bizType},now())
+	</insert>
+	<!-- 删除记录 -->
+	<delete id="delete" parameterType="Object">
+		delete from biz_type where
+		id=#{id}
+	</delete>
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from biz_type where id=#{id}
+	</select>
+	<!-- 列表总数 -->
+	<select id="queryByCount" resultType="java.lang.Integer"
+		parameterType="Object">
+		select count(1) from biz_type
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 查询列表 -->
+	<select id="queryByList" resultMap="baseResultMap"
+		parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from biz_type
+		<include refid="baseWhereClause" />
+	</select>
+	<!-- 以上为工具自动生成 -->
+
+	<!-- 根据policyId查询 -->
+	<select id="queryByPolicyId" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from biz_type where policy_id=#{policyId}
+	</select>
+	<!--query by all-->
+	<select id="queryAll" resultMap="baseResultMap" parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from biz_type
+	</select>
+
+</mapper>

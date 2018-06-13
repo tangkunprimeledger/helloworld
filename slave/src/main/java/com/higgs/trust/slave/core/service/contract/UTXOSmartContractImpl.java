@@ -1,9 +1,6 @@
 package com.higgs.trust.slave.core.service.contract;
 
-import com.higgs.trust.contract.ExecuteContext;
-import com.higgs.trust.contract.ExecuteContextData;
-import com.higgs.trust.contract.ExecuteEngine;
-import com.higgs.trust.contract.ExecuteEngineManager;
+import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
@@ -28,8 +25,12 @@ import org.springframework.stereotype.Service;
             return engineManager;
         }
 
+        ExecuteConfig executeConfig = new ExecuteConfig();
+        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.allow("com.higgs.trust.slave.core.service.contract.UTXOContextService");
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);
+        manager.setExecuteConfig(executeConfig);
         engineManager = manager;
         return engineManager;
     }

@@ -110,6 +110,14 @@ import java.util.concurrent.ConcurrentHashMap;
         }
     }
 
+    @Override public boolean isExist(MerkleTree merkleTree, Object obj) {
+        String objHash = getSHA2HexValue(JSON.toJSONString(obj));
+
+        MerkleNode merkleNode = getMerkleNodeByHash(merkleTree, objHash);
+
+        return merkleNode != null;
+    }
+
     /**
      * update a merkle tree
      *

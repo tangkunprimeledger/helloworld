@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -22,6 +23,11 @@ import java.util.List;
     public void add(AccountContractBinding accountContractBinding) {
         AccountContractBindingPO po = BeanConvertor.convertBean(accountContractBinding, AccountContractBindingPO.class);
         dao.add(po);
+    }
+
+    public boolean batchInsert(Collection<AccountContractBindingPO> list) {
+        int result = dao.batchInsert(list);
+        return result == list.size();
     }
 
     public List<AccountContractBinding> queryListByAccountNo(String accountNo) {

@@ -22,7 +22,15 @@
     <!-- add -->
     <insert id="add" parameterType="com.higgs.trust.slave.dao.po.contract.AccountContractBindingPO">
         INSERT INTO account_contract_binding (hash,block_height,tx_id,action_index,account_no,contract_address,args,create_time)
-        VALUES (#{hash}, #{blockHeight}, #{txId}, #{actionIndex}, #{accountNo}, #{contractAddress}, #{args}, now())
+        VALUES (#{hash}, #{blockHeight}, #{txId}, #{actionIndex}, #{accountNo}, #{contractAddress}, #{args}, now(3))
+    </insert>
+
+    <insert id ="batchInsert" parameterType="java.util.Collection" >
+        INSERT INTO account_contract_binding (hash,block_height,tx_id,action_index,account_no,contract_address,args,create_time)
+        VALUES
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{hash}, #{blockHeight}, #{txId}, #{actionIndex}, #{accountNo}, #{contractAddress}, #{args}, now(3))
+        </foreach>
     </insert>
 
     <!-- delete -->

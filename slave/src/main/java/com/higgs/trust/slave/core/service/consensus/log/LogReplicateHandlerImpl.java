@@ -68,12 +68,13 @@ import java.util.concurrent.TimeUnit;
         String signValue = packageCommand.getSignValue();
         packageCommand.setSign(SignUtils.sign(signValue, nodeState.getPrivateKey()));
 
-        Object obj = null;
-        while (obj == null) {
+        boolean flag = false;
+        while (!flag) {
 
             CompletableFuture future = consensusClient.submit(packageCommand);
             try {
-                obj = future.get(800, TimeUnit.MILLISECONDS);
+                future.get(800, TimeUnit.MILLISECONDS);
+                flag = true;
             } catch (Throwable e) {
                 log.error("replicate log failed!", e);
                 //TODO 添加告警

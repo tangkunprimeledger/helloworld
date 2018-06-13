@@ -78,11 +78,6 @@ import org.springframework.transaction.support.TransactionTemplate;
     }
 
     private void doProcess(Package pack) {
-        // if package status is not 'RECEIVED', return directly.
-        if (PackageStatusEnum.RECEIVED != pack.getStatus()) {
-            return;
-        }
-
         // check next package height
         if (!pack.getHeight().equals(blockRepository.getMaxHeight() + 1)) {
             log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),

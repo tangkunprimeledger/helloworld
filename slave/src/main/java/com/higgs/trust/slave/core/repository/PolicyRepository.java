@@ -72,7 +72,7 @@ import java.util.List;
         policyDao.add(convertPolicyToPolicyPO(policy));
     }
 
-    private PolicyPO convertPolicyToPolicyPO(Policy policy) {
+    public PolicyPO convertPolicyToPolicyPO(Policy policy) {
         PolicyPO policyPO = new PolicyPO();
         policyPO.setPolicyId(policy.getPolicyId());
         policyPO.setPolicyName(policy.getPolicyName());

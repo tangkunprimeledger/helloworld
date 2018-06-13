@@ -26,7 +26,7 @@ public class RsNode extends BaseBO {
     private RsNodeStatusEnum status;
 
     /**
-     * public key
+     * desc
      */
     private String desc;
 }

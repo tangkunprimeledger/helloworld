@@ -50,16 +50,6 @@ import org.springframework.web.bind.annotation.RestController;
     }
 
     /**
-     * init ca transaction
-     *
-     * @param
-     * @return
-     */
-    @RequestMapping(value = "/ca/init") RespData<String> caInit() {
-        return caService.initCaTx();
-    }
-
-    /**
      * acquire ca transaction
      *
      * @param

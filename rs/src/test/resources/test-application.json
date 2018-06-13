@@ -21,7 +21,8 @@
       "address": "127.0.0.1:8800",
       "cluster": "127.0.0.1:8800",
       "stateMachineClass": "com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandlerImpl",
-      "logDir" : "./data/copycat"
+      "logDir" : "./data/copycat",
+      "client":"127.0.0.1:8800"
     }
   },
   "eureka": {
@@ -119,6 +120,10 @@
       "prikey": "f37a12485f23960ddd922b9ced5467806cbb393ef24660305ddd0abfdf987c72",
       "aeskey": "cbs+jcajndcwje-9"
     }
+  },
+  "bftSmart":{
+    "systemConfigs":{
+     "myId":"xxxxxx"
+    }
   }
-
 }

@@ -1,9 +1,11 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
+import com.higgs.trust.slave.dao.po.contract.ContractPO;
 import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.contract.Contract;
 import lombok.AllArgsConstructor;
@@ -13,7 +15,10 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,9 +38,8 @@ public class ContractSnapshotAgent implements CacheLoader {
         return (Contract) snapshot.get(SnapshotBizKeyEnum.CONTRACT, new ContractCacheKey(key));
     }
 
-    //TODO You  should provide insert and update method for yourself to use by using snapshot insert or uodate method .
-    public void put(String key, Contract contract) {
-        //  snapshot.put(SnapshotBizKeyEnum.CONTRACT, new ContractCacheKey(key), contract);
+    public void insert(String key, Contract contract) {
+        snapshot.insert(SnapshotBizKeyEnum.CONTRACT, new ContractCacheKey(key), contract);
     }
 
     @Override
@@ -50,10 +54,14 @@ public class ContractSnapshotAgent implements CacheLoader {
      * @param insertMap
      * @return
      */
-    //TODO to implements your own bachInsert method for db
     @Override
     public boolean batchInsert(Map<Object, Object> insertMap) {
-        return false;
+        List<ContractPO> list = new ArrayList<>(insertMap.size());
+        insertMap.forEach((key, value) -> {
+            Contract contract = (Contract)value;
+            list.add(BeanConvertor.convertBean(contract, ContractPO.class));
+        });
+        return contractRepository.batchInsert(list);
     }
 
     /**
@@ -62,10 +70,9 @@ public class ContractSnapshotAgent implements CacheLoader {
      * @param updateMap
      * @return
      */
-    //TODO to implements your own bachUpdate method for db
     @Override
     public boolean batchUpdate(Map<Object, Object> updateMap) {
-        return false;
+        throw new NotImplementedException();
     }
 
     @Getter

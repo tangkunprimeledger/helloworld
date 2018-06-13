@@ -46,11 +46,12 @@
 
 
 	<update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+		UPDATE cluster_config
 		<trim prefix="SET" suffixOverrides=",">
 			<!-- set update_time -->
-			<trim prefix="`update_time` = CASE" suffix="END">
+			<trim prefix="`update_time` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `node_name`=#{nodeName} and valid != #{valid}
+					WHEN `cluster_name`=#{item.clusterName}
 					THEN now(3)
 				</foreach>
 				ELSE `update_time`
@@ -58,15 +59,15 @@
 			<!-- set node_num -->
 			<trim prefix="`node_num` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `cluster_name`=#{item.clusterName} and #{item.p2pStatus} != null and #{item.p2pStatus}! =''
+					WHEN `cluster_name`=#{item.clusterName}
 					THEN #{item.nodeNum}
 				</foreach>
-				ELSE `nodeNum`
+				ELSE `node_num`
 			</trim>
 			<!-- set faultNum -->
-			<trim prefix="`fault_num` = CASE" suffix="END,">
+			<trim prefix="`fault_num` = CASE" suffix="END">
 				<foreach collection="list" item="item">
-					WHEN `cluster_name`=#{item.clusterName} and #{item.faultNum} != null and #{item.faultNum}! =''
+					WHEN `cluster_name`=#{item.clusterName}
 					THEN #{item.faultNum}
 				</foreach>
 				ELSE `fault_num`

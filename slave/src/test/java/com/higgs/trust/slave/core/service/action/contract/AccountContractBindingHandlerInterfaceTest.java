@@ -43,8 +43,8 @@ public class AccountContractBindingHandlerInterfaceTest extends ContractBaseTest
                 .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
                 .setTxId("00000000000" + System.currentTimeMillis())
-                .signature(ActionDataMockBuilder.privateKey1)
-                .signature(ActionDataMockBuilder.privateKey2)
+                .signature("", ActionDataMockBuilder.privateKey1)
+                .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
         return packContext;

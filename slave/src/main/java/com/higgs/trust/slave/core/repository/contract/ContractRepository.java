@@ -40,6 +40,11 @@ public class ContractRepository {
         }
     }
 
+    public boolean batchInsert(List<ContractPO> list) {
+        int result = contractDao.batchInsert(list);
+        return result == list.size();
+    }
+
     public Long queryCount(Long height, String txId) {
         Long rowCount = contractDao.getQueryCount(height, txId);
         return rowCount;

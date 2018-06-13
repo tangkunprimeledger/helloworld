@@ -30,8 +30,8 @@ public class ExceuteEngineManagerTest extends BaseTest {
         ExecuteEngineManager manager = getExceuteEngineManager();
         String code = loadCodeFromResourceFile("/case2.js");
         ExecuteContextData contextData = newContextData().put("admin", new Person("zhangs", 30));
-        ExecuteContext.newContext(contextData).setInstanceAddress("0xddkdkadJAkdkdkkdkdd");
-        Object result = manager.getExecuteEngine(code, "javascript").execute("verify", 1, 2);
+        ExecuteContext.newContext(contextData).setStateInstanceKey("0xddkdkadJAkdkdkkdkdd");
+        Object result = manager.getExecuteEngine(code, "rhino").execute("verify", 1, 2);
         System.out.println(result.toString());
     }
 
@@ -39,7 +39,7 @@ public class ExceuteEngineManagerTest extends BaseTest {
         ExecuteEngineManager manager = getExceuteEngineManager();
         String code = loadCodeFromResourceFile("/case3.js");
         ExecuteContextData contextData = newContextData().put("admin", new Person("zhangs", 30));
-        ExecuteContext.newContext(contextData).setInstanceAddress("0xddkdkadJAkdkdkkdkdd");
+        ExecuteContext.newContext(contextData).setStateInstanceKey("0xddkdkadJAkdkdkkdkdd");
 
         String bizArgsJson = "[\"add\", [1,2]]";
         Object[] bizArgs = JSON.parseArray(bizArgsJson).toArray();
@@ -56,7 +56,7 @@ public class ExceuteEngineManagerTest extends BaseTest {
         long startTime = System.currentTimeMillis();
         for(int i = 0; i < 10; i++) {
             ExecuteContextData contextData = newContextData();
-            ExecuteContext.newContext(contextData).setInstanceAddress("0xddkdkadJAkdkdkkdkdd");
+            ExecuteContext.newContext(contextData).setStateInstanceKey("0xddkdkadJAkdkdkkdkdd");
 
 
             Object result = manager.getExecuteEngine(code, "javascript").execute("main");

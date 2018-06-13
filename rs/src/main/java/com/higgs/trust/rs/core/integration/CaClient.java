@@ -26,16 +26,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
     @RequestMapping(value = "/ca/auth", method = RequestMethod.POST) RespData<String> caAuth(
         @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody CaVO caVO);
 
-
-    /**
-     * @param
-     * @return
-     * @desc send ca init request
-     */
-    @RequestMapping(value = "/ca/init", method = RequestMethod.POST) RespData<String> caInit(
-        @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName);
-
-
     /**
      * @param
      * @return

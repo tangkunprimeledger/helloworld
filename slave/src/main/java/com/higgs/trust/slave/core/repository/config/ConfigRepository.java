@@ -64,7 +64,7 @@ import java.util.List;
      * @param configPOList
      * @return
      */
-    boolean batchInsert(List<ConfigPO> configPOList) {
+    public boolean batchInsert(List<ConfigPO> configPOList) {
         int affectRows = 0;
         try {
             affectRows = configDao.batchInsert(configPOList);
@@ -81,7 +81,7 @@ import java.util.List;
      * @param configPOList
      * @return
      */
-    boolean batchUpdate(List<ConfigPO> configPOList) {
+    public boolean batchUpdate(List<ConfigPO> configPOList) {
         return configPOList.size() == configDao.batchUpdate(configPOList);
     }
 }

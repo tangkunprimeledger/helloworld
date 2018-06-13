@@ -36,7 +36,7 @@ import javax.script.*;
 
             ContractStateStore dbStateStore = context.getStateStore();
             if (dbStateStore != null) {
-                StateManager stateManager = dbStateStore.get(context.getInstanceAddress());
+                StateManager stateManager = dbStateStore.get(context.getStateInstanceKey());
                 if (stateManager == null) {
                     stateManager = new StateManager();
                 }
@@ -53,7 +53,7 @@ import javax.script.*;
             Object result = method.call(null, bizArgs);
             if (dbStateStore != null) {
                 StateManager state = (StateManager) bindings.get(DB_STATE_CTX_KEY_NAME);
-                dbStateStore.put(context.getInstanceAddress(), state);
+                dbStateStore.put(context.getStateInstanceKey(), state);
             }
             return result;
         } catch (ScriptException ex) {

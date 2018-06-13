@@ -309,7 +309,11 @@ import java.util.*;
         detailFreeze.setBlockHeight(blockHeight);
         detailFreeze.setAmount(happenAmount);
         detailFreeze.setBeforeAmount(accountInfo.getFreezeAmount());
-        detailFreeze.setAfterAmount(accountInfo.getFreezeAmount().add(happenAmount));
+        if(freezeTypeEnum == AccountFreezeTypeEnum.FREEZE){
+            detailFreeze.setAfterAmount(accountInfo.getFreezeAmount().add(happenAmount));
+        }else{
+            detailFreeze.setAfterAmount(accountInfo.getFreezeAmount().subtract(happenAmount));
+        }
         detailFreeze.setFreezeDetailNo(accountInfo.getDetailFreezeNo() + 1);
         detailFreeze.setFreezeType(freezeTypeEnum.getCode());
         detailFreeze.setRemark(remark);
@@ -326,11 +330,17 @@ import java.util.*;
     private void updateMerkleTree(AccountInfo _old, AccountInfo _new) {
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.ACCOUNT);
         if (merkleTree == null) {
-            log.error("[updateMerkleTree] the ACCOUNT merkle tree does not exist");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_MERKLE_TREE_NOT_EXIST_ERROR);
+            log.info("[updateMerkleTree] the ACCOUNT merkle tree does not exist");
+            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.ACCOUNT, new Object[] {_new});
+        }else{
+            AccountMerkleData from = BeanConvertor.convertBean(_old, AccountMerkleData.class);
+            AccountMerkleData to = BeanConvertor.convertBean(_new, AccountMerkleData.class);
+            //check
+            if(merkleTreeSnapshotAgent.isExist(MerkleTypeEnum.ACCOUNT,from)){
+                merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, from, to);
+            }else{
+                merkleTreeSnapshotAgent.appendChild(merkleTree, to);
+            }
         }
-        AccountMerkleData from = BeanConvertor.convertBean(_old, AccountMerkleData.class);
-        AccountMerkleData to = BeanConvertor.convertBean(_new, AccountMerkleData.class);
-        merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, from, to);
     }
 }

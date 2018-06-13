@@ -11,20 +11,19 @@ import org.slf4j.Logger;
  */
 @Slf4j public final class ExecuteContext {
 
-    private static final ThreadLocal<ExecuteContext> currentExceuteContext = new ThreadLocal();
+    private static final ThreadLocal<ExecuteContext> currentExecuteContext = new ThreadLocal();
 
     private ContractEntity contract;
-    private String instanceAddress;
+    private String stateInstanceKey;
     private ContractStateStore stateStore;
     private ExecuteContextData contextData;
-    private boolean validateStage ;
 
     private ExecuteContext() {
-        currentExceuteContext.set(this);
+        currentExecuteContext.set(this);
     }
 
     public static ExecuteContext getCurrent() {
-        ExecuteContext context = currentExceuteContext.get();
+        ExecuteContext context = currentExecuteContext.get();
         return context;
     }
 
@@ -40,7 +39,7 @@ import org.slf4j.Logger;
     }
 
     public static void Clear() {
-        currentExceuteContext.remove();
+        currentExecuteContext.remove();
     }
 
     public Object getData(String name) {
@@ -56,12 +55,12 @@ import org.slf4j.Logger;
         return this;
     }
 
-    public String getInstanceAddress() {
-        return StringUtils.isEmpty(this.instanceAddress) ? this.contract.getAddress() : this.instanceAddress;
+    public String getStateInstanceKey() {
+        return StringUtils.isEmpty(this.stateInstanceKey) ? this.contract.getAddress() : this.stateInstanceKey;
     }
 
-    public ExecuteContext setInstanceAddress(String instanceAddress) {
-        this.instanceAddress = instanceAddress;
+    public ExecuteContext setStateInstanceKey(String instanceKey) {
+        this.stateInstanceKey = instanceKey;
         return this;
     }
 
@@ -79,14 +78,6 @@ import org.slf4j.Logger;
 
     public <T extends ExecuteContextData> T getContextData(Class<T> tClazz) {
         return (T) contextData;
-    }
-
-    public boolean isValidateStage() {
-        return validateStage;
-    }
-
-    public void setValidateStage(boolean validateStage) {
-        this.validateStage = validateStage;
     }
 
     public static void require(Object self, Boolean isRequired, String message){
