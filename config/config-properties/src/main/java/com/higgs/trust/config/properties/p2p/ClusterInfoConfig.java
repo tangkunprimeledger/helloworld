@@ -1,9 +1,10 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.config.p2p;
+package com.higgs.trust.config.properties.p2p;
 
 import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,6 @@ import java.util.Map;
     }
 
     @Override public String privateKey() {
-        return null;
+        return nodeState.getPrivateKey();
     }
 }

@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.consensus.copycat.config;
 
+import com.higgs.trust.consensus.copycat.core.CopycatStateMachine;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
@@ -30,7 +31,7 @@ import java.util.List;
     implements ConsensusStateMachine, ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired private CopycatProperties copycatProperties;
-    
+
     @Autowired private StateMachine stateMachine;
 
     private CopycatServer server;

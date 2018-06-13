@@ -36,8 +36,8 @@ import java.util.List;
     }
 
     private static void startServer(Address address, List<Address> clusterAddress) {
-        CopycatStateMachine stateMachine =
-            new CopycatStateMachine(new CopyCatCommitReplicateComposite(), new ConsensusSnapshot() {
+        CopycatSnapshotStateMachine stateMachine =
+            new CopycatSnapshotStateMachine(new CopyCatCommitReplicateComposite(), new ConsensusSnapshot() {
                 @Override public String getSnapshot() {
                     return null;
                 }

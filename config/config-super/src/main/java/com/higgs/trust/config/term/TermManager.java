@@ -6,8 +6,8 @@ package com.higgs.trust.config.term;
 import com.higgs.trust.config.exception.ConfigError;
 import com.higgs.trust.config.exception.ConfigException;
 import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.TermInfo;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +21,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @date 2018/6/12
  */
 @Component public class TermManager {
+
+
+    @Getter @Setter private long currentTerm = 0;
 
     /**
      * has the master heartbeat
@@ -39,13 +42,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
     synchronized void resetTerms(List<TermInfo> infos) {
         this.terms = infos;
         if (terms == null || terms.isEmpty()) {
-            nodeState.setCurrentTerm(0);
+            currentTerm = 0;
             nodeState.changeMaster(NodeState.MASTER_NA);
         } else {
             String nodeName = nodeState.getNodeName();
             TermInfo termInfo = terms.get(infos.size() - 1);
             String masterName = termInfo.getMasterName();
-            nodeState.setCurrentTerm(termInfo.getTerm());
+            currentTerm = termInfo.getTerm();
             if (!nodeName.equalsIgnoreCase(masterName)) {
                 nodeState.changeMaster(masterName);
             } else {
@@ -76,10 +79,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
      * @param masterName
      */
     public void startNewTerm(long term, String masterName) {
-        if (term != nodeState.getCurrentTerm() + 1) {
+        if (term !=currentTerm + 1) {
             throw new ConfigException(ConfigError.CONFIG_NODE_MASTER_TERM_INCORRECT);
         }
-        nodeState.setCurrentTerm(term);
+        currentTerm = term;
         Optional<TermInfo> optional = getTermInfo(term - 1);
         long startHeight = 2;
         if (optional.isPresent()) {
@@ -110,7 +113,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         if (!termInfo.getMasterName().equalsIgnoreCase(masterName)) {
             return false;
         }
-        if (term == nodeState.getCurrentTerm()) {
+        if (term == currentTerm) {
             return termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :
                 packageHeight == termInfo.getEndHeight() + 1;
         } else {
@@ -119,7 +122,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
 
     public void resetEndHeight(long packageHeight) {
-        Optional<TermInfo> optional = getTermInfo(nodeState.getCurrentTerm());
+        Optional<TermInfo> optional = getTermInfo(currentTerm);
         TermInfo termInfo = optional.get();
         boolean verify =
             termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :

@@ -2,6 +2,7 @@ package com.higgs.trust.consensus.copycat.config;
 
 import com.higgs.trust.consensus.copycat.adapter.CopycatClientAdapter;
 import com.higgs.trust.consensus.copycat.core.CopyCatCommitReplicateComposite;
+import com.higgs.trust.consensus.copycat.core.CopycatSnapshotStateMachine;
 import com.higgs.trust.consensus.copycat.core.CopycatStateMachine;
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusClient;
@@ -12,6 +13,7 @@ import io.atomix.copycat.client.ConnectionStrategies;
 import io.atomix.copycat.client.CopycatClient;
 import io.atomix.copycat.client.RecoveryStrategies;
 import io.atomix.copycat.client.ServerSelectionStrategies;
+import io.atomix.copycat.server.StateMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,8 +30,6 @@ import java.util.List;
 @Configuration @Slf4j @ConditionalOnExpression("!'${copycat.server.cluster:}'.isEmpty()") public class CopycatConfig {
 
     @Autowired private CopycatProperties copycatProperties;
-
-
 
     @Bean public ConsensusClient consensusClient() {
         String server = copycatProperties.getClient();
@@ -50,9 +51,13 @@ import java.util.List;
         return new CopyCatCommitReplicateComposite();
     }
 
-    @ConditionalOnBean(ConsensusSnapshot.class) @Bean
-    public CopycatStateMachine stateMachine(AbstractCommitReplicateComposite commitReplicateComposite,
+    @Bean public StateMachine stateMachine(AbstractCommitReplicateComposite commitReplicateComposite) {
+        return new CopycatStateMachine(commitReplicateComposite);
+    }
+
+    @ConditionalOnBean(ConsensusSnapshot.class) @Bean @Primary
+    public StateMachine stateMachine(AbstractCommitReplicateComposite commitReplicateComposite,
         ConsensusSnapshot snapshot) {
-        return new CopycatStateMachine(commitReplicateComposite, snapshot);
+        return new CopycatSnapshotStateMachine(commitReplicateComposite, snapshot);
     }
 }

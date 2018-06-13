@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.config.node;
+package com.higgs.trust.config.term;
 
 import lombok.*;
 

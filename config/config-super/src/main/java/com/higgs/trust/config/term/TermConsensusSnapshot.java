@@ -4,7 +4,6 @@
 package com.higgs.trust.config.term;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.config.node.TermInfo;
 import com.higgs.trust.consensus.core.ConsensusSnapshot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -18,6 +18,10 @@
             <artifactId>common</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.higgs.trust</groupId>
+            <artifactId>consensus-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
@@ -25,6 +29,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+
 
         <dependency>
             <groupId>org.powermock</groupId>

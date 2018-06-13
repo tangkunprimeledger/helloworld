@@ -17,9 +17,11 @@ class term {
 
     @Usage('show the terms of cluster')
     @Command
-    def terms(InvocationContext context) {
+    def info(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def termManager = beans.getBean(TermManager.class)
+        context.provide([Name: "Term", Value: termManager.getCurrentTerm()])
+        context.provide([Name: "Master Heartbeat", Value: termManager.getMasterHeartbeat().get()])
         termManager.getTerms().forEach({ t -> context.provide(Term: t.term, StartHeight: t.startHeight, EndHeight: t.endHeight, MasterName: t.masterName) })
         out.println("")
     }

@@ -41,7 +41,6 @@ class node {
         def packageRepository = beans.getBean(PackageRepository.class)
         context.provide([Name: "Name", Value: nodeState.nodeName])
         context.provide([Name: "Master", Value: nodeState.masterName])
-        context.provide([Name: "Term", Value: nodeState.getCurrentTerm()])
         context.provide([Name: "isMaster", Value: nodeState.master])
         context.provide([Name: "State", Value: nodeState.state])
         context.provide([Name: "Block Height", Value: blockService.getMaxHeight().toString()])
