@@ -72,7 +72,7 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      */
     public void appendChild(MerkleTree merkleTree, Object _new) {
         merkleService.add(merkleTree, _new);
-        insert(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
+        update(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
     }
 
     /**

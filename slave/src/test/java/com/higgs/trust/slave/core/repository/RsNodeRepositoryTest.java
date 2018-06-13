@@ -3,12 +3,15 @@ package com.higgs.trust.slave.core.repository;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
+import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.List;
+
+import static org.testng.Assert.assertEquals;
 
 /*
  *
@@ -26,6 +29,8 @@ public class RsNodeRepositoryTest extends BaseTest {
     @BeforeMethod public void setUp() throws Exception {
         rsNode = new RsNode();
         rsNode.setRsId("rs-test3");
+        rsNode.setStatus(RsNodeStatusEnum.COMMON);
+        rsNode.setDesc("rs-test3");
     }
 
     @Test public void queryAll() {
@@ -38,18 +43,19 @@ public class RsNodeRepositoryTest extends BaseTest {
     // cannot acuqire rsNode
     @Test public void queryByRsIdReturnNull() {
         RsNode rsNode = rsNodeRepository.queryByRsId("test");
-        Assert.assertEquals(null, rsNode);
+        assertEquals(null, rsNode);
     }
 
     // success
     @Test public void queryByRsId() {
-        RsNode rsNode = rsNodeRepository.queryByRsId("rs-test1");
+        RsNode rsNode = rsNodeRepository.queryByRsId("rs-test3");
         System.out.println(rsNode);
     }
 
     @Test public void save() {
         rsNodeRepository.save(rsNode);
         RsNode rsNode1 = rsNodeRepository.queryByRsId(rsNode.getRsId());
+        assertEquals(rsNode1.getStatus(), rsNode.getStatus());
     }
 
     @Test public void convertActionToRsNode() {
@@ -58,7 +64,7 @@ public class RsNodeRepositoryTest extends BaseTest {
         registerRS.setDesc("rs-test4-RsNode");
 
         RsNode rs = rsNodeRepository.convertActionToRsNode(registerRS);
-        Assert.assertEquals(rs.getRsId(), registerRS.getRsId());
+        assertEquals(rs.getRsId(), registerRS.getRsId());
 
     }
 }

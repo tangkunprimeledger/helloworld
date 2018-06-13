@@ -9,7 +9,6 @@ import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.account.*;
 import com.higgs.trust.slave.core.service.action.ca.CaAuthHandler;
 import com.higgs.trust.slave.core.service.action.ca.CaCancelHandler;
-import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.core.service.action.ca.CaUpdateHandler;
 import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
 import com.higgs.trust.slave.core.service.action.contract.ContractCreationHandler;
@@ -75,7 +74,7 @@ import java.util.*;
         CoreTransaction coreTx = transactionData.getCurrentTransaction().getCoreTx();
         log.info("[process]coreTx:{}", coreTx);
         List<Action> actionList = coreTx.getActionList();
-        if (actionList == null) {
+        if (CollectionUtils.isEmpty(actionList)) {
             return;
         }
         //sort by index

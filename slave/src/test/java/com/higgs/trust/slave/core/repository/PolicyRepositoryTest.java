@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.higgs.trust.slave.BaseTest;
+import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
+import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,8 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.testng.Assert.assertEquals;
 
 /*
  *
@@ -33,12 +37,15 @@ public class PolicyRepositoryTest extends BaseTest {
         policy = new Policy();
         policy.setPolicyId("policy-test-1");
         policy.setPolicyName("注册policy-test-1");
+        policy.setDecisionType(DecisionTypeEnum.FULL_VOTE);
+        policy.setContractAddr(null);
         policy.setRsIds(rsIds);
     }
 
     @Test public void getPolicyById() {
-        Policy policy = policyRepository.getPolicyById("test");
-        Assert.assertEquals(null, policy);
+        Policy policy = policyRepository.getPolicyById("policy-test-1");
+//        assertEquals(null, policy);
+        System.out.println(policy);
     }
 
     @Test public void save() {
@@ -57,14 +64,22 @@ public class PolicyRepositoryTest extends BaseTest {
 
         Policy policy = policyRepository.convertActionToPolicy(registerPolicy);
 
-        Assert.assertEquals(policy.getPolicyId(), registerPolicy.getPolicyId());
-        Assert.assertEquals(policy.getPolicyName(), registerPolicy.getPolicyName());
-        Assert.assertEquals(policy.getRsIds(), registerPolicy.getRsIds());
+        assertEquals(policy.getPolicyId(), registerPolicy.getPolicyId());
+        assertEquals(policy.getPolicyName(), registerPolicy.getPolicyName());
+        assertEquals(policy.getRsIds(), registerPolicy.getRsIds());
     }
 
     @Test
     public void getPolicyType() {
-        String type = policyRepository.getPolicyType("000000");
-        Assert.assertEquals("REGISTER", type);
+        String type = policyRepository.getPolicyType("000001");
+        assertEquals("REGISTER_POLICY", type);
+    }
+
+    @Test
+    public void batchInsert() {
+        List<PolicyPO> policyPOList = new ArrayList<>();
+        policyPOList.add(policyRepository.convertPolicyToPolicyPO(policy));
+        int insert = policyRepository.batchInsert(policyPOList);
+        assertEquals(insert, 1);
     }
 }

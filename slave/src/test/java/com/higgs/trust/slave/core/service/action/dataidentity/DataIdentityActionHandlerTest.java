@@ -28,7 +28,7 @@ public class DataIdentityActionHandlerTest extends BaseTest {
 
     @Test
     public void testValidate() throws Exception {
-        snapshotService.clear();
+/*        snapshotService.clear();
         snapshotService.destroy();
         snapshotService.startTransaction();
         List<DataIdentity> list = new ArrayList<>();
@@ -110,7 +110,7 @@ public class DataIdentityActionHandlerTest extends BaseTest {
         dataIdentityActionHandler.process(ActionData1);
         snapshotService.rollback();
         snapshotService.commit();
-        snapshotService.flush();
+        snapshotService.flush();*/
         System.out.println("9999999999" + dataIdentitySnapshotAgent.getDataIdentity("12312312321223324211132423"));
 
     }
