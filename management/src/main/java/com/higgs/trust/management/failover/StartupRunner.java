@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.slave.core.managment;
+package com.higgs.trust.management.failover;
 
-import com.higgs.trust.slave.core.service.failover.SelfCheckingService;
-import com.higgs.trust.slave.core.service.failover.SyncService;
+import com.higgs.trust.management.failover.service.SelfCheckingService;
+import com.higgs.trust.management.failover.service.SyncService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

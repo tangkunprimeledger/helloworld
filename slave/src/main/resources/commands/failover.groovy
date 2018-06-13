@@ -4,10 +4,10 @@ import ClusterInfo
 import com.higgs.trust.config.node.NodeStateEnum
 import com.higgs.trust.config.node.NodeState
 import com.higgs.trust.slave.core.repository.BlockRepository
-import com.higgs.trust.slave.core.scheduler.FailoverSchedule
+import FailoverSchedule
 import com.higgs.trust.slave.core.service.block.BlockService
-import com.higgs.trust.slave.core.service.failover.SelfCheckingService
-import com.higgs.trust.slave.core.service.failover.SyncService
+import SelfCheckingService
+import SyncService
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.StringUtils

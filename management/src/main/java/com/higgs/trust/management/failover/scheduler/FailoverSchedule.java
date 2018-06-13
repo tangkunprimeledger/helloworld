@@ -1,15 +1,16 @@
-package com.higgs.trust.slave.core.scheduler;
+package com.higgs.trust.management.failover.scheduler;
 
 import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.FailoverExecption;
+import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
-import com.higgs.trust.slave.core.service.failover.BlockSyncService;
-import com.higgs.trust.slave.core.service.failover.FailoverProperties;
+import com.higgs.trust.management.failover.service.BlockSyncService;
+import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -63,7 +64,7 @@ import java.util.List;
                 }
             } while (++size < properties.getFailoverStep());
         } catch (SlaveException e) {
-            if (e.getCode() == SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID) {
+            if (e.getCode() == ManagementError.MANAGEMENT_FAILOVER_BLOCK_PERSIST_RESULT_INVALID) {
                 nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
             }
             log.error("failover block error：{}", e.getCode().getDescription(), e);
@@ -79,7 +80,7 @@ import java.util.List;
      */
     public synchronized boolean failover(long height) {
         if (!nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_STATE_NOT_ALLOWED);
         }
         log.info("failover block:{}", height);
         BlockHeader preBlockHeader = blockRepository.getBlockHeader(height - 1);
@@ -97,7 +98,7 @@ import java.util.List;
             }
         } while (!validated && ++tryTimes < properties.getTryTimes());
         if (!validated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
         }
         if (!checkAndInsert(height)) {
             return false;
@@ -197,7 +198,7 @@ import java.util.List;
         BlockHeader consensusHeader =
             blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE);
         if (consensusHeader == null) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST);
         }
         boolean validated =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), consensusHeader);
@@ -205,17 +206,17 @@ import java.util.List;
             BlockHeader persistHeader =
                 blockService.getTempHeader(blockHeader.getHeight(), BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE);
             if (persistHeader == null) {
-                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST);
+                throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST);
             }
             packContext = packageService.createPackContext(pack);
             packageService.persisting(packContext);
             boolean persistValid =
                 blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), persistHeader);
             if (!persistValid) {
-                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID);
+                throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_BLOCK_PERSIST_RESULT_INVALID);
             }
         } else {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_BLOCK_VALIDATE_RESULT_INVALID);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_BLOCK_VALIDATE_RESULT_INVALID);
         }
     }
 }

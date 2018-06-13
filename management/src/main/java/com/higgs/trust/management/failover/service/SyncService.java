@@ -1,12 +1,15 @@
-package com.higgs.trust.slave.core.service.failover;
+package com.higgs.trust.management.failover.service;
 
 import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.management.exception.ManagementError;
+import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.FailoverExecption;
+import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.core.service.consensus.log.PackageListener;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -21,7 +24,7 @@ import org.springframework.util.Assert;
 
 import java.util.List;
 
-@Service @Slf4j public class SyncService {
+@Service @Slf4j public class SyncService implements PackageListener {
 
     @Autowired private FailoverProperties properties;
     @Autowired private SyncPackageCache cache;
@@ -83,14 +86,14 @@ import java.util.List;
      */
     public synchronized void sync(long startHeight, int size) {
         if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_STATE_NOT_ALLOWED);
         }
         log.info("starting to sync the block, start height:{}, size:{}", startHeight, size);
         Assert.isTrue(size > 0, "the size of sync block must > 0");
         long currentHeight = blockRepository.getMaxHeight();
         log.info("local current block height:{}", currentHeight);
         if (currentHeight != startHeight - 1) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_START_HEIGHT_ERROR);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_START_HEIGHT_ERROR);
         }
         int tryTimes = 0;
         List<BlockHeader> headers = null;
@@ -118,7 +121,7 @@ import java.util.List;
             }
         } while ((headerValidated == null || !headerValidated) && ++tryTimes < properties.getTryTimes());
         if (headerValidated == null || !headerValidated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_GET_VALIDATING_HEADERS_FAILED);
         }
         int headerSize = headers.size();
         int startIndex = 0;
@@ -139,7 +142,7 @@ import java.util.List;
                 blockService.compareBlockHeader(lastBlock.getBlockHeader(), headers.get(startIndex + blockSize - 1));
             if (!blocksValidated) {
                 log.error("validating the last block of blocks failed");
-                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
+                throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
             }
             blocks.forEach(block -> syncBlock(block));
             startIndex = startIndex + blockSize;
@@ -156,14 +159,14 @@ import java.util.List;
      */
     public synchronized void sync(long startHeight, int size, String fromNodeName) {
         if (!nodeState.isState(NodeStateEnum.ArtificialSync)) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_STATE_NOT_ALLOWED);
         }
         log.info("starting to sync the block from node {}, start height:{}, size:{}", fromNodeName, startHeight, size);
         Assert.isTrue(size > 0, "the size of sync block must > 0");
         long currentHeight = blockRepository.getMaxHeight();
         log.info("local current block height:{}", currentHeight);
         if (currentHeight != startHeight - 1) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_START_HEIGHT_ERROR);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_START_HEIGHT_ERROR);
         }
         int tryTimes = 0;
         List<BlockHeader> headers = null;
@@ -187,7 +190,7 @@ import java.util.List;
             }
         } while (!headerValidated && ++tryTimes < properties.getTryTimes());
         if (!headerValidated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_GET_VALIDATING_HEADERS_FAILED);
         }
         int headerSize = headers.size();
         int startIndex = 0;
@@ -208,7 +211,7 @@ import java.util.List;
                 blockService.compareBlockHeader(lastBlock.getBlockHeader(), headers.get(startIndex + blockSize - 1));
             if (!blocksValidated) {
                 log.error("validating the last block of blocks failed");
-                throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
+                throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
             }
             blocks.forEach(block -> syncBlock(block));
             startIndex = startIndex + blockSize;
@@ -219,11 +222,11 @@ import java.util.List;
 
     /**
      * receive package height
-     *
-     * @param height
      */
-    public void receivePackHeight(long height) {
-        cache.receivePackHeight(height);
+    @Override public void received(Package pack) {
+        if (nodeState.isState(NodeStateEnum.AutoSync)) {
+            cache.receivePackHeight(pack.getHeight());
+        }
     }
 
     /**
@@ -249,7 +252,7 @@ import java.util.List;
             }
         } while (!blockValidated && ++tryTimes < properties.getTryTimes());
         if (!blockValidated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
         }
         return blocks;
     }
@@ -277,7 +280,7 @@ import java.util.List;
             }
         } while (!blockValidated && ++tryTimes < properties.getTryTimes());
         if (!blockValidated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_GET_VALIDATING_BLOCKS_FAILED);
         }
         return blocks;
     }
@@ -301,14 +304,14 @@ import java.util.List;
         boolean validated =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
         if (!validated) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
         }
         packContext = packageService.createPackContext(pack);
         packageService.persisting(packContext);
         boolean persistValid =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
         if (!persistValid) {
-            throw new FailoverExecption(SlaveErrorEnum.SLAVE_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID);
+            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID);
         }
     }
 }

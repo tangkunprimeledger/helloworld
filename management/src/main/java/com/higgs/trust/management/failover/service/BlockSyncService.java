@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.core.service.failover;
+package com.higgs.trust.management.failover.service;
 
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.service.block.BlockService;

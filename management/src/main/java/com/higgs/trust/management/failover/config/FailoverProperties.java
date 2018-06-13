@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.core.service.failover;
+package com.higgs.trust.management.failover.config;
 
 import lombok.Getter;
 import lombok.Setter;

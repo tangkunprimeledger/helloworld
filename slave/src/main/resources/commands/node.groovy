@@ -5,7 +5,7 @@ import com.higgs.trust.config.node.NodeState
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
-import com.higgs.trust.slave.core.service.failover.SelfCheckingService
+import SelfCheckingService
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*

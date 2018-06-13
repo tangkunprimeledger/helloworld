@@ -17,6 +17,7 @@
         <module>tester</module>
         <module>registry</module>
         <module>config</module>
+        <module>management</module>
     </modules>
 
     <parent>

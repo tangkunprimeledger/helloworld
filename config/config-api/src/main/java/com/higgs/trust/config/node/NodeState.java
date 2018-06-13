@@ -10,23 +10,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static com.higgs.trust.config.node.NodeStateEnum.*;
 
 @Component @Scope("singleton") @Slf4j public class NodeState implements InitializingBean {
 
+    public static final String MASTER_NA = "N/A";
+
     @Autowired private NodeProperties properties;
 
-    private List<MasterChangeListener> masterListeners = new ArrayList<>();
+    @Autowired private ApplicationContext applicationContext;
 
-    private List<StateChangeListener> stateListeners = new ArrayList<>();
+    private Set<MasterChangeListener> masterListeners = new HashSet<>();
+
+    private Set<StateChangeListener> stateListeners = new HashSet<>();
 
     @Getter private NodeStateEnum state = Starting;
 
@@ -55,16 +58,14 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
      */
     @Getter private String prefix;
 
-
     @Getter @Setter private long currentTerm = 0;
-
-
-    public static final String MASTER_NA = "N/A";
 
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
         this.privateKey = properties.getPrivateKey();
         this.prefix = properties.getPrefix();
+        applicationContext.getBeansOfType(StateChangeListener.class).values().forEach(this::registerStateListener);
+        applicationContext.getBeansOfType(MasterChangeListener.class).values().forEach(this::registerMasterListener);
     }
 
     /**
@@ -117,9 +118,7 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
                 result = SelfChecking == to;
                 break;
             case SelfChecking:
-                result =
-                    AutoSync == to || ArtificialSync == to || Running == to
-                        || Offline == to;
+                result = AutoSync == to || ArtificialSync == to || Running == to || Offline == to;
                 break;
             case AutoSync:
             case ArtificialSync:

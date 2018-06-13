@@ -16,18 +16,20 @@ import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.*;
 
 /**
  * @author suimi
  * @date 2018/6/4
  */
-@Slf4j @Service public class ChangeMasterService implements MasterChangeListener, InitializingBean {
+@Slf4j @Service public class ChangeMasterService implements MasterChangeListener{
 
     @Autowired private NodeProperties nodeProperties;
 
@@ -158,9 +160,5 @@ import java.util.concurrent.*;
             termManager.setMasterHeartbeat(false);
         }
         resetHeartbeatTimeout();
-    }
-
-    @Override public void afterPropertiesSet() {
-        nodeState.registerMasterListener(this);
     }
 }

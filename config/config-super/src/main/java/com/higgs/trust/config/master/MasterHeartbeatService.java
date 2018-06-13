@@ -10,7 +10,6 @@ import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.config.node.listener.MasterChangeListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,7 @@ import java.util.concurrent.*;
  * @author suimi
  * @date 2018/6/4
  */
-@Slf4j @Service public class MasterHeartbeatService implements MasterChangeListener, InitializingBean {
+@Slf4j @Service public class MasterHeartbeatService implements MasterChangeListener{
     @Autowired private NodeProperties nodeProperties;
 
     @Autowired private NodeState nodeState;
@@ -81,9 +80,5 @@ import java.util.concurrent.*;
         } else {
             cancelMasterHeart();
         }
-    }
-
-    @Override public void afterPropertiesSet() {
-        nodeState.registerMasterListener(this);
     }
 }
