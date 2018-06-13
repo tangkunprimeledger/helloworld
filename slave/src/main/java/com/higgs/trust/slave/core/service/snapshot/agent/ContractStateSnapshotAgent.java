@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.service.snapshot.agent;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.contract.ContractStateStore;
+import com.higgs.trust.contract.JsonHelper;
 import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
@@ -49,7 +50,7 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
             ContractStatePO po = new ContractStatePO();
             po.setId(contractState.getId());
             po.setAddress(contractState.getAddress());
-            po.setState(JSON.toJSONString(contractState.getState(), StateManager.JSON_GENERATE_FEATURES));
+            po.setState(JsonHelper.serialize(contractState.getState()));
             list.add(po);
         });
         return list;

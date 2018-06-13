@@ -48,8 +48,8 @@ public class ContractCreationHandlerTest extends BaseTest {
                 .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
                 .setTxId("Ox00000001" + System.currentTimeMillis())
-                .signature(ActionDataMockBuilder.privateKey1)
-                .signature(ActionDataMockBuilder.privateKey2)
+                .signature("", ActionDataMockBuilder.privateKey1)
+                .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .setBlockHeight(6)
                 .build();
@@ -79,10 +79,10 @@ public class ContractCreationHandlerTest extends BaseTest {
                 .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
                 .setTxId("Ox00000001" + System.currentTimeMillis())
-                .signature(ActionDataMockBuilder.privateKey1)
-                .signature(ActionDataMockBuilder.privateKey2)
+                .signature("", ActionDataMockBuilder.privateKey1)
+                .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
-                .setBlockHeight(11)
+                .setBlockHeight(2)
                 .build();
 
         packageService.process(packContext, false);
@@ -107,7 +107,7 @@ public class ContractCreationHandlerTest extends BaseTest {
                 .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
                 .setTxId("tx_00000000001")
-                .signature(ActionDataMockBuilder.privateKey1)
+                .signature("", ActionDataMockBuilder.privateKey1)
                 .makeBlockHeader()
                 .build();
         System.out.println(JSON.toJSONString(packContext.getCurrentTransaction()));

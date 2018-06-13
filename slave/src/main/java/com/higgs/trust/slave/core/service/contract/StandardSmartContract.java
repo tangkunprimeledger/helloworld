@@ -29,8 +29,14 @@ import org.springframework.stereotype.Service;
         if (null != engineManager) {
             return engineManager;
         }
+
+        ExecuteConfig executeConfig = new ExecuteConfig();
+        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.allow("com.higgs.trust.slave.core.service.contract.StandardContractContextService");
+
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);
+        manager.setExecuteConfig(executeConfig);
         manager.setDbStateStore(new ContractStateStore() {
             @Override
             public void put(String key, StateManager state) {
@@ -58,7 +64,7 @@ import org.springframework.stereotype.Service;
         }
         ExecuteEngineManager manager = getExecuteEngineManager();
         ExecuteContext context = ExecuteContext.newContext(data);
-        context.setInstanceAddress(instanceId);
+        context.setStateInstanceKey(instanceId);
 
         ContractEntity contractEntity = new ContractEntity();
         contractEntity.setAddress(contract.getAddress());

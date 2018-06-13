@@ -19,7 +19,8 @@ public interface ExecuteEngineFactory {
      *
      * @param code
      * @param variables
+     * @param executeConfig
      * @return
      */
-    public ExecuteEngine getExecuteEngine(String code, Map<String, Object> variables);
+    public ExecuteEngine createExecuteEngine(String code, Map<String, Object> variables, ExecuteConfig executeConfig);
 }

@@ -99,7 +99,7 @@ import java.math.BigDecimal;
             throw new SlaveException(SlaveErrorEnum.SLAVE_CONTRACT_NOT_EXIST_ERROR);
         }
         //current execute contract addr
-        String bindHash = executeContext.getInstanceAddress();
+        String bindHash = executeContext.getStateInstanceKey();
         //compare to bindHash of freeze record
         if(!StringUtils.equals(contractBindHashOfRecord,bindHash)){
             log.error("[accountUnFreeze.checkContract] contractBindHashOfRecord is unequals bindHash");

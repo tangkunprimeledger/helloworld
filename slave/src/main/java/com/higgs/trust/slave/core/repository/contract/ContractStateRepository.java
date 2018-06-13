@@ -1,9 +1,8 @@
 package com.higgs.trust.slave.core.repository.contract;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.contract.StateManager;
+import com.higgs.trust.contract.JsonHelper;
 import com.higgs.trust.slave.dao.contract.ContractStateDao;
-import com.higgs.trust.slave.dao.po.contract.AccountContractBindingPO;
 import com.higgs.trust.slave.dao.po.contract.ContractStatePO;
 import com.higgs.trust.slave.model.bo.contract.ContractState;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +58,7 @@ public class ContractStateRepository {
     public void put(String address, Map<String, Object> state) {
         ContractStatePO po = new ContractStatePO();
         po.setAddress(address);
-        po.setState(JSON.toJSONString(state, StateManager.JSON_GENERATE_FEATURES));
+        po.setState(JsonHelper.serialize(state));
         contractStateDao.save(po);
     }
 }
