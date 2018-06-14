@@ -12,14 +12,15 @@ import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.agent.*;
 import com.higgs.trust.slave.model.bo.snapshot.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -38,6 +39,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * tag whether  the snapshot is in  transaction
      */
     private static boolean isOpenTransaction = false;
+
+    private static int index = 0;
 
     private static final int PACKAGE_MAXIMUN_SIZE = 10000;
 
@@ -217,6 +220,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear packageCache and txCache
             clearTempCache();
+
+            //reset index
+            resetIndex();
         } finally {
             log.debug("Unlock lock for clear snapshot!");
             lock.unlock();
@@ -259,6 +265,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
                 LoadingCache<String, Object> innerMap = outerEntry.getValue();
                 innerMap.invalidateAll();
             }
+
+            //reset index
+            resetIndex();
         } finally {
             log.debug("Unlock lock for destroy snapshot!");
             lock.unlock();
@@ -325,6 +334,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * @param value
      */
     @Override
+    //TODO lingchao check whether all the change data is a new object when commit or other
     public void insert(SnapshotBizKeyEnum key1, Object key2, Object value) {
         Profiler.enter("[Snapshot.insert]");
         try {
@@ -352,8 +362,11 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             }
 
             //put insert status data into txCache
-            Value putValue = buildValue(value, SnapshotValueStatusEnum.INSERT.getCode());
+            Value putValue = buildValue(value, SnapshotValueStatusEnum.INSERT.getCode(), index);
             innerMap.put(innerKey, (Value) transferValue(putValue));
+
+            //add index for next data
+            addIndex();
 
             //check whether snapshot transaction has been started.
             isNotOpenTransactionException();
@@ -383,6 +396,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             // put update Data into txCache
             putUpdateDataIntoTxCache(key1, key2, value);
+
+            //add index
+            addIndex();
 
             //check whether snapshot transaction has been started.
             isNotOpenTransactionException();
@@ -416,8 +432,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         //data in PackageCache or GlobalCache or DB
         boolean isExistedInPackageOrGlobalOrDB = isExistedInPackageCache || isExistedInGlobalCache;
 
-        Value putInsertValue = buildValue(value, SnapshotValueStatusEnum.INSERT.getCode());
-        Value putUpdateValue = buildValue(value, SnapshotValueStatusEnum.UPDATE.getCode());
+        Value putInsertValue = buildValue(value, SnapshotValueStatusEnum.INSERT.getCode(), index);
+        Value putUpdateValue = buildValue(value, SnapshotValueStatusEnum.UPDATE.getCode(), index);
 
         //if there is data in txCache and in packageCache and  not in  globalCache  and  db.
         //insert method and other case has insure there can not be insert status  data  in txCache  or  update status in packageCache  with  the above situation
@@ -429,6 +445,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         //if there is data in txCache and not in packageCache and globalCache and db and the txCache status is insert
         //the case txCache is status is not exist  .it is insure by other update case.
         if (isExistedInTxCache && !isExistedInPackageOrGlobalOrDB && StringUtils.equals(txValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
+            //use the index before in the cache
+            putInsertValue.setIndex(txValue.getIndex());
             innerMap.put(innerKey, (Value) transferValue(putInsertValue));
             return;
         }
@@ -564,6 +582,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //clear packageCache and txCache
             clearTempCache();
+
+            //reset index
+            resetIndex();
         } finally {
             log.info("Unlock lock for flush!");
             lock.unlock();
@@ -602,7 +623,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * close transaction
      */
     private void closeTransaction() {
-        log.info("Close the snapshot transaction");
+        log.debug("Close the snapshot transaction");
         isOpenTransaction = false;
     }
 
@@ -759,7 +780,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
         //if the txCache value is update status and there is  data in package cache  and the status is insert, put data into packageCache
         if (!isInsert && isExistedInPackageCache && StringUtils.equals(packageValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
-            packageInnerCache.put(innerKey, buildValue(innerValue.getObject(), SnapshotValueStatusEnum.INSERT.getCode()));
+            packageInnerCache.put(innerKey, buildValue(innerValue.getObject(), SnapshotValueStatusEnum.INSERT.getCode(), packageValue.getIndex()));
             return;
         }
 
@@ -816,13 +837,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             // foreach inner map to copy data
             LoadingCache<String, Object> innerCache = globalCache.get(snapshotBizKeyEnum);
             for (Map.Entry<String, Value> innerEntry : innerMap.entrySet()) {
-                //check  cache size
-                if (innerCache.size() >= GLOBAL_MAXIMUN_SIZE) {
-                    log.error("Cache size  : {} for key:{} in globalCache is equal or bigger than {}!", innerCache.size(), snapshotBizKeyEnum, GLOBAL_MAXIMUN_SIZE);
-                    //TODO lingchao 加监控
-                    throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_CACHE_SIZE_NOT_ENOUGH_EXCEPTION);
-                }
-
                 Value value = innerEntry.getValue();
 
                 //if data status is insert and there is data in global cache or db
@@ -862,34 +876,38 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
             }
 
+            //transfer map ro sorted list
+            List<Pair<Object, Object>> sortingList =  mapToSortedList(innerMap);
+
             //cacheLoader to  flush data to db
             CacheLoader cacheLoader = cacheLoaderCache.get(snapshotBizKeyEnum);
             //all insert data for the biz
-            Map<Object, Object> insertMap = new HashMap<>();
+            List<Pair<Object, Object>> insertList = new ArrayList<>();
             //all update data for the biz
-            Map<Object, Object> updateMap = new HashMap<>();
+            List<Pair<Object, Object>> updateList = new ArrayList<>();
             // foreach inner map to flush data
-            for (Map.Entry<String, Value> innerEntry : innerMap.entrySet()) {
-                Value value = innerEntry.getValue();
-                Object keyObject = JSON.parse(innerEntry.getKey());
+            for (Pair<Object, Object> pair : sortingList) {
+                Object keyObject = pair.getLeft();
+                Value value = (Value) pair.getRight();
                 //if data status is insert put it into  insertMap  else into updateMap
                 if (StringUtils.equals(value.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
-                    insertMap.put(keyObject, value.getObject());
+                    insertList.add(Pair.of(keyObject, value.getObject()));
                 } else {
-                    updateMap.put(keyObject, value.getObject());
+                    updateList.add(Pair.of(keyObject, value.getObject()));
                 }
-                log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into flush map ", snapshotBizKeyEnum, innerEntry.getKey(), value);
+                log.info("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into flush map ", snapshotBizKeyEnum, keyObject, value);
             }
+
             try {
 
                 //flush insert data into db
-                if (!insertMap.isEmpty() && !cacheLoader.batchInsert(insertMap)) {
+                if (CollectionUtils.isNotEmpty(insertList) && !cacheLoader.batchInsert(insertList)) {
                     log.error("Flush data for batchInsert db failed error");
                     throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_INSERT_EXCEPTION);
                 }
 
                 //flush update data into db
-                if (!updateMap.isEmpty() && !cacheLoader.batchUpdate(updateMap)) {
+                if (CollectionUtils.isNotEmpty(updateList) && !cacheLoader.batchUpdate(updateList)) {
                     log.error("Flush data for batchUpdate db failed error");
                     throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_UPDATE_EXCEPTION);
                 }
@@ -900,6 +918,46 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         }
         log.info("End of flushing data into db");
     }
+
+    /**
+     * transfer map to sorted list
+     * @param innerMap
+     * @return
+     */
+    private List<Pair<Object, Object>> mapToSortedList(ConcurrentHashMap<String, Value> innerMap) {
+        List<Pair<Object, Object>> sortingList = new ArrayList<>();
+        // foreach inner map to make list to sort data
+        for (Map.Entry<String, Value> innerEntry : innerMap.entrySet()) {
+            Object keyObject = JSON.parse(innerEntry.getKey());
+            Value value = innerEntry.getValue();
+            sortingList.add(Pair.of(keyObject, value));
+        }
+        //sort list
+        sortValueListByIndex(sortingList);
+        return sortingList;
+    }
+
+    /**
+     * sort list by value index
+     * @param sortingList
+     */
+    //TODO lingchao 优化代码。用Lambda  https://www.cnblogs.com/tomyLi/p/JAVA8rang-dai-ma-geng-you-ya-zhiList-pai-xu.html
+    private void sortValueListByIndex(List<Pair<Object, Object>> sortingList) {
+        //sort list
+        Collections.sort(sortingList, new Comparator<Pair<Object, Object>>() {
+            @Override
+            public int compare(Pair<Object, Object> p1, Pair<Object, Object> p2) {
+                Value value1 = (Value) p1.getRight();
+                Value value2 = (Value) p2.getRight();
+                if (value1.getIndex() >= value2.getIndex()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+        });
+    }
+
 
     /**
      * transfer the data to a different object
@@ -926,6 +984,20 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     }
 
     /**
+     * reset index
+     */
+
+    private void resetIndex() {
+        log.debug("Reset index");
+        index = 0;
+    }
+
+    private void addIndex() {
+        log.debug("index add 1");
+        index = index + 1;
+    }
+
+    /**
      * init snapshot after afterPropertiesSet
      *
      * @throws Exception
@@ -943,8 +1015,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * @param status
      * @return
      */
-    private Value buildValue(Object object, String status) {
-        return new Value(object, status);
+    private Value buildValue(Object object, String status, int index) {
+        return new Value(object, status, index);
     }
 
     /**

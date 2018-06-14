@@ -1,5 +1,8 @@
 package com.higgs.trust.slave.core.service.snapshot;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,16 +21,16 @@ public interface CacheLoader {
 
     /**
      * the method to batchInsert data into db
-     * @param insertMap
+     * @param insertList
      * @return
      */
-    boolean batchInsert(Map<Object, Object> insertMap);
+    boolean batchInsert(List<Pair<Object, Object>> insertList);
 
     /**
      * the method to batchUpdate data into db
-     * @param updateMap
+     * @param updateList
      * @return
      */
-    boolean batchUpdate(Map<Object, Object> updateMap);
+    boolean batchUpdate(List<Pair<Object, Object>> updateList);
 
 }

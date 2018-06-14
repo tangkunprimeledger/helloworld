@@ -10,6 +10,7 @@ import com.higgs.trust.slave.model.bo.account.AccountDetail;
 import com.higgs.trust.slave.model.bo.account.AccountDetailFreeze;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -68,27 +69,27 @@ import java.util.Map;
     /**
      * the method to batchInsert data into db
      *
-     * @param insertMap
+     * @param insertList
      * @return
      */
-    @Override public boolean batchInsert(Map<Object, Object> insertMap) {
-        if (insertMap == null || insertMap.isEmpty()) {
+    @Override public boolean batchInsert(List<Pair<Object, Object>> insertList) {
+        if (CollectionUtils.isEmpty(insertList)){
             return true;
         }
         List<AccountDetail> accountDetails = new ArrayList<>();
         List<AccountDcRecord> dcRecords = new ArrayList<>();
         List<AccountDetailFreeze> detailFreezes = new ArrayList<>();
-        for (Object key : insertMap.keySet()) {
-            if (key instanceof AccountDetail) {
-                accountDetails.add((AccountDetail)insertMap.get(key));
+        for (Pair<Object, Object> pair : insertList) {
+            if (pair.getLeft() instanceof AccountDetail) {
+                accountDetails.add((AccountDetail)pair.getRight());
                 continue;
             }
-            if (key instanceof AccountDcRecord) {
-                dcRecords.add((AccountDcRecord)insertMap.get(key));
+            if (pair.getLeft() instanceof AccountDcRecord) {
+                dcRecords.add((AccountDcRecord)pair.getRight());
                 continue;
             }
-            if (key instanceof AccountDetailFreeze) {
-                detailFreezes.add((AccountDetailFreeze)insertMap.get(key));
+            if (pair.getLeft() instanceof AccountDetailFreeze) {
+                detailFreezes.add((AccountDetailFreeze)pair.getRight());
                 continue;
             }
         }
@@ -107,10 +108,10 @@ import java.util.Map;
     /**
      * the method to batchUpdate data into db
      *
-     * @param updateMap
+     * @param updateList
      * @return
      */
-    @Override public boolean batchUpdate(Map<Object, Object> updateMap) {
+    @Override public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
         return true;
     }
 }

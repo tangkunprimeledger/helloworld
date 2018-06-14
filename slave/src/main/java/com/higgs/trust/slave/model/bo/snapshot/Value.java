@@ -22,4 +22,8 @@ public class Value {
      * value status as 1.INSERT for insert  2.UPDATE for update
      */
     private String status;
+    /**
+     * the data index in the cache for the order of data you put into.
+     */
+    private int index;
 }

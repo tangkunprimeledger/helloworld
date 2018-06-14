@@ -18,6 +18,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -136,23 +138,23 @@ public class UTXOSnapshotAgent implements CacheLoader {
     /**
      * the method to batchInsert data into db
      *
-     * @param insertMap
+     * @param insertList
      * @return
      */
     @Override
-    public boolean batchInsert(Map<Object, Object> insertMap) {
-        if (insertMap.isEmpty()){
+    public boolean batchInsert(List<Pair<Object, Object>> insertList) {
+        if (CollectionUtils.isEmpty(insertList)){
             return true;
         }
 
         //get bach insert data
         List<TxOutPO> txOutPOList = new ArrayList<>();
-        for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
-            if (!(entry.getKey() instanceof  TxOutCacheKey)){
+        for (Pair<Object, Object> pair : insertList) {
+            if (!(pair.getLeft() instanceof  TxOutCacheKey)){
                 log.error("insert key is not the type of TxOutCacheKey error");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
-            txOutPOList.add((TxOutPO)entry.getValue());
+            txOutPOList.add((TxOutPO)pair.getRight());
         }
 
         return utxodbHandler.batchInsert(txOutPOList);
@@ -161,23 +163,23 @@ public class UTXOSnapshotAgent implements CacheLoader {
     /**
      * the method to batchUpdate data into db
      *
-     * @param updateMap
+     * @param updateList
      * @return
      */
     @Override
-    public boolean batchUpdate(Map<Object, Object> updateMap) {
-        if (updateMap.isEmpty()){
+    public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
+        if (CollectionUtils.isEmpty(updateList)){
             return true;
         }
 
         //get bach update data
         List<TxOutPO> txOutPOList = new ArrayList<>();
-        for (Map.Entry<Object, Object> entry : updateMap.entrySet()) {
-            if (!(entry.getKey() instanceof  TxOutCacheKey)){
+        for (Pair<Object, Object> pair : updateList) {
+            if (!(pair.getLeft() instanceof  TxOutCacheKey)){
                 log.error("update key is not the type of TxOutCacheKey error");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
-            txOutPOList.add((TxOutPO)entry.getValue());
+            txOutPOList.add((TxOutPO)pair.getRight());
         }
 
         return utxodbHandler.batchUpdate(txOutPOList);

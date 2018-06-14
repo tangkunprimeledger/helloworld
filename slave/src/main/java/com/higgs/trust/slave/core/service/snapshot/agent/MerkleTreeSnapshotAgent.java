@@ -12,10 +12,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -114,22 +116,22 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
     /**
      * the method to batchInsert data into db
      *
-     * @param insertMap
+     * @param insertList
      * @return
      */
     @Override
-    public boolean batchInsert(Map<Object, Object> insertMap) {
+    public boolean batchInsert(List<Pair<Object, Object>> insertList) {
         return true;
     }
 
     /**
      * the method to batchUpdate data into db
      *
-     * @param updateMap
+     * @param updateList
      * @return
      */
     @Override
-    public boolean batchUpdate(Map<Object, Object> updateMap) {
+    public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
         return true;
     }
 

@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -83,14 +84,14 @@ public class AccountContractBindingSnapshotAgent implements CacheLoader {
     /**
      * the method to batchInsert data into db
      *
-     * @param insertMap
+     * @param insertList
      * @return
      */
     @Override
-    public boolean batchInsert(Map<Object, Object> insertMap) {
-        List<AccountContractBindingPO> list = new ArrayList<>(insertMap.size());
-        insertMap.forEach((key, value) -> {
-            AccountContractBinding binding = (AccountContractBinding) value;
+    public boolean batchInsert(List<Pair<Object, Object>> insertList) {
+        List<AccountContractBindingPO> list = new ArrayList<>(insertList.size());
+        insertList.forEach(pair -> {
+            AccountContractBinding binding = (AccountContractBinding) pair.getRight();
             list.add(BeanConvertor.convertBean(binding, AccountContractBindingPO.class));
         });
         return repository.batchInsert(list);
@@ -99,11 +100,11 @@ public class AccountContractBindingSnapshotAgent implements CacheLoader {
     /**
      * the method to batchUpdate data into db
      *
-     * @param updateMap
+     * @param updateList
      * @return
      */
     @Override
-    public boolean batchUpdate(Map<Object, Object> updateMap) {
+    public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
         throw new NotImplementedException();
     }
 

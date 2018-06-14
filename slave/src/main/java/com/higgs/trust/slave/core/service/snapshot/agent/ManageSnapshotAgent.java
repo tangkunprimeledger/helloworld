@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,22 +73,22 @@ public class ManageSnapshotAgent implements CacheLoader {
     /**
      * the method to bachInsert data into db
      *
-     * @param insertMap
+     * @param insertList
      * @return
      */
     @Override
-    public boolean batchInsert(Map<Object, Object> insertMap) {
-        if (insertMap.isEmpty()) {
+    public boolean batchInsert(List<Pair<Object, Object>> insertList) {
+        if (CollectionUtils.isEmpty(insertList)){
             return true;
         }
 
         List<RsNodePO> rsNodePOList = new ArrayList<>();
         List<PolicyPO> policyPOList = new ArrayList<>();
-        for (Map.Entry<Object, Object> entry : insertMap.entrySet()) {
-            if ((entry.getKey() instanceof  RsNodeCacheKey)) {
-                rsNodePOList.add((RsNodePO)entry.getValue());
-            } else if ((entry.getKey() instanceof  PolicyCacheKey)) {
-                policyPOList.add((PolicyPO)entry.getValue());
+        for (Pair<Object, Object> pair : insertList) {
+            if ((pair.getLeft() instanceof  RsNodeCacheKey)) {
+                rsNodePOList.add((RsNodePO)pair.getRight());
+            } else if ((pair.getLeft() instanceof  PolicyCacheKey)) {
+                policyPOList.add((PolicyPO)pair.getRight());
             } else {
                 log.error("insert key is not type of RsNodeCacheKey or PolicyCacheKey");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
@@ -106,19 +107,19 @@ public class ManageSnapshotAgent implements CacheLoader {
     /**
      * the method to bachUpdate data into db
      *
-     * @param updateMap
+     * @param updateList
      * @return
      */
     @Override
-    public boolean batchUpdate(Map<Object, Object> updateMap) {
-        if (updateMap.isEmpty()) {
+    public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
+        if (CollectionUtils.isEmpty(updateList)){
             return true;
         }
 
         List<RsNodePO> rsNodePOList = new ArrayList<>();
-        for (Map.Entry entry : updateMap.entrySet()) {
-            if ((entry.getKey() instanceof  RsNodeCacheKey)) {
-                rsNodePOList.add((RsNodePO)entry.getValue());
+        for (Pair<Object, Object> pair : updateList) {
+            if ((pair.getLeft() instanceof  RsNodeCacheKey)) {
+                rsNodePOList.add((RsNodePO)pair.getRight());
             } else {
                 log.error("insert key is not type of RsNodeCacheKey");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
