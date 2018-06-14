@@ -6,11 +6,17 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
+import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.contract.Contract;
+import com.higgs.trust.slave.model.bo.utxo.TxIn;
+import com.higgs.trust.slave.model.bo.utxo.TxOut;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Slf4j @Service public class UTXOSmartContractImpl implements UTXOSmartContract {
 
@@ -27,7 +33,12 @@ import org.springframework.stereotype.Service;
 
         ExecuteConfig executeConfig = new ExecuteConfig();
         executeConfig.setInstructionCountQuota(10000);
-        executeConfig.allow("com.higgs.trust.slave.core.service.contract.UTXOContextService");
+        executeConfig.allow(UTXOContextService.class)
+            .allow(UTXO.class)
+            .allow(UTXOAction.class)
+            .allow(TxIn.class)
+            .allow(TxOut.class)
+            .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);
         manager.setExecuteConfig(executeConfig);
