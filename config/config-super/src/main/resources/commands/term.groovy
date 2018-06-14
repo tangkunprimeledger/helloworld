@@ -21,6 +21,7 @@ class term {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def termManager = beans.getBean(TermManager.class)
         context.provide([Name: "Master Heartbeat", Value: termManager.getMasterHeartbeat().get()])
+        out.println("")
         termManager.getTerms().forEach({ t -> context.provide(Term: t.term, StartHeight: t.startHeight, EndHeight: t.endHeight, MasterName: t.masterName) })
         out.println("")
     }
