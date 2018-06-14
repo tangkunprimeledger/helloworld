@@ -1,13 +1,13 @@
 package commands
 
-import ClusterInfo
 import com.higgs.trust.config.node.NodeStateEnum
 import com.higgs.trust.config.node.NodeState
+import com.higgs.trust.config.p2p.ClusterInfo
+import com.higgs.trust.management.failover.scheduler.FailoverSchedule
+import com.higgs.trust.management.failover.service.SelfCheckingService
+import com.higgs.trust.management.failover.service.SyncService
 import com.higgs.trust.slave.core.repository.BlockRepository
-import FailoverSchedule
 import com.higgs.trust.slave.core.service.block.BlockService
-import SelfCheckingService
-import SyncService
 import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.StringUtils
@@ -98,6 +98,15 @@ class failover {
         }
         def failoverSchedule = beans.getBean(FailoverSchedule.class)
         return failoverSchedule.failover(Long.parseLong(height))
+    }
+
+    @Usage('check the current block of node')
+    @Command
+    def selfCheck(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def selfCheckService = beans.getBean(SelfCheckingService.class)
+        def result = selfCheckService.selfCheck(1)
+        out.println("Self check result: $result")
     }
 
 }

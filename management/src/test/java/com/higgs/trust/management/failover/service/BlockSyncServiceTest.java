@@ -1,6 +1,7 @@
-package com.higgs.trust.slave.core.service.failover;
+package com.higgs.trust.management.failover.service;
 
 import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.management.failover.service.BlockSyncService;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.block.hash.TxRootHashBuilder;
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService;
@@ -10,9 +11,7 @@ import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.StateRootHash;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeClass;
@@ -47,14 +46,14 @@ import static org.testng.Assert.*;
     }
 
     private BlockHeader mockFirstHeader() {
-        BlockHeader header = mock(BlockHeader.class);
-        when(header.getHeight()).thenReturn(0L);
-        when(header.getBlockHash()).thenReturn("0");
-        when(header.getPreviousHash()).thenReturn("0");
-        StateRootHash stateRootHash = mock(StateRootHash.class);
-        when(header.getStateRootHash()).thenReturn(stateRootHash);
-        when(stateRootHash.getTxRootHash()).thenReturn("0");
-        when(blockService.buildBlockHash(header)).thenReturn("0");
+        BlockHeader header = Mockito.mock(BlockHeader.class);
+        Mockito.when(header.getHeight()).thenReturn(0L);
+        Mockito.when(header.getBlockHash()).thenReturn("0");
+        Mockito.when(header.getPreviousHash()).thenReturn("0");
+        StateRootHash stateRootHash = Mockito.mock(StateRootHash.class);
+        Mockito.when(header.getStateRootHash()).thenReturn(stateRootHash);
+        Mockito.when(stateRootHash.getTxRootHash()).thenReturn("0");
+        Mockito.when(blockService.buildBlockHash(header)).thenReturn("0");
         return header;
     }
 
@@ -71,28 +70,28 @@ import static org.testng.Assert.*;
     }
 
     private BlockHeader mockHeader(BlockHeader preHeader) {
-        BlockHeader header = mock(BlockHeader.class);
+        BlockHeader header = Mockito.mock(BlockHeader.class);
         Long preHeight = preHeader.getHeight();
-        when(header.getPreviousHash()).thenReturn("" + preHeight);
+        Mockito.when(header.getPreviousHash()).thenReturn("" + preHeight);
         long height = preHeight + 1;
-        when(header.getHeight()).thenReturn(height);
-        when(header.getBlockHash()).thenReturn("" + height);
-        StateRootHash stateRootHash = mock(StateRootHash.class);
-        when(header.getStateRootHash()).thenReturn(stateRootHash);
-        when(stateRootHash.getTxRootHash()).thenReturn("" + height);
-        when(blockService.buildBlockHash(header)).thenReturn("" + height);
+        Mockito.when(header.getHeight()).thenReturn(height);
+        Mockito.when(header.getBlockHash()).thenReturn("" + height);
+        StateRootHash stateRootHash = Mockito.mock(StateRootHash.class);
+        Mockito.when(header.getStateRootHash()).thenReturn(stateRootHash);
+        Mockito.when(stateRootHash.getTxRootHash()).thenReturn("" + height);
+        Mockito.when(blockService.buildBlockHash(header)).thenReturn("" + height);
         return header;
     }
 
     private List<Block> mockBlocks(int size) {
         List<Block> blocks = new ArrayList<>();
-        Block block = mock(Block.class);
+        Block block = Mockito.mock(Block.class);
         BlockHeader header = mockFirstHeader();
-        when(block.getBlockHeader()).thenReturn(header);
-        List<SignedTransaction> singedTxList = mock(List.class);
-        when(block.getSignedTxList()).thenReturn(singedTxList);
+        Mockito.when(block.getBlockHeader()).thenReturn(header);
+        List<SignedTransaction> singedTxList = Mockito.mock(List.class);
+        Mockito.when(block.getSignedTxList()).thenReturn(singedTxList);
         Long height = header.getHeight();
-        when(txRootHashBuilder.buildTxs(singedTxList)).thenReturn("" + height);
+        Mockito.when(txRootHashBuilder.buildTxs(singedTxList)).thenReturn("" + height);
         blocks.add(block);
         int i = 1;
         while (i++ < size) {
@@ -103,31 +102,31 @@ import static org.testng.Assert.*;
     }
 
     private Block mockBlock(Block preBlock) {
-        Block block = mock(Block.class);
+        Block block = Mockito.mock(Block.class);
         BlockHeader preHeader = preBlock.getBlockHeader();
         BlockHeader blockHeader = mockHeader(preHeader);
-        when(block.getBlockHeader()).thenReturn(blockHeader);
-        List<SignedTransaction> singedTxList = mock(List.class);
-        when(block.getSignedTxList()).thenReturn(singedTxList);
+        Mockito.when(block.getBlockHeader()).thenReturn(blockHeader);
+        List<SignedTransaction> singedTxList = Mockito.mock(List.class);
+        Mockito.when(block.getSignedTxList()).thenReturn(singedTxList);
         Long height = blockHeader.getHeight();
-        when(txRootHashBuilder.buildTxs(singedTxList)).thenReturn("" + height);
+        Mockito.when(txRootHashBuilder.buildTxs(singedTxList)).thenReturn("" + height);
         return block;
     }
 
     @Test public void testValidatingHeader() {
-        BlockHeader header = mock(BlockHeader.class);
-        when(header.getStateRootHash()).thenReturn(null);
+        BlockHeader header = Mockito.mock(BlockHeader.class);
+        Mockito.when(header.getStateRootHash()).thenReturn(null);
         assertFalse(blockSyncService.validating(header));
 
-        StateRootHash rootHash = mock(StateRootHash.class);
-        when(header.getStateRootHash()).thenReturn(rootHash);
-        when(rootHash.getTxRootHash()).thenReturn(null, "", "0");
+        StateRootHash rootHash = Mockito.mock(StateRootHash.class);
+        Mockito.when(header.getStateRootHash()).thenReturn(rootHash);
+        Mockito.when(rootHash.getTxRootHash()).thenReturn(null, "", "0");
         assertFalse(blockSyncService.validating(header));
         assertFalse(blockSyncService.validating(header));
 
-        when(header.getHeight()).thenReturn(0L);
-        when(header.getBlockHash()).thenReturn("0");
-        when(blockService.buildBlockHash(header)).thenReturn("0", "1");
+        Mockito.when(header.getHeight()).thenReturn(0L);
+        Mockito.when(header.getBlockHash()).thenReturn("0");
+        Mockito.when(blockService.buildBlockHash(header)).thenReturn("0", "1");
         assertTrue(blockSyncService.validating(header));
         assertFalse(blockSyncService.validating(header));
     }
@@ -137,10 +136,10 @@ import static org.testng.Assert.*;
         BlockHeader header0 = headers.get(0);
         BlockHeader header1 = mockHeader(header0);
         assertTrue(blockSyncService.validating(header0.getBlockHash(), header1));
-        when(blockService.buildBlockHash(header1)).thenReturn("0");
+        Mockito.when(blockService.buildBlockHash(header1)).thenReturn("0");
         assertFalse(blockSyncService.validating(header0.getBlockHash(), header1));
         assertFalse(blockSyncService.validating("1", header1));
-        when(blockService.buildBlockHash(header1)).thenReturn("1");
+        Mockito.when(blockService.buildBlockHash(header1)).thenReturn("1");
         assertFalse(blockSyncService.validating("1", header1));
 
         headers = mockHeaders(3);
@@ -166,21 +165,21 @@ import static org.testng.Assert.*;
     }
 
     @Test public void testValidatingBlock() {
-        Block block = mock(Block.class);
-        when(block.getBlockHeader()).thenReturn(null);
+        Block block = Mockito.mock(Block.class);
+        Mockito.when(block.getBlockHeader()).thenReturn(null);
         assertFalse(blockSyncService.validating(block));
 
         List<Block> blocks = mockBlocks(2);
         assertTrue(blockSyncService.validating(blocks.get(0)));
 
         BlockHeader blockHeader = blocks.get(0).getBlockHeader();
-        when(blockService.buildBlockHash(blockHeader)).thenReturn("1");
+        Mockito.when(blockService.buildBlockHash(blockHeader)).thenReturn("1");
         assertFalse(blockSyncService.validating(blocks.get(0)));
 
         assertTrue(blockSyncService.validating(blocks.get(1)));
 
         List<SignedTransaction> signedTxList = blocks.get(1).getSignedTxList();
-        when(txRootHashBuilder.buildTxs(signedTxList)).thenReturn("0");
+        Mockito.when(txRootHashBuilder.buildTxs(signedTxList)).thenReturn("0");
         assertFalse(blockSyncService.validating(blocks.get(1)));
     }
 
@@ -210,22 +209,22 @@ import static org.testng.Assert.*;
 
     @Test public void testGetClusterHeight() {
         Long result = 1L;
-        when(clusterService.getClusterHeight(anyInt())).thenReturn(result, null);
+        Mockito.when(clusterService.getClusterHeight(Matchers.anyInt())).thenReturn(result, null);
         assertEquals(blockSyncService.getClusterHeight(1), result);
         assertNull(blockSyncService.getClusterHeight(1));
     }
 
     @Test public void testGetClusterHeight2() {
         Long result = 1L;
-        when(clusterService.getClusterHeight(anyInt())).thenReturn(result, null);
+        Mockito.when(clusterService.getClusterHeight(Matchers.anyInt())).thenReturn(result, null);
         assertEquals(blockSyncService.getClusterHeight(1), result);
         assertNull(blockSyncService.getClusterHeight(1));
     }
 
     @Test public void testBftValidating() {
-        when(clusterService.validatingHeader(any(BlockHeader.class))).thenReturn(null, false, true);
-        assertNull(blockSyncService.bftValidating(mock(BlockHeader.class)));
-        assertFalse(blockSyncService.bftValidating(mock(BlockHeader.class)));
-        assertTrue(blockSyncService.bftValidating(mock(BlockHeader.class)));
+        Mockito.when(clusterService.validatingHeader(Matchers.any(BlockHeader.class))).thenReturn(null, false, true);
+        assertNull(blockSyncService.bftValidating(Mockito.mock(BlockHeader.class)));
+        assertFalse(blockSyncService.bftValidating(Mockito.mock(BlockHeader.class)));
+        assertTrue(blockSyncService.bftValidating(Mockito.mock(BlockHeader.class)));
     }
 }

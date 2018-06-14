@@ -7,7 +7,9 @@ import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.*;
 import com.higgs.trust.config.node.NodeProperties;
 import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.config.node.listener.MasterChangeListener;
+import com.higgs.trust.config.node.listener.StateChangeListener;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.term.TermManager;
 import com.higgs.trust.consensus.core.ConsensusClient;
@@ -17,6 +19,7 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -29,7 +32,7 @@ import java.util.concurrent.*;
  * @author suimi
  * @date 2018/6/4
  */
-@Slf4j @Service public class ChangeMasterService implements MasterChangeListener{
+@Slf4j @Service public class ChangeMasterService implements MasterChangeListener {
 
     @Autowired private NodeProperties nodeProperties;
 
@@ -54,7 +57,7 @@ import java.util.concurrent.*;
         return thread;
     });
 
-    public void startHeartbeatTimeout() {
+    @StateChangeListener(NodeStateEnum.Running) public void startHeartbeatTimeout() {
         log.info("start change master heartbeat timeout");
         resetHeartbeatTimeout();
     }

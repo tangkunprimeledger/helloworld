@@ -1,6 +1,7 @@
 package com.higgs.trust.management.failover.service;
 
 import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.config.node.listener.StateChangeListener;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -19,12 +20,13 @@ import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
 
-@Service @Slf4j public class SyncService implements PackageListener {
+@Order(2) @Service @Slf4j public class SyncService implements PackageListener {
 
     @Autowired private FailoverProperties properties;
     @Autowired private SyncPackageCache cache;
@@ -37,7 +39,7 @@ import java.util.List;
     /**
      * 自动同步区块
      */
-    public void autoSync() {
+    @StateChangeListener(NodeStateEnum.AutoSync) public void autoSync() {
         if (!nodeState.isState(NodeStateEnum.AutoSync)) {
             return;
         }
@@ -61,7 +63,6 @@ import java.util.List;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
             }
             if (clusterHeight <= currentHeight + properties.getThreshold()) {
-                nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
                 return;
             }
             cache.reset(clusterHeight);
@@ -72,10 +73,8 @@ import java.util.List;
             } while (cache.getMinHeight() <= clusterHeight ? clusterHeight > currentHeight + properties.getThreshold() :
                 currentHeight + 1 < cache.getMinHeight());
         } catch (Exception e) {
-            nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
-            throw e;
+            throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
         }
-        nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
     }
 
     /**

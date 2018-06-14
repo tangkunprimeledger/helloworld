@@ -26,6 +26,8 @@ public enum ManagementError implements ErrorInfo {
     MANAGEMENT_FAILOVER_BLOCK_PERSIST_RESULT_INVALID("416", "the package of block persist result invalid after failover block.", false),
     MANAGEMENT_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST("417","consensus validate result not exist",false),
     MANAGEMENT_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST("418","consensus persist result not exist",false),
+    MANAGEMENT_STARTUP_SELF_CHECK_FAILED("420","the node self check failed",false),
+    MANAGEMENT_STARTUP_AUTO_SYNC_FAILED("421","auto sync block failed",false),
     ;
     //@formatter:on
 

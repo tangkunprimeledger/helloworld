@@ -2,44 +2,31 @@ package com.higgs.trust.management.failover.service;
 
 import com.higgs.trust.config.node.NodeProperties;
 import com.higgs.trust.config.node.NodeStateEnum;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.config.node.listener.StateChangeListener;
 import com.higgs.trust.management.exception.FailoverExecption;
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.management.exception.ManagementError;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.model.bo.Block;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
-@Service @Slf4j public class SelfCheckingService {
+@Order(1) @Service @Slf4j public class SelfCheckingService {
 
     @Autowired private BlockSyncService blockSyncService;
     @Autowired private BlockService blockService;
     @Autowired private BlockRepository blockRepository;
-    @Autowired private NodeState nodeState;
     @Autowired private NodeProperties properties;
 
-    /**
-     * auto check
-     *
-     * @return check result
-     */
-    public boolean check() {
-        nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        boolean selfChecked = false;
-        try {
-            selfChecked = selfCheck(properties.getSelfCheckTimes());
-            log.info("self checked result:{}", selfChecked);
-        } catch (FailoverExecption e) {
-            log.error("self check failed:", e);
-        }
+    @StateChangeListener(NodeStateEnum.SelfChecking) public void autoCheck() {
+        boolean selfChecked = selfCheck(properties.getSelfCheckTimes());
+        log.info("self checked result:{}", selfChecked);
         if (!selfChecked) {
-            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
-            return false;
+            throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_SELF_CHECK_FAILED);
         }
-        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-        return true;
     }
 
     /**

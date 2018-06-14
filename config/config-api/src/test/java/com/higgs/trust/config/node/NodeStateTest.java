@@ -3,7 +3,6 @@ package com.higgs.trust.config.node;
 import com.higgs.trust.config.exception.ConfigError;
 import com.higgs.trust.config.exception.ConfigException;
 import com.higgs.trust.config.node.listener.MasterChangeListener;
-import com.higgs.trust.config.node.listener.StateChangeListener;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -34,28 +33,6 @@ import org.testng.annotations.Test;
         Mockito.when(properties.getNodeName()).thenReturn(nodeName);
         Mockito.when(properties.getPrefix()).thenReturn(prefix);
         nodeState.afterPropertiesSet();
-    }
-
-    @Test public void testRegisterStateListener() {
-        StateChangeListener stateChangeListener = Mockito.mock(StateChangeListener.class);
-        nodeState.registerStateListener(stateChangeListener);
-        nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        Mockito.verify(stateChangeListener, Mockito.times(1))
-            .stateChanged(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-    }
-
-    @Test public void testRegisterStateListenerNull() {
-        nodeState.registerStateListener(null);
-        nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-    }
-
-    @Test public void testRegisterStateListenerDuplicate() {
-        StateChangeListener stateChangeListener = Mockito.mock(StateChangeListener.class);
-        nodeState.registerStateListener(stateChangeListener);
-        nodeState.registerStateListener(stateChangeListener);
-        nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        Mockito.verify(stateChangeListener, Mockito.times(1))
-            .stateChanged(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
     }
 
     @Test public void testRegisterMasterListener() {

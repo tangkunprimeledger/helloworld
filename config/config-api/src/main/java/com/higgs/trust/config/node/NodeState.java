@@ -4,18 +4,31 @@ import com.higgs.trust.config.exception.ConfigError;
 import com.higgs.trust.config.exception.ConfigException;
 import com.higgs.trust.config.node.listener.MasterChangeListener;
 import com.higgs.trust.config.node.listener.StateChangeListener;
+import com.higgs.trust.config.node.listener.StateChangeListenerAdaptor;
+import com.sun.beans.finder.BeanInfoFinder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.MethodIntrospector;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.Schedules;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.higgs.trust.config.node.NodeStateEnum.*;
 
@@ -27,9 +40,9 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
 
     @Autowired private ApplicationContext applicationContext;
 
-    private Set<MasterChangeListener> masterListeners = new HashSet<>();
+    private Set<MasterChangeListener> masterListeners = new LinkedHashSet<>();
 
-    private Set<StateChangeListener> stateListeners = new HashSet<>();
+    private Map<NodeStateEnum, LinkedHashSet<StateChangeListenerAdaptor>> stateListeners = new ConcurrentHashMap<>();
 
     @Getter private NodeStateEnum state = Starting;
 
@@ -64,17 +77,42 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
         this.nodeName = properties.getNodeName();
         this.privateKey = properties.getPrivateKey();
         this.prefix = properties.getPrefix();
-        applicationContext.getBeansOfType(StateChangeListener.class).values().forEach(this::registerStateListener);
-        applicationContext.getBeansOfType(MasterChangeListener.class).values().forEach(this::registerMasterListener);
+
+        registerStateListener();
+
+        List<MasterChangeListener> masterChangeListeners = new ArrayList<>();
+        masterChangeListeners.addAll(applicationContext.getBeansOfType(MasterChangeListener.class).values());
+        AnnotationAwareOrderComparator.sort(masterChangeListeners);
+        masterListeners.addAll(masterChangeListeners);
     }
 
     /**
      * register state change listener
-     *
-     * @param listener
      */
-    public void registerStateListener(StateChangeListener listener) {
-        stateListeners.add(listener);
+    private void registerStateListener() {
+        Map<NodeStateEnum, List<StateChangeListenerAdaptor>> stateListeners = new ConcurrentHashMap<>();
+        Arrays.stream(applicationContext.getBeanDefinitionNames()).forEach(beanName -> {
+            Object bean = applicationContext.getBean(beanName);
+            Class<?> targetClass = AopProxyUtils.ultimateTargetClass(bean);
+            Map<Method, StateChangeListener> methods = MethodIntrospector.selectMethods(targetClass,
+                (MethodIntrospector.MetadataLookup<StateChangeListener>)method -> AnnotatedElementUtils
+                    .findMergedAnnotation(method, StateChangeListener.class));
+            if (methods == null || methods.isEmpty()) {
+                return;
+            }
+            methods.forEach((method, value) -> {
+                NodeStateEnum[] stateEnums = value.value();
+                Arrays.stream(stateEnums).forEach(state -> {
+                    List<StateChangeListenerAdaptor> stateChangeListenerAdaptors =
+                        stateListeners.computeIfAbsent(state, e -> new ArrayList<>());
+                    stateChangeListenerAdaptors.add(new StateChangeListenerAdaptor(bean, method));
+                });
+            });
+        });
+        stateListeners.forEach((state, listeners) -> {
+            AnnotationAwareOrderComparator.sort(listeners);
+            this.stateListeners.put(state, new LinkedHashSet<>(listeners));
+        });
     }
 
     /**
@@ -101,7 +139,10 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
         }
         state = to;
         log.info("Node state changed from:{} to:{}", from, to);
-        stateListeners.forEach(listener -> listener.stateChanged(from, to));
+        LinkedHashSet<StateChangeListenerAdaptor> stateChangeListenerAdaptors = stateListeners.get(to);
+        if (stateChangeListenerAdaptors != null) {
+            stateChangeListenerAdaptors.forEach(StateChangeListenerAdaptor::invoke);
+        }
     }
 
     /**

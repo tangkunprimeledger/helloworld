@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
-            <artifactId>config-properties</artifactId>
+            <artifactId>config-super</artifactId>
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>

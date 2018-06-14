@@ -1,11 +1,10 @@
 package commands
 
-import com.higgs.trust.config.node.NodeStateEnum
 import com.higgs.trust.config.node.NodeState
+import com.higgs.trust.config.node.NodeStateEnum
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
-import SelfCheckingService
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*
@@ -43,6 +42,7 @@ class node {
         context.provide([Name: "Master", Value: nodeState.masterName])
         context.provide([Name: "isMaster", Value: nodeState.master])
         context.provide([Name: "State", Value: nodeState.state])
+        context.provide([Name: "Term", Value: nodeState.getCurrentTerm()])
         context.provide([Name: "Block Height", Value: blockService.getMaxHeight().toString()])
         context.provide([Name: "Package Height", Value: packageRepository.getMaxHeight().toString()])
         context.provide([Name: "Time", Value: DateFormatUtils.format(System.currentTimeMillis(), "yyyy-MM-dd HH:mm:ss.SSS")])
@@ -86,15 +86,6 @@ class node {
             height = blockService.getMaxHeight().toString()
             out.println("The block height is $height")
         }
-    }
-
-    @Usage('check the current block of node')
-    @Command
-    def selfCheck(InvocationContext context) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def selfCheckService = beans.getBean(SelfCheckingService.class)
-        def result = selfCheckService.selfCheck(1)
-        out.println("Self check result: $result")
     }
 
     @Usage('change the state of node')
