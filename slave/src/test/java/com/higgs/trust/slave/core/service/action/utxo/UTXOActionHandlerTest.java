@@ -127,7 +127,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxIn txIn = new TxIn();
         txIn.setIndex(1);
-        txIn.setTxId("UTXOlingchaoyiyi");
+        txIn.setTxId("UTXOlingchaoyiyi凌");
         txIn.setActionIndex(0);
 
         List<TxIn> inputList = new ArrayList<>();
@@ -136,7 +136,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut = new TxOut();
         JSONObject state = new JSONObject();
-        state.put("amount", new BigDecimal("3000"));
+        state.put("amount", new BigDecimal("100"));
         txOut.setIndex(0);
         txOut.setActionIndex(0);
         txOut.setIdentity("12312312321");
@@ -144,7 +144,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut1 = new TxOut();
         JSONObject state1 = new JSONObject();
-        state1.put("amount", new BigDecimal("500"));
+        state1.put("amount", new BigDecimal("400"));
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
         txOut1.setIdentity("12312312321");
@@ -164,7 +164,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setPolicyId("1");
-        coreTx.setTxId("UTXOlingchaoyiyi凌");
+        coreTx.setTxId("UTXOlingchaoyiyi凌超");
         signedTransaction.setCoreTx(coreTx);
         ActionData ActionData1 = new ActionData() {
             @Override
@@ -197,7 +197,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxIn txIn = new TxIn();
         txIn.setIndex(0);
-        txIn.setTxId("UTXOlingchaoyiyi凌");
+        txIn.setTxId("UTXOlingchaoyiyi凌超");
         txIn.setActionIndex(0);
 
         List<TxIn> inputList = new ArrayList<>();
@@ -206,7 +206,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut = new TxOut();
         JSONObject state = new JSONObject();
-        state.put("amount", new BigDecimal("1000"));
+        state.put("amount", new BigDecimal("1"));
         txOut.setIndex(0);
         txOut.setActionIndex(0);
         txOut.setIdentity("12312312321");
@@ -214,7 +214,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut1 = new TxOut();
         JSONObject state1 = new JSONObject();
-        state1.put("amount", new BigDecimal("2000"));
+        state1.put("amount", new BigDecimal("99"));
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
         txOut1.setIdentity("12312312321");

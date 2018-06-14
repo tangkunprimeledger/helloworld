@@ -1,6 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.example.spi.impl;
 
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+
+import com.higgs.trust.config.p2p.ClusterInfo;
 
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class ClusterInfoImpl implements ClusterInfo {
     }
 
     @Override
-    public String myNodeName() {
+    public String nodeName() {
         return myNodeName;
     }
 

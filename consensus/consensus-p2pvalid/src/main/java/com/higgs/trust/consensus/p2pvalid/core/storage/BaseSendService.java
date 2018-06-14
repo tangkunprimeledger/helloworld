@@ -1,10 +1,9 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
-import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class BaseSendService {

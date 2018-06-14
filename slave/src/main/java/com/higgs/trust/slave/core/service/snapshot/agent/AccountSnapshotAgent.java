@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +50,7 @@ public class AccountSnapshotAgent implements CacheLoader {
     private void insert(Object key, Object object) {
         snapshot.insert(SnapshotBizKeyEnum.ACCOUNT, key, object);
     }
+
     private void update(Object key, Object object) {
         snapshot.update(SnapshotBizKeyEnum.ACCOUNT, key, object);
     }
@@ -131,27 +133,27 @@ public class AccountSnapshotAgent implements CacheLoader {
     /**
      * the method to batchInsert data into db
      *
-     * @param insertMap
+     * @param insertList
      * @return
      */
     @Override
-    public boolean batchInsert(Map<Object, Object> insertMap) {
-        if(insertMap == null || insertMap.isEmpty()){
+    public boolean batchInsert(List<Pair<Object, Object>> insertList) {
+        if (CollectionUtils.isEmpty(insertList)) {
             return true;
         }
         List<AccountInfo> accountInfos = new ArrayList<>();
         List<CurrencyInfo> currencyInfos = new ArrayList<>();
-        for(Object key : insertMap.keySet()){
-            if (key instanceof AccountCacheKey) {
-                accountInfos.add((AccountInfo)insertMap.get(key));
-            }else if (key instanceof CurrencyInfoCacheKey){
-                currencyInfos.add((CurrencyInfo)insertMap.get(key));
+        for (Pair<Object, Object> pair : insertList) {
+            if (pair.getLeft() instanceof AccountCacheKey) {
+                accountInfos.add((AccountInfo) pair.getRight());
+            } else if (pair.getLeft() instanceof CurrencyInfoCacheKey) {
+                currencyInfos.add((CurrencyInfo) pair.getRight());
             }
         }
-        if(!CollectionUtils.isEmpty(accountInfos)){
+        if (!CollectionUtils.isEmpty(accountInfos)) {
             accountRepository.batchInsert(accountInfos);
         }
-        if(!CollectionUtils.isEmpty(currencyInfos)){
+        if (!CollectionUtils.isEmpty(currencyInfos)) {
             currencyRepository.batchInsert(currencyInfos);
         }
         return true;
@@ -160,22 +162,22 @@ public class AccountSnapshotAgent implements CacheLoader {
     /**
      * the method to batchUpdate data into db
      *
-     * @param updateMap
+     * @param updateList
      * @return
      */
     @Override
-    public boolean batchUpdate(Map<Object, Object> updateMap) {
-        if(updateMap == null || updateMap.isEmpty()){
+    public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
+        if (CollectionUtils.isEmpty(updateList)) {
             log.info("[updateMap]updateMap is empty");
             return true;
         }
         List<AccountInfo> accountInfos = new ArrayList<>();
-        for(Object key : updateMap.keySet()){
-            if (key instanceof AccountCacheKey) {
-                accountInfos.add((AccountInfo)updateMap.get(key));
+        for (Pair<Object, Object> pair : updateList) {
+            if (pair.getLeft() instanceof AccountCacheKey) {
+                accountInfos.add((AccountInfo) pair.getRight());
             }
         }
-        if(!CollectionUtils.isEmpty(accountInfos)){
+        if (!CollectionUtils.isEmpty(accountInfos)) {
             accountRepository.batchUpdate(accountInfos);
         }
         return true;

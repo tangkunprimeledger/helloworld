@@ -1,15 +1,11 @@
 package com.higgs.trust.contract.mock;
 
-import com.higgs.trust.contract.mock.serialization.Deserializer;
-import com.higgs.trust.contract.mock.serialization.SerializableEntity;
-import com.higgs.trust.contract.mock.serialization.Serializer;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-public class Person implements Externalizable, SerializableEntity {
+public class Person implements Externalizable {
     private String name;
     private int age;
 
@@ -54,15 +50,4 @@ public class Person implements Externalizable, SerializableEntity {
         return String.format("name:%s, age:%", name, age);
     }
 
-    @Override
-    public void serialize(Serializer serializer) {
-        serializer.writeString("name", name);
-        serializer.writeInt("age", age);
-    }
-
-    @Override
-    public void deserialize(Deserializer deserializer) {
-        name = deserializer.readString("name");
-        age = deserializer.readInt("age");
-    }
 }

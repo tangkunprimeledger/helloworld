@@ -2,7 +2,7 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
@@ -14,16 +14,15 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
-import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,8 +49,6 @@ import java.util.*;
     @Autowired private NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
-    @Autowired private ClusterInfo clusterInfo;
-    @Autowired private CaInitHandler caInitHandler;
     @Value("${bftSmart.systemConfigs.myId:test}") private String myId;
 
     // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
@@ -167,12 +164,6 @@ import java.util.*;
                 "[updateKeyPair] ca information doesn't exist");
         }
 
-        //set pubKey and priKey to invalid
-        Config config = new Config();
-        config.setNodeName(nodeState.getNodeName());
-        config.setValid(false);
-        configRepository.updateConfig(config);
-
         //construct caVO
         CaVO caVO = new CaVO();
         String pubKey = configRepository.getConfig(user).getPubKey();
@@ -207,18 +198,21 @@ import java.util.*;
     }
 
     /**
-     * @param caVO
+     * @param user
      * @return
      * @desc acquire CA information by user
      */
-    @Override public RespData<Ca> acquireCA(CaVO caVO) {
-        if (null == caVO || null == caVO.getUser()) {
+    @Override public RespData<Ca> acquireCA(String user) {
+        if (StringUtils.isEmpty(user)) {
+            log.info("[acquireCA] param is null");
             return null;
         }
-        Ca ca = caRepository.getCa(caVO.getUser());
+        Ca ca = caRepository.getCa(user);
         if (null == ca) {
+            log.info("[acquireCA] user={}, ca information is null", user);
             return null;
         }
+        log.info("[acquireCA] user={}, ca information={}", user, ca.toString());
         RespData resp = new RespData();
         resp.setData(ca);
         return resp;
@@ -286,6 +280,7 @@ import java.util.*;
         caAction.setUser(caVO.getUser());
         caAction.setType(ActionTypeEnum.CA_CANCEL);
         caAction.setIndex(0);
+        caAction.setValid(false);
         actions.add(caAction);
         return actions;
     }
@@ -383,20 +378,24 @@ import java.util.*;
     }
 
     @Override public Ca getCa(String user) {
-        //check nodeName
-        if (!nodeState.getNodeName().equals(user)) {
-            log.error("[cancelKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
-                "[cancelKeyPair] invalid node name");
+        if (StringUtils.isEmpty(user)) {
+            log.info("[getCa] user is null");
+            return null;
         }
-        CaVO caVO = new CaVO();
-        caVO.setUser(user);
-        RespData resp = caClient.acquireCA(nodeState.getNodeName(), caVO);
-        Ca ca = new Ca();
-        BeanUtils.copyProperties(resp.getData(), ca);
 
+        log.info("[getCa] start to getCa, user={}", user);
+        RespData resp = caClient.acquireCA(nodeState.getNodeName(), user);
+        if (!resp.isSuccess()) {
+            log.error("[getCa] get ca error");
+            return null;
+        }
+        Ca ca = new Ca();
+        log.info("[getCa] success getCa, resp={}", resp.getData());
+        BeanUtils.copyProperties((Ca)resp.getData(), ca);
+
+        log.info("[getCa] success getCa, ca={}", ca.toString());
         // TODO CA信息进行写文件操作   写之前应该检测一下CA配置文件是否已经存在
-        fileWriter(ca.getPubKey());
+        //        fileWriter(ca.getPubKey());
 
         return ca;
     }

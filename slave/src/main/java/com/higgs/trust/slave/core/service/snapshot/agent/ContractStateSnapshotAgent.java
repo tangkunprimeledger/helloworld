@@ -18,6 +18,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,10 +45,10 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     @Autowired
     private ContractStateRepository repository;
 
-    private List<ContractStatePO> mapToContractStatePOList(Map<Object, Object> map) {
-        List<ContractStatePO> list = new ArrayList<>(map.size());
-        map.forEach((key, value) -> {
-            ContractState contractState = (ContractState) value;
+    private List<ContractStatePO> listToContractStatePOList(List<Pair<Object, Object>> updateList) {
+        List<ContractStatePO> list = new ArrayList<>(updateList.size());
+        updateList.forEach(pair -> {
+            ContractState contractState = (ContractState) pair.getRight();
             ContractStatePO po = new ContractStatePO();
             po.setId(contractState.getId());
             po.setAddress(contractState.getAddress());
@@ -66,32 +68,32 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     /**
      * the method to batchInsert data into db
      *
-     * @param insertMap
+     * @param insertList
      * @return
      */
     @Override
-    public boolean batchInsert(Map<Object, Object> insertMap) {
-        if (insertMap == null || insertMap.size() == 0) {
+    public boolean batchInsert(List<Pair<Object, Object>> insertList) {
+        if (CollectionUtils.isEmpty(insertList)){
             return true;
         }
 
-        List<ContractStatePO> list = mapToContractStatePOList(insertMap);
+        List<ContractStatePO> list = listToContractStatePOList(insertList);
         return repository.batchInsert(list);
     }
 
     /**
      * the method to batchUpdate data into db
      *
-     * @param updateMap
+     * @param updateList
      * @return
      */
     @Override
-    public boolean batchUpdate(Map<Object, Object> updateMap) {
-        if (updateMap == null || updateMap.size() == 0) {
+    public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
+        if (CollectionUtils.isEmpty(updateList)){
             return true;
         }
 
-        List<ContractStatePO> list = mapToContractStatePOList(updateMap);
+        List<ContractStatePO> list = listToContractStatePOList(updateList);
         return repository.batchUpdate(list);
     }
 

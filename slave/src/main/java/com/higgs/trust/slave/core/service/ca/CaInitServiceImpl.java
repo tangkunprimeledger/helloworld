@@ -1,23 +1,24 @@
 package com.higgs.trust.slave.core.service.ca;
 
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.integration.ca.CaInitClient;
-import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author WangQuanzhou
@@ -56,25 +57,70 @@ import java.util.*;
      * @desc
      */
     @Override public void initKeyPair() {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        Map<String, String> caMap = new HashMap();
-        // acquire all Node's pubKey
-        nodeList.forEach((nodeName) -> {
-            RespData<String> resp = caClient.caInit(nodeName);
-            String pubKey = resp.getData();
-            caMap.put(nodeName, pubKey);
-        });
+
+        Map caMap = acquirePubKeys(100);
 
         // construct genius block and insert into db
         try {
+            log.info("[CaInitServiceImpl.initKeyPair] start to generate genius block");
             caInitHandler.process(caMap);
+            log.info("[CaInitServiceImpl.initKeyPair] end generate genius block");
 
-            writeKyePairToFile(caMap);
+            //            writeKyePairToFile(caMap);
+            log.info("[CaInitServiceImpl.initKeyPair] end write all nodes' pubKey to file");
 
         } catch (Throwable e) {
-            // TODO 抛出异常？？？
+            log.error("[CaInitServiceImpl.initKeyPair] cluster init CA error", e);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR,
+                "[CaInitServiceImpl.initKeyPair] cluster init CA error");
         }
 
+    }
+
+    private Map acquirePubKeys(int retryCount) {
+        List<String> nodeList = clusterInfo.clusterNodeNames();
+        Map<String, String> caMap = new HashMap();
+        log.info("[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKey, nodeList size = {}",
+            nodeList.size());
+
+        int i = 0;
+        do {
+            if (caMap.size() == nodeList.size()) {
+                log.info("[CaInitServiceImpl.acquirePubKeys]  acquired all nodes' pubKey, caMap size = {}",
+                    caMap.size());
+                return caMap;
+            }
+            CountDownLatch countDownLatch = new CountDownLatch(nodeList.size());
+            // acquire all nodes' pubKey
+            nodeList.forEach((nodeName) -> {
+                try {
+                    RespData<String> resp = caClient.caInit(nodeName);
+
+                    String pubKey = resp.getData();
+                    caMap.put(nodeName, pubKey);
+                } catch (Throwable e) {
+                    log.error("[CaInitServiceImpl.acquirePubKeys] acquire pubKey error", e);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+
+            try {
+                countDownLatch.await(1 * 60, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                log.error("send count down latch is interrupted", e);
+            }
+
+            try {
+                Thread.sleep(3 * 1000);
+            } catch (InterruptedException e) {
+                log.warn("acquire pubKey error.", e);
+            }
+
+        } while (++i < retryCount);
+
+        log.info("[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caMap size = {}", caMap.size());
+        return caMap;
     }
 
     @Override public RespData<String> initCaTx() {
@@ -82,41 +128,56 @@ import java.util.*;
 
         // acquire pubKey from DB
         String pubKey = configRepository.getConfig(nodeState.getNodeName()).getPubKey();
-        return new RespData<>(pubKey);
+        log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pubKey={}", nodeState.getNodeName(), pubKey);
+        RespData resp = new RespData();
+        resp.setData(pubKey);
+        return resp;
     }
 
     /**
-     * @param pubKey
+     * @param key
      * @return
      * @desc write file
      */
-    private void fileWriter(String pubKey, String flag) {
+    private void fileWriter(String key, String flag) {
         String path = "config" + System.getProperty("file.separator") + "keys" + System.getProperty("file.separator");
         try {
-            BufferedWriter w = new BufferedWriter(new FileWriter(path + flag + myId, false));
-            w.write(pubKey);
+            File file = new File(path);
+            if (!file.exists()) {
+                file.mkdir();
+                /*try {
+//                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
+            }
+           /* BufferedWriter w = new BufferedWriter(new FileWriter(file, false));
+            w.write(key);
             w.flush();
-            w.close();
-        } catch (IOException e) {
+            w.close();*/
+        } catch (Throwable e) {
             log.error("[fileWriter]write pubKey to file error", e);
             throw new SlaveException(SlaveErrorEnum.SLAVE_CA_WRITE_FILE_ERROR,
                 "[fileWriter]write pubKey to file error");
         }
     }
 
-    private Date calculatePeriod() {
-        Calendar calendar = Calendar.getInstance();
-        // default 1 year later
-        calendar.add(Calendar.YEAR, 1);
-        return calendar.getTime();
-    }
-
     private void writeKyePairToFile(Map<String, String> map) {
         for (String key : map.keySet()) {
             fileWriter(map.get(key), "publickey");
+
         }
-        Config config = configRepository.getConfig(nodeState.getNodeName());
-        fileWriter(config.getPriKey(), "privatekey");
+        //        Config config = configRepository.getConfig(nodeState.getNodeName());
+        //        fileWriter(config.getPriKey(), "privatekey");
+    }
+
+    public static void main(String[] args) {
+        CaInitServiceImpl caInitService = new CaInitServiceImpl();
+        Map<String, String> map = new HashMap();
+        map.put("pubKey1", "1234");
+        map.put("pubKey2", "5678");
+        //        map.put("priKey","8521");
+        caInitService.writeKyePairToFile(map);
     }
 
 }

@@ -1,8 +1,8 @@
 package com.higgs.trust.slave.core.scheduler;
 
+import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.slave.common.constant.Constant;
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;

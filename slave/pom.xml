@@ -27,6 +27,10 @@
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
+            <artifactId>config-super</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
             <artifactId>contract</artifactId>
         </dependency>
         <!-- internal end -->

@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
@@ -17,7 +18,6 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;

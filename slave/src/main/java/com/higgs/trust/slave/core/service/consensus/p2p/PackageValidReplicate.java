@@ -3,14 +3,14 @@
  */
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
+import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.consensus.p2pvalid.annotation.P2pvalidReplicator;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.consensus.PersistCommand;
@@ -27,7 +27,6 @@ import org.springframework.stereotype.Component;
     @Autowired private PackageService packageService;
 
     @Autowired private NodeState nodeState;
-
 
     /**
      * majority of this cluster has persisted this command
@@ -57,7 +56,7 @@ import org.springframework.stereotype.Component;
      */
     private void doReceive(ValidCommit commit, BlockHeader header) {
         if (!nodeState.isState(NodeStateEnum.Running)) {
-            throw new SlaveException(SlaveErrorEnum.SLAVE_FAILOVER_STATE_NOT_ALLOWED);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED);
         }
         packageService.persisted(header);
 
