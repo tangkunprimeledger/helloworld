@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
+
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.node.NodeProperties;
 import com.higgs.trust.config.node.NodeState;
@@ -12,6 +13,7 @@ import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * @Description: replicate the sorted package to cluster
  * @author: pengdi
  **/
+
 @Slf4j @Service public class LogReplicateHandlerImpl implements LogReplicateHandler {
     /**
      * client from the log replicate consensus layer
