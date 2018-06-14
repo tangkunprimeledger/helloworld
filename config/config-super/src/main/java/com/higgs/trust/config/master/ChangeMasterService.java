@@ -36,6 +36,8 @@ import java.util.concurrent.*;
 
     @Autowired private NodeProperties nodeProperties;
 
+    @Autowired private ChangeMasterProperties properties;
+
     @Autowired private ClusterInfo clusterInfo;
 
     @Autowired private P2pConsensusClient p2pConsensusClient;
@@ -66,7 +68,7 @@ import java.util.concurrent.*;
      * renew the master heartbeat
      */
     public void renewHeartbeatTimeout() {
-        log.debug("renew change master heartbeat timeout");
+        log.trace("renew change master heartbeat timeout");
         termManager.setMasterHeartbeat(true);
         resetHeartbeatTimeout();
     }
@@ -75,15 +77,15 @@ import java.util.concurrent.*;
      * reset the heart beat timeout, maybe no master heartbeat
      */
     private void resetHeartbeatTimeout() {
-        log.debug("reset change master heartbeat timeout");
+        log.trace("reset change master heartbeat timeout");
         if (heartbeatTimer != null) {
             heartbeatTimer.cancel(true);
         }
-        int masterHeartbeat = nodeProperties.getMasterHeartbeat();
-        int diff = nodeProperties.getChangeMasterMaxRatio() - nodeProperties.getChangeMasterMinRatio();
+        int masterHeartbeat = properties.getMasterHeartbeat();
+        int diff = properties.getChangeMasterMaxRatio() - properties.getChangeMasterMinRatio();
         Random random = new Random();
         long delay = random.nextInt(masterHeartbeat * diff);
-        delay += masterHeartbeat * nodeProperties.getChangeMasterMinRatio();
+        delay += masterHeartbeat * properties.getChangeMasterMinRatio();
         heartbeatTimer = executor.schedule(this::changeMaster, delay, TimeUnit.MILLISECONDS);
     }
 
