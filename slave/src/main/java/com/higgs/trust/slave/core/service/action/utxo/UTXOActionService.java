@@ -116,14 +116,14 @@ public class UTXOActionService {
         Profiler.release();
 
         //execute contract
-/*        ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
+        ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
 
         Profiler.enter("[UTXO.doubleSpendCheck]");
         boolean contractProcessSuccess = utxoSmartContract.execute(utxoAction.getContractAddress(), data);
         if (!contractProcessSuccess) {
             log.error("UTXO contract process fail!");
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_CONTRACT_PROCESS_FAIL_ERROR);
-        }*/
+        }
         Profiler.release();
 
         //persist data in memory or in DB
