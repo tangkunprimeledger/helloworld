@@ -1,11 +1,9 @@
 package com.higgs.trust.slave.core.service.block;
 
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.PackageData;
-import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 
 import java.util.List;
 
@@ -24,29 +22,12 @@ public interface BlockService {
     /**
      * build block p2p
      *
-     * @param processTypeEnum
      * @param packageData
      * @param txReceipts
      * @return
      */
-    BlockHeader buildHeader(TxProcessTypeEnum processTypeEnum, PackageData packageData,
+    BlockHeader buildHeader(PackageData packageData,
         List<TransactionReceipt> txReceipts);
-
-    /**
-     * store block p2p for package validate
-     *
-     * @param header
-     */
-    void storeTempHeader(BlockHeader header, BlockHeaderTypeEnum headerTypeEnum);
-
-    /**
-     * get block p2p with block height from temporary storage in database
-     * most used by package validate and persist
-     *
-     * @param height
-     * @return
-     */
-    BlockHeader getTempHeader(Long height, BlockHeaderTypeEnum headerTypeEnum);
 
     /**
      * get final persisted block header

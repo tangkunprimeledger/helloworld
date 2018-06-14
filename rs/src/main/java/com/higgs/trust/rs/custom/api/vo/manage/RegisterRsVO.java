@@ -25,13 +25,6 @@ public class RegisterRsVO extends BaseVO{
     private String rsId;
 
     /**
-     * public key
-     */
-    @NotBlank
-    @Length(max = 255)
-    private String pubKey;
-
-    /**
      * description of the rs
      */
     @NotBlank

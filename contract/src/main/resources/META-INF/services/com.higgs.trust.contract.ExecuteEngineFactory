@@ -1,1 +1,2 @@
 com.higgs.trust.contract.impl.JavascriptExecuteEngineFactory
+com.higgs.trust.contract.rhino.RhinoExecuteEngineFactory

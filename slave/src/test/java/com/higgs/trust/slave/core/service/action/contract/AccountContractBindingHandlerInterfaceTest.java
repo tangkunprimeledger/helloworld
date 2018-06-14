@@ -43,8 +43,8 @@ public class AccountContractBindingHandlerInterfaceTest extends ContractBaseTest
                 .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
                 .setTxId("00000000000" + System.currentTimeMillis())
-                .signature(ActionDataMockBuilder.privateKey1)
-                .signature(ActionDataMockBuilder.privateKey2)
+                .signature("", ActionDataMockBuilder.privateKey1)
+                .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
         return packContext;
@@ -115,7 +115,7 @@ public class AccountContractBindingHandlerInterfaceTest extends ContractBaseTest
             action.setIndex(0);
             action.setType(ActionTypeEnum.REGISTER_CONTRACT);
             PackContext packContext = createPackContext(action);
-            bindingHandler.validate(packContext);
+            bindingHandler.process(packContext);
             Assert.isTrue(false);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -131,7 +131,7 @@ public class AccountContractBindingHandlerInterfaceTest extends ContractBaseTest
             action.setIndex(0);
             action.setType(ActionTypeEnum.REGISTER_CONTRACT);
             PackContext packContext = createPackContext(action);
-            bindingHandler.persist(packContext);
+            bindingHandler.process(packContext);
             Assert.isTrue(false);
         } catch (Exception ex) {
             ex.printStackTrace();

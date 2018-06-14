@@ -4,8 +4,8 @@ import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.common.context.AppContext;
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
-import com.higgs.trust.slave.core.managment.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
@@ -57,7 +57,7 @@ public class BlockChainServiceImpl implements BlockChainService {
     @Override
     public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
-        List<TransactionVO> transactionVOList = new ArrayList<>();
+        List<TransactionVO> transactionVOList;
         // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
             if (nodeState.isState(NodeStateEnum.Running)) {
@@ -102,7 +102,7 @@ public class BlockChainServiceImpl implements BlockChainService {
     }
 
     private List<TransactionVO> buildTxVOList(List<SignedTransaction> transactions) {
-        log.warn("master node status is not running. cannot receive tx");
+        log.warn("master node status is not running. can not receive tx");
         List<TransactionVO> transactionVOList = new ArrayList<>();
         transactions.forEach(signedTx -> {
             TransactionVO txVO = new TransactionVO();

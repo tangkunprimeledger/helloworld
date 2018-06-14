@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.action.contract;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.api.enums.TxProcessTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
@@ -60,7 +59,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
         return null;
     }
 
-    private String createContract(String filePath, TxProcessTypeEnum processType) {
+    private String createContract(String filePath) {
         try {
             String code = IOUtils.toString(this.getClass().getResource(String.format("/%s%s", getProviderRootPath(), filePath)), "UTF-8");
             Contract contract = new Contract();
@@ -73,11 +72,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
             contract.setVersion("0.1");
             contract.setCreateTime(new Date());
 
-            if (processType == TxProcessTypeEnum.VALIDATE) {
-                contractSnapshotAgent.put(contract.getAddress(), contract);
-            } else {
-                contractRepository.deploy(contract);
-            }
+            contractRepository.deploy(contract);
             return contract.getAddress();
         } catch (IOException e) {
             e.printStackTrace();
@@ -85,10 +80,10 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
         return null;
     }
 
-    private ContractInvokeAction createContractInvokeAction(Map<?, ?> param, TxProcessTypeEnum processType) {
+    private ContractInvokeAction createContractInvokeAction(Map<?, ?> param) {
         ContractInvokeAction action = getBody(param, ContractInvokeAction.class);
         if (action == null) {
-            String address = createContract(String.valueOf(param.get("codeFile")), processType);
+            String address = createContract(String.valueOf(param.get("codeFile")));
             action = new ContractInvokeAction();
             action.setAddress(address);
         }
@@ -97,8 +92,8 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
         return action;
     }
 
-    private PackContext createPackContext(Map<?, ?> param, TxProcessTypeEnum processType) {
-        Action action = createContractInvokeAction(param, processType);
+    private PackContext createPackContext(Map<?, ?> param) {
+        Action action = createContractInvokeAction(param);
         return createPackContext(action);
     }
 
@@ -107,8 +102,8 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
                 .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
                 .setTxId("00000000000" + System.currentTimeMillis())
-                .signature(ActionDataMockBuilder.privateKey1)
-                .signature(ActionDataMockBuilder.privateKey2)
+                .signature("", ActionDataMockBuilder.privateKey1)
+                .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
                 .build();
         return packContext;
@@ -122,21 +117,21 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
     @Test(dataProvider = "defaultProvider",priority = 0)
     public void testValidate(Map<?, ?> param) {
         snapshot.startTransaction();
-        PackContext packContext = createPackContext(param, TxProcessTypeEnum.VALIDATE);
+        PackContext packContext = createPackContext(param);
         doTestValidate(param, packContext, invokeHandler);
         snapshot.commit();
     }
 
     @Test(dataProvider = "defaultProvider",priority = 1)
     public void testPersist(Map<?, ?> param) {
-        PackContext packContext = createPackContext(param, TxProcessTypeEnum.PERSIST);
+        PackContext packContext = createPackContext(param);
         doTestPersist(param, packContext, invokeHandler);
     }
 
     @Test
     public void testValidate_Repeat_Execution() {
         snapshot.startTransaction();
-        String address = createContract("../code/putState.js", TxProcessTypeEnum.VALIDATE);
+        String address = createContract("../code/putState.js");
         ContractInvokeAction action = new ContractInvokeAction();
         action.setAddress(address);
         action.setIndex(0);
@@ -144,7 +139,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
         PackContext packContext = createPackContext(action);
         Profiler.start();
         for(int i = 0; i < 3; i++) {
-            invokeHandler.validate(packContext);
+            invokeHandler.process(packContext);
         }
         Profiler.logDump();
         StateManager stateManager = stateSnapshotAgent.get(address);
@@ -156,7 +151,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
 
     @Test
     public void testPersist_Repeat_Execution() {
-        String address = createContract("../code/putState.js", TxProcessTypeEnum.PERSIST);
+        String address = createContract("../code/putState.js");
         ContractInvokeAction action = new ContractInvokeAction();
         action.setAddress(address);
         action.setIndex(0);
@@ -164,7 +159,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
         PackContext packContext = createPackContext(action);
         Profiler.start();
         for (int i = 0; i < 3; i++) {
-            invokeHandler.persist(packContext);
+            invokeHandler.process(packContext);
         }
         Profiler.logDump();
         StateManager stateManager = dbContractStateStore.get(address);
@@ -180,7 +175,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
             action.setIndex(0);
             action.setType(ActionTypeEnum.REGISTER_CONTRACT);
             PackContext packContext = createPackContext(action);
-            invokeHandler.validate(packContext);
+            invokeHandler.process(packContext);
             Assert.fail();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -195,7 +190,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
             action.setIndex(0);
             action.setType(ActionTypeEnum.REGISTER_CONTRACT);
             PackContext packContext = createPackContext(action);
-            invokeHandler.persist(packContext);
+            invokeHandler.process(packContext);
             Assert.fail();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -205,7 +200,7 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
 
     @Test
     public void testInvoke() {
-        String address = createContract("../code/hello_contract.js", TxProcessTypeEnum.PERSIST);
+        String address = createContract("../code/hello_contract.js");
         ContractInvokeAction action = new ContractInvokeAction();
         action.setAddress(address);
         action.setIndex(0);
@@ -216,9 +211,9 @@ public class ContractInvokeHandlerInterfaceTest extends ContractBaseTest {
         String bizArgsJson = "[\"add\", [1,2]]";
         Object[] bizArgs = JSON.parseArray(bizArgsJson).toArray();
         action.setArgs(bizArgs);
-        invokeHandler.persist(packContext);
-        invokeHandler.persist(packContext);
-        invokeHandler.persist(packContext);
+        invokeHandler.process(packContext);
+        invokeHandler.process(packContext);
+        invokeHandler.process(packContext);
         Profiler.logDump();
 //        StateManager stateManager = dbContractStateStore.get(address);
 //        int actualRunCount = stateManager.getInt("runCount");

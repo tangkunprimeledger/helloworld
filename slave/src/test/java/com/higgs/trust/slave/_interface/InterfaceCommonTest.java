@@ -94,8 +94,8 @@ import static org.testng.Assert.assertEquals;
             if(!StringUtils.isEmpty(policyId) && !StringUtils.equals("null",policyId)){
                 packContext.getCurrentTransaction().getCoreTx().setPolicyId(policyId);
             }
-            actionHandler.validate(packContext);
-            actionHandler.persist(packContext);
+         //   actionHandler.validate(packContext);
+          //  actionHandler.persist(packContext);
         } catch (Exception e) {
             log.info("has error:{}", e.getMessage());
             assertEquals(e.getMessage(), assertData);
@@ -339,7 +339,7 @@ import static org.testng.Assert.assertEquals;
      */
     protected String getPolicyId(Map<?,?> param){
         String pid = String.valueOf(param.get("policyId"));
-        return StringUtils.isEmpty(pid)?InitPolicyEnum.REGISTER.getPolicyId():pid;
+        return StringUtils.isEmpty(pid)?InitPolicyEnum.REGISTER_POLICY.getPolicyId():pid;
     }
     /**
      * package data 的 封装

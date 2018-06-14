@@ -60,7 +60,7 @@ public abstract class ContractBaseTest extends BaseTest {
 
     protected void doTestValidate(Map<?, ?> param, PackContext packContext, ActionHandler handler) {
         try {
-            handler.validate(packContext);
+            handler.process(packContext);
         } catch (SlaveException ex) {
             ex.printStackTrace();
             Assert.assertEquals(ex.getMessage(), String.valueOf(param.get("assert")));
@@ -72,7 +72,7 @@ public abstract class ContractBaseTest extends BaseTest {
 
     public void doTestPersist(Map<?, ?> param, PackContext packContext, ActionHandler handler) {
         try {
-            handler.persist(packContext);
+            handler.process(packContext);
         } catch (SlaveException ex) {
             ex.printStackTrace();
             Assert.assertEquals(ex.getMessage(), String.valueOf(param.get("assert")));

@@ -17,8 +17,6 @@ import java.util.List;
 
     @Autowired
     private UTXOSnapshotHandler utxoSnapshotHandler;
-    @Autowired
-    private UTXODBHandler utxoDBHandler;
 
 
     public UTXOAction getAction() {
@@ -42,14 +40,6 @@ import java.util.List;
      */
    public List<UTXO> queryUTXOList(List<TxIn> inputList){
         log.info("When process UTXO contract  querying queryTxOutList by inputList:{}", inputList);
-        UTXOHandler utxoHandler;
-        if (getContext().isValidateStage()) {
-            // form memory
-            utxoHandler = utxoSnapshotHandler;
-        } else {
-            // form db
-            utxoHandler = utxoDBHandler;
-        }
-        return utxoHandler.queryUTXOList(inputList);
+        return utxoSnapshotHandler.queryUTXOList(inputList);
     }
 }

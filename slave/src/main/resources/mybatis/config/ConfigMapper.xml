@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.config.ConfigDao">
+
+    <insert id="insertConfig" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+        INSERT INTO config(version,
+        valid,
+        pub_key,
+        pri_key,
+        node_name,
+        create_time,
+        update_time)
+        VALUES (#{version},
+        #{valid},
+        #{pubKey},
+        #{priKey},
+        #{nodeName},
+        now(3),
+        now(3))
+    </insert>
+
+
+    <insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+        INSERT INTO
+        config(version,
+        valid,
+        pub_key,
+        pri_key,
+        node_name,
+        create_time,
+        update_time)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.version},
+            #{item.valid},
+            #{item.pubKey},
+            #{item.priKey},
+            #{item.nodeName},
+            now(3),
+            now(3))
+        </foreach>
+    </insert>
+
+
+    <update id="updateConfig" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+        UPDATE config SET
+        update_time=now(3),
+        <if test="valid != null and valid!=''">
+            valid=#{valid},
+        </if>
+        <if test="pubKey != null and pubKey!=''">
+            pub_key=#{pubKey},
+        </if>
+        <if test="priKey != null and priKey!=''">
+            pri_key=#{priKey},
+        </if>
+        <if test="tmpPubKey != null and tmpPubKey!=''">
+            tmp_pub_key=#{tmpPubKey},
+        </if>
+        <if test="tmpPriKey != null and tmpPriKey!=''">
+            tmp_pri_key=#{tmpPriKey}
+        </if>
+        WHERE `node_name`=#{nodeName} and valid != #{valid}
+    </update>
+
+
+    <update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+        UPDATE config
+        <trim prefix="SET" suffixOverrides=",">
+            <!-- set update_time -->
+            <trim prefix="`update_time` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `node_name`=#{item.nodeName} and valid = 1
+                    THEN now(3)
+                </foreach>
+                ELSE `update_time`
+            </trim>
+            <!-- set tmpPubKey -->
+            <trim prefix="`tmp_pub_key` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `node_name`=#{item.nodeName} and valid = 1
+                    THEN #{item.tmpPubKey}
+                </foreach>
+                ELSE `tmp_pub_key`
+            </trim>
+            <!-- set tmpPriKey -->
+            <trim prefix="`tmp_pri_key` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `node_name`=#{item.nodeName} and valid = 1
+                    THEN #{item.tmpPriKey}
+                </foreach>
+                ELSE `tmp_pri_key`
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" item="item" separator="or" open="(" close=")">
+                `node_name`=#{item.nodeName} and valid = 1
+            </foreach>
+        </where>
+    </update>
+
+
+    <select id="getConfig" parameterType="java.lang.String"
+            resultType="com.higgs.trust.slave.dao.po.config.ConfigPO">
+        SELECT version as version,
+        valid as valid,
+        pub_key as pubKey,
+        pri_key as priKey,
+        tmp_pub_key as tmpPubKey,
+        tmp_pri_key as tmpPriKey,
+        node_name as nodeName,
+        create_time as createTime,
+        update_time as updateTime
+        FROM config WHERE `node_name`=#{nodeName}
+    </select>
+
+</mapper>

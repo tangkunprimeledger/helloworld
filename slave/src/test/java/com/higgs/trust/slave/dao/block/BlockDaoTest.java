@@ -68,6 +68,7 @@ public class BlockDaoTest extends BaseTest {
         stateRoot.setRsRootHash("NO_TREE");
         stateRoot.setTxReceiptRootHash("NO_TREE");
         stateRoot.setTxRootHash("NO_TREE");
+        stateRoot.setCaRootHash("NO_TREE");
         blockHeader.setStateRootHash(stateRoot);
 
         HashFunction function = Hashing.sha256();
@@ -83,6 +84,7 @@ public class BlockDaoTest extends BaseTest {
         builder.append(function.hashString(getSafety(stateRootHash.getContractRootHash()), Charsets.UTF_8));
         builder.append(function.hashString(getSafety(stateRootHash.getPolicyRootHash()), Charsets.UTF_8));
         builder.append(function.hashString(getSafety(stateRootHash.getRsRootHash()), Charsets.UTF_8));
+        builder.append(function.hashString(getSafety(stateRootHash.getCaRootHash()), Charsets.UTF_8));
         String hash = function.hashString(builder.toString(), Charsets.UTF_8).toString();
         System.out.println(hash);
     }

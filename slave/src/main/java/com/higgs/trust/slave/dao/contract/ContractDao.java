@@ -10,6 +10,13 @@ import java.util.List;
 @Mapper public interface ContractDao extends BaseDao<ContractPO> {
 
     /**
+     * batch insert
+     * @param list
+     * @return
+     */
+    int batchInsert(List<ContractPO> list);
+
+    /**
      * query contract by address
      * @param address
      * @return

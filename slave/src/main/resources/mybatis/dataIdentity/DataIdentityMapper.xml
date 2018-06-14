@@ -60,4 +60,15 @@
         from data_identity where `identity`=#{identity}
     </select>
 
+    <!-- batch insert -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO
+        data_identity(`identity`,chain_owner,data_owner,create_time)
+        VALUES
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (#{item.identity},#{item.chainOwner},#{item.dataOwner},now(3))
+        </foreach>
+    </insert>
+
 </mapper>

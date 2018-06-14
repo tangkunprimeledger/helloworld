@@ -15,6 +15,7 @@ import java.util.*;
     private Map<String, Object> serviceMap;
     private HashSet<ExecuteEngineFactory> engineFactories;
     private ContractStateStore stateStore;
+    private ExecuteConfig executeConfig;
 
     public ExecuteEngineManager() {
         serviceMap = new HashMap<>();
@@ -33,12 +34,12 @@ import java.util.*;
                     ExecuteEngineFactory fact = itr.next();
                     engineFactories.add(fact);
                 } catch (ServiceConfigurationError err) {
-                    log.error("ExceuteEngineManager providers.next(): {}", err.getMessage());
+                    log.error("ExecuteEngineManager providers.next(): {}", err.getMessage());
                     continue;
                 }
             }
         } catch (ServiceConfigurationError err) {
-            log.error("ExceuteEngineManager providers.hasNext(): {}", err.getMessage());
+            log.error("ExecuteEngineManager providers.hasNext(): {}", err.getMessage());
             return;
         }
     }
@@ -74,7 +75,16 @@ import java.util.*;
         context.setDbStateStore(this.stateStore);
 
         ExecuteEngineFactory factory = getExecuteEngineByLanguage(language);
-        ExecuteEngine engine = factory.getExecuteEngine(code, this.serviceMap);
+        ExecuteEngine engine = factory.createExecuteEngine(code, this.serviceMap, this.executeConfig);
         return engine;
+    }
+
+    public ExecuteConfig getExecuteConfig() {
+        return executeConfig;
+    }
+
+    public ExecuteEngineManager setExecuteConfig(ExecuteConfig executeConfig) {
+        this.executeConfig = executeConfig;
+        return this;
     }
 }

@@ -30,7 +30,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
         if (null == respData || null == respData.getData()) {
             log.error("[process] register RS callback error, respData or respData.getData() is null");
-            throw new BankChainException(BankChainExceptionCodeEnum.IdentityCallbackProcessException,
+            throw new CustomException(CustomExceptionCodeEnum.RegisterRsCallbackProcessException,
                 "[process] register RS callback error, respData or respData.getData() is null");
         }
 

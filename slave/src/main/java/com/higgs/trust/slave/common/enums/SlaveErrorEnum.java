@@ -1,10 +1,12 @@
 package com.higgs.trust.slave.common.enums;
 
+import com.higgs.trust.common.exception.ErrorInfo;
+
 /**
  * @Description:
  * @author: pengdi
  **/
-public enum SlaveErrorEnum {
+public enum SlaveErrorEnum implements ErrorInfo {
     //@formatter:off
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                      公共类错误码[000-099,999]                           //
@@ -15,39 +17,20 @@ public enum SlaveErrorEnum {
     SLAVE_CONFIGURATION_ERROR("000", "配置错误", true),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         请求校检[100-299]                                //
+    //                         请求校检[200-299]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    SLAVE_PARAM_VALIDATE_ERROR("100", "param validate error", false),
-    SLAVE_IDEMPOTENT("101", "request idempotent", false),
-    SLAVE_TX_VERIFY_SIGNATURE_FAILED("102", "transaction verify signature failed", false),
-    SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED("103", "package verify master node signature failed", false),
-    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("103", "package sign signature failed", false),
+    SLAVE_PARAM_VALIDATE_ERROR("200", "param validate error", false),
+    SLAVE_IDEMPOTENT("201", "request idempotent", false),
+    SLAVE_TX_VERIFY_SIGNATURE_FAILED("202", "transaction verify signature failed", false),
+    SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED("203", "package verify master node signature failed", false),
+    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("204", "package sign signature failed", false),
+    SLAVE_TX_VERIFY_SIGNATURE_PUB_KEY_NOT_EXIST("205", "transaction verify signature cannot acquire public key", false),
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         查询相关[300-399]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     SLAVE_CONSENSUS_GET_RESULT_FAILED("301", "get the consensus result failed.", true),
 
-    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         Failover相关[400-450]                           //
-    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    SLAVE_FAILOVER_STATE_NOT_ALLOWED("400", "node state not allowed current operation ", false),
-    SLAVE_FAILOVER_STATE_CHANGE_FAILED("401", "node state change failed ", false),
-    SLAVE_FAILOVER_START_HEIGHT_ERROR("410", "the start height error, please check", false),
-    SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED("411", "get and validating the blocks from other node failed", false),
-    SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED("412", "get and validating the block headers from other node failed", false),
-    SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED("413", "the package of block validating failed when sync block.", false),
-    SLAVE_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID("414", "the package of block persist result invalid after sync block.", false),
-    SLAVE_FAILOVER_BLOCK_VALIDATE_RESULT_INVALID("415", "the package of block validating result invalid after failover block.", false),
-    SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID("416", "the package of block persist result invalid after failover block.", false),
-    SLAVE_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST("417","consensus validate result not exist",false),
-    SLAVE_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST("418","consensus persist result not exist",false),
 
-    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         业务master相关[450-500]                           //
-    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    SLAVE_MASTER_TERM_INCORRECT("451","the term is incorrect",false),
-    SLAVE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT("452","the package height is incorrect",false),
-    SLAVE_MASTER_NODE_INCORRECT("453","the master node is incorrect",false),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         内部处理相关[500-699]                            //
@@ -71,6 +54,13 @@ public enum SlaveErrorEnum {
     SLAVE_ACTION_NOT_EXISTS_EXCEPTION("517", "action not exists exception", false),
     SLAVE_SNAPSHOT_CACHE_SIZE_NOT_ENOUGH_EXCEPTION("518", "snapshot cache size not enough exception", false),
     SLAVE_SNAPSHOT_GET_NO_LOCK_EXCEPTION("519", "snapshot get no lock exception", false),
+    SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION("520", "update data not exist exception", false),
+    SLAVE_SNAPSHOT_DATA_EXIST_EXCEPTION("521", "insert data is existed exception", false),
+    SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION("522", "insert data type error exception", false),
+    SLAVE_DATA_NOT_INSERT_EXCEPTION("523", "data not insert  exception", false),
+    SLAVE_SNAPSHOT_FLUSH_DATA_EXCEPTION("524", "snapshot flush data exception", false),
+    SLAVE_RS_NOT_EXISTS_ERROR("525", "RS is not exist", false),
+    SLAVE_RS_ALREADY_CANCELED_ERROR("526", "RS is already canceled exception", false),
 
 
     SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION("600", "slave merkle param not valid exception", false),
@@ -122,6 +112,14 @@ public enum SlaveErrorEnum {
     SLAVE_PACKAGE_REPLICATE_FAILED("834", "package replicated to consensus failed", false),
     SLAVE_PACKAGE_CALLBACK_ERROR("835", "package callback rs has error", false),
     SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR("836", "rs callback not register error", false),
+    SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR("837", "slave batch insert rows different error", false),
+    SLAVE_PACKAGE_RECEIVED_INVALID_NODE_STATE("838", "the node state is not running", false),
+
+
+    SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),
+    SLAVE_CA_VALIDATE_ERROR("901", "slave ca validate error", false),
+    SLAVE_CA_WRITE_FILE_ERROR("902", "slave ca write file error", false),
+    SLAVE_GENERATE_KEY_ERROR("902", "slave generate key error", false),
     ;
     //@formatter:on
 

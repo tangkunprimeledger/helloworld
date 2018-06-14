@@ -7,10 +7,7 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
-import com.higgs.trust.slave.model.bo.BlockHeader;
-import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.bo.StateRootHash;
+import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.account.*;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
@@ -84,7 +81,7 @@ public class TestDataMaker {
         action.setType(ActionTypeEnum.FREEZE);
         action.setAccountNo(accountNo);
         action.setAmount(new BigDecimal("0.50"));
-        action.setBizFlowNo("freeze_flow_no_1_" + index);
+        action.setBizFlowNo("freeze_flow_no_1_" + index + "_" + System.currentTimeMillis());
         action.setIndex(0);
         return action;
     }
@@ -116,6 +113,7 @@ public class TestDataMaker {
         coreTx.setActionList(actions == null ? new ArrayList<>():actions);
         coreTx.setBizModel(new JSONObject());
         coreTx.setSender("rs-test1");
+        coreTx.setSendTime(new Date());
         coreTx.setLockTime(new Date());
         return coreTx;
     }
@@ -127,6 +125,7 @@ public class TestDataMaker {
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setActionList(actions == null ? new ArrayList<>():actions);
         coreTx.setBizModel(bizModel);
+        coreTx.setSendTime(new Date());
         coreTx.setSender("TRUST-NODE97");
         coreTx.setLockTime(new Date());
         return coreTx;
@@ -139,9 +138,16 @@ public class TestDataMaker {
         signedTransaction.setCoreTx(coreTransaction);
         String sign = SignUtils.sign(JSON.toJSONString(coreTransaction), priKey1);
         String sign1 = SignUtils.sign(JSON.toJSONString(coreTransaction), priKey2);
-        List<String> signedList = new ArrayList<>();
-        signedList.add(sign);
-        signedList.add(sign1);
+        List<SignInfo> signedList = new ArrayList<>();
+        SignInfo signInfo = new SignInfo();
+        signInfo.setOwner("owner1");
+        signInfo.setSign(sign);
+        signedList.add(signInfo);
+
+        signInfo.setOwner("owner2");
+        signInfo.setSign(sign1);
+        signedList.add(signInfo);
+
         signedTransaction.setSignatureList(signedList);
         return  signedTransaction;
     }
@@ -160,6 +166,7 @@ public class TestDataMaker {
         rootHash.setPolicyRootHash("policy-hash");
         rootHash.setRsRootHash("rs-root-hash");
         rootHash.setContractRootHash("contract-hash");
+        rootHash.setCaRootHash("ca-hash");
         blockHeader.setStateRootHash(rootHash);
         return blockHeader;
     }

@@ -16,11 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionTemplate;
 
 @RunWith(PowerMockRunner.class) @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
@@ -59,7 +55,6 @@ public abstract class IntegrateBaseTest {
 
     private void initMock() {
         MockitoAnnotations.initMocks(this);
-        snapshotService.init();
     }
 
     protected void runLast() {

@@ -10,6 +10,7 @@
         <result column="version" property="version"/>
         <result column="block_height" property="blockHeight"/>
         <result column="block_time" property="blockTime"/>
+        <result column="send_time" property="sendTime"/>
         <result column="sender" property="sender"/>
         <result column="sign_datas" property="signDatas"/>
         <result column="action_datas" property="actionDatas"/>
@@ -18,7 +19,7 @@
     </resultMap>
     <!-- transaction table all fields -->
     <sql id="baseColumnList">
-        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,execute_result,error_code,sign_datas,action_datas
+        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,execute_result,error_code,sign_datas,action_datas
     </sql>
     <!-- query  conditions -->
     <sql id="baseWhereClause">
@@ -45,6 +46,9 @@
             <if test="blockTime != null">
                 and block_time=#{blockTime}
             </if>
+            <if test="sendTime != null">
+                and send_time=#{sendTime}
+            </if>
             <if test="sender != null">
                 and sender=#{sender}
             </if>
@@ -56,8 +60,8 @@
     <!-- insert row -->
     <insert id="add" parameterType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
         insert into
-        transaction(tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas,action_datas,execute_result,error_code)
-        values(#{txId},#{bizModel},#{policyId},#{lockTime},#{version},#{blockHeight},#{blockTime},#{sender},#{signDatas},#{actionDatas},#{executeResult},#{errorCode})
+        transaction(tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,sign_datas,action_datas,execute_result,error_code)
+        values(#{txId},#{bizModel},#{policyId},#{lockTime},#{version},#{blockHeight},#{blockTime},#{sendTime},#{sender},#{signDatas},#{actionDatas},#{executeResult},#{errorCode})
     </insert>
     <!-- 列表总数 -->
     <select id="queryByCount" resultType="java.lang.Integer"
@@ -84,10 +88,10 @@
     <!--batch insert-->
     <insert id ="batchInsert" parameterType="java.util.List" >
         insert into transaction
-        (tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,sender,sign_datas,action_datas,execute_result,error_code)
+        (tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,sign_datas,action_datas,execute_result,error_code)
         values
          <foreach collection ="list" item="item" index= "index" separator =",">
-         (#{item.txId},#{item.bizModel},#{item.policyId},#{item.lockTime},#{item.version},#{item.blockHeight},#{item.blockTime},#{item.sender},#{item.signDatas},#{item.actionDatas},#{item.executeResult},#{item.errorCode})
+         (#{item.txId},#{item.bizModel},#{item.policyId},#{item.lockTime},#{item.version},#{item.blockHeight},#{item.blockTime},#{item.sendTime},#{item.sender},#{item.signDatas},#{item.actionDatas},#{item.executeResult},#{item.errorCode})
          </foreach>
     </insert>
     <!--query by block height-->

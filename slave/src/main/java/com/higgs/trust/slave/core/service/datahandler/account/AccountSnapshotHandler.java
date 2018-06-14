@@ -2,6 +2,9 @@ package com.higgs.trust.slave.core.service.datahandler.account;
 
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
+import com.higgs.trust.slave.api.enums.account.AccountFreezeTypeEnum;
+import com.higgs.trust.slave.api.enums.account.ChangeDirectionEnum;
+import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.api.enums.account.TradeDirectionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -18,10 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author liuyu
@@ -36,6 +36,7 @@ import java.util.Set;
     @Autowired ManageSnapshotAgent manageSnapshotAgent;
     @Autowired DataIdentityService dataIdentityService;
     @Autowired FreezeRepository freezeRepository;
+    @Autowired AccountDetailSnapshotAgent accountDetailSnapshotAgent;
 
     @Override public AccountInfo getAccountInfo(String accountNo) {
         return accountSnapshotAgent.getAccountInfo(accountNo);
@@ -69,8 +70,8 @@ import java.util.Set;
         BigDecimal creditAmounts = BigDecimal.ZERO;
         //DEBIT trade
         for (AccountTradeInfo info : debitTradeInfo) {
-            if(!AmountUtil.isLegal(String.valueOf(info.getAmount()),true)){
-                log.error("[validateForOperation] amount:{} is illegal",info.getAmount());
+            if (!AmountUtil.isLegal(String.valueOf(info.getAmount()), true)) {
+                log.error("[validateForOperation] amount:{} is illegal", info.getAmount());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
             AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(info.getAccountNo());
@@ -95,8 +96,8 @@ import java.util.Set;
         }
         //CREDIT trade
         for (AccountTradeInfo info : creditTradeInfo) {
-            if(!AmountUtil.isLegal(String.valueOf(info.getAmount()),true)){
-                log.error("[validateForOperation] amount:{} is illegal",info.getAmount());
+            if (!AmountUtil.isLegal(String.valueOf(info.getAmount()), true)) {
+                log.error("[validateForOperation] amount:{} is illegal", info.getAmount());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
             AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(info.getAccountNo());
@@ -153,15 +154,25 @@ import java.util.Set;
                 log.error("[persistForOperation] account info is not exists by accountNo:{}", info.getAccountNo());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_IS_NOT_EXISTS_ERROR);
             }
+            TradeDirectionEnum tradeDirection = TradeDirectionEnum.DEBIT;
             //validate happen amount and return after amount
             BigDecimal afterAmount =
-                AccountOperationHelper.validateTradeInfo(accountInfo, TradeDirectionEnum.DEBIT, info.getAmount());
+                AccountOperationHelper.validateTradeInfo(accountInfo, tradeDirection, info.getAmount());
             AccountInfo _new = BeanConvertor.convertBean(accountInfo, AccountInfo.class);
             _new.setBalance(afterAmount);
+            _new.setDetailNo(_new.getDetailNo() + 1);
             //update the balance to merkle tree
             updateMerkleTree(accountInfo, _new);
             //update the new balance to snapshot
             accountSnapshotAgent.updateAccountInfo(BeanConvertor.convertBean(_new, AccountInfo.class));
+            //get change direction
+            ChangeDirectionEnum changeDirectionEnum = AccountOperationHelper
+                .getBalanceChangeDirection(tradeDirection, FundDirectionEnum.getBycode(_new.getFundDirection()));
+            //save detail
+            saveAccountDetail(accountOperation, blockHeight, accountInfo, info.getAmount(), afterAmount,
+                changeDirectionEnum);
+            //save dc record
+            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount());
         }
         //CREDIT trade
         for (AccountTradeInfo info : creditTradeInfo) {
@@ -170,15 +181,25 @@ import java.util.Set;
                 log.error("[persistForOperation] account info is not exists by accountNo:{}", info.getAccountNo());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_IS_NOT_EXISTS_ERROR);
             }
+            TradeDirectionEnum tradeDirection = TradeDirectionEnum.CREDIT;
             //validate happen amount and return after amount
             BigDecimal afterAmount =
-                AccountOperationHelper.validateTradeInfo(accountInfo, TradeDirectionEnum.CREDIT, info.getAmount());
+                AccountOperationHelper.validateTradeInfo(accountInfo, tradeDirection, info.getAmount());
             AccountInfo _new = BeanConvertor.convertBean(accountInfo, AccountInfo.class);
             _new.setBalance(afterAmount);
+            _new.setDetailNo(_new.getDetailNo() + 1);
             //update the balance to merkle tree
             updateMerkleTree(accountInfo, _new);
             //update the new balance to snapshot
             accountSnapshotAgent.updateAccountInfo(BeanConvertor.convertBean(_new, AccountInfo.class));
+            //get change direction
+            ChangeDirectionEnum changeDirectionEnum = AccountOperationHelper
+                .getBalanceChangeDirection(tradeDirection, FundDirectionEnum.getBycode(_new.getFundDirection()));
+            //save detail
+            saveAccountDetail(accountOperation, blockHeight, accountInfo, info.getAmount(), afterAmount,
+                changeDirectionEnum);
+            //save dc record
+            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount());
         }
     }
 
@@ -190,12 +211,16 @@ import java.util.Set;
         AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(accountFreeze.getAccountNo());
         AccountInfo _new = BeanConvertor.convertBean(accountInfo, AccountInfo.class);
         _new.setFreezeAmount(accountInfo.getFreezeAmount().add(accountFreeze.getAmount()));
+        _new.setDetailFreezeNo(_new.getDetailFreezeNo() + 1);
         //modify merkle tree
         updateMerkleTree(accountInfo, _new);
         //save to snapshot
         accountSnapshotAgent.updateAccountInfo(BeanConvertor.convertBean(_new, AccountInfo.class));
         //save freeze record
         freezeSnapshotAgent.createAccountFreezeRecord(freezeRepository.build(accountFreeze, blockHeight));
+        //save detail
+        saveFreezeDetail(accountFreeze.getBizFlowNo(), accountFreeze.getAmount(), accountFreeze.getRemark(),
+            AccountFreezeTypeEnum.FREEZE, blockHeight, accountInfo);
     }
 
     @Override
@@ -204,6 +229,7 @@ import java.util.Set;
         AccountInfo _new = BeanConvertor.convertBean(accountInfo, AccountInfo.class);
         BigDecimal afterOfAccount = accountInfo.getFreezeAmount().subtract(accountUnFreeze.getAmount());
         _new.setFreezeAmount(afterOfAccount);
+        _new.setDetailFreezeNo(_new.getDetailFreezeNo() + 1);
         //modify merkle tree
         updateMerkleTree(accountInfo, _new);
         //update account info to snapshot
@@ -211,10 +237,88 @@ import java.util.Set;
         //save to snapshot
         freezeRecord.setAmount(freezeRecord.getAmount().subtract(accountUnFreeze.getAmount()));
         freezeSnapshotAgent.updateAccountFreezeRecord(freezeRecord);
+        //save detail
+        saveFreezeDetail(accountUnFreeze.getBizFlowNo(), accountUnFreeze.getAmount(), accountUnFreeze.getRemark(),
+            AccountFreezeTypeEnum.UNFREEZE, blockHeight, accountInfo);
     }
 
     @Override public void issueCurrency(IssueCurrency bo) {
         accountSnapshotAgent.issueCurrency(bo);
+    }
+
+    /**
+     * save account detail
+     *
+     * @param bo
+     * @param blockHeight
+     * @param accountInfo
+     * @param happenAmount
+     * @param afterAmount
+     * @param changeDirectionEnum
+     */
+    private void saveAccountDetail(AccountOperation bo, Long blockHeight, AccountInfo accountInfo,
+        BigDecimal happenAmount, BigDecimal afterAmount, ChangeDirectionEnum changeDirectionEnum) {
+        AccountDetail detail = new AccountDetail();
+        detail.setBizFlowNo(bo.getBizFlowNo());
+        detail.setBlockHeight(blockHeight);
+        detail.setAccountNo(accountInfo.getAccountNo());
+        detail.setChangeDirection(changeDirectionEnum.getCode());
+        detail.setAmount(happenAmount);
+        detail.setBeforeAmount(accountInfo.getBalance());
+        detail.setAfterAmount(afterAmount);
+        detail.setDetailNo(accountInfo.getDetailNo() + 1);
+        detail.setRemark(bo.getRemark());
+        detail.setCreateTime(bo.getAccountDate());
+        accountDetailSnapshotAgent.createAccountDetail(detail);
+    }
+
+    /**
+     * save account DC record
+     *
+     * @param bo
+     * @param accountNo
+     * @param tradeDirectionEnum
+     * @param amount
+     */
+    private void saveAccountDCRecord(AccountOperation bo, String accountNo, TradeDirectionEnum tradeDirectionEnum,
+        BigDecimal amount) {
+        AccountDcRecord accountDcRecord = new AccountDcRecord();
+        accountDcRecord.setBizFlowNo(bo.getBizFlowNo());
+        accountDcRecord.setAccountNo(accountNo);
+        accountDcRecord.setAmount(amount);
+        accountDcRecord.setDcFlag(tradeDirectionEnum.getCode());
+        accountDcRecord.setCreateTime(bo.getAccountDate());
+        accountDetailSnapshotAgent.createAccountDCRecord(accountDcRecord);
+    }
+
+    /**
+     * save freeze detail
+     *
+     * @param flowNo
+     * @param happenAmount
+     * @param remark
+     * @param freezeTypeEnum
+     * @param blockHeight
+     * @param accountInfo
+     */
+    private void saveFreezeDetail(String flowNo, BigDecimal happenAmount, String remark,
+        AccountFreezeTypeEnum freezeTypeEnum, Long blockHeight, AccountInfo accountInfo) {
+        AccountDetailFreeze detailFreeze = new AccountDetailFreeze();
+        detailFreeze.setBizFlowNo(flowNo);
+        detailFreeze.setAccountNo(accountInfo.getAccountNo());
+        detailFreeze.setBlockHeight(blockHeight);
+        detailFreeze.setAmount(happenAmount);
+        detailFreeze.setBeforeAmount(accountInfo.getFreezeAmount());
+        if(freezeTypeEnum == AccountFreezeTypeEnum.FREEZE){
+            detailFreeze.setAfterAmount(accountInfo.getFreezeAmount().add(happenAmount));
+        }else{
+            detailFreeze.setAfterAmount(accountInfo.getFreezeAmount().subtract(happenAmount));
+        }
+        detailFreeze.setFreezeDetailNo(accountInfo.getDetailFreezeNo() + 1);
+        detailFreeze.setFreezeType(freezeTypeEnum.getCode());
+        detailFreeze.setRemark(remark);
+        detailFreeze.setCreateTime(new Date());
+        accountDetailSnapshotAgent.createAccountDetailFreeze(detailFreeze);
     }
 
     /**
@@ -226,11 +330,17 @@ import java.util.Set;
     private void updateMerkleTree(AccountInfo _old, AccountInfo _new) {
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.ACCOUNT);
         if (merkleTree == null) {
-            log.error("[updateMerkleTree] the ACCOUNT merkle tree does not exist");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_MERKLE_TREE_NOT_EXIST_ERROR);
+            log.info("[updateMerkleTree] the ACCOUNT merkle tree does not exist");
+            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.ACCOUNT, new Object[] {_new});
+        }else{
+            AccountMerkleData from = BeanConvertor.convertBean(_old, AccountMerkleData.class);
+            AccountMerkleData to = BeanConvertor.convertBean(_new, AccountMerkleData.class);
+            //check
+            if(merkleTreeSnapshotAgent.isExist(MerkleTypeEnum.ACCOUNT,from)){
+                merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, from, to);
+            }else{
+                merkleTreeSnapshotAgent.appendChild(merkleTree, to);
+            }
         }
-        AccountMerkleData from = BeanConvertor.convertBean(_old, AccountMerkleData.class);
-        AccountMerkleData to = BeanConvertor.convertBean(_new, AccountMerkleData.class);
-        merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, from, to);
     }
 }

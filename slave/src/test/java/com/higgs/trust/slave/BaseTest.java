@@ -7,7 +7,6 @@
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.boot.test.context.SpringBootTest;
     import org.springframework.context.annotation.Bean;
-    import org.springframework.context.annotation.Profile;
     import org.springframework.test.context.ActiveProfiles;
     import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
     import org.springframework.transaction.PlatformTransactionManager;
@@ -46,8 +45,6 @@ public abstract class BaseTest
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
         //toJSONString的时候记录Class的name
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
-
-        snapshotService.init();
     }
 
     @AfterClass public void runAfter() {

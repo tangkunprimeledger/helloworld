@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -9,7 +10,7 @@ import com.higgs.trust.slave.dao.manage.PolicyDao;
 import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
-import com.higgs.trust.slave.model.bo.manage.RsPubKey;
+import com.higgs.trust.slave.model.bo.manage.RsNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +30,7 @@ import java.util.List;
     @Autowired private PolicyDao policyDao;
 
     @Autowired
-    private RsPubKeyRepository rsPubKeyRepository;
+    private RsNodeRepository rsNodeRepository;
 
     public Policy getPolicyById(String policyId) {
 
@@ -41,15 +42,16 @@ import java.util.List;
         PolicyPO policy;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if (null != initPolicyEnum) {
-            List<RsPubKey> rsPubKeyList = rsPubKeyRepository.queryAll();
-            if (CollectionUtils.isEmpty(rsPubKeyList)) {
+            List<RsNode> rsNodeList = rsNodeRepository.queryAll();
+            if (CollectionUtils.isEmpty(rsNodeList)) {
                 return null;
             }
             policy = new PolicyPO();
             policy.setPolicyId(policyId);
             policy.setPolicyName(initPolicyEnum.getType());
+            policy.setDecisionType(initPolicyEnum.getDecisionType().getCode());
             List<String> rsIdList = new ArrayList<>();
-            rsPubKeyList.forEach(rsPubKey->{rsIdList.add(rsPubKey.getRsId());});
+            rsNodeList.forEach(rsNode->{rsIdList.add(rsNode.getRsId());});
             policy.setRsIds(JSON.toJSONString(rsIdList));
         } else {
             policy = policyDao.queryByPolicyId(policyId);
@@ -70,10 +72,12 @@ import java.util.List;
         policyDao.add(convertPolicyToPolicyPO(policy));
     }
 
-    private PolicyPO convertPolicyToPolicyPO(Policy policy) {
+    public PolicyPO convertPolicyToPolicyPO(Policy policy) {
         PolicyPO policyPO = new PolicyPO();
         policyPO.setPolicyId(policy.getPolicyId());
         policyPO.setPolicyName(policy.getPolicyName());
+        policyPO.setDecisionType(policy.getDecisionType().getCode());
+        policyPO.setContractAddr(policy.getContractAddr());
         policyPO.setRsIds(JSON.toJSONString(policy.getRsIds()));
         return policyPO;
     }
@@ -84,6 +88,8 @@ import java.util.List;
         try {
             policy.setPolicyId(policyPO.getPolicyId());
             policy.setPolicyName(policyPO.getPolicyName());
+            policy.setDecisionType(DecisionTypeEnum.getBycode(policyPO.getDecisionType()));
+            policy.setContractAddr(policyPO.getContractAddr());
             policy.setRsIds(JSON.parseObject(policyPO.getRsIds(), new TypeReference<List<String>>() {
             }));
         } catch (Throwable e) {
@@ -97,6 +103,8 @@ import java.util.List;
         Policy policy = new Policy();
         policy.setPolicyId(action.getPolicyId());
         policy.setPolicyName(action.getPolicyName());
+        policy.setDecisionType(action.getDecisionType());
+        policy.setContractAddr(action.getContractAddr());
         policy.setRsIds(action.getRsIds());
         return policy;
     }
@@ -109,5 +117,9 @@ import java.util.List;
             return null;
         }
         return initPolicyEnum.getType();
+    }
+
+    public int batchInsert(List<PolicyPO> policyPOList) {
+        return policyDao.batchInsert(policyPOList);
     }
 }

@@ -15,23 +15,13 @@ import javax.validation.constraints.NotNull;
      * slave private key
      */
     @NotNull @Value("${higgs.trust.privateKey}") private String privateKey;
-    @NotNull @Value("${rs.core.useHttpChannel}") private boolean useHttpChannel;
-    @NotNull @Value("${rs.core.syncRequestTimeout}") private long syncRequestTimeout;
+    @NotNull @Value("${rs.core.useHttpChannel:false}") private boolean useHttpChannel;
+    @NotNull @Value("${rs.core.syncRequestTimeout:200}") private long syncRequestTimeout;
     @NotNull @Value("${server.port}") private int serverPort;
-    /**
-     * rs outter pubkey
-     */
-    @NotNull @Value("${rs.custom.pubkey}") private String pubKey;
-    /**
-     * rs outter prikey
-     */
-    @NotNull @Value("${rs.custom.prikey}") private String priKey;
-    /**
-     * rs outter aeskey
-     */
-    @NotNull @Value("${rs.custom.aeskey}") private String aesKey;
-    
-    @NotNull @Value("${rs.custom.contractAddress}") private String contractAddress;
+
+    @NotNull @Value("${rs.custom.contractAddress:100}") private String contractAddress;
+
+    @NotNull @Value("${trust.useMySQL:true}") private boolean useMySQL;
 
     @Override public void afterPropertiesSet() throws Exception {
         BeanValidator.validate(this).failThrow();

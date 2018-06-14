@@ -1,8 +1,8 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.core.*;
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class BaseReceiveService {

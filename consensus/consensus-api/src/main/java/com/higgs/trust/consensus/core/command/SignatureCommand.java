@@ -3,8 +3,6 @@
  */
 package com.higgs.trust.consensus.core.command;
 
-import lombok.ToString;
-
 /**
  * @author suimi
  * @date 2018/6/1

@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author liuyu
@@ -32,4 +33,20 @@ import java.math.BigDecimal;
      * @return
      */
     int decreaseAmount(@Param("id") Long id, @Param("amount") BigDecimal amount);
+
+    /**
+     * batch insert
+     *
+     * @param list
+     * @return
+     */
+    int batchInsert(@Param("list") List<AccountFreezeRecordPO> list);
+
+    /**
+     * batch insert
+     *
+     * @param list
+     * @return
+     */
+    int batchUpdate(@Param("list") List<AccountFreezeRecordPO> list);
 }

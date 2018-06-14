@@ -83,7 +83,7 @@ public class PendingTransactionDaoTest extends BaseTest {
         signList.add(sign1);
         signList.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-        signedTx1.setSignatureList(signList);
+//        signedTx1.setSignatureList(signList);
 
         return signedTx1;
 

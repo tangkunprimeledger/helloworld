@@ -1,27 +1,17 @@
 package com.higgs.trust.contract;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.util.IOUtils;
-import jdk.nashorn.api.scripting.AbstractJSObject;
+import com.higgs.trust.contract.rhino.types.NativeJavaMap;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ *  contract state manager
+ *  @author duhongming
+ */
 public class StateManager {
     private Map<String, Object> state;
     private Map<String, Object> oldState;
-    public final static int JSON_GENERATE_FEATURES;
-
-    static {
-        int features = 0;
-        features = features | SerializerFeature.QuoteFieldNames.getMask();
-        features |= SerializerFeature.SkipTransientField.getMask();
-        features |= SerializerFeature.WriteEnumUsingName.getMask();
-        features |= SerializerFeature.SortField.getMask();
-        features |= SerializerFeature.MapSortField.getMask();
-        JSON_GENERATE_FEATURES = features;
-    }
 
     public StateManager() {
         state = new HashMap<>(8);
@@ -34,7 +24,6 @@ public class StateManager {
     public StateManager(Map<String, Object> state, boolean backup) {
         this.state = state == null ? new HashMap<>(8) : state;
         if (state != null && backup) {
-            //this.oldState = JSON.parseObject(JSON.toJSONString(state, JSON_GENERATE_FEATURES), HashMap.class);
             this.oldState = new HashMap<>(this.state.size());
             this.state.forEach((key, value) -> this.oldState.put(key, value));
         }
@@ -51,7 +40,7 @@ public class StateManager {
     }
 
     public StateManager put(String name, Object value) {
-        this.state.put(name, JSON.parse(JSON.toJSONString(value, JSON_GENERATE_FEATURES)));
+        this.state.put(name, JsonHelper.clone(value));
         return this;
     }
 
@@ -60,7 +49,12 @@ public class StateManager {
         if (obj == null) {
             return null;
         }
-        return JSON.parse(JSON.toJSONString(obj));
+
+        obj = JsonHelper.clone(obj);
+        if (obj instanceof Map) {
+            obj = new NativeJavaMap((Map)obj);
+        }
+        return obj;
     }
 
     public int getInt(String name) {

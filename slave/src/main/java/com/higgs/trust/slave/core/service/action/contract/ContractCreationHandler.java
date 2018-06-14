@@ -20,9 +20,12 @@ import org.springframework.util.StringUtils;
 import java.security.MessageDigest;
 import java.util.Date;
 
+/**
+ * create contract handler
+ * @author duhongming
+ */
 @Slf4j @Component public class ContractCreationHandler implements ActionHandler {
 
-    @Autowired private ContractRepository contractRepository;
     @Autowired private ContractSnapshotAgent snapshotAgent;
 
     private byte[] getHexHash(byte[] data) {
@@ -87,40 +90,9 @@ import java.util.Date;
         return creationAction;
     }
 
-    @Override public void validate(ActionData actionData) {
-        log.trace("validate... start process contract creation");
-        Profiler.enter("ContractCreationHandler validate");
-        try {
-            ContractCreationAction creationAction = getAndCheckAction(actionData);
-            Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
-            String sender = actionData.getCurrentTransaction().getCoreTx().getSender();
-            String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
-            String address = generateAddress(blockHeight, sender, txId, creationAction);
-
-            Contract contract = snapshotAgent.get(address);
-            if (null != contract) {
-                Profiler.release();
-                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BLOCK_HEIGHT_UNEQUAL_ERROR);
-            }
-
-            contract = new Contract();
-            contract.setAddress(address);
-            contract.setBlockHeight(blockHeight);
-            contract.setTxId(txId);
-            contract.setActionIndex(actionData.getCurrentAction().getIndex());
-            contract.setLanguage(creationAction.getLanguage());
-            contract.setCode(creationAction.getCode());
-            contract.setCreateTime(new Date());
-            contract.setVersion("0.1");
-            snapshotAgent.put(address, contract);
-        } finally {
-            Profiler.release();
-        }
-    }
-
-    @Override public void persist(ActionData actionData) {
-        log.debug("persist... start process contract creation");
-        Profiler.enter("ContractCreationHandler persist");
+    @Override public void process(ActionData actionData) {
+        log.trace("contract creation process start");
+        Profiler.enter("ContractCreationHandler process");
         try{
             ContractCreationAction creationAction = getAndCheckAction(actionData);
 
@@ -129,7 +101,7 @@ import java.util.Date;
             String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
             String address = generateAddress(blockHeight, sender, txId, creationAction);
 
-            Contract contract = contractRepository.queryByAddress(address);
+            Contract contract = snapshotAgent.get(address);
             if (null != contract) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
@@ -141,9 +113,9 @@ import java.util.Date;
             contract.setLanguage(creationAction.getLanguage());
             contract.setCode(creationAction.getCode());
             contract.setCreateTime(new Date());
-            contract.setVersion("0.1");
+            contract.setVersion("1.0");
 
-            contractRepository.deploy(contract);
+            snapshotAgent.insert(address, contract);
         } finally {
             Profiler.release();
         }

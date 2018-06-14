@@ -18,41 +18,44 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataIdentityActionHandlerTest  {
+public class DataIdentityActionHandlerTest extends BaseTest {
     @Autowired
     private DataIdentityActionHandler dataIdentityActionHandler;
     @Autowired
     private SnapshotService snapshotService;
     @Autowired
     private DataIdentitySnapshotAgent dataIdentitySnapshotAgent;
+
     @Test
     public void testValidate() throws Exception {
-       // snapshotService.destroy();
-       // snapshotService.startTransaction();
-        List<DataIdentity> list =  new ArrayList<>();
+       snapshotService.clear();
+        snapshotService.destroy();
+        snapshotService.startTransaction();
+/*        List<DataIdentity> list = new ArrayList<>();
         DataIdentity dataIdentity1 = new DataIdentity();
-        dataIdentity1.setIdentity("12321");
+        dataIdentity1.setIdentity("12321qweqw");
         dataIdentity1.setDataOwner("trust");
         dataIdentity1.setChainOwner("trust");
         list.add(dataIdentity1);
         DataIdentity dataIdentity2 = new DataIdentity();
-        dataIdentity2.setIdentity("12321");
+        dataIdentity2.setIdentity("12321qweqwe");
         dataIdentity2.setDataOwner("trust");
         dataIdentity2.setChainOwner("trust");
         list.add(dataIdentity2);
         System.out.println(JSONArray.toJSONString(list));
 
-        List<String> rsList =  new ArrayList<>();
+        List<String> rsList = new ArrayList<>();
         rsList.add("RS");
         rsList.add("RS");
-        System.out.println(JSONArray.toJSONString(rsList));
+        System.out.println(JSONArray.toJSONString(rsList));*/
 
         DataIdentityAction dataIdentityAction = new DataIdentityAction();
         dataIdentityAction.setChainOwner("lll");
         dataIdentityAction.setDataOwner("3wew");
-        dataIdentityAction.setIdentity("12312312321");
+        dataIdentityAction.setIdentity("123123123212221ere112321312");
         dataIdentityAction.setIndex(1);
         dataIdentityAction.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
+
         System.out.println(JSONArray.toJSONString(dataIdentityAction));
         ActionData ActionData = new ActionData() {
             @Override
@@ -75,9 +78,39 @@ public class DataIdentityActionHandlerTest  {
                 return dataIdentityAction;
             }
         };
-     //   dataIdentityActionHandler.validate(ActionData);
-    //    snapshotService.commit();
-     //   System.out.println("9999999999"+dataIdentitySnapshotAgent.getDataIdentity("12312312321"));
+        dataIdentityActionHandler.process(ActionData);
+        DataIdentityAction dataIdentityAction1 = new DataIdentityAction();
+        dataIdentityAction1.setChainOwner("lll");
+        dataIdentityAction1.setDataOwner("3wew");
+        dataIdentityAction1.setIdentity("1231231232122332421112312ww13242312312");
+        dataIdentityAction1.setIndex(1);
+        dataIdentityAction1.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
+        System.out.println(JSONArray.toJSONString(dataIdentityAction));
+        ActionData ActionData1 = new ActionData() {
+            @Override
+            public Block getCurrentBlock() {
+                return null;
+            }
+
+            @Override
+            public Package getCurrentPackage() {
+                return null;
+            }
+
+            @Override
+            public SignedTransaction getCurrentTransaction() {
+                return null;
+            }
+
+            @Override
+            public Action getCurrentAction() {
+                return dataIdentityAction1;
+            }
+        };
+        dataIdentityActionHandler.process(ActionData1);
+        snapshotService.commit();
+        snapshotService.flush();
+        System.out.println("9999999999" + dataIdentitySnapshotAgent.getDataIdentity("1231231232122332421112312ww13242312312"));
 
     }
 
@@ -110,7 +143,6 @@ public class DataIdentityActionHandlerTest  {
                 return dataIdentityAction;
             }
         };
-        dataIdentityActionHandler.persist(ActionData);
     }
 
 }

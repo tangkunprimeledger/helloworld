@@ -11,8 +11,9 @@ public enum CustomExceptionCodeEnum {
 
     IdentityCallbackProcessException("存证回调处理失败", "identity_callback_process_exception"),
 
-    RegisterRsCallbackProcessException("注册RS回调处理失败", "register_RS_callback_process_exception"),
-    RegisterPolicyCallbackProcessException("注册policy回调处理失败", "register_policy_callback_process_exception"),
+    RegisterRsCallbackProcessException("注册RS回调处理异常", "register_RS_callback_process_exception"),
+    RegisterPolicyCallbackProcessException("注册policy回调处理异常", "register_policy_callback_process_exception"),
+    CancelRsCallBackProcessException("注销RS回调处理异常", "cancel_rs_callback_process_exception"),
     ;
     CustomExceptionCodeEnum(String description, String monitorTarget) {
         this.description = description;

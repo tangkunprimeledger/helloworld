@@ -31,17 +31,17 @@ public class AccountContractBindingHandlerTest extends IntegrateBaseTest {
     public void testValidate() {
         Action action = createAction();
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER)
+                .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
                 .addAction(action)
                 .setTxId("00000000002")
-                .signature("0x0000000000000000000000000")
+                .signature("", "0x0000000000000000000000000")
                 .makeBlockHeader()
                 .build();
 
 
         snapshot.startTransaction();
-        actionHandler.validate(packContext);
-        actionHandler.validate(packContext);
+        actionHandler.process(packContext);
+        actionHandler.process(packContext);
         snapshot.commit();
     }
 
@@ -49,13 +49,13 @@ public class AccountContractBindingHandlerTest extends IntegrateBaseTest {
     public void testPersist() {
         Action action = createAction();
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER)
+                .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
                 .addAction(action)
                 .setTxId("0000000000")
-                .signature("0x0000000000000000000000000")
+                .signature("", "0x0000000000000000000000000")
                 .makeBlockHeader()
                 .build();
 
-        actionHandler.persist(packContext);
+        actionHandler.process(packContext);
     }
 }

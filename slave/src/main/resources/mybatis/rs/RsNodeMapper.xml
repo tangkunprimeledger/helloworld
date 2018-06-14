@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.higgs.trust.slave.dao.manage.RsNodeDao">
+    <!-- Result Map -->
+    <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.manage.RsNodePO">
+        <result column="rs_id" property="rsId"/>
+        <result column="status" property="status"/>
+        <result column="desc" property="desc"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+    <!-- rs_pub_key table all fields -->
+    <sql id="baseColumnList">
+		rs_id,`status`,`desc`,create_time
+	</sql>
+    <!-- 查询条件 -->
+    <sql id="baseWhereClause">
+        where 1=1
+        <trim suffixOverrides=",">
+            <if test="rsId != null and rsId != ''">
+                and rs_id=#{rsId}
+            </if>
+            <if test="status != null and status != ''">
+                and status=#{status}
+            </if>
+            <if test="desc != null and desc != ''">
+                and desc=#{desc}
+            </if>
+            <if test="createTime != null">
+                and create_time=#{createTime}
+            </if>
+        </trim>
+    </sql>
+    <!-- 插入记录 -->
+    <insert id="add" parameterType="object">
+		insert into
+		rs_node(rs_id,status,`desc`,create_time)
+		values(#{rsId},#{status},#{desc},now(3))
+	</insert>
+    <!-- 删除记录 -->
+    <delete id="delete" parameterType="object">
+		delete from rs_node where
+		id=#{id}
+	</delete>
+    <!-- 根据id查询 -->
+    <select id="queryById" resultMap="baseResultMap" parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from rs_node where id=#{id}
+    </select>
+    <!-- 列表总数 -->
+    <select id="queryByCount" resultType="java.lang.Integer"
+            parameterType="object">
+        select count(1) from rs_node
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 查询列表 -->
+    <select id="queryByList" resultMap="baseResultMap"
+            parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from rs_node
+        <include refid="baseWhereClause"/>
+    </select>
+    <!-- 以上为工具自动生成 -->
+
+    <!-- query by rs id -->
+    <select id="queryByRsId" resultMap="baseResultMap" parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from rs_node where rs_id=#{rsId}
+    </select>
+
+    <!-- query all -->
+    <select id="queryAll" resultMap="baseResultMap" parameterType="object">
+        select
+        <include refid="baseColumnList"/>
+        from rs_node
+        where status='COMMON'
+    </select>
+
+    <select id="queryRsAndPubKey" resultType="com.higgs.trust.slave.model.bo.manage.RsPubKey" parameterType="object">
+        select rs.rs_id as rsId, c.pub_key as pubKey
+         from rs_node rs
+        INNER JOIN
+        ca c ON rs.rs_id = c.user
+        where rs.status='COMMON'
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into
+          rs_node(rs_id,status,`desc`,create_time)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.rsId}, #{item.status}, #{item.desc}, now(3))
+        </foreach>
+    </insert>
+
+    <update id="batchUpdate" parameterType="java.util.List">
+        <foreach collection="list" separator=";" item="item">
+            update rs_node SET
+              status = #{item.status}
+            where rs_id=#{item.rsId}
+        </foreach>
+    </update>
+
+
+</mapper>

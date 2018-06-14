@@ -8,6 +8,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
 import com.higgs.trust.slave.dao.transaction.TransactionDao;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -88,7 +89,7 @@ import java.util.List;
             List<Action> actions = JSON.parseArray(actionDatas, Action.class);
             coreTx.setActionList(actions);
             signedTransaction.setCoreTx(coreTx);
-            List<String> signDatas = JSON.parseArray(tx.getSignDatas(), String.class);
+            List<SignInfo> signDatas = JSON.parseArray(tx.getSignDatas(), SignInfo.class);
             signedTransaction.setSignatureList(signDatas);
             txs.add(signedTransaction);
         }
@@ -120,6 +121,7 @@ import java.util.List;
             po.setBlockTime(blockTime);
             po.setSignDatas(JSON.toJSONString(tx.getSignatureList()));
             po.setActionDatas(JSON.toJSONString(coreTx.getActionList()));
+            po.setSendTime(coreTx.getSendTime());
             TransactionReceipt receipt = getTxReceipt(txReceipts, coreTx.getTxId());
             if (receipt != null) {
                 po.setExecuteResult(receipt.isResult() ? "1" : "0");

@@ -5,12 +5,14 @@
     <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.manage.PolicyPO">
         <result column="policy_id" property="policyId"/>
         <result column="policy_name" property="policyName"/>
+        <result column="decision_type" property="decisionType"/>
+        <result column="contract_addr" property="contractAddr"/>
         <result column="rs_ids" property="rsIds"/>
         <result column="create_time" property="createTime"/>
     </resultMap>
     <!-- policy table all fields -->
     <sql id="baseColumnList">
-		policy_id,policy_name,rs_ids,create_time
+		policy_id,policy_name,decision_type,contract_addr,rs_ids,create_time
 	</sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">
@@ -33,8 +35,8 @@
     <!-- 插入记录 -->
     <insert id="add" parameterType="object">
 		insert into
-		policy(policy_id,policy_name,rs_ids,create_time)
-		values(#{policyId},#{policyName},#{rsIds},now(3))
+		policy(policy_id,policy_name,decision_type,contract_addr,rs_ids,create_time)
+		values(#{policyId},#{policyName},#{decisionType},#{contractAddr},#{rsIds},now(3))
 	</insert>
     <!-- 删除记录 -->
     <delete id="delete" parameterType="object">
@@ -63,6 +65,15 @@
         <include refid="baseColumnList"/>
         from policy where policy_id=#{policyId}
     </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into
+        policy(policy_id,policy_name,decision_type,contract_addr,rs_ids,create_time)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.policyId}, #{item.policyName}, #{item.decisionType},#{item.contractAddr},#{item.rsIds}, now(3))
+        </foreach>
+    </insert>
 
 
 </mapper>

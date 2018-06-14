@@ -17,26 +17,42 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuyu
  * @description an agent for account snapshot
  * @date 2018-04-09
  */
-@Slf4j @Component public class AccountSnapshotAgent implements CacheLoader {
-    @Autowired SnapshotService snapshot;
-    @Autowired AccountRepository accountRepository;
-    @Autowired CurrencyRepository currencyRepository;
-    @Autowired DataIdentitySnapshotAgent dataIdentitySnapshotAgent;
+@Slf4j
+@Component
+public class AccountSnapshotAgent implements CacheLoader {
+    @Autowired
+    SnapshotService snapshot;
+    @Autowired
+    AccountRepository accountRepository;
+    @Autowired
+    CurrencyRepository currencyRepository;
+    @Autowired
+    DataIdentitySnapshotAgent dataIdentitySnapshotAgent;
 
     private <T> T get(Object key) {
-        return (T)snapshot.get(SnapshotBizKeyEnum.ACCOUNT, key);
+        return (T) snapshot.get(SnapshotBizKeyEnum.ACCOUNT, key);
     }
 
-    private void put(Object key, Object object) {
-        snapshot.put(SnapshotBizKeyEnum.ACCOUNT, key, object);
+    private void insert(Object key, Object object) {
+        snapshot.insert(SnapshotBizKeyEnum.ACCOUNT, key, object);
+    }
+
+    private void update(Object key, Object object) {
+        snapshot.update(SnapshotBizKeyEnum.ACCOUNT, key, object);
     }
 
     /**
@@ -68,10 +84,9 @@ import org.springframework.stereotype.Component;
         // account info
         AccountInfo accountInfo = accountRepository.buildAccountInfo(bo);
         //save account info to snapshot
-        put(new AccountCacheKey(accountInfo.getAccountNo()), accountInfo);
+        insert(new AccountCacheKey(accountInfo.getAccountNo()), accountInfo);
         // data identity
-        DataIdentity dataIdentity =
-            DataIdentityConvert.buildDataIdentity(bo.getAccountNo(), bo.getChainOwner(), bo.getDataOwner());
+        DataIdentity dataIdentity = DataIdentityConvert.buildDataIdentity(bo.getAccountNo(), bo.getChainOwner(), bo.getDataOwner());
         // save snapshot
         dataIdentitySnapshotAgent.saveDataIdentity(dataIdentity);
         return accountInfo;
@@ -83,7 +98,7 @@ import org.springframework.stereotype.Component;
      * @param accountInfo
      */
     public void updateAccountInfo(AccountInfo accountInfo) {
-        put(new AccountCacheKey(accountInfo.getAccountNo()), accountInfo);
+        update(new AccountCacheKey(accountInfo.getAccountNo()), accountInfo);
     }
 
     /**
@@ -93,37 +108,100 @@ import org.springframework.stereotype.Component;
      */
     public void issueCurrency(IssueCurrency bo) {
         CurrencyInfo currencyInfo = currencyRepository.buildCurrencyInfo(bo.getCurrencyName(), bo.getRemark());
-        put(new CurrencyInfoCacheKey(bo.getCurrencyName()), currencyInfo);
+        insert(new CurrencyInfoCacheKey(bo.getCurrencyName()), currencyInfo);
     }
 
     /**
      * when cache is not exists,load from db
      */
-    @Override public Object query(Object object) {
+    @Override
+    public Object query(Object object) {
         //query account info
         if (object instanceof AccountCacheKey) {
-            AccountCacheKey key = (AccountCacheKey)object;
+            AccountCacheKey key = (AccountCacheKey) object;
             return accountRepository.queryAccountInfo(String.valueOf(key.getAccountNo()), false);
             //query currency info
         } else if (object instanceof CurrencyInfoCacheKey) {
-            CurrencyInfoCacheKey key = (CurrencyInfoCacheKey)object;
+            CurrencyInfoCacheKey key = (CurrencyInfoCacheKey) object;
             return currencyRepository.queryByCurrency(key.getCurrency());
         }
         log.error("not found load function for cache key:{}", object);
         return null;
     }
 
+
+    /**
+     * the method to batchInsert data into db
+     *
+     * @param insertList
+     * @return
+     */
+    @Override
+    public boolean batchInsert(List<Pair<Object, Object>> insertList) {
+        if (CollectionUtils.isEmpty(insertList)) {
+            return true;
+        }
+        List<AccountInfo> accountInfos = new ArrayList<>();
+        List<CurrencyInfo> currencyInfos = new ArrayList<>();
+        for (Pair<Object, Object> pair : insertList) {
+            if (pair.getLeft() instanceof AccountCacheKey) {
+                accountInfos.add((AccountInfo) pair.getRight());
+            } else if (pair.getLeft() instanceof CurrencyInfoCacheKey) {
+                currencyInfos.add((CurrencyInfo) pair.getRight());
+            }
+        }
+        if (!CollectionUtils.isEmpty(accountInfos)) {
+            accountRepository.batchInsert(accountInfos);
+        }
+        if (!CollectionUtils.isEmpty(currencyInfos)) {
+            currencyRepository.batchInsert(currencyInfos);
+        }
+        return true;
+    }
+
+    /**
+     * the method to batchUpdate data into db
+     *
+     * @param updateList
+     * @return
+     */
+    @Override
+    public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
+        if (CollectionUtils.isEmpty(updateList)) {
+            log.info("[updateMap]updateMap is empty");
+            return true;
+        }
+        List<AccountInfo> accountInfos = new ArrayList<>();
+        for (Pair<Object, Object> pair : updateList) {
+            if (pair.getLeft() instanceof AccountCacheKey) {
+                accountInfos.add((AccountInfo) pair.getRight());
+            }
+        }
+        if (!CollectionUtils.isEmpty(accountInfos)) {
+            accountRepository.batchUpdate(accountInfos);
+        }
+        return true;
+    }
+
     /**
      * the cache key of account info
      */
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class AccountCacheKey extends BaseBO {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AccountCacheKey extends BaseBO {
         private String accountNo;
     }
 
     /**
      * the cache key of currency info
      */
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class CurrencyInfoCacheKey extends BaseBO {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CurrencyInfoCacheKey extends BaseBO {
         private String currency;
     }
 }

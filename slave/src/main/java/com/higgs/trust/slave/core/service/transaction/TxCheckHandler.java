@@ -2,23 +2,24 @@ package com.higgs.trust.slave.core.service.transaction;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
-import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author tangfashuang
@@ -29,27 +30,14 @@ import java.util.List;
 
     @Autowired private PolicyRepository policyRepository;
 
-    @Autowired private RsPubKeyRepository rsPubKeyRepository;
-
-    /**
-     * register repository need all rs sign
-     */
-    private static String ALL = "ALL";
-
-    public boolean verifySignatures(SignedTransaction signedTransaction) {
+    public boolean verifySignatures(SignedTransaction signedTransaction, Map<String, String> rsPubKeys) {
         try {
-            if (null == signedTransaction || null == signedTransaction.getCoreTx()) {
-                log.error("signed transaction is not valid");
-                return false;
-            }
-
-            //TODO 如果master节点启动的时候，需注册RS，此时数据库中没有存任何公私钥，需放开校验
-
             CoreTransaction ctx = signedTransaction.getCoreTx();
 
             //get policy
             InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(ctx.getPolicyId());
             List<RsPubKey> rsPubKeyList;
+            DecisionTypeEnum decisionType;
             if (policyEnum == null) {
                 Policy policy = policyRepository.getPolicyById(ctx.getPolicyId());
 
@@ -57,96 +45,103 @@ import java.util.List;
                     log.error("acquire policy failed. policyId={}", ctx.getPolicyId());
                     return false;
                 }
-                rsPubKeyList = getRsPubKeyList(policy.getRsIds());
+                decisionType = policy.getDecisionType();
+                rsPubKeyList = getRsPubKeyList(rsPubKeys, policy.getRsIds());
             } else {
                 // default policy
-                rsPubKeyList = rsPubKeyRepository.queryAll();
+                decisionType = policyEnum.getDecisionType();
+                rsPubKeyList = getRsPubKeyList(rsPubKeys, null);
             }
 
             if (CollectionUtils.isEmpty(rsPubKeyList)) {
-                log.error("verify signatures failed. rsPubKeyList is empty.");
-                return false;
+                log.warn("rsPubKeyList is empty. default verify pass");
+                return true;
             }
 
-            return verifyRsSign(ctx, signedTransaction.getSignatureList(), rsPubKeyList);
+            return verifyRsSign(ctx, signedTransaction.getSignatureList(), rsPubKeyList, decisionType);
         } catch (Throwable e) {
             log.error("verify signatures exception. ", e);
             return false;
         }
     }
 
-    private List<RsPubKey> getRsPubKeyList(List<String> rsIdList) {
-        try {
-
-            if (rsIdList.size() < 1) {
-                return null;
-            }
-
-            List<RsPubKey> rsPubKeyList = new ArrayList<>();
-            for (String rsId : rsIdList) {
-                RsPubKey rsPubKey = rsPubKeyRepository.queryByRsId(rsId);
-
-                //if rsId cannot acquire public key, policy exception.
-                if (null == rsPubKey) {
-                    log.error("acquire rsPubKey exception. rsPubKey is null. rsId={}", rsId);
-                    return null;
-                }
-                rsPubKeyList.add(rsPubKey);
-            }
-            return rsPubKeyList;
-        } catch (Throwable e) {
-            log.error("get rs pub key exception. ", e);
+    private List<RsPubKey> getRsPubKeyList(Map<String, String> rsPubKeyMap, List<String> rsIdList) {
+        if (rsPubKeyMap.isEmpty()) {
             return null;
         }
+
+        List<RsPubKey> rsPubKeyList = new ArrayList<>();
+        if (CollectionUtils.isEmpty(rsIdList)) {
+            rsPubKeyMap.forEach((k, v) -> {
+                RsPubKey rsPubKey = new RsPubKey();
+                rsPubKey.setRsId(k);
+                rsPubKey.setPubKey(v);
+                rsPubKeyList.add(rsPubKey);
+            });
+        } else {
+            rsIdList.forEach(rsId -> {
+                RsPubKey rsPubKey = new RsPubKey();
+                String pubKey = rsPubKeyMap.get(rsId);
+                if (!StringUtils.isBlank(pubKey)) {
+                    rsPubKey.setRsId(rsId);
+                    rsPubKey.setPubKey(rsPubKeyMap.get(rsId));
+                    rsPubKeyList.add(rsPubKey);
+                } else {
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_TX_VERIFY_SIGNATURE_PUB_KEY_NOT_EXIST);
+                }
+            });
+        }
+        return rsPubKeyList;
     }
 
-    private boolean verifyRsSign(CoreTransaction ctx, List<String> signatureList, List<RsPubKey> rsPubKeyList) {
+    private boolean verifyRsSign(CoreTransaction ctx, List<SignInfo> signatureList, List<RsPubKey> rsPubKeyList,
+        DecisionTypeEnum decisionType) {
+        boolean flag = false;
         try {
-            //check if size of signatureList less than rsIdList
-            if (rsPubKeyList.size() > signatureList.size()) {
-                log.error("signature size is less than need");
-                return false;
-            }
+            Map<String, String> signedMap = SignInfo.makeSignMap(signatureList);
+            if (DecisionTypeEnum.FULL_VOTE == decisionType) {
 
-            List<String> signList = new ArrayList<>();
-            CollectionUtils.addAll(signList, signatureList);
-            //cycle verify signature
-            for (RsPubKey rsPubKey : rsPubKeyList) {
-                if (null != rsPubKey) {
-                    //flag represents verifying signature success or fail
-                    boolean flag = false;
-                    for (String sign : signList) {
-                        flag = SignUtils.verify(JSON.toJSONString(ctx), sign, rsPubKey.getPubKey());
-                        //if true, break this cycle, remove signature from signatureList,
-                        //next cycle will not verify this signature
-                        if (flag) {
-                            signList.remove(sign);
-                            break;
-                        }
-                    }
-                    //if cycle complete, but flag is false, represent verify signature failed.
-                    if (!flag) {
+                //check if size of signatureList less than rsIdList
+                if (rsPubKeyList.size() > signatureList.size()) {
+                    log.error("signature size is less than need");
+                    return false;
+                }
+
+                //verify signature
+                for (RsPubKey rsPubKey : rsPubKeyList) {
+                    if (null != rsPubKey && !SignUtils
+                        .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
                         return false;
                     }
                 }
+                flag = true;
+            } else if(DecisionTypeEnum.ONE_VOTE == decisionType) {
+                for (RsPubKey rsPubKey : rsPubKeyList) {
+                    if (null != rsPubKey && SignUtils
+                        .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
+                        return true;
+                    }
+                }
+                flag = false;
             }
         } catch (Throwable e) {
             log.error("verify signature exception. ", e);
             return false;
         }
-        return true;
+        return flag;
     }
 
     public boolean checkActions(CoreTransaction coreTx) {
-        if(CollectionUtils.isEmpty(coreTx.getActionList())) {
+        if (CollectionUtils.isEmpty(coreTx.getActionList())) {
             return true;
         }
-
-        if (InitPolicyEnum.REGISTER.getPolicyId().equals(coreTx.getPolicyId())
-                && coreTx.getActionList().size() > 1) {
-            return false;
+        if (coreTx.getActionList().size() > 1) {
+            if (InitPolicyEnum.REGISTER_POLICY.getPolicyId().equals(coreTx.getPolicyId())
+                || InitPolicyEnum.REGISTER_RS.getPolicyId().equals(coreTx.getPolicyId())
+                || InitPolicyEnum.CANCEL_RS.getPolicyId().equals(coreTx.getPolicyId())) {
+                return false;
+            }
         }
-
         return checkActionsIndex(coreTx.getActionList());
     }
 

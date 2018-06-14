@@ -110,6 +110,14 @@ import java.util.concurrent.ConcurrentHashMap;
         }
     }
 
+    @Override public boolean isExist(MerkleTree merkleTree, Object obj) {
+        String objHash = getSHA2HexValue(JSON.toJSONString(obj));
+
+        MerkleNode merkleNode = getMerkleNodeByHash(merkleTree, objHash);
+
+        return merkleNode != null;
+    }
+
     /**
      * update a merkle tree
      *
@@ -544,18 +552,7 @@ import java.util.concurrent.ConcurrentHashMap;
         if (null != nodeMap) {
             merkleNode = nodeMap.get(key);
         }
-        if (null == merkleNode) {
-            log.info("[getMerkleNodeByIndex] merkleNode doesn't exist in nodeMap, start to query db, key={}, type={}",
-                key, type);
-            merkleNode = merkleRepository
-                .queryMerkleNodeByIndex(Integer.parseInt(parseKey(key)[0]), Long.parseLong(parseKey(key)[1]), type);
-            if (null == merkleNode) {
-                log.error("[getMerkleNodeByIndex] can not acquire merkl node, key={},type={}", key, type);
-                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_NON_EXIST_EXCEPTION,
-                    "[getMerkleNodeByIndex] can not acquire merkl node");
-            }
-            nodeMap.put(key, merkleNode);
-        }
+
         log.debug("[getMerkleNodeByIndex] merkleNode={}", JSON.toJSONString(merkleNode));
         return merkleNode;
     }
@@ -660,13 +657,6 @@ import java.util.concurrent.ConcurrentHashMap;
             }
         }
 
-        if (leafIndex == -1L || null == merkleNode) {
-            log.info(
-                "[getMerkleNodeByHash] merkleNode doesn't exist in nodeMap, start to query db, nodeHash={},type={}",
-                nodeHash, type);
-            // this means hash(obj) doesn't exist in nodeMap, we need to find hash(obj) in table merkle_node  with exact treeType
-            merkleNode = merkleRepository.queryMerkleNodeByHash(nodeHash);
-        }
         log.debug("[getMerkleNodeByHash] merkleNode={}", JSON.toJSONString(merkleNode));
         return merkleNode;
     }
