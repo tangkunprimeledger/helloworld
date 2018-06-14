@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.common.exception;
 
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.common.exception.ErrorInfo;
 
 /**
  * @author duhongming
@@ -11,19 +11,19 @@ public class ContractException extends SlaveException {
         super(e);
     }
 
-    public ContractException(SlaveErrorEnum code) {
+    public ContractException(ErrorInfo code) {
         super(code);
     }
 
-    public ContractException(SlaveErrorEnum code, String errorMessage) {
+    public ContractException(ErrorInfo code, String errorMessage) {
         super(code, errorMessage);
     }
 
-    public ContractException(SlaveErrorEnum code, Throwable cause) {
+    public ContractException(ErrorInfo code, Throwable cause) {
         super(code, cause);
     }
 
-    public ContractException(SlaveErrorEnum code, String errorMessage, Throwable cause) {
+    public ContractException(ErrorInfo code, String errorMessage, Throwable cause) {
         super(code, errorMessage, cause);
     }
 }

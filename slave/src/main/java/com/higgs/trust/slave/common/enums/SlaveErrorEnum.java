@@ -1,10 +1,12 @@
 package com.higgs.trust.slave.common.enums;
 
+import com.higgs.trust.common.exception.ErrorInfo;
+
 /**
  * @Description:
  * @author: pengdi
  **/
-public enum SlaveErrorEnum {
+public enum SlaveErrorEnum implements ErrorInfo {
     //@formatter:off
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                      公共类错误码[000-099,999]                           //
@@ -15,40 +17,20 @@ public enum SlaveErrorEnum {
     SLAVE_CONFIGURATION_ERROR("000", "配置错误", true),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         请求校检[100-299]                                //
+    //                         请求校检[200-299]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    SLAVE_PARAM_VALIDATE_ERROR("100", "param validate error", false),
-    SLAVE_IDEMPOTENT("101", "request idempotent", false),
-    SLAVE_TX_VERIFY_SIGNATURE_FAILED("102", "transaction verify signature failed", false),
-    SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED("103", "package verify master node signature failed", false),
-    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("104", "package sign signature failed", false),
-    SLAVE_TX_VERIFY_SIGNATURE_PUB_KEY_NOT_EXIST("105", "transaction verify signature cannot acquire public key", false),
+    SLAVE_PARAM_VALIDATE_ERROR("200", "param validate error", false),
+    SLAVE_IDEMPOTENT("201", "request idempotent", false),
+    SLAVE_TX_VERIFY_SIGNATURE_FAILED("202", "transaction verify signature failed", false),
+    SLAVE_PACKAGE_VERIFY_SIGNATURE_FAILED("203", "package verify master node signature failed", false),
+    SLAVE_PACKAGE_SIGN_SIGNATURE_FAILED("204", "package sign signature failed", false),
+    SLAVE_TX_VERIFY_SIGNATURE_PUB_KEY_NOT_EXIST("205", "transaction verify signature cannot acquire public key", false),
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         查询相关[300-399]                                //
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     SLAVE_CONSENSUS_GET_RESULT_FAILED("301", "get the consensus result failed.", true),
 
-    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         Failover相关[400-450]                           //
-    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    SLAVE_FAILOVER_STATE_NOT_ALLOWED("400", "node state not allowed current operation ", false),
-    SLAVE_FAILOVER_STATE_CHANGE_FAILED("401", "node state change failed ", false),
-    SLAVE_FAILOVER_START_HEIGHT_ERROR("410", "the start height error, please check", false),
-    SLAVE_FAILOVER_GET_VALIDATING_BLOCKS_FAILED("411", "get and validating the blocks from other node failed", false),
-    SLAVE_FAILOVER_GET_VALIDATING_HEADERS_FAILED("412", "get and validating the block headers from other node failed", false),
-    SLAVE_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED("413", "the package of block validating failed when sync block.", false),
-    SLAVE_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID("414", "the package of block persist result invalid after sync block.", false),
-    SLAVE_FAILOVER_BLOCK_VALIDATE_RESULT_INVALID("415", "the package of block validating result invalid after failover block.", false),
-    SLAVE_FAILOVER_BLOCK_PERSIST_RESULT_INVALID("416", "the package of block persist result invalid after failover block.", false),
-    SLAVE_FAILOVER_CONSENSUS_VALIDATE_NOT_EXIST("417","consensus validate result not exist",false),
-    SLAVE_FAILOVER_CONSENSUS_PERSIST_NOT_EXIST("418","consensus persist result not exist",false),
 
-    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    //                         业务master相关[450-500]                           //
-    //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
-    SLAVE_MASTER_TERM_INCORRECT("451","the term is incorrect",false),
-    SLAVE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT("452","the package height is incorrect",false),
-    SLAVE_MASTER_NODE_INCORRECT("453","the master node is incorrect",false),
 
     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\//
     //                         内部处理相关[500-699]                            //

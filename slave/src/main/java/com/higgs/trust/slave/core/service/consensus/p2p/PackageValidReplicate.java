@@ -5,18 +5,24 @@ package com.higgs.trust.slave.core.service.consensus.p2p;
 
 import com.higgs.trust.consensus.p2pvalid.annotation.P2pvalidReplicator;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
-import com.higgs.trust.slave.core.managment.NodeState;
-import com.higgs.trust.slave.core.service.pack.PackageService;
+import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.core.service.pack.PackageLock;
+import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.consensus.PersistCommand;
+import com.higgs.trust.slave.model.bo.consensus.ValidateCommand;
+import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author suimi

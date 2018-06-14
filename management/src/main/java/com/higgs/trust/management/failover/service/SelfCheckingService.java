@@ -1,0 +1,60 @@
+package com.higgs.trust.management.failover.service;
+
+import com.higgs.trust.config.node.NodeProperties;
+import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.config.node.listener.StateChangeListener;
+import com.higgs.trust.management.exception.FailoverExecption;
+import com.higgs.trust.management.exception.ManagementError;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.core.repository.BlockRepository;
+import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.model.bo.Block;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
+
+@Order(1) @Service @Slf4j public class SelfCheckingService {
+
+    @Autowired private BlockSyncService blockSyncService;
+    @Autowired private BlockService blockService;
+    @Autowired private BlockRepository blockRepository;
+    @Autowired private NodeProperties properties;
+
+    @StateChangeListener(NodeStateEnum.SelfChecking) public void autoCheck() {
+        boolean selfChecked = selfCheck(properties.getSelfCheckTimes());
+        log.info("self checked result:{}", selfChecked);
+        if (!selfChecked) {
+            throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_SELF_CHECK_FAILED);
+        }
+    }
+
+    /**
+     * 检查自身最高区块是否正确
+     *
+     * @param tryTimes bft validating retry times
+     * @return
+     */
+    public boolean selfCheck(int tryTimes) {
+        log.info("Starting self checking ...");
+        Long maxHeight = blockService.getMaxHeight();
+        Block block = blockRepository.getBlock(maxHeight);
+        int i = 0;
+        if (blockSyncService.validating(block)) {
+            do {
+                Boolean result = blockSyncService.bftValidating(block.getBlockHeader());
+                if (result != null) {
+                    return result;
+                }
+                try {
+                    Thread.sleep(3 * 1000);
+                } catch (InterruptedException e) {
+                    log.warn("self check error.", e);
+                }
+
+            } while (++i < tryTimes);
+            throw new FailoverExecption(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
+        }
+        return false;
+    }
+}
