@@ -2,6 +2,7 @@ package com.higgs.trust.rs.core.callback;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
@@ -54,25 +55,7 @@ import org.springframework.stereotype.Component;
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
-        switch (policyEnum) {
-            case REGISTER_POLICY:
-                processRegisterPolicy(respData);
-                return;
-            case REGISTER_RS:
-                return;
-            case CONTRACT_ISSUE:
-                return;
-            case CONTRACT_DESTROY:
-                return;
-            case CA_UPDATE:
-                processCaUpdate(respData);
-                return;
-            case CA_CANCEL:
-                processCaCancel(respData);
-                return;
-            default:
-                break;
-        if(policyEnum!=null) {
+        if (policyEnum != null) {
             switch (policyEnum) {
                 case REGISTER_POLICY:
                     processRegisterPolicy(respData);
@@ -82,6 +65,12 @@ import org.springframework.stereotype.Component;
                 case CONTRACT_ISSUE:
                     return;
                 case CONTRACT_DESTROY:
+                    return;
+                case CA_UPDATE:
+                    processCaUpdate(respData);
+                    return;
+                case CA_CANCEL:
+                    processCaCancel(respData);
                     return;
                 default:
                     break;
@@ -95,7 +84,7 @@ import org.springframework.stereotype.Component;
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
-        if(policyEnum!=null) {
+        if (policyEnum != null) {
             switch (policyEnum) {
                 case REGISTER_POLICY:
                     processRegisterPolicy(respData);
