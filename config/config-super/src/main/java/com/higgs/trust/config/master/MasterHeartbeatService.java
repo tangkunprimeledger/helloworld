@@ -19,8 +19,10 @@ import java.util.concurrent.*;
  * @author suimi
  * @date 2018/6/4
  */
-@Slf4j @Service public class MasterHeartbeatService implements MasterChangeListener{
+@Slf4j @Service public class MasterHeartbeatService implements MasterChangeListener {
     @Autowired private NodeProperties nodeProperties;
+
+    @Autowired private ChangeMasterProperties properties;
 
     @Autowired private NodeState nodeState;
 
@@ -45,14 +47,16 @@ import java.util.concurrent.*;
         if (masterHeartbeatTimer != null) {
             masterHeartbeatTimer.cancel(true);
         }
-        long delay = nodeProperties.getMasterHeartbeat();
+        long delay = properties.getMasterHeartbeat();
         masterHeartbeatTimer = executor.schedule(this::sendMasterHeartbeat, delay, TimeUnit.MILLISECONDS);
     }
 
     private void sendMasterHeartbeat() {
         log.debug("send master heartbeat");
-        masterHeartbeat();
-        resetMasterHeartbeat();
+        if (nodeState.isMaster()) {
+            masterHeartbeat();
+            resetMasterHeartbeat();
+        }
     }
 
     private void cancelMasterHeart() {
