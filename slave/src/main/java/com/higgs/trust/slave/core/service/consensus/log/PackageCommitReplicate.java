@@ -9,28 +9,32 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.slave.core.repository.RsPubKeyRepository;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import com.higgs.trust.slave.model.convert.PackageConvert;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 @Replicator
-@Slf4j @Component public class PackageCommitReplicate {
+@Slf4j @Component public class PackageCommitReplicate implements ApplicationContextAware,InitializingBean {
 
     @Autowired PackageService packageService;
 
     @Autowired ExecutorService packageThreadPool;
 
     @Autowired PackageProcess packageProcess;
-
-    @Autowired RsPubKeyRepository rsPubKeyRepository;
 
     @Autowired private NodeState nodeState;
 

@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.managment;
 
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -30,8 +31,6 @@ import java.util.Map;
     @Autowired private ConfigRepository configRepository;
 
     @Autowired private NodeState nodeState;
-
-    @Autowired private IClusterService clusterService;
 
     @Value("${trust.start.mode:cluster}") private String startMode;
 

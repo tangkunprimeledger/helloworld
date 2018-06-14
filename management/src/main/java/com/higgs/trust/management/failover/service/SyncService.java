@@ -1,12 +1,16 @@
-package com.higgs.trust.slave.core.service.failover;
+package com.higgs.trust.management.failover.service;
 
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
+import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.config.node.listener.StateChangeListener;
+import com.higgs.trust.management.exception.FailoverExecption;
+import com.higgs.trust.management.exception.ManagementError;
+import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.FailoverExecption;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.core.service.consensus.log.PackageListener;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -295,7 +299,7 @@ import java.util.List;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        packageService.process(packContext,true);
+        packageService.process(packContext, true);
         boolean persistValid =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
         if (!persistValid) {

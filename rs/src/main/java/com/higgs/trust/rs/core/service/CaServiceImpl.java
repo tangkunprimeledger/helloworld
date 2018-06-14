@@ -2,7 +2,7 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
-import com.higgs.trust.consensus.p2pvalid.core.spi.ClusterInfo;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
@@ -14,10 +14,8 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
-import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
@@ -50,8 +48,6 @@ import java.util.*;
     @Autowired private NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
-    @Autowired private ClusterInfo clusterInfo;
-    @Autowired private CaInitHandler caInitHandler;
     @Value("${bftSmart.systemConfigs.myId:test}") private String myId;
 
     // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？

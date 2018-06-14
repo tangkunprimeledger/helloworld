@@ -1,21 +1,20 @@
-package com.higgs.trust.slave.core.scheduler;
+package com.higgs.trust.management.failover.scheduler;
 
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.FailoverExecption;
+import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.management.exception.FailoverExecption;
+import com.higgs.trust.management.exception.ManagementError;
+import com.higgs.trust.management.failover.config.FailoverProperties;
+import com.higgs.trust.management.failover.service.BlockSyncService;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
-import com.higgs.trust.slave.core.service.failover.BlockSyncService;
-import com.higgs.trust.slave.core.service.failover.FailoverProperties;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
-import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -193,7 +192,7 @@ import java.util.List;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        packageService.process(packContext,true);
+        packageService.process(packContext, true);
         boolean persistValid =
             blockService.compareBlockHeader(blockHeader, blockRepository.getBlockHeader(pack.getHeight()));
         if (!persistValid) {

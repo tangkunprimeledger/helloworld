@@ -131,14 +131,14 @@ import static org.testng.Assert.*;
         Mockito.when(blockSyncService.getBlocks(height, 1)).thenReturn(blocks);
         Mockito.doReturn(true).when(blockSyncService).validating(currentHash, block);
 
-        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
+//        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
         PackContext context = Mockito.mock(PackContext.class);
         Mockito.when(packageService.createPackContext(Matchers.any())).thenReturn(context);
         Mockito.when(context.getCurrentBlock()).thenReturn(block);
 
         Mockito.when(blockService.compareBlockHeader(header, header)).thenReturn(true);
 
-        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
+//        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
         failoverSchedule.failover();
         Mockito.verify(properties, Mockito.times(times)).getFailoverStep();
     }
@@ -163,12 +163,12 @@ import static org.testng.Assert.*;
         Mockito.when(blockSyncService.getBlocks(height, 1)).thenReturn(blocks);
         Mockito.doReturn(true).when(blockSyncService).validating(currentHash, block);
 
-        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
+//        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
         PackContext context = Mockito.mock(PackContext.class);
         Mockito.when(packageService.createPackContext(Matchers.any())).thenReturn(context);
         Mockito.when(context.getCurrentBlock()).thenReturn(block);
 
-        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
+//        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
         Mockito.when(blockService.compareBlockHeader(header, header)).thenReturn(true, false);
         failoverSchedule.failover();
         Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
@@ -249,7 +249,7 @@ import static org.testng.Assert.*;
 
 
         //no validate header
-        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(null);
+//        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(null);
         try {
             failoverSchedule.failover(height);
         } catch (FailoverExecption e) {
@@ -257,7 +257,7 @@ import static org.testng.Assert.*;
         }
 
         //header compare: validating failed, has validate header
-        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
+//        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_VALIDATE_TYPE)).thenReturn(header);
         PackContext context = Mockito.mock(PackContext.class);
         Mockito.when(packageService.createPackContext(Matchers.any())).thenReturn(context);
         Mockito.when(context.getCurrentBlock()).thenReturn(block);
@@ -271,7 +271,7 @@ import static org.testng.Assert.*;
 
         //header compare: validating passed, no persist header
         Mockito.when(blockService.compareBlockHeader(header, header)).thenReturn(true);
-        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(null);
+//        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(null);
         try {
             failoverSchedule.failover(height);
         } catch (FailoverExecption e) {
@@ -279,7 +279,7 @@ import static org.testng.Assert.*;
         }
 
         //header compare: validating passed，persisting failed
-        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
+//        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
         Mockito.when(blockService.compareBlockHeader(header, header)).thenReturn(true, false);
         try {
             failoverSchedule.failover(height);
