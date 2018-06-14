@@ -61,17 +61,19 @@ import org.springframework.stereotype.Service;
 
         //process default
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
-        switch (initPolicyEnum) {
-            case STORAGE:
-                storageIdentityCallbackHandler.process(respData);
-                return;
-            case UTXO_ISSUE:
-                createBillCallbackHandler.process(respData);
-                return;
-            case UTXO_DESTROY:
-                return;
-            default:
-                break;
+        if(initPolicyEnum!=null) {
+            switch (initPolicyEnum) {
+                case STORAGE:
+                    storageIdentityCallbackHandler.process(respData);
+                    return;
+                case UTXO_ISSUE:
+                    createBillCallbackHandler.process(respData);
+                    return;
+                case UTXO_DESTROY:
+                    return;
+                default:
+                    break;
+            }
         }
         //process custom
         String bizType = bizTypeService.getByPolicyId(policyId);
