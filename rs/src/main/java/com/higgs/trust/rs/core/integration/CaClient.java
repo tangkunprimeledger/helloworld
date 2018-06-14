@@ -3,11 +3,9 @@ package com.higgs.trust.rs.core.integration;
 import com.higgs.trust.common.feign.FeignRibbonConstants;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author WangQuanzhou
@@ -31,6 +29,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
      * @return
      * @desc send acqurie ca  request
      */
-    @RequestMapping(value = "/ca/get", method = RequestMethod.POST) RespData<String> acquireCA(
-        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody CaVO caVO);
+    @RequestMapping(value = "/ca/get", method = RequestMethod.POST) RespData<Ca> acquireCA(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestParam("user") String user);
 }

@@ -40,7 +40,7 @@ import java.util.List;
      */
     public void updateClusterConfig(ClusterConfig clusterConfig) {
         ClusterConfigPO clusterConfigPO = new ClusterConfigPO();
-        BeanUtils.copyProperties(clusterConfig,clusterConfigPO);
+        BeanUtils.copyProperties(clusterConfig, clusterConfigPO);
         clusterConfigDao.updateClusterConfig(clusterConfigPO);
     }
 
@@ -51,6 +51,9 @@ import java.util.List;
      */
     public ClusterConfig getClusterConfig(String clusterName) {
         ClusterConfigPO clusterConfigPO = clusterConfigDao.getClusterConfig(clusterName);
+        if (null == clusterConfigPO) {
+            return null;
+        }
         ClusterConfig clusterConfig = new ClusterConfig();
         BeanUtils.copyProperties(clusterConfigPO, clusterConfig);
         return clusterConfig;

@@ -1,4 +1,5 @@
 {
+  "runMode": "run",
   "TRUST": {
     "ribbon": {
       "NFLoadBalancerRuleClassName": "com.higgs.trust.common.feign.RequestHeaderRoundRobinRule"
@@ -7,8 +8,8 @@
   "copycat": {
     "server": {
       "address": "127.0.0.1:8801",
-      "cluster": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803",
-      "client": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803",
+      "cluster": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803,127.0.0.1:8804",
+      "client": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803,127.0.0.1:8804",
       "logDir": "/tmp/higgs/trust/copycat/log1"
     }
   },
@@ -32,7 +33,8 @@
           "TRUST-TEST0":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
           "TRUST-TEST1":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
           "TRUST-TEST2":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST3":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB"
+          "TRUST-TEST3":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
+          "TRUST-TEST4":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB"
         }
       }
     }
@@ -76,7 +78,7 @@
         "minIdle": 1,
         "password": "root",
         "time-between-eviction-runs-millis": 60000,
-        "url": "jdbc:mysql://localhost:3307/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
+        "url": "jdbc:mysql://localhost:3306/trust1?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
       },
       "type": "com.alibaba.druid.pool.DruidDataSource"

@@ -1,8 +1,8 @@
 -- create trust database
 CREATE DATABASE
-IF NOT EXISTS trust;
+IF NOT EXISTS trus;
 
-USE trust;
+USE trus;
 
 
 DROP TABLE IF EXISTS `bankchain_request`;
