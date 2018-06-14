@@ -2,10 +2,12 @@ package com.higgs.trust.rs.custom.biz.api.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
+import com.higgs.trust.rs.custom.api.enums.RequestStatusEnum;
 import com.higgs.trust.rs.custom.dao.RequestDao;
 import com.higgs.trust.rs.custom.dao.po.RequestPO;
 import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,9 @@ public class RequestHelper {
         RespData respData = null;
         RequestPO requestPO = requestDao.queryByRequestId(requestId);
         if (null != requestPO) {
+            if (StringUtils.equals(RequestStatusEnum.PROCESSING.getCode(), requestPO.getStatus())) {
+                return new RespData(RequestStatusEnum.DUPLICATE.getCode(), RequestStatusEnum.DUPLICATE.getDesc());
+            }
             return new RespData<>(requestPO.getRespCode(), requestPO.getRespMsg());
         }
         return respData;

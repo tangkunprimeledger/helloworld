@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.core.managment.master;
 
-import com.higgs.trust.slave.core.managment.listener.MasterChangeListener;
+import com.higgs.trust.config.node.listener.MasterChangeListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
  * @desc set packHeight=null when master change
  */
 @Service
-public class MasterPackageService implements MasterChangeListener{
+public class MasterPackageService implements MasterChangeListener {
     @Autowired Long packHeight;
 
     @Override public void masterChanged(String masterName) {
