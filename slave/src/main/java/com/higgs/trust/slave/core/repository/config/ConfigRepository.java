@@ -51,9 +51,12 @@ import java.util.List;
      */
     public Config getConfig(String nodeName) {
         ConfigPO configPO = new ConfigPO();
-        Config config = new Config();
         configPO.setNodeName(nodeName);
         configPO = configDao.getConfig(configPO);
+        if (null == configPO) {
+            return null;
+        }
+        Config config = new Config();
         BeanUtils.copyProperties(configPO, config);
         return config;
     }

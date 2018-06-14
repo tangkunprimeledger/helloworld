@@ -2,6 +2,7 @@ package com.higgs.trust.rs.core.callback;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
@@ -13,7 +14,9 @@ import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,6 +29,8 @@ import org.springframework.stereotype.Component;
 @Component @Slf4j public class RsCoreCallbackProcessor implements TxCallbackHandler {
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private VoteRuleRepository voteRuleRepository;
+    @Autowired private ConfigRepository configRepository;
+    @Autowired private NodeState nodeState;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -59,6 +64,12 @@ import org.springframework.stereotype.Component;
             case CONTRACT_ISSUE:
                 return;
             case CONTRACT_DESTROY:
+                return;
+            case CA_UPDATE:
+                processCaUpdate(respData);
+                return;
+            case CA_CANCEL:
+                processCaCancel(respData);
                 return;
             default:
                 break;
@@ -108,5 +119,35 @@ import org.springframework.stereotype.Component;
         voteRule.setVotePattern(VotePatternEnum.fromCode(voteRuleVO.getVotePattern()));
         voteRule.setCallbackType(CallbackTypeEnum.fromCode(voteRuleVO.getCallbackType()));
         voteRuleRepository.add(voteRule);
+    }
+
+    private void processCaUpdate(RespData<CoreTransaction> respData) {
+        if (!respData.isSuccess()) {
+            log.info("[processCaUpdate]ca update is fail,code:{}", respData.getRespCode());
+            return;
+        }
+
+        log.info("[processCaUpdate] start to update pubKey/priKey, nodeName={}", nodeState.getNodeName());
+        // update table config, set tmpKey to key
+        Config config = configRepository.getConfig(nodeState.getNodeName());
+        config.setPubKey(config.getTmpPubKey());
+        config.setPriKey(config.getTmpPriKey());
+        configRepository.updateConfig(config);
+        log.info("[processCaUpdate] end update pubKey/priKey, nodeName={}", nodeState.getNodeName());
+    }
+
+    private void processCaCancel(RespData<CoreTransaction> respData) {
+        if (!respData.isSuccess()) {
+            log.info("[processCaUpdate]ca update is fail,code:{}", respData.getRespCode());
+            return;
+        }
+
+        log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
+        //set pubKey and priKey to invalid
+        Config config = new Config();
+        config.setNodeName(nodeState.getNodeName());
+        config.setValid(false);
+        configRepository.updateConfig(config);
+        log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
     }
 }
