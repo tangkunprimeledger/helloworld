@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.common.exception;
 
-
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.common.exception.ErrorInfo;
 
 /**
  *snapshot exception
@@ -14,19 +13,19 @@ public class SnapshotException extends SlaveException {
     public SnapshotException(SlaveException e) {
         super(e);
     }
-    public SnapshotException(SlaveErrorEnum code) {
+    public SnapshotException(ErrorInfo code) {
         super(code);
     }
 
-    public SnapshotException(SlaveErrorEnum code, String errorMessage) {
+    public SnapshotException(ErrorInfo code, String errorMessage) {
         super(code, errorMessage);
     }
 
-    public SnapshotException(SlaveErrorEnum code, Throwable cause) {
+    public SnapshotException(ErrorInfo code, Throwable cause) {
         super(code, cause);
     }
 
-    public SnapshotException(SlaveErrorEnum code, String errorMessage, Throwable cause) {
+    public SnapshotException(ErrorInfo code, String errorMessage, Throwable cause) {
         super(code, errorMessage, cause);
     }
 

@@ -13,6 +13,7 @@
         <result column="policy_root_hash" property="policyRootHash"/>
         <result column="rs_root_hash" property="rsRootHash"/>
         <result column="tx_receipt_root_hash" property="txReceiptRootHash"/>
+        <result column="ca_root_hash" property="caRootHash"/>
         <result column="block_time" property="blockTime"/>
         <result column="tx_num" property="txNum"/>
         <result column="create_time" property="createTime"/>
@@ -20,7 +21,7 @@
 
     <!-- block table all fields -->
     <sql id="baseColumnList">
-		height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,block_time,tx_num,create_time
+		height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,ca_root_hash,block_time,tx_num,create_time
 	</sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">
@@ -56,6 +57,9 @@
             <if test="txReceiptRootHash != null and txReceiptRootHash != ''">
                 and tx_receipt_root_hash=#{txReceiptRootHash}
             </if>
+            <if test="caRootHash != null and caRootHash != ''">
+                and ca_root_hash=#{caRootHash}
+            </if>
             <if test="blockTime != null">
                 and block_time=#{blockTime}
             </if>
@@ -67,8 +71,8 @@
     <!-- 插入记录 -->
     <insert id="add" parameterType="object">
 		insert into
-		block(height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,block_time,tx_num,create_time)
-		values(#{height},#{version},#{previousHash},#{blockHash},#{txRootHash},#{accountRootHash},#{contractRootHash},#{policyRootHash},#{rsRootHash},#{txReceiptRootHash},#{blockTime},#{txNum},now(3))
+		block(height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,ca_root_hash,block_time,tx_num,create_time)
+		values(#{height},#{version},#{previousHash},#{blockHash},#{txRootHash},#{accountRootHash},#{contractRootHash},#{policyRootHash},#{rsRootHash},#{txReceiptRootHash},#{caRootHash},#{blockTime},#{txNum},now(3))
 	</insert>
     <!-- 删除记录 -->
     <delete id="delete" parameterType="object">

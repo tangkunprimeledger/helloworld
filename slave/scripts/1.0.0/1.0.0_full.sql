@@ -139,6 +139,7 @@ IF NOT EXISTS `block` (
 	`policy_root_hash` VARCHAR (64) NOT NULL COMMENT 'policy merkle tree root hash',
 	`rs_root_hash` VARCHAR (64) NOT NULL COMMENT 'rs merkle tree root hash',
 	`tx_receipt_root_hash` VARCHAR (64) NOT NULL COMMENT 'tx receipt merkel tree root hash',
+	`ca_root_hash` VARCHAR (64) NOT NULL COMMENT 'ca merkel tree root hash',
 	`block_time` datetime (3) NOT NULL COMMENT 'block time',
 	`tx_num` INT NOT NULL DEFAULT 0 COMMENT 'transaction num',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
@@ -461,8 +462,8 @@ CREATE TABLE IF NOT EXISTS `send_node` (
   UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`to_node_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
 
-INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)
-VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3));
+-- INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)
+-- VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3));
 
 CREATE TABLE IF NOT EXISTS `ca` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',

@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.common.exception;
 
+import com.higgs.trust.common.exception.ErrorInfo;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 
 /**
@@ -12,19 +13,19 @@ public class MerkleException extends SlaveException {
         super(e);
     }
 
-    public MerkleException(SlaveErrorEnum code) {
+    public MerkleException(ErrorInfo code) {
         super(code);
     }
 
-    public MerkleException(SlaveErrorEnum code, String errorMessage) {
+    public MerkleException(ErrorInfo code, String errorMessage) {
         super(code, errorMessage);
     }
 
-    public MerkleException(SlaveErrorEnum code, Throwable cause) {
+    public MerkleException(ErrorInfo code, Throwable cause) {
         super(code, cause);
     }
 
-    public MerkleException(SlaveErrorEnum code, String errorMessage, Throwable cause) {
+    public MerkleException(ErrorInfo code, String errorMessage, Throwable cause) {
         super(code, errorMessage, cause);
     }
 }

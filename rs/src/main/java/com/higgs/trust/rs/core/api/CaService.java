@@ -61,11 +61,11 @@ public interface CaService {
     void callbackCa();
 
     /**
-     * @param caVO
+     * @param user
      * @return
      * @desc acquire CA information by user
      */
-    RespData<Ca> acquireCA(CaVO caVO);
+    RespData<Ca> acquireCA(String user);
 
     /**
      * @param user

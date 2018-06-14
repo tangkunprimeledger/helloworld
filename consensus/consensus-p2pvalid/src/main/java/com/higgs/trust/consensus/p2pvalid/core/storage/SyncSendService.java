@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         log.debug("sync send command {}", validCommand);
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(validCommand.getClass());
-        validCommandWrap.setFromNode(clusterInfo.myNodeName());
+        validCommandWrap.setFromNode(clusterInfo.nodeName());
         validCommandWrap.setSign(SignUtils.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
         validCommandWrap.setValidCommand(validCommand);
         ConcurrentHashMap<String, CommandCounter<T>> resultMap = new ConcurrentHashMap<>();

@@ -1,17 +1,12 @@
 package com.higgs.trust.contract.mock;
 
-import com.higgs.trust.contract.mock.serialization.Deserializer;
-import com.higgs.trust.contract.mock.serialization.SerializableEntity;
-import com.higgs.trust.contract.mock.serialization.Serializer;
+import com.alibaba.fastjson.JSONObject;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-public class Person implements Externalizable, SerializableEntity {
+public class Person {
     private String name;
     private int age;
+    private Colors color;
+    private JSONObject state;
 
     public Person() {}
 
@@ -36,33 +31,24 @@ public class Person implements Externalizable, SerializableEntity {
         this.age = age;
     }
 
-
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(name);
-        out.writeInt(age);
+    public Colors getColor() {
+        return color;
     }
 
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        name = (String)in.readObject();
-        age = in.readInt();
+    public void setColor(Colors color) {
+        this.color = color;
+    }
+
+    public JSONObject getState() {
+        return state;
+    }
+
+    public void setState(JSONObject state) {
+        this.state = state;
     }
 
     @Override
     public String toString() {
-        return String.format("name:%s, age:%", name, age);
-    }
-
-    @Override
-    public void serialize(Serializer serializer) {
-        serializer.writeString("name", name);
-        serializer.writeInt("age", age);
-    }
-
-    @Override
-    public void deserialize(Deserializer deserializer) {
-        name = deserializer.readString("name");
-        age = deserializer.readInt("age");
+        return String.format("name:%s, age:%d", name, age);
     }
 }

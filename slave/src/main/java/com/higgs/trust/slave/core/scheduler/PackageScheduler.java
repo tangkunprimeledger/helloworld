@@ -1,8 +1,8 @@
 package com.higgs.trust.slave.core.scheduler;
 
+import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.slave.common.constant.Constant;
-import com.higgs.trust.slave.common.enums.NodeStateEnum;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
@@ -75,7 +75,7 @@ public class PackageScheduler {
         List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
-            return;
+            return ;
         }
 
         Package pack = packageService.create(signedTransactions, packHeight);
@@ -89,7 +89,7 @@ public class PackageScheduler {
         try {
             //add package to queue
             pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
-            packHeight += 1;
+            packHeight = pack.getHeight();
         } catch (InterruptedException e) {
             log.warn("pending pack offer InterruptedException. ", e);
             pendingState.addPendingTxsToQueueFirst(signedTransactions);

@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
@@ -17,9 +18,9 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.core.managment.NodeState;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.repository.RsNodeRepository;
+import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
@@ -62,6 +63,8 @@ import java.util.List;
 
     @Autowired private PolicyRepository policyRepository;
 
+    @Autowired private CaRepository caRepository;
+
     @Override public RespData registerRs(RegisterRsVO registerRsVO) {
         RespData respData;
         try {
@@ -99,11 +102,6 @@ import java.util.List;
                 log.error("register rs error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if (!respData.isSuccess()) {
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(registerRsVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register rs error", e);
             respData = new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
@@ -120,7 +118,7 @@ import java.util.List;
         }
 
         //校验CA是否存在且有效
-        Ca ca = caService.getCa(rsId);
+        Ca ca = caRepository.getCa(rsId);
         if (null == ca || !ca.isValid()) {
             log.error("Ca is null or ca is not valid, rsId={}", rsId);
             return new RespData(RespCodeEnum.CA_IS_NOT_EXIST_OR_IS_NOT_VALID.getRespCode(),
@@ -189,11 +187,6 @@ import java.util.List;
                 log.error("register policy error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if (!respData.isSuccess()) {
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(registerPolicyVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register policy error", e);
             respData = new RespData<>(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
@@ -239,11 +232,6 @@ import java.util.List;
                 log.error("register rs error, respData is null");
                 return new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
             }
-
-            if (!respData.isSuccess()) {
-                return respData;
-            }
-            respData = coreTransactionService.syncWait(cancelRsVO.getRequestId(), true);
         } catch (Throwable e) {
             log.error("register rs error", e);
             respData = new RespData(RespCodeEnum.SYS_FAIL.getRespCode(), RespCodeEnum.SYS_FAIL.getMsg());
@@ -260,7 +248,7 @@ import java.util.List;
         }
 
         //校验CA是否存在且有效
-        Ca ca = caService.getCa(rsId);
+        Ca ca = caRepository.getCa(rsId);
         if (null == ca || !ca.isValid()) {
             log.error("Ca is null or ca is not valid, rsId={}", rsId);
             return new RespData(RespCodeEnum.CA_IS_NOT_EXIST_OR_IS_NOT_VALID.getRespCode(),

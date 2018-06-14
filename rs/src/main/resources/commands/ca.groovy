@@ -2,6 +2,7 @@ package commands
 
 import com.higgs.trust.rs.core.api.CaService
 import com.higgs.trust.slave.core.service.ca.CaInitService
+import com.higgs.trust.slave.model.bo.ca.Ca
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Argument
 import org.crsh.cli.Command
@@ -26,7 +27,7 @@ class ca {
                   @Usage("user") @Required @Argument String user) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def caService = beans.getBean(CaService.class)
-        def ca = caService.getCa(user)
+        def ca = caService.getCa(user);
         out.println("acquire CA successful, user= $ca.user, pubKey= $ca.pubKey")
     }
 
