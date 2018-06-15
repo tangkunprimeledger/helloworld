@@ -36,12 +36,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -113,7 +115,7 @@ import java.util.List;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
         //save to db
-        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo),CoreTxStatusEnum.INIT);
+        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), CoreTxStatusEnum.INIT);
         //process by async
         txProcessExecutorPool.execute(new Runnable() {
             @Override public void run() {
@@ -158,7 +160,7 @@ import java.util.List;
                     voteRule.setPolicyId(policyId);
                     voteRule.setVotePattern(initPolicyEnum.getVotePattern());
                     voteRule.setCallbackType(CallbackTypeEnum.ALL);
-                }else{
+                } else {
                     //query vote rule
                     voteRule = voteRuleRepository.queryByPolicyId(policyId);
                 }
@@ -327,14 +329,19 @@ import java.util.List;
      * @param respData
      */
     private void toEndAndCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RespData respData) {
-        //save execute result and error code
-        String txId = bo.getTxId();
-        coreTxRepository.saveExecuteResult(txId, CoreTxResultEnum.FAIL, respData.getRespCode());
-        //update status from INIT to END
-        coreTxRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
-        respData.setData(coreTxRepository.convertTxVO(bo));
-        //callback custom rs
-        rsCoreCallbackHandler.onEnd(respData);
+        log.info("[toEndAndCallBackByError]tx:{},from:{},respData:{}",bo,from,respData);
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                //save execute result and error code
+                String txId = bo.getTxId();
+                coreTxRepository.saveExecuteResult(txId, CoreTxResultEnum.FAIL, respData.getRespCode());
+                //update status from 'from' to END
+                coreTxRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
+                respData.setData(coreTxRepository.convertTxVO(bo));
+                //callback custom rs
+                rsCoreCallbackHandler.onEnd(respData);
+            }
+        });
         //同步通知
         try {
             persistedResultMap.put(bo.getTxId(), respData);
@@ -389,7 +396,12 @@ import java.util.List;
                     //set error code
                     mRes.setCode(txVo.getErrCode());
                     mRes.setMsg(txVo.getErrMsg());
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes);
+                    try {
+                        //require db-transaction and try self
+                        toEndAndCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes);
+                    }catch (Throwable e){
+                        log.error("[submitToSlave.toEndAndCallBackByError] has error",e);
+                    }
                 }
             }
         } catch (SlaveException e) {

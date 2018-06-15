@@ -36,6 +36,8 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,13 @@ import java.util.stream.Collectors;
             return null;
         }
 
+        // sort signedTransactions by txId asc
+        Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
+            @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+                return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
+            }
+        });
+
         log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, txList: {}, package.height: {}",
             signedTransactions.size(), signedTransactions, height + 1);
 
@@ -83,7 +92,6 @@ import java.util.stream.Collectors;
         Package pack = new Package();
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
-
         //get max height, add 1 for next package height
         pack.setHeight(height + 1);
         //set status = INIT
