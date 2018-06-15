@@ -76,6 +76,13 @@ import java.util.stream.Collectors;
             return null;
         }
 
+        //sort tx id
+        Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
+            @Override public int compare(SignedTransaction o1, SignedTransaction o2) {
+                return o1.getCoreTx().getTxId().equals(o2.getCoreTx().getTxId()) ? 1 : 0;
+            }
+        });
+
         log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, txList: {}, package.height: {}",
             signedTransactions.size(), signedTransactions, height + 1);
 
@@ -83,15 +90,8 @@ import java.util.stream.Collectors;
          * initial package
          */
         Package pack = new Package();
-        //sort tx id
-        Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
-            @Override public int compare(SignedTransaction o1, SignedTransaction o2) {
-                return o1.getCoreTx().getTxId().equals(o2.getCoreTx().getTxId()) ? 1 : 0;
-            }
-        });
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
-
         //get max height, add 1 for next package height
         pack.setHeight(height + 1);
         //set status = INIT
