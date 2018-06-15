@@ -142,7 +142,7 @@ import org.springframework.stereotype.Component;
 
     private void processCaCancel(RespData<CoreTransaction> respData) {
         if (!respData.isSuccess()) {
-            log.info("[processCaUpdate]ca update is fail,code:{}", respData.getRespCode());
+            log.info("[processCaCancel]ca cancel is fail,code:{}", respData.getRespCode());
             return;
         }
 

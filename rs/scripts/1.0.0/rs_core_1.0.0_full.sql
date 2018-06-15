@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `core_transaction` (
 	`status` VARCHAR (32) NOT NULL COMMENT 'the status create the row: 1.INIT 2.NEED_VOTE/WAIT 3.PERSISTED 4.END',
 	`execute_result` varchar (24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
+	`send_time` datetime(3) NOT NULL COMMENT 'tx send time',
 	`create_time` datetime(3) NOT NULL COMMENT 'create time',
 	`update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),

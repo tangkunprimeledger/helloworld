@@ -163,14 +163,14 @@ import java.util.stream.Collectors;
                 return;
             }
         }
-
-        pack.setStatus(PackageStatusEnum.RECEIVED);
-        packageRepository.save(pack);
-        //save pendingTx to db
-        pack.getSignedTxList().forEach(signedTransaction -> {
-            pendingTxRepository.saveWithStatus(signedTransaction, PendingTxStatusEnum.PACKAGED, pack.getHeight());
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                pack.setStatus(PackageStatusEnum.RECEIVED);
+                packageRepository.save(pack);
+                //save pendingTx to db
+                pendingTxRepository.batchInsert(pack.getSignedTxList(), PendingTxStatusEnum.PACKAGED, pack.getHeight());
+            }
         });
-
     }
 
     /**

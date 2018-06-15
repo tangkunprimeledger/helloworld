@@ -90,6 +90,15 @@
 		      FROM cluster_node WHERE `node_name`=#{nodeName}
 	</select>
 
+	<select id="getAllClusterNodes" resultType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
+		SELECT    node_name as nodeName,
+		    p2p_status as p2pStatus,
+		    rs_status as rsStatus,
+		    create_time as createTime,
+		    update_time as updateTime
+		FROM cluster_node
+	</select>
+
     <select id="getNodeNum" resultType="java.lang.Integer">
 		SELECT count(1) from cluster_node WHERE `p2p_status`=1
 	</select>

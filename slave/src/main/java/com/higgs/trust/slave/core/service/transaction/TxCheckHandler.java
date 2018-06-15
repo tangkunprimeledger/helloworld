@@ -66,7 +66,7 @@ import java.util.*;
     }
 
     private List<RsPubKey> getRsPubKeyList(Map<String, String> rsPubKeyMap, List<String> rsIdList) {
-        if (rsPubKeyMap.isEmpty()) {
+        if (null == rsPubKeyMap || rsPubKeyMap.isEmpty()) {
             return null;
         }
 

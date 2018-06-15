@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.custom.biz.api.impl.identity;
 
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.custom.api.enums.ActionTypeEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestStatusEnum;
@@ -21,7 +22,6 @@ import com.higgs.trust.rs.custom.model.convertor.identity.POToBOConvertor;
 import com.higgs.trust.rs.custom.model.convertor.identity.POToVOConvertor;
 import com.higgs.trust.rs.custom.util.Profiler;
 import com.higgs.trust.slave.api.enums.VersionEnum;
-import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -270,7 +270,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         // 组装CoreTransaction
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setBizModel(bizModel);
-        coreTx.setPolicyId("api.user.storageIdentity");
+        coreTx.setPolicyId(InitPolicyEnum.STORAGE.getPolicyId());
         coreTx.setTxId(identityRequest.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());

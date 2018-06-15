@@ -5,6 +5,7 @@ import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.config.node.listener.StateChangeListener;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.common.config.ClusterNodesInfo;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -35,6 +36,8 @@ import java.util.Map;
 
     @Autowired private NodeState nodeState;
 
+    @Autowired private ClusterNodesInfo clusterNodesInfo;
+
     @Value("${trust.start.mode:cluster}") private String startMode;
 
     @StateChangeListener(NodeStateEnum.SelfChecking) @Order(Ordered.HIGHEST_PRECEDENCE) public void init() {
@@ -48,6 +51,7 @@ import java.util.Map;
             caInitService.initKeyPair();
             log.info("[ClusterInitService.init] end initKeyPair");
         }
+        clusterNodesInfo.refresh();
     }
 
     private boolean needInit() {

@@ -57,4 +57,6 @@ import java.util.List;
      * @return
      */
     int batchUpdate(List<ClusterNodePO> clusterNodePOList);
+
+    List<ClusterNodePO> getAllClusterNodes();
 }

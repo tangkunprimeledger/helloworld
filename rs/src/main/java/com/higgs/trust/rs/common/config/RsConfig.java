@@ -11,10 +11,6 @@ import javax.validation.constraints.NotNull;
 
 @Configuration @Setter @Getter public class RsConfig implements InitializingBean {
     @NotNull @Value("${higgs.trust.nodeName}") private String rsName;
-    /**
-     * slave private key
-     */
-    @NotNull @Value("${higgs.trust.privateKey}") private String privateKey;
     @NotNull @Value("${rs.core.useHttpChannel:false}") private boolean useHttpChannel;
     @NotNull @Value("${rs.core.syncRequestTimeout:200}") private long syncRequestTimeout;
     @NotNull @Value("${server.port}") private int serverPort;

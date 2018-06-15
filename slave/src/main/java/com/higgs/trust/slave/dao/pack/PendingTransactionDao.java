@@ -45,4 +45,11 @@ import java.util.List;
      */
     int updateStatus(@Param("txId") String txId, @Param("fromStatus") String fromStatus,
         @Param("toStatus") String toStatus, @Param("height") Long height);
+
+    /**
+     * batch insert
+     * @param list
+     * @return
+     */
+    int batchInsert(List<PendingTransactionPO> list);
 }

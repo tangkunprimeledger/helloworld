@@ -34,7 +34,8 @@
           "TRUST-TEST2":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
           "TRUST-TEST3":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
           "TRUST-TEST4":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB"
-        }
+        },
+        "clusterNodeNames":["TRUST-TEST0","TRUST-TEST1","TRUST-TEST2","TRUST-TEST3","TRUST-TEST4"]
       }
     }
   },
@@ -100,6 +101,11 @@
   "logging": {
     "config": "classpath:logback.xml",
     "path":"/tmp/log2"
+  },
+  "bftSmart": {
+    "systemConfigs":{
+      "myId":"TRUST-TEST2"
+    }
   },
   "hystrix": {
     "command": {
