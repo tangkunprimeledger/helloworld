@@ -1,8 +1,6 @@
 package com.higgs.trust.slave.common.config;
 
 import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
-import com.higgs.trust.config.node.listener.StateChangeListener;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
@@ -15,12 +13,10 @@ import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,18 +26,14 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author jerry
  */
-@Configurable
-@ConfigurationProperties(prefix = "higgs.trust.p2p")
-public class ClusterNodesInfo implements ClusterInfo {
+@Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
+    implements ClusterInfo {
 
-    @Getter @Setter
-    private int faultNodeNum = 0;
+    @Getter @Setter private int faultNodeNum = 0;
 
-    @Getter
-    private Map<String, String> clusters = new ConcurrentHashMap<>();
+    @Getter private Map<String, String> clusters = new ConcurrentHashMap<>();
 
-    @Getter @Setter
-    private List<String> clusterNodeNames = new ArrayList<>();
+    @Getter @Setter private List<String> clusterNodeNames = new ArrayList<>();
 
     @Autowired private ClusterConfigRepository clusterConfigRepository;
     @Autowired private ClusterNodeRepository clusterNodeRepository;
@@ -90,6 +82,9 @@ public class ClusterNodesInfo implements ClusterInfo {
     }
 
     @Override public List<String> clusterNodeNames() {
+        if (clusterNodeNames.isEmpty()) {
+            clusterNodeNames.addAll(clusters.keySet());
+        }
         return clusterNodeNames;
     }
 
