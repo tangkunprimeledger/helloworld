@@ -329,6 +329,7 @@ import java.util.List;
      * @param respData
      */
     private void toEndAndCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RespData respData) {
+        log.info("[toEndAndCallBackByError]tx:{},from:{},respData:{}",bo,from,respData);
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 //save execute result and error code
