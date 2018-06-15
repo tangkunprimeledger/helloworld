@@ -5,15 +5,13 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import javax.validation.constraints.NotNull;
-
 @Configuration @ConfigurationProperties(prefix = "copycat.server") @Getter @Setter public class CopycatProperties {
 
     private String client;
 
-    @NotNull(message = "address can not be null") private String address;
+    private String address;
 
-    @NotNull(message = "cluster can not be null") private String cluster;
+    private String cluster;
 
     private Integer nettyThreadNum = 10;
 

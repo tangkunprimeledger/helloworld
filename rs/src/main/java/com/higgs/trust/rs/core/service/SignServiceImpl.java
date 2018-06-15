@@ -3,9 +3,13 @@ package com.higgs.trust.rs.core.service;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.rs.common.config.RsConfig;
+import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
+import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.SignService;
+import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
+import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,11 +21,17 @@ import org.springframework.stereotype.Service;
  */
 @Service @Slf4j public class SignServiceImpl implements SignService {
     @Autowired private RsConfig rsConfig;
+    @Autowired private ConfigRepository configRepository;
 
     @Override public SignInfo signTx(CoreTransaction coreTx) {
         String coreTxJSON = JSON.toJSONString(coreTx);
         log.info("[signTx]coreTxJSON:{}", coreTxJSON);
-        String privateKey = rsConfig.getPrivateKey();
+        Config config = configRepository.getConfig(rsConfig.getRsName());
+        if(config == null){
+            log.error("[signTx]get config is null rsName:{}", rsConfig.getRsName());
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_RS_CONFIG_NULL_ERROR);
+        }
+        String privateKey = config.getPriKey();
         log.debug("[signTx]privateKey:{}", privateKey);
         String sign = SignUtils.sign(coreTxJSON, privateKey);
         log.info("[signTx]sign:{}", sign);

@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Deque;
@@ -43,7 +44,8 @@ public class PackageSchedulerTest extends BaseTest{
 
     @Autowired private Deque<SignedTransaction> pendingTxQueue;
 
-//    @Autowired private BlockingQueue<Package> pendingPack;
+    @Resource(name = "pendingPack")
+    private BlockingQueue<Package> pendingPack;
 
     private static final List<SignedTransaction> signedTxList = new ArrayList<>();
 
@@ -70,6 +72,8 @@ public class PackageSchedulerTest extends BaseTest{
         signedTxList.forEach(signedTx->{
             pendingTxQueue.offerLast(signedTx);
         });
+
+        System.out.println(JSON.toJSONString(signedTxList));
     }
 
     private void createCancelRsTx() {
@@ -101,7 +105,7 @@ public class PackageSchedulerTest extends BaseTest{
         SignedTransaction signedTx1 = new SignedTransaction();
         CoreTransaction coreTx1 = new CoreTransaction();
 
-        coreTx1.setTxId("pending-tx-test-14");
+        coreTx1.setTxId("pending-tx-test-17");
 
         List<Action> registerRSList = new ArrayList<>();
         RegisterRS registerRS = new RegisterRS();
@@ -264,8 +268,8 @@ public class PackageSchedulerTest extends BaseTest{
     }
 
     @Test public void createPackage() {
-//        Package pack = packageScheduler.createPackage();
-//        packageService.receive(pack);
+        packageScheduler.createPackage();
+//        packageService.receive(pendingPack.poll());
     }
 
     @Test public void submitPackage() {

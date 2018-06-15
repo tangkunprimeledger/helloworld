@@ -1,13 +1,12 @@
 package com.higgs.trust.contract.mock;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import com.alibaba.fastjson.JSONObject;
 
-public class Person implements Externalizable {
+public class Person {
     private String name;
     private int age;
+    private Colors color;
+    private JSONObject state;
 
     public Person() {}
 
@@ -32,22 +31,24 @@ public class Person implements Externalizable {
         this.age = age;
     }
 
-
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(name);
-        out.writeInt(age);
+    public Colors getColor() {
+        return color;
     }
 
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        name = (String)in.readObject();
-        age = in.readInt();
+    public void setColor(Colors color) {
+        this.color = color;
+    }
+
+    public JSONObject getState() {
+        return state;
+    }
+
+    public void setState(JSONObject state) {
+        this.state = state;
     }
 
     @Override
     public String toString() {
-        return String.format("name:%s, age:%", name, age);
+        return String.format("name:%s, age:%d", name, age);
     }
-
 }

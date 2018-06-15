@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
             SignatureCommand command = (SignatureCommand)commit.operation();
             boolean verify = SignUtils
                 .verify(command.getSignValue(), command.getSignature(), clusterInfo.pubKey(command.getNodeName()));
-            log.debug("command sign verify:{}", verify);
+            log.trace("command sign verify:{}", verify);
             if (!verify) {
                 log.warn("command sign verify failed.");
                 commit.close();

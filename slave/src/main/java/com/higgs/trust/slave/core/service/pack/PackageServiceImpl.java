@@ -109,12 +109,18 @@ import java.util.stream.Collectors;
             return null;
         }
 
-        //when exchange master, maxPackHeight must be initialized
+        //when exchange master, packHeight must be null
         if (null == packHeight || 0 == packHeight) {
-            return maxBlockHeight;
+            Long maxPackHeight = packageRepository.getMaxHeight();
+            if (null == maxPackHeight) {
+                return maxBlockHeight;
+            } else {
+                return maxBlockHeight > maxPackHeight ? maxBlockHeight : maxPackHeight;
+            }
         }
 
         if (null == packageRepository.load(packHeight)) {
+            log.error("package is not exist. packHeight={}", packHeight);
             return null;
         }
 
@@ -194,14 +200,22 @@ import java.util.stream.Collectors;
         Block block = blockService.buildDummyBlock(pack.getHeight(), pack.getPackageTime());
 
         PackContext packContext = new PackContext(pack, block);
+        preparePackContext(packContext);
+
+        return packContext;
+    }
+
+    /**
+     * prepare package context
+     * @param packContext
+     */
+    private void preparePackContext(PackContext packContext) {
         //set rsId and public key map
         List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
         if (!CollectionUtils.isEmpty(rsPubKeyList)) {
             packContext.setRsPubKeyMap(
                 rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
         }
-
-        return packContext;
     }
 
     /**

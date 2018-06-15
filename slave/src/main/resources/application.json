@@ -21,7 +21,7 @@
         "defaultZone": "http://localhost:8761/eureka/"
       }
     },
-    "instance": {ConfigurationProperties
+    "instance": {
       "preferIpAddress": true
     }
   },

@@ -55,24 +55,26 @@ import org.springframework.stereotype.Component;
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
-        switch (policyEnum) {
-            case REGISTER_POLICY:
-                processRegisterPolicy(respData);
-                return;
-            case REGISTER_RS:
-                return;
-            case CONTRACT_ISSUE:
-                return;
-            case CONTRACT_DESTROY:
-                return;
-            case CA_UPDATE:
-                processCaUpdate(respData);
-                return;
-            case CA_CANCEL:
-                processCaCancel(respData);
-                return;
-            default:
-                break;
+        if (policyEnum != null) {
+            switch (policyEnum) {
+                case REGISTER_POLICY:
+                    processRegisterPolicy(respData);
+                    return;
+                case REGISTER_RS:
+                    return;
+                case CONTRACT_ISSUE:
+                    return;
+                case CONTRACT_DESTROY:
+                    return;
+                case CA_UPDATE:
+                    processCaUpdate(respData);
+                    return;
+                case CA_CANCEL:
+                    processCaCancel(respData);
+                    return;
+                default:
+                    break;
+            }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
         callbackHandler.onEnd(respData);
@@ -82,12 +84,14 @@ import org.springframework.stereotype.Component;
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
-        switch (policyEnum) {
-            case REGISTER_POLICY:
-                processRegisterPolicy(respData);
-                return;
-            default:
-                break;
+        if (policyEnum != null) {
+            switch (policyEnum) {
+                case REGISTER_POLICY:
+                    processRegisterPolicy(respData);
+                    return;
+                default:
+                    break;
+            }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
         callbackHandler.onFailover(respData);

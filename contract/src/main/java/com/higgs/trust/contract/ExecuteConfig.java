@@ -14,6 +14,8 @@ public class ExecuteConfig {
     private final Set<String> allowedClasses;
     private int instructionCountQuota = 100000;
 
+    public static boolean DEBUG = false;
+
     public ExecuteConfig() {
         allowedClasses = new HashSet<>();
     }

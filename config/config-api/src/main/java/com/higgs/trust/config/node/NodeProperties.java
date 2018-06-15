@@ -3,9 +3,9 @@ package com.higgs.trust.config.node;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
-@Component @ConfigurationProperties(prefix = "higgs.trust") @Getter @Setter public class NodeProperties {
+@Configuration @ConfigurationProperties(prefix = "higgs.trust") @Getter @Setter public class NodeProperties {
 
     /**
      * default node name
@@ -39,20 +39,6 @@ import org.springframework.stereotype.Component;
      */
     private long consensusWaitTime = 800L;
 
-    /**
-     * the time of master heartbeat
-     */
-    private int masterHeartbeat = 1000;
-
-    /**
-     * the min ratio of change master to master heartbeat
-     */
-    private int changeMasterMinRatio = 2;
-
-    /**
-     * the max ratio of change master to master heartbeat
-     */
-    private int changeMasterMaxRatio = 3;
 
     public boolean isMock() {
         return "Mock".equalsIgnoreCase(runMode);

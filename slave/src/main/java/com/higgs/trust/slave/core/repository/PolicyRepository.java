@@ -43,16 +43,20 @@ import java.util.List;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if (null != initPolicyEnum) {
             List<RsNode> rsNodeList = rsNodeRepository.queryAll();
-            if (CollectionUtils.isEmpty(rsNodeList)) {
-                return null;
-            }
+
             policy = new PolicyPO();
             policy.setPolicyId(policyId);
             policy.setPolicyName(initPolicyEnum.getType());
             policy.setDecisionType(initPolicyEnum.getDecisionType().getCode());
-            List<String> rsIdList = new ArrayList<>();
-            rsNodeList.forEach(rsNode->{rsIdList.add(rsNode.getRsId());});
-            policy.setRsIds(JSON.toJSONString(rsIdList));
+            if (!CollectionUtils.isEmpty(rsNodeList)) {
+                List<String> rsIdList = new ArrayList<>();
+                rsNodeList.forEach(rsNode -> {
+                    rsIdList.add(rsNode.getRsId());
+                });
+                policy.setRsIds(JSON.toJSONString(rsIdList));
+            } else {
+                policy.setRsIds(null);
+            }
         } else {
             policy = policyDao.queryByPolicyId(policyId);
         }
