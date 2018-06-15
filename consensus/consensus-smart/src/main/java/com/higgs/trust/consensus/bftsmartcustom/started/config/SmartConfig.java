@@ -19,6 +19,16 @@ public class SmartConfig {
 
     private String myClientId;
 
+    private Map<String, String> idNodeNameMap;
+
+    public Map<String, String> getIdNodeNameMap() {
+        return idNodeNameMap;
+    }
+
+    public void setIdNodeNameMap(Map<String, String> idNodeNameMap) {
+        this.idNodeNameMap = idNodeNameMap;
+    }
+
     public Map<String, String> getConfigs() {
         return configs;
     }
