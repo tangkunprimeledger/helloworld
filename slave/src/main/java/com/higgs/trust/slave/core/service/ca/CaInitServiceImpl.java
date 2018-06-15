@@ -69,13 +69,13 @@ import java.util.concurrent.TimeUnit;
             caInitHandler.process(caMap);
             log.info("[CaInitServiceImpl.initKeyPair] end generate genius block");
 
-//            writeKyePairToFile(caMap);
+            //            writeKyePairToFile(caMap);
             log.info("[CaInitServiceImpl.initKeyPair] end write all nodes' pubKey to file");
 
         } catch (Throwable e) {
             log.error("[CaInitServiceImpl.initKeyPair] cluster init CA error", e);
             throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR,
-                "[CaInitServiceImpl.initKeyPair] cluster init CA error");
+                "[CaInitServiceImpl.initKeyPair] cluster init CA error", e);
         }
 
     }
@@ -150,7 +150,7 @@ import java.util.concurrent.TimeUnit;
                 file.mkdirs();
             }
             BufferedWriter w =
-//                new BufferedWriter(new FileWriter(path + System.getProperty("file.separator") + flag + myId, false));
+                //                new BufferedWriter(new FileWriter(path + System.getProperty("file.separator") + flag + myId, false));
                 new BufferedWriter(new FileWriter(path + System.getProperty("file.separator") + flag + myId, false));
             w.write(value);
             w.flush();
@@ -158,8 +158,8 @@ import java.util.concurrent.TimeUnit;
             System.out.println("写入结束");
         } catch (Throwable e) {
             log.error("[fileWriter]write pubKey to file error", e);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_WRITE_FILE_ERROR,
-                "[fileWriter]write pubKey to file error");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_WRITE_FILE_ERROR, "[fileWriter]write pubKey to file error",
+                e);
         }
     }
 
@@ -168,8 +168,8 @@ import java.util.concurrent.TimeUnit;
             fileWriter(map.get(key), key);
 
         }
-//        Config config = configRepository.getConfig(nodeState.getNodeName());
-//        fileWriter(config.getPriKey(), "privatekey");
+        //        Config config = configRepository.getConfig(nodeState.getNodeName());
+        //        fileWriter(config.getPriKey(), "privatekey");
     }
 
     public static void main(String[] args) {

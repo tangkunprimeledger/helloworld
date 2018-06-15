@@ -5,13 +5,14 @@ import com.google.common.hash.Hashing;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 
 /**
  * @author cwy
  */
-@Setter @Getter @ToString public abstract class ValidCommand<T extends Serializable> implements Serializable {
+@Slf4j @Setter @Getter @ToString public abstract class ValidCommand<T extends Serializable> implements Serializable {
 
     private static final long serialVersionUID = -1L;
 
@@ -35,8 +36,10 @@ import java.io.Serializable;
     public abstract String messageDigest();
 
     public String getMessageDigestHash() {
-        return Hashing.sha256()
-            .hashString(this.getClass().getName().concat("_").concat(messageDigest()), Charsets.UTF_8).toString();
+        String messageDigest = messageDigest();
+        String digest = this.getClass().getName().concat("_").concat(messageDigest);
+        log.trace("message digest:{}, hash digest:{}", messageDigest, digest);
+        return Hashing.sha256().hashString(digest, Charsets.UTF_8).toString();
     }
 
 }

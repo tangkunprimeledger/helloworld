@@ -68,7 +68,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
                 log.warn("transaction idempotent, txId={}", txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
                 transactionVO.setErrMsg(TxSubmitResultEnum.TX_IDEMPOTENT.getDesc());
-                transactionVO.setRetry(false);
+                transactionVO.setRetry(true);
                 transactionVOList.add(transactionVO);
                 return;
             }
