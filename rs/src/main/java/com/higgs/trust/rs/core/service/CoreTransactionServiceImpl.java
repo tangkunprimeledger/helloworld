@@ -9,18 +9,18 @@ import com.higgs.trust.rs.core.api.VoteService;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
-import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
-import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
-import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRule;
+import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.asynctosync.HashBlockingMap;
@@ -104,6 +104,8 @@ import java.util.List;
             log.info("[submitTx]is idempotent txId:{}", coreTx.getTxId());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
+        //reset sendTime
+        coreTx.setSendTime(new Date());
         //sign tx for self
         SignInfo signInfo = signService.signTx(coreTx);
         if (signInfo == null) {
@@ -405,12 +407,9 @@ import java.util.List;
      */
     private List<SignedTransaction> makeTxs(List<CoreTxBO> list) {
         List<SignedTransaction> txs = new ArrayList<>(list.size());
-        Date currentDate = new Date();
         for (CoreTxBO bo : list) {
             SignedTransaction tx = new SignedTransaction();
             CoreTransaction coreTx = coreTxRepository.convertTxVO(bo);
-            //reset sendTime
-            coreTx.setSendTime(currentDate);
             tx.setCoreTx(coreTx);
             tx.setSignatureList(bo.getSignDatas());
             txs.add(tx);
