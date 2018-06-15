@@ -400,7 +400,7 @@ import java.util.List;
                         //require db-transaction and try self
                         toEndAndCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes);
                     }catch (Throwable e){
-                        log.error("[toEndAndCallBackByError] has error",e);
+                        log.error("[submitToSlave.toEndAndCallBackByError] has error",e);
                     }
                 }
             }
