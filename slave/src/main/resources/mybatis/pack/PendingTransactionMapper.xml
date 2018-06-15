@@ -99,5 +99,14 @@
         from pending_transaction where height=#{height} order by tx_id asc
     </select>
 
+    <insert id ="batchInsert" parameterType="java.util.List" >
+        insert into
+        pending_transaction(tx_id,tx_data,status,height,create_time,update_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.txId},#{item.txData},#{item.status},#{item.height},now(3),now(3))
+        </foreach>
+    </insert>
+
 
 </mapper>

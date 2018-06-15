@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -64,6 +65,32 @@ import java.util.List;
             count = count + update;
         }
         return count;
+    }
+
+    public void batchInsert(List<SignedTransaction> signedTransactions, PendingTxStatusEnum status, Long packHeight) {
+        if (CollectionUtils.isEmpty(signedTransactions)) {
+            log.info("signed transaction list is empty");
+            return;
+        }
+
+        List<PendingTransactionPO> list = new ArrayList<>();
+        for (SignedTransaction signedTx : signedTransactions) {
+            PendingTransactionPO pendingTransactionPO = convertSignedTxToPendingTxPO(signedTx);
+            pendingTransactionPO.setStatus(status.getCode());
+            pendingTransactionPO.setHeight(packHeight);
+            list.add(pendingTransactionPO);
+        }
+
+        try {
+            int r = pendingTransactionDao.batchInsert(list);
+            if (r != signedTransactions.size()) {
+                log.error("[batchSavePendingTransaction]batch insert pending transaction has error");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
+            }
+        } catch (DuplicateKeyException e) {
+            log.error("[batchSavePendingTransaction] is idempotent packHeight:{}", packHeight);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        }
     }
 
     /**
