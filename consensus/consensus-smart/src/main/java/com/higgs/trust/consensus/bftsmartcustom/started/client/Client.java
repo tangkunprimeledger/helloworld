@@ -18,7 +18,6 @@ public class Client implements ConsensusClient {
 
     public void processingPackage(ConsensusCommand command) {
         System.out.println("process start");
-        System.out.println(command);
         byte[] bytes = null;
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = null;

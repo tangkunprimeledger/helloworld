@@ -17,7 +17,13 @@ import java.io.ObjectInputStream;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-
+/**
+ *
+ * @author: Zhouyafeng
+ * @create: 2018/6/15 14:57
+ * @description:
+ *
+ */
 public class Server extends DefaultRecoverable {
 
     private static Logger log = LoggerFactory.getLogger(Server.class);
