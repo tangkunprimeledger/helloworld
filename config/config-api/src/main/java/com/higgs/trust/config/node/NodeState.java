@@ -5,7 +5,6 @@ import com.higgs.trust.config.exception.ConfigException;
 import com.higgs.trust.config.node.listener.MasterChangeListener;
 import com.higgs.trust.config.node.listener.StateChangeListener;
 import com.higgs.trust.config.node.listener.StateChangeListenerAdaptor;
-import com.sun.beans.finder.BeanInfoFinder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -18,17 +17,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.annotation.Schedules;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.higgs.trust.config.node.NodeStateEnum.*;
 
@@ -64,7 +58,7 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
     /**
      * private key
      */
-    @Getter private String privateKey;
+    @Getter @Setter private String privateKey;
 
     /**
      * prefix of node name

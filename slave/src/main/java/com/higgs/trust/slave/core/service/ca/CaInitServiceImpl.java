@@ -8,12 +8,15 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.integration.ca.CaInitClient;
+import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +38,7 @@ import java.util.concurrent.TimeUnit;
     @Autowired private CaInitClient caClient;
     @Autowired private ClusterInfo clusterInfo;
     @Autowired private CaInitHandler caInitHandler;
-    @Value("${bftSmart.systemConfigs.myId:test}") private String myId;
+    @Value("${bftSmart.systemConfigs.myId}") private String myId;
 
     // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
 
@@ -66,7 +69,7 @@ import java.util.concurrent.TimeUnit;
             caInitHandler.process(caMap);
             log.info("[CaInitServiceImpl.initKeyPair] end generate genius block");
 
-            //            writeKyePairToFile(caMap);
+//            writeKyePairToFile(caMap);
             log.info("[CaInitServiceImpl.initKeyPair] end write all nodes' pubKey to file");
 
         } catch (Throwable e) {
@@ -135,26 +138,24 @@ import java.util.concurrent.TimeUnit;
     }
 
     /**
-     * @param key
+     * @param value
      * @return
      * @desc write file
      */
-    private void fileWriter(String key, String flag) {
-        String path = "config" + System.getProperty("file.separator") + "keys" + System.getProperty("file.separator");
+    private void fileWriter(String value, String flag) {
+        String path = "D:\\workspace_idea\\DL\\trust\\ttt";
         try {
             File file = new File(path);
             if (!file.exists()) {
-                file.mkdir();
-                /*try {
-//                    file.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
+                file.mkdirs();
             }
-           /* BufferedWriter w = new BufferedWriter(new FileWriter(file, false));
-            w.write(key);
+            BufferedWriter w =
+//                new BufferedWriter(new FileWriter(path + System.getProperty("file.separator") + flag + myId, false));
+                new BufferedWriter(new FileWriter(path + System.getProperty("file.separator") + flag + myId, false));
+            w.write(value);
             w.flush();
-            w.close();*/
+            w.close();
+            System.out.println("写入结束");
         } catch (Throwable e) {
             log.error("[fileWriter]write pubKey to file error", e);
             throw new SlaveException(SlaveErrorEnum.SLAVE_CA_WRITE_FILE_ERROR,
@@ -164,11 +165,11 @@ import java.util.concurrent.TimeUnit;
 
     private void writeKyePairToFile(Map<String, String> map) {
         for (String key : map.keySet()) {
-            fileWriter(map.get(key), "publickey");
+            fileWriter(map.get(key), key);
 
         }
-        //        Config config = configRepository.getConfig(nodeState.getNodeName());
-        //        fileWriter(config.getPriKey(), "privatekey");
+//        Config config = configRepository.getConfig(nodeState.getNodeName());
+//        fileWriter(config.getPriKey(), "privatekey");
     }
 
     public static void main(String[] args) {

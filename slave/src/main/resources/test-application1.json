@@ -102,6 +102,11 @@
     "config": "classpath:logback.xml",
     "path":"/tmp/log1"
   },
+  "bftSmart": {
+    "systemConfigs":{
+      "myId":"TRUST-TEST1"
+    }
+  },
   "hystrix": {
     "command": {
       "default": {

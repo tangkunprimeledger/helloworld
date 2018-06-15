@@ -155,6 +155,7 @@ import java.util.*;
         }
 
         // TODO 注销CA之前，应该检测RS是否下线，下线就可以注销，否则不可以
+        log.info("[cancelKeyPair] start to cancel CA, user={}", user);
 
         // CA existence check
         Ca ca = caRepository.getCa(user);

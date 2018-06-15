@@ -6,6 +6,7 @@ import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
  * @desc TODO
  * @date 2018/6/6 10:54
  */
-@Service public class CaSnapshotHandler implements CaHandler {
+@Service @Slf4j public class CaSnapshotHandler implements CaHandler {
 
     @Autowired private CaSnapshotAgent caSnapshotAgent;
     @Autowired MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
@@ -64,15 +65,19 @@ import org.springframework.stereotype.Service;
      * @desc cancel CA information
      */
     @Override public void cancelCa(Ca ca) {
+        log.info("[cancelCa] start to cancel CA, user={}",ca.getUser());
+
         // operation merkle tree
         merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
 
+        log.info("[cancelCa] start to update CA to invalid, user={}",ca.getUser());
         caSnapshotAgent.updateCa(ca);
 
         ClusterNode clusterNode = new ClusterNode();
         clusterNode.setNodeName(ca.getUser());
         clusterNode.setP2pStatus(false);
         clusterNode.setRsStatus(false);
+        log.info("[cancelCa] start to update clusterNodeInfo, user={}",ca.getUser());
         caSnapshotAgent.updateClusterNode(clusterNode);
 
         ClusterConfig oldClusterConfig = caSnapshotAgent.getClusterConfig("TRUST");
@@ -81,6 +86,7 @@ import org.springframework.stereotype.Service;
         clusterConfig.setClusterName(oldClusterConfig.getClusterName());
         clusterConfig.setNodeNum(oldClusterConfig.getNodeNum() - 1);
         clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
+        log.info("[cancelCa] start to update clusterConfigInfo, user={}",ca.getUser());
         caSnapshotAgent.updateClusterConfig(clusterConfig);
     }
 

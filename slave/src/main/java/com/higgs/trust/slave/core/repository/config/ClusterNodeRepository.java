@@ -6,11 +6,13 @@ import com.higgs.trust.slave.dao.config.ClusterNodeDao;
 import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -91,5 +93,24 @@ import java.util.List;
      */
     public boolean batchUpdate(List<ClusterNodePO> clusterNodePOList) {
         return clusterNodePOList.size() == clusterNodeDao.batchUpdate(clusterNodePOList);
+    }
+
+    /** 
+     * @desc acquire all cluster nodes
+     * @param
+     * @return   
+     */  
+    public List<ClusterNode> getAllClusterNodes() {
+        List<ClusterNodePO> list = clusterNodeDao.getAllClusterNodes();
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        List<ClusterNode> nodeList = new LinkedList<>();
+        for (ClusterNodePO clusterNodePO : list) {
+            ClusterNode clusterNode = new ClusterNode();
+            BeanUtils.copyProperties(clusterNodePO, clusterNode);
+            nodeList.add(clusterNode);
+        }
+        return nodeList;
     }
 }
