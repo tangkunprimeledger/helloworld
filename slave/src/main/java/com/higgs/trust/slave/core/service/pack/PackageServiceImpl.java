@@ -36,6 +36,8 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,6 +83,12 @@ import java.util.stream.Collectors;
          * initial package
          */
         Package pack = new Package();
+        //sort tx id
+        Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
+            @Override public int compare(SignedTransaction o1, SignedTransaction o2) {
+                return o1.getCoreTx().getTxId().equals(o2.getCoreTx().getTxId()) ? 1 : 0;
+            }
+        });
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
 
