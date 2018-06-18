@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.higgs.trust.slave.dao.config.ClusterNodeDao">
 
-	<insert id="insertClusterNode" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
+    <insert id="insertClusterNode" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
 		INSERT INTO cluster_node(node_name,
 		p2p_status,
 		rs_status,
@@ -15,68 +15,70 @@
 		now(3))
 	</insert>
 
-	<insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
-		INSERT INTO cluster_node(node_name,
-			p2p_status,
-			rs_status,
-			create_time,
-			update_time)
-		VALUES
-		<foreach collection="list" item="item" index="index" separator=",">
-			(#{item.nodeName},
-			#{item.p2pStatus},
-			#{item.rsStatus},
-			now(3),
-			now(3))
-		</foreach>
-	</insert>
+    <insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
+        INSERT INTO cluster_node(node_name,
+        p2p_status,
+        rs_status,
+        create_time,
+        update_time)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.nodeName},
+            #{item.p2pStatus},
+            #{item.rsStatus},
+            now(3),
+            now(3))
+        </foreach>
+    </insert>
 
-	<update id="updateClusterNode" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
-		UPDATE cluster_node SET
-		update_time=now(3),
-		<if test="p2pStatus != null and p2pStatus!=''">
-			p2p_status=#{p2pStatus},
-		</if>
-		<if test="rsStatus != null and rsStatus!=''">
-			rs_status=#{rsStatus}
-		</if>
-		WHERE `node_name`=#{nodeName}
-	</update>
+    <update id="updateClusterNode" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
+        UPDATE cluster_node
+        <trim prefix="SET" suffixOverrides=",">
+            update_time=now(3),
+            <if test="p2pStatus != null and p2pStatus!=''">
+                p2p_status=#{p2pStatus},
+            </if>
+            <if test="rsStatus != null and rsStatus!=''">
+                rs_status=#{rsStatus}
+            </if>
+        </trim>
+        WHERE `node_name`=#{nodeName}
+    </update>
 
 
     <update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
-		UPDATE cluster_node
-		<trim prefix="SET" suffixOverrides=",">
-			<!-- set update_time -->
-			<trim prefix="`update_time` = CASE" suffix="END,">
-				<foreach collection="list" item="item">
-					WHEN `node_name`=#{item.nodeName}
-					THEN now(3)
-				</foreach>
-				ELSE `update_time`
-			</trim>
-			<!-- set p2pStatus -->
-			<trim prefix="`p2p_status` = CASE" suffix="END,">
-				<foreach collection="list" item="item">
-					WHEN `node_name`=#{item.nodeName}
-					THEN #{item.p2pStatus}
-				</foreach>
-				ELSE `p2p_status`
-			</trim>
-			<!-- set rsStatus -->
-			<trim prefix="`rs_status` = CASE" suffix="END">
-				<foreach collection="list" item="item">
-					WHEN `node_name`=#{item.nodeName}
-					THEN #{item.rsStatus}
-				</foreach>
-				ELSE `rs_status`
-			</trim>
-		</trim>
-		<where>
-			<foreach collection="list" item="item" separator="or" open="(" close=")">
-				`node_name`=#{item.nodeName}
-			</foreach>
-		</where>
+        UPDATE cluster_node
+        <trim prefix="SET" suffixOverrides=",">
+            <!-- set update_time -->
+            <trim prefix="`update_time` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `node_name`=#{item.nodeName}
+                    THEN now(3)
+                </foreach>
+                ELSE `update_time`
+            </trim>
+            <!-- set p2pStatus -->
+            <trim prefix="`p2p_status` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `node_name`=#{item.nodeName}
+                    THEN #{item.p2pStatus}
+                </foreach>
+                ELSE `p2p_status`
+            </trim>
+            <!-- set rsStatus -->
+            <trim prefix="`rs_status` = CASE" suffix="END">
+                <foreach collection="list" item="item">
+                    WHEN `node_name`=#{item.nodeName}
+                    THEN #{item.rsStatus}
+                </foreach>
+                ELSE `rs_status`
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" item="item" separator="or" open="(" close=")">
+                `node_name`=#{item.nodeName}
+            </foreach>
+        </where>
     </update>
 
 
@@ -90,7 +92,7 @@
 		      FROM cluster_node WHERE `node_name`=#{nodeName}
 	</select>
 
-	<select id="getAllClusterNodes" resultType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
+    <select id="getAllClusterNodes" resultType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
 		SELECT    node_name as nodeName,
 		    p2p_status as p2pStatus,
 		    rs_status as rsStatus,

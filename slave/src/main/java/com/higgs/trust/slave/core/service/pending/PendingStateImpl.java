@@ -94,10 +94,10 @@ import java.util.concurrent.ConcurrentLinkedDeque;
                 return;
             }
 
-            //insert memory
-            pendingTxQueue.offerLast(signedTransaction);
             // key and value all are txId
             existTxMap.put(signedTransaction.getCoreTx().getTxId(), signedTransaction.getCoreTx().getTxId());
+            //insert memory
+            pendingTxQueue.offerLast(signedTransaction);
         });
 
         // if all transaction received success, RespData will set data 'null'

@@ -18,6 +18,7 @@ import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -131,13 +132,20 @@ import org.springframework.stereotype.Component;
             return;
         }
 
-        log.info("[processCaUpdate] start to update pubKey/priKey, nodeName={}", nodeState.getNodeName());
+        CoreTransaction coreTransaction = respData.getData();
+        String user = coreTransaction.getSender();
+        if (!StringUtils.equals(user, nodeState.getNodeName())) {
+            log.info("[processCaUpdate] current node ={}, is not ca updated user={}, end update pubKey/priKey",
+                nodeState.getNodeName(), user);
+        }
+
+        log.info("[processCaUpdate] start to update pubKey/priKey, nodeName={}", user);
         // update table config, set tmpKey to key
-        Config config = configRepository.getConfig(nodeState.getNodeName());
+        Config config = configRepository.getConfig(user);
         config.setPubKey(config.getTmpPubKey());
         config.setPriKey(config.getTmpPriKey());
         configRepository.updateConfig(config);
-        log.info("[processCaUpdate] end update pubKey/priKey, nodeName={}", nodeState.getNodeName());
+        log.info("[processCaUpdate] end update pubKey/priKey, nodeName={}", user);
     }
 
     private void processCaCancel(RespData<CoreTransaction> respData) {
@@ -149,7 +157,9 @@ import org.springframework.stereotype.Component;
         log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
         //set pubKey and priKey to invalid
         Config config = new Config();
-        config.setNodeName(nodeState.getNodeName());
+        CoreTransaction coreTransaction = respData.getData();
+        String user = coreTransaction.getSender();
+        config.setNodeName(user);
         config.setValid(false);
         configRepository.updateConfig(config);
         log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());

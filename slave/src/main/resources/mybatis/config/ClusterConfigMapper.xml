@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.higgs.trust.slave.dao.config.ClusterConfigDao">
 
-	<insert id="insertClusterConfig" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+    <insert id="insertClusterConfig" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
 		INSERT INTO cluster_config(cluster_name,
 				node_num,
 				fault_num,
@@ -15,74 +15,76 @@
 				now(3))
 	</insert>
 
-	<insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
-		INSERT INTO cluster_config(cluster_name,
-			node_num,
-			fault_num,
-			create_time,
-			update_time)
-		VALUES
-		<foreach collection="list" item="item" index="index" separator=",">
-			(#{item.clusterName},
-			#{item.nodeNum},
-			#{item.faultNum},
-			now(3),
-			now(3))
-		</foreach>
-	</insert>
+    <insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+        INSERT INTO cluster_config(cluster_name,
+        node_num,
+        fault_num,
+        create_time,
+        update_time)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.clusterName},
+            #{item.nodeNum},
+            #{item.faultNum},
+            now(3),
+            now(3))
+        </foreach>
+    </insert>
 
 
-	<update id="updateClusterConfig" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
-		UPDATE cluster_config SET
-		update_time=now(3),
-		<if test="nodeNum != null and nodeNum!=''">
-			node_num=#{nodeNum},
-		</if>
-		<if test="faultNum != null and faultNum!=''">
-			fault_num=#{faultNum}
-		</if>
-		WHERE `cluster_name`=#{clusterName}
-	</update>
+    <update id="updateClusterConfig" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+        UPDATE cluster_config
+        <trim prefix="SET" suffixOverrides=",">
+            update_time=now(3),
+            <if test="nodeNum != null and nodeNum!=''">
+                node_num=#{nodeNum},
+            </if>
+            <if test="faultNum != null and faultNum!=''">
+                fault_num=#{faultNum}
+            </if>
+        </trim>
+        WHERE `cluster_name`=#{clusterName}
+    </update>
 
 
-	<update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
-		UPDATE cluster_config
-		<trim prefix="SET" suffixOverrides=",">
-			<!-- set update_time -->
-			<trim prefix="`update_time` = CASE" suffix="END,">
-				<foreach collection="list" item="item">
-					WHEN `cluster_name`=#{item.clusterName}
-					THEN now(3)
-				</foreach>
-				ELSE `update_time`
-			</trim>
-			<!-- set node_num -->
-			<trim prefix="`node_num` = CASE" suffix="END,">
-				<foreach collection="list" item="item">
-					WHEN `cluster_name`=#{item.clusterName}
-					THEN #{item.nodeNum}
-				</foreach>
-				ELSE `node_num`
-			</trim>
-			<!-- set faultNum -->
-			<trim prefix="`fault_num` = CASE" suffix="END">
-				<foreach collection="list" item="item">
-					WHEN `cluster_name`=#{item.clusterName}
-					THEN #{item.faultNum}
-				</foreach>
-				ELSE `fault_num`
-			</trim>
-		</trim>
-		<where>
-			<foreach collection="list" item="item" separator="or" open="(" close=")">
-				`cluster_name`=#{item.clusterName}
-			</foreach>
-		</where>
-	</update>
+    <update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+        UPDATE cluster_config
+        <trim prefix="SET" suffixOverrides=",">
+            <!-- set update_time -->
+            <trim prefix="`update_time` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `cluster_name`=#{item.clusterName}
+                    THEN now(3)
+                </foreach>
+                ELSE `update_time`
+            </trim>
+            <!-- set node_num -->
+            <trim prefix="`node_num` = CASE" suffix="END,">
+                <foreach collection="list" item="item">
+                    WHEN `cluster_name`=#{item.clusterName}
+                    THEN #{item.nodeNum}
+                </foreach>
+                ELSE `node_num`
+            </trim>
+            <!-- set faultNum -->
+            <trim prefix="`fault_num` = CASE" suffix="END">
+                <foreach collection="list" item="item">
+                    WHEN `cluster_name`=#{item.clusterName}
+                    THEN #{item.faultNum}
+                </foreach>
+                ELSE `fault_num`
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" item="item" separator="or" open="(" close=")">
+                `cluster_name`=#{item.clusterName}
+            </foreach>
+        </where>
+    </update>
 
 
-	<select id="getClusterConfig" parameterType="java.lang.String"
-			resultType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
+    <select id="getClusterConfig" parameterType="java.lang.String"
+            resultType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">
 		SELECT    cluster_name as clusterName,
 								node_num as nodeNum,
 								fault_num as faultNum,

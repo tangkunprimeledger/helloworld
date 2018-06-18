@@ -20,6 +20,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,18 +32,12 @@ import java.util.List;
  * @desc ca snapshot agent
  * @date 2018/6/6 11:29
  */
-@Slf4j
-@Component
-public class CaSnapshotAgent implements CacheLoader {
+@Slf4j @Component public class CaSnapshotAgent implements CacheLoader {
 
-    @Autowired
-    SnapshotService snapshot;
-    @Autowired
-    CaRepository caRepository;
-    @Autowired
-    ClusterConfigRepository clusterConfigRepository;
-    @Autowired
-    ClusterNodeRepository clusterNodeRepository;
+    @Autowired SnapshotService snapshot;
+    @Autowired CaRepository caRepository;
+    @Autowired ClusterConfigRepository clusterConfigRepository;
+    @Autowired ClusterNodeRepository clusterNodeRepository;
 
     /**
      * get data from snapshot
@@ -52,7 +47,7 @@ public class CaSnapshotAgent implements CacheLoader {
      * @return
      */
     private <T> T get(Object key) {
-        return (T) snapshot.get(SnapshotBizKeyEnum.CA, key);
+        return (T)snapshot.get(SnapshotBizKeyEnum.CA, key);
     }
 
     /**
@@ -111,6 +106,8 @@ public class CaSnapshotAgent implements CacheLoader {
      * @param ca
      */
     public void saveCa(Ca ca) {
+        CaPO caPO = new CaPO();
+        BeanUtils.copyProperties(ca, caPO);
         insert(new CaCacheKey(ca.getUser()), ca);
     }
 
@@ -120,7 +117,9 @@ public class CaSnapshotAgent implements CacheLoader {
      * @param ca
      */
     public void updateCa(Ca ca) {
-        update(new CaCacheKey(ca.getUser()), ca);
+        CaPO caPO = new CaPO();
+        BeanUtils.copyProperties(ca, caPO);
+        update(new CaCacheKey(caPO.getUser()), caPO);
     }
 
     /**
@@ -129,6 +128,8 @@ public class CaSnapshotAgent implements CacheLoader {
      * @param clusterConfig
      */
     public void saveClusterConfig(ClusterConfig clusterConfig) {
+        ClusterConfigPO clusterConfigPO = new ClusterConfigPO();
+        BeanUtils.copyProperties(clusterConfig, clusterConfigPO);
         insert(new ClusterConfigCacheKey(clusterConfig.getClusterName()), clusterConfig);
     }
 
@@ -138,7 +139,9 @@ public class CaSnapshotAgent implements CacheLoader {
      * @param clusterConfig
      */
     public void updateClusterConfig(ClusterConfig clusterConfig) {
-        update(new ClusterConfigCacheKey(clusterConfig.getClusterName()), clusterConfig);
+        ClusterConfigPO clusterConfigPO = new ClusterConfigPO();
+        BeanUtils.copyProperties(clusterConfig, clusterConfigPO);
+        update(new ClusterConfigCacheKey(clusterConfigPO.getClusterName()), clusterConfigPO);
     }
 
     /**
@@ -147,6 +150,8 @@ public class CaSnapshotAgent implements CacheLoader {
      * @param clusterNode
      */
     public void saveClusterNode(ClusterNode clusterNode) {
+        ClusterNodePO clusterNodePO = new ClusterNodePO();
+        BeanUtils.copyProperties(clusterNode, clusterNodePO);
         insert(new ClusterNodeCacheKey(clusterNode.getNodeName()), clusterNode);
     }
 
@@ -156,24 +161,25 @@ public class CaSnapshotAgent implements CacheLoader {
      * @param clusterNode
      */
     public void updateClusterNode(ClusterNode clusterNode) {
-        update(new ClusterNodeCacheKey(clusterNode.getNodeName()), clusterNode);
+        ClusterNodePO clusterNodePO = new ClusterNodePO();
+        BeanUtils.copyProperties(clusterNode, clusterNodePO);
+        update(new ClusterNodeCacheKey(clusterNodePO.getNodeName()), clusterNodePO);
     }
 
     /**
      * when cache is not exists,load from db
      */
-    @Override
-    public Object query(Object object) {
+    @Override public Object query(Object object) {
         if (object instanceof CaSnapshotAgent.CaCacheKey) {
-            CaCacheKey key = (CaCacheKey) object;
+            CaCacheKey key = (CaCacheKey)object;
             return caRepository.getCa(key.getUser());
         }
         if (object instanceof CaSnapshotAgent.ClusterConfigCacheKey) {
-            ClusterConfigCacheKey key = (ClusterConfigCacheKey) object;
+            ClusterConfigCacheKey key = (ClusterConfigCacheKey)object;
             return clusterConfigRepository.getClusterConfig(key.clusterName);
         }
         if (object instanceof CaSnapshotAgent.ClusterNodeCacheKey) {
-            ClusterNodeCacheKey key = (ClusterNodeCacheKey) object;
+            ClusterNodeCacheKey key = (ClusterNodeCacheKey)object;
             return clusterNodeRepository.getClusterNode(key.nodeName);
         }
         log.error("not found load function for cache key:{}", object);
@@ -186,8 +192,7 @@ public class CaSnapshotAgent implements CacheLoader {
      * @param insertList
      * @return
      */
-    @Override
-    public boolean batchInsert(List<Pair<Object, Object>> insertList) {
+    @Override public boolean batchInsert(List<Pair<Object, Object>> insertList) {
         if (CollectionUtils.isEmpty(insertList)) {
             log.info("[batchInsert]insertMap is empty");
             return true;
@@ -197,13 +202,13 @@ public class CaSnapshotAgent implements CacheLoader {
         List<ClusterNodePO> clusterNodePOS = new LinkedList<>();
         for (Pair<Object, Object> pair : insertList) {
             if (pair.getLeft() instanceof CaSnapshotAgent.CaCacheKey) {
-                caPOS.add((CaPO) pair.getRight());
+                caPOS.add((CaPO)pair.getRight());
             }
             if (pair.getLeft() instanceof CaSnapshotAgent.ClusterConfigCacheKey) {
-                clusterConfigPOS.add((ClusterConfigPO) pair.getRight());
+                clusterConfigPOS.add((ClusterConfigPO)pair.getRight());
             }
             if (pair.getLeft() instanceof CaSnapshotAgent.ClusterNodeCacheKey) {
-                clusterNodePOS.add((ClusterNodePO) pair.getRight());
+                clusterNodePOS.add((ClusterNodePO)pair.getRight());
             }
         }
         if (!CollectionUtils.isEmpty(caPOS)) {
@@ -224,8 +229,7 @@ public class CaSnapshotAgent implements CacheLoader {
      * @param updateList
      * @return
      */
-    @Override
-    public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
+    @Override public boolean batchUpdate(List<Pair<Object, Object>> updateList) {
         if (CollectionUtils.isEmpty(updateList)) {
             log.info("[updateMap]updateMap is empty");
             return true;
@@ -235,13 +239,13 @@ public class CaSnapshotAgent implements CacheLoader {
         List<ClusterNodePO> clusterNodePOS = new LinkedList<>();
         for (Pair<Object, Object> pair : updateList) {
             if (pair.getLeft() instanceof CaSnapshotAgent.CaCacheKey) {
-                caPOS.add((CaPO) pair.getRight());
+                caPOS.add((CaPO)pair.getRight());
             }
             if (pair.getLeft() instanceof CaSnapshotAgent.ClusterConfigCacheKey) {
-                clusterConfigPOS.add((ClusterConfigPO) pair.getRight());
+                clusterConfigPOS.add((ClusterConfigPO)pair.getRight());
             }
-            if (pair.getLeft() instanceof CaSnapshotAgent.CaCacheKey) {
-                clusterNodePOS.add((ClusterNodePO) pair.getRight());
+            if (pair.getLeft() instanceof CaSnapshotAgent.ClusterNodeCacheKey) {
+                clusterNodePOS.add((ClusterNodePO)pair.getRight());
             }
         }
         if (!CollectionUtils.isEmpty(caPOS)) {
@@ -259,33 +263,21 @@ public class CaSnapshotAgent implements CacheLoader {
     /**
      * the cache key of CA
      */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CaCacheKey extends BaseBO {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class CaCacheKey extends BaseBO {
         private String user;
     }
 
     /**
      * the cache key of CA
      */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ClusterConfigCacheKey extends BaseBO {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class ClusterConfigCacheKey extends BaseBO {
         private String clusterName;
     }
 
     /**
      * the cache key of CA
      */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ClusterNodeCacheKey extends BaseBO {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class ClusterNodeCacheKey extends BaseBO {
         private String nodeName;
     }
 }
