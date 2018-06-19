@@ -84,12 +84,6 @@ import java.util.concurrent.atomic.AtomicLong;
             return null;
         }
 
-        // check package if exist
-        if (null == packageRepository.load(packHeight.get())) {
-            log.error("package is not exist. packHeight={}", packHeight.get());
-            return null;
-        }
-
         return packHeight.get();
     }
 
