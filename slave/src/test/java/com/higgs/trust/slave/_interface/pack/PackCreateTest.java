@@ -2,7 +2,7 @@ package com.higgs.trust.slave._interface.pack;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave._interface.InterfaceCommonTest;
-import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -22,6 +22,7 @@ public class PackCreateTest extends InterfaceCommonTest{
 
     @Autowired
     private PackageService packageService;
+    @Autowired private MasterPackageCache packageCache;
     @Override protected String getProviderRootPath() {
         return PROVIDER_ROOT_PATH;
     }
@@ -30,7 +31,7 @@ public class PackCreateTest extends InterfaceCommonTest{
         log.info("[fail]param:{}", param);
         executeBeforeSql(param);
 
-        Package pack = packageService.create(getTxList(param), null);
+        Package pack = packageService.create(getTxList(param), packageCache.getPackHeight());
         assertEquals(pack, param.get("assert"));
 
         executeAfterSql(param);
@@ -38,7 +39,7 @@ public class PackCreateTest extends InterfaceCommonTest{
 
     @Test(dataProvider = "defaultProvider", priority = 2) public void success(Map<?, ?> param) {
         log.info("[success]param:{}", param);
-        Package pack = packageService.create(getTxList(param), null);
+        Package pack = packageService.create(getTxList(param), packageCache.getPackHeight());
         assertEquals(String.valueOf(pack.getHeight()), getAssertData(param));
     }
 
@@ -46,7 +47,7 @@ public class PackCreateTest extends InterfaceCommonTest{
         log.info("[successWithCondition]param:{}", param);
         executeBeforeSql(param);
 
-        Package pack = packageService.create(getTxList(param), null);
+        Package pack = packageService.create(getTxList(param), packageCache.getPackHeight());
 
         assertEquals(String.valueOf(pack.getHeight()), getAssertData(param));
 

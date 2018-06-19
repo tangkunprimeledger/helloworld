@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.pack;
 
-import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -18,9 +17,10 @@ public interface PackageService {
      * create new package from pending transactions
      *
      * @param signedTransactions
+     * @param currentPackageHeight
      * @return
      */
-    Package create(List<SignedTransaction> signedTransactions, Long packHeight);
+    Package create(List<SignedTransaction> signedTransactions, Long currentPackageHeight);
 
     /**
      * package status change function

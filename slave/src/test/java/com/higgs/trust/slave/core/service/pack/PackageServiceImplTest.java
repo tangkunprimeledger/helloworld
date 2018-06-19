@@ -7,6 +7,7 @@ import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
+import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.Package;
@@ -37,8 +38,9 @@ public class PackageServiceImplTest extends BaseTest{
     @Autowired
     private PackageService packageService;
 
-    @Autowired
-    private PackageRepository packageRepository;
+    @Autowired private PackageRepository packageRepository;
+
+    @Autowired private MasterPackageCache packageCache;
 
     private Package packageToRecieve;
 
@@ -128,11 +130,11 @@ public class PackageServiceImplTest extends BaseTest{
     @Test public void create() {
         Package pack;
         //test signedTxList is null
-        pack = packageService.create(null, null);
+        pack = packageService.create(null, packageCache.getPackHeight());
         assertEquals(pack, null);
 
         //test packHeight is null
-        pack = packageService.create(signedTxList, null);
+        pack = packageService.create(signedTxList, packageCache.getPackHeight());
         assertEquals(new Long(2L), pack.getHeight());
 //        System.out.println(pack);
     }

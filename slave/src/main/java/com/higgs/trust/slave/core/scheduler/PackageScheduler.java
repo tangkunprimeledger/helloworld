@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.scheduler;
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
@@ -25,45 +26,33 @@ import java.util.concurrent.TimeUnit;
  * @author tangfashuang
  * @date 2018/04/09 15:30
  */
-@Service
-@Slf4j
-public class PackageScheduler {
+@Service @Slf4j public class PackageScheduler {
 
-    @Autowired
-    private PendingState pendingState;
+    @Autowired private PendingState pendingState;
 
-    @Autowired
-    private PackageRepository packageRepository;
+    @Autowired private PackageRepository packageRepository;
 
-    @Autowired
-    private PackageService packageService;
+    @Autowired private PackageService packageService;
 
-    @Autowired
-    private PackageProcess packageProcess;
+    @Autowired private PackageProcess packageProcess;
 
-    @Autowired
-    private BlockRepository blockRepository;
+    @Autowired private BlockRepository blockRepository;
 
-    @Autowired
-    private NodeState nodeState;
+    @Autowired private NodeState nodeState;
 
-    @Autowired
-    private Long packHeight;
+    @Autowired private MasterPackageCache packageCache;
 
     /**
      * pending package blocking queue
      */
-    @Autowired
-    private BlockingQueue<Package> pendingPack;
+    @Autowired private BlockingQueue<Package> pendingPack;
 
-    @Value("${trust.batch.tx.limit:200}")
-    private int TX_PENDING_COUNT;
+    @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
 
     /**
      * master node create package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.create}")
-    public void createPackage() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
         if (!nodeState.isMaster()) {
             return;
         }
@@ -75,10 +64,10 @@ public class PackageScheduler {
         List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
-            return ;
+            return;
         }
 
-        Package pack = packageService.create(signedTransactions, packHeight);
+        Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
 
         if (null == pack) {
             //add pending signedTransactions to pendingTxQueue
@@ -89,7 +78,7 @@ public class PackageScheduler {
         try {
             //add package to queue
             pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
-            packHeight = pack.getHeight();
+            packageCache.increment();
         } catch (InterruptedException e) {
             log.warn("pending pack offer InterruptedException. ", e);
             pendingState.addPendingTxsToQueueFirst(signedTransactions);
@@ -99,8 +88,7 @@ public class PackageScheduler {
     /**
      * master node submit package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.submit}")
-    public void submitPackage() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.submit}") public void submitPackage() {
         if (!nodeState.isMaster()) {
             return;
         }
@@ -115,8 +103,7 @@ public class PackageScheduler {
     /**
      * process package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
-    public void processPackage() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}") public void processPackage() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
