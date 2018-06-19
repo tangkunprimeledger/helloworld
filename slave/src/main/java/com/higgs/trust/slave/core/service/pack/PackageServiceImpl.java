@@ -75,6 +75,15 @@ import java.util.stream.Collectors;
             return null;
         }
 
+        // check package if exist
+        Long maxBlockHeight = blockRepository.getMaxHeight();
+        if (maxBlockHeight != null && maxBlockHeight.compareTo(currentPackageHeight) < 0) {
+            if ( null == packageRepository.load(currentPackageHeight)) {
+                log.error("package is not exist. packHeight={}", currentPackageHeight);
+                return null;
+            }
+        }
+
         // sort signedTransactions by txId asc
         Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
             @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
