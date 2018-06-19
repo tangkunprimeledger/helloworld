@@ -46,4 +46,14 @@ import java.util.Map;
     @Override public String privateKey() {
         return nodeState.getPrivateKey();
     }
+
+    @Override public void init(ClusterInfoVo vo) {
+        faultNodeNum = vo.getFaultNodeNum();
+        clusters.clear();
+        clusters.putAll(vo.getClusters());
+    }
+
+    @Override public void refresh() {
+
+    }
 }

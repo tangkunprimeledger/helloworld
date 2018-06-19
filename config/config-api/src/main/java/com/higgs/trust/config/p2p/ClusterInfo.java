@@ -42,4 +42,16 @@ public interface ClusterInfo {
      * @return
      */
     String privateKey();
+
+    /**
+     * init the cluster info
+     *
+     * @param vo
+     */
+    void init(ClusterInfoVo vo);
+
+    /**
+     * refresh the cluster info
+     */
+    void refresh();
 }
