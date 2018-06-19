@@ -117,6 +117,7 @@ import java.util.*;
                 "[updateKeyPair] ca information doesn't exist");
         }
 
+        log.info("[updateKeyPair] start to update CA pubKey/priKey, nodeName={}",user);
         // generate temp pubKey and priKey, insert into db
         CaVO caVO = generateTmpKeyPair();
 
@@ -160,16 +161,18 @@ import java.util.*;
         // CA existence check
         Ca ca = caRepository.getCa(user);
         if (null == ca) {
-            log.error("[updateKeyPair] ca information for node={} ", user);
+            log.error("[cancelKeyPair] ca information for node={} doesn't exist", user);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_NOT_EXIST_ERROR,
-                "[updateKeyPair] ca information doesn't exist");
+                "[cancelKeyPair] ca information doesn't exist");
         }
 
         //construct caVO
         CaVO caVO = new CaVO();
-        String pubKey = configRepository.getConfig(user).getPubKey();
-        caVO.setReqNo(HashUtil.getSHA256S(pubKey));
-        caVO.setUser(nodeState.getNodeName());
+        Ca oldCa = caRepository.getCa(user);
+        caVO.setReqNo(HashUtil.getSHA256S(oldCa.getPubKey()));
+        caVO.setUser(user);
+        caVO.setPeriod(oldCa.getPeriod());
+        caVO.setPubKey(oldCa.getPubKey());
 
         // send CA cancel request
         return cancelCaTx(caVO);
@@ -261,6 +264,7 @@ import java.util.*;
         caAction.setUser(caVO.getUser());
         caAction.setType(ActionTypeEnum.CA_UPDATE);
         caAction.setIndex(0);
+        caAction.setValid(true);
         actions.add(caAction);
         return actions;
     }
@@ -282,6 +286,8 @@ import java.util.*;
         caAction.setType(ActionTypeEnum.CA_CANCEL);
         caAction.setIndex(0);
         caAction.setValid(false);
+        caAction.setPeriod(caVO.getPeriod());
+        caAction.setPubKey(caVO.getPubKey());
         actions.add(caAction);
         return actions;
     }
@@ -350,6 +356,7 @@ import java.util.*;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
                 "[generateTmpKeyPair] generate pubKey/priKey has error, no such algorithm");
         }
+        log.info("[generateTmpKeyPair] start to generate tempKeyPairs");
         String pubKey = map.get(PUB_KEY);
         String priKey = map.get(PRI_KEY);
         //store temp pubKey and priKey
@@ -357,8 +364,10 @@ import java.util.*;
         config.setNodeName(nodeState.getNodeName());
         config.setTmpPubKey(pubKey);
         config.setTmpPriKey(priKey);
+        config.setValid(true);
         configRepository.updateConfig(config);
 
+        //TODO 旧的pubKey需要从数据库查出来，作为txid进行下发
         //construct caVO
         CaVO caVO = new CaVO();
         caVO.setVersion(VersionEnum.V1.getCode());

@@ -23,17 +23,6 @@ import org.springframework.beans.factory.BeanFactory
 @Usage("get the node info")
 class failover {
 
-    @Usage('delete the temp header')
-    @Command
-    def deleteTempHeader(InvocationContext context,
-                         @Required @Argument String height,
-                         @Usage("block header type") @Required @Argument BlockHeaderTypeEnum type) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def blockRepository = beans.getBean(BlockRepository.class)
-        blockRepository.deleteTempHeader(Long.parseLong(height), type)
-        out.println("delete successful")
-    }
-
     @Usage('auto sync the batch blocks, get the blocks from other node and validate block by raft/b2p channel and execute it, this option will auto change the node state.')
     @Command
     def autoSync(InvocationContext context) {

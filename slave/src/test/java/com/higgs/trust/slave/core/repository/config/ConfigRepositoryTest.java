@@ -29,8 +29,9 @@ public class ConfigRepositoryTest extends BaseTest {
     @Test public void testUpdateConfig() throws Exception {
         Config config = new Config();
         config.setNodeName("node-1");
-        config.setTmpPubKey("tempPubKey");
-        config.setTmpPriKey("tempPriKey");
+//        config.setTmpPubKey("tempPubKey");
+//        config.setTmpPriKey("tempPriKey");
+        config.setValid(false);
         configRepository.updateConfig(config);
     }
 

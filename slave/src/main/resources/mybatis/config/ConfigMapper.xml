@@ -43,24 +43,24 @@
 
 
     <update id="updateConfig" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
-        UPDATE config SET
-        update_time=now(3),
-        <if test="valid != null and valid!=''">
+        UPDATE config
+        <trim prefix="SET" suffixOverrides=",">
+            update_time=now(3),
             valid=#{valid},
-        </if>
-        <if test="pubKey != null and pubKey!=''">
-            pub_key=#{pubKey},
-        </if>
-        <if test="priKey != null and priKey!=''">
-            pri_key=#{priKey},
-        </if>
-        <if test="tmpPubKey != null and tmpPubKey!=''">
-            tmp_pub_key=#{tmpPubKey},
-        </if>
-        <if test="tmpPriKey != null and tmpPriKey!=''">
-            tmp_pri_key=#{tmpPriKey}
-        </if>
-        WHERE `node_name`=#{nodeName} and valid != #{valid}
+            <if test="pubKey != null and pubKey!=''">
+                pub_key=#{pubKey},
+            </if>
+            <if test="priKey != null and priKey!=''">
+                pri_key=#{priKey},
+            </if>
+            <if test="tmpPubKey != null and tmpPubKey!=''">
+                tmp_pub_key=#{tmpPubKey},
+            </if>
+            <if test="tmpPriKey != null and tmpPriKey!=''">
+                tmp_pri_key=#{tmpPriKey}
+            </if>
+        </trim>
+        WHERE `node_name`=#{nodeName}
     </update>
 
 

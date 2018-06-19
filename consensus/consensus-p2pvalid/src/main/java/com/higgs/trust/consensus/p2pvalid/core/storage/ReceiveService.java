@@ -129,6 +129,7 @@ public class ReceiveService {
         }
 
         log.info("command receive : {}", validCommandWrap);
+        log.debug("command message digest:{}",validCommandWrap.getValidCommand().getMessageDigestHash());
 
         // update receive command
         ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);

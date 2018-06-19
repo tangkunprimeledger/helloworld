@@ -58,6 +58,14 @@
     <update id="batchUpdate" parameterType="com.higgs.trust.slave.dao.po.ca.CaPO">
 		UPDATE ca
 		<trim prefix="SET" suffixOverrides=",">
+			<!-- set valid -->
+			<trim prefix="`valid` = CASE" suffix="END,">
+				<foreach collection="list" item="item">
+					WHEN `user`=#{item.user} and valid=1
+					THEN #{item.valid}
+				</foreach>
+				ELSE `valid`
+			</trim>
 			<!-- set period -->
 			<trim prefix="`period` = CASE" suffix="END,">
 				<foreach collection="list" item="item">

@@ -26,7 +26,7 @@ public enum RespCodeEnum {
     }
 
     public String getRespCode() {
-        return this.mainCode + this.subCode;
+        return this.mainCode.concat("-").concat(this.subCode);
     }
 
     public String getMsg() {

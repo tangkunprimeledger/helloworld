@@ -68,7 +68,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
                 log.warn("transaction idempotent, txId={}", txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
                 transactionVO.setErrMsg(TxSubmitResultEnum.TX_IDEMPOTENT.getDesc());
-                transactionVO.setRetry(false);
+                transactionVO.setRetry(true);
                 transactionVOList.add(transactionVO);
                 return;
             }
@@ -94,10 +94,10 @@ import java.util.concurrent.ConcurrentLinkedDeque;
                 return;
             }
 
-            //insert memory
-            pendingTxQueue.offerLast(signedTransaction);
             // key and value all are txId
             existTxMap.put(signedTransaction.getCoreTx().getTxId(), signedTransaction.getCoreTx().getTxId());
+            //insert memory
+            pendingTxQueue.offerLast(signedTransaction);
         });
 
         // if all transaction received success, RespData will set data 'null'
