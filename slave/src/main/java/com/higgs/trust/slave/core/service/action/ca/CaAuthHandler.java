@@ -27,6 +27,9 @@ import org.springframework.stereotype.Component;
     @Override public void process(ActionData actionData) {
         CaAction caAction = (CaAction)actionData.getCurrentAction();
 
+        log.info("[CaAuthHandler.process] start to process ca auth action, user={}, pubKey={}", caAction.getUser(),
+            caAction.getPubKey());
+
         if (!caHelper.validate(caAction, ActionTypeEnum.CA_AUTH)) {
             log.error("[CaAuthHandler.process] actionData validate error, user={}, pubKey={}", caAction.getUser(),
                 caAction.getPubKey());

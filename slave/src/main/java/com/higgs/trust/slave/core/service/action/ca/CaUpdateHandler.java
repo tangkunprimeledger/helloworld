@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
     @Autowired CaSnapshotHandler caSnapshotHandler;
     @Autowired CaHelper caHelper;
 
-
     /**
      * the storage for the action
      *
@@ -33,6 +32,9 @@ import org.springframework.stereotype.Component;
     @Override public void process(ActionData actionData) {
         // convert action and validate it
         CaAction caAction = (CaAction)actionData.getCurrentAction();
+
+        log.info("[CaUpdateHandler.process] start to process ca update action, user={}, pubKey={}", caAction.getUser(),
+            caAction.getPubKey());
 
         if (!caHelper.validate(caAction, ActionTypeEnum.CA_UPDATE)) {
             log.error("[CaUpdateHandler.process] actionData validate error, user={}, pubKey={}", caAction.getUser(),

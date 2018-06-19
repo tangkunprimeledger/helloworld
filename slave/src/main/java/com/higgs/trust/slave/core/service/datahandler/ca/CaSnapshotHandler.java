@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.datahandler.ca;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
+import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
@@ -95,7 +96,7 @@ import org.springframework.stereotype.Service;
      * @return Ca
      * @desc get CA information by nodeName
      */
-    @Override public Ca getCa(String nodeName) {
+    @Override public CaPO getCa(String nodeName) {
         return caSnapshotAgent.getCa(nodeName);
     }
 }
