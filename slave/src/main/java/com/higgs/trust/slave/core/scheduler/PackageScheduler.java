@@ -42,11 +42,6 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired private MasterPackageCache packageCache;
 
-    /**
-     * pending package blocking queue
-     */
-    @Autowired private BlockingQueue<Package> pendingPack;
-
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
 
     /**
@@ -57,7 +52,7 @@ import java.util.concurrent.TimeUnit;
             return;
         }
 
-        if (pendingPack.size() > Constant.MAX_BLOCKING_QUEUE_SIZE - 1) {
+        if (packageCache.getPendingPackSize() > Constant.MAX_BLOCKING_QUEUE_SIZE - 1) {
             return;
         }
 
@@ -76,9 +71,8 @@ import java.util.concurrent.TimeUnit;
         }
 
         try {
-            //add package to queue
-            pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
-            packageCache.increment();
+            packageCache.putPendingPack(pack);
+            packageCache.incPackHeight();
         } catch (InterruptedException e) {
             log.warn("pending pack offer InterruptedException. ", e);
             pendingState.addPendingTxsToQueueFirst(signedTransactions);
@@ -93,11 +87,11 @@ import java.util.concurrent.TimeUnit;
             return;
         }
 
-        if (pendingPack.size() < 1) {
+        if (packageCache.getPendingPackSize() < 1) {
             return;
         }
 
-        packageService.submitConsensus(pendingPack.poll());
+        packageService.submitConsensus(packageCache.getPackage());
     }
 
     /**
