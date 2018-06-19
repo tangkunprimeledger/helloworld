@@ -74,10 +74,6 @@ import java.util.stream.Collectors;
         if (null == currentPackageHeight) {
             return null;
         }
-        if (null == packageRepository.load(currentPackageHeight)) {
-            log.error("package is not exist. packHeight={}", currentPackageHeight);
-            return null;
-        }
 
         // sort signedTransactions by txId asc
         Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
