@@ -95,8 +95,6 @@ import java.util.stream.Collectors;
         Package pack = new Package();
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
-        //get max height, add 1 for next package height
-        pack.setHeight(currentPackageHeight + 1);
         //set status = INIT
         pack.setStatus(PackageStatusEnum.INIT);
         return pack;
