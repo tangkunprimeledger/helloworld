@@ -72,7 +72,6 @@ import java.util.concurrent.TimeUnit;
 
         try {
             packageCache.putPendingPack(pack);
-            packageCache.incPackHeight();
         } catch (InterruptedException e) {
             log.warn("pending pack offer InterruptedException. ", e);
             pendingState.addPendingTxsToQueueFirst(signedTransactions);

@@ -32,24 +32,22 @@ import java.util.concurrent.atomic.AtomicLong;
     @Autowired private PackageRepository packageRepository;
     @Autowired private NodeState nodeState;
 
-    private AtomicLong packHeight;
-    private Deque<SignedTransaction> pendingTxQueue;
-    private ConcurrentLinkedHashMap existTxMap;
-    private BlockingQueue<Package> pendingPack;
+    private AtomicLong packHeight = new AtomicLong(0);
+    private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
+    private ConcurrentLinkedHashMap existTxMap =
+        new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE)
+            .build();
+    private BlockingQueue<Package> pendingPack = new LinkedBlockingDeque<>();
 
     @Override public void masterChanged(String masterName) {
         synchronized (this) {
-            packHeight = null;
-            pendingPack = null;
-            existTxMap = null;
-            pendingTxQueue = null;
-        }
-        if (nodeState.isMaster()) {
-            initPackHeight();
-            pendingTxQueue = new ConcurrentLinkedDeque<>();
-            existTxMap = new ConcurrentLinkedHashMap.Builder<String, String>()
-                .maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE).build();
-            pendingPack = new LinkedBlockingDeque<>();
+            packHeight.set(0);
+            pendingPack.clear();
+            existTxMap.clear();
+            pendingTxQueue.clear();
+            if (nodeState.isMaster()) {
+                initPackHeight();
+            }
         }
     }
 
@@ -75,8 +73,8 @@ import java.util.concurrent.atomic.AtomicLong;
             if (null != maxPackHeight) {
                 packageHeight = maxBlockHeight > maxPackHeight ? maxBlockHeight : maxPackHeight;
             }
-            synchronized (packHeight) {
-                packHeight = new AtomicLong(packageHeight);
+            synchronized (this) {
+                packHeight.set(packageHeight);
             }
         }
     }
@@ -86,10 +84,6 @@ import java.util.concurrent.atomic.AtomicLong;
             return null;
         }
         return packHeight.get();
-    }
-
-    public synchronized long incPackHeight() {
-        return packHeight.getAndIncrement();
     }
 
     public List<SignedTransaction> getPendingTxQueue(int count) {
@@ -135,7 +129,11 @@ import java.util.concurrent.atomic.AtomicLong;
     }
 
     public void putPendingPack(Package pack) throws InterruptedException {
-        pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+        synchronized (this) {
+            long packageHeight = packHeight.getAndIncrement();
+            pack.setHeight(packageHeight);
+            pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+        }
     }
 
     public int getPendingPackSize() {
