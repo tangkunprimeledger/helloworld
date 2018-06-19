@@ -131,7 +131,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
     public void putPendingPack(Package pack) throws InterruptedException {
         synchronized (this) {
-            long packageHeight = packHeight.getAndIncrement();
+            long packageHeight = packHeight.incrementAndGet();
             pack.setHeight(packageHeight);
             pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
         }

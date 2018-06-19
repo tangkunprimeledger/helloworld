@@ -5,6 +5,7 @@ package com.higgs.trust.config.properties.p2p;
 
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.p2p.ClusterInfoVo;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,5 +47,15 @@ import java.util.Map;
 
     @Override public String privateKey() {
         return nodeState.getPrivateKey();
+    }
+
+    @Override public void init(ClusterInfoVo vo) {
+        faultNodeNum = vo.getFaultNodeNum();
+        clusters.clear();
+        clusters.putAll(vo.getClusters());
+    }
+
+    @Override public void refresh() {
+
     }
 }
