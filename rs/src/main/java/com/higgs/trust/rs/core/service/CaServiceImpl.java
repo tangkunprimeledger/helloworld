@@ -119,7 +119,7 @@ import java.util.*;
 
         log.info("[updateKeyPair] start to update CA pubKey/priKey, nodeName={}",user);
         // generate temp pubKey and priKey, insert into db
-        CaVO caVO = generateTmpKeyPair();
+        CaVO caVO = generateTmpKeyPair(ca);
 
         // send CA update request
         return updateCaTx(caVO);
@@ -345,7 +345,7 @@ import java.util.*;
         return caVO;
     }
 
-    private CaVO generateTmpKeyPair() {
+    private CaVO generateTmpKeyPair(Ca ca) {
 
         // generate temp pubKey and priKey and insert into db
         Map<String, String> map = null;
@@ -361,21 +361,20 @@ import java.util.*;
         String priKey = map.get(PRI_KEY);
         //store temp pubKey and priKey
         Config config = new Config();
-        config.setNodeName(nodeState.getNodeName());
+        config.setNodeName(ca.getUser());
         config.setTmpPubKey(pubKey);
         config.setTmpPriKey(priKey);
         config.setValid(true);
         configRepository.updateConfig(config);
 
-        //TODO 旧的pubKey需要从数据库查出来，作为txid进行下发
         //construct caVO
         CaVO caVO = new CaVO();
         caVO.setVersion(VersionEnum.V1.getCode());
         caVO.setPeriod(calculatePeriod());
         caVO.setPubKey(pubKey);
-        caVO.setReqNo(HashUtil.getSHA256S(pubKey));
+        caVO.setReqNo(HashUtil.getSHA256S(ca.getPubKey()));
         caVO.setUsage("consensus");
-        caVO.setUser(nodeState.getNodeName());
+        caVO.setUser(ca.getUser());
 
         return caVO;
     }
