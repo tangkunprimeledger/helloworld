@@ -16,6 +16,9 @@ limitations under the License.
 package bftsmart.reconfiguration.util;
 
 import bftsmart.tom.util.Logger;
+import com.higgs.trust.consensus.bftsmartcustom.started.SpringUtil;
+import com.higgs.trust.consensus.bftsmartcustom.started.config.SmartConfig;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.CustomKeyLoader;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -330,8 +333,9 @@ public class TOMConfiguration extends Configuration {
             } else {
                 numNettyWorkers = Integer.parseInt(s);
             }
-            
-            rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
+            //TODO zyf modified
+//            rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
+            rsaLoader = SpringUtil.getBean(CustomKeyLoader.class);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }

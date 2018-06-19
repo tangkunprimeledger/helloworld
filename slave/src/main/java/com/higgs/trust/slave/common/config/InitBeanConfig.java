@@ -61,10 +61,6 @@ import java.util.concurrent.*;
         return new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE).build();
     }
 
-    @Bean public Long packHeight() {
-        return new Long(0);
-    }
-
     @Bean public BlockingQueue<Package> pendingPack() {
         return new LinkedBlockingDeque<>();
     }
