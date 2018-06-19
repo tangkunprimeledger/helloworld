@@ -74,10 +74,6 @@ import java.util.stream.Collectors;
         if (null == currentPackageHeight) {
             return null;
         }
-        if (null == packageRepository.load(currentPackageHeight)) {
-            log.error("package is not exist. packHeight={}", currentPackageHeight);
-            return null;
-        }
 
         // sort signedTransactions by txId asc
         Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
@@ -95,8 +91,6 @@ import java.util.stream.Collectors;
         Package pack = new Package();
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
-        //get max height, add 1 for next package height
-        pack.setHeight(currentPackageHeight + 1);
         //set status = INIT
         pack.setStatus(PackageStatusEnum.INIT);
         return pack;

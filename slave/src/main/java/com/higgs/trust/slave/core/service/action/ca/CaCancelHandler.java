@@ -49,6 +49,8 @@ import org.springframework.stereotype.Component;
         caSnapshotHandler.cancelCa(ca);
         Profiler.release();
 
+
+        // TODO  添加refresh()方法属性集群配置信息
     }
 
 }

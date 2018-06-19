@@ -1,9 +1,8 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
-import com.higgs.trust.slave.model.bo.ca.Ca;
+import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +13,12 @@ import org.springframework.stereotype.Component;
 
     public boolean validate(CaAction caAction, ActionTypeEnum type) {
         // convert action and validate it
-        log.info("[CaAuthHandler.process] is start,params:{}", caAction);
+        log.info("[CaHelper.process] is start,params:{}", caAction);
 
         //validate idempotent
-        Ca ca = caSnapshotHandler.getCa(caAction.getUser());
+        CaPO caPO = caSnapshotHandler.getCa(caAction.getUser());
         if (type == ActionTypeEnum.CA_AUTH) {
-            if (null != ca) {
+            if (null != caPO) {
                 return false;
             } else {
                 return true;
@@ -27,7 +26,7 @@ import org.springframework.stereotype.Component;
         }
 
         if (type != ActionTypeEnum.CA_AUTH) {
-            if (null != ca) {
+            if (null != caPO) {
                 return true;
             } else {
                 return false;

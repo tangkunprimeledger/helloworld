@@ -1,10 +1,10 @@
 package com.higgs.trust.slave.core.service.pending;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
+import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -16,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * @Description:
@@ -29,9 +27,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
     @Autowired private TransactionRepository transactionRepository;
 
-    @Autowired private Deque<SignedTransaction> pendingTxQueue;
-
-    @Autowired private ConcurrentLinkedHashMap existTxMap;
+    @Autowired private MasterPackageCache packageCache;
 
     /**
      * add pending transaction to db
@@ -74,7 +70,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
             }
 
             //limit queue size
-            if (pendingTxQueue.size() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
+            if (packageCache.getPendingTxQueueSize() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
                 log.warn("pending transaction queue size is too large , txId={}", txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.TX_QUEUE_SIZE_TOO_LARGE.getCode());
                 transactionVO.setErrMsg(TxSubmitResultEnum.TX_QUEUE_SIZE_TOO_LARGE.getDesc());
@@ -85,7 +81,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
             //check exist tx map and pending_tx_index
             //TODO rocks db isExist method
-            if (existTxMap.containsKey(txId) || pendingTxRepository.isExist(txId)) {
+            if (packageCache.isExistInMap(txId) || pendingTxRepository.isExist(txId)) {
                 log.warn("pending transaction idempotent, txId={}", txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
                 transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
@@ -95,9 +91,9 @@ import java.util.concurrent.ConcurrentLinkedDeque;
             }
 
             // key and value all are txId
-            existTxMap.put(signedTransaction.getCoreTx().getTxId(), signedTransaction.getCoreTx().getTxId());
+            packageCache.putExistMap(signedTransaction.getCoreTx().getTxId(), signedTransaction.getCoreTx().getTxId());
             //insert memory
-            pendingTxQueue.offerLast(signedTransaction);
+            packageCache.appendDequeLast(signedTransaction);
         });
 
         // if all transaction received success, RespData will set data 'null'
@@ -108,22 +104,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
     }
 
     @Override public List<SignedTransaction> getPendingTransactions(int count) {
-        if (null == pendingTxQueue.peekFirst()) {
-            return null;
-        }
-
-        int num = 0;
-        List<SignedTransaction> list = new ArrayList<>();
-        while (num < count) {
-            SignedTransaction signedTx = pendingTxQueue.pollFirst();
-            if (null != signedTx) {
-                list.add(signedTx);
-                num++;
-            } else {
-                break;
-            }
-        }
-        return list;
+       return packageCache.getPendingTxQueue(count);
     }
 
     @Override public int packagePendingTransactions(List<SignedTransaction> signedTransactions, Long height) {
@@ -135,13 +116,12 @@ import java.util.concurrent.ConcurrentLinkedDeque;
     }
 
     @Override public void addPendingTxsToQueueFirst(List<SignedTransaction> signedTransactions) {
-        signedTransactions.forEach(signedTx->{
+        for (SignedTransaction signedTx : signedTransactions) {
             try {
-                pendingTxQueue.offerFirst(signedTx);
+                packageCache.appendDequeFirst(signedTx);
             } catch (Exception e) {
                 log.error("add transaction to pendingTxQueue exception. ", e);
             }
-        });
-        System.out.println("pendingTxQueue.size = " + pendingTxQueue.size());
+        }
     }
 }

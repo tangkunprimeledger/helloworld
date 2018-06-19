@@ -53,18 +53,6 @@ import java.util.concurrent.*;
         return tx;
     }
 
-    @Bean public Deque<SignedTransaction> pendingTxQueue() {
-        return new ConcurrentLinkedDeque<>();
-    }
-
-    @Bean public ConcurrentLinkedHashMap existTxMap() {
-        return new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE).build();
-    }
-
-    @Bean public BlockingQueue<Package> pendingPack() {
-        return new LinkedBlockingDeque<>();
-    }
-
     @Bean public ExecutorService packageThreadPool() {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("package-pool-%d").build();
         ExecutorService packageExecutor =

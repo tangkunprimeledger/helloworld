@@ -76,7 +76,7 @@ import java.util.List;
      * @param user
      * @return
      */
-    public Ca getCa(String user) {
+    public CaPO getCa(String user) {
         return get(new CaCacheKey(user));
     }
 
@@ -108,7 +108,7 @@ import java.util.List;
     public void saveCa(Ca ca) {
         CaPO caPO = new CaPO();
         BeanUtils.copyProperties(ca, caPO);
-        insert(new CaCacheKey(ca.getUser()), ca);
+        insert(new CaCacheKey(ca.getUser()), caPO);
     }
 
     /**
@@ -130,7 +130,7 @@ import java.util.List;
     public void saveClusterConfig(ClusterConfig clusterConfig) {
         ClusterConfigPO clusterConfigPO = new ClusterConfigPO();
         BeanUtils.copyProperties(clusterConfig, clusterConfigPO);
-        insert(new ClusterConfigCacheKey(clusterConfig.getClusterName()), clusterConfig);
+        insert(new ClusterConfigCacheKey(clusterConfig.getClusterName()), clusterConfigPO);
     }
 
     /**
@@ -152,7 +152,7 @@ import java.util.List;
     public void saveClusterNode(ClusterNode clusterNode) {
         ClusterNodePO clusterNodePO = new ClusterNodePO();
         BeanUtils.copyProperties(clusterNode, clusterNodePO);
-        insert(new ClusterNodeCacheKey(clusterNode.getNodeName()), clusterNode);
+        insert(new ClusterNodeCacheKey(clusterNode.getNodeName()), clusterNodePO);
     }
 
     /**

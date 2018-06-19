@@ -67,7 +67,7 @@ import java.util.Map;
     private void generateKeyPair() {
 
         if (null != configRepository.getConfig(nodeState.getNodeName())) {
-            log.info("[ClusterInitService.generateKeyPair] pubKey/peiKey already exist in table config");
+            log.info("[ClusterInitService.generateKeyPair] pubKey/priKey already exist in table config");
             return;
         }
 
