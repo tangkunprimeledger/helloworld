@@ -49,9 +49,6 @@ import java.util.*;
     @Autowired private NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
-    @Value("${bftSmart.systemConfigs.myId:test}") private String myId;
-
-    // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
 
     /**
      * @return
@@ -65,6 +62,7 @@ import java.util.*;
                 "[authKeyPair] invalid node name");
         }
 
+        log.info("[authKeyPair] start to auth CA pubKey/priKey, nodeName={}", user);
         // CA existence check
         Ca ca = caRepository.getCa(user);
         if (null != ca) {
@@ -117,7 +115,7 @@ import java.util.*;
                 "[updateKeyPair] ca information doesn't exist");
         }
 
-        log.info("[updateKeyPair] start to update CA pubKey/priKey, nodeName={}",user);
+        log.info("[updateKeyPair] start to update CA pubKey/priKey, nodeName={}", user);
         // generate temp pubKey and priKey, insert into db
         CaVO caVO = generateTmpKeyPair(ca);
 
@@ -292,24 +290,6 @@ import java.util.*;
         return actions;
     }
 
-    /**
-     * @param pubKey
-     * @return
-     * @desc write file
-     */
-    private void fileWriter(String pubKey) {
-        String path = "config" + System.getProperty("file.separator") + "keys" + System.getProperty("file.separator");
-        try {
-            BufferedWriter w = new BufferedWriter(new FileWriter(path + "publickey" + myId, false));
-            w.write(pubKey);
-            w.flush();
-            w.close();
-        } catch (IOException e) {
-            log.error("[fileWriter]write pubKey to file error", e);
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_WRITE_FILE_ERROR,
-                "[fileWriter]write pubKey to file error");
-        }
-    }
 
     public CaVO generateKeyPair() {
 
@@ -401,10 +381,6 @@ import java.util.*;
         Ca ca = new Ca();
         log.info("[getCa] success getCa, resp={}", resp.getData());
         BeanUtils.copyProperties((Ca)resp.getData(), ca);
-
-        log.info("[getCa] success getCa, ca={}", ca.toString());
-        // TODO CA信息进行写文件操作   写之前应该检测一下CA配置文件是否已经存在
-        //        fileWriter(ca.getPubKey());
 
         return ca;
     }

@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 
     @Autowired CaSnapshotHandler caSnapshotHandler;
     @Autowired CaHelper caHelper;
+    @Autowired ClusterInfo clusterInfo;
 
     @Override public void process(ActionData actionData) {
         CaAction caAction = (CaAction)actionData.getCurrentAction();
@@ -42,5 +44,8 @@ import org.springframework.stereotype.Component;
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.authCa(ca);
         Profiler.release();
+
+
+        // TODO  添加refresh()方法属性集群配置信息
     }
 }
