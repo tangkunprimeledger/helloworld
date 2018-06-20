@@ -112,14 +112,12 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
             snapshot.update(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey, contractState);
         }
 
-        // TODO use merkle tree
-
-//        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT);
-//        if (merkleTree == null) {
-//            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CONTRACT, new Object[]{newState});
-//        } else {
-//            merkleTreeSnapshotAgent.appendChild(merkleTree, newState);
-//        }
+        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT);
+        if (merkleTree == null) {
+            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CONTRACT, new Object[]{newState});
+        } else {
+            merkleTreeSnapshotAgent.appendChild(merkleTree, newState);
+        }
     }
 
     @Override

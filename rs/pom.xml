@@ -19,6 +19,10 @@
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
+            <artifactId>contract</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
             <artifactId>slave</artifactId>
         </dependency>
         <dependency>
