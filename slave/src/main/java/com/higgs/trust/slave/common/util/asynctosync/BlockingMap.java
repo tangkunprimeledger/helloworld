@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.asynctosync;
+package com.higgs.trust.slave.common.util.asynctosync;
 
 public interface BlockingMap<V> {
     void put(String key, V o) throws InterruptedException;
