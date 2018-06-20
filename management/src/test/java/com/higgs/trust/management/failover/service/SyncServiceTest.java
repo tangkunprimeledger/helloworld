@@ -71,21 +71,18 @@ import static org.testng.Assert.assertEquals;
         } catch (SlaveException e) {
             assertEquals(e.getCode(), SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
         }
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
     }
 
     @Test public void testSyncInThreshold() {
         Mockito.when(blockSyncService.getClusterHeight(Matchers.anyInt())).thenReturn(101L);
         Mockito.when(properties.getThreshold()).thenReturn(100);
         syncService.autoSync();
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
     }
 
     @Test public void testSyncOutThreshold() {
         Mockito.when(blockSyncService.getClusterHeight(Matchers.anyInt())).thenReturn(102L);
         Mockito.when(properties.getThreshold()).thenReturn(100);
         syncService.autoSync();
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Offline);
     }
 
     @Test public void testSyncWithParamNotState() {
@@ -228,7 +225,7 @@ import static org.testng.Assert.assertEquals;
         try {
             syncService.sync(startHeight, size);
         } catch (SlaveException e) {
-            assertEquals(e.getCode(), ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
+            assertEquals(e.getCode(), ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID);
         }
         Mockito.verify(blockService, Mockito.times(1)).compareBlockHeader(Matchers.any(), Matchers.any());
     }
@@ -288,7 +285,7 @@ import static org.testng.Assert.assertEquals;
         try {
             syncService.sync(startHeight, size);
         } catch (SlaveException e) {
-            assertEquals(e.getCode(), ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
+            assertEquals(e.getCode(), ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID);
         }
     }
 
@@ -365,7 +362,6 @@ import static org.testng.Assert.assertEquals;
         Mockito.when(pack.getCurrentBlock()).thenReturn(block);
         Mockito.when(packageService.createPackContext(Matchers.any())).thenReturn(pack);
         syncService.autoSync();
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
     }
 
     private List<BlockHeader> mockHeaders(long startHeight, int size) {

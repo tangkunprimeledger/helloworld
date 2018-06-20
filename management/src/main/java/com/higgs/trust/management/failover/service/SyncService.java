@@ -3,6 +3,8 @@ package com.higgs.trust.management.failover.service;
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.config.node.listener.StateChangeListener;
+import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
@@ -35,6 +37,8 @@ import java.util.List;
     @Autowired private BlockSyncService blockSyncService;
     @Autowired private PackageService packageService;
     @Autowired private NodeState nodeState;
+    @Autowired private ClusterInfo clusterInfo;
+    @Autowired private ClusterInfoService clusterInfoService;
 
     /**
      * 自动同步区块
@@ -46,6 +50,7 @@ import java.util.List;
         log.info("auto sync starting ...");
         try {
             Long currentHeight = blockRepository.getMaxHeight();
+            currentHeight = currentHeight == null ? 0 : currentHeight;
             Long clusterHeight = null;
             int tryTimes = 0;
             do {
@@ -66,6 +71,7 @@ import java.util.List;
                 return;
             }
             cache.reset(clusterHeight);
+            clusterInfoService.initWithCluster();
             do {
                 sync(currentHeight + 1, properties.getHeaderStep());
                 currentHeight = blockRepository.getMaxHeight();
@@ -74,6 +80,8 @@ import java.util.List;
                 currentHeight + 1 < cache.getMinHeight());
         } catch (Exception e) {
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
+        } finally {
+            clusterInfo.refresh();
         }
     }
 
@@ -89,7 +97,8 @@ import java.util.List;
         }
         log.info("starting to sync the block, start height:{}, size:{}", startHeight, size);
         Assert.isTrue(size > 0, "the size of sync block must > 0");
-        long currentHeight = blockRepository.getMaxHeight();
+        Long currentHeight = blockRepository.getMaxHeight();
+        currentHeight = currentHeight == null ? 0 : currentHeight;
         log.info("local current block height:{}", currentHeight);
         if (currentHeight != startHeight - 1) {
             throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_START_HEIGHT_ERROR);
@@ -97,7 +106,7 @@ import java.util.List;
         int tryTimes = 0;
         List<BlockHeader> headers = null;
         Boolean headerValidated = false;
-        BlockHeader currentHeader = blockRepository.getBlockHeader(currentHeight);
+        BlockHeader preHeader = null;
         //批量拉取header并验证
         do {
             headers = blockSyncService.getHeaders(startHeight, size);
@@ -107,7 +116,17 @@ import java.util.List;
             if (log.isDebugEnabled()) {
                 log.debug("get the block headers from other node:{}", ToStringBuilder.reflectionToString(headers));
             }
-            headerValidated = blockSyncService.validating(currentHeader.getBlockHash(), headers);
+            if (currentHeight == 0) {
+                headerValidated = blockSyncService.bftValidating(headers.get(0));
+                if (!headerValidated) {
+                    continue;
+                }
+                headerValidated = blockSyncService.validating("IS_NULL", headers);
+            } else {
+                BlockHeader currentHeader = blockRepository.getBlockHeader(currentHeight);
+                preHeader = currentHeader;
+                headerValidated = blockSyncService.validating(currentHeader.getBlockHash(), headers);
+            }
             if (log.isDebugEnabled()) {
                 log.debug("the block headers local valid result:{}", headerValidated);
             }
@@ -127,7 +146,6 @@ import java.util.List;
         long blockStartHeight = headers.get(startIndex).getHeight();
         long blockEndHeight = headers.get(headers.size() - 1).getHeight();
         int blockSize = properties.getBlockStep();
-        BlockHeader preHeader = currentHeader;
 
         do {
             if (blockStartHeight + properties.getBlockStep() > blockEndHeight) {
@@ -162,7 +180,8 @@ import java.util.List;
         }
         log.info("starting to sync the block from node {}, start height:{}, size:{}", fromNodeName, startHeight, size);
         Assert.isTrue(size > 0, "the size of sync block must > 0");
-        long currentHeight = blockRepository.getMaxHeight();
+        Long currentHeight = blockRepository.getMaxHeight();
+        currentHeight = currentHeight == null ? 0 : currentHeight;
         log.info("local current block height:{}", currentHeight);
         if (currentHeight != startHeight - 1) {
             throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_START_HEIGHT_ERROR);
@@ -170,7 +189,7 @@ import java.util.List;
         int tryTimes = 0;
         List<BlockHeader> headers = null;
         Boolean headerValidated = false;
-        BlockHeader currentHeader = blockRepository.getBlockHeader(currentHeight);
+        BlockHeader preHeader = null;
         //批量拉取header并验证
         do {
             headers = blockSyncService.getHeadersFromNode(startHeight, size, fromNodeName);
@@ -180,7 +199,17 @@ import java.util.List;
             if (log.isDebugEnabled()) {
                 log.debug("get the block headers from other node:{}", ToStringBuilder.reflectionToString(headers));
             }
-            headerValidated = blockSyncService.validating(currentHeader.getBlockHash(), headers);
+            if (currentHeight == 0) {
+                headerValidated = blockSyncService.bftValidating(headers.get(0));
+                if (!headerValidated) {
+                    continue;
+                }
+                headerValidated = blockSyncService.validating("IS_NULL", headers);
+            } else {
+                BlockHeader currentHeader = blockRepository.getBlockHeader(currentHeight);
+                preHeader = currentHeader;
+                headerValidated = blockSyncService.validating(currentHeader.getBlockHash(), headers);
+            }
             if (log.isDebugEnabled()) {
                 log.debug("the block headers local valid result:{}", headerValidated);
             }
@@ -196,7 +225,6 @@ import java.util.List;
         long blockStartHeight = headers.get(startIndex).getHeight();
         long blockEndHeight = headers.get(headers.size() - 1).getHeight();
         int blockSize = properties.getBlockStep();
-        BlockHeader preHeader = currentHeader;
 
         do {
             if (blockStartHeight + properties.getBlockStep() > blockEndHeight) {
@@ -245,7 +273,11 @@ import java.util.List;
             if (blocks == null || blocks.isEmpty()) {
                 continue;
             }
-            blockValidated = blockSyncService.validatingBlocks(preHeader.getBlockHash(), blocks);
+            if (preHeader == null) {
+                blockValidated = blockSyncService.validatingBlocks("IS_NULL", blocks);
+            } else {
+                blockValidated = blockSyncService.validatingBlocks(preHeader.getBlockHash(), blocks);
+            }
             if (!blockValidated) {
                 continue;
             }
@@ -273,7 +305,11 @@ import java.util.List;
             if (blocks == null || blocks.isEmpty()) {
                 continue;
             }
-            blockValidated = blockSyncService.validatingBlocks(preHeader.getBlockHash(), blocks);
+            if (preHeader == null) {
+                blockValidated = blockSyncService.validatingBlocks("IS_NULL", blocks);
+            } else {
+                blockValidated = blockSyncService.validatingBlocks(preHeader.getBlockHash(), blocks);
+            }
             if (!blockValidated) {
                 continue;
             }

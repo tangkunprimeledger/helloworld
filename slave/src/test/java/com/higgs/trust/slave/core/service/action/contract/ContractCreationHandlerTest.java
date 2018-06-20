@@ -51,7 +51,7 @@ public class ContractCreationHandlerTest extends BaseTest {
                 .signature("", ActionDataMockBuilder.privateKey1)
                 .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
-                .setBlockHeight(6)
+                .setBlockHeight(2)
                 .build();
 
         try {

@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.service.datahandler.ca;
 
+import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.ca.Ca;
-import com.higgs.trust.slave.model.bo.ca.CaAction;
 
 /**
  * @author WangQuanzhou
@@ -36,5 +36,5 @@ public interface CaHandler {
      * @return Ca
      * @desc get CA information by nodeName
      */
-    Ca getCa(String nodeName);
+    CaPO getCa(String nodeName);
 }

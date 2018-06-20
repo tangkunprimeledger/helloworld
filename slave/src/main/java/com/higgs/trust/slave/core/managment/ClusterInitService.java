@@ -4,8 +4,8 @@ import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.config.node.listener.StateChangeListener;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.api.enums.VersionEnum;
-import com.higgs.trust.slave.common.config.ClusterNodesInfo;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -36,7 +36,7 @@ import java.util.Map;
 
     @Autowired private NodeState nodeState;
 
-    @Autowired private ClusterNodesInfo clusterNodesInfo;
+    @Autowired private ClusterInfo clusterInfo;
 
     @Value("${trust.start.mode:cluster}") private String startMode;
 
@@ -51,7 +51,7 @@ import java.util.Map;
             caInitService.initKeyPair();
             log.info("[ClusterInitService.init] end initKeyPair");
         }
-        clusterNodesInfo.refresh();
+        clusterInfo.refresh();
     }
 
     private boolean needInit() {
@@ -67,7 +67,7 @@ import java.util.Map;
     private void generateKeyPair() {
 
         if (null != configRepository.getConfig(nodeState.getNodeName())) {
-            log.info("[ClusterInitService.generateKeyPair] pubKey/peiKey already exist in table config");
+            log.info("[ClusterInitService.generateKeyPair] pubKey/priKey already exist in table config");
             return;
         }
 

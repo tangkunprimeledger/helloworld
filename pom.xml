@@ -121,6 +121,11 @@
                 <artifactId>config-super</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>management</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.higgs.trust</groupId>

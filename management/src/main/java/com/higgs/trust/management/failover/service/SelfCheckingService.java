@@ -38,6 +38,9 @@ import org.springframework.stereotype.Service;
     public boolean selfCheck(int tryTimes) {
         log.info("Starting self checking ...");
         Long maxHeight = blockService.getMaxHeight();
+        if (maxHeight == null) {
+            return true;
+        }
         Block block = blockRepository.getBlock(maxHeight);
         int i = 0;
         if (blockSyncService.validating(block)) {

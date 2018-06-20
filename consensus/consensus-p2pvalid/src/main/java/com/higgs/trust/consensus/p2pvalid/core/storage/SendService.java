@@ -3,6 +3,8 @@ package com.higgs.trust.consensus.p2pvalid.core.storage;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.common.utils.TraceUtils;
+import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
@@ -11,6 +13,7 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import com.higgs.trust.consensus.p2pvalid.dao.*;
 import com.higgs.trust.consensus.p2pvalid.dao.po.*;
+import com.netflix.discovery.converters.Auto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,6 +57,8 @@ import java.util.concurrent.locks.ReentrantLock;
     @Autowired private ClusterInfo clusterInfo;
 
     @Autowired private P2pConsensusClient p2pConsensusClient;
+
+    @Autowired private NodeState nodeState;
 
     @Value("${p2p.send.gc.interval:6000}") private Long gcInterval;
 
@@ -120,6 +125,9 @@ import java.util.concurrent.locks.ReentrantLock;
      * @throws Exception
      */
     public void submit(ValidCommand<?> validCommand) {
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            throw new RuntimeException(String.format("the node state is not running, please try again latter"));
+        }
         SendCommandPO sendCommand = sendCommandDao.queryByMessageDigest(validCommand.getMessageDigestHash());
         if (null != sendCommand) {
             log.warn("duplicate command {}", validCommand);
@@ -172,6 +180,9 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void send() {
         while (true) {
+            if (!nodeState.isState(NodeStateEnum.Running)) {
+                return;
+            }
             try {
                 List<QueuedSendPO> queuedSendList = takeSendList();
                 queuedSendList.forEach((queuedSend) -> {
@@ -222,6 +233,9 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void sendDelay() {
         while (true) {
+            if (!nodeState.isState(NodeStateEnum.Running)) {
+                return;
+            }
             try {
                 List<QueuedSendDelayPO> queuedSendDelayList = takeDelaySendList();
                 queuedSendDelayList.forEach((queuedSendDelay) -> {
@@ -289,7 +303,7 @@ import java.util.concurrent.locks.ReentrantLock;
      *
      * @param sendCommand
      */
-    public void sendCommand(SendCommandPO sendCommand) {
+    private void sendCommand(SendCommandPO sendCommand) {
         log.info("send command {}", sendCommand);
         List<SendNodePO> sendNodeList =
             sendNodeDao.queryByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_WAIT_SEND);
