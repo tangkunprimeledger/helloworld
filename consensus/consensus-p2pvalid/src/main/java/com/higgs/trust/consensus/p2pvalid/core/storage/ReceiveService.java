@@ -108,6 +108,7 @@ import java.util.concurrent.locks.ReentrantLock;
     }
 
     public void receive(ValidCommandWrap validCommandWrap) {
+        log.info("command receive : {}", validCommandWrap);
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new RuntimeException(String.format("the node state is not running, please try again latter"));
         }
@@ -119,8 +120,6 @@ import java.util.concurrent.locks.ReentrantLock;
                 .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
                     validCommandWrap, pubKey));
         }
-
-        log.info("command receive : {}", validCommandWrap);
         log.debug("command message digest:{}", validCommandWrap.getValidCommand().getMessageDigestHash());
 
         // update receive command
@@ -184,7 +183,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
     public void apply() {
         while (true) {
+            log.debug("ReceiveService.apply");
             if (!nodeState.isState(NodeStateEnum.Running)) {
+                log.debug("ReceiveService.apply-continue");
                 continue;
             }
             try {
@@ -192,6 +193,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedApplyList.forEach((queuedApply) -> {
                     Span span = TraceUtils.createSpan();
                     try {
+                        log.debug("apply:{}",queuedApply);
                         ReceiveCommandPO receiveCommand =
                             receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
                         if (null == receiveCommand) {
@@ -218,7 +220,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
     public void applyDelay() {
         while (true) {
+            log.debug("ReceiveService.applyDelay");
             if (!nodeState.isState(NodeStateEnum.Running)) {
+                log.debug("ReceiveService.applyDelay-continue");
                 continue;
             }
             try {
@@ -226,6 +230,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedApplyDelayList.forEach((queuedApplyDelay) -> {
                     Span span = TraceUtils.createSpan();
                     try {
+                        log.debug("apply delay :{}",queuedApplyDelay);
                         ReceiveCommandPO receiveCommand =
                             receiveCommandDao.queryByMessageDigest(queuedApplyDelay.getMessageDigest());
                         if (null == receiveCommand) {
@@ -256,6 +261,7 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void applyCommand(ReceiveCommandPO receiveCommand) {
         ValidCommit validCommit = ValidCommit.of(receiveCommand);
+        log.debug("execute valid commit");
         validConsensus.getValidExecutor().execute(validCommit);
 
         if (receiveCommand.getStatus().equals(COMMAND_QUEUED_APPLY)) {

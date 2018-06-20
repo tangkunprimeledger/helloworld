@@ -7,6 +7,7 @@ import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.dao.account.AccountDetailFreezeDao;
 import com.higgs.trust.slave.dao.account.AccountFreezeRecordDao;
 import com.higgs.trust.slave.dao.account.AccountInfoDao;
+import com.higgs.trust.slave.dao.account.AccountJDBCDao;
 import com.higgs.trust.slave.dao.po.account.AccountDetailFreezePO;
 import com.higgs.trust.slave.dao.po.account.AccountFreezeRecordPO;
 import com.higgs.trust.slave.model.bo.account.AccountDetailFreeze;
@@ -31,7 +32,7 @@ import java.util.List;
     @Autowired AccountInfoDao accountInfoDao;
     @Autowired AccountFreezeRecordDao accountFreezeRecordDao;
     @Autowired AccountDetailFreezeDao accountDetailFreezeDao;
-
+    @Autowired AccountJDBCDao accountJDBCDao;
     /**
      * query account freeze record
      *
@@ -143,10 +144,9 @@ import java.util.List;
         if (CollectionUtils.isEmpty(accountFreezeRecords)) {
             return;
         }
-        List<AccountFreezeRecordPO> list = BeanConvertor.convertList(accountFreezeRecords, AccountFreezeRecordPO.class);
         try {
             Profiler.enter("[batchInsert accountFreezeRecords]");
-            int r = accountFreezeRecordDao.batchInsert(list);
+            int r = accountJDBCDao.batchInsertFreezeRecord(accountFreezeRecords);
             Profiler.release();
             if (r != accountFreezeRecords.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");
@@ -170,10 +170,9 @@ import java.util.List;
         if (CollectionUtils.isEmpty(accountFreezeRecords)) {
             return;
         }
-        List<AccountFreezeRecordPO> list = BeanConvertor.convertList(accountFreezeRecords, AccountFreezeRecordPO.class);
         try {
             Profiler.enter("[batchUpdate accountFreezeRecords]");
-            int r = accountFreezeRecordDao.batchUpdate(list);
+            int r = accountJDBCDao.batchUpdateFreezeRecord(accountFreezeRecords);
             Profiler.release();
             if (r != accountFreezeRecords.size()) {
                 log.info("[batchUpdate]the number of update rows is different from the original number");
@@ -195,10 +194,9 @@ import java.util.List;
             log.info("[batchInsertDetailFreezes] detailFreezes is empty");
             return;
         }
-        List<AccountDetailFreezePO> list = BeanConvertor.convertList(detailFreezes, AccountDetailFreezePO.class);
         try {
             Profiler.enter("[batchInsert detailFreeze]");
-            int r = accountDetailFreezeDao.batchInsert(list);
+            int r = accountJDBCDao.batchInsertDetailFreezes(detailFreezes);
             Profiler.release();
             if (r != detailFreezes.size()) {
                 log.info("[batchInsertDetailFreezes]the number of update rows is different from the original number");

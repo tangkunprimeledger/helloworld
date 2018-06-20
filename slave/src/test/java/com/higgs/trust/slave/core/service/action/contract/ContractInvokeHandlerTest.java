@@ -48,7 +48,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
                 .setBlockHeight(9)
                 .build();
 
-        packageService.process(packContext, true);
+        packageService.process(packContext, true,false);
 
     }
 

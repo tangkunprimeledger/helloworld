@@ -180,7 +180,9 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void send() {
         while (true) {
+            log.debug("SendService.send");
             if (!nodeState.isState(NodeStateEnum.Running)) {
+                log.debug("SendService.send-continue");
                 continue;
             }
             try {
@@ -233,7 +235,9 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void sendDelay() {
         while (true) {
+            log.debug("SendService.sendDelay");
             if (!nodeState.isState(NodeStateEnum.Running)) {
+                log.debug("SendService.sendDelay-continue");
                 continue;
             }
             try {

@@ -2,6 +2,8 @@ package com.higgs.trust.slave.core.service.datahandler.utxo;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
@@ -57,7 +59,10 @@ public class UTXODBHandler implements UTXOHandler{
         List<UTXO> utxoList = new ArrayList<>();
         for (TxIn txIn :inputList){
             UTXO utxo = queryUTXO(txIn.getTxId(), txIn.getIndex(), txIn.getActionIndex());
-            //TODO lingchao 查看 txOUt 为 null 怎么处理好，这样处理感觉不对
+            if (null == utxo) {
+                log.error("The input: {} is not existed in txOut", txIn);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_TX_OUT_NOT_EXISTS_ERROR);
+            }
             if (null != utxo){
                 utxoList.add(utxo);
             }

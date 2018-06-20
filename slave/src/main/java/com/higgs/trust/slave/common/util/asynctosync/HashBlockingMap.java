@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.asynctosync;
+package com.higgs.trust.slave.common.util.asynctosync;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
