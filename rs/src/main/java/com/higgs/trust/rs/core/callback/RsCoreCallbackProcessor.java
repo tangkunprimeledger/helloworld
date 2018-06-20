@@ -1,6 +1,5 @@
 package com.higgs.trust.rs.core.callback;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -9,7 +8,6 @@ import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
-import com.higgs.trust.rs.core.vo.VoteRuleVO;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
@@ -17,6 +15,7 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.config.Config;
+import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,17 +108,19 @@ import org.springframework.stereotype.Component;
             return;
         }
         CoreTransaction coreTransaction = respData.getData();
+        //get register policy action
+        RegisterPolicy registerPolicy = (RegisterPolicy)coreTransaction.getActionList().get(0);
         //check
-        VoteRule voteRule = voteRuleRepository.queryByPolicyId(coreTransaction.getPolicyId());
+        VoteRule voteRule = voteRuleRepository.queryByPolicyId(registerPolicy.getPolicyId());
         if (voteRule != null) {
-            log.info("[processRegisterPolicy]voteRule already exist policyId:{},txId:{}", coreTransaction.getPolicyId(),
+            log.info("[processRegisterPolicy]voteRule already exist policyId:{},txId:{}", registerPolicy.getPolicyId(),
                 coreTransaction.getTxId());
             return;
         }
         JSONObject jsonObject = coreTransaction.getBizModel();
 
         voteRule = new VoteRule();
-        voteRule.setPolicyId(coreTransaction.getPolicyId());
+        voteRule.setPolicyId(registerPolicy.getPolicyId());
         voteRule.setVotePattern(VotePatternEnum.fromCode(jsonObject.getString("votePattern")));
         voteRule.setCallbackType(CallbackTypeEnum.fromCode(jsonObject.getString("callbackType")));
         voteRuleRepository.add(voteRule);

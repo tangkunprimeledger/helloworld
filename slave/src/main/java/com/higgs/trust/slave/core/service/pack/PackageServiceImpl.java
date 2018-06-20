@@ -381,6 +381,8 @@ import java.util.stream.Collectors;
                     Profiler.release();
                 }
             });
+        } catch (SlaveException e) {
+            throw e;
         } catch (Throwable e) {
             log.error("[package.persisted]callback rs has error", e);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR, e);
