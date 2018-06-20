@@ -14,4 +14,8 @@ public interface ConsensusClient {
      * @return
      */
     <T> CompletableFuture<T> submit(ConsensusCommand<T> command);
+
+    default void init() {
+
+    }
 }

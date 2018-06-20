@@ -6,8 +6,6 @@ import com.higgs.trust.consensus.util.CaKeyLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Map;
@@ -27,17 +25,6 @@ public class CustomKeyLoader extends RSAKeyLoader{
     @Autowired
     private CaKeyLoader caKeyLoader;
 
-    /**
-     * Creates a new instance of RSAKeyLoader
-     *
-     * @param id
-     * @param configHome
-     * @param defaultKeys
-     */
-    public CustomKeyLoader(int id, String configHome, boolean defaultKeys) {
-        super(id, configHome, defaultKeys);
-    }
-
     @Override
     public PublicKey loadPublicKey(int id) throws Exception {
         String pubKey = caKeyLoader.loadPublicKey(getNodeNameById(id + ""));
@@ -45,13 +32,14 @@ public class CustomKeyLoader extends RSAKeyLoader{
         return ret;
     }
 
-    @Autowired
+    @Override
     public PrivateKey loadPrivateKey() throws Exception {
         String priKey = caKeyLoader.loadPrivateKey();
         PrivateKey ret = getPrivateKeyFromString(priKey);
         return ret;
     }
 
+    @Override
     public PublicKey loadPublicKey(String pubKeyStr) throws Exception {
         return getPublicKeyFromString(pubKeyStr);
     }

@@ -4,14 +4,15 @@ import bftsmart.reconfiguration.SendRCMessage;
 import bftsmart.reconfiguration.util.RSAKeyLoader;
 import com.higgs.trust.consensus.bftsmartcustom.started.SpringUtil;
 import com.higgs.trust.consensus.bftsmartcustom.started.server.Server;
+import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.util.StringUtils;
 
 import java.security.PublicKey;
@@ -20,8 +21,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-@ConditionalOnExpression("'${bftSmart.systemConfigs.myId}' != ''")
-public class SmartServerConfig implements ConsensusStateMachine {
+public class SmartServerConfig implements ConsensusStateMachine, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(SmartServerConfig.class);
 
@@ -31,39 +31,17 @@ public class SmartServerConfig implements ConsensusStateMachine {
     @Value("${bftSmart.systemConfigs.configs.system.ttp.id}")
     private String ttpId;
 
+    @Autowired
+    private RSAKeyLoader rsaKeyLoader;
+
+    @Autowired
+    private ConsensusClient consensusClient;
+
     private String ttpIp;
     private int ttpPort;
 
     private String ip;
     private int port;
-
-    @Bean("server")
-    @DependsOn("springUtil")
-    public Server getServer() {
-        log.info("smart server starting,myid={}", myId);
-        if (!StringUtils.isEmpty(myId)) {
-            RSAKeyLoader rsaKeyLoader = new RSAKeyLoader(Integer.valueOf(myId), "", false);
-            while (true) {
-                try {
-                    PublicKey publicKey = rsaKeyLoader.loadPublicKey(Integer.valueOf(myId));
-                    if (!Objects.isNull(publicKey)) {
-                        break;
-                    }
-                } catch (Exception e) {
-                    log.debug("CA还未准备好");
-                }
-                try {
-                    TimeUnit.MILLISECONDS.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return new Server(Integer.valueOf(myId));
-        } else {
-            log.info("The myId is not found,myid={}", myId);
-            throw new RuntimeException("The myId is not found");
-        }
-    }
 
     @Override
     public void leaveConsensus() {
@@ -75,6 +53,7 @@ public class SmartServerConfig implements ConsensusStateMachine {
             if (st.countTokens() > 2 && ttpId.equals(st.nextToken())) {
                 ttpIp = st.nextToken();
                 ttpPort = Integer.valueOf(st.nextToken());
+                break;
             }
         }
         SendRCMessage sendRCMessage = new SendRCMessage();
@@ -107,4 +86,32 @@ public class SmartServerConfig implements ConsensusStateMachine {
 
     }
 
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
+        log.info("smart server starting,myid={}", myId);
+        if (!StringUtils.isEmpty(myId)) {
+            while (true) {
+                try {
+                    PublicKey publicKey = rsaKeyLoader.loadPublicKey(Integer.valueOf(myId));
+                    if (!Objects.isNull(publicKey)) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    log.error("CA还没准备好");
+                }
+                try {
+                    TimeUnit.MILLISECONDS.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            log.info("smart server initializing...");
+            new Server(Integer.valueOf(myId));
+            log.info("smart server Initialization complete");
+            consensusClient.init();
+        } else {
+            log.info("The myId is not found,myid={}", myId);
+            throw new RuntimeException("The myId is not found");
+        }
+    }
 }
