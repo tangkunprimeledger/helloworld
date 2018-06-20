@@ -117,12 +117,11 @@ import org.springframework.stereotype.Component;
             return;
         }
         JSONObject jsonObject = coreTransaction.getBizModel();
-        // parse and save policy rule
-        VoteRuleVO voteRuleVO = JSON.parseObject(jsonObject.toJSONString(), VoteRuleVO.class);
+
         voteRule = new VoteRule();
         voteRule.setPolicyId(coreTransaction.getPolicyId());
-        voteRule.setVotePattern(VotePatternEnum.fromCode(voteRuleVO.getVotePattern()));
-        voteRule.setCallbackType(CallbackTypeEnum.fromCode(voteRuleVO.getCallbackType()));
+        voteRule.setVotePattern(VotePatternEnum.fromCode(jsonObject.getString("votePattern")));
+        voteRule.setCallbackType(CallbackTypeEnum.fromCode(jsonObject.getString("callbackType")));
         voteRuleRepository.add(voteRule);
     }
 
