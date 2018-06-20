@@ -108,6 +108,7 @@ import java.util.concurrent.locks.ReentrantLock;
     }
 
     public void receive(ValidCommandWrap validCommandWrap) {
+        log.info("command receive : {}", validCommandWrap);
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new RuntimeException(String.format("the node state is not running, please try again latter"));
         }
@@ -119,8 +120,6 @@ import java.util.concurrent.locks.ReentrantLock;
                 .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
                     validCommandWrap, pubKey));
         }
-
-        log.info("command receive : {}", validCommandWrap);
         log.debug("command message digest:{}", validCommandWrap.getValidCommand().getMessageDigestHash());
 
         // update receive command
