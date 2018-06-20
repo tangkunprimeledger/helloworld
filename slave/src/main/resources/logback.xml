@@ -167,7 +167,7 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <logger name="com.higgs.trust" level="debug" additivity="false">
+    <logger name="com.higgs.trust" level="info" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
         <appender-ref ref="CONSOLE"/>
