@@ -1,5 +1,6 @@
-package com.higgs.trust.slave.dao;
+package com.higgs.trust.slave.dao.dataIdentity;
 
+import com.higgs.trust.slave.dao.BaseDao;
 import com.higgs.trust.slave.dao.po.DataIdentityPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -23,8 +24,8 @@ import java.util.List;
     /**
      * batch insert
      *
-     * @param list
+     * @param dataIdentityList
      * @return
      */
-    int batchInsert(@Param("list") List<DataIdentityPO> list);
+    int batchInsert(List<DataIdentityPO> dataIdentityList);
 }

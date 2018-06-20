@@ -3,8 +3,8 @@ package com.higgs.trust.slave.core.repository;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.exception.SnapshotException;
-import com.higgs.trust.slave.dao.DataIdentityDao;
+import com.higgs.trust.slave.dao.dataIdentity.DataIdentityDao;
+import com.higgs.trust.slave.dao.dataIdentity.DataIdentityJDBCDao;
 import com.higgs.trust.slave.dao.po.DataIdentityPO;
 import com.higgs.trust.slave.model.bo.DataIdentity;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,6 +26,9 @@ import java.util.List;
 public class DataIdentityRepository {
     @Autowired
     private DataIdentityDao dataIdentityDao;
+
+    @Autowired
+    private DataIdentityJDBCDao dataIdentityJDBCDao;
 
     /**
      * query identity data by identity
@@ -67,7 +69,7 @@ public class DataIdentityRepository {
         }
         List<DataIdentityPO> dataIdentityPOList = BeanConvertor.convertList(dataIdentityList,DataIdentityPO.class);
         try {
-          return  dataIdentityPOList.size() == dataIdentityDao.batchInsert(dataIdentityPOList);
+          return  dataIdentityPOList.size() == dataIdentityJDBCDao.batchInsert(dataIdentityPOList);
         } catch (DuplicateKeyException e) {
             log.error("bachInsert dataIdentity fail, because there is DuplicateKeyException for dataIdentityPOList:", dataIdentityPOList);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
