@@ -181,7 +181,7 @@ import java.util.concurrent.locks.ReentrantLock;
     private void send() {
         while (true) {
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                return;
+                continue;
             }
             try {
                 List<QueuedSendPO> queuedSendList = takeSendList();
@@ -234,7 +234,7 @@ import java.util.concurrent.locks.ReentrantLock;
     private void sendDelay() {
         while (true) {
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                return;
+                continue;
             }
             try {
                 List<QueuedSendDelayPO> queuedSendDelayList = takeDelaySendList();
