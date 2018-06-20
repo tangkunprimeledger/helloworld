@@ -70,14 +70,17 @@ import java.util.concurrent.TimeUnit;
 
         boolean flag = false;
         while (!flag) {
-
-            CompletableFuture future = consensusClient.submit(packageCommand);
-            try {
-                future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
-                flag = true;
-            } catch (Throwable e) {
-                log.error("replicate log failed!", e);
-                //TODO 添加告警
+            if (nodeState.isMaster()) {
+                CompletableFuture future = consensusClient.submit(packageCommand);
+                try {
+                    future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
+                    flag = true;
+                } catch (Throwable e) {
+                    log.error("replicate log failed!", e);
+                    //TODO 添加告警
+                }
+            } else {
+                return;
             }
         }
 
