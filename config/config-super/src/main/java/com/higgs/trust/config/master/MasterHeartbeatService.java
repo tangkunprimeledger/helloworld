@@ -7,6 +7,7 @@ import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
 import com.higgs.trust.config.node.NodeProperties;
 import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.config.node.listener.MasterChangeListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,7 @@ import java.util.concurrent.*;
 
     private void sendMasterHeartbeat() {
         log.debug("send master heartbeat");
-        if (nodeState.isMaster()) {
+        if (nodeState.isMaster() && nodeState.isState(NodeStateEnum.Running)) {
             masterHeartbeat();
             resetMasterHeartbeat();
         }
