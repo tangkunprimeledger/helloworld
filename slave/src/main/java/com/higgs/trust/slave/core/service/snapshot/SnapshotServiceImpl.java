@@ -598,7 +598,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * 2.add guavaCache to globalCache
      * 3.add cacheLoader to cacheLoaderCache
      */
-    //TODO lingchao make MAXIMUN_SIZE  config in the config file
     private void registerBizLoadingCache(SnapshotBizKeyEnum snapshotBizKeyEnum, CacheLoader cacheLoader) {
         log.info("Start to register core loadingCache to globalCache and cacheLoaderCache for snapshotBizKeyEnum:{}", snapshotBizKeyEnum);
         LoadingCache<String, Object> bizCache = CacheBuilder.newBuilder().initialCapacity(10).maximumSize(GLOBAL_MAXIMUN_SIZE).refreshAfterWrite(REFRESH_TIME, TimeUnit.DAYS).build(new com.google.common.cache.CacheLoader<String, Object>() {
