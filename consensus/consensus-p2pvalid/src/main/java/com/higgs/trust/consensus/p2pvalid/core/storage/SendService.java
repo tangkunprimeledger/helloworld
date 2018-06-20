@@ -180,8 +180,10 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void send() {
         while (true) {
+            log.debug("SendService.send");
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                return;
+                log.debug("SendService.send-continue");
+                continue;
             }
             try {
                 List<QueuedSendPO> queuedSendList = takeSendList();
@@ -233,8 +235,10 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void sendDelay() {
         while (true) {
+            log.debug("SendService.sendDelay");
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                return;
+                log.debug("SendService.sendDelay-continue");
+                continue;
             }
             try {
                 List<QueuedSendDelayPO> queuedSendDelayList = takeDelaySendList();

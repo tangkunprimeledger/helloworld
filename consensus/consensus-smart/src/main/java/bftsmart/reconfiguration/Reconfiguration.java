@@ -15,15 +15,20 @@ limitations under the License.
 */
 package bftsmart.reconfiguration;
 
+import bftsmart.reconfiguration.util.RSAKeyLoader;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.util.TOMUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author eduardo
  */
 public class Reconfiguration {
+
+    private static Logger log = LoggerFactory.getLogger(Reconfiguration.class);
 
     private ReconfigureRequest request;
     private ServiceProxy proxy;
@@ -66,8 +71,13 @@ public class Reconfiguration {
     }
     
     public ReconfigureReply execute(){
-        byte[] signature = TOMUtil.signMessage(proxy.getViewManager().getStaticConf().getRSAPrivateKey(),
-                                                                            request.toString().getBytes());
+        byte[] signature = new byte[0];
+        try {
+            signature = TOMUtil.signMessage(new RSAKeyLoader(7001, "", true).loadPrivateKey(),
+                                                                                request.toString().getBytes());
+        } catch (Exception e) {
+            log.error("获取TTP私钥失败");
+        }
         request.setSignature(signature);
         byte[] reply = proxy.invoke(TOMUtil.getBytes(request), TOMMessageType.RECONFIG);
         request = null;

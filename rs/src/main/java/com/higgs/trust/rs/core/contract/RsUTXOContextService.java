@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class UTXOContextService extends ContractApiService {
+public class RsUTXOContextService extends ContractApiService {
 
     public UTXOAction getAction() {
         return getContextData(UTXOExecuteContextData.class).getAction();

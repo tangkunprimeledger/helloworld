@@ -27,7 +27,8 @@ import org.springframework.stereotype.Service;
 
     @Autowired private ValidConsensus validConsensus;
 
-    @StateChangeListener(NodeStateEnum.Running) @Order(Ordered.HIGHEST_PRECEDENCE) public void refreshClusterInfo() {
+    @StateChangeListener(value = NodeStateEnum.Running, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
+    public void refreshClusterInfo() {
         clusterInfo.refresh();
     }
 
@@ -40,7 +41,14 @@ import org.springframework.stereotype.Service;
         do {
             responseCommand = validConsensus
                 .submitSync(new ClusterInfoCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis()));
-        } while (responseCommand != null);
+            if (responseCommand == null) {
+                try {
+                    Thread.sleep(3 * 1000);
+                } catch (InterruptedException e) {
+                    log.warn("init cluster info thread interrupted", e);
+                }
+            }
+        } while (responseCommand == null);
         clusterInfo.init((ClusterInfoVo)responseCommand.get());
     }
 }
