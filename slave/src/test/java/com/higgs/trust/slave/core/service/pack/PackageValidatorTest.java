@@ -35,8 +35,8 @@ public class PackageValidatorTest extends IntegrateBaseTest {
     }
     @Test
     public void testValidating() throws Exception {
-//        test(2L);
-        test2(3L);
+        test(2L);
+//        test2(3L);
     }
 
     private void test(Long height) throws Exception {

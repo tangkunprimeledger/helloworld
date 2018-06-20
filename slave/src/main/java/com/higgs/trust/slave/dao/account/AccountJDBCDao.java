@@ -1,18 +1,10 @@
 package com.higgs.trust.slave.dao.account;
 
 import com.google.common.collect.Lists;
-import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.CollectionBean;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.Profiler;
-import com.higgs.trust.slave.dao.po.account.AccountDetailFreezePO;
-import com.higgs.trust.slave.dao.po.account.AccountFreezeRecordPO;
 import com.higgs.trust.slave.model.bo.account.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
