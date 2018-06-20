@@ -180,9 +180,12 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void send() {
         while (true) {
-            log.debug("SendService.send");
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                log.debug("SendService.send-continue");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    log.warn("thread interrupted");
+                }
                 continue;
             }
             try {
@@ -235,9 +238,12 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private void sendDelay() {
         while (true) {
-            log.debug("SendService.sendDelay");
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                log.debug("SendService.sendDelay-continue");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    log.warn("thread interrupted");
+                }
                 continue;
             }
             try {

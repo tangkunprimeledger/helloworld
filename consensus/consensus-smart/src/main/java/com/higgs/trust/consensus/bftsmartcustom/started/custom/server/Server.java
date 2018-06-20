@@ -1,7 +1,7 @@
-package com.higgs.trust.consensus.bftsmartcustom.started.server;
+package com.higgs.trust.consensus.bftsmartcustom.started.custom.server;
 
-import com.higgs.trust.consensus.bftsmartcustom.started.SpringUtil;
-import com.higgs.trust.consensus.bftsmartcustom.started.SmartCommitReplicateComposite;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SmartCommitReplicateComposite;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultRecoverable;

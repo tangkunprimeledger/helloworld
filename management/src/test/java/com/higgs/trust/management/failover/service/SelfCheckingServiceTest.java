@@ -5,8 +5,6 @@ import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
-import com.higgs.trust.management.failover.service.BlockSyncService;
-import com.higgs.trust.management.failover.service.SelfCheckingService;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.model.bo.Block;
@@ -22,7 +20,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -46,7 +43,7 @@ import static org.testng.Assert.assertTrue;
         Mockito.when(blockService.getMaxHeight()).thenReturn(height);
         Mockito.when(block.getBlockHeader()).thenReturn(header);
         Mockito.when(blockRepository.getBlock(height)).thenReturn(block);
-        Mockito.when(properties.getSelfCheckTimes()).thenReturn(1);
+        Mockito.when(properties.getStartupRetryTime()).thenReturn(1);
     }
 
     @BeforeMethod public void beforeMethod() {
@@ -69,7 +66,7 @@ import static org.testng.Assert.assertTrue;
 
         Mockito.when(blockSyncService.validating(block)).thenReturn(true);
         Mockito.when(blockSyncService.bftValidating(header)).thenReturn(null, true);
-        Mockito.when(properties.getSelfCheckTimes()).thenReturn(2);
+        Mockito.when(properties.getStartupRetryTime()).thenReturn(2);
 
         selfCheckingService.autoCheck();
         Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);

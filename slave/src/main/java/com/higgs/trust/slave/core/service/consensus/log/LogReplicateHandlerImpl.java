@@ -70,7 +70,9 @@ import java.util.concurrent.TimeUnit;
 
         boolean flag = false;
         while (!flag) {
-
+            if (!nodeState.isMaster()) {
+                return;
+            }
             CompletableFuture future = consensusClient.submit(packageCommand);
             try {
                 future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
