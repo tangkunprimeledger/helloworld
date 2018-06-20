@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.repository;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.vo.UTXOVO;
@@ -8,6 +7,7 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.dao.utxo.TxOutDao;
+import com.higgs.trust.slave.dao.utxo.TxOutJDBCDao;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * txOut repository
@@ -30,6 +33,8 @@ public class TxOutRepository {
 
     @Autowired
     private TxOutDao txOutDao;
+    @Autowired
+    private TxOutJDBCDao txOutJDBCDao;
 
     @Value("${trust.utxo.display:2}")
     private int DISPLAY;
@@ -52,11 +57,10 @@ public class TxOutRepository {
      * @param txOutPOList
      * @return
      */
-    //TODO lingchao 检查是否会存在部分数据入库成功
     public boolean batchInsert(List<TxOutPO> txOutPOList) {
         int affectRows = 0;
         try {
-            affectRows = txOutDao.batchInsert(txOutPOList);
+            affectRows = txOutJDBCDao.batchInsert(txOutPOList);
         } catch (DuplicateKeyException e) {
             log.error("batch insert UTXO fail, because there is DuplicateKeyException for txOutPOList:", txOutPOList);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
@@ -71,7 +75,7 @@ public class TxOutRepository {
      * @return
      */
     public boolean batchUpdate(List<TxOutPO> txOutPOList) {
-        return txOutPOList.size() == txOutDao.batchUpdate(txOutPOList);
+        return txOutPOList.size() == txOutJDBCDao.batchUpdate(txOutPOList);
     }
 
     public List<UTXOVO> queryTxOutByTxId(String txId) {
@@ -99,7 +103,7 @@ public class TxOutRepository {
                 try {
                     JSONObject jsonObject = JSONObject.parseObject(txOutPO.getState());
 
-                    Map<String, String> stateMap= new HashMap<>();
+                    Map<String, String> stateMap = new HashMap<>();
                     for (String key : jsonObject.keySet()) {
                         stateMap.put(key, jsonObject.getString(key));
                     }
