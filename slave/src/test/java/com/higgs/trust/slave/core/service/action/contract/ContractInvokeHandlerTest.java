@@ -4,19 +4,17 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.higgs.trust.contract.JsonHelper;
 import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.core.service.pack.PackageServiceImpl;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
-import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import reactor.core.support.Assert;
 
 public class ContractInvokeHandlerTest extends IntegrateBaseTest {
 
@@ -26,7 +24,7 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
 
     private ContractInvokeAction createContractInvokeAction() {
         ContractInvokeAction action = new ContractInvokeAction();
-        action.setAddress("d9d8b61310a3abded4d309b97e63cf7bf60e23a24779c7ff261a4b29bcc81757");
+        action.setAddress("a7d0c2779d627cfc7e931c35060d1dcb6d5c63c13862323bedf2a4f3c352f956");
         //action.setMethod("main");
         action.setIndex(0);
         action.setType(ActionTypeEnum.TRIGGER_CONTRACT);
@@ -36,14 +34,18 @@ public class ContractInvokeHandlerTest extends IntegrateBaseTest {
     @Test
     public void testProcess() {
         Action action = createContractInvokeAction();
+        Action action2 = JsonHelper.clone(action, ContractInvokeAction.class);
+        action2.setIndex(1);
+
         PackContext packContext = ActionDataMockBuilder.getBuilder()
-                .createSignedTransaction(InitPolicyEnum.REGISTER_POLICY)
+                .createSignedTransaction(InitPolicyEnum.CONTRACT_ISSUE)
                 .addAction(action)
+                .addAction(action2)
                 .setTxId(String.format("tx_id_invoke_contract_%s", System.currentTimeMillis()))
                 .signature("", ActionDataMockBuilder.privateKey1)
                 .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
-                .setBlockHeight(5)
+                .setBlockHeight(9)
                 .build();
 
         packageService.process(packContext, true);

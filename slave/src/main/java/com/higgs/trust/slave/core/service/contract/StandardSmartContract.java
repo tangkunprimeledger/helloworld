@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 
         ExecuteConfig executeConfig = new ExecuteConfig();
         executeConfig.setInstructionCountQuota(10000);
-        executeConfig.allow("com.higgs.trust.slave.core.service.contract.StandardContractContextService");
+        executeConfig.allow(StandardContractContextService.class);
 
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);

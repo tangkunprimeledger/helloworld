@@ -46,7 +46,7 @@ import static com.higgs.trust.Application.INITIAL_DELAY;
         List<BankChainRequestPO> list = bankChainRequestDAO.queryRequest();
         log.info("[process]: start process,the list size={}", list.size());
         if (CollectionUtils.isEmpty(list)) {
-            log.info("没有需要下发的存证数据");
+//            log.info("没有需要下发的存证数据");
             return;
         }
 
