@@ -5,13 +5,14 @@ package com.higgs.trust.consensus.p2pvalid.config;
 
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.consensus.p2pvalid.core.IdValidCommand;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
  * @author suimi
  * @date 2018/6/19
  */
-@NoArgsConstructor public class ValidClusterInfoCmd extends IdValidCommand<ClusterInfoVo> {
+@NoArgsConstructor @Data public class ValidClusterInfoCmd extends IdValidCommand<ClusterInfoVo> {
 
     private static final long serialVersionUID = -8444604701966607243L;
 

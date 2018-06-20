@@ -5,6 +5,7 @@ package com.higgs.trust.config.node.listener;
 
 import com.higgs.trust.config.exception.ConfigError;
 import com.higgs.trust.config.exception.ConfigException;
+import lombok.Getter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
@@ -21,9 +22,17 @@ public class StateChangeListenerAdaptor implements Ordered {
 
     private Method method;
 
+    private int order;
+
+    @Getter private boolean before;
+
     public StateChangeListenerAdaptor(Object bean, Method method) {
         this.bean = bean;
         this.method = method;
+        Order ann = AnnotationUtils.findAnnotation(method, Order.class);
+        order = ann != null ? ann.value() : Ordered.LOWEST_PRECEDENCE;
+        StateChangeListener listener = AnnotationUtils.findAnnotation(method, StateChangeListener.class);
+        before = listener.before();
     }
 
     public void invoke() {
@@ -35,10 +44,6 @@ public class StateChangeListenerAdaptor implements Ordered {
     }
 
     @Override public int getOrder() {
-        Order ann = AnnotationUtils.findAnnotation(method, Order.class);
-        if (ann != null) {
-            return ann.value();
-        }
-        return Ordered.LOWEST_PRECEDENCE;
+        return order;
     }
 }

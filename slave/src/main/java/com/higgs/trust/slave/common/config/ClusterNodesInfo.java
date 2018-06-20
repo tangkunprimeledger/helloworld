@@ -13,6 +13,7 @@ import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author jerry
  */
-@Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
+@Slf4j @Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
     implements ClusterInfo {
 
     @Getter @Setter private int faultNodeNum = 0;
@@ -74,6 +75,7 @@ import java.util.concurrent.ConcurrentHashMap;
     }
 
     public void refresh() {
+        log.info("refresh cluster info");
         ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getNodeName());
         faultNodeNum = clusterConfig == null ? 0 : clusterConfig.getFaultNum();
         Config config = configRepository.getConfig(nodeState.getNodeName());

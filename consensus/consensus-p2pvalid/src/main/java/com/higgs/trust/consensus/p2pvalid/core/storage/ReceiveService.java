@@ -185,7 +185,7 @@ import java.util.concurrent.locks.ReentrantLock;
     public void apply() {
         while (true) {
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                return;
+                continue;
             }
             try {
                 List<QueuedApplyPO> queuedApplyList = takeApplyList();
@@ -219,7 +219,7 @@ import java.util.concurrent.locks.ReentrantLock;
     public void applyDelay() {
         while (true) {
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                return;
+                continue;
             }
             try {
                 List<QueuedApplyDelayPO> queuedApplyDelayList = takeApplyDelayList();
