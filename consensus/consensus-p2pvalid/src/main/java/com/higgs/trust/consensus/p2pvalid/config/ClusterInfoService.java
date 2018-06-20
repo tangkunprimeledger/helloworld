@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.consensus.p2pvalid.config;
 
+import com.higgs.trust.config.node.NodeProperties;
 import com.higgs.trust.config.node.NodeStateEnum;
 import com.higgs.trust.config.node.listener.StateChangeListener;
 import com.higgs.trust.config.p2p.ClusterInfo;
@@ -27,6 +28,8 @@ import org.springframework.stereotype.Service;
 
     @Autowired private ValidConsensus validConsensus;
 
+    @Autowired private NodeProperties nodeProperties;
+
     @StateChangeListener(value = NodeStateEnum.Running, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
     public void refreshClusterInfo() {
         clusterInfo.refresh();
@@ -38,6 +41,7 @@ import org.springframework.stereotype.Service;
     public void initWithCluster() {
         log.info("init the clusterInfo by cluster");
         ResponseCommand<?> responseCommand = null;
+        int i = 0;
         do {
             responseCommand = validConsensus
                 .submitSync(new ClusterInfoCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis()));
@@ -48,7 +52,10 @@ import org.springframework.stereotype.Service;
                     log.warn("init cluster info thread interrupted", e);
                 }
             }
-        } while (responseCommand == null);
+        } while (responseCommand == null && ++i < nodeProperties.getStartupRetryTime());
+        if (responseCommand == null) {
+            throw new RuntimeException("init clusterInfo from cluster failed");
+        }
         clusterInfo.init((ClusterInfoVo)responseCommand.get());
     }
 }

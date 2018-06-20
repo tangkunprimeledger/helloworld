@@ -20,9 +20,9 @@ import org.springframework.context.annotation.Configuration;
     private String nodeName = DEFAULT_NODE_NAME;
 
     /**
-     * the try times of self check
+     * the try times at start up
      */
-    private int selfCheckTimes = 100;
+    private int startupRetryTime = 100;
 
     /**
      * the private key of node
@@ -37,8 +37,7 @@ import org.springframework.context.annotation.Configuration;
     /**
      * the wait time for command consensus
      */
-    private long consensusWaitTime = 800L;
-
+    private long consensusWaitTime = 1000L;
 
     public boolean isMock() {
         return "Mock".equalsIgnoreCase(runMode);

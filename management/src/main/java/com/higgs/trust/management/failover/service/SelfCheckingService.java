@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
     @Autowired private NodeProperties properties;
 
     @StateChangeListener(NodeStateEnum.SelfChecking) public void autoCheck() {
-        boolean selfChecked = selfCheck(properties.getSelfCheckTimes());
+        boolean selfChecked = selfCheck(properties.getStartupRetryTime());
         log.info("self checked result:{}", selfChecked);
         if (!selfChecked) {
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_SELF_CHECK_FAILED);

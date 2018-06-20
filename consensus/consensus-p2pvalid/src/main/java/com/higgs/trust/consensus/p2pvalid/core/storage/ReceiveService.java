@@ -183,9 +183,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
     public void apply() {
         while (true) {
-            log.debug("ReceiveService.apply");
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                log.debug("ReceiveService.apply-continue");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    log.warn("thread interrupted");
+                }
                 continue;
             }
             try {
@@ -220,9 +223,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
     public void applyDelay() {
         while (true) {
-            log.debug("ReceiveService.applyDelay");
             if (!nodeState.isState(NodeStateEnum.Running)) {
-                log.debug("ReceiveService.applyDelay-continue");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    log.warn("thread interrupted");
+                }
                 continue;
             }
             try {
