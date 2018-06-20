@@ -1,7 +1,7 @@
 package com.higgs.trust.consensus.bftsmartcustom.started.custom;
 
 import bftsmart.reconfiguration.util.RSAKeyLoader;
-import com.higgs.trust.consensus.bftsmartcustom.started.config.SmartConfig;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
 import com.higgs.trust.consensus.util.CaKeyLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

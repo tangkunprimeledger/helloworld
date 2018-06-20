@@ -16,8 +16,8 @@ limitations under the License.
 package bftsmart.reconfiguration.util;
 
 
-import com.higgs.trust.consensus.bftsmartcustom.started.SpringUtil;
-import com.higgs.trust.consensus.bftsmartcustom.started.config.SmartConfig;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
 
 import java.math.BigInteger;
 import java.net.InetSocketAddress;

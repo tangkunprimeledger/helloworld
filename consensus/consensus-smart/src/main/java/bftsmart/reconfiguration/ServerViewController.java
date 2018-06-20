@@ -15,9 +15,9 @@ limitations under the License.
 */
 package bftsmart.reconfiguration;
 
-import com.higgs.trust.consensus.bftsmartcustom.started.SpringUtil;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
 import bftsmart.reconfiguration.views.View;
-import com.higgs.trust.consensus.bftsmartcustom.started.config.SmartConfig;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.util.TOMUtil;

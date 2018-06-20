@@ -15,8 +15,7 @@ limitations under the License.
 */
 package bftsmart.reconfiguration.util;
 
-import com.higgs.trust.consensus.bftsmartcustom.started.SpringUtil;
-import org.springframework.stereotype.Component;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
 import org.springframework.util.StringUtils;
 
 import java.net.InetSocketAddress;
@@ -27,7 +26,7 @@ import java.util.StringTokenizer;
 
 public class HostsConfig {
 
-    private com.higgs.trust.consensus.bftsmartcustom.started.config.SmartConfig config;
+    private com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig config;
 
     private Hashtable servers = new Hashtable();
     
@@ -35,7 +34,7 @@ public class HostsConfig {
 
     /** Creates a new instance of ServersConfig */
     public HostsConfig(String configHome, String fileName) {
-        config = SpringUtil.getBean(com.higgs.trust.consensus.bftsmartcustom.started.config.SmartConfig.class);
+        config = SpringUtil.getBean(com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig.class);
         loadConfig(configHome, fileName);
     }
     

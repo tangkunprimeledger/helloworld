@@ -1,10 +1,10 @@
-package com.higgs.trust.consensus.bftsmartcustom.started.config;
+package com.higgs.trust.consensus.bftsmartcustom.started.custom;
 
 import bftsmart.reconfiguration.SendRCMessage;
 import bftsmart.reconfiguration.util.RSAKeyLoader;
-import com.higgs.trust.consensus.bftsmartcustom.started.SpringUtil;
-import com.higgs.trust.consensus.bftsmartcustom.started.server.Server;
-import com.higgs.trust.consensus.core.ConsensusClient;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.client.Client;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.server.Server;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +21,9 @@ import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class SmartServerConfig implements ConsensusStateMachine, ApplicationListener<ApplicationReadyEvent> {
+public class SmartStart implements ConsensusStateMachine, ApplicationListener<ApplicationReadyEvent> {
 
-    private static final Logger log = LoggerFactory.getLogger(SmartServerConfig.class);
+    private static final Logger log = LoggerFactory.getLogger(SmartStart.class);
 
     @Value("${bftSmart.systemConfigs.myId}")
     private String myId;
@@ -35,7 +35,7 @@ public class SmartServerConfig implements ConsensusStateMachine, ApplicationList
     private RSAKeyLoader rsaKeyLoader;
 
     @Autowired
-    private ConsensusClient consensusClient;
+    private Client client;
 
     private String ttpIp;
     private int ttpPort;
@@ -108,7 +108,7 @@ public class SmartServerConfig implements ConsensusStateMachine, ApplicationList
             log.info("smart server initializing...");
             new Server(Integer.valueOf(myId));
             log.info("smart server Initialization complete");
-            consensusClient.init();
+            client.init();
         } else {
             log.info("The myId is not found,myid={}", myId);
             throw new RuntimeException("The myId is not found");
