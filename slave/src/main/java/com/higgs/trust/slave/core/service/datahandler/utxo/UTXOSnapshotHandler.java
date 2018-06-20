@@ -1,10 +1,13 @@
 package com.higgs.trust.slave.core.service.datahandler.utxo;
 
 
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.snapshot.agent.UTXOSnapshotAgent;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,7 @@ import java.util.List;
  * @create 2018年04月17日15:19
  */
 @Service
+@Slf4j
 public class UTXOSnapshotHandler implements UTXOHandler{
 
     @Autowired
@@ -49,7 +53,10 @@ public class UTXOSnapshotHandler implements UTXOHandler{
         List<UTXO> utxoList = new ArrayList<>();
         for (TxIn txIn :inputList){
             UTXO utxo = queryUTXO(txIn.getTxId(), txIn.getIndex(), txIn.getActionIndex());
-            //TODO lingchao 查看 txOUt 为 null 怎么处理好，这样处理感觉不对
+            if (null == utxo) {
+                log.error("The input: {} is not existed in txOut", txIn);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_TX_OUT_NOT_EXISTS_ERROR);
+            }
             if (null != utxo){
                 utxoList.add(utxo);
             }

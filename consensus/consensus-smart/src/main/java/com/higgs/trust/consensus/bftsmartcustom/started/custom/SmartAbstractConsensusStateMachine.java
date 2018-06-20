@@ -3,7 +3,7 @@
 //
 //import com.higgs.trust.consensus.bft.core.ConsensusCommit;
 //import com.higgs.trust.consensus.bft.core.template.AbstractConsensusCommand;
-//import com.higgs.trust.consensus.bftsmartcustom.started.adapter.SmartCommitAdapter;
+//import com.higgs.trust.consensus.bftsmartcustom.started.custom.adapter.SmartCommitAdapter;
 //
 //import java.lang.reflect.InvocationTargetException;
 //import java.lang.reflect.Method;

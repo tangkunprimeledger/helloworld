@@ -1,31 +1,31 @@
-package com.higgs.trust.consensus.bftsmartcustom.started.client;
+package com.higgs.trust.consensus.bftsmartcustom.started.custom.client;
 
 import bftsmart.tom.ServiceProxy;
-import com.higgs.trust.consensus.bftsmartcustom.started.config.SmartServerConfig;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.core.command.ConsensusCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.CompletableFuture;
 
+@Component
 public class Client implements ConsensusClient {
 
     private static final Logger log = LoggerFactory.getLogger(Client.class);
 
     private ServiceProxy serviceProxy;
 
-    private int clientId;
+    @Value("${bftSmart.systemConfigs.myClientId}")
+    private String myClientId;
 
-    public Client(int clientId) {
-        this.clientId = clientId;
-    }
     public void init() {
         log.info("-----ServiceProxy init-----");
-        serviceProxy = new ServiceProxy(clientId);
+        serviceProxy = new ServiceProxy(Integer.valueOf(myClientId));
     }
 
     public void processingPackage(ConsensusCommand command) {

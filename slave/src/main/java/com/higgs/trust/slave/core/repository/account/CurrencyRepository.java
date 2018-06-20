@@ -4,6 +4,7 @@ import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.slave.dao.account.AccountJDBCDao;
 import com.higgs.trust.slave.dao.account.CurrencyInfoDao;
 import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
 import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
@@ -23,7 +24,7 @@ import java.util.List;
  */
 @Repository @Slf4j public class CurrencyRepository {
     @Autowired CurrencyInfoDao currencyInfoDao;
-
+    @Autowired AccountJDBCDao accountJDBCDao;
     /**
      * query currency info
      *
@@ -76,10 +77,9 @@ import java.util.List;
             log.info("[batchInsert] currencyInfos is empty");
             return;
         }
-        List<CurrencyInfoPO> list = BeanConvertor.convertList(currencyInfos, CurrencyInfoPO.class);
         try {
             Profiler.enter("[batchInsert currencyInfo]");
-            int r = currencyInfoDao.batchInsert(list);
+            int r = accountJDBCDao.batchInsertCurrency(currencyInfos);
             Profiler.release();
             if (r != currencyInfos.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");

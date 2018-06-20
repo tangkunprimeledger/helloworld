@@ -1,4 +1,4 @@
-package com.higgs.trust.consensus.bftsmartcustom.started;
+package com.higgs.trust.consensus.bftsmartcustom.started.custom;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

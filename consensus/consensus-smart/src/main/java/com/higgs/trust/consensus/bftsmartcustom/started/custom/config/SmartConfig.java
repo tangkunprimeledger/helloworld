@@ -1,4 +1,4 @@
-package com.higgs.trust.consensus.bftsmartcustom.started.config;
+package com.higgs.trust.consensus.bftsmartcustom.started.custom.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

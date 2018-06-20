@@ -1,4 +1,4 @@
-package com.higgs.trust.consensus.bftsmartcustom.started.adapter;
+package com.higgs.trust.consensus.bftsmartcustom.started.custom.adapter;
 
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;

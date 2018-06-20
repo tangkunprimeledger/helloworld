@@ -24,6 +24,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -39,6 +42,7 @@ import java.util.List;
     @Autowired private NodeState nodeState;
     @Autowired private ClusterInfo clusterInfo;
     @Autowired private ClusterInfoService clusterInfoService;
+    @Autowired private TransactionTemplate txNested;
 
     /**
      * 自动同步区块
@@ -335,7 +339,11 @@ import java.util.List;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        packageService.process(packContext, true);
+        txNested.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                packageService.process(packContext, true,true);
+            }
+        });
         boolean persistValid =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
         if (!persistValid) {

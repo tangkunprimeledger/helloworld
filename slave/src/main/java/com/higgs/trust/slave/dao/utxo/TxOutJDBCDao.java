@@ -25,14 +25,15 @@ public class TxOutJDBCDao {
 
     @Autowired
     private JdbcTemplate template;
+
     /**
      * batch insert
      *
      * @param txOutPOList
      * @return
      */
-    int batchInsert(List<TxOutPO> txOutPOList) {
-        if (CollectionUtils.isEmpty(txOutPOList)){
+    public int batchInsert(List<TxOutPO> txOutPOList) {
+        if (CollectionUtils.isEmpty(txOutPOList)) {
             return 0;
         }
 
@@ -46,7 +47,6 @@ public class TxOutJDBCDao {
         sql.deleteCharAt(sql.length() - 1);
 
         return jdbcTemplate.update(sql.toString(), new BeanPropertySqlParameterSource(new CollectionBean(txOutPOList)));
-
     }
 
     /**
@@ -55,8 +55,8 @@ public class TxOutJDBCDao {
      * @param txOutPOList
      * @return
      */
-    int batchUpdate(List<TxOutPO> txOutPOList) {
-        if (CollectionUtils.isEmpty(txOutPOList)){
+    public int batchUpdate(List<TxOutPO> txOutPOList) {
+        if (CollectionUtils.isEmpty(txOutPOList)) {
             return 0;
         }
         StringBuffer sql = new StringBuffer("UPDATE `tx_out`");
@@ -106,18 +106,17 @@ public class TxOutJDBCDao {
 
             // where condition list
             whereSql.append(whereConditionSql);
-            if(i < size - 1){
+            if (i < size - 1) {
                 whereSql.append(" or");
             }
             whereConditionList.add(txId);
             whereConditionList.add(index);
             whereConditionList.add(actionIndex);
-
         }
         sTxIdConditionSql.append(" ELSE `s_tx_id` END,");
         statusConditionSql.append(" ELSE `status` END,");
         updateTimeConditionSql.append(" ELSE `update_time` END");
-        whereSql.append(" )") ;
+        whereSql.append(" )");
         sql.append(sTxIdConditionSql).append(statusConditionSql).append(updateTimeConditionSql).append(whereSql);
         List<Object> params = Lists.newLinkedList();
         params.addAll(sTxIdConditionList);

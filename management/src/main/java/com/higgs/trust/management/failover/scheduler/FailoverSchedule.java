@@ -192,11 +192,11 @@ import java.util.List;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        packageService.process(packContext, true);
-        boolean persistValid =
-            blockService.compareBlockHeader(blockHeader, blockRepository.getBlockHeader(pack.getHeight()));
-        if (!persistValid) {
-            throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_BLOCK_PERSIST_RESULT_INVALID);
-        }
+        packageService.process(packContext, true,false);
+        txNested.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                packageService.process(packContext, true,false);
+            }
+        });
     }
 }

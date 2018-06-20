@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
      */
     @Override public void initKeyPair() {
 
-        Map caMap = acquirePubKeys(nodeProperties.getSelfCheckTimes());
+        Map caMap = acquirePubKeys(nodeProperties.getStartupRetryTime());
 
         // construct genius block and insert into db
         try {
