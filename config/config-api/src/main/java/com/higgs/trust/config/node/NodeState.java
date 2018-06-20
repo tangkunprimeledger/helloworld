@@ -131,11 +131,16 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
         if (from != state || !checkState(from, to)) {
             throw new ConfigException(ConfigError.CONFIG_NODE_STATE_CHANGE_FAILED);
         }
-        state = to;
-        log.info("Node state changed from:{} to:{}", from, to);
         LinkedHashSet<StateChangeListenerAdaptor> stateChangeListenerAdaptors = stateListeners.get(to);
         if (stateChangeListenerAdaptors != null) {
-            stateChangeListenerAdaptors.forEach(StateChangeListenerAdaptor::invoke);
+            stateChangeListenerAdaptors.stream().filter(StateChangeListenerAdaptor::isBefore)
+                .forEach(StateChangeListenerAdaptor::invoke);
+        }
+        state = to;
+        log.info("Node state changed from:{} to:{}", from, to);
+        if (stateChangeListenerAdaptors != null) {
+            stateChangeListenerAdaptors.stream().filter(adaptor -> !adaptor.isBefore())
+                .forEach(StateChangeListenerAdaptor::invoke);
         }
     }
 

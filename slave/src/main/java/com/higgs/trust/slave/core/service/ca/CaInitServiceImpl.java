@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.ca;
 
+import com.higgs.trust.config.node.NodeProperties;
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -10,7 +11,6 @@ import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.integration.ca.CaInitClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit;
     @Autowired private ClusterInfo clusterInfo;
     @Autowired private CaInitHandler caInitHandler;
 
+    @Autowired private NodeProperties nodeProperties;
+
     // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
 
     /**
@@ -56,7 +58,7 @@ import java.util.concurrent.TimeUnit;
      */
     @Override public void initKeyPair() {
 
-        Map caMap = acquirePubKeys(100);
+        Map caMap = acquirePubKeys(nodeProperties.getSelfCheckTimes());
 
         // construct genius block and insert into db
         try {
@@ -78,8 +80,9 @@ import java.util.concurrent.TimeUnit;
     private Map acquirePubKeys(int retryCount) {
         List<String> nodeList = clusterInfo.clusterNodeNames();
         Map<String, String> caMap = new HashMap();
-        log.info("[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKey, nodeList size = {}",
-            nodeList.size());
+        log.info(
+            "[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKey, nodeList size = {}, nodeList = {}",
+            nodeList.size(), nodeList.toString());
 
         int i = 0;
         do {
@@ -116,6 +119,14 @@ import java.util.concurrent.TimeUnit;
             }
 
         } while (++i < retryCount);
+
+        if (caMap.size() < nodeList.size()) {
+            log.info(
+                "[CaInitServiceImpl.acquirePubKeys]  error acquire all nodes' pubKey, caMap size = {},caMap={}, nodeList.size={},nodeList={}",
+                caMap.size(), caMap.toString(), nodeList.size(), nodeList.toString());
+            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR,
+                "[CaInitServiceImpl.acquirePubKeys] cluster init CA error, can not acquire enough pubKeys");
+        }
 
         log.info("[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caMap size = {}", caMap.size());
         return caMap;

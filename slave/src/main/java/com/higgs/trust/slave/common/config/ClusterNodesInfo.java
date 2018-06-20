@@ -2,6 +2,7 @@ package com.higgs.trust.slave.common.config;
 
 import com.higgs.trust.config.node.NodeState;
 import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
@@ -12,6 +13,7 @@ import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author jerry
  */
-@Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
+@Slf4j @Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
     implements ClusterInfo {
 
     @Getter @Setter private int faultNodeNum = 0;
@@ -41,7 +43,39 @@ import java.util.concurrent.ConcurrentHashMap;
     @Autowired private CaRepository caRepository;
     @Autowired private NodeState nodeState;
 
+    @Override public Integer faultNodeNum() {
+        return faultNodeNum;
+    }
+
+    @Override public String nodeName() {
+        return nodeState.getNodeName();
+    }
+
+    @Override public List<String> clusterNodeNames() {
+        if (clusterNodeNames.isEmpty()) {
+            clusterNodeNames.addAll(clusters.keySet());
+        }
+        return clusterNodeNames;
+    }
+
+    @Override public String pubKey(String nodeName) {
+        return clusters.get(nodeName);
+    }
+
+    @Override public String privateKey() {
+        return nodeState.getPrivateKey();
+    }
+
+    @Override public void init(ClusterInfoVo vo) {
+        faultNodeNum = vo.getFaultNodeNum();
+        clusters.clear();
+        clusters.putAll(vo.getClusters());
+        clusterNodeNames.clear();
+        clusterNodeNames.addAll(clusters.keySet());
+    }
+
     public void refresh() {
+        log.info("refresh cluster info");
         ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getNodeName());
         faultNodeNum = clusterConfig == null ? 0 : clusterConfig.getFaultNum();
         Config config = configRepository.getConfig(nodeState.getNodeName());
@@ -71,28 +105,5 @@ import java.util.concurrent.ConcurrentHashMap;
             clusterNodeNames.clear();
             clusterNodeNames.addAll(clusters.keySet());
         }
-    }
-
-    @Override public Integer faultNodeNum() {
-        return faultNodeNum;
-    }
-
-    @Override public String nodeName() {
-        return nodeState.getNodeName();
-    }
-
-    @Override public List<String> clusterNodeNames() {
-        if (clusterNodeNames.isEmpty()) {
-            clusterNodeNames.addAll(clusters.keySet());
-        }
-        return clusterNodeNames;
-    }
-
-    @Override public String pubKey(String nodeName) {
-        return clusters.get(nodeName);
-    }
-
-    @Override public String privateKey() {
-        return nodeState.getPrivateKey();
     }
 }

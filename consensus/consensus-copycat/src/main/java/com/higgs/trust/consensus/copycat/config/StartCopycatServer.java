@@ -3,7 +3,6 @@
  */
 package com.higgs.trust.consensus.copycat.config;
 
-import com.higgs.trust.consensus.copycat.core.CopycatStateMachine;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;

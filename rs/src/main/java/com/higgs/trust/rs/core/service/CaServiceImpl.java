@@ -49,9 +49,6 @@ import java.util.*;
     @Autowired private NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
-    @Value("${bftSmart.systemConfigs.myId:test}") private String myId;
-
-    // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
 
     /**
      * @return
@@ -65,6 +62,7 @@ import java.util.*;
                 "[authKeyPair] invalid node name");
         }
 
+        log.info("[authKeyPair] start to auth CA pubKey/priKey, nodeName={}", user);
         // CA existence check
         Ca ca = caRepository.getCa(user);
         if (null != ca) {
@@ -117,9 +115,9 @@ import java.util.*;
                 "[updateKeyPair] ca information doesn't exist");
         }
 
-        log.info("[updateKeyPair] start to update CA pubKey/priKey, nodeName={}",user);
+        log.info("[updateKeyPair] start to update CA pubKey/priKey, nodeName={}", user);
         // generate temp pubKey and priKey, insert into db
-        CaVO caVO = generateTmpKeyPair();
+        CaVO caVO = generateTmpKeyPair(ca);
 
         // send CA update request
         return updateCaTx(caVO);
@@ -168,11 +166,10 @@ import java.util.*;
 
         //construct caVO
         CaVO caVO = new CaVO();
-        Ca oldCa = caRepository.getCa(user);
-        caVO.setReqNo(HashUtil.getSHA256S(oldCa.getPubKey()));
+        caVO.setReqNo(HashUtil.getSHA256S(ca.getPubKey()));
         caVO.setUser(user);
-        caVO.setPeriod(oldCa.getPeriod());
-        caVO.setPubKey(oldCa.getPubKey());
+        caVO.setPeriod(ca.getPeriod());
+        caVO.setPubKey(ca.getPubKey());
 
         // send CA cancel request
         return cancelCaTx(caVO);
@@ -239,6 +236,7 @@ import java.util.*;
         caAction.setPubKey(caVO.getPubKey());
         caAction.setUsage(caVO.getUsage());
         caAction.setUser(caVO.getUser());
+        caAction.setValid(true);
         caAction.setType(ActionTypeEnum.CA_AUTH);
         caAction.setIndex(0);
         actions.add(caAction);
@@ -292,24 +290,6 @@ import java.util.*;
         return actions;
     }
 
-    /**
-     * @param pubKey
-     * @return
-     * @desc write file
-     */
-    private void fileWriter(String pubKey) {
-        String path = "config" + System.getProperty("file.separator") + "keys" + System.getProperty("file.separator");
-        try {
-            BufferedWriter w = new BufferedWriter(new FileWriter(path + "publickey" + myId, false));
-            w.write(pubKey);
-            w.flush();
-            w.close();
-        } catch (IOException e) {
-            log.error("[fileWriter]write pubKey to file error", e);
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_WRITE_FILE_ERROR,
-                "[fileWriter]write pubKey to file error");
-        }
-    }
 
     public CaVO generateKeyPair() {
 
@@ -329,7 +309,7 @@ import java.util.*;
         config.setNodeName(nodeState.getNodeName());
         config.setPubKey(pubKey);
         config.setPriKey(priKey);
-        config.setValid(false);
+        config.setValid(true);
         config.setVersion(VersionEnum.V1.getCode());
         configRepository.insertConfig(config);
 
@@ -345,7 +325,7 @@ import java.util.*;
         return caVO;
     }
 
-    private CaVO generateTmpKeyPair() {
+    private CaVO generateTmpKeyPair(Ca ca) {
 
         // generate temp pubKey and priKey and insert into db
         Map<String, String> map = null;
@@ -361,21 +341,20 @@ import java.util.*;
         String priKey = map.get(PRI_KEY);
         //store temp pubKey and priKey
         Config config = new Config();
-        config.setNodeName(nodeState.getNodeName());
+        config.setNodeName(ca.getUser());
         config.setTmpPubKey(pubKey);
         config.setTmpPriKey(priKey);
         config.setValid(true);
         configRepository.updateConfig(config);
 
-        //TODO 旧的pubKey需要从数据库查出来，作为txid进行下发
         //construct caVO
         CaVO caVO = new CaVO();
         caVO.setVersion(VersionEnum.V1.getCode());
         caVO.setPeriod(calculatePeriod());
         caVO.setPubKey(pubKey);
-        caVO.setReqNo(HashUtil.getSHA256S(pubKey));
+        caVO.setReqNo(HashUtil.getSHA256S(ca.getPubKey()));
         caVO.setUsage("consensus");
-        caVO.setUser(nodeState.getNodeName());
+        caVO.setUser(ca.getUser());
 
         return caVO;
     }
@@ -402,10 +381,6 @@ import java.util.*;
         Ca ca = new Ca();
         log.info("[getCa] success getCa, resp={}", resp.getData());
         BeanUtils.copyProperties((Ca)resp.getData(), ca);
-
-        log.info("[getCa] success getCa, ca={}", ca.toString());
-        // TODO CA信息进行写文件操作   写之前应该检测一下CA配置文件是否已经存在
-        //        fileWriter(ca.getPubKey());
 
         return ca;
     }

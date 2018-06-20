@@ -1,5 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.api.controller;
 
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
@@ -32,6 +33,11 @@ import org.springframework.web.bind.annotation.*;
     @RequestMapping(value = "/receive_command_sync", method = RequestMethod.POST) @ResponseBody
     public ValidResponseWrap<? extends ResponseCommand> receiveCommandSync(
         @RequestBody ValidCommandWrap validCommandWrap) {
-        return syncReceiveService.receive(validCommandWrap);
+        try {
+            return syncReceiveService.receive(validCommandWrap);
+        } catch (Throwable throwable) {
+            log.error("failed process received sync command", throwable);
+            return ValidResponseWrap.failedResponse(throwable.getMessage());
+        }
     }
 }

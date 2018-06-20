@@ -12,6 +12,7 @@ import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
@@ -64,16 +65,23 @@ import java.util.stream.Collectors;
      *
      * @return
      */
-    @Override public Package create(List<SignedTransaction> signedTransactions, Long packHeight) {
+    @Override public Package create(List<SignedTransaction> signedTransactions, Long currentPackageHeight) {
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
             return null;
         }
 
-        Long height = getHeight(packHeight);
-
-        if (null == height) {
+        if (null == currentPackageHeight) {
             return null;
+        }
+
+        // check package if exist
+        Long maxBlockHeight = blockRepository.getMaxHeight();
+        if (maxBlockHeight != null && maxBlockHeight.compareTo(currentPackageHeight) < 0) {
+            if ( null == packageRepository.load(currentPackageHeight)) {
+                log.error("package is not exist. packHeight={}", currentPackageHeight);
+                return null;
+            }
         }
 
         // sort signedTransactions by txId asc
@@ -84,7 +92,7 @@ import java.util.stream.Collectors;
         });
 
         log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, txList: {}, package.height: {}",
-            signedTransactions.size(), signedTransactions, height + 1);
+            signedTransactions.size(), signedTransactions, currentPackageHeight + 1);
 
         /**
          * initial package
@@ -92,47 +100,9 @@ import java.util.stream.Collectors;
         Package pack = new Package();
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
-        //get max height, add 1 for next package height
-        pack.setHeight(height + 1);
         //set status = INIT
         pack.setStatus(PackageStatusEnum.INIT);
         return pack;
-    }
-
-    /**
-     * get maxBlockHeight from db, packHeight from memory.
-     * if maxBlockHeight is null, log error, return null.
-     * if packHeight is null, return maxBlockHeight.(if exchange master, maxPackHeight must be initialized)
-     * if package is null which height = packHeight, then return null
-     * else return packHeight
-     *
-     * @return
-     */
-    private Long getHeight(Long packHeight) {
-        Long maxBlockHeight = blockRepository.getMaxHeight();
-
-        //genius block must be exist
-        if (null == maxBlockHeight) {
-            log.error("please initialize genius block");
-            return null;
-        }
-
-        //when exchange master, packHeight must be null
-        if (null == packHeight || 0 == packHeight) {
-            Long maxPackHeight = packageRepository.getMaxHeight();
-            if (null == maxPackHeight) {
-                return maxBlockHeight;
-            } else {
-                return maxBlockHeight > maxPackHeight ? maxBlockHeight : maxPackHeight;
-            }
-        }
-
-        if (null == packageRepository.load(packHeight)) {
-            log.error("package is not exist. packHeight={}", packHeight);
-            return null;
-        }
-
-        return packHeight;
     }
 
     @Override public void submitConsensus(Package pack) {
@@ -215,6 +185,7 @@ import java.util.stream.Collectors;
 
     /**
      * prepare package context
+     *
      * @param packContext
      */
     private void preparePackContext(PackContext packContext) {

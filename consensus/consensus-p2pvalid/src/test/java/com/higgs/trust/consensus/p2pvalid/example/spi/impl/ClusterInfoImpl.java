@@ -2,6 +2,7 @@ package com.higgs.trust.consensus.p2pvalid.example.spi.impl;
 
 
 import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.p2p.ClusterInfoVo;
 
 import java.util.List;
 
@@ -71,5 +72,13 @@ public class ClusterInfoImpl implements ClusterInfo {
     @Override
     public String privateKey() {
         return privateKey;
+    }
+
+    @Override public void init(ClusterInfoVo vo) {
+
+    }
+
+    @Override public void refresh() {
+
     }
 }
