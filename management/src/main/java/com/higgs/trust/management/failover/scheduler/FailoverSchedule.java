@@ -192,7 +192,7 @@ import java.util.List;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        packageService.process(packContext, true);
+        packageService.process(packContext, true,false);
         boolean persistValid =
             blockService.compareBlockHeader(blockHeader, blockRepository.getBlockHeader(pack.getHeight()));
         if (!persistValid) {

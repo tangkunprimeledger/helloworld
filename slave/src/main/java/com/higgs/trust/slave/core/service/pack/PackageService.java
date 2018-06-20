@@ -51,8 +51,9 @@ public interface PackageService {
      *
      * @param packContext
      * @param isFailover
+     * @param isBatchSync
      */
-    void process(PackContext packContext,boolean isFailover);
+    void process(PackContext packContext,boolean isFailover, boolean isBatchSync);
 
     /**
      * remove the package if it is done

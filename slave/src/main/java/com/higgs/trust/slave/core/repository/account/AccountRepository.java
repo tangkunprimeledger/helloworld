@@ -11,6 +11,7 @@ import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.dao.account.AccountDcRecordDao;
 import com.higgs.trust.slave.dao.account.AccountDetailDao;
 import com.higgs.trust.slave.dao.account.AccountInfoDao;
+import com.higgs.trust.slave.dao.account.AccountJDBCDao;
 import com.higgs.trust.slave.dao.po.account.AccountDcRecordPO;
 import com.higgs.trust.slave.dao.po.account.AccountDetailPO;
 import com.higgs.trust.slave.dao.po.account.AccountInfoPO;
@@ -42,7 +43,7 @@ import java.util.List;
     @Autowired AccountDetailDao accountDetailDao;
     @Autowired AccountDcRecordDao accountDcRecordDao;
     @Autowired DataIdentityRepository dataIdentityRepository;
-
+    @Autowired AccountJDBCDao accountJDBCDao;
     /**
      * query account info by account no
      *
@@ -187,10 +188,9 @@ import java.util.List;
             log.info("[batchInsert] accountInfos is empty");
             return;
         }
-        List<AccountInfoPO> list = BeanConvertor.convertList(accountInfos, AccountInfoPO.class);
         try {
             Profiler.enter("[batchInsert accountInfo]");
-            int r = accountInfoDao.batchInsert(list);
+            int r = accountJDBCDao.batchInsertAccount(accountInfos);
             Profiler.release();
             if (r != accountInfos.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");
@@ -215,10 +215,9 @@ import java.util.List;
             log.info("[batchUpdate] accountInfos is empty");
             return;
         }
-        List<AccountInfoPO> list = BeanConvertor.convertList(accountInfos, AccountInfoPO.class);
         try {
             Profiler.enter("[batchUpdate accountInfo]");
-            int r = accountInfoDao.batchUpdate(list);
+            int r = accountJDBCDao.batchUpdateAccount(accountInfos);
             Profiler.release();
             if (r != accountInfos.size()) {
                 log.info("[batchUpdate]the number of update rows is different from the original number");
@@ -240,10 +239,9 @@ import java.util.List;
             log.info("[batchInsertAccountDetail] accountDetails is empty");
             return;
         }
-        List<AccountDetailPO> list = BeanConvertor.convertList(accountDetails, AccountDetailPO.class);
         try {
             Profiler.enter("[batchInsert accountDetail]");
-            int r = accountDetailDao.batchInsert(list);
+            int r = accountJDBCDao.batchInsertAccountDetail(accountDetails);
             Profiler.release();
             if (r != accountDetails.size()) {
                 log.info("[batchInsertAccountDetail]the number of update rows is different from the original number");
@@ -268,10 +266,9 @@ import java.util.List;
             log.info("[batchInsertDcRecords] dcRecords is empty");
             return;
         }
-        List<AccountDcRecordPO> list = BeanConvertor.convertList(dcRecords, AccountDcRecordPO.class);
         try {
             Profiler.enter("[batchInsert accountDcRecords]");
-            int r = accountDcRecordDao.batchInsert(list);
+            int r = accountJDBCDao.batchInsertDcRecords(dcRecords);
             Profiler.release();
             if (r != dcRecords.size()) {
                 log.info("[batchInsertDcRecords]the number of update rows is different from the original number");

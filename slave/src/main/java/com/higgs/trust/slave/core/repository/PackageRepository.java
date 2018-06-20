@@ -56,7 +56,7 @@ import java.util.Set;
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                 int r = packageDao.updateStatus(height, from.getCode(), to.getCode());
                 if (r != 1) {
-                    log.error("[package.updateStatus] has error");
+                    log.error("[package.updateStatus] has error, fromStatus={}, toStatus={}", from.getCode(), to.getCode());
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_UPDATE_STATUS_ERROR);
                 }
             }

@@ -60,7 +60,7 @@ public class ContractCreationHandlerTest extends BaseTest {
             tx.execute(new TransactionCallbackWithoutResult(){
                 @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                     try {
-                        packageService.process(packContext, false);
+                        packageService.process(packContext, false,false);
                     } catch (Exception ex) {
                         transactionStatus.setRollbackOnly();
                     }
@@ -85,7 +85,7 @@ public class ContractCreationHandlerTest extends BaseTest {
                 .setBlockHeight(2)
                 .build();
 
-        packageService.process(packContext, false);
+        packageService.process(packContext, false,false);
     }
 
     public static void main(String[] args) {
