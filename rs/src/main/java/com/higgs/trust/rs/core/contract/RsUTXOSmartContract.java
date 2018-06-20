@@ -18,9 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author duhongming
  * @date 2018/6/15
  */
-public class UTXOSmartContract {
-    @Autowired
-    private UTXOContextService contextService;
+public class RsUTXOSmartContract {
+    @Autowired private RsUTXOContextService contextService;
     @Autowired private ContractSnapshotAgent contractSnapshotAgent;
 
     private ExecuteEngineManager engineManager;
@@ -35,7 +34,7 @@ public class UTXOSmartContract {
 
         ExecuteConfig executeConfig = new ExecuteConfig();
         executeConfig.setInstructionCountQuota(10000);
-        executeConfig.allow(UTXOContextService.class)
+        executeConfig.allow(RsUTXOContextService.class)
                 .allow(UTXO.class)
                 .allow(UTXOAction.class)
                 .allow(TxIn.class)
