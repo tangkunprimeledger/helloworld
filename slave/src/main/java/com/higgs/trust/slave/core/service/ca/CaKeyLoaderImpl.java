@@ -5,7 +5,9 @@ import com.higgs.trust.consensus.util.CaKeyLoader;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CaKeyLoaderImpl implements CaKeyLoader {
 
     @Autowired private CaRepository caRepository;

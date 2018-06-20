@@ -71,6 +71,8 @@ public class RSAKeyLoader {
 		}
 	}
 
+	public RSAKeyLoader() {}
+
 	/**
 	 * Loads the public key of some processes from configuration files
 	 *

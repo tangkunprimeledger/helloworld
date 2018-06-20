@@ -22,8 +22,8 @@ public class SmartClientConfig {
     private String myClientId;
 
 
-    @Bean(name = "smartClient")
-    @DependsOn("server")
+    @Bean()
+    @DependsOn("springUtil")
     public ConsensusClient consensusClient() {
         log.info("smart client start");
         if (!StringUtils.isEmpty(myClientId)) {
