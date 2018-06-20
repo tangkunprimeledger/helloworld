@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-@Component
 public class HostsConfig {
 
     private com.higgs.trust.consensus.bftsmartcustom.started.config.SmartConfig config;
