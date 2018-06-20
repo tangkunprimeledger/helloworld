@@ -166,11 +166,10 @@ import java.util.*;
 
         //construct caVO
         CaVO caVO = new CaVO();
-        Ca oldCa = caRepository.getCa(user);
-        caVO.setReqNo(HashUtil.getSHA256S(oldCa.getPubKey()));
+        caVO.setReqNo(HashUtil.getSHA256S(ca.getPubKey()));
         caVO.setUser(user);
-        caVO.setPeriod(oldCa.getPeriod());
-        caVO.setPubKey(oldCa.getPubKey());
+        caVO.setPeriod(ca.getPeriod());
+        caVO.setPubKey(ca.getPubKey());
 
         // send CA cancel request
         return cancelCaTx(caVO);
@@ -237,6 +236,7 @@ import java.util.*;
         caAction.setPubKey(caVO.getPubKey());
         caAction.setUsage(caVO.getUsage());
         caAction.setUser(caVO.getUser());
+        caAction.setValid(true);
         caAction.setType(ActionTypeEnum.CA_AUTH);
         caAction.setIndex(0);
         actions.add(caAction);
@@ -309,7 +309,7 @@ import java.util.*;
         config.setNodeName(nodeState.getNodeName());
         config.setPubKey(pubKey);
         config.setPriKey(priKey);
-        config.setValid(false);
+        config.setValid(true);
         config.setVersion(VersionEnum.V1.getCode());
         configRepository.insertConfig(config);
 
