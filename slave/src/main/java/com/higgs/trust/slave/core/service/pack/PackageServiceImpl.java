@@ -78,7 +78,7 @@ import java.util.stream.Collectors;
         // check package if exist
         Long maxBlockHeight = blockRepository.getMaxHeight();
         if (maxBlockHeight != null && maxBlockHeight.compareTo(currentPackageHeight) < 0) {
-            if ( null == packageRepository.load(currentPackageHeight)) {
+            if (null == packageRepository.load(currentPackageHeight)) {
                 log.error("package is not exist. packHeight={}", currentPackageHeight);
                 return null;
             }
@@ -202,8 +202,9 @@ import java.util.stream.Collectors;
      *
      * @param packContext
      * @param isFailover
+     * @param isBatchSync
      */
-    @Override public void process(PackContext packContext, boolean isFailover) {
+    @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
         log.info("process package start");
         Profiler.start("[PackageService.process.monitor]");
         Package pack = packContext.getCurrentPackage();
@@ -240,22 +241,19 @@ import java.util.stream.Collectors;
             blockService.persistBlock(block, txReceipts);
             Profiler.release();
 
-            //persist package
-            Profiler.enter("[persist package]");
-            packageRepository
-                .updateStatus(pack.getHeight(), PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-            Profiler.release();
-
             //call back business
             Profiler.enter("[callbackRS]");
             callbackRS(block.getSignedTxList(), txReceipts, false, isFailover);
             Profiler.release();
 
-            //submit blockHeader to p2p
-            Profiler.enter("[submit block header to p2p]");
-            p2pHandler.sendPersisting(dbHeader);
-            Profiler.release();
-
+            if (!isBatchSync) {
+                PackageStatusEnum from = PackageStatusEnum.RECEIVED;
+                if (pack.getStatus() == PackageStatusEnum.FAILOVER) {
+                    from = PackageStatusEnum.FAILOVER;
+                }
+                packageRepository.updateStatus(pack.getHeight(), from, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+                p2pHandler.sendPersisting(dbHeader);
+            }
         } catch (Throwable e) {
             //snapshot transactions should be destroy
             snapshotService.destroy();

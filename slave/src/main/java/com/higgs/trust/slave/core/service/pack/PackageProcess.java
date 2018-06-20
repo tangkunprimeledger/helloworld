@@ -87,7 +87,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
         PackContext packContext = packageService.createPackContext(pack);
         // do persist
-        packageService.process(packContext,false);
+        packageService.process(packContext,false,false);
     }
 
 }

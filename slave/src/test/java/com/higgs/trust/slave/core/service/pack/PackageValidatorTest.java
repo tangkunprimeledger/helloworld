@@ -99,7 +99,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
         PackContext packContext = new PackContext(pack,block);
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                packageService.process(packContext,false);
+                packageService.process(packContext,false,false);
             }
         });
     }
@@ -157,7 +157,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
         PackContext packContext = new PackContext(pack,block);
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                packageService.process(packContext,false);
+                packageService.process(packContext,false,false);
             }
         });
     }
