@@ -39,4 +39,10 @@ public class JsonHelper {
         Object cloneObj = parse(json);
         return cloneObj;
     }
+
+    public static <T> T clone(Object obj, Class<T> clazz) {
+        String json = serialize(obj);
+        T cloneObj = JSON.parseObject(json, clazz);
+        return cloneObj;
+    }
 }
