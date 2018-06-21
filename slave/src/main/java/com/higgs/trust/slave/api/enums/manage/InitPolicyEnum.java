@@ -7,7 +7,6 @@ package com.higgs.trust.slave.api.enums.manage;
  *
  */
 public enum InitPolicyEnum {
-    STORAGE("STORAGE", "000000", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"storage policy"),
     REGISTER_POLICY("REGISTER_POLICY", "000001",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE, "register policy"),
     REGISTER_RS("REGISTER_RS", "000002",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE, "register rs"),
     UTXO_ISSUE("UTXO_ISSUE", "000003", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"utxo issue"),

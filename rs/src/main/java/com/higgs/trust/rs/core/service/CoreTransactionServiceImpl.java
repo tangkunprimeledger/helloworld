@@ -168,6 +168,21 @@ import java.util.List;
                         RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR);
                     return;
                 }
+                //check rs ids
+                if (CollectionUtils.isEmpty(policy.getRsIds())) {
+                    //system policy
+                    if (initPolicyEnum == InitPolicyEnum.REGISTER_POLICY || initPolicyEnum == InitPolicyEnum.REGISTER_RS
+                        || initPolicyEnum == InitPolicyEnum.CA_AUTH || initPolicyEnum == InitPolicyEnum.CA_UPDATE
+                        || initPolicyEnum == InitPolicyEnum.CA_CANCEL || initPolicyEnum == InitPolicyEnum.CANCEL_RS) {
+                        //still submit to slave
+                        coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+                        return;
+                    } else {
+                        toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
+                            RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR);
+                        return;
+                    }
+                }
                 //vote pattern
                 VotePatternEnum votePattern = voteRule.getVotePattern();
                 if (votePattern == null) {
@@ -177,22 +192,15 @@ import java.util.List;
                     return;
                 }
                 //get required voters from saved sign info
-                List<String> voters = voteService.getVoters(bo.getSignDatas(), policy.getRsIds());
-                if (CollectionUtils.isEmpty(voters)) {
+                List<String> needVoters = voteService.getVoters(bo.getSignDatas(), policy.getRsIds());
+                if (CollectionUtils.isEmpty(needVoters)) {
                     log.warn("[processInitTx]required voters is empty txId:{}", bo.getTxId());
-                    if (initPolicyEnum == InitPolicyEnum.REGISTER_POLICY || initPolicyEnum == InitPolicyEnum.REGISTER_RS
-                        || initPolicyEnum == InitPolicyEnum.CA_AUTH || initPolicyEnum == InitPolicyEnum.CA_UPDATE
-                        || initPolicyEnum == InitPolicyEnum.CA_CANCEL || initPolicyEnum == InitPolicyEnum.CANCEL_RS) {
-                        //still submit to slave
-                        coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
-                        return;
-                    }
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR);
+                    //still submit to slave
+                    coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
                     return;
                 }
                 //request voting
-                List<VoteReceipt> receipts = voteService.requestVoting(bo, voters, votePattern);
+                List<VoteReceipt> receipts = voteService.requestVoting(bo, needVoters, votePattern);
                 //if receipts is empty,should retry
                 if (CollectionUtils.isEmpty(receipts)) {
                     log.error("[processInitTx]voting receipts is empty by SYNC txId:{}", bo.getTxId());
@@ -208,9 +216,9 @@ import java.util.List;
                     voteReceiptRepository.batchAdd(receipts);
                 }
                 //when there is failure as net-timeout,should retry
-                if (receipts.size() < voters.size()) {
+                if (receipts.size() < needVoters.size()) {
                     log.error("[processInitTx]receipts.size:{} is less than voters.size:{} txId:{}", receipts.size(),
-                        voters.size(), bo.getTxId());
+                        needVoters.size(), bo.getTxId());
                     return;
                 }
                 //check vote decision for SYNC pattern

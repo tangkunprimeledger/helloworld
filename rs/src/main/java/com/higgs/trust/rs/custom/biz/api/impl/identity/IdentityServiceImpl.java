@@ -14,6 +14,7 @@ import com.higgs.trust.rs.custom.dao.identity.IdentityRequestDAO;
 import com.higgs.trust.rs.custom.dao.po.BankChainRequestPO;
 import com.higgs.trust.rs.custom.dao.po.identity.IdentityPO;
 import com.higgs.trust.rs.custom.dao.po.identity.IdentityRequestPO;
+import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.rs.custom.model.RespData;
 import com.higgs.trust.rs.custom.model.bo.BankChainRequest;
 import com.higgs.trust.rs.custom.model.bo.identity.IdentityRequest;
@@ -69,7 +70,7 @@ import org.springframework.transaction.support.TransactionTemplate;
             Profiler.start("[acceptRequest] accept request start");
 
             BankChainRequestPO bankChainRequestPO = new BankChainRequestPO();
-            bankChainRequestPO.setBizType(InitPolicyEnum.STORAGE.getType());
+            bankChainRequestPO.setBizType(BizTypeConst.STORAGE_IDENTITY);
             bankChainRequestPO.setReqNo(identityRequest.getReqNo());
             bankChainRequestPO.setStatus(RequestStatusEnum.INIT.getCode());
             try {
@@ -270,7 +271,7 @@ import org.springframework.transaction.support.TransactionTemplate;
         // 组装CoreTransaction
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setBizModel(bizModel);
-        coreTx.setPolicyId(InitPolicyEnum.STORAGE.getPolicyId());
+        coreTx.setPolicyId(BizTypeConst.STORAGE_IDENTITY);
         coreTx.setTxId(identityRequest.getReqNo());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
