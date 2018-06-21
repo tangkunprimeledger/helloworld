@@ -147,7 +147,6 @@ import java.util.List;
         try {
             Profiler.enter("[batchInsert accountFreezeRecords]");
             int r = accountJDBCDao.batchInsertFreezeRecord(accountFreezeRecords);
-            Profiler.release();
             if (r != accountFreezeRecords.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -157,7 +156,6 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         } finally {
             Profiler.release();
-            Profiler.logDump();
         }
     }
 
@@ -173,14 +171,12 @@ import java.util.List;
         try {
             Profiler.enter("[batchUpdate accountFreezeRecords]");
             int r = accountJDBCDao.batchUpdateFreezeRecord(accountFreezeRecords);
-            Profiler.release();
             if (r != accountFreezeRecords.size()) {
                 log.info("[batchUpdate]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
             }
         } finally {
             Profiler.release();
-            Profiler.logDump();
         }
     }
 
@@ -191,13 +187,11 @@ import java.util.List;
      */
     public void batchInsertDetailFreezes(List<AccountDetailFreeze> detailFreezes) {
         if (CollectionUtils.isEmpty(detailFreezes)) {
-            log.info("[batchInsertDetailFreezes] detailFreezes is empty");
             return;
         }
         try {
             Profiler.enter("[batchInsert detailFreeze]");
             int r = accountJDBCDao.batchInsertDetailFreezes(detailFreezes);
-            Profiler.release();
             if (r != detailFreezes.size()) {
                 log.info("[batchInsertDetailFreezes]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -207,7 +201,6 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         } finally {
             Profiler.release();
-            Profiler.logDump();
         }
     }
 }
