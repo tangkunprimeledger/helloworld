@@ -41,12 +41,14 @@ import java.util.List;
         }
         for (SignedTransaction tx : txs) {
             List<SignInfo> signDatas = tx.getSignatureList();
-            Collections.sort(signDatas, new Comparator<SignInfo>() {
-                @Override public int compare(SignInfo o1, SignInfo o2) {
-                    return o1.getOwner().equals(o2.getOwner()) ? 1 : 0;
-                }
-            });
-            tx.setSignatureList(signDatas);
+            if (signDatas != null) {
+                Collections.sort(signDatas, new Comparator<SignInfo>() {
+                    @Override public int compare(SignInfo o1, SignInfo o2) {
+                        return o1.getOwner().equals(o2.getOwner()) ? 1 : 0;
+                    }
+                });
+                tx.setSignatureList(signDatas);
+            }
         }
         Collections.sort(txs, new Comparator<SignedTransaction>() {
             @Override public int compare(SignedTransaction o1, SignedTransaction o2) {

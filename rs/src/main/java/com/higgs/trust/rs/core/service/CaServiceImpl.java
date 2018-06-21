@@ -15,6 +15,8 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
+import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
+import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -25,12 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -43,12 +41,17 @@ import java.util.*;
 
     public static final String PUB_KEY = "pubKey";
     public static final String PRI_KEY = "priKey";
+    public static final String CLUSTER_CONFIG = "clusterConfig";
+    public static final String CLUSTER_NODE = "clusterNode";
+    public static final String CA_INFO = "caInfo";
 
     @Autowired private ConfigRepository configRepository;
     @Autowired private CaRepository caRepository;
     @Autowired private NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
+    @Autowired private ClusterConfigRepository clusterConfigRepository;
+    @Autowired private ClusterNodeRepository clusterNodeRepository;
 
     /**
      * @return
@@ -76,7 +79,7 @@ import java.util.*;
         CaVO caVO = generateKeyPair();
 
         // send CA auth request
-        caClient.caAuth(nodeState.getNodeName(), caVO);
+        caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
     }
 
     /**
@@ -235,6 +238,7 @@ import java.util.*;
         caAction.setPeriod(caVO.getPeriod());
         caAction.setPubKey(caVO.getPubKey());
         caAction.setUsage(caVO.getUsage());
+        caAction.setVersion(VersionEnum.V1.getCode());
         caAction.setUser(caVO.getUser());
         caAction.setValid(true);
         caAction.setType(ActionTypeEnum.CA_AUTH);
@@ -289,7 +293,6 @@ import java.util.*;
         actions.add(caAction);
         return actions;
     }
-
 
     public CaVO generateKeyPair() {
 
@@ -373,7 +376,7 @@ import java.util.*;
         }
 
         log.info("[getCa] start to getCa, user={}", user);
-        RespData resp = caClient.acquireCA(nodeState.getNodeName(), user);
+        RespData resp = caClient.acquireCA(nodeState.notMeNodeNameReg(), user);
         if (!resp.isSuccess()) {
             log.error("[getCa] get ca error");
             return null;
