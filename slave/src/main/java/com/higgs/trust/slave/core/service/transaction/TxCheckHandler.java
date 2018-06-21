@@ -41,7 +41,7 @@ import java.util.*;
             if (policyEnum == null) {
                 Policy policy = policyRepository.getPolicyById(ctx.getPolicyId());
 
-                if (policy == null && CollectionUtils.isEmpty(policy.getRsIds())) {
+                if (policy == null || CollectionUtils.isEmpty(policy.getRsIds())) {
                     log.error("acquire policy failed. policyId={}", ctx.getPolicyId());
                     return false;
                 }

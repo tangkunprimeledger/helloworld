@@ -4,15 +4,16 @@
 
     <insert id="insertClusterNode" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">
 		INSERT INTO cluster_node(node_name,
-		p2p_status,
-		rs_status,
-		create_time,
-		update_time)
+		          p2p_status,
+		          rs_status,
+		          create_time,
+		          update_time)
 		VALUES (#{nodeName},
-		#{p2pStatus},
-		#{rsStatus},
-		now(3),
-		now(3))
+		          #{p2pStatus},
+		          #{rsStatus},
+		          now(3),
+		          now(3))
+        ON DUPLICATE KEY UPDATE p2p_status=#{p2pStatus},rs_status=#{rsStatus},update_time=now(3)
 	</insert>
 
     <insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ClusterNodePO">

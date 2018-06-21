@@ -4,6 +4,7 @@ import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
+import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
@@ -38,12 +39,12 @@ import org.springframework.stereotype.Service;
         clusterNode.setRsStatus(false);
         caSnapshotAgent.saveClusterNode(clusterNode);
 
-        ClusterConfig oldClusterConfig = caSnapshotAgent.getClusterConfig("TRUST");
+        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig("TRUST");
         ClusterConfig clusterConfig = new ClusterConfig();
         // TODO 集群名称应该从配置动态读取
-        clusterConfig.setClusterName(oldClusterConfig.getClusterName());
-        clusterConfig.setNodeNum(oldClusterConfig.getNodeNum() + 1);
-        clusterConfig.setFaultNum(oldClusterConfig.getNodeNum() / 3);
+        clusterConfig.setClusterName(clusterConfigPO.getClusterName());
+        clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() + 1);
+        clusterConfig.setFaultNum(clusterConfigPO.getNodeNum() / 3);
         caSnapshotAgent.updateClusterConfig(clusterConfig);
 
     }
@@ -81,11 +82,11 @@ import org.springframework.stereotype.Service;
         log.info("[cancelCa] start to update clusterNodeInfo, user={}",ca.getUser());
         caSnapshotAgent.updateClusterNode(clusterNode);
 
-        ClusterConfig oldClusterConfig = caSnapshotAgent.getClusterConfig("TRUST");
+        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig("TRUST");
         ClusterConfig clusterConfig = new ClusterConfig();
         // TODO 集群名称应该从配置动态读取
-        clusterConfig.setClusterName(oldClusterConfig.getClusterName());
-        clusterConfig.setNodeNum(oldClusterConfig.getNodeNum() - 1);
+        clusterConfig.setClusterName(clusterConfigPO.getClusterName());
+        clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() - 1);
         clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
         log.info("[cancelCa] start to update clusterConfigInfo, user={}",ca.getUser());
         caSnapshotAgent.updateClusterConfig(clusterConfig);

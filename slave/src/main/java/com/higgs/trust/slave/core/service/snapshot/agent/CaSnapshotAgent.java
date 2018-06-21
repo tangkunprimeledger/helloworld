@@ -83,7 +83,6 @@ import java.util.List;
      * @return
      */
     public CaPO getCa(String user) {
-        log.warn("getCa kkkkkkk"+get(new CaCacheKey(user)).toString());
         return get(new CaCacheKey(user));
     }
 
@@ -93,7 +92,7 @@ import java.util.List;
      * @param clusterName
      * @return
      */
-    public ClusterConfig getClusterConfig(String clusterName) {
+    public ClusterConfigPO getClusterConfig(String clusterName) {
         return get(new ClusterConfigCacheKey(clusterName));
     }
 
@@ -103,7 +102,7 @@ import java.util.List;
      * @param nodeName
      * @return
      */
-    public ClusterNode getClusterNode(String nodeName) {
+    public ClusterNodePO getClusterNode(String nodeName) {
         return get(new ClusterNodeCacheKey(nodeName));
     }
 
@@ -116,7 +115,6 @@ import java.util.List;
         CaPO caPO = new CaPO();
         BeanUtils.copyProperties(ca, caPO);
         insert(new CaCacheKey(ca.getUser()), caPO);
-        log.warn("jjjjjjjjjjj"+get(new CaCacheKey(ca.getUser())).toString());
     }
 
     /**
@@ -128,7 +126,6 @@ import java.util.List;
         CaPO caPO = new CaPO();
         BeanUtils.copyProperties(ca, caPO);
         update(new CaCacheKey(caPO.getUser()), caPO);
-        log.warn("updateCa oooooo"+get(new CaCacheKey(ca.getUser())).toString());
     }
 
     /**

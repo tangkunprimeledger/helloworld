@@ -13,6 +13,7 @@
 				#{faultNum},
 				now(3),
 				now(3))
+        ON DUPLICATE KEY UPDATE node_num=#{nodeNum},fault_num=#{faultNum},update_time=now(3)
 	</insert>
 
     <insert id="batchInsert" parameterType="com.higgs.trust.slave.dao.po.config.ClusterConfigPO">

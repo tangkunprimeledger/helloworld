@@ -71,7 +71,8 @@ import java.util.Map;
 
         //verify signatures
         if (!txCheckHandler.verifySignatures(signedTransaction, rsPubKeyMap)) {
-            log.error("SignedTransaction verify signature failed");
+            log.error("SignedTransaction verify signature failed, signedTransaction={}, rsPubKeyMap={}",
+                signedTransaction.toString(), rsPubKeyMap.toString());
             throw new SlaveException(SlaveErrorEnum.SLAVE_TX_VERIFY_SIGNATURE_FAILED);
         }
 
