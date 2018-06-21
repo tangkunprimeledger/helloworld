@@ -17,6 +17,7 @@ import org.mockito.*;
 import org.mockito.stubbing.Answer;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -44,6 +45,7 @@ import static org.testng.Assert.assertEquals;
     @Mock BlockSyncService blockSyncService;
     @Mock PackageService packageService;
     @Mock NodeState nodeState;
+    @Mock TransactionTemplate txNested;
 
     long currentHeight = 1;
     @Mock BlockHeader header;

@@ -57,8 +57,6 @@ import static org.testng.Assert.assertTrue;
         Mockito.when(blockSyncService.bftValidating(header)).thenReturn(true);
 
         selfCheckingService.autoCheck();
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
     }
 
     @Test public void testCheckTrueNotMaster1() {
@@ -69,8 +67,6 @@ import static org.testng.Assert.assertTrue;
         Mockito.when(properties.getStartupRetryTime()).thenReturn(2);
 
         selfCheckingService.autoCheck();
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
     }
 
     @Test public void testCheckFalseNotMaster() {
@@ -82,8 +78,6 @@ import static org.testng.Assert.assertTrue;
         }catch (FailoverExecption e) {
             assertEquals(e.getCode(), ManagementError.MANAGEMENT_STARTUP_SELF_CHECK_FAILED);
         }
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
     }
 
     @Test public void testCheckFalseNotMaster2() {
@@ -97,8 +91,6 @@ import static org.testng.Assert.assertTrue;
         }catch (FailoverExecption e) {
             assertEquals(e.getCode(), ManagementError.MANAGEMENT_STARTUP_SELF_CHECK_FAILED);
         }
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
     }
 
     //    @Test
@@ -113,7 +105,5 @@ import static org.testng.Assert.assertTrue;
         }catch (FailoverExecption e) {
             assertEquals(e.getCode(), ManagementError.MANAGEMENT_STARTUP_SELF_CHECK_FAILED);
         }
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
     }
 }

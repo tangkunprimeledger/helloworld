@@ -76,7 +76,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
     public void refresh() {
         log.info("refresh cluster info");
-        ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getNodeName());
+        ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getClusterName());
         faultNodeNum = clusterConfig == null ? 0 : clusterConfig.getFaultNum();
         Config config = configRepository.getConfig(nodeState.getNodeName());
         nodeState.setPrivateKey(null != config ? config.getPriKey() : null);
@@ -91,14 +91,16 @@ import java.util.concurrent.ConcurrentHashMap;
     public void refreshPubkeys() {
         Map<String, String> clusterPubkeys = new HashMap<>();
         List<ClusterNode> list = clusterNodeRepository.getAllClusterNodes();
-        list.forEach(clusterNode -> {
-            if (clusterNode.isP2pStatus()) {
-                Ca ca = caRepository.getCa(clusterNode.getNodeName());
-                if (ca != null) {
-                    clusterPubkeys.put(clusterNode.getNodeName(), ca.getPubKey());
+        if (list != null) {
+            list.forEach(clusterNode -> {
+                if (clusterNode.isP2pStatus()) {
+                    Ca ca = caRepository.getCa(clusterNode.getNodeName());
+                    if (ca != null) {
+                        clusterPubkeys.put(clusterNode.getNodeName(), ca.getPubKey());
+                    }
                 }
-            }
-        });
+            });
+        }
         synchronized (clusters) {
             clusters.clear();
             clusters.putAll(clusterPubkeys);

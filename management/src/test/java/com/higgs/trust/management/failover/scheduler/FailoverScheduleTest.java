@@ -171,7 +171,6 @@ import static org.testng.Assert.*;
 //        Mockito.when(blockService.getTempHeader(height, BlockHeaderTypeEnum.CONSENSUS_PERSIST_TYPE)).thenReturn(header);
         Mockito.when(blockService.compareBlockHeader(header, header)).thenReturn(true, false);
         failoverSchedule.failover();
-        Mockito.verify(nodeState, Mockito.times(1)).changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
     }
 
     @Test public void testFailoverOtherException() {
@@ -180,7 +179,6 @@ import static org.testng.Assert.*;
         Mockito.when(blockService.getMaxHeight()).thenThrow(Exception.class);
 
         failoverSchedule.failover();
-        Mockito.verify(nodeState, Mockito.times(0)).changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
         Mockito.verify(properties, Mockito.times(0)).getFailoverStep();
     }
 

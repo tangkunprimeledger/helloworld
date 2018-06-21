@@ -61,16 +61,16 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
     @Getter @Setter private String privateKey;
 
     /**
-     * prefix of node name
+     * cluster name, as the prefix of cluster nodes
      */
-    @Getter private String prefix;
+    @Getter private String clusterName;
 
     @Getter @Setter private long currentTerm = 0;
 
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
         this.privateKey = properties.getPrivateKey();
-        this.prefix = properties.getPrefix();
+        this.clusterName = properties.getPrefix();
 
         registerStateListener();
 
@@ -213,6 +213,7 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
      * @return
      */
     public String notMeNodeNameReg() {
-        return "(?!" + this.nodeName.toUpperCase(Locale.ROOT) + ")" + this.prefix.toUpperCase(Locale.ROOT) + "(\\S)*";
+        return "(?!" + this.nodeName.toUpperCase(Locale.ROOT) + ")" + this.clusterName.toUpperCase(Locale.ROOT)
+            + "(\\S)*";
     }
 }
