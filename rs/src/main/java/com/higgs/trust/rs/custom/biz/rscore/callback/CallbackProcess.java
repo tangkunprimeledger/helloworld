@@ -66,9 +66,6 @@ import org.springframework.stereotype.Service;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if(initPolicyEnum!=null) {
             switch (initPolicyEnum) {
-                case STORAGE:
-                    storageIdentityCallbackHandler.process(respData);
-                    break;
                 case UTXO_ISSUE:
                     createBillCallbackHandler.process(respData);
                     break;
@@ -86,6 +83,9 @@ import org.springframework.stereotype.Service;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONFIGURATION_ERROR);
         }
         switch (bizType) {
+            case BizTypeConst.STORAGE_IDENTITY:
+                storageIdentityCallbackHandler.process(respData);
+                break;
             case BizTypeConst.TRANSFER_UTXO:
                 transferBillCallbackHandler.process(respData);
                 break;
