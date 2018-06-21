@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
     @Autowired AccountSnapshotHandler accountSnapshotHandler;
 
     @Override public void process(ActionData actionData){
-        log.info("[openAccount.process] is start ");
+        log.debug("[openAccount.process] is start ");
         OpenAccount bo = (OpenAccount)actionData.getCurrentAction();
         Profiler.enter("[validateForOpenAccount]");
         // validate business
@@ -43,6 +43,6 @@ import org.springframework.stereotype.Component;
         Profiler.enter("[persistForOpenAccount]");
         accountSnapshotHandler.openAccount(bo);
         Profiler.release();
-        log.info("[openAccount.process] is success");
+        log.debug("[openAccount.process] is success");
     }
 }

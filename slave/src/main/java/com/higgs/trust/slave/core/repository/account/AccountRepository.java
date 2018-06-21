@@ -185,13 +185,11 @@ import java.util.List;
      */
     public void batchInsert(List<AccountInfo> accountInfos) {
         if (CollectionUtils.isEmpty(accountInfos)) {
-            log.info("[batchInsert] accountInfos is empty");
             return;
         }
         try {
             Profiler.enter("[batchInsert accountInfo]");
             int r = accountJDBCDao.batchInsertAccount(accountInfos);
-            Profiler.release();
             if (r != accountInfos.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -201,7 +199,6 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         } finally {
             Profiler.release();
-            Profiler.logDump();
         }
     }
 
@@ -212,20 +209,17 @@ import java.util.List;
      */
     public void batchUpdate(List<AccountInfo> accountInfos) {
         if (CollectionUtils.isEmpty(accountInfos)) {
-            log.info("[batchUpdate] accountInfos is empty");
             return;
         }
         try {
             Profiler.enter("[batchUpdate accountInfo]");
             int r = accountJDBCDao.batchUpdateAccount(accountInfos);
-            Profiler.release();
             if (r != accountInfos.size()) {
                 log.info("[batchUpdate]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
             }
         } finally {
             Profiler.release();
-            Profiler.logDump();
         }
     }
 
@@ -236,13 +230,11 @@ import java.util.List;
      */
     public void batchInsertAccountDetail(List<AccountDetail> accountDetails) {
         if (CollectionUtils.isEmpty(accountDetails)) {
-            log.info("[batchInsertAccountDetail] accountDetails is empty");
             return;
         }
         try {
             Profiler.enter("[batchInsert accountDetail]");
             int r = accountJDBCDao.batchInsertAccountDetail(accountDetails);
-            Profiler.release();
             if (r != accountDetails.size()) {
                 log.info("[batchInsertAccountDetail]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -252,7 +244,6 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         } finally {
             Profiler.release();
-            Profiler.logDump();
         }
     }
 
@@ -263,13 +254,11 @@ import java.util.List;
      */
     public void batchInsertDcRecords(List<AccountDcRecord> dcRecords) {
         if (CollectionUtils.isEmpty(dcRecords)) {
-            log.info("[batchInsertDcRecords] dcRecords is empty");
             return;
         }
         try {
             Profiler.enter("[batchInsert accountDcRecords]");
             int r = accountJDBCDao.batchInsertDcRecords(dcRecords);
-            Profiler.release();
             if (r != dcRecords.size()) {
                 log.info("[batchInsertDcRecords]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -279,7 +268,6 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         } finally {
             Profiler.release();
-            Profiler.logDump();
         }
     }
 }

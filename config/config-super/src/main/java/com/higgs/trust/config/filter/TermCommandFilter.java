@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
             Long height = command.getPackageHeight();
             String nodeName = command.getNodeName();
             if (!termManager.isTermHeight(term, nodeName, height)) {
-                log.warn("package command rejected");
+                log.warn("package command rejected,current termInfo:{}", termManager.getTermInfo(term));
                 commit.close();
                 return;
             }

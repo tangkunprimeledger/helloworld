@@ -72,7 +72,7 @@ import java.util.*;
 
     @Override public void process(TransactionData transactionData) {
         CoreTransaction coreTx = transactionData.getCurrentTransaction().getCoreTx();
-        log.info("[process]coreTx:{}", coreTx);
+        log.debug("[process]coreTx:{}", coreTx);
         List<Action> actionList = coreTx.getActionList();
         if (CollectionUtils.isEmpty(actionList)) {
             return;
@@ -184,7 +184,7 @@ import java.util.*;
             default:
         }
         if (CollectionUtils.isEmpty(accountNos)) {
-            log.info("[exeContract]accountNos is empty");
+            log.debug("[exeContract]accountNos is empty");
             return;
         }
         for (String accountNo : accountNos) {

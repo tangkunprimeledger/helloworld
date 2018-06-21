@@ -71,9 +71,12 @@ import java.math.BigDecimal;
             Profiler.release();
         }
         //freeze
-        Profiler.enter("[persistForFreeze]");
-        accountSnapshotHandler.freeze(newBo, actionData.getCurrentBlock().getBlockHeader().getHeight());
-        Profiler.release();
+        try {
+            Profiler.enter("[persistForFreeze]");
+            accountSnapshotHandler.freeze(newBo, actionData.getCurrentBlock().getBlockHeader().getHeight());
+        }finally {
+            Profiler.release();
+        }
     }
 
     /**

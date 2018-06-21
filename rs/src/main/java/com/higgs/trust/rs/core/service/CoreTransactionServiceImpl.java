@@ -179,9 +179,16 @@ import java.util.List;
                 //get required voters from saved sign info
                 List<String> voters = voteService.getVoters(bo.getSignDatas(), policy.getRsIds());
                 if (CollectionUtils.isEmpty(voters)) {
-                    log.info("[processInitTx]required voters is empty txId:{}", bo.getTxId());
-                    //still submit to slave
-                    coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+                    log.warn("[processInitTx]required voters is empty txId:{}", bo.getTxId());
+                    if (initPolicyEnum == InitPolicyEnum.REGISTER_POLICY || initPolicyEnum == InitPolicyEnum.REGISTER_RS
+                        || initPolicyEnum == InitPolicyEnum.CA_AUTH || initPolicyEnum == InitPolicyEnum.CA_UPDATE
+                        || initPolicyEnum == InitPolicyEnum.CA_CANCEL || initPolicyEnum == InitPolicyEnum.CANCEL_RS) {
+                        //still submit to slave
+                        coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+                        return;
+                    }
+                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
+                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR);
                     return;
                 }
                 //request voting
@@ -327,7 +334,7 @@ import java.util.List;
      * @param respData
      */
     private void toEndAndCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RespData respData) {
-        log.info("[toEndAndCallBackByError]tx:{},from:{},respData:{}",bo,from,respData);
+        log.info("[toEndAndCallBackByError]tx:{},from:{},respData:{}", bo, from, respData);
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 //save execute result and error code
@@ -397,8 +404,8 @@ import java.util.List;
                     try {
                         //require db-transaction and try self
                         toEndAndCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes);
-                    }catch (Throwable e){
-                        log.error("[submitToSlave.toEndAndCallBackByError] has error",e);
+                    } catch (Throwable e) {
+                        log.error("[submitToSlave.toEndAndCallBackByError] has error", e);
                     }
                 }
             }
