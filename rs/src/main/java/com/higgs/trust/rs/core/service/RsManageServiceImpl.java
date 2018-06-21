@@ -224,7 +224,7 @@ import java.util.List;
                     //组装UTXO,CoreTransaction，下发
                     return submitTx(coreTransactionConvertor
                         .buildCoreTransaction(cancelRsVO.getRequestId(), null, buildCancelRsActionList(cancelRsVO),
-                            InitPolicyEnum.REGISTER_RS.getPolicyId()));
+                            InitPolicyEnum.CANCEL_RS.getPolicyId()));
                 }
             });
 
