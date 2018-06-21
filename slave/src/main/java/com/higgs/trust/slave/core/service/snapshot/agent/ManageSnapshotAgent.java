@@ -132,9 +132,21 @@ public class ManageSnapshotAgent implements CacheLoader {
         return true;
     }
 
-    public Policy getPolicy(String policyId) { return get(new PolicyCacheKey(policyId));}
+    public Policy getPolicy(String policyId) {
+        PolicyPO po = get(new PolicyCacheKey(policyId));
+        if (null == po) {
+            return null;
+        }
+        return policyRepository.convertPolicyPOToPolicy(po);
+    }
 
-    public RsNode getRsNode(String rsId) { return get(new RsNodeCacheKey(rsId));}
+    public RsNode getRsNode(String rsId) {
+        RsNodePO po = get(new RsNodeCacheKey(rsId));
+        if (null == po) {
+            return null;
+        }
+        return rsNodeRepository.convertRsNodePOtoRsNode(po);
+    }
 
     public Policy registerPolicy(RegisterPolicy registerPolicy) {
         Policy policy = policyRepository.convertActionToPolicy(registerPolicy);
