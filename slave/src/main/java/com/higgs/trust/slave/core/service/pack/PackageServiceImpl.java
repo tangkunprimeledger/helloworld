@@ -206,14 +206,13 @@ import java.util.stream.Collectors;
      */
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
         log.info("process package start");
-        Profiler.start("[PackageService.process.monitor]");
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (CollectionUtils.isEmpty(txs)) {
             log.error("[package.process]the transactions in the package is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
-
+        Profiler.start("[PackageService.process.monitor]size:" + txs.size());
         try {
             //snapshot transactions should be init
             snapshotService.clear();

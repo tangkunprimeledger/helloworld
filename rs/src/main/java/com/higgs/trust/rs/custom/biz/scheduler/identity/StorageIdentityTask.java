@@ -3,6 +3,7 @@ package com.higgs.trust.rs.custom.biz.scheduler.identity;
 import com.higgs.trust.rs.custom.api.identity.IdentityService;
 import com.higgs.trust.rs.custom.dao.BankChainRequestDAO;
 import com.higgs.trust.rs.custom.dao.po.BankChainRequestPO;
+import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.rs.custom.model.convertor.identity.POToBOConvertor;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,7 @@ import static com.higgs.trust.Application.INITIAL_DELAY;
         for (BankChainRequestPO bankChainRequestPO : list) {
 
             // 判断是否是存证类业务
-            if (!InitPolicyEnum.STORAGE.getType().equals(bankChainRequestPO.getBizType())) {
+            if (!BizTypeConst.STORAGE_IDENTITY.equals(bankChainRequestPO.getBizType())) {
                 return;
             }
 
@@ -62,7 +63,7 @@ import static com.higgs.trust.Application.INITIAL_DELAY;
                 identityService.asyncSendIdentity(POToBOConvertor.convertBankChainRequestPOToBO(bankChainRequestPO));
                 log.info("定时任务处理存证下发业务  reqNo :{} 处理结束", bankChainRequestPO.getReqNo());
             } catch (Throwable e) {
-                log.error("[StorageIdentityTask] process failed,reqNo={}", bankChainRequestPO.getReqNo(), e);
+                log.error("[REGISTER_POLICYIdentityTask] process failed,reqNo={}", bankChainRequestPO.getReqNo(), e);
             }
 
         }

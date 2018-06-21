@@ -77,6 +77,16 @@ import java.util.List;
     }
 
     /**
+     * has core_transaction for txId
+     *
+     * @param txId
+     * @return
+     */
+    public boolean isExist(String txId) {
+        return queryByTxId(txId, false) != null;
+    }
+
+    /**
      * query for status by page no
      *
      * @param coreTxStatusEnum

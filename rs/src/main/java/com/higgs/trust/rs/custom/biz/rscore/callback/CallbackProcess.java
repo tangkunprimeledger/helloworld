@@ -1,5 +1,7 @@
 package com.higgs.trust.rs.custom.biz.rscore.callback;
 
+import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
+import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.BizTypeService;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.callback.TxCallbackHandler;
@@ -10,6 +12,7 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,7 +58,7 @@ import org.springframework.stereotype.Service;
      * @param respData
      */
     @Override public void onEnd(RespData<CoreTransaction> respData) {
-        log.info("[onEnd] start process");
+        log.debug("[onEnd] start process");
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
 
@@ -63,26 +66,32 @@ import org.springframework.stereotype.Service;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if(initPolicyEnum!=null) {
             switch (initPolicyEnum) {
-                case STORAGE:
-                    storageIdentityCallbackHandler.process(respData);
-                    return;
                 case UTXO_ISSUE:
                     createBillCallbackHandler.process(respData);
-                    return;
+                    break;
                 case UTXO_DESTROY:
-                    return;
+                    break;
                 default:
                     break;
             }
+            return;
         }
         //process custom
         String bizType = bizTypeService.getByPolicyId(policyId);
+        if(StringUtils.isEmpty(bizType)){
+            log.error("[onEnd] get bizType is null ");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONFIGURATION_ERROR);
+        }
         switch (bizType) {
+            case BizTypeConst.STORAGE_IDENTITY:
+                storageIdentityCallbackHandler.process(respData);
+                break;
             case BizTypeConst.TRANSFER_UTXO:
                 transferBillCallbackHandler.process(respData);
                 break;
             default:
-                break;
+                log.error("[onEnd] do not has bizType:{} handler",bizType);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONFIGURATION_ERROR);
         }
         log.info("[onEnd] end process");
     }

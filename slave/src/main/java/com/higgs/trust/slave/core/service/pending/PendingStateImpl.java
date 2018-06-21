@@ -90,10 +90,17 @@ import java.util.List;
                 return;
             }
 
-            // key and value all are txId
-            packageCache.putExistMap(signedTransaction.getCoreTx().getTxId(), signedTransaction.getCoreTx().getTxId());
-            //insert memory
-            packageCache.appendDequeLast(signedTransaction);
+            try {
+                // key and value all are txId
+                packageCache.putExistMap(txId, txId);
+                //insert memory
+                packageCache.appendDequeLast(signedTransaction);
+            } catch (Throwable e) {
+                log.error("transaction insert into memory exception. txId={}, ", txId, e);
+                if (packageCache.isExistInMap(txId)) {
+                    packageCache.removeExistMap(txId);
+                }
+            }
         });
 
         // if all transaction received success, RespData will set data 'null'

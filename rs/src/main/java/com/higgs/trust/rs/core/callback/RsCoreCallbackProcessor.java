@@ -57,6 +57,8 @@ import org.springframework.stereotype.Component;
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if (policyEnum != null) {
             switch (policyEnum) {
+                case NA:
+                    return;
                 case REGISTER_POLICY:
                     processRegisterPolicy(respData);
                     return;
@@ -86,6 +88,8 @@ import org.springframework.stereotype.Component;
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if (policyEnum != null) {
             switch (policyEnum) {
+                case NA:
+                    return;
                 case REGISTER_POLICY:
                     processRegisterPolicy(respData);
                     return;

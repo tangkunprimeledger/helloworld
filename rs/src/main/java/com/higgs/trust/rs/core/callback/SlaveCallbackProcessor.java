@@ -47,15 +47,21 @@ import java.util.List;
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
-            log.info("[onPersisted]only call self");
+            log.debug("[onPersisted]only call self");
             return;
         }
         //not send by myself
         if (!sendBySelf(tx.getSender())) {
-            //add tx,status=END
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
+            //add tx,status=PERSISTED
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
             //callback custom rs
             rsCoreCallbackProcessor.onPersisted(respData);
+            return;
+        }
+        //check core_tx record
+        if(!coreTxRepository.isExist(tx.getTxId())){
+            log.warn("onPersisted]call back self but core_tx is not exist txId:{}",tx.getTxId());
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
             return;
         }
         //for self
@@ -75,16 +81,9 @@ import java.util.List;
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
-            log.info("[onClusterPersisted]only call self");
+            log.debug("[onClusterPersisted]only call self");
             return;
         }
-        //not send by myself
-        if (!sendBySelf(tx.getSender())) {
-            //callback custom rs
-            rsCoreCallbackProcessor.onEnd(respData);
-            return;
-        }
-        //for self
         //update status
         coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
         //callback custom rs
@@ -101,7 +100,7 @@ import java.util.List;
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
-            log.info("[onFailover]only call self");
+            log.debug("[onFailover]only call self");
             return;
         }
         //add tx,status=END
@@ -130,8 +129,14 @@ import java.util.List;
                 throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR);
             }
             callbackType = voteRule.getCallbackType();
+        }else{
+            //default UTXO policy should call back self
+            if(policyEnum == InitPolicyEnum.UTXO_ISSUE
+                || policyEnum == InitPolicyEnum.UTXO_DESTROY){
+                callbackType = CallbackTypeEnum.SELF;
+            }
         }
-        log.info("[getCallbackType]callbackType:{}", callbackType);
+        log.debug("[getCallbackType]callbackType:{}", callbackType);
         return callbackType;
     }
 

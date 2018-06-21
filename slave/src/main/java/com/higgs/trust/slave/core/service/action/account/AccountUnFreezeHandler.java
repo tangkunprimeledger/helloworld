@@ -32,7 +32,6 @@ import java.math.BigDecimal;
     }
 
     public void unFreeze(AccountUnFreeze bo,Long blockHeight){
-        Profiler.enter("[validateForUnFreeze]");
         //validate business
         //check record is exists
         AccountFreezeRecord freezeRecord = accountSnapshotHandler.getAccountFreezeRecord(bo.getBizFlowNo(), bo.getAccountNo());
@@ -68,16 +67,23 @@ import java.math.BigDecimal;
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_BALANCE_IS_NOT_ENOUGH_ERROR);
         }
         //check contract address
-        checkContract(freezeRecord.getContractAddr());
-        Profiler.release();
-        log.info("[accountUnFreeze.process] before-freeze-record:{}", freezeRecord.getAmount());
-        log.info("[accountUnFreeze.process] after-freeze-record:{}", afterAmount);
-        log.info("[accountUnFreeze.process] before-freeze-account:{}", accountInfo.getFreezeAmount());
-        log.info("[accountUnFreeze.process] after-freeze-account:{}", afterOfAccount);
+        try {
+            Profiler.enter("[checkContract]");
+            checkContract(freezeRecord.getContractAddr());
+        }finally {
+            Profiler.release();
+        }
+        log.debug("[accountUnFreeze.process] before-freeze-record:{}", freezeRecord.getAmount());
+        log.debug("[accountUnFreeze.process] after-freeze-record:{}", afterAmount);
+        log.debug("[accountUnFreeze.process] before-freeze-account:{}", accountInfo.getFreezeAmount());
+        log.debug("[accountUnFreeze.process] after-freeze-account:{}", afterOfAccount);
         //unfreeze
-        Profiler.enter("[persistForUnFreeze]");
-        accountSnapshotHandler.unfreeze(bo, freezeRecord, blockHeight);
-        Profiler.release();
+        try {
+            Profiler.enter("[persistForUnFreeze]");
+            accountSnapshotHandler.unfreeze(bo, freezeRecord, blockHeight);
+        }finally {
+            Profiler.release();
+        }
     }
 
     /**

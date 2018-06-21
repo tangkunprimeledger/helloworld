@@ -64,7 +64,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
      * @param term
      * @return
      */
-    private Optional<TermInfo> getTermInfo(long term) {
+    public Optional<TermInfo> getTermInfo(long term) {
         return terms.stream().filter(termInfo -> term == termInfo.getTerm()).findFirst();
     }
 

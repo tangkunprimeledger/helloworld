@@ -16,6 +16,9 @@ public abstract class BaseReceiveService {
     public ValidResponseWrap<? extends ResponseCommand> receive(ValidCommandWrap validCommandWrap) {
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
         String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNode());
+
+        log.info("[BaseReceiveService] user={}",validCommandWrap.getFromNode());
+
         if (!SignUtils.verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
             throw new RuntimeException(String
                 .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),

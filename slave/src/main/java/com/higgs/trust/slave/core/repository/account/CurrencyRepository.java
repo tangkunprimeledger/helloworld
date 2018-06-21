@@ -74,13 +74,11 @@ import java.util.List;
      */
     public void batchInsert(List<CurrencyInfo> currencyInfos) {
         if (CollectionUtils.isEmpty(currencyInfos)) {
-            log.info("[batchInsert] currencyInfos is empty");
             return;
         }
         try {
             Profiler.enter("[batchInsert currencyInfo]");
             int r = accountJDBCDao.batchInsertCurrency(currencyInfos);
-            Profiler.release();
             if (r != currencyInfos.size()) {
                 log.info("[batchInsert]the number of update rows is different from the original number");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
@@ -90,7 +88,6 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         } finally {
             Profiler.release();
-            Profiler.logDump();
         }
     }
 }

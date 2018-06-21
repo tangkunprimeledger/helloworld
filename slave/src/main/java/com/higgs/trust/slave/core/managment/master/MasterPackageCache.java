@@ -129,6 +129,12 @@ import java.util.concurrent.atomic.AtomicLong;
         return existTxMap.containsKey(key);
     }
 
+    public void removeExistMap(String key) {
+        if (existTxMap.containsKey(key)) {
+            existTxMap.remove(key);
+        }
+    }
+
     public void putPendingPack(Package pack) throws InterruptedException {
         synchronized (this) {
             long packageHeight = packHeight.incrementAndGet();

@@ -27,11 +27,12 @@ import org.springframework.stereotype.Component;
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
         if (commit.operation() instanceof SignatureCommand) {
             SignatureCommand command = (SignatureCommand)commit.operation();
-            boolean verify = SignUtils
-                .verify(command.getSignValue(), command.getSignature(), clusterInfo.pubKey(command.getNodeName()));
+            String nodeName = command.getNodeName();
+            String publicKey = clusterInfo.pubKey(nodeName);
+            boolean verify = SignUtils.verify(command.getSignValue(), command.getSignature(), publicKey);
             log.trace("command sign verify:{}", verify);
             if (!verify) {
-                log.warn("command sign verify failed.");
+                log.warn("command sign verify failed, node:{}, pubkey:{}", nodeName, publicKey);
                 commit.close();
                 return;
             }
