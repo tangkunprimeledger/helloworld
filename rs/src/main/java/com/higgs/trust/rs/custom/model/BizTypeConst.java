@@ -11,4 +11,8 @@ public class BizTypeConst {
      * transfer for utxo
      */
     public final static String TRANSFER_UTXO = "TRANSFER_UTXO";
+    /**
+     * 存证
+     */
+    public final static String STORAGE_IDENTITY = "storage-identity";
 }

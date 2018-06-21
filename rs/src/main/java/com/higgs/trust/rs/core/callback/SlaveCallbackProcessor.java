@@ -52,10 +52,16 @@ import java.util.List;
         }
         //not send by myself
         if (!sendBySelf(tx.getSender())) {
-            //add tx,status=END
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
+            //add tx,status=PERSISTED
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
             //callback custom rs
             rsCoreCallbackProcessor.onPersisted(respData);
+            return;
+        }
+        //check core_tx record
+        if(!coreTxRepository.isExist(tx.getTxId())){
+            log.warn("onPersisted]call back self but core_tx is not exist txId:{}",tx.getTxId());
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
             return;
         }
         //for self
@@ -78,13 +84,6 @@ import java.util.List;
             log.debug("[onClusterPersisted]only call self");
             return;
         }
-        //not send by myself
-        if (!sendBySelf(tx.getSender())) {
-            //callback custom rs
-            rsCoreCallbackProcessor.onEnd(respData);
-            return;
-        }
-        //for self
         //update status
         coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
         //callback custom rs
