@@ -59,4 +59,5 @@ import org.springframework.web.bind.annotation.RestController;
     @RequestMapping(value = "/ca/get") RespData<Ca> acquireCA(@RequestParam("user") String user) {
         return caService.acquireCA(user);
     }
+
 }

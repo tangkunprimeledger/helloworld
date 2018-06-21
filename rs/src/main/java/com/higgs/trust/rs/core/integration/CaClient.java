@@ -7,6 +7,8 @@ import com.higgs.trust.slave.model.bo.ca.Ca;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * @author WangQuanzhou
  * @desc TODO
@@ -31,4 +33,13 @@ import org.springframework.web.bind.annotation.*;
      */
     @RequestMapping(value = "/ca/get", method = RequestMethod.POST) RespData<Ca> acquireCA(
         @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestParam("user") String user);
+
+
+    /**
+     * @param
+     * @return
+     * @desc send acqurie ca  request
+     */
+    @RequestMapping(value = "/ca/sync", method = RequestMethod.POST) RespData<Map> syncCluster(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg);
 }
