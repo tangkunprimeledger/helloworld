@@ -86,7 +86,7 @@ import java.util.List;
         return policyPO;
     }
 
-    private Policy convertPolicyPOToPolicy(PolicyPO policyPO) {
+    public Policy convertPolicyPOToPolicy(PolicyPO policyPO) {
 
         Policy policy = new Policy();
         try {
