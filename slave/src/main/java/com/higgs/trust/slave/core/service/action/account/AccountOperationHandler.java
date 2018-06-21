@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
      * @param actionData
      */
     @Override public void process(ActionData actionData){
-        log.info("[accountOperation.validate] is start");
+        log.debug("[accountOperation.validate] is start");
         AccountOperation bo = (AccountOperation)actionData.getCurrentAction();
         //validate
         Profiler.enter("[validateForOperation]");
