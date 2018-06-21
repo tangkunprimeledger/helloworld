@@ -79,7 +79,7 @@ import org.springframework.stereotype.Service;
         //process custom
         String bizType = bizTypeService.getByPolicyId(policyId);
         if(StringUtils.isEmpty(bizType)){
-            log.error("[onEnd] get bizType is null ");
+            log.error("[onEnd] get bizType is null,policyId:{}",policyId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONFIGURATION_ERROR);
         }
         switch (bizType) {

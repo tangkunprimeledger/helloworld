@@ -23,8 +23,8 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
-import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
@@ -145,8 +145,8 @@ import java.util.List;
                 Policy policy = policyRepository.getPolicyById(policyId);
                 if (policy == null) {
                     log.error("[processInitTx]get policy is null by policyId:{}", policyId);
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
+                    toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
+                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED,false);
                     return;
                 }
                 // vote rule
@@ -164,8 +164,8 @@ import java.util.List;
                 }
                 if (voteRule == null) {
                     log.error("[processInitTx]get voteRule is null by policyId:{}", policyId);
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR);
+                    toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
+                        RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR,false);
                     return;
                 }
                 //check rs ids
@@ -181,8 +181,8 @@ import java.util.List;
                         coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
                         return;
                     } else {
-                        toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
-                            RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR);
+                        toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
+                            RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR,false);
                         return;
                     }
                 }
@@ -190,8 +190,8 @@ import java.util.List;
                 VotePatternEnum votePattern = voteRule.getVotePattern();
                 if (votePattern == null) {
                     log.error("[processInitTx]votePattern is empty");
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_VOTE_PATTERN_NOT_EXISTS_ERROR);
+                    toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
+                        RsCoreErrorEnum.RS_CORE_VOTE_PATTERN_NOT_EXISTS_ERROR,false);
                     return;
                 }
                 //get need voters from saved sign info
@@ -235,7 +235,7 @@ import java.util.List;
                     boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
                     log.info("[processInitTx]decision:{}", decision);
                     if (!decision) {
-                        toEndAndCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL);
+                        toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,false);
                         return;
                     }
                     //change status to WAIT for SYNC pattern
@@ -284,15 +284,15 @@ import java.util.List;
                 Policy policy = policyRepository.getPolicyById(policyId);
                 if (policy == null) {
                     log.error("[processNeedVoteTx]get policy is null by policyId:{}", policyId);
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
-                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED);
+                    toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
+                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED,false);
                     return;
                 }
                 List<String> rsIds = policy.getRsIds();
                 if (CollectionUtils.isEmpty(rsIds)) {
                     log.error("[processNeedVoteTx]rsIds is empty by txId:{}", bo.getTxId());
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
-                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR);
+                    toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
+                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR,false);
                     return;
                 }
                 //query receipts by txId
@@ -310,7 +310,7 @@ import java.util.List;
                 boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
                 log.info("[processNeedVoteTx]decision:{}", decision);
                 if (!decision) {
-                    toEndAndCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL);
+                    toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,false);
                     return;
                 }
                 List<SignInfo> signInfos = voteService.getSignInfos(receipts);
@@ -330,11 +330,11 @@ import java.util.List;
      * @param from
      * @param rsCoreErrorEnum
      */
-    private void toEndAndCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RsCoreErrorEnum rsCoreErrorEnum) {
+    private void toEndOrCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RsCoreErrorEnum rsCoreErrorEnum,boolean isCallback) {
         RespData respData = new RespData();
         respData.setCode(rsCoreErrorEnum.getCode());
         respData.setMsg(rsCoreErrorEnum.getDescription());
-        toEndAndCallBackByError(bo, from, respData);
+        toEndOrCallBackByError(bo, from, respData,isCallback);
     }
 
     /**
@@ -344,8 +344,8 @@ import java.util.List;
      * @param from
      * @param respData
      */
-    private void toEndAndCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RespData respData) {
-        log.info("[toEndAndCallBackByError]tx:{},from:{},respData:{}", bo, from, respData);
+    private void toEndOrCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RespData respData,boolean isCallback) {
+        log.info("[toEndOrCallBackByError]tx:{},from:{},respData:{}", bo, from, respData);
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 //save execute result and error code
@@ -355,7 +355,9 @@ import java.util.List;
                 coreTxRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
                 respData.setData(coreTxRepository.convertTxVO(bo));
                 //callback custom rs
-                rsCoreCallbackHandler.onEnd(respData);
+                if(isCallback) {
+                    rsCoreCallbackHandler.onEnd(respData);
+                }
             }
         });
         //同步通知
@@ -414,9 +416,9 @@ import java.util.List;
                     mRes.setMsg(txVo.getErrMsg());
                     try {
                         //require db-transaction and try self
-                        toEndAndCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes);
+                        toEndOrCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes,true);
                     } catch (Throwable e) {
-                        log.error("[submitToSlave.toEndAndCallBackByError] has error", e);
+                        log.error("[submitToSlave.toEndOrCallBackByError] has error", e);
                     }
                 }
             }
