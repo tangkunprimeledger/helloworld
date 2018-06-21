@@ -6,6 +6,7 @@ import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
@@ -82,6 +83,12 @@ import java.util.List;
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
             log.debug("[onClusterPersisted]only call self");
+            return;
+        }
+        //check status
+        CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(tx.getTxId(),false);
+        if(CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()) == CoreTxStatusEnum.END){
+            log.error("[onClusterPersisted]tx status already END txId:{}",tx.getTxId());
             return;
         }
         //update status

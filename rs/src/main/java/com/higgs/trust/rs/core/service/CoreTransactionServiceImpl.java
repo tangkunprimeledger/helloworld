@@ -62,13 +62,13 @@ import java.util.List;
     @Autowired private ThreadPoolTaskExecutor txSubmitExecutorPool;
     @Autowired private ThreadPoolTaskExecutor txProcessExecutorPool;
 
-    @Override public RespData syncWait(String key, boolean forEnd) {
+    @Override public RespData syncWait(String txId, boolean forEnd) {
         RespData respData = null;
         try {
             if (forEnd) {
-                respData = clusterPersistedResultMap.poll(key, rsConfig.getSyncRequestTimeout());
+                respData = clusterPersistedResultMap.poll(txId, rsConfig.getSyncRequestTimeout());
             } else {
-                respData = persistedResultMap.poll(key, rsConfig.getSyncRequestTimeout());
+                respData = persistedResultMap.poll(txId, rsConfig.getSyncRequestTimeout());
             }
         } catch (Throwable e) {
             log.error("tx handle exception. ", e);

@@ -12,7 +12,6 @@ import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
-import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
@@ -372,7 +371,12 @@ import java.util.stream.Collectors;
                     Profiler.enter("[callbackRSForClusterPersisted]");
                     callbackRS(txs, txReceipts, true, false);
                     Profiler.release();
-
+                    //check status for package
+                    boolean isPackageStatus = packageRepository.isPackageStatus(blockHeader.getHeight(),PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+                    if(!isPackageStatus) {
+                        log.error("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",blockHeader.getHeight());
+                        return;
+                    }
                     //update package status ---- PERSISTED
                     Profiler.enter("[updatePackStatus]");
                     packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
