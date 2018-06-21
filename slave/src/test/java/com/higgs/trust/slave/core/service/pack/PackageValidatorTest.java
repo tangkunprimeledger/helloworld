@@ -75,7 +75,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
 
             freezeBizFlowNo = freezeAction.getBizFlowNo();
 
-            CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, i, InitPolicyEnum.STORAGE);
+            CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, i, InitPolicyEnum.REGISTER_POLICY);
             SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
             txs.add(tx);
         }
@@ -89,7 +89,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
         unfreezeAction.setIndex(1);
         actions.add(unfreezeAction);
 
-        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 3, InitPolicyEnum.STORAGE);
+        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 3, InitPolicyEnum.REGISTER_POLICY);
         SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
         txs.add(tx);
 
@@ -133,7 +133,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
 
             freezeBizFlowNo = freezeAction.getBizFlowNo();
 
-            CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, i, InitPolicyEnum.STORAGE);
+            CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, i, InitPolicyEnum.REGISTER_POLICY);
             SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
             txs.add(tx);
         }
@@ -147,7 +147,7 @@ public class PackageValidatorTest extends IntegrateBaseTest {
         unfreezeAction.setIndex(1);
         actions.add(unfreezeAction);
 
-        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 3, InitPolicyEnum.STORAGE);
+        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 3, InitPolicyEnum.REGISTER_POLICY);
         SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
         txs.add(tx);
 
