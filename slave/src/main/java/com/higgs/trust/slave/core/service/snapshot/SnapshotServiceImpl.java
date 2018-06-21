@@ -583,6 +583,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //clear packageCache and txCache
             clearTempCache();
 
+            //clear merkle tree cache
+            clearGlobalMerkleTree();
+
             //reset index
             resetIndex();
         } finally {
@@ -591,6 +594,21 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             Profiler.release();
         }
         log.debug("End of flush");
+    }
+
+    /**
+     * clear global merkle cache
+     */
+    private void clearGlobalMerkleTree() {
+        SnapshotBizKeyEnum bizKey = SnapshotBizKeyEnum.MERKLE_TREE;
+        //check whether there is snapshotBizKeyEnum in globalCache
+        if (!globalCache.containsKey(bizKey)) {
+            log.error("There is no key:{} for bizCache in globalCache!", bizKey);
+            //TODO lingchao 加监控
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
+        }
+        LoadingCache<String, Object> merkleCache = globalCache.get(bizKey);
+        merkleCache.invalidateAll();
     }
 
     /**
