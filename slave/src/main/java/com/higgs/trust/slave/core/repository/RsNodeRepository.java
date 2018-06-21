@@ -105,7 +105,7 @@ import java.util.List;
         return rsNode;
     }
 
-    private RsNode convertRsNodePOtoRsNode(RsNodePO rsNodePO) {
+    public RsNode convertRsNodePOtoRsNode(RsNodePO rsNodePO) {
         RsNode rsNode = new RsNode();
         BeanUtils.copyProperties(rsNodePO, rsNode);
         rsNode.setStatus(RsNodeStatusEnum.getByCode(rsNodePO.getStatus()));
