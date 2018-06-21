@@ -222,4 +222,20 @@ import java.util.Set;
         return packageBO;
     }
 
+    /**
+     * check package status
+     *
+     * @param height
+     * @param packageStatusEnum
+     * @return
+     */
+    public boolean isPackageStatus(Long height,PackageStatusEnum packageStatusEnum){
+        PackagePO packagePO= queryByHeight(height);
+        if(packagePO == null){
+            log.error("[isPackageStatus] package is null height:{}",height);
+            return false;
+        }
+        log.info("package of DB status:{},blockHeight:{}",packagePO.getStatus(),height);
+        return PackageStatusEnum.getByCode(packagePO.getStatus()) == packageStatusEnum;
+    }
 }
