@@ -16,7 +16,8 @@ public enum InitPolicyEnum {
     CA_AUTH("CA_AUTH", "000007",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA AUTH"),
     CA_UPDATE("CA_UPDATE", "000008",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA UPDATE"),
     CA_CANCEL("CA_CANCEL", "000009",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA CANCEL"),
-    CANCEL_RS("CANCEL_RS", "000010", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "cancel rs");
+    CANCEL_RS("CANCEL_RS", "000010", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "cancel rs"),
+    NA("NA", "000011", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "NA type");
     private String type;
 
     private String policyId;

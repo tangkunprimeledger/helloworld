@@ -17,7 +17,7 @@ public abstract class BaseReceiveService {
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
         String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNode());
 
-        log.info("[BaseReceiveService] ttttttttt user={},pubKey={}",validCommandWrap.getFromNode(),pubKey);
+        log.info("[BaseReceiveService] user={}",validCommandWrap.getFromNode());
 
         if (!SignUtils.verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
             throw new RuntimeException(String
