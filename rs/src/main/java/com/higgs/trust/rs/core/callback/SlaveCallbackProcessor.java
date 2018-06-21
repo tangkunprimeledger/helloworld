@@ -88,7 +88,7 @@ import java.util.List;
         //check status
         CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(tx.getTxId(),false);
         if(CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()) == CoreTxStatusEnum.END){
-            log.warn("[onClusterPersisted]tx status already END txId:{}",tx.getTxId());
+            log.error("[onClusterPersisted]tx status already END txId:{}",tx.getTxId());
             return;
         }
         //update status
