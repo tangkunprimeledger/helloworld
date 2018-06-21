@@ -2,6 +2,7 @@ package com.higgs.trust.rs.custom.util.converter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.IntegrateBaseTest;
+import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.slave.model.bo.action.Action;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,8 @@ public class CoreTransactionConvertorTest extends IntegrateBaseTest {
 
         List<Action> actionList = utxoActionConvertor.buildCreateBillWithIdentityActionList(billCreateVO);
 
-        System.out.println("---------------------------" + coreTransactionConvertor.buildBillCoreTransaction("12312312", new JSONObject(), actionList));
+        System.out.println("---------------------------" + coreTransactionConvertor.buildBillCoreTransaction("12312312", new JSONObject(), actionList,
+            BizTypeConst.TRANSFER_UTXO));
     }
 
 }

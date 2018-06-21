@@ -33,7 +33,7 @@ public class CoreTransactionServiceImplTest extends IntegrateBaseTest {
         DataBaseManager dataBaseManager = new DataBaseManager();
         dataBaseManager.executeSingleDelete("delete from core_transaction where tx_id = '12234234234234';",DB_URL);
         CoreTransaction coreTransaction = new CoreTransaction();
-        coreTransaction.setPolicyId(InitPolicyEnum.STORAGE.getPolicyId());
+        coreTransaction.setPolicyId(InitPolicyEnum.REGISTER_POLICY.getPolicyId());
         coreTransaction.setSender("sender");
         coreTransaction.setTxId("12234234234234");
         coreTransaction.setVersion("1.0");

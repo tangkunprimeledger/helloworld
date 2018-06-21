@@ -28,7 +28,7 @@ public class CoreTxServiceTest extends IntegrateBaseTest {
     public void testSubmitTx(){
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId("tx_id_001");
-        coreTx.setPolicyId(InitPolicyEnum.STORAGE.getPolicyId());
+        coreTx.setPolicyId(InitPolicyEnum.REGISTER_POLICY.getPolicyId());
         coreTx.setBizModel(new JSONObject());
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setSender("RS001");

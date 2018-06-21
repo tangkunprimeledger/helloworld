@@ -29,14 +29,14 @@ public class CoreTransactionConvertor {
      * @param actionList
      * @return
      */
-    public CoreTransaction buildBillCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList){
+    public CoreTransaction buildBillCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList,String policyId){
         CoreTransaction coreTransaction = new CoreTransaction();
         coreTransaction.setTxId(txId);
         coreTransaction.setBizModel(bizModel);
         coreTransaction.setActionList(actionList);
         coreTransaction.setVersion(VersionEnum.V1.getCode());
         coreTransaction.setSender(nodeState.getNodeName());
-        coreTransaction.setPolicyId(InitPolicyEnum.UTXO_ISSUE.getPolicyId());
+        coreTransaction.setPolicyId(policyId);
         return coreTransaction;
     }
 
