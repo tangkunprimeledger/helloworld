@@ -13,6 +13,7 @@ public enum RespCodeEnum {
 
     //    业务异常类
     PARAM_NOT_ILLEGAL("200", "000", "param is illegal"),
+    DATA_NOT_EXIST("200", "001", "data not exist"),
 
     // 系统异常
     SYS_FAIL("500", "000", "system busy"),

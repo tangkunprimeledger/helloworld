@@ -79,6 +79,10 @@ import java.util.concurrent.*;
         }
     }
 
+    @Override public void beforeChange(String masterName) {
+
+    }
+
     @Override public void masterChanged(String masterName) {
         if (nodeState.isMaster()) {
             startMasterHeartbeat();

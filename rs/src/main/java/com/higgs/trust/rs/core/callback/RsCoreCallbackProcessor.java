@@ -160,6 +160,7 @@ import org.springframework.stereotype.Component;
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
             log.info("[processCaUpdate] current node ={}, is not ca updated user={}, end update pubKey/priKey",
                 nodeState.getNodeName(), user);
+            return;
         }
 
         log.info("[processCaUpdate] start to update pubKey/priKey, nodeName={}", user);
@@ -177,11 +178,17 @@ import org.springframework.stereotype.Component;
             return;
         }
 
+        CoreTransaction coreTransaction = respData.getData();
+        String user = coreTransaction.getSender();
+        if (!StringUtils.equals(user, nodeState.getNodeName())) {
+            log.info("[processCaUpdate] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
+                nodeState.getNodeName(), user);
+            return;
+        }
+
         log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
         //set pubKey and priKey to invalid
         Config config = new Config();
-        CoreTransaction coreTransaction = respData.getData();
-        String user = coreTransaction.getSender();
         config.setNodeName(user);
         config.setValid(false);
         configRepository.updateConfig(config);

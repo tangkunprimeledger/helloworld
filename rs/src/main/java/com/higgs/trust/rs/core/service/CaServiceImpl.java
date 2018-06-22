@@ -3,6 +3,8 @@ package com.higgs.trust.rs.core.service;
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
+import com.higgs.trust.management.failover.service.SyncService;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
@@ -14,15 +16,16 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
-import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
-import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
+import com.higgs.trust.slave.model.bo.manage.RsNode;
+import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -41,17 +44,15 @@ import java.util.*;
 
     public static final String PUB_KEY = "pubKey";
     public static final String PRI_KEY = "priKey";
-    public static final String CLUSTER_CONFIG = "clusterConfig";
-    public static final String CLUSTER_NODE = "clusterNode";
-    public static final String CA_INFO = "caInfo";
 
     @Autowired private ConfigRepository configRepository;
     @Autowired private CaRepository caRepository;
     @Autowired private NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
-    @Autowired private ClusterConfigRepository clusterConfigRepository;
-    @Autowired private ClusterNodeRepository clusterNodeRepository;
+    @Autowired private RsNodeRepository rsNodeRepository;
+    @Autowired private ConsensusStateMachine consensusStateMachine;
+    @Autowired private SyncService syncService;
 
     /**
      * @return
@@ -156,7 +157,18 @@ import java.util.*;
                 "[cancelKeyPair] invalid node name");
         }
 
-        // TODO 注销CA之前，应该检测RS是否下线，下线就可以注销，否则不可以
+        // check RS status, before cancel CA, RS should be canceled
+        RsNode rsNode = rsNodeRepository.queryByRsId(user);
+        if (null == rsNode || RsNodeStatusEnum.COMMON == rsNode.getStatus()) {
+            log.error("[cancelKeyPair] invalid RS status, it should be canceled before CA");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_CANCEL_ERROR,
+                "[cancelKeyPair] invalid RS status, it should be canceled before CA");
+        }
+
+        log.info("[[cancelKeyPair]] start to leave consensus,user ={}", user);
+        consensusStateMachine.leaveConsensus();
+        log.info("[[cancelKeyPair]] end leave consensus,user ={}", user);
+
         log.info("[cancelKeyPair] start to cancel CA, user={}", user);
 
         // CA existence check
@@ -214,7 +226,7 @@ import java.util.*;
         Ca ca = caRepository.getCa(user);
         if (null == ca) {
             log.info("[acquireCA] user={}, ca information is null", user);
-            return null;
+            return new RespData<>();
         }
         log.info("[acquireCA] user={}, ca information={}", user, ca.toString());
         RespData resp = new RespData();
@@ -377,7 +389,7 @@ import java.util.*;
 
         log.info("[getCa] start to getCa, user={}", user);
         RespData resp = caClient.acquireCA(nodeState.notMeNodeNameReg(), user);
-        if (!resp.isSuccess()) {
+        if (!resp.isSuccess() || null == resp.getData()) {
             log.error("[getCa] get ca error");
             return null;
         }
@@ -386,6 +398,23 @@ import java.util.*;
         BeanUtils.copyProperties((Ca)resp.getData(), ca);
 
         return ca;
+    }
+
+    /**
+     * @param user
+     * @return
+     * @desc after ca auth successd, start to launch consensus and failover
+     */
+    @Override public void startConsensusAndFilover(String user) {
+
+        log.info("[startConsensusAndFilover] start to launch consensus layer");
+        consensusStateMachine.joinConsensus();
+
+        log.info("[startConsensusAndFilover] start to launch failover");
+        syncService.autoSync();
+
+        log.info("[startConsensusAndFilover] end start consensus and filover");
+
     }
 
 }

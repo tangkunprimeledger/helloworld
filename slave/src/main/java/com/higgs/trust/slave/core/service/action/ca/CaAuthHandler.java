@@ -43,9 +43,9 @@ import org.springframework.stereotype.Component;
         Ca ca = new Ca();
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.authCa(ca);
+
+        clusterInfo.refresh();
         Profiler.release();
 
-
-        // TODO  添加refresh()方法属性集群配置信息
     }
 }
