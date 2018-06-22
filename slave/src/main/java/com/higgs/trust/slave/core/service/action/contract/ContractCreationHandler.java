@@ -7,6 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
+import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.context.ActionData;
@@ -27,6 +28,7 @@ import java.util.Date;
 @Slf4j @Component public class ContractCreationHandler implements ActionHandler {
 
     @Autowired private ContractSnapshotAgent snapshotAgent;
+    @Autowired private StandardSmartContract smartContract;
 
     private byte[] getHexHash(byte[] data) {
         if (null == data) {
@@ -116,6 +118,7 @@ import java.util.Date;
             contract.setVersion("1.0");
 
             snapshotAgent.insert(address, contract);
+            smartContract.init(address, creationAction.getInitArgs());
         } finally {
             Profiler.release();
         }
