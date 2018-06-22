@@ -105,11 +105,6 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      */
     @Override
     public Object query(Object object) {
-        if (object instanceof MerkleTreeCacheKey) {
-            MerkleTreeCacheKey key = (MerkleTreeCacheKey) object;
-            return merkleService.queryMerkleTree(key.getMerkleTypeEnum());
-        }
-        log.error("not found load function for cache key:{}", object);
         return null;
     }
 
