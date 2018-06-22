@@ -374,7 +374,7 @@ import java.util.stream.Collectors;
                     //check status for package
                     boolean isPackageStatus = packageRepository.isPackageStatus(blockHeader.getHeight(),PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
                     if(!isPackageStatus) {
-                        log.error("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",blockHeader.getHeight());
+                        log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",blockHeader.getHeight());
                         return;
                     }
                     //update package status ---- PERSISTED
