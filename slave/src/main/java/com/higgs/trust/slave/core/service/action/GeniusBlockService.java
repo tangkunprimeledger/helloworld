@@ -58,7 +58,7 @@ import java.util.List;
             });
         } catch (Throwable e) {
             log.error("[process] store ca init data error", e);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR, "[process] store ca init data error");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR, "[process] store ca init data error", e);
         }
     }
 

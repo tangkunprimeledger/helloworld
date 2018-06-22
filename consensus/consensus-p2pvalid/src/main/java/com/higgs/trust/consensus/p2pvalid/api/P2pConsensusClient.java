@@ -17,4 +17,8 @@ import org.springframework.web.bind.annotation.*;
     @RequestMapping(value = "/consensus/p2p/receive_command_sync", method = RequestMethod.POST) @ResponseBody
     ValidResponseWrap<? extends ResponseCommand> syncSend(
         @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName, @RequestBody ValidCommandWrap validCommandWrap);
+
+    @RequestMapping(value = "/consensus/p2p/receive_command_sync", method = RequestMethod.POST) @ResponseBody
+    ValidResponseWrap<? extends ResponseCommand> syncSendFeign(
+        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody ValidCommandWrap validCommandWrap);
 }
