@@ -45,7 +45,7 @@ public class ContractStateMigrationHandlerTest extends BaseTest {
                 .setBlockHeight()
                 .build();
 
-        packageService.process(packContext, true);
+        packageService.process(packContext, true, false);
 
     }
 }
