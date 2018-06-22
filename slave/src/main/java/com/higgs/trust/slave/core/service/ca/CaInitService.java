@@ -21,7 +21,7 @@ public interface CaInitService {
      * @return
      * @desc construct ca init tx and send to slave
      */
-    RespData initCaTx();
+    RespData<String> initCaTx();
 
     void initKeyPair();
 

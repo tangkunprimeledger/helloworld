@@ -105,7 +105,6 @@ import java.util.concurrent.TimeUnit;
                     nodeSet.size());
                 return caActionList;
             }
-            CountDownLatch countDownLatch = new CountDownLatch(nodeList.size());
             // acquire all nodes' pubKey
             nodeList.forEach((nodeName) -> {
                 try {
@@ -120,25 +119,17 @@ import java.util.concurrent.TimeUnit;
                         }
                     }
                 } catch (Throwable e) {
-                    log.error("[CaInitServiceImpl.acquirePubKeys] acquire pubKey error", e);
-                } finally {
-                    countDownLatch.countDown();
+                    log.warn("[CaInitServiceImpl.acquirePubKeys] acquire pubKey error, node:{}", nodeName, e);
                 }
             });
-
-            try {
-                countDownLatch.await(1 * 60, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                log.error("send count down latch is interrupted", e);
+            if (caActionList.size() < nodeList.size()) {
+                try {
+                    Thread.sleep(3 * 1000);
+                } catch (InterruptedException e) {
+                    log.warn("acquire pubKey error.", e);
+                }
             }
-
-            try {
-                Thread.sleep(3 * 1000);
-            } catch (InterruptedException e) {
-                log.warn("acquire pubKey error.", e);
-            }
-
-        } while (++i < retryCount);
+        } while (caActionList.size() < nodeList.size() && ++i < retryCount);
 
         if (caActionList.size() < nodeList.size()) {
             log.info(
@@ -164,7 +155,7 @@ import java.util.concurrent.TimeUnit;
         }
         String pubKey = config.getPubKey();
         log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pubKey={}", nodeState.getNodeName(), pubKey);
-        RespData resp = new RespData();
+        RespData<String> resp = new RespData<>();
         resp.setData(pubKey);
         return resp;
     }
