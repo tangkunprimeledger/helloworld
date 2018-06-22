@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
-@Order(1) @Service @Slf4j public class SelfCheckingService {
+@Service @Slf4j public class SelfCheckingService {
 
     @Autowired private BlockSyncService blockSyncService;
     @Autowired private BlockService blockService;
