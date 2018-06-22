@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
     /**
      * the try times for getting the block or blockheader from other node
      */
-    private int tryTimes = 3;
+    private int tryTimes = 10;
 
     /**
      * failover step
