@@ -77,6 +77,9 @@ import java.util.List;
     }
 
     public PolicyPO convertPolicyToPolicyPO(Policy policy) {
+        if (null == policy) {
+            return null;
+        }
         PolicyPO policyPO = new PolicyPO();
         policyPO.setPolicyId(policy.getPolicyId());
         policyPO.setPolicyName(policy.getPolicyName());
