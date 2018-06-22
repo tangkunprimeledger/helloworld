@@ -160,17 +160,6 @@ IF NOT EXISTS `package` (
 	UNIQUE KEY `uniq_package` (`height`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'package';
 
-CREATE TABLE
-IF NOT EXISTS `block_header` (
-	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-	`height` BIGINT (20) NOT NULL COMMENT 'block height',
-	`type` VARCHAR (64) NOT NULL COMMENT 'header type',
-	`header_data` VARCHAR (2048) NOT NULL COMMENT 'block header data',
-	`create_time` datetime (3) NOT NULL COMMENT 'create time',
-	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_block_header` (`height`, `type`)
-) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'block header';
-
 -- contract init
 CREATE TABLE
 IF NOT EXISTS `contract` (

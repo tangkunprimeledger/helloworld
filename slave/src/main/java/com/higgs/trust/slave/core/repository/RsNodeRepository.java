@@ -113,6 +113,9 @@ import java.util.List;
     }
 
     public RsNodePO convertRsNodeToRsNodePO(RsNode rsNode) {
+        if (null == rsNode) {
+            return null;
+        }
         RsNodePO rsNodePO = new RsNodePO();
         rsNodePO.setStatus(rsNode.getStatus().getCode());
         BeanUtils.copyProperties(rsNode, rsNodePO);

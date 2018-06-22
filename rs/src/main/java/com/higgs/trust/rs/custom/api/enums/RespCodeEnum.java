@@ -38,6 +38,7 @@ public enum RespCodeEnum {
     POLICY_RS_IDS_MUST_HAVE_SENDER("100", "027", "policy发起方必须包含在policy的rsIds中"),
     POLICY_ALREADY_EXIST("100", "028", "policy已经存在"),
     RS_NODE_NOT_EXIST_OR_RS_NODE_ALREADY_CANCELED("100", "029", "RS节点不存在或状态已经注销"),
+    REQUEST_DUPLICATE("100", "030", "请求重复"),
 
     BILL_HOLDER_NOT_EXISTED("200", "001", "票据持有人不存在"),
     BILL_TRANSFER_INVALID_PARAM("200", "002", "转账票据不存在或者可以转的票据超过一个"),

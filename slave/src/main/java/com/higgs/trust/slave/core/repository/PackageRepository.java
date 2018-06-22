@@ -232,7 +232,7 @@ import java.util.Set;
     public boolean isPackageStatus(Long height,PackageStatusEnum packageStatusEnum){
         PackagePO packagePO= queryByHeight(height);
         if(packagePO == null){
-            log.error("[isPackageStatus] package is null height:{}",height);
+            log.warn("[isPackageStatus] package is null height:{}",height);
             return false;
         }
         log.info("package of DB status:{},blockHeight:{}",packagePO.getStatus(),height);

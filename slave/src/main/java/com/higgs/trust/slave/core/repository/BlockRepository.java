@@ -1,17 +1,13 @@
 package com.higgs.trust.slave.core.repository;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.vo.BlockVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.block.BlockDao;
-import com.higgs.trust.slave.dao.block.BlockHeaderDao;
-import com.higgs.trust.slave.dao.po.block.BlockHeaderPO;
 import com.higgs.trust.slave.dao.po.block.BlockPO;
 import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.convert.BlockConvert;
-import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -29,7 +25,6 @@ import java.util.List;
  */
 @Repository @Slf4j public class BlockRepository {
     @Autowired BlockDao blockDao;
-    @Autowired BlockHeaderDao blockHeaderDao;
     @Autowired TransactionRepository transactionRepository;
 
     /**
@@ -163,49 +158,6 @@ import java.util.List;
         return headers;
     }
 
-    /**
-     * get block header data from db
-     *
-     * @param height
-     * @return
-     */
-    public BlockHeader getTempHeader(Long height, BlockHeaderTypeEnum blockHeaderTypeEnum) {
-        BlockHeaderPO blockHeaderPO = blockHeaderDao.queryByHeight(height, blockHeaderTypeEnum.getCode());
-        if (blockHeaderPO == null) {
-            return null;
-        }
-        return JSON.toJavaObject(JSON.parseObject(blockHeaderPO.getHeaderData()), BlockHeader.class);
-    }
-
-    /**
-     * delete the temp header by height
-     *
-     * @param height
-     * @param blockHeaderTypeEnum
-     */
-    public void deleteTempHeader(Long height, BlockHeaderTypeEnum blockHeaderTypeEnum) {
-        blockHeaderDao.deleteBlockHeader(height, blockHeaderTypeEnum.getCode());
-    }
-
-    /**
-     * save to db
-     *
-     * @param header
-     */
-    public void saveTempHeader(BlockHeader header, BlockHeaderTypeEnum blockHeaderTypeEnum) {
-        BlockHeaderPO blockHeaderPO = new BlockHeaderPO();
-        blockHeaderPO.setHeight(header.getHeight());
-        blockHeaderPO.setType(blockHeaderTypeEnum.getCode());
-        String headerData = JSON.toJSONString(header);
-        blockHeaderPO.setHeaderData(headerData);
-        blockHeaderPO.setCreateTime(new Date());
-        try {
-            blockHeaderDao.add(blockHeaderPO);
-        } catch (DuplicateKeyException e) {
-            log.error("[saveTempHeader] is idempotent blockHeight:{}", header.getHeight());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
-        }
-    }
 
     /**
      * get block header data from db

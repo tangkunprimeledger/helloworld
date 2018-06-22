@@ -1,8 +1,9 @@
 package com.higgs.trust.rs.custom.dao;
 
 import com.higgs.trust.IntegrateBaseTest;
+import com.higgs.trust.rs.core.dao.RequestDao;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
-import com.higgs.trust.rs.custom.dao.po.RequestPO;
+import com.higgs.trust.rs.core.dao.po.RequestPO;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

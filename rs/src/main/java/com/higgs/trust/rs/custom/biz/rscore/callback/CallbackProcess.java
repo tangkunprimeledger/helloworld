@@ -6,7 +6,9 @@ import com.higgs.trust.rs.core.api.BizTypeService;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.callback.TxCallbackHandler;
 import com.higgs.trust.rs.core.vo.VotingRequest;
-import com.higgs.trust.rs.custom.biz.rscore.callback.handler.*;
+import com.higgs.trust.rs.custom.biz.rscore.callback.handler.CreateBillCallbackHandler;
+import com.higgs.trust.rs.custom.biz.rscore.callback.handler.StorageIdentityCallbackHandler;
+import com.higgs.trust.rs.custom.biz.rscore.callback.handler.TransferBillCallbackHandler;
 import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -29,9 +31,6 @@ import org.springframework.stereotype.Service;
     @Autowired private StorageIdentityCallbackHandler storageIdentityCallbackHandler;
     @Autowired private CreateBillCallbackHandler createBillCallbackHandler;
     @Autowired private TransferBillCallbackHandler transferBillCallbackHandler;
-    @Autowired private RegisterPolicyCallbackHandler registerPolicyCallbackHandler;
-    @Autowired private RegisterRsCallbackHandler registerRsCallbackHandler;
-    @Autowired private CancelRsCallbackHandler cancelRsCallbackHandler;
     @Autowired private BizTypeService bizTypeService;
 
     @Override public void afterPropertiesSet() throws Exception {

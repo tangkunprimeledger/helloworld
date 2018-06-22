@@ -7,8 +7,10 @@ import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
+import com.higgs.trust.rs.core.dao.RequestDao;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.VotingRequest;
+import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -31,6 +33,7 @@ import org.springframework.stereotype.Component;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
+    @Autowired private RequestDao requestDao;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -63,6 +66,7 @@ import org.springframework.stereotype.Component;
                     processRegisterPolicy(respData);
                     return;
                 case REGISTER_RS:
+                    processRegisterRS(respData);
                     return;
                 case CONTRACT_ISSUE:
                     return;
@@ -73,6 +77,9 @@ import org.springframework.stereotype.Component;
                     return;
                 case CA_CANCEL:
                     processCaCancel(respData);
+                    return;
+                case CANCEL_RS:
+                    processCancelRS(respData);
                     return;
                 default:
                     break;
@@ -128,6 +135,18 @@ import org.springframework.stereotype.Component;
         voteRule.setVotePattern(VotePatternEnum.fromCode(jsonObject.getString("votePattern")));
         voteRule.setCallbackType(CallbackTypeEnum.fromCode(jsonObject.getString("callbackType")));
         voteRuleRepository.add(voteRule);
+
+        //update request status
+        requestDao.updateStatusByRequestId(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
+    }
+
+
+    private void processRegisterRS(RespData<CoreTransaction> respData) {
+        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
+    }
+
+    private void processCancelRS(RespData<CoreTransaction> respData) {
+        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
     }
 
     private void processCaUpdate(RespData<CoreTransaction> respData) {

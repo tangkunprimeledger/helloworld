@@ -61,10 +61,12 @@ public class ManageSnapshotAgent implements CacheLoader {
     @Override public Object query(Object obj) {
         if (obj instanceof PolicyCacheKey) {
             PolicyCacheKey policyCacheKey = (PolicyCacheKey)obj;
-            return policyRepository.getPolicyById(policyCacheKey.getPolicyId());
+            return policyRepository.convertPolicyToPolicyPO(
+                policyRepository.getPolicyById(policyCacheKey.getPolicyId()));
         } else if (obj instanceof RsNodeCacheKey) {
             RsNodeCacheKey rsNodeCacheKey = (RsNodeCacheKey)obj;
-            return rsNodeRepository.queryByRsId(rsNodeCacheKey.getRsId());
+            return rsNodeRepository.convertRsNodeToRsNodePO(
+                rsNodeRepository.queryByRsId(rsNodeCacheKey.getRsId()));
         }
 
         return null;
