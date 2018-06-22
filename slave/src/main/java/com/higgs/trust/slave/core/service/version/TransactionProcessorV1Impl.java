@@ -13,6 +13,7 @@ import com.higgs.trust.slave.core.service.action.ca.CaUpdateHandler;
 import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
 import com.higgs.trust.slave.core.service.action.contract.ContractCreationHandler;
 import com.higgs.trust.slave.core.service.action.contract.ContractInvokeHandler;
+import com.higgs.trust.slave.core.service.action.contract.ContractStateMigrationHandler;
 import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityActionHandler;
 import com.higgs.trust.slave.core.service.action.manage.CancelRsHandler;
 import com.higgs.trust.slave.core.service.action.manage.RegisterPolicyHandler;
@@ -58,6 +59,7 @@ import java.util.*;
     @Autowired private DataIdentityActionHandler dataIdentityActionHandler;
     @Autowired private ContractCreationHandler contractCreationHandler;
     @Autowired private ContractInvokeHandler contractInvokeHandler;
+    @Autowired private ContractStateMigrationHandler contractStateMigrationHandler;
     @Autowired private AccountContractBindingHandler accountContractBindingHandler;
     @Autowired private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
     @Autowired private StandardSmartContract standardSmartContract;
@@ -140,6 +142,8 @@ import java.util.*;
                 return contractInvokeHandler;
             case REGISTER_CONTRACT:
                 return contractCreationHandler;
+            case CONTRACT_STATE_MIGRATION:
+                return contractStateMigrationHandler;
             case CA_AUTH:
                 return caAuthHandler;
             case CA_CANCEL:

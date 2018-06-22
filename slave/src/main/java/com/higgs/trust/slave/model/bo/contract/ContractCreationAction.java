@@ -14,4 +14,5 @@ import lombok.Setter;
     private String language;
     private String version;
     private String code;
+    private Object[] initArgs;
 }

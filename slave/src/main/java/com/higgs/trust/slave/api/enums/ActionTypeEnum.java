@@ -7,14 +7,23 @@ package com.higgs.trust.slave.api.enums;
  */
 public enum ActionTypeEnum {
 
-    OPEN_ACCOUNT("OPEN_ACCOUNT", "open account action"), ACCOUNTING("ACCOUNTING", "accounting action"), FREEZE("FREEZE",
-        "freeze capital action"), UNFREEZE("UNFREEZE", "unfreeze capital action"), UTXO("UTXO",
-        "UTXO action"), REGISTER_CONTRACT("REGISTER_CONTRACT", "register contract action"), BIND_CONTRACT(
-        "BIND_CONTRACT", "bind contract action"), TRIGGER_CONTRACT("TRIGGER_CONTRACT",
-        "trigger contract action"), REGISTER_RS("REGISTER_RS", "register RS action"), REGISTER_POLICY("REGISTER_POLICY",
-        "register policy action"), CREATE_DATA_IDENTITY("CREATE_DATA_IDENTITY", "create data identity"), ISSUE_CURRENCY(
-        "ISSUE_CURRENCY", "issue new currency"), CA_AUTH("CA_AUTH", "ca auth"), CA_CANCEL("CA_CANCEL",
-        "ca cancel"), CA_UPDATE("CA_UPDATE", "ca update"), RS_CANCEL("RS_CANCEL", "cancel rs"),;
+    OPEN_ACCOUNT("OPEN_ACCOUNT", "open account action"),
+    ACCOUNTING("ACCOUNTING", "accounting action"),
+    FREEZE("FREEZE", "freeze capital action"),
+    UNFREEZE("UNFREEZE", "unfreeze capital action"),
+    UTXO("UTXO", "UTXO action"),
+    REGISTER_CONTRACT("REGISTER_CONTRACT", "register contract action"),
+    BIND_CONTRACT("BIND_CONTRACT", "bind contract action"),
+    TRIGGER_CONTRACT("TRIGGER_CONTRACT", "trigger contract action"),
+    CONTRACT_STATE_MIGRATION("CONTRACT_STATE_MIGRATION", "migration contract state"),
+    REGISTER_RS("REGISTER_RS", "register RS action"),
+    REGISTER_POLICY("REGISTER_POLICY", "register policy action"),
+    CREATE_DATA_IDENTITY("CREATE_DATA_IDENTITY", "create data identity"),
+    ISSUE_CURRENCY("ISSUE_CURRENCY", "issue new currency"),
+    CA_AUTH("CA_AUTH", "ca auth"),
+    CA_CANCEL("CA_CANCEL", "ca cancel"),
+    CA_UPDATE("CA_UPDATE", "ca update"),
+    RS_CANCEL("RS_CANCEL", "cancel rs"),;
 
     String code;
     String desc;
