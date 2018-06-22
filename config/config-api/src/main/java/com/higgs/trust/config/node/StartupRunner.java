@@ -5,20 +5,19 @@ package com.higgs.trust.config.node;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.event.SpringApplicationEvent;
-import org.springframework.context.ApplicationListener;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
  * @author suimi
  * @date 2018/6/13
  */
-@Component @Slf4j public class StartupRunner implements ApplicationListener<ApplicationReadyEvent> {
+@Order @Component @Slf4j public class StartupRunner implements CommandLineRunner {
 
     @Autowired NodeState nodeState;
 
-    @Override public void onApplicationEvent(ApplicationReadyEvent event) {
+    @Override public void run(String... args) {
         try {
             nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);

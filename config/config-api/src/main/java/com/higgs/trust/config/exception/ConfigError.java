@@ -17,6 +17,7 @@ public enum ConfigError implements ErrorInfo {
 
     //@formatter:off
     CONFIG_NODE_STATE_CHANGE_FAILED("101", "node state change failed ", false),
+    CONFIG_NODE_STATE_INVALID("101", "node state invalid", false),
     //--------master[110-120]
     CONFIG_NODE_MASTER_TERM_INCORRECT("110","the term is incorrect",false),
     CONFIG_NODE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT("112","the package height is incorrect",false),

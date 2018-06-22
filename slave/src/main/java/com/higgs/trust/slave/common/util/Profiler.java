@@ -197,7 +197,7 @@ import java.util.List;
          */
         private Entry(Object message, Entry parentEntry, Entry firstEntry) {
             this.message = message;
-            this.startTime = System.currentTimeMillis();
+            this.startTime = System.nanoTime();
             this.parentEntry = parentEntry;
             this.firstEntry = (firstEntry != null) ? firstEntry : this;
             this.baseTime = (firstEntry == null) ? 0 : firstEntry.startTime;
@@ -235,7 +235,7 @@ import java.util.List;
          * @return 相对起始时间
          */
         public long getStartTime() {
-            return (baseTime > 0) ? (startTime - baseTime) : 0;
+            return (baseTime > 0) ? (startTime - baseTime) / 1000 : 0;
         }
 
         /**
@@ -247,7 +247,7 @@ import java.util.List;
             if (endTime < baseTime) {
                 return -1;
             } else {
-                return endTime - baseTime;
+                return (endTime - baseTime) / 1000;
             }
         }
 
@@ -260,7 +260,7 @@ import java.util.List;
             if (endTime < startTime) {
                 return -1;
             } else {
-                return endTime - startTime;
+                return (endTime - startTime) / 1000;
             }
         }
 
@@ -344,7 +344,7 @@ import java.util.List;
          * 结束当前entry，并记录结束时间。
          */
         private void release() {
-            endTime = System.currentTimeMillis();
+            endTime = System.nanoTime();
         }
 
         /**
@@ -438,10 +438,10 @@ import java.util.List;
             StringBuffer pattern = new StringBuffer("{1,number} ");
 
             if (isReleased()) {
-                pattern.append("[{2,number}ms");
+                pattern.append("[{2,number}us");
 
                 if ((durationOfSelf > 0) && (durationOfSelf != duration)) {
-                    pattern.append(" ({3,number}ms)");
+                    pattern.append(" ({3,number}us)");
                 }
 
                 if (percent > 0) {

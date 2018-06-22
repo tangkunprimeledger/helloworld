@@ -116,7 +116,12 @@ import java.util.function.Function;
                 if (consensusCommit.operation() != null) {
                     span = TraceUtils.createSpan(consensusCommit.operation().getTraceId());
                 }
-                filter.doFilter(consensusCommit);
+                try {
+                    filter.doFilter(consensusCommit);
+                } catch (Exception e) {
+                    log.error("filter commmit error", e);
+                    return;
+                }
                 if (consensusCommit.isClosed()) {
                     return;
                 }
@@ -150,7 +155,12 @@ import java.util.function.Function;
             if (consensusCommit.operation() != null) {
                 span = TraceUtils.createSpan(consensusCommit.operation().getTraceId());
             }
-            filter.doFilter(consensusCommit);
+            try {
+                filter.doFilter(consensusCommit);
+            } catch (Exception e) {
+                log.error("filter commmit error", e);
+                return null;
+            }
             if (consensusCommit.isClosed()) {
                 return null;
             }
