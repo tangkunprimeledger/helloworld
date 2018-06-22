@@ -50,8 +50,8 @@ import java.util.Map;
             log.info("[ClusterInitService.init] end generateKeyPair");
             caInitService.initKeyPair();
             log.info("[ClusterInitService.init] end initKeyPair");
+            clusterInfo.refresh();
         }
-        clusterInfo.refresh();
     }
 
     private boolean needInit() {

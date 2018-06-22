@@ -6,9 +6,6 @@ import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
-import com.higgs.trust.slave.dao.ca.CaDao;
-import com.higgs.trust.slave.dao.config.ClusterConfigDao;
-import com.higgs.trust.slave.dao.config.ClusterNodeDao;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
 import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
@@ -39,11 +36,8 @@ import java.util.List;
 
     @Autowired SnapshotService snapshot;
     @Autowired CaRepository caRepository;
-    @Autowired CaDao caDao;
     @Autowired ClusterConfigRepository clusterConfigRepository;
-    @Autowired ClusterConfigDao clusterConfigDao;
     @Autowired ClusterNodeRepository clusterNodeRepository;
-    @Autowired ClusterNodeDao clusterNodeDao;
 
     /**
      * get data from snapshot
@@ -178,15 +172,33 @@ import java.util.List;
     @Override public Object query(Object object) {
         if (object instanceof CaSnapshotAgent.CaCacheKey) {
             CaCacheKey key = (CaCacheKey)object;
-            return caDao.getCa(key.getUser());
+            Ca ca = caRepository.getCa(key.getUser());
+            if (null == ca) {
+                return null;
+            }
+            CaPO caPO = new CaPO();
+            BeanUtils.copyProperties(ca, caPO);
+            return caPO;
         }
         if (object instanceof CaSnapshotAgent.ClusterConfigCacheKey) {
             ClusterConfigCacheKey key = (ClusterConfigCacheKey)object;
-            return clusterConfigDao.getClusterConfig(key.clusterName);
+            ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(key.clusterName);
+            if (null == clusterConfig) {
+                return null;
+            }
+            ClusterConfigPO clusterConfigPO = new ClusterConfigPO();
+            BeanUtils.copyProperties(clusterConfig, clusterConfigPO);
+            return clusterConfigPO;
         }
         if (object instanceof CaSnapshotAgent.ClusterNodeCacheKey) {
             ClusterNodeCacheKey key = (ClusterNodeCacheKey)object;
-            return clusterNodeDao.getClusterNode(key.nodeName);
+            ClusterNode clusterNode = clusterNodeRepository.getClusterNode(key.nodeName);
+            if (null == clusterNode) {
+                return null;
+            }
+            ClusterNodePO clusterNodePO = new ClusterNodePO();
+            BeanUtils.copyProperties(clusterNode, clusterNodePO);
+            return clusterNodePO;
         }
         log.error("not found load function for cache key:{}", object);
         return null;

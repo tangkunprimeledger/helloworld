@@ -151,7 +151,7 @@ import java.util.concurrent.TimeUnit;
         Config config = configRepository.getConfig(nodeState.getNodeName());
         if (null == config) {
             log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pubKey not exist", nodeState.getNodeName());
-            return new RespData<>(RespCodeEnum.PARAM_NOT_ILLEGAL);
+            return new RespData<>(RespCodeEnum.DATA_NOT_EXIST);
         }
         String pubKey = config.getPubKey();
         log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pubKey={}", nodeState.getNodeName(), pubKey);

@@ -73,4 +73,11 @@ public interface CaService {
      * @desc TODO
      */
     Ca getCa(String user);
+
+    /** 
+     * @desc  after ca auth successd, start to launch consensus and failover
+     * @param user
+     * @return   
+     */  
+    void startConsensusAndFilover(String user);
 }
