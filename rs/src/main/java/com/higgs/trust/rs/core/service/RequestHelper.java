@@ -1,10 +1,10 @@
-package com.higgs.trust.rs.custom.biz.api.impl;
+package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestStatusEnum;
-import com.higgs.trust.rs.custom.dao.RequestDao;
-import com.higgs.trust.rs.custom.dao.po.RequestPO;
+import com.higgs.trust.rs.core.dao.RequestDao;
+import com.higgs.trust.rs.core.dao.po.RequestPO;
 import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

@@ -4,7 +4,6 @@ import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.biz.api.impl.bill.BillServiceHelper;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
-import com.higgs.trust.rs.custom.dao.RequestDao;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;

@@ -362,6 +362,12 @@ import java.util.stream.Collectors;
         try {
             Profiler.enter("[queryTransactions]");
             List<SignedTransaction> txs = transactionRepository.queryTransactions(header.getHeight());
+            // sort signedTransactions by txId asc
+            Collections.sort(txs, new Comparator<SignedTransaction>() {
+                @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+                    return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
+                }
+            });
             List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
             Profiler.release();
 
@@ -374,7 +380,7 @@ import java.util.stream.Collectors;
                     //check status for package
                     boolean isPackageStatus = packageRepository.isPackageStatus(blockHeader.getHeight(),PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
                     if(!isPackageStatus) {
-                        log.error("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",blockHeader.getHeight());
+                        log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",blockHeader.getHeight());
                         return;
                     }
                     //update package status ---- PERSISTED

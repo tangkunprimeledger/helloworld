@@ -3,7 +3,7 @@ package com.higgs.trust.rs.custom.util.converter;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
-import com.higgs.trust.rs.custom.dao.po.RequestPO;
+import com.higgs.trust.rs.core.dao.po.RequestPO;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
 
