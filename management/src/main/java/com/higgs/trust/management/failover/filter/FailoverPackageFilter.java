@@ -11,6 +11,7 @@ import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author suimi
  * @date 2018/6/21
  */
-@Slf4j @Component public class FailoverPackageFilter implements CommandFilter {
+@Order(3) @Slf4j @Component public class FailoverPackageFilter implements CommandFilter {
 
     @Autowired private BlockRepository blockRepository;
 

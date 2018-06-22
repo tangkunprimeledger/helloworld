@@ -96,7 +96,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     @Override public Server choose(Object key) {
         Server server = choose(getLoadBalancer(), key);
-        log.info("Choosed server:{}", server);
+        log.debug("Choosed server:{}", server);
         return server;
     }
 
