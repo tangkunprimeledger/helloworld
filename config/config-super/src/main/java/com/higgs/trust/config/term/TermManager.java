@@ -7,6 +7,7 @@ import com.higgs.trust.config.exception.ConfigError;
 import com.higgs.trust.config.exception.ConfigException;
 import com.higgs.trust.config.node.NodeState;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author suimi
  * @date 2018/6/12
  */
-@Component public class TermManager {
+@Slf4j @Component public class TermManager {
 
     /**
      * has the master heartbeat
@@ -88,6 +89,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         TermInfo newTerm = TermInfo.builder().term(term).masterName(masterName).startHeight(startHeight)
             .endHeight(TermInfo.INIT_END_HEIGHT).build();
+        log.debug("start new term:{}", newTerm);
         terms.add(newTerm);
         nodeState.changeMaster(masterName);
     }
@@ -124,6 +126,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :
                 packageHeight == termInfo.getEndHeight() + 1;
         if (verify) {
+            log.debug("reset term end height:{}", packageHeight);
             termInfo.setEndHeight(packageHeight);
         } else {
             throw new ConfigException(ConfigError.CONFIG_NODE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT);

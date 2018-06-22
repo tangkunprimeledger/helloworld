@@ -45,9 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
             pendingPack.clear();
             existTxMap.clear();
             pendingTxQueue.clear();
-            if (nodeState.isMaster()) {
-                initPackHeight();
-            }
+            initPackHeight();
         }
     }
 
@@ -78,6 +76,7 @@ import java.util.concurrent.atomic.AtomicLong;
                 packageHeight = maxBlockHeight > maxPackHeight ? maxBlockHeight : maxPackHeight;
             }
             synchronized (this) {
+                log.info("set master package height:{}", packageHeight);
                 packHeight.set(packageHeight);
             }
         }
