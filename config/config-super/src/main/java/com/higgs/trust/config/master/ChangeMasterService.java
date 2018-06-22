@@ -160,6 +160,10 @@ import java.util.concurrent.*;
         }
     }
 
+    @Override public void beforeChange(String masterName) {
+
+    }
+
     @Override public void masterChanged(String masterName) {
         if (NodeState.MASTER_NA.equalsIgnoreCase(masterName)) {
             termManager.setMasterHeartbeat(false);

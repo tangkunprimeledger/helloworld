@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
             .build();
     private BlockingQueue<Package> pendingPack = new LinkedBlockingDeque<>();
 
-    @Override public void masterChanged(String masterName) {
+    @Override public void beforeChange(String masterName) {
         synchronized (this) {
             packHeight.set(0);
             pendingPack.clear();
@@ -49,6 +49,10 @@ import java.util.concurrent.atomic.AtomicLong;
                 initPackHeight();
             }
         }
+    }
+
+    @Override public void masterChanged(String masterName) {
+
     }
 
     /**

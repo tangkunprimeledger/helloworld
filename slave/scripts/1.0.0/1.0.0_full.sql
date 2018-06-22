@@ -202,36 +202,6 @@ IF NOT EXISTS `account_contract_binding` (
 	UNIQUE KEY `uniq_hash` (`hash`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'account contract';
 
--- merkle init
-CREATE TABLE
-IF NOT EXISTS `merkle_node` (
-	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-	`uuid` VARCHAR (64) NOT NULL COMMENT 'node unique id',
-	`node_hash` VARCHAR (64) NOT NULL COMMENT 'node hash',
-	`index` BIGINT (20) NOT NULL COMMENT 'the index in the current level, start with 0',
-	`level` INT NOT NULL COMMENT 'current level, start with 1',
-	`parent` VARCHAR (64) COMMENT 'the parent node uuid create the current node',
-	`tree_type` VARCHAR (32) NOT NULL COMMENT 'type，ACCOUNT or TX or CONTRACT',
-	`create_time` datetime (3) NOT NULL COMMENT 'create time',
-	`update_time` datetime (3) NOT NULL COMMENT 'update time',
-	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_idx` (`level`,`tree_type`,`index`),
-	UNIQUE KEY `uniq_idx_hash` (`node_hash`)
-) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'merkle node, this store the whole node info create merkle tree';
-
-CREATE TABLE
-IF NOT EXISTS `merkle_tree` (
-	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-	`root_hash` VARCHAR (64) NOT NULL COMMENT 'root hash',
-	`total_level` INT NOT NULL COMMENT 'the total level create the merkle tree, start with 1',
-	`max_index` BIGINT (20) NOT NULL COMMENT 'the max index create leaf level create the merkle tree, start with 0',
-	`tree_type` VARCHAR (32) NOT NULL COMMENT 'type，ACCOUNT or TX or CONTRACT',
-	`create_time` datetime (3) NOT NULL COMMENT 'create time',
-	`update_time` datetime (3) NOT NULL COMMENT 'update time',
-	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_tree_type` (`tree_type`)
-) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'merkle tree, this store the statistical information create a merkle tree';
-
 -- policy init
 CREATE TABLE
 IF NOT EXISTS `policy` (

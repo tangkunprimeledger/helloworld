@@ -182,6 +182,7 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
      */
     public synchronized void changeMaster(String masterName) {
         Assert.isTrue(StringUtils.isNotBlank(masterName), "master name can't be null");
+        masterListeners.forEach(listener -> listener.beforeChange(masterName));
         this.masterName = masterName;
         log.info("Node master changed to {}", masterName);
         master = masterName.equalsIgnoreCase(nodeName);

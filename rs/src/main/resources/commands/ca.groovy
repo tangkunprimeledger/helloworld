@@ -27,13 +27,28 @@ class ca {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def caService = beans.getBean(CaService.class)
         def ca = caService.getCa(user)
-        out.println("acquire CA successful, user= $ca.user, pubKey= $ca.pubKey")
+        if (ca) {
+            out.println("acquire CA successful, user= $ca.user, pubKey= $ca.pubKey")
+        } else {
+            out.println("acquire CA error, user= $user")
+        }
     }
 
 
     @Usage('auth CA')
     @Command
     def authCA(InvocationContext context,
+               @Usage("user") @Required @Argument String user) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def caService = beans.getBean(CaService.class)
+        caService.authKeyPair(user)
+        out.println("send CA auth tx successful, user= $user")
+    }
+
+
+    @Usage('start consensus and failover')
+    @Command
+    def startConsensus(InvocationContext context,
                @Usage("user") @Required @Argument String user) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def caService = beans.getBean(CaService.class)

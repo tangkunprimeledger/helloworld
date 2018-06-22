@@ -95,11 +95,11 @@ import java.util.List;
         return clusterNodePOList.size() == clusterNodeDao.batchUpdate(clusterNodePOList);
     }
 
-    /** 
+    /**
      * @desc acquire all cluster nodes
      * @param
-     * @return   
-     */  
+     * @return
+     */
     public List<ClusterNode> getAllClusterNodes() {
         List<ClusterNodePO> list = clusterNodeDao.getAllClusterNodes();
         if (CollectionUtils.isEmpty(list)) {
