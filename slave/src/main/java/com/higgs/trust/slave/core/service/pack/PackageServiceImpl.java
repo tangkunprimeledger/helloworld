@@ -115,7 +115,7 @@ import java.util.stream.Collectors;
      * @param pack
      */
     @Override public void receive(Package pack) {
-        log.info("receive package from consensus, pack: {}", pack);
+        log.info("receive package from consensus, pack height: {}", pack.getHeight());
 
         if (null == pack || CollectionUtils.isEmpty(pack.getSignedTxList())) {
             log.error("package is null or transaction list is empty.");
