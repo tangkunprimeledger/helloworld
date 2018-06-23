@@ -8,6 +8,7 @@ import com.higgs.trust.common.utils.OkHttpClientManager;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -88,13 +89,9 @@ import java.util.List;
         log.info("[post]requestJSON:{}", requestJSON);
         try {
             String resultString = OkHttpClientManager.postAsString(TX_URL, requestJSON, 10000L);
-            JSONObject respData = JSON.parseObject(resultString);
-            if (!StringUtils.equals(respData.getString("respCode"), "000000")) {
-                log.error("[post]request has error:{}", respData);
-                throw new RuntimeException("request has error " + respData);
-            }
-            log.info("[post]respCode:{}", respData.getString("respCode"));
-            log.info("[post]msg:{}", respData.getString("msg"));
+            RespData respData = JSON.parseObject(resultString,RespData.class);
+            log.info("[post]respCode:{}", respData.getRespCode());
+            log.info("[post]msg:{}", respData.getMsg());
         } catch (Throwable t) {
             log.error("[post] has error", t);
         }

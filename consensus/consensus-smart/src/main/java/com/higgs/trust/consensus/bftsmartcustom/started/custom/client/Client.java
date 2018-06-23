@@ -29,7 +29,6 @@ public class Client implements ConsensusClient {
     }
 
     public void processingPackage(ConsensusCommand command) {
-        System.out.println("process start");
         byte[] bytes = null;
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = null;
@@ -39,13 +38,14 @@ public class Client implements ConsensusClient {
             objectOutputStream.flush();
             bytes = byteArrayOutputStream.toByteArray();
             byte[] reply = serviceProxy.invokeOrdered(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.info("------submit error-----: " + e.getMessage());
         } finally {
             if (objectOutputStream != null) {
                 try {
                     objectOutputStream.close();
                 } catch (IOException e) {
+                    log.error("source close error");
                     e.printStackTrace();
                 }
             }
@@ -53,7 +53,7 @@ public class Client implements ConsensusClient {
                 try {
                     byteArrayOutputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.error("source close error");
                 }
             }
         }
@@ -61,7 +61,10 @@ public class Client implements ConsensusClient {
 
     @Override
     public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
-        processingPackage(command);
-        return null;
+        CompletableFuture completableFuture = CompletableFuture.completedFuture(null).thenApply(s -> {
+            processingPackage(command);
+            return null;
+        });
+        return completableFuture;
     }
 }

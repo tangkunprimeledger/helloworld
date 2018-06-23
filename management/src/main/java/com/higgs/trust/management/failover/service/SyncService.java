@@ -1,8 +1,8 @@
 package com.higgs.trust.management.failover.service;
 
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
-import com.higgs.trust.config.node.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService;
 import com.higgs.trust.management.exception.FailoverExecption;

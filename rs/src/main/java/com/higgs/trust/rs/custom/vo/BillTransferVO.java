@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import java.util.List;
 
 /**
  * @Description: 票据转让
@@ -26,7 +29,12 @@ import org.hibernate.validator.constraints.NotBlank;
     @NotBlank @Length(max = 64) private String billId;
 
     /**
+     * 持票人 64
+     */
+    @NotBlank @Length(max = 64) private String holder;
+
+    /**
      * 受让持票人 64
      */
-    @NotBlank @Length(max = 64) private String nextHolder;
+    @NotEmpty @Length(max = 64) private List<TransferDetailVO> transferList;
 }

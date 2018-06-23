@@ -5,10 +5,10 @@ package com.higgs.trust.config.master;
 
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
-import com.higgs.trust.config.node.NodeProperties;
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
-import com.higgs.trust.config.node.listener.MasterChangeListener;
+import com.higgs.trust.consensus.config.NodeProperties;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

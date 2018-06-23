@@ -1,10 +1,10 @@
-package com.higgs.trust.config.node;
+package com.higgs.trust.consensus.config;
 
-import com.higgs.trust.config.exception.ConfigError;
-import com.higgs.trust.config.exception.ConfigException;
-import com.higgs.trust.config.node.listener.MasterChangeListener;
-import com.higgs.trust.config.node.listener.StateChangeListener;
-import com.higgs.trust.config.node.listener.StateChangeListenerAdaptor;
+import com.higgs.trust.consensus.config.listener.MasterChangeListener;
+import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateChangeListenerAdaptor;
+import com.higgs.trust.consensus.exception.ConsensusError;
+import com.higgs.trust.consensus.exception.ConsensusException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.higgs.trust.config.node.NodeStateEnum.*;
+import static com.higgs.trust.consensus.config.NodeStateEnum.*;
 
 @Component @Scope("singleton") @Slf4j public class NodeState implements InitializingBean {
 
@@ -129,7 +129,7 @@ import static com.higgs.trust.config.node.NodeStateEnum.*;
         Assert.notNull(to, "to state can't be null");
 
         if (from != state || !checkState(from, to)) {
-            throw new ConfigException(ConfigError.CONFIG_NODE_STATE_CHANGE_FAILED);
+            throw new ConsensusException(ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
         }
         LinkedHashSet<StateChangeListenerAdaptor> stateChangeListenerAdaptors = stateListeners.get(to);
         if (stateChangeListenerAdaptors != null) {

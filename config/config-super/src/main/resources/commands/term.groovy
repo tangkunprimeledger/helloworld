@@ -1,8 +1,10 @@
 package commands
 
+import com.higgs.trust.config.master.INodeInfoService
 import com.higgs.trust.config.term.TermManager
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Command
+import org.crsh.cli.Option
 import org.crsh.cli.Usage
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
@@ -20,7 +22,9 @@ class term {
     def info(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def termManager = beans.getBean(TermManager.class)
+        def nodeInfoService = beans.getBean(INodeInfoService.class)
         context.provide([Name: "Master Heartbeat", Value: termManager.getMasterHeartbeat().get()])
+        context.provide([Name: "Master Election", Value: nodeInfoService.isElectionMaster()])
         out.println("")
         termManager.getTerms().forEach({ t -> context.provide(Term: t.term, StartHeight: t.startHeight, EndHeight: t.endHeight, MasterName: t.masterName) })
         out.println("")
@@ -35,4 +39,13 @@ class term {
         out.println("ended the master term")
     }
 
+    @Usage('end the master term')
+    @Command
+    def election(InvocationContext context, @Option(names = ["e", "e"]) Boolean election) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def nodeInfoService = beans.getBean(INodeInfoService.class)
+        nodeInfoService.setElectionMaster(election)
+        context.provide([Name: "Master Election", Value: nodeInfoService.isElectionMaster()])
+        out.println("")
+    }
 }

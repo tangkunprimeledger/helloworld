@@ -3,6 +3,8 @@
  */
 package com.higgs.trust.consensus.copycat.config;
 
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.netty.NettyTransport;
@@ -15,6 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -26,8 +30,7 @@ import java.util.List;
  * @author suimi
  * @date 2018/6/12
  */
-@Slf4j @Component public class StartCopycatServer
-    implements ConsensusStateMachine, ApplicationListener<ApplicationReadyEvent> {
+@Slf4j @Component public class StartCopycatServer implements ConsensusStateMachine {
 
     @Autowired private CopycatProperties copycatProperties;
 
@@ -73,8 +76,10 @@ import java.util.List;
         server.bootstrap(clusterAddress);
     }
 
-    @Override public void onApplicationEvent(ApplicationReadyEvent event) {
-        start(copycatProperties, stateMachine);
+    @StateChangeListener(NodeStateEnum.Running) @Order public synchronized void start() {
+        if (server == null) {
+            start(copycatProperties, stateMachine);
+        }
     }
 
     @Override public void leaveConsensus() {

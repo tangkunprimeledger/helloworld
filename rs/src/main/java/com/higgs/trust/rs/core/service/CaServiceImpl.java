@@ -2,7 +2,7 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.management.failover.service.SyncService;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -51,8 +51,8 @@ import java.util.*;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private RsNodeRepository rsNodeRepository;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
     @Autowired private SyncService syncService;
+    @Autowired private ConsensusStateMachine consensusStateMachine;
 
     /**
      * @return
@@ -159,15 +159,11 @@ import java.util.*;
 
         // check RS status, before cancel CA, RS should be canceled
         RsNode rsNode = rsNodeRepository.queryByRsId(user);
-        if (null == rsNode || RsNodeStatusEnum.COMMON == rsNode.getStatus()) {
+        if (null != rsNode && RsNodeStatusEnum.COMMON == rsNode.getStatus()) {
             log.error("[cancelKeyPair] invalid RS status, it should be canceled before CA");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_CANCEL_ERROR,
                 "[cancelKeyPair] invalid RS status, it should be canceled before CA");
         }
-
-        log.info("[[cancelKeyPair]] start to leave consensus,user ={}", user);
-        consensusStateMachine.leaveConsensus();
-        log.info("[[cancelKeyPair]] end leave consensus,user ={}", user);
 
         log.info("[cancelKeyPair] start to cancel CA, user={}", user);
 
