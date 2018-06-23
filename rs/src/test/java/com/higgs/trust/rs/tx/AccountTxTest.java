@@ -19,10 +19,19 @@ import java.util.List;
  */
 public class AccountTxTest{
 
+    @Test
+    public void test(){
+//        testCreateCurrency();
+//        testOpenAccount();
+//        testIn();
+//        testOut();
+//        testTransafer();
+//        testFreeze();
+        testUnFreeze();
+    }
     /**
      * 创建币种
      */
-    @Test
     public void testCreateCurrency(){
         IssueCurrency action = new IssueCurrency();
         action.setIndex(1);
@@ -36,7 +45,6 @@ public class AccountTxTest{
     /**
      * 开户
      */
-    @Test
     public void testOpenAccount(){
         List<Action> actionList = Lists.newArrayList(2);
         for(int i=0;i<1;i++){
@@ -57,7 +65,6 @@ public class AccountTxTest{
     /**
      * 入金
      */
-    @Test
     public void testIn(){
         AccountOperation action = new AccountOperation();
         action.setIndex(1);
@@ -75,7 +82,6 @@ public class AccountTxTest{
     /**
      * 出金
      */
-    @Test
     public void testOut(){
         AccountOperation action = new AccountOperation();
         action.setIndex(1);
@@ -93,7 +99,6 @@ public class AccountTxTest{
     /**
      * 转账
      */
-    @Test
     public void testTransafer(){
         AccountOperation action = new AccountOperation();
         action.setIndex(1);
@@ -110,16 +115,32 @@ public class AccountTxTest{
     /**
      * 冻结
      */
-    @Test
     public void testFreeze(){
         AccountFreeze action = new AccountFreeze();
         action.setIndex(1);
         action.setType(ActionTypeEnum.FREEZE);
-        action.setBizFlowNo("biz_flow_no_freeze_001");
+        action.setBizFlowNo("biz_flow_no_freeze_002");
         action.setAccountNo("account_no_t_00");
         action.setAmount(new BigDecimal(10));
+        action.setContractAddr("12345678");
         action.setRemark("for test");
         RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_freeze_" + System.currentTimeMillis(),Lists.newArrayList(action));
+        CoreTxHelper.post(rsCoreTxVO);
+    }
+
+    /**
+     * 解冻
+     */
+    @Test
+    public void testUnFreeze(){
+        AccountUnFreeze action = new AccountUnFreeze();
+        action.setIndex(1);
+        action.setType(ActionTypeEnum.UNFREEZE);
+        action.setBizFlowNo("biz_flow_no_freeze_002");
+        action.setAccountNo("account_no_t_00");
+        action.setAmount(new BigDecimal(0.1));
+        action.setRemark("for test");
+        RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_unfreeze_" + System.currentTimeMillis(),Lists.newArrayList(action));
         CoreTxHelper.post(rsCoreTxVO);
     }
 }
