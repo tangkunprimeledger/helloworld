@@ -1,6 +1,5 @@
 package com.higgs.trust.rs.custom.util.converter;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.higgs.trust.IntegrateBaseTest;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
