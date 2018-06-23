@@ -2,7 +2,7 @@ package com.higgs.trust.slave.core.service.action.ca;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.HashUtil;
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.core.service.action.GeniusBlockService;

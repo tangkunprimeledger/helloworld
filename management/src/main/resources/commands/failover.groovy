@@ -1,15 +1,13 @@
 package commands
 
-import com.higgs.trust.config.node.NodeStateEnum
-import com.higgs.trust.config.node.NodeState
+import com.higgs.trust.consensus.config.NodeStateEnum
+import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.config.p2p.ClusterInfo
 import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService
 import com.higgs.trust.management.failover.scheduler.FailoverSchedule
 import com.higgs.trust.management.failover.service.SelfCheckingService
 import com.higgs.trust.management.failover.service.SyncService
-import com.higgs.trust.slave.core.repository.BlockRepository
 import com.higgs.trust.slave.core.service.block.BlockService
-import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.StringUtils
 import org.crsh.cli.*

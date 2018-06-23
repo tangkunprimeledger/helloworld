@@ -47,11 +47,11 @@ import org.springframework.stereotype.Component;
                 "[CaCancelHandler.process] actionData validate error");
         }
 
-        log.info("[[cancelKeyPair]] start to leave consensus,user ={}", caAction.getUser());
+        log.info("[CaCancelHandler.process] start to leave consensus,user ={}", caAction.getUser());
         consensusStateMachine.leaveConsensus();
-        log.info("[[cancelKeyPair]] end leave consensus,user ={}", caAction.getUser());
+        log.info("[CaCancelHandler.process] end leave consensus,user ={}", caAction.getUser());
 
-        Profiler.enter("[CaCancelHandler.cancelCa]");
+        Profiler.enter("[CaCancelHandler.process]");
         Ca ca = new Ca();
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.cancelCa(ca);
@@ -59,7 +59,6 @@ import org.springframework.stereotype.Component;
         clusterInfo.refresh();
         Profiler.release();
 
-        // TODO  添加refresh()方法属性集群配置信息
     }
 
 }

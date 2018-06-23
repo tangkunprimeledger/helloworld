@@ -1,4 +1,4 @@
-package com.higgs.trust.config.node.listener;
+package com.higgs.trust.consensus.config.listener;
 
 public interface MasterChangeListener {
 

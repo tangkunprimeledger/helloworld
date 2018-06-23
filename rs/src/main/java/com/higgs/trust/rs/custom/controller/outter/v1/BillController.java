@@ -58,7 +58,7 @@ public class BillController {
      * @return
      */
     @RequestMapping(value = "/transfer")
-    RespData<?> create(@RequestBody BillTransferVO billTransferVO) {
+    RespData<?> transfer(@RequestBody BillTransferVO billTransferVO) {
         RespData respData = null;
 
         BeanValidateResult result = BeanValidator.validate(billTransferVO);

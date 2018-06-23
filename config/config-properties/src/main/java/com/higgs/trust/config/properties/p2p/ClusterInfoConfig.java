@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.config.properties.p2p;
 
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 import lombok.Getter;
