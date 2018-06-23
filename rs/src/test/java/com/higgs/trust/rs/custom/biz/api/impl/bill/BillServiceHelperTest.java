@@ -1,16 +1,27 @@
 package com.higgs.trust.rs.custom.biz.api.impl.bill;
 
+import com.google.common.collect.Lists;
 import com.higgs.trust.IntegrateBaseTest;
+import com.higgs.trust.rs.custom.util.converter.UTXOActionConvertor;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
-import org.junit.Test;
+import com.higgs.trust.rs.custom.vo.TransferDetailVO;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.action.UTXOAction;
+import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class BillServiceHelperTest extends IntegrateBaseTest {
     @Autowired
     private BillServiceHelper billServiceHelper;
+
+    @Autowired
+    private UTXOActionConvertor utxoActionConvertor;
 
     @Test
     public void requestIdempotentTest() {
@@ -56,10 +67,22 @@ public class BillServiceHelperTest extends IntegrateBaseTest {
     public void insertRequestTest2() {
 
         BillTransferVO billTransferVO = new BillTransferVO();
-        billTransferVO.setBillId("1231dddd2");
+        billTransferVO.setBillId("12312312312");
         billTransferVO.setBizModel("12312");
-        billTransferVO.setNextHolder("lingchao");
+        billTransferVO.setHolder("lingchao");
         billTransferVO.setRequestId("132123dfscsdwada");
+
+        billTransferVO.setTransferList(Lists.newArrayList());
+
+        TransferDetailVO transferDetailVO = new TransferDetailVO();
+        transferDetailVO.setNextHolder("chao1");
+        transferDetailVO.setAmount(new BigDecimal("1230000"));
+        billTransferVO.getTransferList().add(transferDetailVO);
+
+        transferDetailVO = new TransferDetailVO();
+        transferDetailVO.setNextHolder("chao2");
+        transferDetailVO.setAmount(new BigDecimal("1231"));
+        billTransferVO.getTransferList().add(transferDetailVO);
 
         System.out.println("-------------------------" + billServiceHelper.insertRequest(billTransferVO));
         System.out.println("-------------------------" + billServiceHelper.insertRequest(billTransferVO));
@@ -69,14 +92,35 @@ public class BillServiceHelperTest extends IntegrateBaseTest {
     public void insertBillTestTransfer() {
 
         BillTransferVO billTransferVO = new BillTransferVO();
-        billTransferVO.setBillId("12345");
+        billTransferVO.setBillId("12312312312");
         billTransferVO.setBizModel("12312");
-        billTransferVO.setNextHolder("lingchao");
+        billTransferVO.setHolder("lingchao");
         billTransferVO.setRequestId("132123dfscsdwada");
 
+        billTransferVO.setTransferList(Lists.newArrayList());
 
-        billServiceHelper.insertBill(billTransferVO, 0L, 0L);
-        billServiceHelper.insertBill(billTransferVO, 0L, 0L);
+        TransferDetailVO transferDetailVO = new TransferDetailVO();
+        transferDetailVO.setNextHolder("chao1");
+        transferDetailVO.setAmount(new BigDecimal("1230000"));
+        billTransferVO.getTransferList().add(transferDetailVO);
+
+        transferDetailVO = new TransferDetailVO();
+        transferDetailVO.setNextHolder("chao2");
+        transferDetailVO.setAmount(new BigDecimal("1231"));
+        billTransferVO.getTransferList().add(transferDetailVO);
+
+        List<Action> actionList = utxoActionConvertor.buildTransferBillWithIdentityActionList(billTransferVO);
+
+        //insert bill
+        for (Action action : actionList) {
+            if (action.getType() == ActionTypeEnum.UTXO) {
+                UTXOAction utxoAction = (UTXOAction)action;
+                List<TxOut> outputList = utxoAction.getOutputList();
+                for (TxOut txOut : outputList) {
+                    billServiceHelper.insertBill(billTransferVO.getRequestId(), utxoAction, txOut);
+                }
+            }
+        }
     }
 
 }
