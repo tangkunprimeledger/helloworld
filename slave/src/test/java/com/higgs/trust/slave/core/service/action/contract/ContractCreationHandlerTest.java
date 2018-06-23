@@ -33,10 +33,12 @@ public class ContractCreationHandlerTest extends BaseTest {
 
     private ContractCreationAction createContractCreationAction() {
         ContractCreationAction action = new ContractCreationAction();
-        action.setCode("function main() { db.put('name', 'higgs trust'); print('>>>>>>>> hello world <<<<<<<<<'); }");
+        action.setCode("function main() { var count = db.get('count'); db.put('count', ++count);  db.put('name', 'higgs trust'); print('>>>>>>>> hello world <<<<<<<<<'); }" +
+                "function init(name) {db.put('name', name); db.put('count', 1);}");
         action.setLanguage("javascript");
         action.setVersion("1");
         action.setIndex(0);
+        action.setInitArgs(new Object[] { "zhangs" });
         action.setType(ActionTypeEnum.REGISTER_CONTRACT);
         return action;
     }
@@ -51,7 +53,7 @@ public class ContractCreationHandlerTest extends BaseTest {
                 .signature("", ActionDataMockBuilder.privateKey1)
                 .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
-                .setBlockHeight(2)
+                .setBlockHeight()
                 .build();
 
         try {
@@ -82,7 +84,7 @@ public class ContractCreationHandlerTest extends BaseTest {
                 .signature("", ActionDataMockBuilder.privateKey1)
                 .signature("", ActionDataMockBuilder.privateKey2)
                 .makeBlockHeader()
-                .setBlockHeight(2)
+                .setBlockHeight()
                 .build();
 
         packageService.process(packContext, false,false);

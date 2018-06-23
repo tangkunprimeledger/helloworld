@@ -1,7 +1,6 @@
 package com.higgs.trust.contract.rhino;
 
 import com.higgs.trust.contract.ExecuteConfig;
-import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 
@@ -47,5 +46,13 @@ public class SafeNativeJavaObject extends NativeJavaObject {
             return  ((List) obj).get(index);
         }
         return super.get(index, start);
+    }
+
+    @Override
+    public Object getDefaultValue(Class<?> hint) {
+        if (javaObject instanceof Number) {
+            return ((Number)javaObject).doubleValue();
+        }
+        return super.getDefaultValue(hint);
     }
 }

@@ -17,6 +17,8 @@ import org.slf4j.Logger;
     private String stateInstanceKey;
     private ContractStateStore stateStore;
     private ExecuteContextData contextData;
+    private boolean tryInitialization;
+    private boolean onlyQuery;
 
     private ExecuteContext() {
         currentExecuteContext.set(this);
@@ -78,6 +80,22 @@ import org.slf4j.Logger;
 
     public <T extends ExecuteContextData> T getContextData(Class<T> tClazz) {
         return (T) contextData;
+    }
+
+    public boolean isTryInitialization() {
+        return tryInitialization;
+    }
+
+    public void setTryInitialization(boolean tryInitialization) {
+        this.tryInitialization = tryInitialization;
+    }
+
+    public boolean isOnlyQuery() {
+        return onlyQuery;
+    }
+
+    public void setOnlyQuery(boolean onlyQuery) {
+        this.onlyQuery = onlyQuery;
     }
 
     public static void require(Object self, Boolean isRequired, String message){

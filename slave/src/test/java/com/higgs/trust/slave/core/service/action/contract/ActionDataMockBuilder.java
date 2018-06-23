@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -11,7 +12,11 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.BlockVersionEnum;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
+import com.higgs.trust.tester.dbunit.DataBaseManager;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +35,35 @@ public class ActionDataMockBuilder {
 
     public ActionDataMockBuilder() {
         this.block.setSignedTxList(transList);
+    }
+
+    public static String getDbConnectString() {
+        try {
+            String json = IOUtils.toString(ContractBaseTest.class.getResource("/test-application.json"), "UTF-8");
+            JSONObject config = (JSONObject) JSON.parse(json);
+            JSONObject dbConf = config.getJSONObject("spring").getJSONObject("datasource").getJSONObject("druid");
+            String connectStr = dbConf.getString("url");// "jdbc:mysql://localhost:3306/trust?user=root&password=root";
+            if (connectStr.indexOf("user=") > 0) {
+                return connectStr;
+            }
+
+            connectStr = connectStr.indexOf("user=") > 0
+                    ? connectStr
+                    : String.format("%s&user=%s&password=%s", connectStr, dbConf.getString("username"), dbConf.getString("password"));
+            return connectStr;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static long getBlockHeight() {
+        DataBaseManager dataBaseManager = new DataBaseManager();
+        JSONArray array = dataBaseManager.executeSingleQuery("SELECT height FROM block ORDER BY height desc limit 1", getDbConnectString());
+        if (array.size() == 0) {
+            return 0;
+        }
+        return ((JSONObject) array.get(0)).getLong("height");
     }
 
     public ActionDataMockBuilder setBlockHeader(BlockHeader header) {
@@ -71,6 +105,13 @@ public class ActionDataMockBuilder {
     }
     public ActionDataMockBuilder setBizModel(JSONObject bizModel) {
         this.currentSignedTransaction.getCoreTx().setBizModel(bizModel);
+        return this;
+    }
+
+    public ActionDataMockBuilder setBlockHeight() {
+        long height = getBlockHeight() + 1;
+        this.currentPackage.setHeight(height);
+        this.block.getBlockHeader().setHeight(height);
         return this;
     }
 
