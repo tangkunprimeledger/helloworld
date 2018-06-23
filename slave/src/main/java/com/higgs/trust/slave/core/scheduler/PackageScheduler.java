@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.scheduler;
 
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.BlockRepository;
@@ -19,8 +19,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author tangfashuang

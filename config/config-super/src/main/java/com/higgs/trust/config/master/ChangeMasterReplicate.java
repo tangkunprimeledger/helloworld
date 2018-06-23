@@ -10,7 +10,7 @@ import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyResponseCmd;
 import com.higgs.trust.config.term.TermManager;
 import com.higgs.trust.consensus.p2pvalid.annotation.P2pvalidReplicator;
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 
 import com.higgs.trust.consensus.p2pvalid.core.ValidSyncCommit;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,8 +3,8 @@
  */
 package com.higgs.trust.slave.core.service.consensus.p2p;
 
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.p2pvalid.annotation.P2pvalidReplicator;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;

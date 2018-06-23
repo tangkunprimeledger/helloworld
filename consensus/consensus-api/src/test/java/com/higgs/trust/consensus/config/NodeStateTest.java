@@ -1,8 +1,8 @@
-package com.higgs.trust.config.node;
+package com.higgs.trust.consensus.config;
 
-import com.higgs.trust.config.exception.ConfigError;
-import com.higgs.trust.config.exception.ConfigException;
-import com.higgs.trust.config.node.listener.MasterChangeListener;
+import com.higgs.trust.consensus.config.listener.MasterChangeListener;
+import com.higgs.trust.consensus.exception.ConsensusError;
+import com.higgs.trust.consensus.exception.ConsensusException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -74,8 +74,8 @@ import org.testng.annotations.Test;
     @Test(dataProvider = "startingException") public void testChangeStateStartingException(NodeStateEnum toState) {
         try {
             nodeState.changeState(NodeStateEnum.Starting, toState);
-        } catch (ConfigException e) {
-            Assert.assertEquals(e.getCode(), ConfigError.CONFIG_NODE_STATE_CHANGE_FAILED);
+        } catch (ConsensusException e) {
+            Assert.assertEquals(e.getCode(), ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
         }
         Assert.assertEquals(nodeState.getState(), NodeStateEnum.Starting);
     }
@@ -99,8 +99,8 @@ import org.testng.annotations.Test;
         nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
         try {
             nodeState.changeState(NodeStateEnum.SelfChecking, toState);
-        } catch (ConfigException e) {
-            Assert.assertEquals(e.getCode(), ConfigError.CONFIG_NODE_STATE_CHANGE_FAILED);
+        } catch (ConsensusException e) {
+            Assert.assertEquals(e.getCode(), ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
         }
         Assert.assertEquals(nodeState.getState(), NodeStateEnum.SelfChecking);
     }
@@ -127,8 +127,8 @@ import org.testng.annotations.Test;
         nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
         try {
             nodeState.changeState(NodeStateEnum.AutoSync, toState);
-        } catch (ConfigException e) {
-            Assert.assertEquals(e.getCode(), ConfigError.CONFIG_NODE_STATE_CHANGE_FAILED);
+        } catch (ConsensusException e) {
+            Assert.assertEquals(e.getCode(), ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
         }
         Assert.assertEquals(nodeState.getState(), NodeStateEnum.AutoSync);
     }
@@ -145,8 +145,8 @@ import org.testng.annotations.Test;
         nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.ArtificialSync);
         try {
             nodeState.changeState(NodeStateEnum.ArtificialSync, toState);
-        } catch (ConfigException e) {
-            Assert.assertEquals(e.getCode(), ConfigError.CONFIG_NODE_STATE_CHANGE_FAILED);
+        } catch (ConsensusException e) {
+            Assert.assertEquals(e.getCode(), ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
         }
         Assert.assertEquals(nodeState.getState(), NodeStateEnum.ArtificialSync);
     }
@@ -172,8 +172,8 @@ import org.testng.annotations.Test;
         nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Running);
         try {
             nodeState.changeState(NodeStateEnum.Running, toState);
-        } catch (ConfigException e) {
-            Assert.assertEquals(e.getCode(), ConfigError.CONFIG_NODE_STATE_CHANGE_FAILED);
+        } catch (ConsensusException e) {
+            Assert.assertEquals(e.getCode(), ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
         }
         Assert.assertEquals(nodeState.getState(), NodeStateEnum.Running);
     }
@@ -200,8 +200,8 @@ import org.testng.annotations.Test;
         nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.Offline);
         try {
             nodeState.changeState(NodeStateEnum.Offline, toState);
-        } catch (ConfigException e) {
-            Assert.assertEquals(e.getCode(), ConfigError.CONFIG_NODE_STATE_CHANGE_FAILED);
+        } catch (ConsensusException e) {
+            Assert.assertEquals(e.getCode(), ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
         }
         Assert.assertEquals(nodeState.getState(), NodeStateEnum.Offline);
     }

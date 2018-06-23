@@ -2,7 +2,7 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.management.failover.service.SyncService;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;

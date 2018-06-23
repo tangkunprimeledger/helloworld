@@ -1,7 +1,7 @@
 package com.higgs.trust.rs.core.callback;
 
 import com.alibaba.fastjson.JSONObject;
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
