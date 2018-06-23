@@ -55,14 +55,8 @@ import java.util.concurrent.TimeUnit;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        BeanValidateResult result = BeanValidator.validate(packageVO);
-        if (!result.isSuccess()) {
-            log.error("[LogReplicateHandler.replicatePackage]param validate failed, cause: " + result.getFirstMsg());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
         // replicate package to all nodes
-        log.info("package starts to distribute to each node through consensus layer");
+        log.info("package starts to distribute to each node through consensus layer package height = {}", packageVO.getHeight());
         PackageCommand packageCommand =
             new PackageCommand(nodeState.getCurrentTerm(), nodeState.getMasterName(), packageVO);
         String signValue = packageCommand.getSignValue();
@@ -83,7 +77,7 @@ import java.util.concurrent.TimeUnit;
             }
         }
 
-        log.info("package has been sent to consensus layer");
+        log.info("package has been sent to consensus layer package height = {}", packageVO.getHeight());
     }
 
 
