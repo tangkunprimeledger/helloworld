@@ -318,6 +318,7 @@ import java.util.List;
                 for(SignInfo signInfo : lastSigns){
                     if(StringUtils.equals(rsConfig.getRsName(),signInfo.getOwner())){
                         signInfos.add(signInfo);
+                        break;
                     }
                 }
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
