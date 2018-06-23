@@ -13,7 +13,7 @@ import org.springframework.beans.factory.BeanFactory
 
 @Slf4j
 @Usage("operate the consensus cluster")
-class term {
+class consensus {
 
     @Usage('join a consensus cluster')
     @Command
