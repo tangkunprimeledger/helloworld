@@ -97,6 +97,7 @@ import java.util.concurrent.*;
         }
         termManager.setMasterHeartbeat(false);
         if (!nodeInfoService.hasMasterQualify()) {
+            log.warn("not have master qualify");
             resetHeartbeatTimeout();
             return;
         }
