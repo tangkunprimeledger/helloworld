@@ -115,6 +115,7 @@ public enum SlaveErrorEnum implements ErrorInfo {
     SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR("837", "rs callback not register error", false),
     SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR("838", "slave batch insert rows different error", false),
     SLAVE_PACKAGE_RECEIVED_INVALID_NODE_STATE("839", "the node state is not running", false),
+    SLAVE_ACCOUNT_FREEZE_RECORD_IS_ALREADY_EXISTS_ERROR("840", "account freeze record is already exists error", false),
 
 
     SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),
