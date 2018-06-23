@@ -1,8 +1,8 @@
 package com.higgs.trust.slave.core.service.ca;
 
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -72,7 +72,7 @@ import java.util.*;
                 }
             });
 
-            if(log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("[CaInitServiceImpl.initKeyPair] user ={}, caActionList={}", nodeState.getNodeName(),
                     caActionList.toString());
             }
@@ -117,7 +117,7 @@ import java.util.*;
                         }
                     }
                 } catch (Throwable e) {
-                    log.warn("[CaInitServiceImpl.acquirePubKeys] acquire pubKey error, node:{}", nodeName, e);
+                    log.warn("[CaInitServiceImpl.acquirePubKeys] acquire pubKey error, node={}", nodeName);
                 }
             });
             if (caActionList.size() < nodeList.size()) {

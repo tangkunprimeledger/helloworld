@@ -314,7 +314,12 @@ import java.util.List;
                     return;
                 }
                 List<SignInfo> signInfos = voteService.getSignInfos(receipts);
-                signInfos.addAll(bo.getSignDatas());
+                List<SignInfo> lastSigns = bo.getSignDatas();
+                for(SignInfo signInfo : lastSigns){
+                    if(StringUtils.equals(rsConfig.getRsName(),signInfo.getOwner())){
+                        signInfos.add(signInfo);
+                    }
+                }
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
                 //change status to WAIT for SYNC pattern
                 coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);
