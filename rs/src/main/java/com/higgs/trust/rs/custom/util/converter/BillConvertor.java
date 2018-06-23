@@ -63,7 +63,7 @@ public class BillConvertor {
         receivableBillPO.setCreateTime(time);
         receivableBillPO.setUpdateTime(time);
         receivableBillPO.setBillId(txOut.getState().getString("billId"));
-        receivableBillPO.setHolder(txOut.getState().getString("holder"));
+        receivableBillPO.setHolder(txOut.getIdentity());
         receivableBillPO.setStatus(BillStatusEnum.PROCESS.getCode());
         receivableBillPO.setTxId(txId);
         receivableBillPO.setActionIndex(txOut.getActionIndex().longValue());
