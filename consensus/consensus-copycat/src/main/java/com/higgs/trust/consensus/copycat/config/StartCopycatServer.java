@@ -77,7 +77,7 @@ import java.util.List;
     }
 
     @StateChangeListener(NodeStateEnum.Running) @Order public synchronized void start() {
-        if (server != null) {
+        if (server == null) {
             start(copycatProperties, stateMachine);
         }
     }
