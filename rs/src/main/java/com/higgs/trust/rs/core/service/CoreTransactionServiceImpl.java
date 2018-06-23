@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
+import com.higgs.trust.rs.core.api.BizTypeService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.VoteService;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
@@ -49,6 +50,7 @@ import java.util.List;
 @Service @Slf4j public class CoreTransactionServiceImpl implements CoreTransactionService {
     @Autowired private TransactionTemplate txRequired;
     @Autowired private RsConfig rsConfig;
+    @Autowired private BizTypeService bizTypeService;
     @Autowired private CoreTxRepository coreTxRepository;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private VoteReceiptRepository voteReceiptRepository;
@@ -98,6 +100,16 @@ import java.util.List;
             log.error("[submitTx] param validate is fail,first msg:{}", validateResult.getFirstMsg());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
+        //check bizType
+        String policyId = coreTx.getPolicyId();
+        InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
+        if (initPolicyEnum == null) {
+            String bizType = bizTypeService.getByPolicyId(coreTx.getPolicyId());
+            if(StringUtils.isEmpty(bizType)){
+                log.error("[submitTx] get bizType is null,policyId:{}",coreTx.getPolicyId());
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONFIGURATION_ERROR);
+            }
+        }
         //check by txId
         CoreTransactionPO po = coreTxRepository.queryByTxId(coreTx.getTxId(), false);
         if (po != null) {
@@ -146,7 +158,7 @@ import java.util.List;
                 if (policy == null) {
                     log.error("[processInitTx]get policy is null by policyId:{}", policyId);
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED,false);
+                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED,true);
                     return;
                 }
                 // vote rule
@@ -165,7 +177,7 @@ import java.util.List;
                 if (voteRule == null) {
                     log.error("[processInitTx]get voteRule is null by policyId:{}", policyId);
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR,false);
+                        RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR,true);
                     return;
                 }
                 //check rs ids
@@ -182,7 +194,7 @@ import java.util.List;
                         return;
                     } else {
                         toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
-                            RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR,false);
+                            RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR,true);
                         return;
                     }
                 }
@@ -191,7 +203,7 @@ import java.util.List;
                 if (votePattern == null) {
                     log.error("[processInitTx]votePattern is empty");
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_VOTE_PATTERN_NOT_EXISTS_ERROR,false);
+                        RsCoreErrorEnum.RS_CORE_VOTE_PATTERN_NOT_EXISTS_ERROR,true);
                     return;
                 }
                 //get need voters from saved sign info
@@ -235,7 +247,7 @@ import java.util.List;
                     boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
                     log.info("[processInitTx]decision:{}", decision);
                     if (!decision) {
-                        toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,false);
+                        toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,true);
                         return;
                     }
                     //change status to WAIT for SYNC pattern
@@ -285,14 +297,14 @@ import java.util.List;
                 if (policy == null) {
                     log.error("[processNeedVoteTx]get policy is null by policyId:{}", policyId);
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
-                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED,false);
+                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED,true);
                     return;
                 }
                 List<String> rsIds = policy.getRsIds();
                 if (CollectionUtils.isEmpty(rsIds)) {
                     log.error("[processNeedVoteTx]rsIds is empty by txId:{}", bo.getTxId());
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
-                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR,false);
+                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR,true);
                     return;
                 }
                 //query receipts by txId
@@ -310,7 +322,7 @@ import java.util.List;
                 boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
                 log.info("[processNeedVoteTx]decision:{}", decision);
                 if (!decision) {
-                    toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,false);
+                    toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,true);
                     return;
                 }
                 List<SignInfo> signInfos = voteService.getSignInfos(receipts);
