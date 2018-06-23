@@ -69,12 +69,17 @@ public class RespData<T> implements java.io.Serializable {
         this.respCode = respCode;
     }
 
+    public void setRespCode(String respCode) {
+        this.respCode = respCode;
+    }
+
     public String getMsg() {
         if (msg == null || msg.length() == 0) {
             msg = "unknow error";
         }
         return msg;
     }
+
 
     public void setMsg(String msg) {
         this.msg = msg;

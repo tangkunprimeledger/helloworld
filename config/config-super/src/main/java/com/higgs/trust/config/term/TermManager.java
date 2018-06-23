@@ -113,7 +113,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         if (term == nodeState.getCurrentTerm()) {
             return termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :
-                packageHeight == termInfo.getEndHeight() + 1;
+                packageHeight >= termInfo.getStartHeight() && packageHeight <= termInfo.getEndHeight() + 1;
         } else {
             return termInfo.getStartHeight() <= packageHeight && termInfo.getEndHeight() >= packageHeight;
         }
@@ -124,12 +124,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
         TermInfo termInfo = optional.get();
         boolean verify =
             termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :
-                packageHeight == termInfo.getEndHeight() + 1;
-        if (verify) {
+                packageHeight >= termInfo.getStartHeight() && packageHeight <= termInfo.getEndHeight() + 1;
+        if (!verify) {
+            throw new ConfigException(ConfigError.CONFIG_NODE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT);
+        }
+        if (packageHeight == termInfo.getStartHeight() || packageHeight == termInfo.getEndHeight() + 1) {
             log.debug("reset term end height:{}", packageHeight);
             termInfo.setEndHeight(packageHeight);
         } else {
-            throw new ConfigException(ConfigError.CONFIG_NODE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT);
+            log.warn("set incorrect end height:{}, termInfo:{}", packageHeight, termInfo);
         }
     }
 
