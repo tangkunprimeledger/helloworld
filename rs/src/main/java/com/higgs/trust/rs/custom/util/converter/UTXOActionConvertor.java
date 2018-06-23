@@ -193,7 +193,6 @@ public class UTXOActionConvertor {
             txOut.setIndex(index++);
 
             JSONObject state = JSON.parseObject(receivableBillPO.getState());
-            state.put("holder", transferDetailVO.getNextHolder());
             state.put("amount", transferDetailVO.getAmount());
 
             txOut.setState(state);
