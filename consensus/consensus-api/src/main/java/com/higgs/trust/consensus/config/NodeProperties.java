@@ -1,4 +1,4 @@
-package com.higgs.trust.config.node;
+package com.higgs.trust.consensus.config;
 
 import lombok.Getter;
 import lombok.Setter;

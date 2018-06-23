@@ -1,7 +1,7 @@
 package com.higgs.trust.management.failover.scheduler;
 
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;

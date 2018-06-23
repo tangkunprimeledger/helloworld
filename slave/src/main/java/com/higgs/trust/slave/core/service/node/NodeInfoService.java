@@ -4,12 +4,13 @@
 package com.higgs.trust.slave.core.service.node;
 
 import com.higgs.trust.config.master.INodeInfoService;
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -27,6 +28,8 @@ import java.util.List;
 
     @Autowired private PackageRepository packageRepository;
 
+    @Value("${higgs.trust.electionMaster:false}") private boolean electionMaster;
+
     @Override public Long packageHeight() {
         return packageRepository.getMaxHeight();
     }
@@ -36,7 +39,7 @@ import java.util.List;
     }
 
     @Override public boolean hasMasterQualify() {
-        if (!nodeState.isState(NodeStateEnum.Running)) {
+        if (!nodeState.isState(NodeStateEnum.Running) || !electionMaster) {
             return false;
         }
         Long blockHeight = blockRepository.getMaxHeight();

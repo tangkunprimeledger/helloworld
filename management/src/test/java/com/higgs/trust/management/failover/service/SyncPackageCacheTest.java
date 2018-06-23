@@ -1,9 +1,8 @@
 package com.higgs.trust.management.failover.service;
 
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.management.failover.config.FailoverProperties;
-import com.higgs.trust.management.failover.service.SyncPackageCache;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

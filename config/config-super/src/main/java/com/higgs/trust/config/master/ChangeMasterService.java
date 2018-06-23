@@ -5,13 +5,13 @@ package com.higgs.trust.config.master;
 
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.*;
-import com.higgs.trust.config.node.NodeProperties;
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.NodeStateEnum;
-import com.higgs.trust.config.node.listener.MasterChangeListener;
-import com.higgs.trust.config.node.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.NodeProperties;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.term.TermManager;
+import com.higgs.trust.consensus.config.listener.MasterChangeListener;
+import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
@@ -19,7 +19,6 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -93,6 +92,9 @@ import java.util.concurrent.*;
         if (log.isDebugEnabled()) {
             log.debug("start change master verify");
         }
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            return;
+        }
         termManager.setMasterHeartbeat(false);
         if (!nodeInfoService.hasMasterQualify()) {
             resetHeartbeatTimeout();
@@ -156,7 +158,7 @@ import java.util.concurrent.*;
         try {
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            log.error("change master failed!", e);
+            log.error("submit change master to consensus failed!", e);
         }
     }
 
