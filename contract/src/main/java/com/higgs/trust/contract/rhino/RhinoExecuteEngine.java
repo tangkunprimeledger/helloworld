@@ -5,10 +5,7 @@ import com.higgs.trust.contract.rhino.function.PrintNativeFunction;
 import com.higgs.trust.contract.rhino.function.SafeEvalFunction;
 import com.higgs.trust.contract.rhino.types.JsDate;
 import lombok.extern.slf4j.Slf4j;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Script;
-import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +17,7 @@ import java.util.Map;
 @Slf4j
 public class RhinoExecuteEngine implements ExecuteEngine {
 
+    private static final String INITIALIZATION_METHOD_NAME = "init";
     private static final String DB_STATE_CTX_KEY_NAME = "db";
     private static Map<String, Script> scriptCache = new HashMap<>();
 
@@ -40,6 +38,9 @@ public class RhinoExecuteEngine implements ExecuteEngine {
     }
 
     private Object executeInternal(String methodName, Object... bizArgs) {
+        if (INITIALIZATION_METHOD_NAME.equals(methodName) && !ExecuteContext.getCurrent().isTryInitialization()) {
+            throw new SmartContractException("can't invoke init method");
+        }
         //Context context = Context.enter();
         long startTime = System.currentTimeMillis();
         Context context = new TrustContextFactory(executeConfig).enterContext();
@@ -52,24 +53,34 @@ public class RhinoExecuteEngine implements ExecuteEngine {
             ScriptableObject.defineClass(scope, JsDate.class);
             Script script = scriptCache.get("" + code.hashCode());
             if (script == null) {
-                script = context.compileString(code, "contract", 1, null);
+                try {
+                    script = context.compileString(code, "contract", 1, null);
+                } catch (EvaluatorException ex) {
+                    throw new ContractSyntaxException("syntax error:" + ex.getMessage());
+                }
                 scriptCache.put("" + code.hashCode(), script);
             }
 
             applyVariables(scope);
             script.exec(context, scope);
-            Function func = (Function) scope.get(methodName, scope);
-            //System.out.println("func: " + func);
-            if (func == null) {
-                System.out.println(String.format("method %s not find", methodName));
+            Object func = scope.get(methodName, scope);
+            if (func == null || !(func instanceof Function)) {
+                if (ExecuteContext.getCurrent().isTryInitialization()) {
+                    log.debug("try to initialization contract, but init method not find");
+                    return null;
+                }
+                throw new SmartContractException(String.format("method %s not find", methodName));
             }
-            Object result = func.call(context, scope, scope, bizArgs);
+            Object result = ((Function) func).call(context, scope, scope, bizArgs);
 
             ExecuteContext executeContext = ExecuteContext.getCurrent();
             ContractStateStore dbStateStore = executeContext.getStateStore();
-            if (dbStateStore != null) {
+            if (dbStateStore != null && !ExecuteContext.getCurrent().isOnlyQuery()) {
                 StateManager state = (StateManager) scope.get(DB_STATE_CTX_KEY_NAME);
                 dbStateStore.put(executeContext.getStateInstanceKey(), state);
+            }
+            if (result instanceof NativeJavaObject) {
+                return ((NativeJavaObject) result).unwrap();
             }
             return result;
         } catch (Exception ex) {

@@ -19,9 +19,12 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j @Service public class StandardSmartContract {
 
-    @Autowired private StandardContractContextService contextService;
-    @Autowired private ContractSnapshotAgent snapshotAgent;
-    @Autowired private ContractStateSnapshotAgent contractStateSnapshotAgent;
+    @Autowired
+    private StandardContractContextService contextService;
+    @Autowired
+    private ContractSnapshotAgent snapshotAgent;
+    @Autowired
+    private ContractStateSnapshotAgent contractStateSnapshotAgent;
 
     private ExecuteEngineManager engineManager;
 
@@ -43,10 +46,12 @@ import org.springframework.stereotype.Service;
                 log.debug("put contract state to db, the key is {}, state size: {}", key, state.getState().size());
                 contractStateSnapshotAgent.put(key, state);
             }
+
             @Override
             public StateManager get(String key) {
                 return contractStateSnapshotAgent.get(key);
             }
+
             @Override
             public void remove(String key) {
                 contractStateSnapshotAgent.remove(key);
@@ -56,24 +61,31 @@ import org.springframework.stereotype.Service;
         return engineManager;
     }
 
-    private Object execute(String address, String instanceId, ExecuteContextData data, Object... args) {
+    private Contract getContract(String address) {
         Contract contract = snapshotAgent.get(address);
         if (null == contract) {
             log.error("contract not fond: {}", address);
             throw new ContractException(SlaveErrorEnum.SLAVE_CONTRACT_NOT_EXIST_ERROR, String.format("contract not fond: %s", address));
         }
+        return contract;
+    }
+
+    private Object execute(Contract contract, String methodName, Object... args) {
         ExecuteEngineManager manager = getExecuteEngineManager();
+        ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
+        Object result = engine.execute(methodName, args);
+        return result;
+    }
+
+    private Object execute(String address, String instanceId, ExecuteContextData data, Object... args) {
+        Contract contract = getContract(address);
         ExecuteContext context = ExecuteContext.newContext(data);
         context.setStateInstanceKey(instanceId);
-
         ContractEntity contractEntity = new ContractEntity();
         contractEntity.setAddress(contract.getAddress());
-
         context.setContract(contractEntity);
-//        context.setValidateStage(processType == TxProcessTypeEnum.VALIDATE);
 
-        ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
-        Object result = engine.execute("main", args);
+        Object result = execute(contract, "main", args);
         return result;
     }
 
@@ -81,6 +93,24 @@ import org.springframework.stereotype.Service;
         try {
             Profiler.enter(String.format("execute contract at %s", address));
             return execute(address, address, data, args);
+        } finally {
+            Profiler.release();
+        }
+    }
+
+    public Object executeQuery(String address, String methodName, Object... args) {
+        try {
+            Profiler.enter(String.format("query contract at %s", address));
+            Contract contract = getContract(address);
+            ExecuteContext context = ExecuteContext.newContext();
+            context.setStateInstanceKey(address);
+            ContractEntity contractEntity = new ContractEntity();
+            contractEntity.setAddress(contract.getAddress());
+            context.setContract(contractEntity);
+            context.setOnlyQuery(true);
+
+            Object result = execute(contract, methodName, args);
+            return result;
         } finally {
             Profiler.release();
         }
@@ -98,5 +128,20 @@ import org.springframework.stereotype.Service;
         } finally {
             Profiler.release();
         }
+    }
+
+    public void init(String address, Object... args) {
+        Contract contract = getContract(address);
+        ExecuteContext context = ExecuteContext.newContext();
+        context.setTryInitialization(true);
+        context.setStateInstanceKey(address);
+
+        ContractEntity contractEntity = new ContractEntity();
+        contractEntity.setAddress(contract.getAddress());
+        context.setContract(contractEntity);
+
+        ExecuteEngineManager manager = getExecuteEngineManager();
+        ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
+        engine.execute("init", args);
     }
 }

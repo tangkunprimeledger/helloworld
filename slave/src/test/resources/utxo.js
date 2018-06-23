@@ -20,6 +20,9 @@ function verify() {
       return false;
     }
 
+    var num = 10000;
+    db.put('num', num);
+
     var inputsAmount = 0;
     var outputsAmount = 0;
 

@@ -57,7 +57,7 @@ import java.util.concurrent.ExecutorService;
         }
 
         PackageVO packageVO = commit.operation().get();
-        log.info("package reached consensus, log: {}", packageVO);
+        log.info("package reached consensus, log height: {}", packageVO.getHeight());
 
         // validate param
         if (null == packageVO) {
