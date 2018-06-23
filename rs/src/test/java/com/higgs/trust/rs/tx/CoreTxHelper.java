@@ -85,11 +85,20 @@ import java.util.List;
      * @param tx
      */
     public static void post(RsCoreTxVO tx) {
-        String requestJSON = JSON.toJSONString(tx);
+        post(TX_URL,tx);
+    }
+    /**
+     * 发送交易请求
+     *
+     * @param url
+     * @param param
+     */
+    public static void post(String url,Object param) {
+        String requestJSON = JSON.toJSONString(param);
         log.info("[post]requestJSON:{}", requestJSON);
         try {
-            String resultString = OkHttpClientManager.postAsString(TX_URL, requestJSON, 10000L);
-            RespData respData = JSON.parseObject(resultString,RespData.class);
+            String resultString = OkHttpClientManager.postAsString(url, requestJSON, 10000L);
+            RespData respData = JSON.parseObject(resultString, RespData.class);
             log.info("[post]respCode:{}", respData.getRespCode());
             log.info("[post]msg:{}", respData.getMsg());
         } catch (Throwable t) {
