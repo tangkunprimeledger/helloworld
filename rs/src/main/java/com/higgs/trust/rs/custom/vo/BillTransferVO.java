@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -36,5 +37,6 @@ import java.util.List;
     /**
      * 受让持票人 64
      */
-    @NotEmpty private List<TransferDetailVO> transferList;
+    @NotEmpty @Valid
+    private List<TransferDetailVO> transferList;
 }
