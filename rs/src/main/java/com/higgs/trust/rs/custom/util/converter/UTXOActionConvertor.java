@@ -3,11 +3,13 @@ package com.higgs.trust.rs.custom.util.converter;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.rs.common.config.RsConfig;
+import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.rs.custom.vo.TransferDetailVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.consensus.config.NodeState;
@@ -42,6 +44,9 @@ public class UTXOActionConvertor {
 
     @Autowired
     private RsConfig rsConfig;
+
+    @Autowired
+    private RsBlockChainService rsBlockChainService;
 
 
     /**
@@ -143,6 +148,7 @@ public class UTXOActionConvertor {
 
         ReceivableBillPO receivableBillParam = new ReceivableBillPO();
         receivableBillParam.setBillId(billTransferVO.getBillId());
+        receivableBillParam.setHolder(billTransferVO.getHolder());
         receivableBillParam.setStatus(BillStatusEnum.UNSPENT.getCode());
         List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
 
@@ -152,70 +158,22 @@ public class UTXOActionConvertor {
         }
         ReceivableBillPO receivableBillPO = receivableBillPOList.get(0);
 
-
         List<Action> actionList = new ArrayList<>();
+        int actionIndex = 0;
+
         //build dataIdentityAction
-        DataIdentityAction dataIdentityAction = new DataIdentityAction();
-        dataIdentityAction.setDataOwner(nodeState.getNodeName());
-        dataIdentityAction.setChainOwner(CHAIN_OWNER);
-        dataIdentityAction.setIdentity(billTransferVO.getNextHolder());
-        dataIdentityAction.setIndex(0);
-        dataIdentityAction.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
-        actionList.add(dataIdentityAction);
-
-
-        //build TxIn
-        TxIn txIn = new TxIn();
-        txIn.setTxId(receivableBillPO.getTxId());
-        txIn.setActionIndex(receivableBillPO.getActionIndex().intValue());
-        txIn.setIndex(receivableBillPO.getIndex().intValue());
-        List<TxIn> inputList = new ArrayList<>();
-        inputList.add(txIn);
-
-        //build UTXO
-        TxOut txOut = new TxOut();
-        txOut.setIdentity(billTransferVO.getNextHolder());
-        txOut.setActionIndex(1);
-        txOut.setIndex(0);
-        txOut.setState(JSON.parseObject(receivableBillPO.getState()));
-
-        List<TxOut> txOutList = new ArrayList<>();
-        txOutList.add(txOut);
-
-        //build UTXOAction
-        UTXOAction utxoAction = new UTXOAction();
-        utxoAction.setInputList(inputList);
-        utxoAction.setOutputList(txOutList);
-        utxoAction.setContractAddress(receivableBillPO.getContractAddress());
-        utxoAction.setType(ActionTypeEnum.UTXO);
-        utxoAction.setStateClass("com.alibaba.fastjson.JSONObject");
-        utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
-        utxoAction.setIndex(1);
-        actionList.add(utxoAction);
-
-        return actionList;
-    }
-
-
-    /**
-     * build  transfer bill actionList
-     *
-     * @param billTransferVO
-     * @return
-     */
-    public List<Action> buildTransferBillActionList(BillTransferVO billTransferVO) {
-
-        ReceivableBillPO receivableBillParam = new ReceivableBillPO();
-        receivableBillParam.setBillId(billTransferVO.getBillId());
-        receivableBillParam.setStatus(BillStatusEnum.UNSPENT.getCode());
-        List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
-
-        if (CollectionUtils.isEmpty(receivableBillPOList) || receivableBillPOList.size() > 1) {
-            log.error("build Transfer Bill WithIdentity  ActionList  error, receivableBillPOList: {}", receivableBillPOList);
-            throw new RuntimeException("build Transfer Bill WithIdentity  ActionList  error for receivableBillPOList is null or receivableBillPOList size bigger than 1");
+        for (TransferDetailVO transferDetailVO : billTransferVO.getTransferList()) {
+            boolean isIdentityExist = rsBlockChainService.isExistedIdentity(transferDetailVO.getNextHolder());
+            if (!isIdentityExist) {
+                DataIdentityAction dataIdentityAction = new DataIdentityAction();
+                dataIdentityAction.setDataOwner(nodeState.getNodeName());
+                dataIdentityAction.setChainOwner(CHAIN_OWNER);
+                dataIdentityAction.setIdentity(transferDetailVO.getNextHolder());
+                dataIdentityAction.setIndex(actionIndex++);
+                dataIdentityAction.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
+                actionList.add(dataIdentityAction);
+            }
         }
-        ReceivableBillPO receivableBillPO = receivableBillPOList.get(0);
-
 
         //build TxIn
         TxIn txIn = new TxIn();
@@ -225,15 +183,21 @@ public class UTXOActionConvertor {
         List<TxIn> inputList = new ArrayList<>();
         inputList.add(txIn);
 
-        //build UTXO
-        TxOut txOut = new TxOut();
-        txOut.setIdentity(billTransferVO.getNextHolder());
-        txOut.setActionIndex(0);
-        txOut.setIndex(0);
-        txOut.setState(JSON.parseObject(receivableBillPO.getState()));
-
         List<TxOut> txOutList = new ArrayList<>();
-        txOutList.add(txOut);
+        int index = 0;
+        //build UTXO
+        for (TransferDetailVO transferDetailVO : billTransferVO.getTransferList()) {
+            TxOut txOut = new TxOut();
+            txOut.setIdentity(transferDetailVO.getNextHolder());
+            txOut.setActionIndex(actionIndex);
+            txOut.setIndex(index++);
+
+            JSONObject state = JSON.parseObject(receivableBillPO.getState());
+            state.put("amount", transferDetailVO.getAmount());
+
+            txOut.setState(state);
+            txOutList.add(txOut);
+        }
 
         //build UTXOAction
         UTXOAction utxoAction = new UTXOAction();
@@ -243,12 +207,9 @@ public class UTXOActionConvertor {
         utxoAction.setType(ActionTypeEnum.UTXO);
         utxoAction.setStateClass("com.alibaba.fastjson.JSONObject");
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
-        utxoAction.setIndex(0);
-        List<Action> actionList = new ArrayList<>();
+        utxoAction.setIndex(actionIndex);
         actionList.add(utxoAction);
 
         return actionList;
     }
-
-
 }

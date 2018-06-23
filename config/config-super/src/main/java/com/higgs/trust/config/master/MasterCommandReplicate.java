@@ -12,6 +12,7 @@ import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.term.TermManager;
 import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.consensus.core.ConsensusCommit;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
  * @author suimi
  * @date 2018/6/5
  */
-@Component @Replicator public class MasterCommandReplicate {
+@Slf4j @Component @Replicator public class MasterCommandReplicate {
 
     @Autowired NodeState nodeState;
 
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
     @Autowired ClusterInfo clusterInfo;
 
     public void changeMaster(ConsensusCommit<ChangeMasterCommand> commit) {
+        log.debug("received change master commit");
         ChangeMasterCommand operation = commit.operation();
         if (operation.getTerm() == nodeState.getCurrentTerm() + 1) {
             Map<String, ChangeMasterVerifyResponse> verifyResponseMap = operation.get();

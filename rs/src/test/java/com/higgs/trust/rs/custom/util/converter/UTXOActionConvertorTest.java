@@ -1,8 +1,10 @@
 package com.higgs.trust.rs.custom.util.converter;
 
+import com.google.common.collect.Lists;
 import com.higgs.trust.IntegrateBaseTest;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.rs.custom.vo.TransferDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -44,25 +46,26 @@ public class UTXOActionConvertorTest extends IntegrateBaseTest {
 
     @Test
     public void buildTransferBillWithIdentityActionList(){
+
         BillTransferVO billTransferVO = new BillTransferVO();
         billTransferVO.setBillId("12312312312");
         billTransferVO.setBizModel("12312");
-        billTransferVO.setNextHolder("lingchao");
+        billTransferVO.setHolder("lingchao");
         billTransferVO.setRequestId("132123dfscsdwada");
+
+        billTransferVO.setTransferList(Lists.newArrayList());
+
+        TransferDetailVO transferDetailVO = new TransferDetailVO();
+        transferDetailVO.setNextHolder("chao1");
+        transferDetailVO.setAmount(new BigDecimal("1230000"));
+        billTransferVO.getTransferList().add(transferDetailVO);
+
+        transferDetailVO = new TransferDetailVO();
+        transferDetailVO.setNextHolder("chao2");
+        transferDetailVO.setAmount(new BigDecimal("1231"));
+        billTransferVO.getTransferList().add(transferDetailVO);
 
         System.out.println("----------buildTransferBillWithIdentityActionList-------------------"+utxoActionConvertor.buildTransferBillWithIdentityActionList(billTransferVO));
-    }
-
-
-    @Test
-    public void buildTransferBillActionList(){
-        BillTransferVO billTransferVO = new BillTransferVO();
-        billTransferVO.setBillId("12312312312");
-        billTransferVO.setBizModel("12312");
-        billTransferVO.setNextHolder("lingchao");
-        billTransferVO.setRequestId("132123dfscsdwada");
-
-        System.out.println("----------buildTransferBillWithIdentityActionList-------------------"+utxoActionConvertor.buildTransferBillActionList(billTransferVO));
     }
 
 }

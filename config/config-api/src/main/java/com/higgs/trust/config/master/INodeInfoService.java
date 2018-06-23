@@ -19,4 +19,13 @@ public interface INodeInfoService {
      * @return
      */
     boolean hasMasterQualify();
+
+    /**
+     * election master
+     *
+     * @return
+     */
+    boolean isElectionMaster();
+
+    void setElectionMaster(boolean electionMaster);
 }

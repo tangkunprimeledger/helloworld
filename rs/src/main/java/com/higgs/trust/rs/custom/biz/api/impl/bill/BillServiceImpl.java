@@ -106,11 +106,9 @@ public class BillServiceImpl implements BillService {
                     if (null != respData) {
                         return respData;
                     }
-                    //identity 是否存在
-                    boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billTransferVO.getNextHolder());
 
                     //组装UTXO,CoreTransaction，下发
-                    respData = billServiceHelper.buildTransferBillAndSend(isIdentityExist, billTransferVO);
+                    respData = billServiceHelper.buildTransferBillAndSend(billTransferVO);
                     return respData;
                 }
             });

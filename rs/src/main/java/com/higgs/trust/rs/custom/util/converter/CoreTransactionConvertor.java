@@ -8,6 +8,7 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,6 +36,7 @@ public class CoreTransactionConvertor {
         coreTransaction.setActionList(actionList);
         coreTransaction.setVersion(VersionEnum.V1.getCode());
         coreTransaction.setSender(nodeState.getNodeName());
+        coreTransaction.setSendTime(new Date());
         coreTransaction.setPolicyId(policyId);
         return coreTransaction;
     }
@@ -52,6 +54,7 @@ public class CoreTransactionConvertor {
         coreTransaction.setActionList(actionList);
         coreTransaction.setVersion(VersionEnum.V1.getCode());
         coreTransaction.setSender(nodeState.getNodeName());
+        coreTransaction.setSendTime(new Date());
         coreTransaction.setPolicyId(policyId);
         return coreTransaction;
     }

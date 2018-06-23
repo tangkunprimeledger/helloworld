@@ -39,7 +39,7 @@ import java.util.List;
     }
 
     @Override public boolean hasMasterQualify() {
-        if (!nodeState.isState(NodeStateEnum.Running) || !electionMaster) {
+        if (!nodeState.isState(NodeStateEnum.Running) || !isElectionMaster()) {
             return false;
         }
         Long blockHeight = blockRepository.getMaxHeight();
@@ -55,5 +55,13 @@ import java.util.List;
             return true;
         }
         return false;
+    }
+
+    public boolean isElectionMaster() {
+        return electionMaster;
+    }
+
+    public void setElectionMaster(boolean electionMaster) {
+        this.electionMaster = electionMaster;
     }
 }

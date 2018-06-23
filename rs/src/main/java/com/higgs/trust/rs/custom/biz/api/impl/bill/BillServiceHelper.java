@@ -7,13 +7,10 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
-import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
-import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
-import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.core.dao.RequestDao;
-import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.core.dao.po.RequestPO;
-import com.higgs.trust.rs.custom.exceptions.BillException;
+import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
+import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.rs.custom.util.converter.BillConvertor;
 import com.higgs.trust.rs.custom.util.converter.CoreTransactionConvertor;
@@ -29,7 +26,6 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -42,30 +38,21 @@ import java.util.List;
  * @author lingchao
  * @create 2018年05月13日16:11
  */
-@Service
-@Slf4j
-public class BillServiceHelper {
+@Service @Slf4j public class BillServiceHelper {
 
-    @Autowired
-    private UTXOActionConvertor utxoActionConvertor;
+    @Autowired private UTXOActionConvertor utxoActionConvertor;
 
-    @Autowired
-    private CoreTransactionConvertor coreTransactionConvertor;
+    @Autowired private CoreTransactionConvertor coreTransactionConvertor;
 
-    @Autowired
-    private CoreTransactionService coreTransactionService;
+    @Autowired private CoreTransactionService coreTransactionService;
 
-    @Autowired
-    private ReceivableBillDao receivableBillDao;
+    @Autowired private ReceivableBillDao receivableBillDao;
 
-    @Autowired
-    private RsConfig rsConfig;
+    @Autowired private RsConfig rsConfig;
 
-    @Autowired
-    private RsBlockChainService rsBlockChainService;
+    @Autowired private RsBlockChainService rsBlockChainService;
 
-    @Autowired
-    private RequestDao requestDao;
+    @Autowired private RequestDao requestDao;
 
     /**
      * requestIdempotent
@@ -106,11 +93,13 @@ public class BillServiceHelper {
      * @param billCreateVO
      */
     public void insertBill(BillCreateVO billCreateVO, Long actionIndex, Long index) {
-        ReceivableBillPO receivableBillPO = BillConvertor.buildBill(billCreateVO, actionIndex, index, rsConfig.getContractAddress());
+        ReceivableBillPO receivableBillPO =
+            BillConvertor.buildBill(billCreateVO, actionIndex, index, rsConfig.getContractAddress());
         try {
             receivableBillDao.add(receivableBillPO);
         } catch (DuplicateKeyException e) {
-            log.error("receivableBillPO : {} for txId : {} is idempotent", receivableBillPO, receivableBillPO.getTxId());
+            log.error("receivableBillPO : {} for txId : {} is idempotent", receivableBillPO,
+                receivableBillPO.getTxId());
             throw new RuntimeException("receivableBillPO is idempotent");
         }
     }
@@ -139,13 +128,14 @@ public class BillServiceHelper {
         }
 
         //创建coreTx
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList,
-            InitPolicyEnum.UTXO_ISSUE.getPolicyId());
+        CoreTransaction coreTransaction = coreTransactionConvertor
+            .buildBillCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList,
+                InitPolicyEnum.UTXO_ISSUE.getPolicyId());
 
         //insert bill
         for (Action action : actionList) {
             if (action.getType() == ActionTypeEnum.UTXO) {
-                UTXOAction utxoAction = (UTXOAction) action;
+                UTXOAction utxoAction = (UTXOAction)action;
                 List<TxOut> outputList = utxoAction.getOutputList();
                 for (TxOut txOut : outputList) {
                     insertBill(billCreateVO, txOut.getActionIndex().longValue(), txOut.getIndex().longValue());
@@ -155,7 +145,6 @@ public class BillServiceHelper {
 
         return submitTx(coreTransaction);
     }
-
 
     /**
      * billTransferVO 请求入库
@@ -178,45 +167,30 @@ public class BillServiceHelper {
     /**
      * bill transfer new 入库
      *
-     * @param billTransferVO
+     * @param requestId
+     * @param utxoAction
+     * @param txOut
      */
-    public void insertBill(BillTransferVO billTransferVO, Long actionIndex, Long index) {
+    public void insertBill(String requestId, UTXOAction utxoAction, TxOut txOut) {
 
-        ReceivableBillPO receivableBillParam = new ReceivableBillPO();
-        receivableBillParam.setBillId(billTransferVO.getBillId());
-        receivableBillParam.setStatus(BillStatusEnum.UNSPENT.getCode());
-        List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
-
-        if (CollectionUtils.isEmpty(receivableBillPOList) || receivableBillPOList.size() > 1) {
-            log.error("build Transfer Bill WithIdentity  ActionList  error for receivableBillPOList is null or receivableBillPOList size bigger than 1," + "build Transfer Bill WithIdentity  ActionList  error, receivableBillPOList: {}", receivableBillPOList);
-            throw new BillException(RespCodeEnum.BILL_TRANSFER_INVALID_PARAM);
-        }
-        ReceivableBillPO receivableBill = receivableBillPOList.get(0);
-
-        ReceivableBillPO receivableBillPO = BillConvertor.buildBill(billTransferVO, receivableBill, actionIndex, index);
+        ReceivableBillPO receivableBillPO = BillConvertor.buildBill(requestId, utxoAction, txOut);
         try {
             receivableBillDao.add(receivableBillPO);
         } catch (DuplicateKeyException e) {
-            log.error("receivableBillPO : {} for txId : {} is idempotent", receivableBillPO, receivableBillPO.getTxId());
+            log.error("receivableBillPO : {} for txId : {} is idempotent", receivableBillPO,
+                receivableBillPO.getTxId());
             throw new RuntimeException("receivableBillPO is idempotent");
         }
     }
 
-
     /**
      * build Transfer Bill And Send
      *
-     * @param isIdentityExist
      * @param billTransferVO
      * @return
      */
-    public RespData<?> buildTransferBillAndSend(boolean isIdentityExist, BillTransferVO billTransferVO) {
-        List<Action> actionList = null;
-        if (isIdentityExist) {
-            actionList = utxoActionConvertor.buildTransferBillActionList(billTransferVO);
-        } else {
-            actionList = utxoActionConvertor.buildTransferBillWithIdentityActionList(billTransferVO);
-        }
+    public RespData<?> buildTransferBillAndSend(BillTransferVO billTransferVO) {
+        List<Action> actionList = utxoActionConvertor.buildTransferBillWithIdentityActionList(billTransferVO);
         //创建coreTx
 
         JSONObject bizModel = new JSONObject();
@@ -226,16 +200,16 @@ public class BillServiceHelper {
             bizModel.put("bizModel", billTransferVO.getBizModel());
         }
 
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList,
-            BizTypeConst.TRANSFER_UTXO);
+        CoreTransaction coreTransaction = coreTransactionConvertor
+            .buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList, BizTypeConst.TRANSFER_UTXO);
 
         //insert bill
         for (Action action : actionList) {
             if (action.getType() == ActionTypeEnum.UTXO) {
-                UTXOAction utxoAction = (UTXOAction) action;
+                UTXOAction utxoAction = (UTXOAction)action;
                 List<TxOut> outputList = utxoAction.getOutputList();
                 for (TxOut txOut : outputList) {
-                    insertBill(billTransferVO, txOut.getActionIndex().longValue(), txOut.getIndex().longValue());
+                    insertBill(billTransferVO.getRequestId(), utxoAction, txOut);
                 }
             }
         }
@@ -245,7 +219,7 @@ public class BillServiceHelper {
     /**
      * 发送交易到rs-core
      */
-    private RespData<?> submitTx (CoreTransaction coreTransaction){
+    private RespData<?> submitTx(CoreTransaction coreTransaction) {
         //send and get callback result
         try {
             coreTransactionService.submitTx(coreTransaction);
@@ -275,6 +249,5 @@ public class BillServiceHelper {
             throw new RuntimeException("update request  status failed!");
         }
     }
-
 
 }

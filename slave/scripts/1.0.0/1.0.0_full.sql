@@ -122,7 +122,7 @@ IF NOT EXISTS `pending_transaction` (
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	`update_time` datetime (3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_pending_transation` (`tx_id`),
+	INDEX `idx_pending_transaction` (`tx_id`),
   INDEX `idx_height` (`height`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'pending transaction';
 
