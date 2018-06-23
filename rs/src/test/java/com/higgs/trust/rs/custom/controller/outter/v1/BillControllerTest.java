@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Slf4j
 public class BillControllerTest {
 
-    private static final String url = "http://10.200.172.98:7070/bill/";
+    private static final String url = "http://10.200.173.33:7070/bill/";
 
     @Test
     public void testCreate() throws Exception {
@@ -60,12 +60,12 @@ public class BillControllerTest {
 
         String params = JSON.toJSONString(billTransferVO);
 
-        //  System.out.println("request.params:" + params);
+          System.out.println("request.params:" + params);
         long start = System.currentTimeMillis();
-        String res = OkHttpClientManager.postAsString(url + "transfer", params);
+      //  String res = OkHttpClientManager.postAsString(url + "transfer", params);
         long end = System.currentTimeMillis();
         log.info("total cost : {} ms", end - start);
-        log.info("res.data:{}", res);
+     //   log.info("res.data:{}", res);
 
 
     }
