@@ -65,7 +65,7 @@ import java.math.BigDecimal;
             if (freezeRecord != null) {
                 log.error("[accountFreeze.validate] freezeRecord is already exists flowNo:{},accountNo:{}",
                     bo.getBizFlowNo(), bo.getAccountNo());
-                throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_FREEZE_RECORD_IS_ALREADY_EXISTS_ERROR);
             }
         } finally {
             Profiler.release();

@@ -29,8 +29,8 @@ import org.springframework.stereotype.Component;
         // check accountNo
         AccountInfo accountInfo = accountSnapshotHandler.getAccountInfo(bo.getAccountNo());
         if (accountInfo != null) {
-            log.error("[openAccount.process] is idempotent for accountNo:{}", bo.getAccountNo());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+            log.error("[openAccount.process]account is already exists for accountNo:{}", bo.getAccountNo());
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_IS_ALREADY_EXISTS_ERROR);
         }
         // check currency
         CurrencyInfo currencyInfo = accountSnapshotHandler.queryCurrency(bo.getCurrency());
