@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
 import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
     @Autowired CaSnapshotHandler caSnapshotHandler;
     @Autowired CaHelper caHelper;
     @Autowired private ClusterInfo clusterInfo;
+    @Autowired private ConsensusStateMachine consensusStateMachine;
 
     /**
      * @param
@@ -45,6 +47,10 @@ import org.springframework.stereotype.Component;
                 "[CaCancelHandler.process] actionData validate error");
         }
 
+        log.info("[[cancelKeyPair]] start to leave consensus,user ={}", caAction.getUser());
+        consensusStateMachine.leaveConsensus();
+        log.info("[[cancelKeyPair]] end leave consensus,user ={}", caAction.getUser());
+
         Profiler.enter("[CaCancelHandler.cancelCa]");
         Ca ca = new Ca();
         BeanUtils.copyProperties(caAction, ca);
@@ -52,7 +58,6 @@ import org.springframework.stereotype.Component;
 
         clusterInfo.refresh();
         Profiler.release();
-
 
         // TODO  添加refresh()方法属性集群配置信息
     }
