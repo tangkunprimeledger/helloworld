@@ -39,9 +39,9 @@ class term {
         out.println("ended the master term")
     }
 
-    @Usage('end the master term')
+    @Usage('set election master')
     @Command
-    def election(InvocationContext context, @Option(names = ["e", "e"]) Boolean election) {
+    def election(InvocationContext context, @Option(names = ["e", "election"]) Boolean election) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeInfoService = beans.getBean(INodeInfoService.class)
         nodeInfoService.setElectionMaster(election)
