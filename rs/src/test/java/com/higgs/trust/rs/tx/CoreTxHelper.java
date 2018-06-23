@@ -25,11 +25,11 @@ import java.util.List;
     /**
      * 交易提交接口地址
      */
-    public static String TX_URL = "http://127.0.0.1:7070/submitTx";
+    public static String TX_URL = "http://10.200.173.33:7070/submitTx";
     /**
      * 交易发起方，需跟配置一致，否则RS回调时可能会有问题
      */
-    public static String SENDER = "TRUST-TEST1";
+    public static String SENDER = "TRUST-NODE33";
 
     static {
         //JSON auto detect class type
@@ -85,11 +85,20 @@ import java.util.List;
      * @param tx
      */
     public static void post(RsCoreTxVO tx) {
-        String requestJSON = JSON.toJSONString(tx);
+        post(TX_URL,tx);
+    }
+    /**
+     * 发送交易请求
+     *
+     * @param url
+     * @param param
+     */
+    public static void post(String url,Object param) {
+        String requestJSON = JSON.toJSONString(param);
         log.info("[post]requestJSON:{}", requestJSON);
         try {
-            String resultString = OkHttpClientManager.postAsString(TX_URL, requestJSON, 10000L);
-            RespData respData = JSON.parseObject(resultString,RespData.class);
+            String resultString = OkHttpClientManager.postAsString(url, requestJSON, 10000L);
+            RespData respData = JSON.parseObject(resultString, RespData.class);
             log.info("[post]respCode:{}", respData.getRespCode());
             log.info("[post]msg:{}", respData.getMsg());
         } catch (Throwable t) {
