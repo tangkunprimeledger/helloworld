@@ -29,7 +29,7 @@
         INSERT INTO account_contract_binding (hash,block_height,tx_id,action_index,account_no,contract_address,args,create_time)
         VALUES
         <foreach collection ="list" item="item" index= "index" separator =",">
-            (#{hash}, #{blockHeight}, #{txId}, #{actionIndex}, #{accountNo}, #{contractAddress}, #{args}, now(3))
+            (#{item.hash}, #{item.blockHeight}, #{item.txId}, #{item.actionIndex}, #{item.accountNo}, #{item.contractAddress}, #{item.args}, now(3))
         </foreach>
     </insert>
 
