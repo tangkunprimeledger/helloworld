@@ -121,7 +121,8 @@ public enum SlaveErrorEnum implements ErrorInfo {
     SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),
     SLAVE_CA_VALIDATE_ERROR("901", "slave ca validate error", false),
     SLAVE_CA_WRITE_FILE_ERROR("902", "slave ca write file error", false),
-    SLAVE_GENERATE_KEY_ERROR("902", "slave generate key error", false),
+    SLAVE_GENERATE_KEY_ERROR("903", "slave generate key error", false),
+    SLAVE_SMART_CONTRACT_ERROR("904", "has SmartContractException", false),
     ;
     //@formatter:on
 
