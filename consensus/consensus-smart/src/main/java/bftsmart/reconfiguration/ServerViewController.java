@@ -21,6 +21,8 @@ import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfi
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.util.TOMUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Iterator;
@@ -33,6 +35,8 @@ import java.util.StringTokenizer;
  * @author eduardo
  */
 public class ServerViewController extends ViewController {
+
+    private static final Logger log = LoggerFactory.getLogger(ServerViewController.class);
 
     public static final int ADD_SERVER = 0;
     public static final int REMOVE_SERVER = 1;
@@ -59,12 +63,11 @@ public class ServerViewController extends ViewController {
         super(procId, configHome);
         View cv = getViewStore().readView();
         if(cv == null){
-            
-            System.out.println("-- Creating current view from configuration file");
+            log.info("-- Creating current view from configuration file");
             reconfigureTo(new View(0, getStaticConf().getInitialView(), 
                 getStaticConf().getF(), getInitAdddresses()));
         }else{
-            System.out.println("-- Using view stored on disk");
+            log.info("-- Using view stored on disk");
             reconfigureTo(cv);
         }
        
@@ -242,9 +245,9 @@ public class ServerViewController extends ViewController {
 
         View newV = new View(currentView.getId() + 1, nextV, f,addresses);
 
-        System.out.println("new view: " + newV);
-        System.out.println("installed on CID: " + cid);
-        System.out.println("lastJoinSet: " + jSet);
+        log.info("new view:" + newV);
+        log.info("installed on CID: " + cid);
+        log.info("lastJoinSet: " + jSet);
 
         //TODO:Remove all information stored about each process in rSet
         //processes execute the leave!!!

@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.config.properties.master;
 
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;

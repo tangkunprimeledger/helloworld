@@ -1,9 +1,11 @@
 package com.higgs.trust.rs.custom.controller.outter.v1;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.higgs.trust.common.utils.OkHttpClientManager;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.rs.custom.vo.TransferDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
@@ -41,9 +43,20 @@ public class BillControllerTest {
 
         BillTransferVO billTransferVO = new BillTransferVO();
         billTransferVO.setBillId("1234567893444530");
+        billTransferVO.setHolder("ling");
         billTransferVO.setBizModel("dasdasdas");
-        billTransferVO.setNextHolder("chaoguo");
         billTransferVO.setRequestId("billTransfer" + System.currentTimeMillis());
+        billTransferVO.setTransferList(Lists.newArrayList());
+
+        TransferDetailVO transferDetailVO = new TransferDetailVO();
+        transferDetailVO.setNextHolder("chao1");
+        transferDetailVO.setAmount(new BigDecimal("40000000000000"));
+        billTransferVO.getTransferList().add(transferDetailVO);
+
+        transferDetailVO = new TransferDetailVO();
+        transferDetailVO.setNextHolder("chao2");
+        transferDetailVO.setAmount(new BigDecimal("60000000000000"));
+        billTransferVO.getTransferList().add(transferDetailVO);
 
         String params = JSON.toJSONString(billTransferVO);
 

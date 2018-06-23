@@ -15,7 +15,4 @@ public interface ConsensusClient {
      */
     <T> CompletableFuture<T> submit(ConsensusCommand<T> command);
 
-    default void init() {
-
-    }
 }

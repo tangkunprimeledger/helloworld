@@ -1,6 +1,6 @@
-package com.higgs.trust.config.node.listener;
+package com.higgs.trust.consensus.config.listener;
 
-import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 
 import java.lang.annotation.*;
 

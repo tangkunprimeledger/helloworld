@@ -37,6 +37,9 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
     @Autowired
     private Client client;
 
+    @Autowired
+    private SmartConfig smartConfig;
+
     private String ttpIp;
     private int ttpPort;
 
@@ -45,7 +48,6 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
 
     @Override
     public void leaveConsensus() {
-        SmartConfig smartConfig = SpringUtil.getBean(SmartConfig.class);
         String hostsConfig = smartConfig.getHostsConfig();
         String[] configs = hostsConfig.split(",", -1);
         for (String config : configs) {
@@ -63,7 +65,6 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
 
     @Override
     public void joinConsensus() {
-        SmartConfig smartConfig = SpringUtil.getBean(SmartConfig.class);
         String hostsConfig = smartConfig.getHostsConfig();
         String[] configs = hostsConfig.split(",", -1);
         for (String config : configs) {

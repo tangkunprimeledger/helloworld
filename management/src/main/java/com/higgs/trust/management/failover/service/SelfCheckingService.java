@@ -1,8 +1,8 @@
 package com.higgs.trust.management.failover.service;
 
-import com.higgs.trust.config.node.NodeProperties;
-import com.higgs.trust.config.node.NodeStateEnum;
-import com.higgs.trust.config.node.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.NodeProperties;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -11,7 +11,6 @@ import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.model.bo.Block;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 @Service @Slf4j public class SelfCheckingService {
