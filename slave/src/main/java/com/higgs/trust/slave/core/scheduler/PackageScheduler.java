@@ -44,6 +44,7 @@ import java.util.Set;
     @Autowired private MasterPackageCache packageCache;
 
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
+    @Value("${higgs.trust.package.batchSize:100}") private int batchSize;
 
     /**
      * master node create package
