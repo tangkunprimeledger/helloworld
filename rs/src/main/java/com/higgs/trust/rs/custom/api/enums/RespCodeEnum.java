@@ -44,7 +44,7 @@ public enum RespCodeEnum {
     BILL_TRANSFER_INVALID_PARAM("200", "002", "持票人对应的转账票据不存在异常"),
     DATA_NOT_EXIST("200", "003", "数据库查询结果为空"),
     BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED("200", "004", "票据拆分有重复 billId存在"),
-    BILL_TRANSFER_BILLID_EXIST_EXCEPTION("200", "005", "拆分新产生的 billId 已存在异常"),
+    BILL_BILLID_EXIST_EXCEPTION("200", "005", "新生成的票据 billId 已存在  异常"),
 
     SYS_LIMITED("500", "003", "系统限流，请稍后重试"),
     SYS_FAIL_RETRY("500", "001", "系统繁忙，请稍后重试"),

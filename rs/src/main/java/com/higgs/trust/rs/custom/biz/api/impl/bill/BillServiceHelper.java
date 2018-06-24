@@ -261,12 +261,29 @@ public class BillServiceHelper {
     }
 
     /**
-     * 检查是否有重复的billId
+     * 创建票据业务校验
+     * @param billCreateVO
+     * @return
+     */
+    public RespData<?> createBizCheck(BillCreateVO  billCreateVO) {
+        RespData<?> respData = null;
+        ReceivableBillPO receivableBillPO = receivableBillDao.queryByBillId(billCreateVO.getBillId());
+        if (null != receivableBillPO) {
+            log.error("the new  crate bill for  billId：{} is  existed exception", billCreateVO.getBillId());
+            updateRequestStatus(billCreateVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+            respData = new RespData(RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+        }
+        return respData;
+    }
+
+
+    /**
+     * 票据转移业务check
      *
      * @param billTransferVO
      * @return
      */
-    public RespData<?> bizCheck(BillTransferVO billTransferVO) {
+    public RespData<?> transferBizCheck(BillTransferVO billTransferVO) {
         RespData<?> respData = null;
 
         //bill check
@@ -301,8 +318,8 @@ public class BillServiceHelper {
             ReceivableBillPO receivableBillPO = receivableBillDao.queryByBillId(transferDetailVO.getNextBillId());
             if (null != receivableBillPO) {
                 log.error("the billId：{}  for nextHolder  is  existed exception", transferDetailVO.getNextBillId());
-                updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_TRANSFER_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_EXIST_EXCEPTION.getMsg());
-                return new RespData(RespCodeEnum.BILL_TRANSFER_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_EXIST_EXCEPTION.getMsg());
+                updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+                return new RespData(RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
             }
         }
 

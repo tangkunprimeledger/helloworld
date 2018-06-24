@@ -65,6 +65,13 @@ public class BillServiceImpl implements BillService {
                     if (null != respData) {
                         return respData;
                     }
+
+                    //biz check
+                    respData = billServiceHelper.createBizCheck(billCreateVO);
+                    if (null != respData) {
+                        return respData;
+                    }
+
                     //identity 是否存在
                     boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billCreateVO.getHolder());
 
@@ -113,7 +120,7 @@ public class BillServiceImpl implements BillService {
                     }
 
                     //业务校验
-                    respData = billServiceHelper.bizCheck(billTransferVO);
+                    respData = billServiceHelper.transferBizCheck(billTransferVO);
                     if (null != respData) {
                         return respData;
                     }
