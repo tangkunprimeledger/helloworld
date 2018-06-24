@@ -67,10 +67,6 @@ import java.util.Set;
         CollectionUtils.addAll(txSet, signedTransactions);
         signedTransactions = Lists.newArrayList(txSet);
 
-        if (CollectionUtils.isEmpty(signedTransactions)) {
-            return;
-        }
-
         Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
 
         if (null == pack) {
