@@ -1,17 +1,15 @@
 package com.higgs.trust.rs.tx;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.common.utils.OkHttpClientManager;
-import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -53,7 +51,7 @@ import java.util.List;
      * @param actions
      * @return
      */
-    public static RsCoreTxVO makeSimpleTx(String txId, List<Action> actions) {
+    public static CoreTransaction makeSimpleTx(String txId, List<Action> actions) {
         return makeSimpleTx(txId, InitPolicyEnum.NA.getPolicyId(), actions, SENDER);
     }
 
@@ -66,8 +64,8 @@ import java.util.List;
      * @param sender
      * @return
      */
-    public static RsCoreTxVO makeSimpleTx(String txId, String policyId, List<Action> actions, String sender) {
-        RsCoreTxVO vo = new RsCoreTxVO();
+    public static CoreTransaction makeSimpleTx(String txId, String policyId, List<Action> actions, String sender) {
+        CoreTransaction vo = new CoreTransaction();
         vo.setTxId(txId);
         vo.setPolicyId(policyId);
         vo.setSender(sender);
@@ -84,7 +82,7 @@ import java.util.List;
      *
      * @param tx
      */
-    public static void post(RsCoreTxVO tx) {
+    public static void post(CoreTransaction tx) {
         post(TX_URL,tx);
     }
     /**

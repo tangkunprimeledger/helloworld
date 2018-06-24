@@ -1,8 +1,8 @@
 package com.higgs.trust.rs.tx;
 
-import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.account.*;
 import com.higgs.trust.slave.model.bo.action.Action;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class AccountTxTest{
         action.setType(ActionTypeEnum.ISSUE_CURRENCY);
         action.setCurrencyName("CNY-A");
         action.setRemark("for test");
-        RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_create_currency_" + System.currentTimeMillis(), Lists.newArrayList(action));
+        CoreTransaction rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_create_currency_" + System.currentTimeMillis(), Lists.newArrayList(action));
         CoreTxHelper.post(rsCoreTxVO);
     }
 
@@ -58,7 +58,8 @@ public class AccountTxTest{
             action.setChainOwner(CoreTxHelper.SENDER);
             actionList.add(action);
         }
-        RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_open_account_" + System.currentTimeMillis(),actionList);
+        CoreTransaction
+            rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_open_account_" + System.currentTimeMillis(),actionList);
         CoreTxHelper.post(rsCoreTxVO);
     }
 
@@ -74,7 +75,7 @@ public class AccountTxTest{
         action.setCreditTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_t_1",new BigDecimal(100))));
         action.setAccountDate(new Date());
         action.setRemark("for test");
-        RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_accounting_in_" + System.currentTimeMillis(),Lists.newArrayList(action));
+        CoreTransaction rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_accounting_in_" + System.currentTimeMillis(),Lists.newArrayList(action));
         CoreTxHelper.post(rsCoreTxVO);
     }
 
@@ -91,7 +92,7 @@ public class AccountTxTest{
         action.setCreditTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_t_0",new BigDecimal(10))));
         action.setAccountDate(new Date());
         action.setRemark("for test");
-        RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_accounting_out_" + System.currentTimeMillis(),Lists.newArrayList(action));
+        CoreTransaction rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_accounting_out_" + System.currentTimeMillis(),Lists.newArrayList(action));
         CoreTxHelper.post(rsCoreTxVO);
     }
 
@@ -108,7 +109,7 @@ public class AccountTxTest{
         action.setCreditTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_t_00",new BigDecimal(10))));
         action.setAccountDate(new Date());
         action.setRemark("for test");
-        RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_accounting_transfer_" + System.currentTimeMillis(),Lists.newArrayList(action));
+        CoreTransaction rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_accounting_transfer_" + System.currentTimeMillis(),Lists.newArrayList(action));
         CoreTxHelper.post(rsCoreTxVO);
     }
 
@@ -124,7 +125,7 @@ public class AccountTxTest{
         action.setAmount(new BigDecimal(10));
         action.setContractAddr("12345678");
         action.setRemark("for test");
-        RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_freeze_" + System.currentTimeMillis(),Lists.newArrayList(action));
+        CoreTransaction rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_freeze_" + System.currentTimeMillis(),Lists.newArrayList(action));
         CoreTxHelper.post(rsCoreTxVO);
     }
 
@@ -140,7 +141,7 @@ public class AccountTxTest{
         action.setAccountNo("account_no_t_00");
         action.setAmount(new BigDecimal(0.1));
         action.setRemark("for test");
-        RsCoreTxVO rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_unfreeze_" + System.currentTimeMillis(),Lists.newArrayList(action));
+        CoreTransaction rsCoreTxVO = CoreTxHelper.makeSimpleTx("tx_unfreeze_" + System.currentTimeMillis(),Lists.newArrayList(action));
         CoreTxHelper.post(rsCoreTxVO);
     }
 }

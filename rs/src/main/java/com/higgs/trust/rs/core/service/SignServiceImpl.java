@@ -25,14 +25,14 @@ import org.springframework.stereotype.Service;
 
     @Override public SignInfo signTx(CoreTransaction coreTx) {
         String coreTxJSON = JSON.toJSONString(coreTx);
-        log.info("[signTx]coreTxJSON:{}", coreTxJSON);
+        log.info("[signTx]txId:{},coreTxJSON:{}", coreTx.getTxId(), coreTxJSON);
         Config config = configRepository.getConfig(rsConfig.getRsName());
-        if(config == null){
+        if (config == null) {
             log.error("[signTx]get config is null rsName:{}", rsConfig.getRsName());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_RS_CONFIG_NULL_ERROR);
         }
         String privateKey = config.getPriKey();
-        log.debug("[signTx]privateKey:{}", privateKey);
+        log.info("[signTx]privateKey:{}", privateKey);
         String sign = SignUtils.sign(coreTxJSON, privateKey);
         log.info("[signTx]sign:{}", sign);
         SignInfo signInfo = new SignInfo();
