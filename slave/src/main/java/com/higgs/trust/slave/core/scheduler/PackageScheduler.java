@@ -44,46 +44,39 @@ import java.util.Set;
     @Autowired private MasterPackageCache packageCache;
 
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
+    @Value("${higgs.trust.package.batchSize:100}") private int batchSize;
 
     /**
      * master node create package
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
-        if (!nodeState.isMaster()) {
-            return;
-        }
+        int i = 0;
+        while (nodeState.isMaster() && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE
+            && ++i <= batchSize) {
+            List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
-        if (packageCache.getPendingPackSize() > Constant.MAX_BLOCKING_QUEUE_SIZE - 1) {
-            return;
-        }
+            if (CollectionUtils.isEmpty(signedTransactions)) {
+                return;
+            }
+            // remove dup transactions
+            Set<SignedTransaction> txSet = Sets.newHashSet();
+            CollectionUtils.addAll(txSet, signedTransactions);
+            signedTransactions = Lists.newArrayList(txSet);
 
-        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
+            Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
 
-        if (CollectionUtils.isEmpty(signedTransactions)) {
-            return;
-        }
-        // remove dup transactions
-        Set<SignedTransaction> txSet = Sets.newHashSet();
-        CollectionUtils.addAll(txSet, signedTransactions);
-        signedTransactions = Lists.newArrayList(txSet);
+            if (null == pack) {
+                //add pending signedTransactions to pendingTxQueue
+                pendingState.addPendingTxsToQueueFirst(signedTransactions);
+                return;
+            }
 
-        if (CollectionUtils.isEmpty(signedTransactions)) {
-            return;
-        }
-
-        Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
-
-        if (null == pack) {
-            //add pending signedTransactions to pendingTxQueue
-            pendingState.addPendingTxsToQueueFirst(signedTransactions);
-            return;
-        }
-
-        try {
-            packageCache.putPendingPack(pack);
-        } catch (InterruptedException e) {
-            log.warn("pending pack offer InterruptedException. ", e);
-            pendingState.addPendingTxsToQueueFirst(signedTransactions);
+            try {
+                packageCache.putPendingPack(pack);
+            } catch (InterruptedException e) {
+                log.warn("pending pack offer InterruptedException. ", e);
+                pendingState.addPendingTxsToQueueFirst(signedTransactions);
+            }
         }
     }
 
@@ -91,15 +84,10 @@ import java.util.Set;
      * master node submit package
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.submit}") public void submitPackage() {
-        if (!nodeState.isMaster()) {
-            return;
+        int i = 0;
+        while (nodeState.isMaster() && packageCache.getPendingPackSize() > 0 && ++i < batchSize) {
+            packageService.submitConsensus(packageCache.getPackage());
         }
-
-        if (packageCache.getPendingPackSize() < 1) {
-            return;
-        }
-
-        packageService.submitConsensus(packageCache.getPackage());
     }
 
     /**
