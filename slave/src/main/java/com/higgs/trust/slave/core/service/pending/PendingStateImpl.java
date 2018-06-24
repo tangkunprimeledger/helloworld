@@ -82,7 +82,11 @@ import java.util.List;
 
             try {
                 //insert memory
-                boolean result = packageCache.appendDequeLast(signedTransaction);
+                boolean result = packageCache.
+
+
+
+                    appendDequeLast(signedTransaction);
                 if (!result) {
                     log.warn("pending transaction idempotent, txId={}", txId);
                     transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
