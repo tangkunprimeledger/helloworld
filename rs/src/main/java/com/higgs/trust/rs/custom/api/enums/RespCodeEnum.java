@@ -43,6 +43,7 @@ public enum RespCodeEnum {
     BILL_HOLDER_NOT_EXISTED("200", "001", "票据持有人不存在"),
     BILL_TRANSFER_INVALID_PARAM("200", "002", "转账票据不存在或者可以转的票据超过一个"),
     DATA_NOT_EXIST("200", "003", "数据库查询结果为空"),
+    BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED("200", "004", "转账 有重复billId 异常"),
 
     SYS_LIMITED("500", "003", "系统限流，请稍后重试"),
     SYS_FAIL_RETRY("500", "001", "系统繁忙，请稍后重试"),

@@ -13,6 +13,12 @@ import java.math.BigDecimal;
  * @author: pengdi
  **/
 @Getter @Setter public class TransferDetailVO {
+
+    /**
+     * 应收票据编号 64
+     */
+    @NotBlank @Length(max = 64) private String nextBillId;
+
     /**
      * 持票人 64
      */
