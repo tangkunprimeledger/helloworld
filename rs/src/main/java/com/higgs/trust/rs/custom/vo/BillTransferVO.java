@@ -37,6 +37,6 @@ import java.util.List;
     /**
      * 受让持票人 64
      */
-    @NotEmpty @Valid
+    @Valid @NotEmpty
     private List<TransferDetailVO> transferList;
 }

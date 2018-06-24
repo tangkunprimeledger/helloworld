@@ -1,6 +1,5 @@
 -- create trust database
-CREATE DATABASE
-IF NOT EXISTS trust;
+CREATE DATABASE IF NOT EXISTS trust;
 
 USE trust;
 
@@ -266,12 +265,6 @@ IF NOT EXISTS `tx_out` (
 	UNIQUE KEY `uniq_tx_id_index_action_index` (`tx_id`,`index`,`action_index`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create tx out';
 
-#
-# Consensus
-#
-#
-# Structure for table "queued_apply"
-#
 
 CREATE TABLE IF NOT EXISTS `queued_apply` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -281,9 +274,6 @@ CREATE TABLE IF NOT EXISTS `queued_apply` (
   KEY `idx_message_digest` (`message_digest`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table apply_queue';
 
-#
-# Structure for table "queued_apply_delay"
-#
 
 CREATE TABLE IF NOT EXISTS `queued_apply_delay` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -295,9 +285,6 @@ CREATE TABLE IF NOT EXISTS `queued_apply_delay` (
   KEY `index_apply_time` (`apply_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table apply_delay_queue';
 
-#
-# Structure for table "queued_receive_gc"
-#
 
 CREATE TABLE IF NOT EXISTS `queued_receive_gc` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -309,9 +296,6 @@ CREATE TABLE IF NOT EXISTS `queued_receive_gc` (
   KEY `index_gc_time` (`gc_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_gc_queue';
 
-#
-# Structure for table "queued_send"
-#
 
 CREATE TABLE IF NOT EXISTS `queued_send` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -321,9 +305,6 @@ CREATE TABLE IF NOT EXISTS `queued_send` (
   KEY `idx_message_digest` (`message_digest`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_queue';
 
-#
-# Structure for table "queued_send_delay"
-#
 
 CREATE TABLE IF NOT EXISTS `queued_send_delay` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -335,9 +316,6 @@ CREATE TABLE IF NOT EXISTS `queued_send_delay` (
   KEY `index_send_time` (`send_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_delay_queue';
 
-#
-# Structure for table "queued_send_gc"
-#
 
 CREATE TABLE IF NOT EXISTS `queued_send_gc` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -349,9 +327,6 @@ CREATE TABLE IF NOT EXISTS `queued_send_gc` (
   KEY `index_gc_time` (`gc_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_gc_queue';
 
-#
-# Structure for table "receive_command"
-#
 
 CREATE TABLE IF NOT EXISTS `receive_command` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -371,9 +346,6 @@ CREATE TABLE IF NOT EXISTS `receive_command` (
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_command';
 
-#
-# Structure for table "receive_node"
-#
 
 CREATE TABLE IF NOT EXISTS `receive_node` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -385,9 +357,6 @@ CREATE TABLE IF NOT EXISTS `receive_node` (
   UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`from_node_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
 
-#
-# Structure for table "send_command"
-#
 
 CREATE TABLE IF NOT EXISTS `send_command` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -407,9 +376,6 @@ CREATE TABLE IF NOT EXISTS `send_command` (
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_command';
 
-#
-# Structure for table "send_node"
-#
 
 CREATE TABLE IF NOT EXISTS `send_node` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -420,9 +386,6 @@ CREATE TABLE IF NOT EXISTS `send_node` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`to_node_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
-
--- INSERT INTO `block` (`height`, `version`, `previous_hash`, `block_hash`, `tx_root_hash`, `account_root_hash`, `contract_root_hash`, `policy_root_hash`, `rs_root_hash`, `tx_receipt_root_hash`, `block_time`, `create_time`)
--- VALUE (1, 'v1.0', '0', '48f662666b5ad8869c21026d588ba5024d47cdaa67334ce83bd088cad55b58f4', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', 'NO_TREE', '2018-04-27 12:00:00.000', now(3));
 
 CREATE TABLE IF NOT EXISTS `ca` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -437,7 +400,6 @@ CREATE TABLE IF NOT EXISTS `ca` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_pub_key` (`pub_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds CA info';
-
 
 
 CREATE TABLE IF NOT EXISTS `config` (

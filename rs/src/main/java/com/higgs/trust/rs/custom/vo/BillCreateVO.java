@@ -42,7 +42,7 @@ import java.math.BigDecimal;
     /**
      * 到期日
      */
-    @NotBlank @Length(max = 20) private String dueDate;
+    @NotBlank @Length(max = 30) private String dueDate;
 
     /**
      * 持票人
