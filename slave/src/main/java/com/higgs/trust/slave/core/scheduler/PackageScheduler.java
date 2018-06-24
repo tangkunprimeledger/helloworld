@@ -59,6 +59,9 @@ import java.util.Set;
 
         List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
+        if (CollectionUtils.isEmpty(signedTransactions)) {
+            return;
+        }
         // remove dup transactions
         Set<SignedTransaction> txSet = Sets.newHashSet();
         CollectionUtils.addAll(txSet, signedTransactions);
