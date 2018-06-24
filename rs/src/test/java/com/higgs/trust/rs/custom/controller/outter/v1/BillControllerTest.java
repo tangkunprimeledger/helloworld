@@ -51,11 +51,13 @@ public class BillControllerTest {
         TransferDetailVO transferDetailVO = new TransferDetailVO();
         transferDetailVO.setNextHolder("chao1");
         transferDetailVO.setAmount(new BigDecimal("40000000000000"));
+        transferDetailVO.setNextBillId("nextBillId_1");
         billTransferVO.getTransferList().add(transferDetailVO);
 
         transferDetailVO = new TransferDetailVO();
         transferDetailVO.setNextHolder("chao2");
         transferDetailVO.setAmount(new BigDecimal("60000000000000"));
+        transferDetailVO.setNextBillId("nextBillId_2");
         billTransferVO.getTransferList().add(transferDetailVO);
 
         String params = JSON.toJSONString(billTransferVO);

@@ -31,7 +31,7 @@ function verify() {
         var output = outputs[j];
         outputsAmount += output.getState().amount;
 
-        if (input.getState().billId != output.getState().billId) {
+        if (input.getState().billId == output.getState().billId) {
           return false;
         }
         if (input.getState().finalPayerId != output.getState().finalPayerId) {

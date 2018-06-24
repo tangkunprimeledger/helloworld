@@ -1,7 +1,10 @@
 package com.higgs.trust.rs.core.controller;
 
 import com.higgs.trust.rs.core.api.ContractService;
+import com.higgs.trust.rs.core.bo.ContractCreateRequest;
 import com.higgs.trust.rs.core.bo.ContractInvokeRequest;
+import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
+import com.higgs.trust.rs.core.bo.ContractQueryRequest;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -44,6 +47,17 @@ import org.springframework.web.bind.annotation.*;
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
     }
 
+    @PutMapping
+    public RespData<String> deploy2(@RequestBody ContractCreateRequest request) {
+        String code = request.getCode();
+        if (StringUtils.isEmpty(code)) {
+            return fail(null, "", "code is empty");
+        }
+        String txId = "0x00000000" + code.hashCode() + System.currentTimeMillis();
+        RespData result = contractService.deploy(txId, code, request.getInitArgs());
+        return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
+    }
+
     @PostMapping(path = "/invoke")
     public RespData<String> invoke(@RequestBody ContractInvokeRequest invokeRequest) {
         if (invokeRequest == null) {
@@ -55,6 +69,29 @@ import org.springframework.web.bind.annotation.*;
         String txId = "0x10000000" + invokeRequest.getAddress().hashCode() + System.currentTimeMillis();
         RespData result = contractService.invoke(txId, invokeRequest.getAddress(), invokeRequest.getBizArgs());
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
+    }
+
+    @PostMapping(path = "/migration")
+    public RespData<String> migration(@RequestBody ContractMigrationRequest migrationRequest) {
+        if (migrationRequest == null) {
+            return fail(null, "", "invalid migrationRequest");
+        }
+        if (StringUtils.isEmpty(migrationRequest.getFromAddress())) {
+            return fail(null, "", "fromAddress is empty");
+        }
+
+        if (StringUtils.isEmpty(migrationRequest.getToAddress())) {
+            return fail(null, "", "toAddress is empty");
+        }
+
+        RespData result = contractService.migration(migrationRequest);
+        return result.isSuccess() ? ok(migrationRequest.getTxId()) : fail(migrationRequest.getTxId(), result.getRespCode(), result.getMsg());
+    }
+
+    @PostMapping(path = "/query")
+    public RespData<Object> query(@RequestBody ContractQueryRequest request) {
+        Object result = contractService.query(request);
+        return ok(result);
     }
 
     @GetMapping(path = "/list")

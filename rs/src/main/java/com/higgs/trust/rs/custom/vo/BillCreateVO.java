@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.custom.vo;
 
+import com.higgs.trust.rs.common.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
  * @Description: 票据创建
  * @author: pengdi
  **/
-@Getter @Setter public class BillCreateVO {
+@Getter @Setter public class BillCreateVO extends BaseBO {
     /**
      * 请求编号 64
      */
@@ -42,7 +43,7 @@ import java.math.BigDecimal;
     /**
      * 到期日
      */
-    @NotBlank @Length(max = 20) private String dueDate;
+    @NotBlank @Length(max = 30) private String dueDate;
 
     /**
      * 持票人
