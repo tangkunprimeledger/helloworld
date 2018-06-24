@@ -44,7 +44,6 @@ import java.util.Set;
     @Autowired private MasterPackageCache packageCache;
 
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
-    @Value("${higgs.trust.package.batchSize:100}") private int batchSize;
 
     /**
      * master node create package
@@ -55,14 +54,13 @@ import java.util.Set;
             && ++i <= batchSize) {
             List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
+            if (CollectionUtils.isEmpty(signedTransactions)) {
+                return;
+            }
             // remove dup transactions
             Set<SignedTransaction> txSet = Sets.newHashSet();
             CollectionUtils.addAll(txSet, signedTransactions);
             signedTransactions = Lists.newArrayList(txSet);
-
-            if (CollectionUtils.isEmpty(signedTransactions)) {
-                return;
-            }
 
             Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
 
