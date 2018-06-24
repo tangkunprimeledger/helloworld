@@ -29,5 +29,6 @@ IF NOT EXISTS `receivable_bill` (
 	`create_time` datetime (3) NOT NULL COMMENT 'the create time',
 	`update_time` datetime (3) NOT NULL COMMENT 'the update time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_tx_id_action_index_index` (`tx_id`,`action_index`,`index`)
+	UNIQUE KEY `uniq_tx_id_action_index_index` (`tx_id`,`action_index`,`index`),
+	UNIQUE KEY `uniq_bill_id` (`bill_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table receivable bill';

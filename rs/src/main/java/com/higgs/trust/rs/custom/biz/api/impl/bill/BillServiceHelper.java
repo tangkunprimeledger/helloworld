@@ -9,6 +9,8 @@ import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.core.dao.RequestDao;
 import com.higgs.trust.rs.core.dao.po.RequestPO;
+import com.higgs.trust.rs.custom.api.enums.RequestEnum;
+import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.custom.model.BizTypeConst;
@@ -18,6 +20,7 @@ import com.higgs.trust.rs.custom.util.converter.RequestConvertor;
 import com.higgs.trust.rs.custom.util.converter.UTXOActionConvertor;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.rs.custom.vo.TransferDetailVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -30,7 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * BillService helper
@@ -38,21 +43,30 @@ import java.util.List;
  * @author lingchao
  * @create 2018年05月13日16:11
  */
-@Service @Slf4j public class BillServiceHelper {
+@Service
+@Slf4j
+public class BillServiceHelper {
 
-    @Autowired private UTXOActionConvertor utxoActionConvertor;
+    @Autowired
+    private UTXOActionConvertor utxoActionConvertor;
 
-    @Autowired private CoreTransactionConvertor coreTransactionConvertor;
+    @Autowired
+    private CoreTransactionConvertor coreTransactionConvertor;
 
-    @Autowired private CoreTransactionService coreTransactionService;
+    @Autowired
+    private CoreTransactionService coreTransactionService;
 
-    @Autowired private ReceivableBillDao receivableBillDao;
+    @Autowired
+    private ReceivableBillDao receivableBillDao;
 
-    @Autowired private RsConfig rsConfig;
+    @Autowired
+    private RsConfig rsConfig;
 
-    @Autowired private RsBlockChainService rsBlockChainService;
+    @Autowired
+    private RsBlockChainService rsBlockChainService;
 
-    @Autowired private RequestDao requestDao;
+    @Autowired
+    private RequestDao requestDao;
 
     /**
      * requestIdempotent
@@ -93,13 +107,11 @@ import java.util.List;
      * @param billCreateVO
      */
     public void insertBill(BillCreateVO billCreateVO, Long actionIndex, Long index) {
-        ReceivableBillPO receivableBillPO =
-            BillConvertor.buildBill(billCreateVO, actionIndex, index, rsConfig.getContractAddress());
+        ReceivableBillPO receivableBillPO = BillConvertor.buildBill(billCreateVO, actionIndex, index, rsConfig.getContractAddress());
         try {
             receivableBillDao.add(receivableBillPO);
         } catch (DuplicateKeyException e) {
-            log.error("receivableBillPO : {} for txId : {} is idempotent", receivableBillPO,
-                receivableBillPO.getTxId());
+            log.error("receivableBillPO : {} for txId : {} is idempotent", receivableBillPO, receivableBillPO.getTxId());
             throw new RuntimeException("receivableBillPO is idempotent");
         }
     }
@@ -128,14 +140,12 @@ import java.util.List;
         }
 
         //创建coreTx
-        CoreTransaction coreTransaction = coreTransactionConvertor
-            .buildBillCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList,
-                InitPolicyEnum.UTXO_ISSUE.getPolicyId());
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList, InitPolicyEnum.UTXO_ISSUE.getPolicyId());
 
         //insert bill
         for (Action action : actionList) {
             if (action.getType() == ActionTypeEnum.UTXO) {
-                UTXOAction utxoAction = (UTXOAction)action;
+                UTXOAction utxoAction = (UTXOAction) action;
                 List<TxOut> outputList = utxoAction.getOutputList();
                 for (TxOut txOut : outputList) {
                     insertBill(billCreateVO, txOut.getActionIndex().longValue(), txOut.getIndex().longValue());
@@ -177,8 +187,7 @@ import java.util.List;
         try {
             receivableBillDao.add(receivableBillPO);
         } catch (DuplicateKeyException e) {
-            log.error("receivableBillPO : {} for txId : {} is idempotent", receivableBillPO,
-                receivableBillPO.getTxId());
+            log.error("receivableBillPO : {} for txId : {} is idempotent", receivableBillPO, receivableBillPO.getTxId());
             throw new RuntimeException("receivableBillPO is idempotent");
         }
     }
@@ -200,13 +209,12 @@ import java.util.List;
             bizModel.put("bizModel", billTransferVO.getBizModel());
         }
 
-        CoreTransaction coreTransaction = coreTransactionConvertor
-            .buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList, BizTypeConst.TRANSFER_UTXO);
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList, BizTypeConst.TRANSFER_UTXO);
 
         //insert bill
         for (Action action : actionList) {
             if (action.getType() == ActionTypeEnum.UTXO) {
-                UTXOAction utxoAction = (UTXOAction)action;
+                UTXOAction utxoAction = (UTXOAction) action;
                 List<TxOut> outputList = utxoAction.getOutputList();
                 for (TxOut txOut : outputList) {
                     insertBill(billTransferVO.getRequestId(), utxoAction, txOut);
@@ -248,6 +256,29 @@ import java.util.List;
             log.error("update request status  for requestId :{} , to status: {} is failed!", txId, toStatus);
             throw new RuntimeException("update request  status failed!");
         }
+    }
+
+    /**
+     * 检查是否有重复的billId
+     *
+     * @param billTransferVO
+     * @return
+     */
+    public RespData<?> checkBillId(BillTransferVO billTransferVO) {
+        RespData<?> respData = null;
+        Set<String> billIds = new HashSet<>();
+        billIds.add(billTransferVO.getBillId());
+        List<TransferDetailVO> transferList = billTransferVO.getTransferList();
+        for (TransferDetailVO transferDetailVO : transferList) {
+            billIds.add(transferDetailVO.getNextBillId());
+        }
+        int billNum = transferList.size() + 1;
+        if (billIds.size() != billNum) {
+            log.error("The billId can not be the same for a transfer tx: {}  ", billTransferVO);
+            updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getMsg());
+            respData = new RespData(RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getMsg());
+        }
+        return respData;
     }
 
 }
