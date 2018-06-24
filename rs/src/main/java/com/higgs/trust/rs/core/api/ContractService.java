@@ -1,6 +1,8 @@
 package com.higgs.trust.rs.core.api;
 
 import com.higgs.trust.rs.core.bo.Contract;
+import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
+import com.higgs.trust.rs.core.bo.ContractQueryRequest;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -18,7 +20,7 @@ public interface ContractService {
      * @param code
      * @return
      */
-    RespData deploy(String txId, String code);
+    RespData deploy(String txId, String code, Object... initArgs);
 
     /**
      * query contract list
@@ -37,4 +39,18 @@ public interface ContractService {
      * @param args
      */
     RespData invoke(String txId, String address, Object... args);
+
+    /**
+     * migration contract state
+     * @param migrationRequest
+     * @return
+     */
+    RespData migration(ContractMigrationRequest migrationRequest);
+
+    /**
+     * query contract state
+     * @param request
+     * @return
+     */
+    Object query(ContractQueryRequest request);
 }
