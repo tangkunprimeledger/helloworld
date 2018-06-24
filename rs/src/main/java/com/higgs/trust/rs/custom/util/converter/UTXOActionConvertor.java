@@ -152,9 +152,9 @@ public class UTXOActionConvertor {
         receivableBillParam.setStatus(BillStatusEnum.UNSPENT.getCode());
         List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
 
-        if (CollectionUtils.isEmpty(receivableBillPOList) || receivableBillPOList.size() > 1) {
-            log.error("build Transfer Bill WithIdentity  ActionList  error, receivableBillPOList: {}", receivableBillPOList);
-            throw new RuntimeException("build Transfer Bill WithIdentity  ActionList  error for receivableBillPOList is null or receivableBillPOList size bigger than 1");
+        if (CollectionUtils.isEmpty(receivableBillPOList)) {
+            log.error("build Transfer Bill   error, transfer bill is not exist exception");
+            throw new RuntimeException("build Transfer Bill   error, transfer bill is not exist exception");
         }
         ReceivableBillPO receivableBillPO = receivableBillPOList.get(0);
 

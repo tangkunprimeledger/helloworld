@@ -113,7 +113,7 @@ public class BillServiceImpl implements BillService {
                     }
 
                     //业务校验
-                    respData = billServiceHelper.checkBillId(billTransferVO);
+                    respData = billServiceHelper.bizCheck(billTransferVO);
                     if (null != respData) {
                         return respData;
                     }
