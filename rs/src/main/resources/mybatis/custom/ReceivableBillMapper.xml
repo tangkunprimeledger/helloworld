@@ -78,4 +78,14 @@
 		`tx_id` = #{txId} and `action_index` = #{actionIndex} and `index` = #{index} and `status` = #{fromStatus}
 	</update>
 
+
+	<!-- 查询列表 -->
+	<select id="queryByBillId" resultMap="baseResultMap"
+			parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from receivable_bill
+		where bill_id=#{billId}
+	</select>
+
 </mapper>

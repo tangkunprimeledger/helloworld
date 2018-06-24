@@ -3,8 +3,8 @@ package com.higgs.trust.rs.custom.dao;
 import com.higgs.trust.IntegrateBaseTest;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
 
 /**
  * ReceivableBillDao test
@@ -46,6 +46,13 @@ public class ReceivableBillDaoTest extends IntegrateBaseTest {
         receivableBillParam.setStatus(BillStatusEnum.UNSPENT.getCode());
 
         System.out.println("--------------------------------------------" + receivableBillDao.queryByList(receivableBillParam));
+
+    }
+
+    @Test
+    public void queryByBillIdTest() {
+
+        System.out.println("--------------------------------------------" + receivableBillDao.queryByBillId("123456"));
 
     }
 

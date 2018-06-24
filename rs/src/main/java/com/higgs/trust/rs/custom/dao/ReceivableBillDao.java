@@ -18,4 +18,11 @@ public interface ReceivableBillDao extends BaseDao<ReceivableBillPO> {
      * @return
      */
     int updateStatus(@Param("txId") String txId, @Param("actionIndex")Long actionIndex,@Param("index") Long index,  @Param("fromStatus")String fromStatus, @Param("toStatus")String toStatus);
+
+    /**
+     * 根据billId 获取 ReceivableBillPO
+     * @param billId
+     * @return
+     */
+    ReceivableBillPO queryByBillId(@Param("billId") String billId);
 }

@@ -9,6 +9,7 @@ import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.rs.core.dao.RequestDao;
 import com.higgs.trust.rs.core.dao.po.RequestPO;
+import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
 import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
@@ -29,6 +30,7 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -259,13 +261,32 @@ public class BillServiceHelper {
     }
 
     /**
-     * 检查是否有重复的billId
+     * 创建票据业务校验
+     * @param billCreateVO
+     * @return
+     */
+    public RespData<?> createBizCheck(BillCreateVO  billCreateVO) {
+        RespData<?> respData = null;
+        ReceivableBillPO receivableBillPO = receivableBillDao.queryByBillId(billCreateVO.getBillId());
+        if (null != receivableBillPO) {
+            log.error("the new  crate bill for  billId：{} is  existed exception", billCreateVO.getBillId());
+            updateRequestStatus(billCreateVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+            respData = new RespData(RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+        }
+        return respData;
+    }
+
+
+    /**
+     * 票据转移业务check
      *
      * @param billTransferVO
      * @return
      */
-    public RespData<?> checkBillId(BillTransferVO billTransferVO) {
+    public RespData<?> transferBizCheck(BillTransferVO billTransferVO) {
         RespData<?> respData = null;
+
+        //bill check
         Set<String> billIds = new HashSet<>();
         billIds.add(billTransferVO.getBillId());
         List<TransferDetailVO> transferList = billTransferVO.getTransferList();
@@ -276,8 +297,32 @@ public class BillServiceHelper {
         if (billIds.size() != billNum) {
             log.error("The billId can not be the same for a transfer tx: {}  ", billTransferVO);
             updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getMsg());
-            respData = new RespData(RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getMsg());
+            return new RespData(RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getMsg());
         }
+
+        //be  transfer bill exist check
+        ReceivableBillPO receivableBillParam = new ReceivableBillPO();
+        receivableBillParam.setBillId(billTransferVO.getBillId());
+        receivableBillParam.setHolder(billTransferVO.getHolder());
+        receivableBillParam.setStatus(BillStatusEnum.UNSPENT.getCode());
+        List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
+        if (CollectionUtils.isEmpty(receivableBillPOList)) {
+            log.error("the bill  for holder:{} for the billId:{} with the status UNSPENT is not existed exception", billTransferVO.getHolder(), billTransferVO.getBillId());
+            updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_TRANSFER_INVALID_PARAM.getRespCode(), RespCodeEnum.BILL_TRANSFER_INVALID_PARAM.getMsg());
+            return new RespData(RespCodeEnum.BILL_TRANSFER_INVALID_PARAM.getRespCode(), RespCodeEnum.BILL_TRANSFER_INVALID_PARAM.getMsg());
+        }
+
+
+        //the new bill exist check
+        for (TransferDetailVO transferDetailVO : transferList) {
+            ReceivableBillPO receivableBillPO = receivableBillDao.queryByBillId(transferDetailVO.getNextBillId());
+            if (null != receivableBillPO) {
+                log.error("the billId：{}  for nextHolder  is  existed exception", transferDetailVO.getNextBillId());
+                updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+                return new RespData(RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+            }
+        }
+
         return respData;
     }
 
