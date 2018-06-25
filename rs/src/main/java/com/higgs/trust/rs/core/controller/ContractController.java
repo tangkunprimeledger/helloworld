@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.*;
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
     }
 
-  /*  @PutMapping
+    @PutMapping(path = "deploy2")
     public RespData<String> deploy2(@RequestBody ContractCreateRequest request) {
         String code = request.getCode();
         if (StringUtils.isEmpty(code)) {
@@ -56,7 +56,7 @@ import org.springframework.web.bind.annotation.*;
         String txId = "0x00000000" + code.hashCode() + System.currentTimeMillis();
         RespData result = contractService.deploy(txId, code, request.getInitArgs());
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
-    }*/
+    }
 
     @PostMapping(path = "/invoke")
     public RespData<String> invoke(@RequestBody ContractInvokeRequest invokeRequest) {
