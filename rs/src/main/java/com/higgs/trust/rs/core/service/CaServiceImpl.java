@@ -180,7 +180,7 @@ import java.util.*;
 
         //construct caVO
         CaVO caVO = new CaVO();
-        caVO.setReqNo(HashUtil.getSHA256S(ca.getPubKey()));
+        caVO.setReqNo(HashUtil.getSHA256S(ca.getPubKey() + InitPolicyEnum.CA_CANCEL.getType()));
         caVO.setUser(user);
         caVO.setPeriod(ca.getPeriod());
         caVO.setPubKey(ca.getPubKey());
@@ -319,7 +319,7 @@ import java.util.*;
         caVO.setVersion(VersionEnum.V1.getCode());
         caVO.setPeriod(calculatePeriod());
         caVO.setPubKey(pubKey);
-        caVO.setReqNo(HashUtil.getSHA256S(pubKey));
+        caVO.setReqNo(HashUtil.getSHA256S(pubKey + InitPolicyEnum.CA_AUTH.getType()));
         caVO.setUsage("consensus");
         caVO.setUser(nodeState.getNodeName());
 
@@ -353,7 +353,7 @@ import java.util.*;
         caVO.setVersion(VersionEnum.V1.getCode());
         caVO.setPeriod(calculatePeriod());
         caVO.setPubKey(pubKey);
-        caVO.setReqNo(HashUtil.getSHA256S(ca.getPubKey()));
+        caVO.setReqNo(HashUtil.getSHA256S(ca.getPubKey() + InitPolicyEnum.CA_UPDATE.getType()));
         caVO.setUsage("consensus");
         caVO.setUser(ca.getUser());
 
