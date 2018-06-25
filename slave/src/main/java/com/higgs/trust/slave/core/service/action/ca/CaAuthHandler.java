@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
     @Autowired CaSnapshotHandler caSnapshotHandler;
     @Autowired CaHelper caHelper;
-    @Autowired ClusterInfo clusterInfo;
+//    @Autowired ClusterInfo clusterInfo;
 
     @Override public void process(ActionData actionData) {
         CaAction caAction = (CaAction)actionData.getCurrentAction();
@@ -44,7 +44,7 @@ import org.springframework.stereotype.Component;
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.authCa(ca);
 
-        clusterInfo.refresh();
+//        clusterInfo.refresh();
         Profiler.release();
 
     }

@@ -52,7 +52,7 @@ class ca {
                @Usage("user") @Required @Argument String user) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def caService = beans.getBean(CaService.class)
-        caService.authKeyPair(user)
+        caService.startConsensusAndFilover(user)
         out.println("send CA auth tx successful, user= $user")
     }
 

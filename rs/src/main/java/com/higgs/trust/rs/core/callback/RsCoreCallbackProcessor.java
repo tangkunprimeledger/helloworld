@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.callback;
 
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Component;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
     @Autowired private RequestDao requestDao;
+    @Autowired ClusterInfo clusterInfo;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -77,6 +79,9 @@ import org.springframework.stereotype.Component;
                     return;
                 case CA_CANCEL:
                     processCaCancel(respData);
+                    return;
+                case CA_AUTH:
+                    processCaAuth(respData);
                     return;
                 case CANCEL_RS:
                     processCancelRS(respData);
@@ -193,5 +198,18 @@ import org.springframework.stereotype.Component;
         config.setValid(false);
         configRepository.updateConfig(config);
         log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
+    }
+
+
+    private void processCaAuth(RespData<CoreTransaction> respData) {
+        if (!respData.isSuccess()) {
+            log.info("[processCaAuth]ca auth is fail,code:{}", respData.getRespCode());
+            return;
+        }
+
+
+        log.info("[processCaAuth] start to auth pubKey/priKey, nodeName={}", nodeState.getNodeName());
+        clusterInfo.refresh();
+        log.info("[processCaCancel] end auth pubKey/priKey, nodeName={}", nodeState.getNodeName());
     }
 }
