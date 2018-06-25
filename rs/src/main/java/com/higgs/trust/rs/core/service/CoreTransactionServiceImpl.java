@@ -343,9 +343,9 @@ import java.util.List;
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
                 //change status to WAIT for SYNC pattern
                 coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);
+                log.info("[processNeedVoteTx]is success");
             }
         });
-        log.info("[processNeedVoteTx]is success");
     }
 
     /**
