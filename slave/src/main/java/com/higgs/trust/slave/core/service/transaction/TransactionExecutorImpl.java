@@ -5,6 +5,7 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.MerkleException;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.exception.SnapshotException;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.version.TransactionProcessor;
 import com.higgs.trust.slave.core.service.version.TxProcessorHolder;
@@ -29,7 +30,7 @@ import java.util.Map;
     @Autowired SnapshotService snapshot;
 
     @Override public TransactionReceipt process(TransactionData transactionData, Map<String, String> rsPubKeyMap) {
-        log.info("[TransactionExecutorImpl.persist] is start");
+        log.debug("[TransactionExecutorImpl.persist] is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
 
         TransactionReceipt receipt = new TransactionReceipt();
@@ -43,7 +44,12 @@ import java.util.Map;
             snapshot.commit();
             receipt.setResult(true);
         } catch (SmartContractException e) {
-            log.error("[TransactionExecutorImpl.persist] has SmartContractException");
+            log.error("[TransactionExecutorImpl.persist] has SmartContractException",e);
+            //snapshot transactions should be rollback
+            snapshot.rollback();
+            receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
+        } catch (SnapshotException e) {
+            log.error("[TransactionExecutorImpl.persist] has SnapshotException");
             //should retry package process
             throw e;
         } catch (MerkleException e) {
@@ -62,7 +68,7 @@ import java.util.Map;
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
         }
 
-        log.info("[TransactionExecutorImpl.persist] is end");
+        log.debug("[TransactionExecutorImpl.persist] is end");
         return receipt;
     }
 

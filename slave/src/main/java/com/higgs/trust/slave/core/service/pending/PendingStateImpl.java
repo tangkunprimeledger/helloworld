@@ -31,6 +31,7 @@ import java.util.List;
 
     /**
      * add pending transaction to db
+     *
      * @param transactions
      * @return transaction list which check failed
      */
@@ -79,27 +80,22 @@ import java.util.List;
                 return;
             }
 
-            //check exist tx map and pending_tx_index
-            //TODO rocks db isExist method
-            if (packageCache.isExistInMap(txId) || pendingTxRepository.isExist(txId)) {
-                log.warn("pending transaction idempotent, txId={}", txId);
-                transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
-                transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
-                transactionVO.setRetry(true);
-                transactionVOList.add(transactionVO);
-                return;
-            }
-
             try {
-                // key and value all are txId
-                packageCache.putExistMap(txId, txId);
                 //insert memory
-                packageCache.appendDequeLast(signedTransaction);
+                boolean result = packageCache.
+
+
+
+                    appendDequeLast(signedTransaction);
+                if (!result) {
+                    log.warn("pending transaction idempotent, txId={}", txId);
+                    transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
+                    transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
+                    transactionVO.setRetry(true);
+                    transactionVOList.add(transactionVO);
+                }
             } catch (Throwable e) {
                 log.error("transaction insert into memory exception. txId={}, ", txId, e);
-                if (packageCache.isExistInMap(txId)) {
-                    packageCache.removeExistMap(txId);
-                }
             }
         });
 
@@ -111,11 +107,12 @@ import java.util.List;
     }
 
     @Override public List<SignedTransaction> getPendingTransactions(int count) {
-       return packageCache.getPendingTxQueue(count);
+        return packageCache.getPendingTxQueue(count);
     }
 
     @Override public int packagePendingTransactions(List<SignedTransaction> signedTransactions, Long height) {
-        return pendingTxRepository.batchUpdateStatus(signedTransactions, PendingTxStatusEnum.INIT, PendingTxStatusEnum.PACKAGED, height);
+        return pendingTxRepository
+            .batchUpdateStatus(signedTransactions, PendingTxStatusEnum.INIT, PendingTxStatusEnum.PACKAGED, height);
     }
 
     @Override public List<SignedTransaction> getPackagedTransactions(Long height) {

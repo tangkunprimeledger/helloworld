@@ -19,10 +19,6 @@ function verify() {
     if (utxoList.length === 0) {
       return false;
     }
-
-    var num = 10000;
-    db.put('num', num);
-
     var inputsAmount = 0;
     var outputsAmount = 0;
 
@@ -35,7 +31,7 @@ function verify() {
         var output = outputs[j];
         outputsAmount += output.getState().amount;
 
-        if (input.getState().billId != output.getState().billId) {
+        if (input.getState().billId == output.getState().billId) {
           return false;
         }
         if (input.getState().finalPayerId != output.getState().finalPayerId) {

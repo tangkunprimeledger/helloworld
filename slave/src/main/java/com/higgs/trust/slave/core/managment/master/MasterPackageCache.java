@@ -1,11 +1,12 @@
 package com.higgs.trust.slave.core.managment.master;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.higgs.trust.config.node.NodeState;
-import com.higgs.trust.config.node.listener.MasterChangeListener;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
     @Autowired private NodeState nodeState;
+    @Autowired private PendingTxRepository pendingTxRepository;
 
     private AtomicLong packHeight = new AtomicLong(0);
     private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
@@ -113,29 +115,21 @@ import java.util.concurrent.atomic.AtomicLong;
         pendingTxQueue.offerFirst(signedTransaction);
     }
 
-    public void appendDequeLast(SignedTransaction signedTx) {
+    /**
+     * @return if exist will return false
+     */
+    public synchronized boolean appendDequeLast(SignedTransaction signedTx) {
+        String txId = signedTx.getCoreTx().getTxId();
+        if (existTxMap.containsKey(txId) || pendingTxRepository.isExist(txId)) {
+            return false;
+        }
         pendingTxQueue.offerLast(signedTx);
+        existTxMap.put(txId, txId);
+        return true;
     }
 
     public int getPendingTxQueueSize() {
         return pendingTxQueue.size();
-    }
-
-    public void putExistMap(String key, String value) {
-        existTxMap.put(key, value);
-    }
-
-    public boolean isExistInMap(String key) {
-        if (null == existTxMap || existTxMap.isEmpty()) {
-            return false;
-        }
-        return existTxMap.containsKey(key);
-    }
-
-    public void removeExistMap(String key) {
-        if (existTxMap.containsKey(key)) {
-            existTxMap.remove(key);
-        }
     }
 
     public void putPendingPack(Package pack) throws InterruptedException {

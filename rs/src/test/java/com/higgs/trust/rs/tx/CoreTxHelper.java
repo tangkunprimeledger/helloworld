@@ -1,17 +1,15 @@
 package com.higgs.trust.rs.tx;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.common.utils.OkHttpClientManager;
-import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -25,11 +23,11 @@ import java.util.List;
     /**
      * 交易提交接口地址
      */
-    public static String TX_URL = "http://127.0.0.1:7070/submitTx";
+    public static String TX_URL = "http://10.200.172.98:7070/submitTx";
     /**
      * 交易发起方，需跟配置一致，否则RS回调时可能会有问题
      */
-    public static String SENDER = "TRUST-TEST1";
+    public static String SENDER = "TRUST-NODEB";
 
     static {
         //JSON auto detect class type
@@ -53,7 +51,7 @@ import java.util.List;
      * @param actions
      * @return
      */
-    public static RsCoreTxVO makeSimpleTx(String txId, List<Action> actions) {
+    public static CoreTransaction makeSimpleTx(String txId, List<Action> actions) {
         return makeSimpleTx(txId, InitPolicyEnum.NA.getPolicyId(), actions, SENDER);
     }
 
@@ -66,8 +64,8 @@ import java.util.List;
      * @param sender
      * @return
      */
-    public static RsCoreTxVO makeSimpleTx(String txId, String policyId, List<Action> actions, String sender) {
-        RsCoreTxVO vo = new RsCoreTxVO();
+    public static CoreTransaction makeSimpleTx(String txId, String policyId, List<Action> actions, String sender) {
+        CoreTransaction vo = new CoreTransaction();
         vo.setTxId(txId);
         vo.setPolicyId(policyId);
         vo.setSender(sender);
@@ -84,12 +82,21 @@ import java.util.List;
      *
      * @param tx
      */
-    public static void post(RsCoreTxVO tx) {
-        String requestJSON = JSON.toJSONString(tx);
+    public static void post(CoreTransaction tx) {
+        post(TX_URL,tx);
+    }
+    /**
+     * 发送交易请求
+     *
+     * @param url
+     * @param param
+     */
+    public static void post(String url,Object param) {
+        String requestJSON = JSON.toJSONString(param);
         log.info("[post]requestJSON:{}", requestJSON);
         try {
-            String resultString = OkHttpClientManager.postAsString(TX_URL, requestJSON, 10000L);
-            RespData respData = JSON.parseObject(resultString,RespData.class);
+            String resultString = OkHttpClientManager.postAsString(url, requestJSON, 10000L);
+            RespData respData = JSON.parseObject(resultString, RespData.class);
             log.info("[post]respCode:{}", respData.getRespCode());
             log.info("[post]msg:{}", respData.getMsg());
         } catch (Throwable t) {

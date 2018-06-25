@@ -7,13 +7,13 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
+import com.higgs.trust.rs.core.dao.RequestDao;
+import com.higgs.trust.rs.core.dao.po.RequestPO;
 import com.higgs.trust.rs.custom.api.enums.BillStatusEnum;
+import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
-import com.higgs.trust.rs.core.dao.RequestDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
-import com.higgs.trust.rs.core.dao.po.RequestPO;
-import com.higgs.trust.rs.custom.exceptions.BillException;
 import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.rs.custom.util.converter.BillConvertor;
 import com.higgs.trust.rs.custom.util.converter.CoreTransactionConvertor;
@@ -21,6 +21,7 @@ import com.higgs.trust.rs.custom.util.converter.RequestConvertor;
 import com.higgs.trust.rs.custom.util.converter.UTXOActionConvertor;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.rs.custom.vo.TransferDetailVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -29,12 +30,14 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * BillService helper
@@ -139,8 +142,7 @@ public class BillServiceHelper {
         }
 
         //创建coreTx
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList,
-            InitPolicyEnum.UTXO_ISSUE.getPolicyId());
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList, InitPolicyEnum.UTXO_ISSUE.getPolicyId());
 
         //insert bill
         for (Action action : actionList) {
@@ -155,7 +157,6 @@ public class BillServiceHelper {
 
         return submitTx(coreTransaction);
     }
-
 
     /**
      * billTransferVO 请求入库
@@ -178,22 +179,13 @@ public class BillServiceHelper {
     /**
      * bill transfer new 入库
      *
-     * @param billTransferVO
+     * @param requestId
+     * @param utxoAction
+     * @param txOut
      */
-    public void insertBill(BillTransferVO billTransferVO, Long actionIndex, Long index) {
+    public void insertBill(String requestId, UTXOAction utxoAction, TxOut txOut) {
 
-        ReceivableBillPO receivableBillParam = new ReceivableBillPO();
-        receivableBillParam.setBillId(billTransferVO.getBillId());
-        receivableBillParam.setStatus(BillStatusEnum.UNSPENT.getCode());
-        List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
-
-        if (CollectionUtils.isEmpty(receivableBillPOList) || receivableBillPOList.size() > 1) {
-            log.error("build Transfer Bill WithIdentity  ActionList  error for receivableBillPOList is null or receivableBillPOList size bigger than 1," + "build Transfer Bill WithIdentity  ActionList  error, receivableBillPOList: {}", receivableBillPOList);
-            throw new BillException(RespCodeEnum.BILL_TRANSFER_INVALID_PARAM);
-        }
-        ReceivableBillPO receivableBill = receivableBillPOList.get(0);
-
-        ReceivableBillPO receivableBillPO = BillConvertor.buildBill(billTransferVO, receivableBill, actionIndex, index);
+        ReceivableBillPO receivableBillPO = BillConvertor.buildBill(requestId, utxoAction, txOut);
         try {
             receivableBillDao.add(receivableBillPO);
         } catch (DuplicateKeyException e) {
@@ -202,21 +194,14 @@ public class BillServiceHelper {
         }
     }
 
-
     /**
      * build Transfer Bill And Send
      *
-     * @param isIdentityExist
      * @param billTransferVO
      * @return
      */
-    public RespData<?> buildTransferBillAndSend(boolean isIdentityExist, BillTransferVO billTransferVO) {
-        List<Action> actionList = null;
-        if (isIdentityExist) {
-            actionList = utxoActionConvertor.buildTransferBillActionList(billTransferVO);
-        } else {
-            actionList = utxoActionConvertor.buildTransferBillWithIdentityActionList(billTransferVO);
-        }
+    public RespData<?> buildTransferBillAndSend(BillTransferVO billTransferVO) {
+        List<Action> actionList = utxoActionConvertor.buildTransferBillWithIdentityActionList(billTransferVO);
         //创建coreTx
 
         JSONObject bizModel = new JSONObject();
@@ -226,8 +211,7 @@ public class BillServiceHelper {
             bizModel.put("bizModel", billTransferVO.getBizModel());
         }
 
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList,
-            BizTypeConst.TRANSFER_UTXO);
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList, BizTypeConst.TRANSFER_UTXO);
 
         //insert bill
         for (Action action : actionList) {
@@ -235,7 +219,7 @@ public class BillServiceHelper {
                 UTXOAction utxoAction = (UTXOAction) action;
                 List<TxOut> outputList = utxoAction.getOutputList();
                 for (TxOut txOut : outputList) {
-                    insertBill(billTransferVO, txOut.getActionIndex().longValue(), txOut.getIndex().longValue());
+                    insertBill(billTransferVO.getRequestId(), utxoAction, txOut);
                 }
             }
         }
@@ -245,7 +229,7 @@ public class BillServiceHelper {
     /**
      * 发送交易到rs-core
      */
-    private RespData<?> submitTx (CoreTransaction coreTransaction){
+    private RespData<?> submitTx(CoreTransaction coreTransaction) {
         //send and get callback result
         try {
             coreTransactionService.submitTx(coreTransaction);
@@ -276,5 +260,70 @@ public class BillServiceHelper {
         }
     }
 
+    /**
+     * 创建票据业务校验
+     * @param billCreateVO
+     * @return
+     */
+    public RespData<?> createBizCheck(BillCreateVO  billCreateVO) {
+        RespData<?> respData = null;
+        ReceivableBillPO receivableBillPO = receivableBillDao.queryByBillId(billCreateVO.getBillId());
+        if (null != receivableBillPO) {
+            log.error("the new  crate bill for  billId：{} is  existed exception", billCreateVO.getBillId());
+            updateRequestStatus(billCreateVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+            respData = new RespData(RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+        }
+        return respData;
+    }
+
+
+    /**
+     * 票据转移业务check
+     *
+     * @param billTransferVO
+     * @return
+     */
+    public RespData<?> transferBizCheck(BillTransferVO billTransferVO) {
+        RespData<?> respData = null;
+
+        //bill check
+        Set<String> billIds = new HashSet<>();
+        billIds.add(billTransferVO.getBillId());
+        List<TransferDetailVO> transferList = billTransferVO.getTransferList();
+        for (TransferDetailVO transferDetailVO : transferList) {
+            billIds.add(transferDetailVO.getNextBillId());
+        }
+        int billNum = transferList.size() + 1;
+        if (billIds.size() != billNum) {
+            log.error("The billId can not be the same for a transfer tx: {}  ", billTransferVO);
+            updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getMsg());
+            return new RespData(RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getRespCode(), RespCodeEnum.BILL_TRANSFER_BILLID_IDEMPOTENT_FAIED.getMsg());
+        }
+
+        //be  transfer bill exist check
+        ReceivableBillPO receivableBillParam = new ReceivableBillPO();
+        receivableBillParam.setBillId(billTransferVO.getBillId());
+        receivableBillParam.setHolder(billTransferVO.getHolder());
+        receivableBillParam.setStatus(BillStatusEnum.UNSPENT.getCode());
+        List<ReceivableBillPO> receivableBillPOList = receivableBillDao.queryByList(receivableBillParam);
+        if (CollectionUtils.isEmpty(receivableBillPOList)) {
+            log.error("the bill  for holder:{} for the billId:{} with the status UNSPENT is not existed exception", billTransferVO.getHolder(), billTransferVO.getBillId());
+            updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_TRANSFER_INVALID_PARAM.getRespCode(), RespCodeEnum.BILL_TRANSFER_INVALID_PARAM.getMsg());
+            return new RespData(RespCodeEnum.BILL_TRANSFER_INVALID_PARAM.getRespCode(), RespCodeEnum.BILL_TRANSFER_INVALID_PARAM.getMsg());
+        }
+
+
+        //the new bill exist check
+        for (TransferDetailVO transferDetailVO : transferList) {
+            ReceivableBillPO receivableBillPO = receivableBillDao.queryByBillId(transferDetailVO.getNextBillId());
+            if (null != receivableBillPO) {
+                log.error("the billId：{}  for nextHolder  is  existed exception", transferDetailVO.getNextBillId());
+                updateRequestStatus(billTransferVO.getRequestId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+                return new RespData(RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getRespCode(), RespCodeEnum.BILL_BILLID_EXIST_EXCEPTION.getMsg());
+            }
+        }
+
+        return respData;
+    }
 
 }

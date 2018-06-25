@@ -6,6 +6,7 @@ import com.higgs.trust.rs.custom.api.bill.BillService;
 import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
 import com.higgs.trust.rs.custom.vo.BillTransferVO;
+import com.higgs.trust.rs.custom.vo.TransferDetailVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * bill service impl
@@ -60,6 +65,13 @@ public class BillServiceImpl implements BillService {
                     if (null != respData) {
                         return respData;
                     }
+
+                    //biz check
+                    respData = billServiceHelper.createBizCheck(billCreateVO);
+                    if (null != respData) {
+                        return respData;
+                    }
+
                     //identity 是否存在
                     boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billCreateVO.getHolder());
 
@@ -106,11 +118,15 @@ public class BillServiceImpl implements BillService {
                     if (null != respData) {
                         return respData;
                     }
-                    //identity 是否存在
-                    boolean isIdentityExist = rsBlockChainService.isExistedIdentity(billTransferVO.getNextHolder());
+
+                    //业务校验
+                    respData = billServiceHelper.transferBizCheck(billTransferVO);
+                    if (null != respData) {
+                        return respData;
+                    }
 
                     //组装UTXO,CoreTransaction，下发
-                    respData = billServiceHelper.buildTransferBillAndSend(isIdentityExist, billTransferVO);
+                    respData = billServiceHelper.buildTransferBillAndSend(billTransferVO);
                     return respData;
                 }
             });

@@ -2,13 +2,13 @@ package com.higgs.trust.rs.custom.util.converter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave.api.enums.VersionEnum;
-import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,6 +36,7 @@ public class CoreTransactionConvertor {
         coreTransaction.setActionList(actionList);
         coreTransaction.setVersion(VersionEnum.V1.getCode());
         coreTransaction.setSender(nodeState.getNodeName());
+        coreTransaction.setSendTime(new Date());
         coreTransaction.setPolicyId(policyId);
         return coreTransaction;
     }
@@ -53,6 +54,7 @@ public class CoreTransactionConvertor {
         coreTransaction.setActionList(actionList);
         coreTransaction.setVersion(VersionEnum.V1.getCode());
         coreTransaction.setSender(nodeState.getNodeName());
+        coreTransaction.setSendTime(new Date());
         coreTransaction.setPolicyId(policyId);
         return coreTransaction;
     }

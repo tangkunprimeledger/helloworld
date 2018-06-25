@@ -1,15 +1,20 @@
 package com.higgs.trust.rs.custom.vo;
 
+import com.higgs.trust.rs.common.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @Description: 票据转让
  * @author: pengdi
  **/
-@Getter @Setter public class BillTransferVO {
+@Getter @Setter public class BillTransferVO extends BaseBO{
     /**
      * 请求编号 64
      */
@@ -26,7 +31,13 @@ import org.hibernate.validator.constraints.NotBlank;
     @NotBlank @Length(max = 64) private String billId;
 
     /**
+     * 持票人 64
+     */
+    @NotBlank @Length(max = 64) private String holder;
+
+    /**
      * 受让持票人 64
      */
-    @NotBlank @Length(max = 64) private String nextHolder;
+    @Valid @NotEmpty
+    private List<TransferDetailVO> transferList;
 }

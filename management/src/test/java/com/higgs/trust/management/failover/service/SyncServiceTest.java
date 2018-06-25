@@ -1,11 +1,11 @@
 package com.higgs.trust.management.failover.service;
 
-import com.higgs.trust.config.node.NodeStateEnum;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.config.node.NodeState;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -28,11 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertEquals;
 
 @RunWith(PowerMockRunner.class) public class SyncServiceTest {
