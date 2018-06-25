@@ -45,9 +45,6 @@ import java.util.Map;
             // 1、生成公私钥,存入db
             // 2、获取其他节点的公钥,公钥写入配置文件给共识层使用
             // 3、使用所有的公钥及节点名生成创世块
-            log.info("[ClusterInitService.init] start generateKeyPair");
-            generateKeyPair();
-            log.info("[ClusterInitService.init] end generateKeyPair");
             caInitService.initKeyPair();
             log.info("[ClusterInitService.init] end initKeyPair");
         }
@@ -59,7 +56,13 @@ import java.util.Map;
         // 2、 本地没有创世块，集群有创世块时，需要进行failover得到创世块
         Long maxHeight = blockRepository.getMaxHeight();
         if (null == maxHeight && startMode.equals(RunModeEnum.CLUSTER.getCode())) {
+            log.info("[ClusterInitService.needInit] start generateKeyPair, cluster mode");
+            generateKeyPair();
             return true;
+        }
+        if (null == maxHeight && startMode.equals(RunModeEnum.SINGLE.getCode())) {
+            log.info("[ClusterInitService.needInit] start generateKeyPair, single mode");
+            generateKeyPair();
         }
         return false;
     }

@@ -88,6 +88,7 @@ public class RhinoExecuteEngine implements ExecuteEngine {
             throw new SmartContractException(ex.getMessage());
         } finally {
             Context.exit();
+            ExecuteContext.Clear();
             log.info("execute contract duration: {} ms", System.currentTimeMillis() - startTime);
         }
     }

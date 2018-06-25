@@ -61,7 +61,7 @@ import org.springframework.stereotype.Component;
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.cancelCa(ca);
 
-        clusterInfo.refresh();
+//        clusterInfo.refresh();
         Profiler.release();
 
     }
