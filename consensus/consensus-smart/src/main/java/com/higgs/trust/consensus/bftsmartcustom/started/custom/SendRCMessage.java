@@ -1,16 +1,16 @@
 package bftsmart.reconfiguration;
 
-import bftsmart.reconfiguration.util.RSAKeyLoader;
 import bftsmart.tom.util.TOMUtil;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.CustomKeyLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Objects;
 
@@ -19,10 +19,14 @@ import java.util.Objects;
  * @create: 2018/05/30 15:02
  * @description:
  */
+@Component
 public class SendRCMessage {
 
     private static final Logger log = LoggerFactory.getLogger(SendRCMessage.class);
     private RCMessage rcMessage;
+
+    @Autowired
+    private CustomKeyLoader customKeyLoader;
 
     public void add(int num, String ip, int port) {
         if (num < 0) {
@@ -87,18 +91,14 @@ public class SendRCMessage {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
             //设置TTP的编号
             rcMessage.setSender(ttpId);
-            rcMessage.setSignature(TOMUtil.signMessage(new RSAKeyLoader(rcMessage.getNum(), "", false).loadPrivateKey(), rcMessage.toString().getBytes()));
+            rcMessage.setSignature(TOMUtil.signMessage(customKeyLoader.loadPrivateKey(), rcMessage.toString().getBytes()));
 
             objectOutputStream.writeObject(rcMessage);
             objectOutputStream.flush();
             objectOutputStream.close();
             s.close();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            log.error("Failed to get the private key");
+            log.error("Failed to get the private key : ", e);
             e.printStackTrace();
         }
     }
