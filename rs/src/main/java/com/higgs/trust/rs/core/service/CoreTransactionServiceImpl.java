@@ -310,11 +310,18 @@ import java.util.List;
                 //query receipts by txId
                 List<VoteReceipt> receipts = voteReceiptRepository.queryByTxId(bo.getTxId());
                 if (CollectionUtils.isEmpty(receipts)) {
-                    log.error("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
+                    log.warn("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
                     return;
                 }
-                if (receipts.size() < rsIds.size() - 1) {
-                    log.error("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
+                //filter self
+                List<String> lastRsIds = new ArrayList<>();
+                for(String rsName : rsIds){
+                    if(!StringUtils.equals(rsName,rsConfig.getRsName())){
+                        lastRsIds.add(rsName);
+                    }
+                }
+                if (receipts.size() != lastRsIds.size()) {
+                    log.warn("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
                         rsIds.size(), bo.getTxId());
                     return;
                 }
@@ -336,9 +343,9 @@ import java.util.List;
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
                 //change status to WAIT for SYNC pattern
                 coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);
+                log.info("[processNeedVoteTx]is success");
             }
         });
-        log.info("[processNeedVoteTx]is success");
     }
 
     /**
