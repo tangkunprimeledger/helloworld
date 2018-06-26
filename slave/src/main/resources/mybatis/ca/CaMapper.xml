@@ -48,11 +48,18 @@
 
 
     <update id="updateCa" parameterType="com.higgs.trust.slave.dao.po.ca.CaPO">
-		UPDATE ca SET
-		            period=#{period},
-		            pub_key=#{pubKey},
-		            update_time=now(3)
-		          WHERE `user`=#{user} and valid=1
+		UPDATE ca
+		<trim prefix="SET" suffixOverrides=",">
+            update_time=now(3),
+            valid=#{valid},
+            <if test="period != null and period!=''">
+                period=#{period},
+            </if>
+            <if test="pubKey != null and pubKey!=''">
+                pub_key=#{pubKey},
+            </if>
+		</trim>
+		WHERE `user`=#{user} and valid=1
 	</update>
 
 

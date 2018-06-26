@@ -16,8 +16,11 @@ import com.higgs.trust.rs.custom.api.enums.RequestEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +40,7 @@ import org.springframework.stereotype.Component;
     @Autowired private NodeState nodeState;
     @Autowired private RequestDao requestDao;
     @Autowired ClusterInfo clusterInfo;
+    @Autowired private CaRepository caRepository;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -52,12 +56,12 @@ import org.springframework.stereotype.Component;
         callbackHandler.onVote(votingRequest);
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onPersisted(respData);
+        callbackHandler.onPersisted(respData,blockHeader);
     }
 
-    @Override public void onEnd(RespData<CoreTransaction> respData) {
+    @Override public void onEnd(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -92,10 +96,10 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onEnd(respData);
+        callbackHandler.onEnd(respData,blockHeader);
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData) {
+    @Override public void onFailover(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -111,7 +115,7 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onFailover(respData);
+        callbackHandler.onFailover(respData,blockHeader);
     }
 
     /**
@@ -190,15 +194,22 @@ import org.springframework.stereotype.Component;
 
         clusterInfo.refresh();
 
+
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
+
+        Ca ca = new Ca();
+        ca.setUser(user);
+        ca.setValid(false);
+        caRepository.updateCa(ca);
+
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
             log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
                 nodeState.getNodeName(), user);
             return;
         }
 
-        if (nodeState.isState(NodeStateEnum.Running)){
+        if (nodeState.isState(NodeStateEnum.Running)) {
             nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
         }
 
