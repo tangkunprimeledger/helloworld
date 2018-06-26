@@ -305,7 +305,7 @@ import java.util.*;
         return actions;
     }
 
-    public CaVO buildKeyPair(String user) {
+    private CaVO buildKeyPair(String user) {
 
         Config config = configRepository.getConfig(user);
         if (null == config) {

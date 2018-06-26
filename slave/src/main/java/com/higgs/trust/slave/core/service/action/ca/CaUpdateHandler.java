@@ -50,7 +50,7 @@ import org.springframework.stereotype.Component;
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.updateCa(ca);
 
-        clusterInfo.refresh();
+//        clusterInfo.refresh();
         Profiler.release();
 
         // TODO  添加refresh()方法属性集群配置信息
