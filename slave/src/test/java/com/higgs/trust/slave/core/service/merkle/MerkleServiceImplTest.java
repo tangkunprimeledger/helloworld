@@ -95,7 +95,7 @@ public class MerkleServiceImplTest extends BaseTest {
 
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.getBizTypeEnumBycode((String)param.get("type")), dataList);
         assertEquals(merkleTree.getRootHash(), param.get("assert").toString());
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
 
@@ -130,7 +130,7 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("d");
         tempTxList.add("e");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(dataProvider = "provideUpdateData",priority = 30)
@@ -142,7 +142,7 @@ public class MerkleServiceImplTest extends BaseTest {
             });
         merkleService.update(merkleTree,map.get("old"),map.get("new"));
         assertEquals(merkleTree.getRootHash(), param.get("assert").toString());
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(priority = 40)
@@ -155,7 +155,7 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("d");
         tempTxList.add("e");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(dataProvider = "provideUpdateExceptionData",priority = 50)
@@ -182,7 +182,7 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("c");
         tempTxList.add("d");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(dataProvider = "provideAddData",priority = 70)
@@ -191,7 +191,7 @@ public class MerkleServiceImplTest extends BaseTest {
         Object obj = param.get("body");
         merkleService.add(merkleTree,obj);
         assertEquals(merkleTree.getRootHash(), param.get("assert").toString());
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(priority = 80)
@@ -204,7 +204,7 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("d");
         tempTxList.add("e");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(dataProvider = "provideAddData",priority = 90)
@@ -213,7 +213,7 @@ public class MerkleServiceImplTest extends BaseTest {
         Object obj = param.get("body");
         merkleService.add(merkleTree,obj);
         assertEquals(merkleTree.getRootHash(), param.get("assert1").toString());
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(priority = 100)
@@ -227,7 +227,7 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("e");
         tempTxList.add("f");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(dataProvider = "provideAddData",priority = 110)
@@ -236,7 +236,7 @@ public class MerkleServiceImplTest extends BaseTest {
         Object obj = param.get("body");
         merkleService.add(merkleTree,obj);
         assertEquals(merkleTree.getRootHash(), param.get("assert2").toString());
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(priority = 120)
@@ -248,7 +248,7 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("c");
         tempTxList.add("d");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
     }
 
     @Test(dataProvider = "provideAddExceptionData",priority = 130)
@@ -273,10 +273,10 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("d");
         tempTxList.add("e");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
         merkleTree = merkleService.queryMerkleTree(merkleTree.getTreeType());
         merkleService.update(merkleTree,"c","x");
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
         merkleTree = merkleService.queryMerkleTree(merkleTree.getTreeType());
         merkleService.add(merkleTree,"y");
 
@@ -336,7 +336,7 @@ public class MerkleServiceImplTest extends BaseTest {
             MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
             String tempSql = "INSERT INTO `merkle_node` VALUES (1, '439431967390302209', 'ad3bbd0236cee779a7b660177b3e7cffb90e915fbc0305e50ccfc64c1f445e47', 0, 2, NULL, 'RS', '2018-4-27 14:25:45', '2018-4-27 14:25:45');";
             dataBaseManager.executeSingleInsert(tempSql,url);
-            merkleService.flush(merkleTree);
+//            merkleService.flush(merkleTree);
         }catch (MerkleException e){
             assertEquals(e.getMessage(), "slave merkle node add idempotent exception[SLAVE_MERKLE_NODE_ADD_IDEMPOTENT_EXCEPTION]");
         }
@@ -368,7 +368,7 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("g");
         tempTxList.add("h");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
         merkleTree = merkleService.queryMerkleTree(MerkleTypeEnum.RS);
 
 
@@ -395,7 +395,7 @@ public class MerkleServiceImplTest extends BaseTest {
         tempTxList.add("g");
         tempTxList.add("h");
         MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.RS, tempTxList);
-        merkleService.flush(merkleTree);
+//        merkleService.flush(merkleTree);
         merkleTree = merkleService.queryMerkleTree(MerkleTypeEnum.RS);
 
         merkleService.add(merkleTree,"x");
