@@ -14,6 +14,7 @@ import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +45,7 @@ import java.util.List;
         slaveCallbackRegistor.registCallbackHandler(this);
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
@@ -78,7 +79,7 @@ import java.util.List;
         }
     }
 
-    @Override public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos) {
+    @Override public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
@@ -103,7 +104,7 @@ import java.util.List;
         }
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData, List<SignInfo> signInfos) {
+    @Override public void onFailover(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
