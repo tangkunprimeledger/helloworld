@@ -29,6 +29,7 @@ public interface TxCallbackHandler {
      *
      * @param respData
      * @param blockHeader
+     *          may be null
      */
     void onEnd(RespData<CoreTransaction> respData,BlockHeader blockHeader);
 
