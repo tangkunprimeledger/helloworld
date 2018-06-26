@@ -18,6 +18,7 @@ import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.Config;
@@ -55,12 +56,12 @@ import org.springframework.stereotype.Component;
         callbackHandler.onVote(votingRequest);
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onPersisted(respData);
+        callbackHandler.onPersisted(respData,blockHeader);
     }
 
-    @Override public void onEnd(RespData<CoreTransaction> respData) {
+    @Override public void onEnd(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -95,10 +96,10 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onEnd(respData);
+        callbackHandler.onEnd(respData,blockHeader);
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData) {
+    @Override public void onFailover(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -114,7 +115,7 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onFailover(respData);
+        callbackHandler.onFailover(respData,blockHeader);
     }
 
     /**

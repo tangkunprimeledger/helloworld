@@ -381,7 +381,7 @@ import java.util.List;
                 respData.setData(coreTxRepository.convertTxVO(bo));
                 //callback custom rs
                 if(isCallback) {
-                    rsCoreCallbackHandler.onEnd(respData);
+                    rsCoreCallbackHandler.onEnd(respData,null);
                 }
             }
         });

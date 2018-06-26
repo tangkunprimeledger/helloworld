@@ -90,8 +90,8 @@ import java.util.stream.Collectors;
             }
         });
 
-        log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, txList: {}, package.height: {}",
-            signedTransactions.size(), signedTransactions, currentPackageHeight + 1);
+        log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, package.height: {}",
+            signedTransactions.size(), currentPackageHeight + 1);
 
         /**
          * initial package
@@ -241,7 +241,7 @@ import java.util.stream.Collectors;
 
             //call back business
             Profiler.enter("[callbackRS]");
-            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover);
+            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover,dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
@@ -375,7 +375,7 @@ import java.util.stream.Collectors;
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                     //call back business
                     Profiler.enter("[callbackRSForClusterPersisted]");
-                    callbackRS(txs, txReceipts, true, false);
+                    callbackRS(txs, txReceipts, true, false,blockHeader);
                     Profiler.release();
                     //check status for package
                     boolean isPackageStatus = packageRepository.isPackageStatus(blockHeader.getHeight(),PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
@@ -407,7 +407,7 @@ import java.util.stream.Collectors;
      * call back business
      */
     private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
-        boolean isClusterPersisted, boolean isFailover) {
+        boolean isClusterPersisted, boolean isFailover,BlockHeader blockHeader) {
         log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         if (callbackHandler == null) {
@@ -436,15 +436,15 @@ import java.util.stream.Collectors;
             }
             if (isFailover) {
                 log.info("[callbackRS]start fail over rs txId:{}", txId);
-                callbackHandler.onFailover(respData, tx.getSignatureList());
+                callbackHandler.onFailover(respData, tx.getSignatureList(),blockHeader);
                 return;
             }
             //callback business
             log.info("[callbackRS]start callback rs txId:{}", txId);
             if (isClusterPersisted) {
-                callbackHandler.onClusterPersisted(respData, tx.getSignatureList());
+                callbackHandler.onClusterPersisted(respData, tx.getSignatureList(),blockHeader);
             } else {
-                callbackHandler.onPersisted(respData, tx.getSignatureList());
+                callbackHandler.onPersisted(respData, tx.getSignatureList(),blockHeader);
             }
             log.info("[callbackRS]end callback rs txId:{}", txId);
         }

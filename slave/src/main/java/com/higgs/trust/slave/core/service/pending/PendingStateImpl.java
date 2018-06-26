@@ -59,8 +59,7 @@ import java.util.List;
                 return;
             }
 
-            // chained transaction idempotent check, cannot retry
-            //TODO rocks db isExist method
+            // chained transaction idempotent check, need retry
             if (transactionRepository.isExist(txId)) {
                 log.warn("transaction idempotent, txId={}", txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
@@ -82,11 +81,7 @@ import java.util.List;
 
             try {
                 //insert memory
-                boolean result = packageCache.
-
-
-
-                    appendDequeLast(signedTransaction);
+                boolean result = packageCache.appendDequeLast(signedTransaction);
                 if (!result) {
                     log.warn("pending transaction idempotent, txId={}", txId);
                     transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());

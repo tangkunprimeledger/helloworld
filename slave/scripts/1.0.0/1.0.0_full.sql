@@ -222,6 +222,7 @@ IF NOT EXISTS `rs_node` (
 	`desc` VARCHAR (128) NOT NULL COMMENT 'business RS description',
 	`status` VARCHAR (32) NOT NULL COMMENT 'rs status',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
+	`update_time` datetime (3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_rs` (`rs_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'rs node info';
