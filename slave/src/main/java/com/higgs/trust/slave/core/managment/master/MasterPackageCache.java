@@ -118,7 +118,7 @@ import java.util.concurrent.atomic.AtomicLong;
      */
     public synchronized boolean appendDequeLast(SignedTransaction signedTx) {
         String txId = signedTx.getCoreTx().getTxId();
-        if (existTxMap.containsKey(txId) || pendingTxRepository.isExist(txId)) {
+        if (existTxMap.containsKey(txId)) {
             return false;
         }
         pendingTxQueue.offerLast(signedTx);
@@ -132,9 +132,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
     public void putPendingPack(Package pack) throws InterruptedException {
         synchronized (this) {
-            long packageHeight = packHeight.incrementAndGet();
-            pack.setHeight(packageHeight);
-            pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+            try {
+                long packageHeight = packHeight.incrementAndGet();
+                pack.setHeight(packageHeight);
+                pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+            } catch (Throwable e) {
+                //set packHeight
+                packHeight.getAndDecrement();
+                throw e;
+            }
         }
     }
 
