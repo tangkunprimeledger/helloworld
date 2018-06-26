@@ -10,6 +10,7 @@ import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
+import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
@@ -54,6 +55,9 @@ public class BlockChainServiceImpl implements BlockChainService {
     @Autowired
     private DataIdentityRepository dataIdentityRepository;
 
+    @Autowired
+    private CurrencyRepository currencyRepository;
+
     @Override
     public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
@@ -61,16 +65,16 @@ public class BlockChainServiceImpl implements BlockChainService {
         // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
             if (nodeState.isState(NodeStateEnum.Running)) {
-                log.info("The node is master and it is running , add txs:{} into pending txs", transactions);
+                log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);
                 transactionVOList = pendingState.addPendingTransactions(transactions);
             } else {
-                log.info("The node is master but the status is not running, cannot receive txs: {}", transactions);
+                log.debug("The node is master but the status is not running, cannot receive txs: {}", transactions);
                 transactionVOList = buildTxVOList(transactions);
             }
             respData.setData(transactionVOList);
         } else {
             //when it is not master ,then send txs to master node
-            log.info("this node is not  master, send txs:{} to master node", transactions);
+            log.debug("this node is not  master, send txs:{} to master node", transactions);
             respData = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
         }
 
@@ -205,6 +209,16 @@ public class BlockChainServiceImpl implements BlockChainService {
     @Override
     public boolean isExistedIdentity(String identity) {
         return dataIdentityRepository.isExist(identity);
+    }
+
+    /**
+     * check currency
+     *
+     * @param currency
+     * @return
+     */
+    @Override public boolean isExistedCurrency(String currency) {
+        return currencyRepository.isExits(currency);
     }
 
 }

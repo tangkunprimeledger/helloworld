@@ -37,6 +37,16 @@ import java.util.List;
     }
 
     /**
+     * check currency info
+     *
+     * @param currency
+     * @return
+     */
+    public boolean isExits(String currency) {
+        return currencyInfoDao.queryByCurrency(currency) != null;
+    }
+
+    /**
      * build an new currency info
      *
      * @param currency
