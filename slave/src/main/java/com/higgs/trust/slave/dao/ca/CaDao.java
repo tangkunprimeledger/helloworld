@@ -57,4 +57,11 @@ import java.util.List;
      */
     int batchUpdate(List<CaPO> caPOList);
 
+    /** 
+     * @desc get ca info for consensus layer
+     * @param user
+     * @return   
+     */  
+    CaPO getCaForConsensus(String user);
+
 }
