@@ -54,4 +54,13 @@ public class RsChainServiceImpl implements RsBlockChainService {
     public boolean isExistedIdentity(String identity) {
         return blockChainService.isExistedIdentity(identity);
     }
+    /**
+     * check currency
+     *
+     * @param currency
+     * @return
+     */
+    @Override public boolean isExistedCurrency(String currency) {
+        return blockChainService.isExistedCurrency(currency);
+    }
 }
