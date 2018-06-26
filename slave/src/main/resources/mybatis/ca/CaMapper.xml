@@ -120,6 +120,20 @@
 		      FROM ca WHERE `user`=#{user} and valid=1
 	</select>
 
+
+    <select id="getCaForConsensus" parameterType="java.lang.String"
+            resultType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		SELECT    version as version,
+								period as period,
+								valid as valid,
+								pub_key as pubKey,
+								`user` as `user`,
+								`usage` as `usage`,
+								create_time as createTime,
+								update_time as updateTime
+		      FROM ca WHERE `user`=#{user} and `usage`='consensus'
+	</select>
+
     <select id="getAllCa"  resultType="com.higgs.trust.slave.dao.po.ca.CaPO">
 		SELECT    version as version,
 				period as period,

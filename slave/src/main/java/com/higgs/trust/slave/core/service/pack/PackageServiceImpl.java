@@ -78,7 +78,7 @@ import java.util.stream.Collectors;
         Long maxBlockHeight = blockRepository.getMaxHeight();
         if (maxBlockHeight != null && maxBlockHeight.compareTo(currentPackageHeight) < 0) {
             if (null == packageRepository.load(currentPackageHeight)) {
-                log.error("package is not exist. packHeight={}", currentPackageHeight);
+                log.warn("package is not exist. packHeight={}", currentPackageHeight);
                 return null;
             }
         }

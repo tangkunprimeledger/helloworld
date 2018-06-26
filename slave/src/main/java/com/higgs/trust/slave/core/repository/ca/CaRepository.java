@@ -96,4 +96,14 @@ import java.util.List;
     public boolean batchUpdate(List<CaPO> caPOList) {
         return caPOList.size() == caDao.batchUpdate(caPOList);
     }
+
+    public Ca getCaForConsensus(String user){
+        CaPO caPO = caDao.getCaForConsensus(user);
+        if (caPO == null){
+            return null;
+        }
+        Ca ca = new Ca();
+        BeanUtils.copyProperties(caPO,ca);
+        return ca;
+    }
 }

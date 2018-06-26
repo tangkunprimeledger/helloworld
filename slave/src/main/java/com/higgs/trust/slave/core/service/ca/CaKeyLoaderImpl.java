@@ -20,7 +20,7 @@ public class CaKeyLoaderImpl implements CaKeyLoader {
      * @return   
      */  
     @Override public String loadPublicKey(String nodeName) throws Exception {
-        return caRepository.getCa(nodeName).getPubKey();
+        return caRepository.getCaForConsensus(nodeName).getPubKey();
     }
 
     /** 
