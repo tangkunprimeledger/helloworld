@@ -77,7 +77,7 @@ import org.springframework.stereotype.Service;
         check(ca);
 
         log.info("[cancelCa] start to update CA to invalid, user={}", ca.getUser());
-        caSnapshotAgent.updateCa(ca);
+//        caSnapshotAgent.updateCa(ca);
 
         ClusterNode clusterNode = new ClusterNode();
         clusterNode.setNodeName(ca.getUser());
