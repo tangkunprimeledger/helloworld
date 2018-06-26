@@ -79,11 +79,20 @@ import java.util.List;
                 return;
             }
 
+            if (pendingTxRepository.isExist(txId)) {
+                log.warn("pending transaction table idempotent, txId={}", txId);
+                transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
+                transactionVO.setRetry(true);
+                transactionVOList.add(transactionVO);
+                return;
+            }
+
             try {
                 //insert memory
                 boolean result = packageCache.appendDequeLast(signedTransaction);
                 if (!result) {
-                    log.warn("pending transaction idempotent, txId={}", txId);
+                    log.warn("pending transaction map idempotent, txId={}", txId);
                     transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
                     transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
                     transactionVO.setRetry(true);
