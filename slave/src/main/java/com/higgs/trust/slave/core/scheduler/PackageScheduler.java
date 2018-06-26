@@ -50,9 +50,10 @@ import java.util.Set;
      * master node create package
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
-        int i = 0;
-        while (nodeState.isMaster() && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE
-            && ++i <= batchSize) {
+
+        if(nodeState.isMaster()
+            && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
+
             List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
             if (CollectionUtils.isEmpty(signedTransactions)) {
@@ -63,6 +64,7 @@ import java.util.Set;
             CollectionUtils.addAll(txSet, signedTransactions);
             signedTransactions = Lists.newArrayList(txSet);
 
+            log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}", packageCache.getPackHeight());
             Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
 
             if (null == pack) {
@@ -77,6 +79,8 @@ import java.util.Set;
                 log.warn("pending pack offer InterruptedException. ", e);
                 pendingState.addPendingTxsToQueueFirst(signedTransactions);
             }
+
+            log.debug("[PackageScheduler.createPackage] create package finished, packHeight={}", pack.getHeight());
         }
     }
 
@@ -112,11 +116,11 @@ import java.util.Set;
             return;
         }
 
-        // process  next block as height = maxBlockHeight + 1
+        // process next block as height = maxBlockHeight + 1
         try {
             packageProcess.process(height);
         } catch (Throwable e) {
-            log.error("package process scheduled execute failed", e);
+            log.error("package process scheduled execute failed. ", e);
         }
 
     }

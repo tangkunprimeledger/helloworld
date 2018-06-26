@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.core.managment.master;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.core.repository.BlockRepository;
@@ -31,7 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
-    @Autowired private NodeState nodeState;
     @Autowired private PendingTxRepository pendingTxRepository;
 
     private AtomicLong packHeight = new AtomicLong(0);
@@ -120,7 +118,7 @@ import java.util.concurrent.atomic.AtomicLong;
      */
     public synchronized boolean appendDequeLast(SignedTransaction signedTx) {
         String txId = signedTx.getCoreTx().getTxId();
-        if (existTxMap.containsKey(txId) || pendingTxRepository.isExist(txId)) {
+        if (existTxMap.containsKey(txId)) {
             return false;
         }
         pendingTxQueue.offerLast(signedTx);
@@ -134,9 +132,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
     public void putPendingPack(Package pack) throws InterruptedException {
         synchronized (this) {
-            long packageHeight = packHeight.incrementAndGet();
-            pack.setHeight(packageHeight);
-            pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+            try {
+                long packageHeight = packHeight.incrementAndGet();
+                pack.setHeight(packageHeight);
+                pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+            } catch (Throwable e) {
+                //set packHeight
+                packHeight.getAndDecrement();
+                throw e;
+            }
         }
     }
 
