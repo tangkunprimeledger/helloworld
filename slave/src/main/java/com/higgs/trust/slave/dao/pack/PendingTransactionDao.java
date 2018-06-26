@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.dao.pack;
 
-import com.higgs.trust.slave.dao.BaseDao;
+import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.pack.PendingTransactionPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

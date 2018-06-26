@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.dao.manage;
 
-import com.higgs.trust.slave.dao.BaseDao;
+import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.manage.RsNodePO;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import org.apache.ibatis.annotations.Mapper;

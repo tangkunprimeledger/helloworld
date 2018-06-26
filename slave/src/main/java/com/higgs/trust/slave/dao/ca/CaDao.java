@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.dao.ca;
 
-import com.higgs.trust.slave.dao.BaseDao;
+import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import org.apache.ibatis.annotations.Mapper;
 
