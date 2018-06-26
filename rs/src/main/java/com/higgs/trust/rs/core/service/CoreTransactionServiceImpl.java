@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.service;
 
 import com.google.common.collect.Lists;
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -18,6 +19,7 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
+import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -410,6 +412,16 @@ import java.util.List;
         }
         //submit
         submitToSlave(boList);
+    }
+
+    @Override public RsCoreTxVO queryCoreTx(String txId) {
+        CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(txId,false);
+        CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
+        RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO,RsCoreTxVO.class);
+        coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
+        coreTxVO.setExecuteResult(coreTransactionPO.getExecuteResult());
+        coreTxVO.setStatus(CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()));
+        return coreTxVO;
     }
 
     /**
