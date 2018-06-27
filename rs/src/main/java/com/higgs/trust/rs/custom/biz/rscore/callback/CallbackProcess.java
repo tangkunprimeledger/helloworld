@@ -66,11 +66,6 @@ import org.springframework.stereotype.Service;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if(initPolicyEnum!=null) {
             switch (initPolicyEnum) {
-                case UTXO_ISSUE:
-                    createBillCallbackHandler.process(respData);
-                    break;
-                case UTXO_DESTROY:
-                    break;
                 default:
                     break;
             }
@@ -88,6 +83,9 @@ import org.springframework.stereotype.Service;
                 break;
             case BizTypeConst.TRANSFER_UTXO:
                 transferBillCallbackHandler.process(respData);
+                break;
+            case BizTypeConst.ISSUE_UTXO:
+                createBillCallbackHandler.process(respData);
                 break;
             default:
                 log.error("[onEnd] do not has bizType:{} handler",bizType);
