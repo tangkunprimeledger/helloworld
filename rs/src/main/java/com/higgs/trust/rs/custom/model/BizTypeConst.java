@@ -15,4 +15,8 @@ public class BizTypeConst {
      * 存证
      */
     public final static String STORAGE_IDENTITY = "storage-identity";
+    /**
+     * 发行utxo
+     */
+    public final static String ISSUE_UTXO = "ISSUE_UTXO";
 }
