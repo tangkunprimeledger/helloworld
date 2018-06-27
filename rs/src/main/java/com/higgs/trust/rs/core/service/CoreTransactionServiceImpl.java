@@ -377,7 +377,7 @@ import java.util.List;
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 //save execute result and error code
                 String txId = bo.getTxId();
-                coreTxRepository.saveExecuteResult(txId, CoreTxResultEnum.FAIL, respData.getRespCode());
+                coreTxRepository.saveExecuteResult(txId, CoreTxResultEnum.FAIL, respData.getRespCode(),respData.getMsg());
                 //update status from 'from' to END
                 coreTxRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
                 respData.setData(coreTxRepository.convertTxVO(bo));
@@ -422,7 +422,7 @@ import java.util.List;
         CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
         RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO,RsCoreTxVO.class);
         coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
-        coreTxVO.setExecuteResult(coreTransactionPO.getExecuteResult());
+        coreTxVO.setExecuteResult(CoreTxResultEnum.formCode(coreTransactionPO.getExecuteResult()));
         coreTxVO.setStatus(CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()));
         return coreTxVO;
     }
