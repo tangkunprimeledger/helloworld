@@ -288,7 +288,7 @@
             <dependency>
                 <groupId>io.atomix.copycat</groupId>
                 <artifactId>copycat-server</artifactId>
-                <version>1.1.4-suimi</version>
+                <version>1.1.4-suimi-SNAPSHOT</version>
             </dependency>
             <!--copycat end-->
 
