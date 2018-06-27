@@ -128,7 +128,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         if (!verify) {
             throw new ConfigException(ConfigError.CONFIG_NODE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT);
         }
-        if (packageHeight == termInfo.getStartHeight() || packageHeight == termInfo.getEndHeight() + 1) {
+        if ((packageHeight == termInfo.getStartHeight() && termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT)
+            || packageHeight == termInfo.getEndHeight() + 1) {
             log.debug("reset term end height:{}", packageHeight);
             termInfo.setEndHeight(packageHeight);
         } else {
