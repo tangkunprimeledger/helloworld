@@ -416,6 +416,9 @@ import java.util.List;
 
     @Override public RsCoreTxVO queryCoreTx(String txId) {
         CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(txId,false);
+        if(coreTransactionPO == null){
+            return null;
+        }
         CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
         RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO,RsCoreTxVO.class);
         coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
