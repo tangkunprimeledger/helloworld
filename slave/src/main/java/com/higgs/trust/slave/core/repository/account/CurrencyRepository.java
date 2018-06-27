@@ -10,6 +10,7 @@ import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
 import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
@@ -34,6 +35,19 @@ import java.util.List;
     public CurrencyInfo queryByCurrency(String currency) {
         CurrencyInfoPO currencyInfoPO = currencyInfoDao.queryByCurrency(currency);
         return BeanConvertor.convertBean(currencyInfoPO, CurrencyInfo.class);
+    }
+
+    /**
+     * check currency info
+     *
+     * @param currency
+     * @return
+     */
+    public boolean isExits(String currency) {
+        if(StringUtils.isEmpty(currency)){
+            return false;
+        }
+        return currencyInfoDao.queryByCurrency(currency) != null;
     }
 
     /**

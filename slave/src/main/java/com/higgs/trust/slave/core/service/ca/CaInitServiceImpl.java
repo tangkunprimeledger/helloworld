@@ -14,11 +14,15 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.util.ConcurrentHashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author WangQuanzhou
@@ -90,8 +94,8 @@ import java.util.*;
 
     private List<Action> acquirePubKeys(int retryCount) {
         List<String> nodeList = clusterInfo.clusterNodeNames();
-        Set<String> nodeSet = new ConcurrentHashSet<>();
-        List<Action> caActionList = new LinkedList<>();
+        Set<String> nodeSet = new CopyOnWriteArraySet<>();
+        List<Action> caActionList = new CopyOnWriteArrayList<>();
         log.info(
             "[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKey, nodeList size = {}, nodeList = {}",
             nodeList.size(), nodeList.toString());
@@ -137,8 +141,9 @@ import java.util.*;
                 "[CaInitServiceImpl.acquirePubKeys] cluster init CA error, can not acquire enough pubKeys");
         }
 
-        log.info("[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}",
-            caActionList.size());
+        log.info(
+            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}, nodeSet size={}, nodeList.size()={}",
+            caActionList.size(), nodeSet.size(), nodeList.size());
         return caActionList;
     }
 

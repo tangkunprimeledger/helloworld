@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 
@@ -42,4 +43,12 @@ public interface CoreTransactionService {
      * submit to slave for wait status,called by scheduler
      */
     void submitToSlave();
+
+    /**
+     * query by txId
+     *
+     * @param txId
+     * @return
+     */
+    RsCoreTxVO queryCoreTx(String txId);
 }

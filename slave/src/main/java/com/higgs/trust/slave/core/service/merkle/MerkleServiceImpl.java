@@ -7,17 +7,12 @@ import com.higgs.trust.slave.common.SnowflakeIdWorker;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.MerkleException;
 import com.higgs.trust.slave.common.util.Profiler;
-import com.higgs.trust.slave.core.repository.merkle.MerkleRepository;
 import com.higgs.trust.slave.model.bo.merkle.MerkleNode;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -37,10 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
     private static final int INIT_CAPACITY = 300;
 
     @Autowired private SnowflakeIdWorker snowflakeIdWorker;
-
-    @Autowired private MerkleRepository merkleRepository;
-
-    @Autowired private TransactionTemplate txNested;
 
     /**
      * create a merkle tree
@@ -143,8 +134,8 @@ import java.util.concurrent.ConcurrentHashMap;
             String newHash = getSHA2HexValue(JSON.toJSONString(objNew));
             long leafIndex = -1L;
 
-            log.debug("[update] start to udpate merkleTree, type={}, oldHash={}, objOld={}, newHash={}, objNew={}", type,
-                oldHash, JSON.toJSONString(objOld), newHash, JSON.toJSONString(objNew));
+            log.debug("[update] start to udpate merkleTree, type={}, oldHash={}, objOld={}, newHash={}, objNew={}",
+                type, oldHash, JSON.toJSONString(objOld), newHash, JSON.toJSONString(objNew));
 
             // acquire nodeMap stored in merkleTree
             Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
@@ -191,7 +182,7 @@ import java.util.concurrent.ConcurrentHashMap;
             int totalLevel = merkleTree.getTotalLevel();
 
             // batch query merkleNode from nodeMap or db
-            getMerkleNodeListForUpdate(merkleTree, totalLevel, leafIndex);
+            //            getMerkleNodeListForUpdate(merkleTree, totalLevel, leafIndex);
 
             for (int i = 1; i < totalLevel; i++) {
                 Profiler.enter("[update parentNode]");
@@ -277,7 +268,7 @@ import java.util.concurrent.ConcurrentHashMap;
             merkleTree.setMaxIndex(leafIndex);
 
             // batch query merkleNode from nodeMap or db
-            getMerkleNodeListForAdd(merkleTree, totalLevel, leafIndex);
+            //            getMerkleNodeListForAdd(merkleTree, totalLevel, leafIndex);
 
             // handle the other level
             for (int i = 1; i < totalLevel; i++) {
@@ -296,124 +287,21 @@ import java.util.concurrent.ConcurrentHashMap;
     }
 
     /**
-     * flush merkle tree info into database
-     *
-     * @param merkleTree
-     */
-    @Override public void flush(MerkleTree merkleTree) {
-        Profiler.enter("[MerkleServiceImpl.flush.monitor]");
-        // validate param
-        try {
-            if (null == merkleTree || null == merkleTree.getTreeType() || null == merkleTree.getNodeMap()) {
-                log.error("[flush] merkleTree is null");
-                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
-                    "[flush] merkleTree is null");
-            }
-
-            String type = merkleTree.getTreeType().getCode();
-            log.debug("[flush] start to flush data into database, type={}, merkleRootHash={}", type,
-                merkleTree.getRootHash());
-            List<MerkleNode> addedList = new LinkedList<>();
-            List<MerkleNode> modifiedList = new LinkedList<>();
-            Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
-            log.debug("[flush] the size of nodeMap={}", nodeMap.size());
-            for (Map.Entry<String, MerkleNode> entry : nodeMap.entrySet()) {
-                if (MerkleStatusEnum.NO_CHANGE == entry.getValue().getStatus()) {
-                    continue;
-                }
-                if (MerkleStatusEnum.ADD == entry.getValue().getStatus()) {
-                    addedList.add(entry.getValue());
-                    continue;
-                }
-                if (MerkleStatusEnum.MODIFY == entry.getValue().getStatus()) {
-                    modifiedList.add(entry.getValue());
-                }
-            }
-
-            //开启事务
-            txNested.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-
-                    log.debug("[flush] transaction start，type={}, merkleRootHash={}", type, merkleTree.getRootHash());
-                    // insert or update merkleTree
-                    merkleRepository.insertMerkleTree(merkleTree);
-
-                    // batch insert or update merkleNode
-                    if (!addedList.isEmpty()) {
-                        log.debug("[flush] the size of addedList ={}", addedList.size());
-                        Profiler.enter("[batch insert merkleNode]");
-                        int count = merkleRepository.batchInsertMerkleNode(addedList);
-                        Profiler.release();
-                        if (addedList.size() != count) {
-                            log.error(
-                                "[flush] batch insert merkle node error，inserted rows not equals addedList size, inserted rows={}, addedList size={}",
-                                count, addedList.size());
-                            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_ADD_EXCEPTION,
-                                "[flush] batch insert merkle node error，inserted rows not equals addedList size");
-                        }
-                    }
-                    if (!modifiedList.isEmpty()) {
-                        log.debug("[flush] the size of modifiedList ={}", modifiedList.size());
-                        Profiler.enter("[batch update merkleNode]");
-                        int count = merkleRepository.batchUpdateMerkleNode(modifiedList);
-                        Profiler.release();
-                        if (modifiedList.size() != count) {
-                            log.error(
-                                "[flush] batch update merkle node error，updated rows not equals modifiedList size, updated rows={}, modifiedList size={}",
-                                count, modifiedList.size());
-                            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_UPDATE_EXCEPTION,
-                                "[flush] batch update merkle node error，updated rows not equals modifiedList size");
-                        }
-                    }
-                    log.debug("[flush] transaction success，type={},merkleRootHash={}", type, merkleTree.getRootHash());
-
-                    // clear merkleTree's nodeMap
-                    // TODO 这里是直接将nodeMap置为null  还是new一个map？？
-                    merkleTree.setNodeMap(null);
-                    log.debug("[flush] clear nodeMap success，type={},merkleRootHash={}", type, merkleTree.getRootHash());
-                }
-            });
-        } catch (DuplicateKeyException e) {
-            log.error("[flush] idempotent exception,type={},merkleRootHash={}", merkleTree.getTreeType(),
-                merkleTree.getRootHash(), e);
-            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_NODE_ADD_IDEMPOTENT_EXCEPTION,
-                "add merkleNode idempotent exception");
-        } finally {
-            Profiler.release();
-        }
-        log.debug("[flush] end flush data into database, type={}, merkleRootHash={}", merkleTree.getTreeType(),
-            merkleTree.getRootHash());
-    }
-
-    /**
      * query a merkle tree with the exact type
      *
      * @param treeType
      * @return
      */
     @Override public MerkleTree queryMerkleTree(MerkleTypeEnum treeType) {
-        Profiler.enter("[MerkleServiceImpl.queryMerkleTree.monitor]");
-        try {
-            // validate param
-            if (null == treeType) {
-                log.error("[queryMerkleTree] treeType is null");
-                throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
-                    "[queryMerkleTree] treeType is null");
-            }
-            log.debug("[queryMerkleTree] start to queryMerkleTree, type={}", treeType);
-
-            MerkleTree merkleTree = merkleRepository.queryMerkleTree(treeType.getCode());
-            if (null == merkleTree) {
-                log.debug("[queryMerkleTree] merkleTree doesn't exist in database, type={}", treeType);
-                return null;
-            }
-            Map<String, MerkleNode> nodeMap = new ConcurrentHashMap<>(INIT_CAPACITY);
-            merkleTree.setNodeMap(nodeMap);
-            log.debug("[queryMerkleTree] end queryMerkleTree, type={}, rootHash={}", treeType, merkleTree.getRootHash());
-            return merkleTree;
-        } finally {
-            Profiler.release();
+        // validate param
+        if (null == treeType) {
+            log.error("[queryMerkleTree] treeType is null");
+            throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
+                "[queryMerkleTree] treeType is null");
         }
+        log.debug("[queryMerkleTree] start to queryMerkleTree, type={}", treeType);
+
+        return null;
     }
 
     /**
@@ -720,152 +608,6 @@ import java.util.concurrent.ConcurrentHashMap;
             }
             right.setParent(parent.getUuid());
         }
-    }
-
-    /**
-     * batch acquire merkleNode from database which doesn't exist nodeMap
-     *
-     * @param merkleTree
-     * @param totalLevel
-     * @param leafIndex
-     */
-    private void getMerkleNodeListForUpdate(MerkleTree merkleTree, int totalLevel, long leafIndex) {
-        long maxIndex = merkleTree.getMaxIndex();
-        Map nodeMap = merkleTree.getNodeMap();
-        MerkleTypeEnum treeType = merkleTree.getTreeType();
-        List<MerkleNode> list = new LinkedList<>();
-        for (int level = 1; level < totalLevel; level++) {
-            if (leafIndex <= maxIndex && 1 == (leafIndex % N)) {
-                log.debug("[getMerkleNodeListForUpdate] leafIndex <= maxIndex && 1 == (leafIndex % N)");
-                if (!nodeMap.containsKey(getKey(level, leafIndex - 1))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex - 1, level, null, treeType, null);
-                    list.add(merkleNode);
-                }
-                if (!nodeMap.containsKey(getKey(level, leafIndex))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex, level, null, treeType, null);
-                    list.add(merkleNode);
-                }
-                if (!nodeMap.containsKey(getKey(level + 1, leafIndex / N))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex / N, level + 1, null, treeType, null);
-                    list.add(merkleNode);
-                }
-            }
-
-            // this means leafIndex is the max index of the currrent level and (leafIndex+1) is odd
-            if (leafIndex == maxIndex && 0 == (leafIndex % N)) {
-                log.debug("[getMerkleNodeListForUpdate] leafIndex == maxIndex && 0 == (leafIndex % N)");
-                if (!nodeMap.containsKey(getKey(level, leafIndex))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex, level, null, treeType, null);
-                    list.add(merkleNode);
-                }
-                if (!nodeMap.containsKey(getKey(level + 1, leafIndex / N))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex / N, level + 1, null, treeType, null);
-                    list.add(merkleNode);
-                }
-            }
-
-            // this means leafIndex is not the max index of the currrent level and (leafIndex+1) is odd
-            if (leafIndex < maxIndex && 0 == (leafIndex % N)) {
-                log.debug("[getMerkleNodeListForUpdate] leafIndex < maxIndex && 0 == (leafIndex % N)");
-                if (!nodeMap.containsKey(getKey(level, leafIndex))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex, level, null, treeType, null);
-                    list.add(merkleNode);
-                }
-                if (!nodeMap.containsKey(getKey(level, leafIndex + 1))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex + 1, level, null, treeType, null);
-                    list.add(merkleNode);
-                }
-                if (!nodeMap.containsKey(getKey(level + 1, leafIndex / N))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex / N, level + 1, null, treeType, null);
-                    list.add(merkleNode);
-                }
-            }
-
-            leafIndex = leafIndex / N;
-            maxIndex = maxIndex / N;
-        }
-
-        if (list.size() > 0) {
-            log.debug("[getMerkleNodeListForUpdate] before query db, list.size={}, list={}", list.size(),
-                JSON.toJSONString(list));
-            list = merkleRepository.batchQueryMerkleNodeByIndex(list);
-            log.debug("[getMerkleNodeListForUpdate] after query db, list.size={}, list={}", list.size(),
-                JSON.toJSONString(list));
-
-            // add merkleNode into nodeMap
-            for (MerkleNode merkleNode : list) {
-                nodeMap.put(getKey(merkleNode.getLevel(), merkleNode.getIndex()), merkleNode);
-            }
-        }
-    }
-
-    /**
-     * batch acquire merkleNode from database which doesn't exist nodeMap
-     *
-     * @param merkleTree
-     * @param totalLevel
-     * @param leafIndex
-     */
-    private void getMerkleNodeListForAdd(MerkleTree merkleTree, int totalLevel, long leafIndex) {
-        long maxIndex = merkleTree.getMaxIndex();
-        Map nodeMap = merkleTree.getNodeMap();
-        MerkleTypeEnum treeType = merkleTree.getTreeType();
-        List<MerkleNode> list = new LinkedList<>();
-        for (int level = 1; level < totalLevel; level++) {
-            if (0 == leafIndex % N) {
-                log.debug("[getMerkleNodeListForAdd] 0 == leafIndex % N");
-                // this means a parent should be added into nodeMap
-                if ((leafIndex / N) > (maxIndex / N)) {
-                    log.debug(
-                        "[getMerkleNodeListForAdd] (leafIndex / N) > (maxIndex / N), add a parent node to merkleTree");
-                    if (!nodeMap.containsKey(getKey(level, leafIndex))) {
-                        MerkleNode merkleNode = new MerkleNode(null, null, leafIndex, level, null, treeType, null);
-                        list.add(merkleNode);
-                    }
-                }
-                // this means only have left chaild
-                if (!nodeMap.containsKey(getKey(level, leafIndex))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex, level, null, treeType, null);
-                    list.add(merkleNode);
-                }
-                if (!nodeMap.containsKey(getKey(level + 1, leafIndex / N))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex / N, level + 1, null, treeType, null);
-                    list.add(merkleNode);
-                }
-            }
-            if (1 == leafIndex % N) {
-                log.debug("[getMerkleNodeListForAdd] 1 == leafIndex % N, update a parent node");
-                if (!nodeMap.containsKey(getKey(level, leafIndex - 1L))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex - 1L, level, null, treeType, null);
-                    list.add(merkleNode);
-                }
-                if (!nodeMap.containsKey(getKey(level, leafIndex))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex, level, null, treeType, null);
-                    list.add(merkleNode);
-                }
-                if (!nodeMap.containsKey(getKey(level + 1, leafIndex))) {
-                    MerkleNode merkleNode = new MerkleNode(null, null, leafIndex / N, level + 1, null, treeType, null);
-                    list.add(merkleNode);
-                }
-            }
-
-            leafIndex = leafIndex / N;
-            maxIndex = maxIndex / N;
-        }
-
-        if (list.size() > 0) {
-            log.debug("[getMerkleNodeListForAdd] before query db, list.size={}, list={}", list.size(),
-                JSON.toJSONString(list));
-            list = merkleRepository.batchQueryMerkleNodeByIndex(list);
-            log.debug("[getMerkleNodeListForAdd] after query db, list.size={}, list={}", list.size(),
-                JSON.toJSONString(list));
-
-            // add merkleNode into nodeMap
-            for (MerkleNode merkleNode : list) {
-                nodeMap.put(getKey(merkleNode.getLevel(), merkleNode.getIndex()), merkleNode);
-            }
-        }
-
     }
 
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * transaction controller
+ * transaction tx
  *
  * @author lingchao
  * @create 2018年04月18日14:29
@@ -25,14 +25,14 @@ public class TransactionController {
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     @ResponseBody
     public RespData submitTransactions(@RequestBody List<SignedTransaction> transactions) {
-        log.info("submit transactions receive parameter :{}", transactions);
+        log.debug("submit transactions receive parameter :{}", transactions);
         return blockChainService.submitTransactions(transactions);
     }
 
     @RequestMapping(value = "/post", method = RequestMethod.POST)
     @ResponseBody
     public RespData submitTransaction(@RequestBody SignedTransaction transaction) {
-        log.info("submit transaction receive parameter :{}", transaction);
+        log.debug("submit transaction receive parameter :{}", transaction);
         return blockChainService.submitTransaction(transaction);
     }
 }

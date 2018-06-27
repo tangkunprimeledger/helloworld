@@ -67,7 +67,7 @@ public class TransferBillCallbackHandler {
                                 int isUpdate = receivableBillDao.updateStatus(coreTransaction.getTxId(), txOut.getActionIndex().longValue(), txOut.getIndex().longValue(), BillStatusEnum.PROCESS.getCode(), toStatus);
                                 if (0 == isUpdate) {
                                     log.error(" transfer bill update status  for txId :{} ,actionIndex :{} ,index :{} to status: {} is failed!", coreTransaction.getTxId(), txOut.getActionIndex(), txOut.getIndex(), toStatus);
-                                    throw new RuntimeException("create bill update status failed!");
+                                    throw new RuntimeException("create bill update stdatus failed!");
                                 }
                             }
 

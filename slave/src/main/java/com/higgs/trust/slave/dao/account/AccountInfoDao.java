@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.dao.account;
 
-import com.higgs.trust.slave.dao.BaseDao;
+import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.account.AccountInfoPO;
 import com.higgs.trust.slave.dao.po.account.AccountInfoWithOwnerPO;
 import org.apache.ibatis.annotations.Mapper;

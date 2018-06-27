@@ -55,4 +55,12 @@ public interface BlockChainService {
      * @return
      */
     boolean isExistedIdentity(String identity);
+
+    /**
+     * check currency
+     *
+     * @param currency
+     * @return
+     */
+    boolean isExistedCurrency(String currency);
 }
