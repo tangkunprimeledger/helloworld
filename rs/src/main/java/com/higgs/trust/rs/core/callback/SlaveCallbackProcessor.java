@@ -4,6 +4,7 @@ import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
+import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
@@ -56,6 +57,8 @@ import java.util.List;
         if (!sendBySelf(tx.getSender())) {
             //add tx,status=PERSISTED
             coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
+            //save process result
+            coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
             //callback custom rs
             rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
             return;
@@ -64,11 +67,15 @@ import java.util.List;
         if(!coreTxRepository.isExist(tx.getTxId())){
             log.warn("onPersisted]call back self but core_tx is not exist txId:{}",tx.getTxId());
             coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
+            //save process result
+            coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
             return;
         }
         //for self
         //update status
         coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
+        //save process result
+        coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
         //callback custom rs
         rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
         //同步通知
@@ -113,6 +120,8 @@ import java.util.List;
         }
         //add tx,status=END
         coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
+        //save process result
+        coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
         //callback custom rs
         rsCoreCallbackProcessor.onFailover(respData,blockHeader);
     }
