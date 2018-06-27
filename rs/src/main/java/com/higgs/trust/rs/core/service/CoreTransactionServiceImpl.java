@@ -421,9 +421,10 @@ import java.util.List;
         }
         CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
         RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO,RsCoreTxVO.class);
-        coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
-        coreTxVO.setExecuteResult(CoreTxResultEnum.formCode(coreTransactionPO.getExecuteResult()));
         coreTxVO.setStatus(CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()));
+        coreTxVO.setExecuteResult(CoreTxResultEnum.formCode(coreTransactionPO.getExecuteResult()));
+        coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
+        coreTxVO.setErrorMsg(coreTransactionPO.getErrorMsg());
         return coreTxVO;
     }
 
