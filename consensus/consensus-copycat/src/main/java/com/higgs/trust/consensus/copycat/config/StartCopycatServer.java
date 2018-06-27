@@ -14,10 +14,8 @@ import io.atomix.copycat.server.storage.Storage;
 import io.atomix.copycat.server.storage.StorageLevel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +28,7 @@ import java.util.List;
  * @author suimi
  * @date 2018/6/12
  */
-@Slf4j @Component public class StartCopycatServer implements ConsensusStateMachine {
+@Slf4j @Component public class StartCopycatServer implements ConsensusStateMachine, DisposableBean {
 
     @Autowired private CopycatProperties copycatProperties;
 
@@ -94,5 +92,11 @@ import java.util.List;
 
     @Override public void initStart() {
 
+    }
+
+    @Override public void destroy() {
+        if (server != null && server.isRunning()) {
+            server.shutdown();
+        }
     }
 }

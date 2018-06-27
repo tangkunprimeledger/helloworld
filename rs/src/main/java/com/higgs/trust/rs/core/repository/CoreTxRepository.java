@@ -146,13 +146,14 @@ import java.util.List;
      * @param txId
      * @param executResult
      * @param respCode
+     * @param respMsg
      */
-    public void saveExecuteResult(String txId,CoreTxResultEnum executResult,String respCode){
+    public void saveExecuteResult(String txId,CoreTxResultEnum executResult,String respCode,String respMsg){
         if (!rsConfig.isUseMySQL()) {
             //TODO: liuyu for rocksdb handler
             return;
         }
-        int r = coreTransactionDao.saveExecuteResult(txId,executResult.getCode(), respCode);
+        int r = coreTransactionDao.saveExecuteResult(txId,executResult.getCode(), respCode,respMsg);
         if (r != 1) {
             log.error("[saveExecuteResult]executResult:{},respCode:{} is fail txId:{}",executResult,respCode, txId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);

@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.vo;
 
+import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import lombok.Getter;
@@ -18,9 +19,13 @@ import lombok.Setter;
     /**
      * the tx execute result 0:fail 1:success
      */
-    private String executeResult;
+    private CoreTxResultEnum executeResult;
     /**
      * execute error code
      */
     private String errorCode;
+    /**
+     * execute error msg
+     */
+    private String errorMsg;
 }

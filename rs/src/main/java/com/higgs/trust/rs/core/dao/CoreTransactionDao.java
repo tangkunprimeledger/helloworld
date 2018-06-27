@@ -42,9 +42,10 @@ public interface CoreTransactionDao extends BaseDao<CoreTransactionPO> {
      * @param txId
      * @param executResult
      * @param errorCode
+     * @param errorMsg
      * @return
      */
-    int saveExecuteResult(@Param("txId")String txId,@Param("executResult")String executResult,@Param("errorCode")String errorCode);
+    int saveExecuteResult(@Param("txId")String txId,@Param("executResult")String executResult,@Param("errorCode")String errorCode,@Param("errorMsg")String errorMsg);
 
     /**
      * update sign datas
