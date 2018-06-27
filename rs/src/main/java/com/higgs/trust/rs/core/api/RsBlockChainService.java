@@ -45,4 +45,11 @@ public interface RsBlockChainService {
      * @return
      */
     boolean isExistedIdentity(String identity);
+
+    /**
+     * check curency
+     * @param currency
+     * @return
+     */
+    boolean isExistedCurrency(String currency);
 }

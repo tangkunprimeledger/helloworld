@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.dao.block;
 
-import com.higgs.trust.slave.api.vo.BlockVO;
-import com.higgs.trust.slave.dao.BaseDao;
+import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.block.BlockPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

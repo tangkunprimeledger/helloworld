@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.service;
 
 import com.google.common.collect.Lists;
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -18,6 +19,7 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
+import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -310,11 +312,18 @@ import java.util.List;
                 //query receipts by txId
                 List<VoteReceipt> receipts = voteReceiptRepository.queryByTxId(bo.getTxId());
                 if (CollectionUtils.isEmpty(receipts)) {
-                    log.error("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
+                    log.warn("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
                     return;
                 }
-                if (receipts.size() < rsIds.size() - 1) {
-                    log.error("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
+                //filter self
+                List<String> lastRsIds = new ArrayList<>();
+                for(String rsName : rsIds){
+                    if(!StringUtils.equals(rsName,rsConfig.getRsName())){
+                        lastRsIds.add(rsName);
+                    }
+                }
+                if (receipts.size() != lastRsIds.size()) {
+                    log.warn("[processNeedVoteTx]receipts.size:{} less than rsIds.size:{} by txId:{}", receipts.size(),
                         rsIds.size(), bo.getTxId());
                     return;
                 }
@@ -336,9 +345,9 @@ import java.util.List;
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
                 //change status to WAIT for SYNC pattern
                 coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);
+                log.info("[processNeedVoteTx]is success");
             }
         });
-        log.info("[processNeedVoteTx]is success");
     }
 
     /**
@@ -374,7 +383,7 @@ import java.util.List;
                 respData.setData(coreTxRepository.convertTxVO(bo));
                 //callback custom rs
                 if(isCallback) {
-                    rsCoreCallbackHandler.onEnd(respData);
+                    rsCoreCallbackHandler.onEnd(respData,null);
                 }
             }
         });
@@ -403,6 +412,19 @@ import java.util.List;
         }
         //submit
         submitToSlave(boList);
+    }
+
+    @Override public RsCoreTxVO queryCoreTx(String txId) {
+        CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(txId,false);
+        if(coreTransactionPO == null){
+            return null;
+        }
+        CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
+        RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO,RsCoreTxVO.class);
+        coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
+        coreTxVO.setExecuteResult(coreTransactionPO.getExecuteResult());
+        coreTxVO.setStatus(CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()));
+        return coreTxVO;
     }
 
     /**

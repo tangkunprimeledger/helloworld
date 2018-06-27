@@ -12,6 +12,7 @@ import com.higgs.trust.rs.custom.biz.rscore.callback.handler.TransferBillCallbac
 import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -46,7 +47,7 @@ import org.springframework.stereotype.Service;
      *
      * @param respData
      */
-    @Override public void onPersisted(RespData<CoreTransaction> respData) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
 
     }
 
@@ -56,7 +57,7 @@ import org.springframework.stereotype.Service;
      *
      * @param respData
      */
-    @Override public void onEnd(RespData<CoreTransaction> respData) {
+    @Override public void onEnd(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
         log.debug("[onEnd] start process");
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
@@ -65,11 +66,6 @@ import org.springframework.stereotype.Service;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if(initPolicyEnum!=null) {
             switch (initPolicyEnum) {
-                case UTXO_ISSUE:
-                    createBillCallbackHandler.process(respData);
-                    break;
-                case UTXO_DESTROY:
-                    break;
                 default:
                     break;
             }
@@ -88,6 +84,9 @@ import org.springframework.stereotype.Service;
             case BizTypeConst.TRANSFER_UTXO:
                 transferBillCallbackHandler.process(respData);
                 break;
+            case BizTypeConst.ISSUE_UTXO:
+                createBillCallbackHandler.process(respData);
+                break;
             default:
                 log.error("[onEnd] do not has bizType:{} handler",bizType);
                 throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONFIGURATION_ERROR);
@@ -95,7 +94,7 @@ import org.springframework.stereotype.Service;
         log.info("[onEnd] end process");
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData) {
+    @Override public void onFailover(RespData<CoreTransaction> respData,BlockHeader blockHeader) {
 
     }
 

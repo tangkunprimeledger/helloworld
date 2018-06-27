@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.dao.ca;
 
-import com.higgs.trust.slave.dao.BaseDao;
+import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -56,5 +56,12 @@ import java.util.List;
      * @return
      */
     int batchUpdate(List<CaPO> caPOList);
+
+    /** 
+     * @desc get ca info for consensus layer
+     * @param user
+     * @return   
+     */  
+    CaPO getCaForConsensus(String user);
 
 }

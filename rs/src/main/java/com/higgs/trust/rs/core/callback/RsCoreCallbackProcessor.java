@@ -1,7 +1,9 @@
 package com.higgs.trust.rs.core.callback;
 
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
@@ -15,6 +17,7 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
@@ -34,6 +37,7 @@ import org.springframework.stereotype.Component;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
     @Autowired private RequestDao requestDao;
+    @Autowired ClusterInfo clusterInfo;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -49,12 +53,12 @@ import org.springframework.stereotype.Component;
         callbackHandler.onVote(votingRequest);
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onPersisted(respData);
+        callbackHandler.onPersisted(respData, blockHeader);
     }
 
-    @Override public void onEnd(RespData<CoreTransaction> respData) {
+    @Override public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -78,6 +82,9 @@ import org.springframework.stereotype.Component;
                 case CA_CANCEL:
                     processCaCancel(respData);
                     return;
+                case CA_AUTH:
+                    processCaAuth(respData);
+                    return;
                 case CANCEL_RS:
                     processCancelRS(respData);
                     return;
@@ -86,10 +93,10 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onEnd(respData);
+        callbackHandler.onEnd(respData, blockHeader);
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData) {
+    @Override public void onFailover(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -105,7 +112,7 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onFailover(respData);
+        callbackHandler.onFailover(respData, blockHeader);
     }
 
     /**
@@ -137,16 +144,18 @@ import org.springframework.stereotype.Component;
         voteRuleRepository.add(voteRule);
 
         //update request status
-        requestDao.updateStatusByRequestId(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
+        requestDao.updateStatusByRequestId(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(),
+            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
     }
 
-
     private void processRegisterRS(RespData<CoreTransaction> respData) {
-        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
+        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(),
+            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
     }
 
     private void processCancelRS(RespData<CoreTransaction> respData) {
-        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(), RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
+        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(),
+            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
     }
 
     private void processCaUpdate(RespData<CoreTransaction> respData) {
@@ -154,6 +163,8 @@ import org.springframework.stereotype.Component;
             log.info("[processCaUpdate]ca update is fail,code:{}", respData.getRespCode());
             return;
         }
+
+        clusterInfo.refresh();
 
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
@@ -178,12 +189,18 @@ import org.springframework.stereotype.Component;
             return;
         }
 
+        clusterInfo.refresh();
+
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
-            log.info("[processCaUpdate] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
+            log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
                 nodeState.getNodeName(), user);
             return;
+        }
+
+        if (nodeState.isState(NodeStateEnum.Running)) {
+            nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
         }
 
         log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
@@ -192,6 +209,18 @@ import org.springframework.stereotype.Component;
         config.setNodeName(user);
         config.setValid(false);
         configRepository.updateConfig(config);
+
         log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
+    }
+
+    private void processCaAuth(RespData<CoreTransaction> respData) {
+        if (!respData.isSuccess()) {
+            log.info("[processCaAuth]ca auth is fail,code:{}", respData.getRespCode());
+            return;
+        }
+
+        log.info("[processCaAuth] start to auth pubKey/priKey, nodeName={}", nodeState.getNodeName());
+        clusterInfo.refresh();
+        log.info("[processCaCancel] end auth pubKey/priKey, nodeName={}", nodeState.getNodeName());
     }
 }

@@ -14,6 +14,7 @@ import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +45,7 @@ import java.util.List;
         slaveCallbackRegistor.registCallbackHandler(this);
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos) {
+    @Override public void onPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
@@ -56,7 +57,7 @@ import java.util.List;
             //add tx,status=PERSISTED
             coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
             //callback custom rs
-            rsCoreCallbackProcessor.onPersisted(respData);
+            rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
             return;
         }
         //check core_tx record
@@ -69,7 +70,7 @@ import java.util.List;
         //update status
         coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
         //callback custom rs
-        rsCoreCallbackProcessor.onPersisted(respData);
+        rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
         //同步通知
         try {
             persistedResultMap.put(tx.getTxId(), respData);
@@ -78,7 +79,7 @@ import java.util.List;
         }
     }
 
-    @Override public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos) {
+    @Override public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
@@ -94,7 +95,7 @@ import java.util.List;
         //update status
         coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
         //callback custom rs
-        rsCoreCallbackProcessor.onEnd(respData);
+        rsCoreCallbackProcessor.onEnd(respData,blockHeader);
         //同步通知
         try {
             clusterPersistedResultMap.put(tx.getTxId(), respData);
@@ -103,7 +104,7 @@ import java.util.List;
         }
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData, List<SignInfo> signInfos) {
+    @Override public void onFailover(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
@@ -113,7 +114,7 @@ import java.util.List;
         //add tx,status=END
         coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
         //callback custom rs
-        rsCoreCallbackProcessor.onFailover(respData);
+        rsCoreCallbackProcessor.onFailover(respData,blockHeader);
     }
 
     /**
