@@ -39,7 +39,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
     }
 
     @Override
-    public List<UTXOVO> queryUtxo(String txId) {
+    public List<UTXOVO> queryUTXO(String txId) {
 
         return blockChainService.queryUTXOByTxId(txId);
     }
@@ -54,13 +54,26 @@ public class RsChainServiceImpl implements RsBlockChainService {
     public boolean isExistedIdentity(String identity) {
         return blockChainService.isExistedIdentity(identity);
     }
+
     /**
      * check currency
      *
      * @param currency
      * @return
      */
-    @Override public boolean isExistedCurrency(String currency) {
+    @Override
+    public boolean isExistedCurrency(String currency) {
         return blockChainService.isExistedCurrency(currency);
+    }
+
+    /**
+     * query System Property by key
+     *
+     * @param key
+     * @return
+     */
+    @Override
+    public SystemPropertyVO querySystemPropertyByKey(String key) {
+        return blockChainService.querySystemPropertyByKey(key);
     }
 }

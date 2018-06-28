@@ -4,6 +4,7 @@ import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.config.SystemProperty;
 
 import java.util.List;
 
@@ -63,4 +64,12 @@ public interface BlockChainService {
      * @return
      */
     boolean isExistedCurrency(String currency);
+
+    /**
+     * query System Property by key
+     * @param key
+     * @return
+     */
+    SystemPropertyVO querySystemPropertyByKey(String key);
+
 }

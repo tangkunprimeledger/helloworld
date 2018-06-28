@@ -37,7 +37,7 @@ public interface RsBlockChainService {
      * @param txId
      * @return
      */
-    List<UTXOVO> queryUtxo(String txId);
+    List<UTXOVO> queryUTXO(String txId);
 
     /**
      * check whether the identity is existed
@@ -52,4 +52,12 @@ public interface RsBlockChainService {
      * @return
      */
     boolean isExistedCurrency(String currency);
+
+
+    /**
+     * query System Property by key
+     * @param key
+     * @return
+     */
+    SystemPropertyVO querySystemPropertyByKey(String key);
 }

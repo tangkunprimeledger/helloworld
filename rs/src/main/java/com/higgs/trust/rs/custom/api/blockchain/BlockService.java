@@ -27,5 +27,5 @@ public interface BlockService {
      * @param txId
      * @return
      */
-    RespData queryUtxo(String txId);
+    RespData queryUTXO(String txId);
 }

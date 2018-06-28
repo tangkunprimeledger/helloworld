@@ -1,24 +1,27 @@
 package com.higgs.trust.slave.core.api.impl;
 
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.common.context.AppContext;
-import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
+import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.config.SystemProperty;
 import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +60,9 @@ public class BlockChainServiceImpl implements BlockChainService {
 
     @Autowired
     private CurrencyRepository currencyRepository;
+
+    @Autowired
+    private SystemPropertyRepository systemPropertyRepository;
 
     @Override
     public RespData submitTransactions(List<SignedTransaction> transactions) {
@@ -130,7 +136,8 @@ public class BlockChainServiceImpl implements BlockChainService {
         return blockRepository.listBlocks(startHeight, size);
     }
 
-    @Override public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
+    @Override
+    public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
         if (null == req) {
             return null;
         }
@@ -158,7 +165,8 @@ public class BlockChainServiceImpl implements BlockChainService {
     }
 
 
-    @Override public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
+    @Override
+    public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
 
         if (null == req) {
             return null;
@@ -180,8 +188,7 @@ public class BlockChainServiceImpl implements BlockChainService {
         if (0 == count) {
             pageVO.setData(null);
         } else {
-            List<CoreTransactionVO> list = transactionRepository
-                .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(), req.getPageSize());
+            List<CoreTransactionVO> list = transactionRepository.queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(), req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -208,6 +215,9 @@ public class BlockChainServiceImpl implements BlockChainService {
      */
     @Override
     public boolean isExistedIdentity(String identity) {
+        if (StringUtils.isBlank(identity)) {
+            return false;
+        }
         return dataIdentityRepository.isExist(identity);
     }
 
@@ -217,8 +227,31 @@ public class BlockChainServiceImpl implements BlockChainService {
      * @param currency
      * @return
      */
-    @Override public boolean isExistedCurrency(String currency) {
+    @Override
+    public boolean isExistedCurrency(String currency) {
         return currencyRepository.isExits(currency);
     }
+
+
+    /**
+     * query System Property by key
+     *
+     * @param key
+     * @return
+     */
+    @Override
+    public SystemPropertyVO querySystemPropertyByKey(String key) {
+        SystemPropertyVO systemPropertyVO = null;
+        if (StringUtils.isBlank(key)) {
+            return systemPropertyVO;
+        }
+        SystemProperty systemProperty = systemPropertyRepository.queryByKey(key);
+        if (null != systemProperty) {
+            systemPropertyVO = new SystemPropertyVO();
+            BeanUtils.copyProperties(systemProperty, systemPropertyVO);
+        }
+        return systemPropertyVO;
+    }
+
 
 }
