@@ -131,7 +131,7 @@ import java.util.function.Function;
                         TraceUtils.closeSpan(span);
                         return;
                     } catch (Exception e) {
-                        log.error("apply error {}", e);
+                        log.error("apply error {}", e.getMessage());
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e1) {
