@@ -17,10 +17,7 @@ import java.util.List;
  * @author lingchao
  * @create 2018年05月13日17:49
  */
-@Service
 public class CoreTransactionConvertor {
-    @Autowired
-    private NodeState nodeState;
 
     /**
      * 构建coreTransaction
@@ -29,13 +26,13 @@ public class CoreTransactionConvertor {
      * @param actionList
      * @return
      */
-    public CoreTransaction buildBillCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList,String policyId){
+    public CoreTransaction buildBillCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList,String policyId,String sender){
         CoreTransaction coreTransaction = new CoreTransaction();
         coreTransaction.setTxId(txId);
         coreTransaction.setBizModel(bizModel);
         coreTransaction.setActionList(actionList);
         coreTransaction.setVersion(VersionEnum.V1.getCode());
-        coreTransaction.setSender(nodeState.getNodeName());
+        coreTransaction.setSender(sender);
         coreTransaction.setSendTime(new Date());
         coreTransaction.setPolicyId(policyId);
         return coreTransaction;
@@ -47,13 +44,13 @@ public class CoreTransactionConvertor {
      * @param actionList
      * @return
      */
-    public CoreTransaction buildCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList, String policyId) {
+    public CoreTransaction buildCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList, String policyId,String sender) {
         CoreTransaction coreTransaction = new CoreTransaction();
         coreTransaction.setTxId(txId);
         coreTransaction.setBizModel(bizModel);
         coreTransaction.setActionList(actionList);
         coreTransaction.setVersion(VersionEnum.V1.getCode());
-        coreTransaction.setSender(nodeState.getNodeName());
+        coreTransaction.setSender(sender);
         coreTransaction.setSendTime(new Date());
         coreTransaction.setPolicyId(policyId);
         return coreTransaction;
