@@ -16,7 +16,7 @@ import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.rs.custom.util.converter.BillConvertor;
-import com.higgs.trust.rs.custom.util.converter.CoreTransactionConvertor;
+import com.higgs.trust.rs.common.utils.CoreTransactionConvertor;
 import com.higgs.trust.rs.custom.util.converter.RequestConvertor;
 import com.higgs.trust.rs.custom.util.converter.UTXOActionConvertor;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;

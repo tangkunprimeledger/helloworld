@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.custom.util.converter;
+package com.higgs.trust.rs.common.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave.api.enums.VersionEnum;
