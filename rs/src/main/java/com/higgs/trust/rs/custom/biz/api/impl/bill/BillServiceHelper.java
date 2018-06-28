@@ -16,7 +16,7 @@ import com.higgs.trust.rs.custom.dao.ReceivableBillDao;
 import com.higgs.trust.rs.custom.dao.po.ReceivableBillPO;
 import com.higgs.trust.rs.custom.model.BizTypeConst;
 import com.higgs.trust.rs.custom.util.converter.BillConvertor;
-import com.higgs.trust.rs.custom.util.converter.CoreTransactionConvertor;
+import com.higgs.trust.rs.common.utils.CoreTransactionConvertor;
 import com.higgs.trust.rs.custom.util.converter.RequestConvertor;
 import com.higgs.trust.rs.custom.util.converter.UTXOActionConvertor;
 import com.higgs.trust.rs.custom.vo.BillCreateVO;
@@ -142,7 +142,7 @@ public class BillServiceHelper {
         }
 
         //创建coreTx
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList, InitPolicyEnum.UTXO_ISSUE.getPolicyId());
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildCoreTransaction(billCreateVO.getRequestId(), bizModel, actionList, InitPolicyEnum.UTXO_ISSUE.getPolicyId());
 
         //insert bill
         for (Action action : actionList) {
@@ -211,7 +211,7 @@ public class BillServiceHelper {
             bizModel.put("bizModel", billTransferVO.getBizModel());
         }
 
-        CoreTransaction coreTransaction = coreTransactionConvertor.buildBillCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList, BizTypeConst.TRANSFER_UTXO);
+        CoreTransaction coreTransaction = coreTransactionConvertor.buildCoreTransaction(billTransferVO.getRequestId(), bizModel, actionList, BizTypeConst.TRANSFER_UTXO);
 
         //insert bill
         for (Action action : actionList) {

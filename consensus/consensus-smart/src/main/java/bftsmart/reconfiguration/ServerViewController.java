@@ -109,10 +109,12 @@ public class ServerViewController extends ViewController {
         ReconfigureRequest request = (ReconfigureRequest) TOMUtil.getObject(up.getContent());
         //TODO 修改过，获取配置中的TTP公钥验签
         SmartConfig smartConfig = SpringUtil.getBean(SmartConfig.class);
+        log.info("ttp pubkey");
 //        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getSender()),
         if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(smartConfig.getTtpPubKey()),
                 request.toString().getBytes(), request.getSignature()) && TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getNumber()),
                 request.toString().getBytes(), request.getOtherSignature())) {
+            log.info("---- ttp sign is true ----");
             if (request.getSender() == getStaticConf().getTTPId()) {
                 this.updates.add(up);
             } else {
@@ -147,6 +149,12 @@ public class ServerViewController extends ViewController {
                     this.updates.add(up);
                 }
             }
+        } else {
+            log.error("---- ttp sign is false ----");
+            log.error("ttp sign :" + TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(smartConfig.getTtpPubKey()),
+                    request.toString().getBytes(), request.getSignature()));
+            log.error("other sign :" + TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getNumber()),
+                    request.toString().getBytes(), request.getOtherSignature()));
         }
     }
 

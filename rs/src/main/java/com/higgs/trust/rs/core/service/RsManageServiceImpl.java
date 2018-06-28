@@ -12,7 +12,7 @@ import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.rs.custom.api.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.custom.api.vo.manage.RegisterRsVO;
-import com.higgs.trust.rs.custom.util.converter.CoreTransactionConvertor;
+import com.higgs.trust.rs.common.utils.CoreTransactionConvertor;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;

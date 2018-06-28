@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +30,7 @@ import java.util.List;
  * @author suimi
  * @date 2018/6/12
  */
-@Slf4j @Component public class StartCopycatServer implements ConsensusStateMachine, DisposableBean {
+@Slf4j @Component public class StartCopycatServer implements ConsensusStateMachine,ApplicationListener<ApplicationReadyEvent>, DisposableBean {
 
     @Autowired private CopycatProperties copycatProperties;
 
@@ -74,7 +76,9 @@ import java.util.List;
         server.bootstrap(clusterAddress);
     }
 
-    @StateChangeListener(NodeStateEnum.Running) @Order public synchronized void start() {
+//    @StateChangeListener(NodeStateEnum.Running) @Order
+
+    public synchronized void start() {
         if (server == null) {
             start(copycatProperties, stateMachine);
         }
@@ -98,5 +102,9 @@ import java.util.List;
         if (server != null && server.isRunning()) {
             server.shutdown();
         }
+    }
+
+    @Override public void onApplicationEvent(ApplicationReadyEvent event) {
+        start(copycatProperties, stateMachine);
     }
 }
