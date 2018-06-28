@@ -93,7 +93,7 @@ import java.util.List;
 
                     //组装UTXO,CoreTransaction，下发
                     return submitTx(coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(), null,
-                        buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId(),nodeState.getNodeName()));
+                        buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId()));
                 }
             });
 
@@ -178,7 +178,7 @@ import java.util.List;
                     jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
                     return submitTx(coreTransactionConvertor
                         .buildCoreTransaction(registerPolicyVO.getRequestId(), jsonObject,
-                            buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId(),nodeState.getNodeName()));
+                            buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
                 }
             });
 
@@ -223,7 +223,7 @@ import java.util.List;
                     //组装UTXO,CoreTransaction，下发
                     return submitTx(coreTransactionConvertor
                         .buildCoreTransaction(cancelRsVO.getRequestId(), null, buildCancelRsActionList(cancelRsVO),
-                            InitPolicyEnum.CANCEL_RS.getPolicyId(),nodeState.getNodeName()));
+                            InitPolicyEnum.CANCEL_RS.getPolicyId()));
                 }
             });
 
