@@ -23,7 +23,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -153,7 +152,7 @@ public class ViewManager {
 
     public static void main(String[] args) {
 
-        ViewManager viewManager = null;
+        ViewManager viewManager = new ViewManager();
 
 //        if (args.length > 0) {
 //            viewManager = new ViewManager(args[0]);

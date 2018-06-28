@@ -81,7 +81,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         byte[][] replies = new byte[commands.length][];
 
         if (checkpointIndex == -1) {
-            System.out.println("!noop" + !noop);
             if (!noop) {
 
                 stateLock.lock();

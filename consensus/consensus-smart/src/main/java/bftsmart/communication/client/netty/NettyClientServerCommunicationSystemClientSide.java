@@ -79,7 +79,6 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 
     public NettyClientServerCommunicationSystemClientSide(int clientId, ClientViewController controller) {
         super();
-
         this.clientId = clientId;
         this.workerGroup = new NioEventLoopGroup();
         try {           
@@ -253,7 +252,6 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             
             return;
         }
-        
         System.out.println("Channel active");
     }
 
@@ -555,4 +553,5 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             }
             
         }
+
 }
