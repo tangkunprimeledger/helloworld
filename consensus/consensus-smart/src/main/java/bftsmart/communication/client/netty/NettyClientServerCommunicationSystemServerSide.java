@@ -19,6 +19,7 @@ import bftsmart.communication.client.CommunicationSystemServerSide;
 import bftsmart.communication.client.RequestReceiver;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.messages.TOMMessage;
+import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.util.Logger;
 import bftsmart.tom.util.TOMUtil;
 import io.netty.bootstrap.ServerBootstrap;
@@ -51,6 +52,8 @@ import java.util.logging.Level;
  */
 @Sharable
 public class NettyClientServerCommunicationSystemServerSide extends SimpleChannelInboundHandler<TOMMessage> implements CommunicationSystemServerSide {
+
+	private static final org.slf4j.Logger log = LoggerFactory.getLogger(NettyClientServerCommunicationSystemServerSide.class);
 
 	private RequestReceiver requestReceiver;
 	private HashMap sessionTable;
@@ -130,8 +133,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
         @Override
         public void shutdown() {
             
-            System.out.println("Shutting down Netty system");
-            
+			log.info("Shutting down Netty system");
             this.closed = true;
 
             closeChannelAndEventLoop(mainChannel);
@@ -158,9 +160,9 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                 }
             
                 if(cause instanceof ClosedChannelException)
-			System.out.println("Connection with client closed.");
+                log.info("Connection with client closed.");
 		else if(cause instanceof ConnectException) {
-			System.out.println("Impossible to connect to client.");
+			log.info("Impossible to connect to client.");
 		} else {
 			cause.printStackTrace(System.err);
 		}
@@ -168,7 +170,11 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, TOMMessage sm) throws Exception {
-
+				//TODO zyf modified
+				log.info("---TOMMessage type: {}", sm.getReqType().toString());
+				if (sm.getReqType() == TOMMessageType.RECONFIG) {
+					log.info("ttptype" + sm.getSender());
+				}
                 if (this.closed) {
                     closeChannelAndEventLoop(ctx.channel());
                     return;
@@ -187,8 +193,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                     closeChannelAndEventLoop(ctx.channel());
                     return;
                 }
-		Logger.println("Session Created, active clients=" + sessionTable.size());
-		System.out.println("Session Created, active clients=" + sessionTable.size());
+		log.info("netty client info : local address " + ctx.channel().localAddress() + " ;and remote address " + ctx.channel().remoteAddress());
 	}
 
 	@Override
@@ -220,7 +225,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 		} finally {
 			rl.writeLock().unlock();
 		}
-		Logger.println("Session Closed, active clients=" + sessionTable.size());
+		log.info("Session Closed, active clients=" + sessionTable.size());
 	}
 
 	@Override

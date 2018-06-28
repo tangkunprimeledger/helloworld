@@ -1,32 +1,27 @@
-package bftsmart.reconfiguration;
+package com.higgs.trust.consensus.bftsmartcustom.started.custom;
 
+import bftsmart.reconfiguration.RCMessage;
+import bftsmart.reconfiguration.util.RSAKeyLoader;
 import bftsmart.tom.util.TOMUtil;
-import com.higgs.trust.consensus.bftsmartcustom.started.custom.CustomKeyLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: zhouyafeng
  * @create: 2018/05/30 15:02
  * @description:
  */
-@Component
 public class SendRCMessage {
 
     private static final Logger log = LoggerFactory.getLogger(SendRCMessage.class);
     private RCMessage rcMessage;
-
-    @Autowired
-    private CustomKeyLoader customKeyLoader;
 
     public void add(int num, String ip, int port) {
         if (num < 0) {
@@ -67,7 +62,7 @@ public class SendRCMessage {
 
     }
 
-    public void sendToTTP(String ip, int port, int ttpId) {
+    public void sendToTTP(String ip, int port, int ttpId, RSAKeyLoader rsaKeyLoader) {
         if (ttpId < 0) {
             log.error("This value cannot be less than 0: {}", ttpId);
             return;
@@ -84,16 +79,34 @@ public class SendRCMessage {
             log.error("The message cannot be sent because they are null");
             return;
         }
+        Socket s = null;
+        OutputStream os = null;
+        InputStream is = null;
+        BufferedReader reader = null;
+        ObjectOutputStream objectOutputStream = null;
         try {
-            Socket s = new Socket(ip, port);
-
-            OutputStream os = s.getOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
+            s = new Socket(ip, port);
+            is = s.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            os = s.getOutputStream();
+            objectOutputStream = new ObjectOutputStream(os);
             //设置TTP的编号
             rcMessage.setSender(ttpId);
-            rcMessage.setSignature(TOMUtil.signMessage(customKeyLoader.loadPrivateKey(), rcMessage.toString().getBytes()));
-
+            rcMessage.setSignature(TOMUtil.signMessage(rsaKeyLoader.loadPrivateKey(), rcMessage.toString().getBytes()));
+            log.info("leave replica message {}", rcMessage.toString());
             objectOutputStream.writeObject(rcMessage);
+            while (true) {
+                String res = reader.readLine();
+                if("success".equals(res)){
+                    log.info("Successful configuration update");
+                    break;
+                } else if("fail".equals(res)){
+                    log.info("Configuration update failed");
+                    break;
+                }
+                TimeUnit.MILLISECONDS.sleep(10);
+            }
+            reader.close();
             objectOutputStream.flush();
             objectOutputStream.close();
             s.close();

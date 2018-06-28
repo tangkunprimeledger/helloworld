@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class Client implements ConsensusClient {
@@ -37,7 +38,7 @@ public class Client implements ConsensusClient {
             objectOutputStream.writeObject(command);
             objectOutputStream.flush();
             bytes = byteArrayOutputStream.toByteArray();
-            byte[] reply = serviceProxy.invokeOrdered(bytes);
+                byte[] reply = serviceProxy.invokeOrdered(bytes);
         } catch (Exception e) {
             log.info("------submit error-----: " + e.getMessage());
         } finally {

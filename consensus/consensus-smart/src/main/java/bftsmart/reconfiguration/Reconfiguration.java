@@ -65,8 +65,8 @@ public class Reconfiguration {
             //request = new ReconfigureRequest(proxy.getViewManager().getStaticConf().getProcessId());
             request = new ReconfigureRequest(id);
         }
-        request.setNumber(Integer.valueOf(value));
-        request.setOtherSignature(sign);
+//        request.setNumber(Integer.valueOf(value));
+//        request.setOtherSignature(sign);
         request.setProperty(prop, value);
     }
     

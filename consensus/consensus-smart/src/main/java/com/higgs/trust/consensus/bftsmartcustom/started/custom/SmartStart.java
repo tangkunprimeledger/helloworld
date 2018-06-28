@@ -1,10 +1,10 @@
 package com.higgs.trust.consensus.bftsmartcustom.started.custom;
 
-import bftsmart.reconfiguration.SendRCMessage;
 import bftsmart.reconfiguration.util.RSAKeyLoader;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.client.Client;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.server.Server;
+import com.higgs.trust.consensus.core.ConsensusSnapshot;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +40,12 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
     @Autowired
     private SmartConfig smartConfig;
 
+    @Autowired
+    private ConsensusSnapshot consensusSnapshot;
+
+    @Autowired
+    private SmartCommitReplicateComposite machine;
+
     private String ttpIp;
     private int ttpPort;
 
@@ -48,6 +54,7 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
 
     @Override
     public void leaveConsensus() {
+        log.info("leave replica :" + myId);
         String hostsConfig = smartConfig.getHostsConfig();
         String[] configs = hostsConfig.split(",", -1);
         for (String config : configs) {
@@ -60,7 +67,7 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
         }
         SendRCMessage sendRCMessage = new SendRCMessage();
         sendRCMessage.remove(Integer.valueOf(myId));
-        sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId));
+        sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
     @Override
@@ -79,7 +86,7 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
         }
         SendRCMessage sendRCMessage = new SendRCMessage();
         sendRCMessage.add(Integer.valueOf(myId), ip, port);
-        sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId));
+        sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
     @Override
@@ -107,9 +114,24 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
                 }
             }
             log.info("smart server initializing...");
-            new Server(Integer.valueOf(myId));
+            Server server = new Server(Integer.valueOf(myId), consensusSnapshot, machine);
             log.info("smart server Initialization complete");
-            client.init();
+
+            while (true) {
+                if (server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size() == (server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN() - 1)) {
+                    client.init();
+                    break;
+                } else {
+                    log.info("connection count : " + server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size());
+                    log.info("view N : " + server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN());
+                    log.warn("server connection fail");
+                }
+                try {
+                    TimeUnit.MILLISECONDS.sleep(500L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
             log.info("The myId is not found,myid={}", myId);
             throw new RuntimeException("The myId is not found");
