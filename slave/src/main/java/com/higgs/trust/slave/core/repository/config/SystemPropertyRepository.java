@@ -5,6 +5,7 @@ import com.higgs.trust.slave.dao.po.config.SystemPropertyPO;
 import com.higgs.trust.slave.model.bo.config.SystemProperty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * System  Property  repository
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author lingchao
  * @create 2018年06月27日15:58
  */
+@Service
 public class SystemPropertyRepository {
     @Autowired
     private SystemPropertyDao systemPropertyDao;

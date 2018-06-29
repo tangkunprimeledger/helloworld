@@ -3,7 +3,7 @@ package com.higgs.trust.rs.core.service;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
-import com.higgs.trust.rs.core.api.UTOXContractService;
+import com.higgs.trust.rs.core.api.UTXOContractService;
 import com.higgs.trust.rs.core.contract.RsUTXOSmartContract;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
@@ -14,14 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * UTOXContractService impl
+ * UTXOContractService impl
  *
  * @author lingchao
  * @create 2018年06月29日1:05
  */
 @Slf4j
 @Service
-public class UTOXContractServiceImpl implements UTOXContractService {
+public class UTXOContractServiceImpl implements UTXOContractService {
     @Autowired
     private RsUTXOSmartContract rsUTXOSmartContract;
 

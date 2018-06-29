@@ -8,7 +8,7 @@ import com.higgs.trust.slave.model.bo.action.UTXOAction;
  * @author lingchao
  * @create 2018年06月29日1:04
  */
-public interface UTOXContractService {
+public interface UTXOContractService {
     /**
      * process UTXO contract
      *
