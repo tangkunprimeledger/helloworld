@@ -2,6 +2,7 @@ package com.higgs.trust.rs.core.api;
 
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 
@@ -84,4 +85,18 @@ public interface RsBlockChainService {
      * @return
      */
     String queryChainOwner();
+
+    /**
+     * query by height
+     *
+     * @param blockHeight
+     * @return
+     */
+    BlockHeader getBlockHeader(Long blockHeight);
+
+    /**
+     * query max
+     * @return
+     */
+    BlockHeader getMaxBlockHeader();
 }

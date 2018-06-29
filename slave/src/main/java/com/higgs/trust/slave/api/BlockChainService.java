@@ -88,9 +88,25 @@ public interface BlockChainService {
 
     /**
      * get utxo action type
+     *
      * @param name
      * @return
      */
-     UTXOActionTypeEnum getUTXOActionType(String name);
+    UTXOActionTypeEnum getUTXOActionType(String name);
+
+    /**
+     * query header by height
+     *
+     * @param blockHeight
+     * @return
+     */
+    BlockHeader getBlockHeader(Long blockHeight);
+
+    /**
+     * query max
+     *
+     * @return
+     */
+    BlockHeader getMaxBlockHeader();
 
 }
