@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
         log.debug("received change master commit");
         ChangeMasterCommand operation = commit.operation();
         if (operation.getTerm() == nodeState.getCurrentTerm() + 1) {
-            clusterInfo.refresh();
             Map<String, ChangeMasterVerifyResponse> verifyResponseMap = operation.get();
             List<Map.Entry<String, ChangeMasterVerifyResponse>> collect =
                 verifyResponseMap.entrySet().stream().filter(e -> {
