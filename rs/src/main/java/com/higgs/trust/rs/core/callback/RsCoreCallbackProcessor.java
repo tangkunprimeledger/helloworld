@@ -54,11 +54,6 @@ import org.springframework.stereotype.Component;
     }
 
     @Override public void onPersisted(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
-        TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onPersisted(respData, blockHeader);
-    }
-
-    @Override public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -87,6 +82,38 @@ import org.springframework.stereotype.Component;
                     return;
                 case CANCEL_RS:
                     processCancelRS(respData);
+                    return;
+                default:
+                    break;
+            }
+        }
+        TxCallbackHandler callbackHandler = getCallbackHandler();
+        callbackHandler.onPersisted(respData, blockHeader);
+    }
+
+    @Override public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
+        CoreTransaction coreTransaction = respData.getData();
+        String policyId = coreTransaction.getPolicyId();
+        InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
+        if (policyEnum != null) {
+            switch (policyEnum) {
+                case NA:
+                    return;
+                case REGISTER_POLICY:
+                    return;
+                case REGISTER_RS:
+                    return;
+                case CONTRACT_ISSUE:
+                    return;
+                case CONTRACT_DESTROY:
+                    return;
+                case CA_UPDATE:
+                    return;
+                case CA_CANCEL:
+                    return;
+                case CA_AUTH:
+                    return;
+                case CANCEL_RS:
                     return;
                 default:
                     break;
