@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author lingchao
  * @create 2018年03月14日20:40
  */
-@RestController
+//@RestController
 public class SystemController {
     @RequestMapping(value = "/status.html", method = RequestMethod.GET)
     String status_html() {

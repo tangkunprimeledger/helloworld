@@ -1,8 +1,7 @@
-package com.higgs.trust.rs.custom.api;
+package com.higgs.trust.slave.common;
 
-import com.higgs.trust.rs.custom.util.CoinChainIdGenerator;
-import com.higgs.trust.rs.custom.util.IpUtil;
-import com.higgs.trust.slave.common.SnowflakeIdWorker;
+import com.higgs.trust.common.utils.IdGenerator;
+import com.higgs.trust.common.utils.IpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ public class ReqIdGenerator {
             requestId = new StringBuffer("reqid-").append(ipIntStr).append("-").append(id).toString();
         } catch (Exception e) {
             LOGGER.error("获取机器ip生成requestid失败，使用PPIdGenerator来生成reqid", e);
-            requestId = CoinChainIdGenerator.generateRandomReqId();
+            requestId = IdGenerator.generateRandomReqId();
         }
         return requestId;
     }
