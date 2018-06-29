@@ -21,9 +21,7 @@ public enum SnapshotBizKeyEnum {
     MANAGE("MANAGE", "manage  Snapshot"),
     MERKLE_TREE("MERKLE_TREE", "merkle tree  Snapshot"),
     OTHER("OTHER", "other  Snapshot"),
-    CA("CA", "ca Snapshot"),
-    SYSTEM_PROPERTY("SYSTEM_PROPERTY", "system_property  Snapshot"),
-    ;
+    CA("CA", "ca Snapshot"),;
 
     String code;
     String desc;
