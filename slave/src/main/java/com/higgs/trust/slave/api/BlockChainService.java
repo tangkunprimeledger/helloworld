@@ -1,16 +1,18 @@
 package com.higgs.trust.slave.api;
 
+import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.utxo.TxIn;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 
 import java.util.List;
 
 /**
- *
  * @author pengdi
- * @date 
+ * @date
  */
 public interface BlockChainService {
 
@@ -30,6 +32,7 @@ public interface BlockChainService {
 
     /**
      * query block
+     *
      * @param req
      * @return
      */
@@ -37,6 +40,7 @@ public interface BlockChainService {
 
     /**
      * query transaction
+     *
      * @param req
      * @return
      */
@@ -44,6 +48,7 @@ public interface BlockChainService {
 
     /**
      * query utxo by transaction id
+     *
      * @param txId
      * @return
      */
@@ -51,6 +56,7 @@ public interface BlockChainService {
 
     /**
      * check whether the identity is existed
+     *
      * @param identity
      * @return
      */
@@ -63,4 +69,28 @@ public interface BlockChainService {
      * @return
      */
     boolean isExistedCurrency(String currency);
+
+    /**
+     * query System Property by key
+     *
+     * @param key
+     * @return
+     */
+    SystemPropertyVO querySystemPropertyByKey(String key);
+
+    /**
+     * query UTXO list
+     *
+     * @param inputList
+     * @return
+     */
+    List<UTXO> queryUTXOList(List<TxIn> inputList);
+
+    /**
+     * get utxo action type
+     * @param name
+     * @return
+     */
+     UTXOActionTypeEnum getUTXOActionType(String name);
+
 }
