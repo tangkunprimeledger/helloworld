@@ -13,7 +13,7 @@ import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
 import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
-import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertySnapshotHandler;
+import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
@@ -71,7 +71,7 @@ public class BlockChainServiceImpl implements BlockChainService {
     private UTXOSnapshotHandler utxoSnapshotHandler;
 
     @Autowired
-    private SystemPropertySnapshotHandler systemPropertySnapshotHandler;
+    private SystemPropertyHandler systemPropertyHandler;
 
     @Override
     public RespData submitTransactions(List<SignedTransaction> transactions) {
@@ -250,7 +250,7 @@ public class BlockChainServiceImpl implements BlockChainService {
      */
     @Override
     public SystemPropertyVO querySystemPropertyByKey(String key) {
-        return systemPropertySnapshotHandler.querySystemPropertyByKey(key);
+        return systemPropertyHandler.querySystemPropertyByKey(key);
     }
 
 

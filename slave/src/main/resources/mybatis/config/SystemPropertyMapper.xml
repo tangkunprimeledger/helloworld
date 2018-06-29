@@ -14,11 +14,25 @@
 	<sql id="baseColumnList">
 		`key`,`value`,`desc`,create_time,update_time
 	</sql>
-	<!-- 根据id查询 -->
+	<!-- 插入记录 -->
+	<insert id="add" parameterType="Object">
+		insert into
+		system_property(`key`,`value`,`desc`,create_time,update_time)
+		values(#{key},#{value},#{desc},now(3),now(3))
+	</insert>
+	<!-- 根据Key查询 -->
 	<select id="queryByKey" resultMap="baseResultMap" parameterType="Object">
 		select
 		<include refid="baseColumnList" />
 		from system_property where `key`=#{key}
 	</select>
+
+	<!-- update -->
+	<update id="update">
+		UPDATE `system_property`
+		SET `value` = #{value},`update_time`= now(3)
+		WHERE
+		`key` = #{key} and `value`!=  #{value}
+	</update>
 
 </mapper>

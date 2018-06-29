@@ -34,4 +34,29 @@ public class SystemPropertyRepository {
         return systemProperty;
     }
 
+    /**
+     * add property into db
+     * @param key
+     * @param value
+     * @param desc
+     * @return
+     */
+    public void add(String key, String value, String desc){
+        SystemPropertyPO systemPropertyPO = new SystemPropertyPO();
+        systemPropertyPO.setKey(key);
+        systemPropertyPO.setValue(value);
+        systemPropertyPO.setDesc(desc);
+        systemPropertyDao.add(systemPropertyPO);
+    }
+
+    /**
+     * add property into db
+     * @param key
+     * @param value
+     * @return
+     */
+    public int update(String key, String value){
+        return systemPropertyDao.update(key, value);
+    }
+
 }
