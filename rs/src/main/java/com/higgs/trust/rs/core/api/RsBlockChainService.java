@@ -1,6 +1,9 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.model.bo.utxo.TxIn;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 
 import java.util.List;
 
@@ -60,4 +63,25 @@ public interface RsBlockChainService {
      * @return
      */
     SystemPropertyVO querySystemPropertyByKey(String key);
+
+    /**
+     * query UTXO list
+     *
+     * @param inputList
+     * @return
+     */
+    List<UTXO> queryUTXOList(List<TxIn> inputList);
+
+    /**
+     * get utxo action type
+     * @param name
+     * @return
+     */
+    UTXOActionTypeEnum getUTXOActionType(String name);
+    /**
+     * query chain_owner
+     *
+     * @return
+     */
+    String queryChainOwner();
 }

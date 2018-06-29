@@ -2,6 +2,7 @@ package com.higgs.trust.rs.common.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
@@ -26,10 +27,10 @@ import java.util.List;
  */
 @Service
 public class CoreTransactionConvertor {
-    private static final String CHAIN_OWNER = "TRUST_COINCHAIN";
-
     @Autowired
     private NodeState nodeState;
+    @Autowired
+    private RsBlockChainService rsBlockChainService;
 
     /**
      * build core transaction
@@ -78,7 +79,7 @@ public class CoreTransactionConvertor {
      * @param amount
      * @return
      */
-    public TxOut builTxOut(String accountId, Integer actionIndex, Integer index, String currency, BigDecimal amount) {
+    public TxOut buildTxOut(String accountId, Integer actionIndex, Integer index, String currency, BigDecimal amount) {
         TxOut txOut = new TxOut();
         txOut.setIdentity(accountId);
         txOut.setActionIndex(actionIndex);
@@ -99,7 +100,7 @@ public class CoreTransactionConvertor {
     public DataIdentityAction buildDataIdentityAction(String identity, int index) {
         DataIdentityAction dataIdentityAction = new DataIdentityAction();
         dataIdentityAction.setDataOwner(nodeState.getNodeName());
-        dataIdentityAction.setChainOwner(CHAIN_OWNER);
+        dataIdentityAction.setChainOwner(rsBlockChainService.queryChainOwner());
         dataIdentityAction.setIdentity(identity);
         dataIdentityAction.setIndex(index);
         dataIdentityAction.setType(ActionTypeEnum.CREATE_DATA_IDENTITY);
