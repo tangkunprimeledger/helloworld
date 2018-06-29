@@ -76,6 +76,6 @@ public class RsBlockChainController {
             return respData;
         }
 
-        return blockService.queryUtxo(txId);
+        return blockService.queryUTXO(txId);
     }
 }
