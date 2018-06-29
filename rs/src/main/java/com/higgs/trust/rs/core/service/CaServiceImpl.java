@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.service;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
@@ -400,8 +401,8 @@ import java.util.*;
         nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
         nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
         nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
-        //        clusterInfo.refresh();
-        //        syncService.autoSync();
+//        clusterInfo.refresh();
+//                syncService.autoSync();
 
         log.info("[startConsensusAndFilover] end start consensus and filover");
 

@@ -3,14 +3,15 @@
  */
 package com.higgs.trust.config.master;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.ChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.term.TermManager;
 import com.higgs.trust.consensus.annotation.Replicator;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
         log.debug("received change master commit");
         ChangeMasterCommand operation = commit.operation();
         if (operation.getTerm() == nodeState.getCurrentTerm() + 1) {
+            clusterInfo.refresh();
             Map<String, ChangeMasterVerifyResponse> verifyResponseMap = operation.get();
             List<Map.Entry<String, ChangeMasterVerifyResponse>> collect =
                 verifyResponseMap.entrySet().stream().filter(e -> {
