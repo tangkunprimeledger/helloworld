@@ -1,6 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
-import com.higgs.trust.slave.model.bo.action.UTXOAction;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
 
 /**
  * UTXO contract process
@@ -12,9 +12,8 @@ public interface UTXOContractService {
     /**
      * process UTXO contract
      *
-     * @param action
-     * @param contractAddress
+     * @param coreTransaction
      * @return
      */
-    boolean process(UTXOAction action, String contractAddress);
+    boolean process(CoreTransaction coreTransaction);
 }
