@@ -92,10 +92,10 @@ import java.util.concurrent.*;
         if (log.isDebugEnabled()) {
             log.debug("start change master verify");
         }
+        termManager.setMasterHeartbeat(false);
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
-        termManager.setMasterHeartbeat(false);
         if (!nodeInfoService.hasMasterQualify()) {
             log.warn("not have master qualify");
             resetHeartbeatTimeout();
