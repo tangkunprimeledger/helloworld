@@ -44,7 +44,11 @@ class term {
     def election(InvocationContext context, @Option(names = ["e", "election"]) Boolean election) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeInfoService = beans.getBean(INodeInfoService.class)
-        nodeInfoService.setElectionMaster(election)
+        if (election) {
+            nodeInfoService.setElectionMaster(election)
+        } else {
+            nodeInfoService.setElectionMaster(false)
+        }
         context.provide([Name: "Master Election", Value: nodeInfoService.isElectionMaster()])
         out.println("")
     }

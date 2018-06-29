@@ -4,6 +4,7 @@
 package com.higgs.trust.config.filter;
 
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
@@ -21,11 +22,12 @@ import org.springframework.stereotype.Component;
  */
 @Order(1) @Component @Slf4j public class SignatureCommandFilter implements CommandFilter {
 
-    @Autowired private ClusterInfo clusterInfo;
+    @Autowired private AbstractClusterInfo clusterInfo;
 
     @Override
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
         if (commit.operation() instanceof SignatureCommand) {
+            clusterInfo.refreshIfNeed();
             SignatureCommand command = (SignatureCommand)commit.operation();
             String nodeName = command.getNodeName();
             String publicKey = clusterInfo.pubKey(nodeName);

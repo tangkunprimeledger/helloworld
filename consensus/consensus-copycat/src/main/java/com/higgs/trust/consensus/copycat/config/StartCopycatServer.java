@@ -30,7 +30,7 @@ import java.util.List;
  * @author suimi
  * @date 2018/6/12
  */
-@Slf4j @Component public class StartCopycatServer implements ConsensusStateMachine,ApplicationListener<ApplicationReadyEvent>, DisposableBean {
+@Slf4j @Component public class StartCopycatServer implements ConsensusStateMachine, DisposableBean {
 
     @Autowired private CopycatProperties copycatProperties;
 
@@ -76,8 +76,7 @@ import java.util.List;
         server.bootstrap(clusterAddress);
     }
 
-//    @StateChangeListener(NodeStateEnum.Running) @Order
-
+    @StateChangeListener(NodeStateEnum.Running) @Order
     public synchronized void start() {
         if (server == null) {
             start(copycatProperties, stateMachine);
@@ -102,9 +101,5 @@ import java.util.List;
         if (server != null && server.isRunning()) {
             server.shutdown();
         }
-    }
-
-    @Override public void onApplicationEvent(ApplicationReadyEvent event) {
-        start(copycatProperties, stateMachine);
     }
 }

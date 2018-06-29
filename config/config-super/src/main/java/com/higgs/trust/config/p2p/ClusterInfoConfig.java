@@ -19,7 +19,7 @@ import java.util.Map;
  * @date 2018/6/12
  */
 @Getter @Setter @ConfigurationProperties(prefix = "higgs.trust.p2p") @Configuration public class ClusterInfoConfig
-    implements ClusterInfo {
+    extends AbstractClusterInfo {
 
     @Autowired private NodeState nodeState;
 
