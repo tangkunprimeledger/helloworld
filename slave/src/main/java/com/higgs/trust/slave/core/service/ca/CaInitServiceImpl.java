@@ -26,23 +26,17 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
+ * @desc ca init service
  * @date 2018/6/5 15:48
  */
 @Service @Slf4j public class CaInitServiceImpl implements CaInitService {
-
-    public static final String PUB_KEY = "pubKey";
-    public static final String PRI_KEY = "priKey";
 
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
     @Autowired private CaInitClient caClient;
     @Autowired private ClusterInfo clusterInfo;
     @Autowired private CaInitHandler caInitHandler;
-
     @Autowired private NodeProperties nodeProperties;
-
-    // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
 
     /**
      * @return
@@ -148,8 +142,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
     }
 
     @Override public RespData<String> initCaTx() {
-        // TODO 公私钥的生成会在集群自检时，发现没有创世块，那么就应该生成公私钥
-
         // acquire pubKey from DB
         Config config = configRepository.getConfig(nodeState.getNodeName());
         if (null == config) {

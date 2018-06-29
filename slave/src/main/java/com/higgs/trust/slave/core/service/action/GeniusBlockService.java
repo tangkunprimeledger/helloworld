@@ -43,7 +43,7 @@ import java.util.List;
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
 
-                    log.info("[process] transaction start，insert genius block into db");
+                    log.info("[process] transaction start, insert genius block into db");
                     blockRepository.saveBlock(block, null);
 
                     log.info("[process]insert clusterNode information into db");

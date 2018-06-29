@@ -13,11 +13,13 @@ import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author duhongming
  * @date 2018/6/15
  */
+@Service
 public class RsUTXOSmartContract {
     @Autowired private RsUTXOContextService contextService;
     @Autowired private ContractSnapshotAgent contractSnapshotAgent;

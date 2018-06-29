@@ -1,8 +1,8 @@
 package com.higgs.trust.slave.common.config;
 
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
@@ -26,7 +26,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author jerry
+ * @author WangQuanzhou
+ * @desc cluster node info and refresh method
+ * @date 2018/6/28 20:01
  */
 @Slf4j @Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
     implements ClusterInfo {

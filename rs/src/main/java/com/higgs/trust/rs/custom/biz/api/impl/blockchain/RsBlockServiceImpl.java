@@ -56,10 +56,10 @@ public class RsBlockServiceImpl implements BlockService {
         return respData;
     }
 
-    @Override public RespData queryUtxo(String txId) {
+    @Override public RespData queryUTXO(String txId) {
         RespData respData = new RespData();
         respData.setData(BeanConvertor.convertList(
-            blockChainService.queryUtxo(txId), UtxoVO.class));
+            blockChainService.queryUTXO(txId), UtxoVO.class));
 
         log.info("[RsBlockChainService.queryUtxo] query result: {}", respData.getData());
         return respData;
