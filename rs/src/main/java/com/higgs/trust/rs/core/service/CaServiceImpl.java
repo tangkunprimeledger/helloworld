@@ -1,6 +1,5 @@
 package com.higgs.trust.rs.core.service;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
@@ -8,12 +7,12 @@ import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.management.failover.service.SyncService;
+import com.higgs.trust.rs.common.enums.RespCodeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.integration.CaClient;
-import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;

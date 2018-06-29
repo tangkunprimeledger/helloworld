@@ -1,6 +1,6 @@
-package com.higgs.trust.rs.custom.api.vo.manage;
+package com.higgs.trust.rs.core.vo.manage;
 
-import com.higgs.trust.rs.custom.api.vo.BaseVO;
+import com.higgs.trust.rs.core.vo.BaseVO;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;

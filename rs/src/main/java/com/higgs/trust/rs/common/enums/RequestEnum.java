@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.custom.api.enums;
+package com.higgs.trust.rs.common.enums;
 
 import lombok.Getter;
 

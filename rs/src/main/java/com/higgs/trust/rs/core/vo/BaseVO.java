@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.custom.api.vo;
+package com.higgs.trust.rs.core.vo;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.StandardToStringStyle;
