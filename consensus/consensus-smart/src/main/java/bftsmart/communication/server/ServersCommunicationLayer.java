@@ -314,4 +314,9 @@ public class ServersCommunicationLayer extends Thread {
     }
 
     //******* EDUARDO END **************//
+
+    //TODO zyfmodified
+    public Hashtable<Integer, ServerConnection> getConnections() {
+        return connections;
+    }
 }

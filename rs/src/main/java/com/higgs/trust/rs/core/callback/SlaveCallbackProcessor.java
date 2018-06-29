@@ -93,11 +93,22 @@ import java.util.List;
             log.debug("[onClusterPersisted]only call self");
             return;
         }
-        //check status
         CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(tx.getTxId(),false);
-        if(CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()) == CoreTxStatusEnum.END){
-            log.error("[onClusterPersisted]tx status already END txId:{}",tx.getTxId());
+        if(coreTransactionPO == null){
+            log.info("[onClusterPersisted]coreTransactionPO is null so add id,txId:{}",tx.getTxId());
+            //add tx,status=END
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
+            //save process result
+            coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
+            //callback custom rs
+            rsCoreCallbackProcessor.onEnd(respData,blockHeader);
             return;
+        }else {
+            //check status
+            if (CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()) == CoreTxStatusEnum.END) {
+                log.error("[onClusterPersisted]tx status already END txId:{}", tx.getTxId());
+                return;
+            }
         }
         //update status
         coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);

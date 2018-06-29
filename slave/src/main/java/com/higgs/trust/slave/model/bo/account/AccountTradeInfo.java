@@ -23,6 +23,9 @@ import java.math.BigDecimal;
      */
     @NotNull private BigDecimal amount;
 
+    public AccountTradeInfo() {
+    }
+
     public AccountTradeInfo(String accountNo, BigDecimal amount) {
         this.accountNo = accountNo;
         this.amount = amount;

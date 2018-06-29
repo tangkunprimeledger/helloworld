@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.custom.util;
+package com.higgs.trust.common.utils;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashCode;
@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * Created by young001 on 2017/6/15.
  */
-public class CoinChainIdGenerator {
+public class IdGenerator {
 
     @SuppressWarnings("deprecation")
     public static final String generateRandomReqId() {

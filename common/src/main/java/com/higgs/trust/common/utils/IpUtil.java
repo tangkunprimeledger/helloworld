@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.custom.util;
+package com.higgs.trust.common.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

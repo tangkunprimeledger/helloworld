@@ -240,12 +240,12 @@ import java.util.List;
         } while (startIndex < headerSize - 1);
     }
 
-    private void syncGenesis() {
+    public void syncGenesis() {
         List<Block> blocks = getAndValidatingBlock(null, 1, 1);
         syncGenesis(blocks.get(0));
     }
 
-    private void syncGenesis(String fromNode) {
+    public void syncGenesis(String fromNode) {
         List<Block> blocks = getAndValidatingBlock(null, 1, 1, fromNode);
         syncGenesis(blocks.get(0));
     }
