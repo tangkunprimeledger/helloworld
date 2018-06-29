@@ -8,6 +8,7 @@ import com.higgs.trust.slave.api.AccountInfoService;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
@@ -120,5 +121,19 @@ public class RsChainServiceImpl implements RsBlockChainService {
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_CHAIN_OWNER_NULL_ERROR);
         }
         return systemPropertyVO.getValue();
+    }
+
+    /**
+     * query by height
+     *
+     * @param blockHeight
+     * @return
+     */
+    @Override public BlockHeader getBlockHeader(Long blockHeight) {
+        return blockChainService.getBlockHeader(blockHeight);
+    }
+
+    @Override public BlockHeader getMaxBlockHeader() {
+        return blockChainService.getMaxBlockHeader();
     }
 }
