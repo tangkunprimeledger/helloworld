@@ -1,6 +1,9 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.model.bo.utxo.TxIn;
+import com.higgs.trust.slave.model.bo.utxo.UTXO;
 
 import java.util.List;
 
@@ -37,7 +40,7 @@ public interface RsBlockChainService {
      * @param txId
      * @return
      */
-    List<UTXOVO> queryUtxo(String txId);
+    List<UTXOVO> queryUTXO(String txId);
 
     /**
      * check whether the identity is existed
@@ -52,4 +55,33 @@ public interface RsBlockChainService {
      * @return
      */
     boolean isExistedCurrency(String currency);
+
+
+    /**
+     * query System Property by key
+     * @param key
+     * @return
+     */
+    SystemPropertyVO querySystemPropertyByKey(String key);
+
+    /**
+     * query UTXO list
+     *
+     * @param inputList
+     * @return
+     */
+    List<UTXO> queryUTXOList(List<TxIn> inputList);
+
+    /**
+     * get utxo action type
+     * @param name
+     * @return
+     */
+    UTXOActionTypeEnum getUTXOActionType(String name);
+    /**
+     * query chain_owner
+     *
+     * @return
+     */
+    String queryChainOwner();
 }

@@ -83,6 +83,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     @Autowired
     private CaSnapshotAgent caSnapshotAgent;
 
+    @Autowired
+    private SystemPropertySnapshotAgent systemPropertySnapshotAgent;
+
 
     /**
      * cache  for snapshot cacheLoader
@@ -162,6 +165,10 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //registerCA cache loader
             log.debug("Register CA cache loader");
             registerBizLoadingCache(SnapshotBizKeyEnum.CA, caSnapshotAgent);
+
+            //registerSYSTEM_PROPERTY cache loader
+            log.debug("Register SYSTEM_PROPERTY cache loader");
+            registerBizLoadingCache(SnapshotBizKeyEnum.SYSTEM_PROPERTY, systemPropertySnapshotAgent);
         } finally {
             log.debug("unlock lock  for init snapshot");
             lock.unlock();

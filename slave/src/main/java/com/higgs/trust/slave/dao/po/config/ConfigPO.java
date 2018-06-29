@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.dao.po.config;
 
-import com.higgs.trust.slave.dao.po.BaseEntity;
+import com.higgs.trust.common.mybatis.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
