@@ -62,9 +62,8 @@ public class Client implements ConsensusClient {
 
     @Override
     public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
-        CompletableFuture completableFuture = CompletableFuture.completedFuture(null).thenApply(s -> {
+        CompletableFuture completableFuture = CompletableFuture.runAsync(() -> {
             processingPackage(command);
-            return null;
         });
         return completableFuture;
     }
