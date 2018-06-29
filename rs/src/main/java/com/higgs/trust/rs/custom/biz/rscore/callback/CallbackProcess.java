@@ -35,7 +35,7 @@ import org.springframework.stereotype.Service;
     @Autowired private BizTypeService bizTypeService;
 
     @Override public void afterPropertiesSet() throws Exception {
-//        txCallbackRegistor.registCallback(this);
+        txCallbackRegistor.registCallback(this);
     }
 
     @Override public void onVote(VotingRequest votingRequest) {
