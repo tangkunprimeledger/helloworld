@@ -1,17 +1,24 @@
 package com.higgs.trust.rs.core.service;
 
+import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
-import com.higgs.trust.rs.common.utils.CoreTransactionConvertor;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
+import com.higgs.trust.rs.core.contract.RsUTXOSmartContract;
 import com.higgs.trust.slave.api.AccountInfoService;
 import com.higgs.trust.slave.api.BlockChainService;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
 import com.higgs.trust.slave.model.bo.BlockHeader;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +38,9 @@ public class RsChainServiceImpl implements RsBlockChainService {
 
     @Autowired
     private AccountInfoService accountInfoService;
+
+    @Autowired
+    private RsUTXOSmartContract rsUTXOSmartContract;
 
     @Override
     public PageVO<BlockVO> queryBlock(QueryBlockVO req) {
@@ -129,11 +139,67 @@ public class RsChainServiceImpl implements RsBlockChainService {
      * @param blockHeight
      * @return
      */
-    @Override public BlockHeader getBlockHeader(Long blockHeight) {
+    @Override
+    public BlockHeader getBlockHeader(Long blockHeight) {
         return blockChainService.getBlockHeader(blockHeight);
     }
 
-    @Override public BlockHeader getMaxBlockHeader() {
+    @Override
+    public BlockHeader getMaxBlockHeader() {
         return blockChainService.getMaxBlockHeader();
+    }
+
+
+    /**
+     * process UTXO contract
+     *
+     * @param coreTransaction
+     * @return
+     */
+    @Override
+    public boolean processContract(CoreTransaction coreTransaction) {
+        //check arguments
+        if (null == coreTransaction) {
+            log.error("process for contract arguments error, coreTransaction is null");
+            throw new IllegalArgumentException("process for contract arguments error, coreTransaction is null");
+        }
+        return processActions(coreTransaction.getActionList());
+
+    }
+
+    /**
+     * process contract
+     *
+     * @param actionList
+     * @return
+     */
+    private boolean processActions(List<Action> actionList) {
+        if (CollectionUtils.isEmpty(actionList)) {
+            log.error("There is no actionList");
+            return false;
+        }
+
+        //when the action is UTXO we execute contract, otherwise not .
+        //if there is no UTXO action return true.
+        int UTXOActionNum = 0;
+        for (Action action : actionList) {
+            if (action.getType() != ActionTypeEnum.UTXO) {
+                continue;
+            }
+            //execute contract
+            UTXOActionNum = UTXOActionNum + 1;
+            UTXOAction utxoAction = (UTXOAction) action;
+            ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
+            if (!rsUTXOSmartContract.execute(utxoAction.getContractAddress(), data)) {
+                log.info("UTXO contract process result is not pass");
+                return false;
+            }
+        }
+        //check the num of UTXO Action in coreTransaction
+        if (0 == UTXOActionNum) {
+            log.error("There is no UTXO Action in actionList :{}", actionList);
+            return false;
+        }
+        return true;
     }
 }

@@ -17,8 +17,7 @@ import java.util.List;
 
 public class UTXOContractServiceTest extends IntegrateBaseTest {
     @Autowired
-    private UTXOContractService utxoContractService;
-
+    private RsBlockChainService rsBlockChainService;
     @Test
     public void processTest() {
         UTXOAction utxoAction = new UTXOAction();
@@ -51,6 +50,7 @@ public class UTXOContractServiceTest extends IntegrateBaseTest {
         utxoAction.setContractAddress("1234567890");
 
 
-        System.out.println("contract resault:"+utxoContractService.process(utxoAction, "1234567890"));
+
+       // System.out.println("contract resault:"+rsBlockChainService.processContract(utxoAction, "1234567890"));
     }
 }
