@@ -75,3 +75,16 @@ CREATE TABLE IF NOT EXISTS `biz_type` (
 	UNIQUE KEY `uniq_policy_id` (`policy_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table of business type';
 
+
+CREATE TABLE IF NOT EXISTS `request` (
+	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+	`request_id` VARCHAR (64) NOT NULL COMMENT 'request id',
+	`data` varchar(12288) NULL COMMENT 'the request data',
+	`status` VARCHAR(32) NOT NULL COMMENT 'request status',
+	`resp_code` VARCHAR(10) DEFAULT NULL COMMENT 'response code',
+	`resp_msg` varchar(2048) DEFAULT NULL COMMENT 'response msg',
+	`create_time` datetime (3) NOT NULL COMMENT 'the create time',
+	`update_time` datetime (3) NOT NULL COMMENT 'the update time',
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `uniq_request_id` (`request_id`)
+) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table request';
