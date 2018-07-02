@@ -38,23 +38,23 @@ public class Client implements ConsensusClient {
             objectOutputStream.writeObject(command);
             objectOutputStream.flush();
             bytes = byteArrayOutputStream.toByteArray();
-                byte[] reply = serviceProxy.invokeOrdered(bytes);
+            log.debug("service invoke ordered");
+            byte[] reply = serviceProxy.invokeOrdered(bytes);
         } catch (Exception e) {
-            log.info("------submit error-----: " + e.getMessage());
+            throw new RuntimeException(e);
         } finally {
             if (objectOutputStream != null) {
                 try {
                     objectOutputStream.close();
                 } catch (IOException e) {
-                    log.error("source close error");
-                    e.printStackTrace();
+                    log.error("source close error", e);
                 }
             }
             if (byteArrayOutputStream != null) {
                 try {
                     byteArrayOutputStream.close();
                 } catch (IOException e) {
-                    log.error("source close error");
+                    log.error("source close error", e);
                 }
             }
         }

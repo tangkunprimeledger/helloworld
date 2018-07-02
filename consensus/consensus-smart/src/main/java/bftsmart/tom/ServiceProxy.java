@@ -160,8 +160,9 @@ public class ServiceProxy extends TOMSender {
 	 * @return The reply from the replicas related to request
 	 */
 	public byte[] invoke(byte[] request, TOMMessageType reqType) {
+		Logger.println("canSendLock start");
 		canSendLock.lock();
-
+		Logger.println("canSendLock end");
 		// Clean all statefull data to prepare for receiving next replies
 		Arrays.fill(replies, null);
 		receivedReplies = 0;
@@ -191,7 +192,9 @@ public class ServiceProxy extends TOMSender {
 
 			TOMulticast(sm);
 		}else{
+			Logger.println("TOMulticast() start");
 			TOMulticast(request, reqId, operationId, reqType);
+			Logger.println("TOMulticast() end");
 		}
 
 		Logger.println("Sending request (" + reqType + ") with reqId=" + reqId);

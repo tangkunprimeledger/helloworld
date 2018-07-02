@@ -15,21 +15,25 @@ limitations under the License.
 */
 package bftsmart.tom.util;
 
+import org.slf4j.LoggerFactory;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Logger {
 
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger("SmartLog");
     //public static long startInstant = System.currentTimeMillis();
     public static boolean debug = false;
 
     public static void println(String msg) {
         if (debug) {
-            String dataActual = new SimpleDateFormat("yy/MM/dd HH:mm:ss").format(new Date());
-            System.out.println(
-                    "(" + dataActual
-                    + " - " + Thread.currentThread().getName()
-                    + ") " + msg);
+//            String dataActual = new SimpleDateFormat("yy/MM/dd HH:mm:ss").format(new Date());
+//            System.out.println(
+//                    "(" + dataActual
+//                    + " - " + Thread.currentThread().getName()
+//                    + ") " + msg);
+            log.info(msg);
         }
     }
 
