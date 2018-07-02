@@ -161,7 +161,11 @@ public class ServiceProxy extends TOMSender {
 	 */
 	public byte[] invoke(byte[] request, TOMMessageType reqType) {
 		Logger.println("canSendLock start");
-		canSendLock.lock();
+		try {
+			canSendLock.tryLock(100, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 		Logger.println("canSendLock end");
 		// Clean all statefull data to prepare for receiving next replies
 		Arrays.fill(replies, null);
