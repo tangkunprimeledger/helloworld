@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.common.config;
 
+import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.consensus.config.NodeState;
@@ -31,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2018/6/28 20:01
  */
 @Slf4j @Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
-    implements ClusterInfo {
+    extends AbstractClusterInfo {
 
     @Getter @Setter private int faultNodeNum = 0;
 
