@@ -1,8 +1,8 @@
 package com.higgs.trust.rs.core.api;
 
-import com.higgs.trust.rs.custom.api.vo.manage.CancelRsVO;
-import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;
-import com.higgs.trust.rs.custom.api.vo.manage.RegisterRsVO;
+import com.higgs.trust.rs.core.vo.manage.CancelRsVO;
+import com.higgs.trust.rs.core.vo.manage.RegisterPolicyVO;
+import com.higgs.trust.rs.core.vo.manage.RegisterRsVO;
 import com.higgs.trust.slave.api.vo.RespData;
 
 /**

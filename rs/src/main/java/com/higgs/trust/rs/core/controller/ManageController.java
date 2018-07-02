@@ -1,9 +1,9 @@
 package com.higgs.trust.rs.core.controller;
 
 import com.higgs.trust.rs.core.api.RsManageService;
-import com.higgs.trust.rs.custom.api.vo.manage.CancelRsVO;
-import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;
-import com.higgs.trust.rs.custom.api.vo.manage.RegisterRsVO;
+import com.higgs.trust.rs.core.vo.manage.CancelRsVO;
+import com.higgs.trust.rs.core.vo.manage.RegisterPolicyVO;
+import com.higgs.trust.rs.core.vo.manage.RegisterRsVO;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;

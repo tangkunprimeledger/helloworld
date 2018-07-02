@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.higgs.trust.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
@@ -17,8 +18,7 @@ import java.util.List;
 
 public class UTXOContractServiceTest extends IntegrateBaseTest {
     @Autowired
-    private UTXOContractService utxoContractService;
-
+    private RsBlockChainService rsBlockChainService;
     @Test
     public void processTest() {
         UTXOAction utxoAction = new UTXOAction();
@@ -37,7 +37,7 @@ public class UTXOContractServiceTest extends IntegrateBaseTest {
         txOut.setActionIndex(0);
         JSONObject state = new JSONObject();
         state.put("currency", "BUC");
-        state.put("amount", 1000);
+        state.put("amount", 10000);
         txOut.setState(state);
 
         outputList.add(txOut);
@@ -49,8 +49,10 @@ public class UTXOContractServiceTest extends IntegrateBaseTest {
         utxoAction.setStateClass("2342");
         utxoAction.setUtxoActionType(UTXOActionTypeEnum.NORMAL);
         utxoAction.setContractAddress("1234567890");
+        List<Action> actionList = Lists.newArrayList(utxoAction);
+        CoreTransaction coreTransaction = new CoreTransaction();
 
-
-        System.out.println("contract resault:"+utxoContractService.process(utxoAction, "1234567890"));
+        coreTransaction.setActionList(actionList);
+        System.out.println("contract resault:"+rsBlockChainService.processContract(coreTransaction));
     }
 }
