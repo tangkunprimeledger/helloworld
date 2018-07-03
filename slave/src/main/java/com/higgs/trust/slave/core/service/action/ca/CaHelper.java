@@ -5,6 +5,7 @@ import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Component;
         //validate idempotent
         CaPO caPO = caSnapshotHandler.getCa(caAction.getUser());
         if (type == ActionTypeEnum.CA_AUTH) {
-            if (null != caPO) {
+            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
                 return false;
             } else {
                 return true;
@@ -26,7 +27,7 @@ import org.springframework.stereotype.Component;
         }
 
         if (type != ActionTypeEnum.CA_AUTH) {
-            if (null != caPO) {
+            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
                 return true;
             } else {
                 return false;

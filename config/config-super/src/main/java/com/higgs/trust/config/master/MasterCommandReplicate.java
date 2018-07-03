@@ -5,6 +5,7 @@ package com.higgs.trust.config.master;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.config.master.command.ArtificialChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
@@ -53,6 +54,14 @@ import java.util.stream.Collectors;
                 termManager.startNewTerm(operation.getTerm(), operation.getMasterName());
             }
         }
+        commit.close();
+    }
+
+    public void artificialChangeMaster(ConsensusCommit<ArtificialChangeMasterCommand> commit) {
+        log.debug("received change master commit");
+        ArtificialChangeMasterCommand operation = commit.operation();
+        termManager.getTerms().clear();
+        termManager.startNewTerm(operation.getTerm(), operation.getMasterName(), operation.getStartHeight());
         commit.close();
     }
 

@@ -50,11 +50,11 @@ import org.springframework.stereotype.Component;
                 "[CaCancelHandler.process] actionData validate error");
         }
 
-        if(StringUtils.equals(caAction.getUser(),nodeState.getNodeName())){
+        /*if(StringUtils.equals(caAction.getUser(),nodeState.getNodeName())){
             log.info("[CaCancelHandler.process] start to leave consensus,user ={}", caAction.getUser());
             consensusStateMachine.leaveConsensus();
             log.info("[CaCancelHandler.process] end leave consensus,user ={}", caAction.getUser());
-        }
+        }*/
 
         Profiler.enter("[CaCancelHandler.process]");
         Ca ca = new Ca();

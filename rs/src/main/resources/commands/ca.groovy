@@ -45,17 +45,6 @@ class ca {
         out.println("send CA auth tx successful, user= $user")
     }
 
-
-    @Usage('start consensus and failover')
-    @Command
-    def startConsensus(InvocationContext context,
-               @Usage("user") @Required @Argument String user) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def caService = beans.getBean(CaService.class)
-        caService.startConsensusAndFilover(user)
-        out.println("send CA auth tx successful, user= $user")
-    }
-
     @Usage('update CA')
     @Command
     def updateCA(InvocationContext context,

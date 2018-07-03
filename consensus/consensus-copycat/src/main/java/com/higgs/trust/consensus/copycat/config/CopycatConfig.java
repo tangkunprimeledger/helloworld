@@ -41,7 +41,7 @@ import java.util.List;
         }
         CopycatClient client = CopycatClient.builder().withTransport(new NettyTransport())
             .withConnectionStrategy(ConnectionStrategies.FIBONACCI_BACKOFF)
-            .withRecoveryStrategy(RecoveryStrategies.CLOSE)
+            .withRecoveryStrategy(RecoveryStrategies.RECOVER)
             .withServerSelectionStrategy(ServerSelectionStrategies.LEADER).build();
         client.connect(addressList);
         return new CopycatClientAdapter(client);

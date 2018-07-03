@@ -1,10 +1,10 @@
 package com.higgs.trust.slave.core.managment;
 
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -23,11 +23,11 @@ import org.springframework.stereotype.Service;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-/**  
- * @desc cluster init service
+/**
  * @author WangQuanzhou
- * @date 2018/6/28 19:53    
- */  
+ * @desc cluster init service
+ * @date 2018/6/28 19:53
+ */
 @Service @Slf4j public class ClusterInitService {
 
     public static final String PUB_KEY = "pubKey";
@@ -65,10 +65,6 @@ import java.util.Map;
             generateKeyPair();
             return true;
         }
-        if (null == maxHeight && startMode.equals(RunModeEnum.SINGLE.getCode())) {
-            log.info("[ClusterInitService.needInit] start generateKeyPair, single mode");
-            generateKeyPair();
-        }
         return false;
     }
 
@@ -90,7 +86,7 @@ import java.util.Map;
         String pubKey = map.get(PUB_KEY);
         String priKey = map.get(PRI_KEY);
         Config config = new Config();
-        config.setValid(true);
+        config.setValid(false);
         config.setPubKey(pubKey);
         config.setPriKey(priKey);
         config.setVersion(VersionEnum.V1.getCode());
