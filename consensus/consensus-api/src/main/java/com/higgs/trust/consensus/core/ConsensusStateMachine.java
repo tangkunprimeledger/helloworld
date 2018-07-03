@@ -21,6 +21,6 @@ public interface ConsensusStateMachine {
     /**
      * start a node when there is no cluster
      */
-    void initStart();
+    void start();
 
 }

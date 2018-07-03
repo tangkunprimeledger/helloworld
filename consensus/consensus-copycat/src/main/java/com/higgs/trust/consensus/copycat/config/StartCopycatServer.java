@@ -93,10 +93,6 @@ import java.util.List;
 
     }
 
-    @Override public void initStart() {
-
-    }
-
     @Override public void destroy() {
         if (server != null && server.isRunning()) {
             server.shutdown();

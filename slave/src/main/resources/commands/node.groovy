@@ -2,6 +2,7 @@ package commands
 
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
+import com.higgs.trust.consensus.core.ConsensusStateMachine
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
@@ -59,7 +60,6 @@ class node {
     }
 
 
-
     @Usage('show the current height of node')
     @Command
     def height(InvocationContext context,
@@ -100,10 +100,20 @@ class node {
     }
 
 
+    @Usage('start consensus layer')
+    @Command
+    def startConsensus(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def consensusStateMachine = beans.getBean(ConsensusStateMachine.class)
+        consensusStateMachine.start()
+        out.println("start consensus successful")
+    }
+
+
     @Usage('join consensus layer')
     @Command
     def joinConsensus(InvocationContext context,
-                       @Usage("user") @Required @Argument String user) {
+                      @Usage("user") @Required @Argument String user) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeService = beans.getBean(NodeConsensusService.class)
         nodeService.joinConsensus(user)
@@ -119,7 +129,6 @@ class node {
         nodeService.leaveConsensus(user)
         out.println("leave consensus layer successful, user= $user")
     }
-
 
 
 }
