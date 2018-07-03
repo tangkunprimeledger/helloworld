@@ -110,6 +110,19 @@ import java.util.concurrent.*;
         resetHeartbeatTimeout();
     }
 
+    public void artificialChangeMaster(int term, long startHeight) {
+        ArtificialChangeMasterCommand command =
+            new ArtificialChangeMasterCommand(term, nodeState.getNodeName(), startHeight);
+        command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        CompletableFuture<Long> future = consensusClient.submit(command);
+        try {
+            future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("submit artificial change master to consensus failed!", e);
+        }
+        resetHeartbeatTimeout();
+    }
+
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
         List<String> nodeNames = clusterInfo.clusterNodeNames();
         Map<String, ChangeMasterVerifyResponse> heightMap = new HashMap<>();
