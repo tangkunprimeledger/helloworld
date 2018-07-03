@@ -416,8 +416,8 @@ import java.util.stream.Collectors;
             return;
         }
         if (CollectionUtils.isEmpty(txs)) {
-            log.error("[callbackRS]txs is empty");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
+            log.warn("[callbackRS]txs is empty");
+            return;
         }
         for (SignedTransaction tx : txs) {
             String txId = tx.getCoreTx().getTxId();
