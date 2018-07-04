@@ -362,12 +362,14 @@ import java.util.stream.Collectors;
         try {
             Profiler.enter("[queryTransactions]");
             List<SignedTransaction> txs = transactionRepository.queryTransactions(header.getHeight());
-            // sort signedTransactions by txId asc
-            Collections.sort(txs, new Comparator<SignedTransaction>() {
-                @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
-                    return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
-                }
-            });
+            if (!CollectionUtils.isEmpty(txs)) {
+                // sort signedTransactions by txId asc
+                Collections.sort(txs, new Comparator<SignedTransaction>() {
+                    @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+                        return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
+                    }
+                });
+            }
             List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
             Profiler.release();
 
@@ -416,8 +418,8 @@ import java.util.stream.Collectors;
             return;
         }
         if (CollectionUtils.isEmpty(txs)) {
-            log.error("[callbackRS]txs is empty");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
+            log.warn("[callbackRS]txs is empty");
+            return;
         }
         for (SignedTransaction tx : txs) {
             String txId = tx.getCoreTx().getTxId();
