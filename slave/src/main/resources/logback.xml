@@ -138,6 +138,23 @@
         </rollingPolicy>
     </appender>
 
+    <!-- application monitor log -->
+    <appender name="BFTSMART-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${COMMON_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_PATH}/bft-smart.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/bft-smart.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="SmartLog" level="debug" additivity="false">
+        <appender-ref ref="BFTSMART-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
+    </logger>
+
     <logger name="io.atomix.copycat" level="debug" additivity="false">
         <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>

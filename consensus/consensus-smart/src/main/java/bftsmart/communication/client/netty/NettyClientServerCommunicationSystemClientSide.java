@@ -320,7 +320,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
     @Override
     public void send(boolean sign, int[] targets, TOMMessage sm) {
 
-        listener.waitForChannels(targets.length); // wait for the previous transmission to complete
+//        listener.waitForChannels(targets.length); // wait for the previous transmission to complete
         
         Logger.println("Sending request from " + sm.getSender() + " with sequence number " + sm.getSequence() + " to " + Arrays.toString(targets));
                 
@@ -520,18 +520,18 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             @Override
             public void operationComplete(ChannelFuture f) {
                 
-                this.futureLock.lock();
-
-                this.remainingFutures--;
-
-                if (this.remainingFutures <= 0) {
-
-                    this.enoughCompleted.signalAll();
-                }
-
-                Logger.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
-                System.out.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
-                this.futureLock.unlock();
+//                this.futureLock.lock();
+//
+//                this.remainingFutures--;
+//
+//                if (this.remainingFutures <= 0) {
+//
+//                    this.enoughCompleted.signalAll();
+//                }
+//
+//                Logger.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
+//                System.out.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
+//                this.futureLock.unlock();
               
             }
             

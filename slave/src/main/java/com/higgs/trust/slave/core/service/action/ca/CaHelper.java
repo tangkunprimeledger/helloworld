@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
         }
 
         if (type != ActionTypeEnum.CA_AUTH) {
-            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
+            if (null != caPO && !StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
                 return true;
             } else {
                 return false;
