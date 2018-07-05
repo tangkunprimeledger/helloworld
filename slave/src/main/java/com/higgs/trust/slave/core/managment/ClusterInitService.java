@@ -58,7 +58,7 @@ import java.util.Map;
 
     private boolean needInit() {
         // 1、 本地没有创世块，集群也没有创世块时（即集群初始启动），需要生成公私钥，以及创世块
-        // 2、 本地没有创世块，集群有创世块时（即动态单节点加入），需要生成公私钥，然后进行failover得到创世块
+        // 2、 本地没有创世块，集群有创世块时（即动态单节点加入），需要进行failover得到创世块
         Long maxHeight = blockRepository.getMaxHeight();
         if (null == maxHeight && startMode.equals(RunModeEnum.CLUSTER.getCode())) {
             log.info("[ClusterInitService.needInit] start generateKeyPair, cluster mode");
@@ -86,7 +86,7 @@ import java.util.Map;
         String pubKey = map.get(PUB_KEY);
         String priKey = map.get(PRI_KEY);
         Config config = new Config();
-        config.setValid(false);
+        config.setValid(true);
         config.setPubKey(pubKey);
         config.setPriKey(priKey);
         config.setVersion(VersionEnum.V1.getCode());
