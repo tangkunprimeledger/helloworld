@@ -7,8 +7,8 @@
   "copycat": {
     "server": {
       "address": "127.0.0.1:8802",
-      "cluster": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803,127.0.0.1:8804",
-      "client": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803,127.0.0.1:8804",
+      "cluster": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803",
+      "client": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803",
       "logDir": "/tmp/higgs/trust/copycat/log2"
     }
   },
@@ -22,6 +22,7 @@
   },
   "higgs": {
     "trust": {
+      "electionMaster":true,
       "masterName":"TRUST-TEST0",
       "nodeName": "TRUST-TEST2",
       "prefix": "TRUST",
@@ -32,10 +33,9 @@
           "TRUST-TEST0":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
           "TRUST-TEST1":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
           "TRUST-TEST2":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST3":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST4":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB"
+          "TRUST-TEST3":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB"
         },
-        "clusterNodeNames":["TRUST-TEST0","TRUST-TEST1","TRUST-TEST2","TRUST-TEST3","TRUST-TEST4"]
+        "clusterNodeNames":["TRUST-TEST0","TRUST-TEST1","TRUST-TEST2","TRUST-TEST3"]
       }
     }
   },
@@ -76,7 +76,7 @@
         "maxWait": 60000,
         "min-evictable-idle-time-millis": 300000,
         "minIdle": 1,
-        "password": "root",
+        "password": "920125",
         "time-between-eviction-runs-millis": 60000,
         "url": "jdbc:mysql://localhost:3306/trust2?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
@@ -102,11 +102,6 @@
     "config": "classpath:logback.xml",
     "path":"/tmp/log2"
   },
-  "bftSmart": {
-    "systemConfigs":{
-      "myId":"TRUST-TEST2"
-    }
-  },
   "hystrix": {
     "command": {
       "default": {
@@ -118,6 +113,50 @@
       "default": {
         "coreSize": 40,
         "maximumSize": 100
+      }
+    }
+  },
+  "bftSmart": {
+    "systemConfigs": {
+      "myId": "2",
+      "myClientId":"1102",
+      "configs": {
+        "system.communication.useSenderThread": true,
+        "system.communication.defaultkeys": true,
+        "system.servers.num": "4",
+        "system.servers.f": "1",
+        "system.totalordermulticast.timeout": "2000",
+        "system.totalordermulticast.maxbatchsize": "400",
+        "system.totalordermulticast.nonces": "10",
+        "system.totalordermulticast.verifyTimestamps": false,
+        "system.communication.inQueueSize": "500000",
+        "system.communication.outQueueSize": "500000",
+        "system.communication.useSignatures": "0",
+        "system.communication.useMACs": "0",
+        "system.debug": "1",
+        "system.shutdownhook": true,
+        "system.totalordermulticast.state_transfer": true,
+        "system.totalordermulticast.highMark": "10000",
+        "system.totalordermulticast.revival_highMark": "10",
+        "system.totalordermulticast.timeout_highMark": "200",
+        "system.totalordermulticast.log": true,
+        "system.totalordermulticast.log_parallel": false,
+        "system.totalordermulticast.log_to_disk": true,
+        "system.totalordermulticast.sync_log": false,
+        "system.totalordermulticast.checkpoint_period": "1000",
+        "system.totalordermulticast.global_checkpoint_period": "120000",
+        "system.totalordermulticast.checkpoint_to_disk": false,
+        "system.totalordermulticast.sync_ckp": false,
+        "system.bft": true,
+        "system.ttp.id": "7001"
+      },
+      "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030,7001 127.0.0.1 11100",
+      "ttpPubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwuoTWbSFDnVjohwdZftoAwv3oCxUPnUiiNNH9pXryEW8kSFRGVJ7zJCwxJnt3YZGnpPGxnC3hAI4XkG26hO7+TxkgaYmv5GbamL946uZISxv0aNX3YbaOf//MC6F8tShFfCnpWlj68FYulM5dC2OOOHaUJfofQhmXfsaEWU251wIDAQAB",
+      "idNodeNameMap": {
+        "0": "TRUST-TEST0",
+        "1": "TRUST-TEST1",
+        "2": "TRUST-TEST2",
+        "3": "TRUST-TEST3"
       }
     }
   }
