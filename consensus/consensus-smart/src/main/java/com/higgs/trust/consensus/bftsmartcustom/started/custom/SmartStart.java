@@ -4,6 +4,8 @@ import bftsmart.reconfiguration.util.RSAKeyLoader;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.client.Client;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.server.Server;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.core.ConsensusSnapshot;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.util.StringUtils;
 
 import java.security.PublicKey;
@@ -45,6 +48,8 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
 
     @Autowired
     private SmartCommitReplicateComposite machine;
+
+    private Server server;
 
     private String ttpIp;
     private int ttpPort;
@@ -90,13 +95,12 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
     }
 
     @Override
-    public void initStart() {
-
-    }
-
-    @Override
-    public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
+    public synchronized void start() {
         log.info("smart server starting,myid={}", myId);
+        if (server != null) {
+            log.warn("The service has started");
+            return;
+        }
         if (!StringUtils.isEmpty(myId)) {
             while (true) {
                 try {
@@ -114,7 +118,7 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
                 }
             }
             log.info("smart server initializing...");
-            Server server = new Server(Integer.valueOf(myId), consensusSnapshot, machine);
+            server = new Server(Integer.valueOf(myId), consensusSnapshot, machine);
             log.info("smart server Initialization complete");
 
             while (true) {
@@ -136,5 +140,10 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
             log.info("The myId is not found,myid={}", myId);
             throw new RuntimeException("The myId is not found");
         }
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
+        start();
     }
 }

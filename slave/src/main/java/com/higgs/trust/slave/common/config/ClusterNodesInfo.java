@@ -31,45 +31,65 @@ import java.util.concurrent.ConcurrentHashMap;
  * @desc cluster node info and refresh method
  * @date 2018/6/28 20:01
  */
-@Slf4j @Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
-    extends AbstractClusterInfo {
+@Slf4j
+@Configuration
+@Primary
+@ConfigurationProperties(prefix = "higgs.trust.p2p")
+public class ClusterNodesInfo
+        extends AbstractClusterInfo {
 
-    @Getter @Setter private int faultNodeNum = 0;
+    @Getter
+    @Setter
+    private int faultNodeNum = 0;
 
-    @Getter private Map<String, String> clusters = new ConcurrentHashMap<>();
+    @Getter
+    private Map<String, String> clusters = new ConcurrentHashMap<>();
 
-    @Getter @Setter private List<String> clusterNodeNames = new ArrayList<>();
+    @Getter
+    @Setter
+    private List<String> clusterNodeNames = new ArrayList<>();
 
-    @Autowired private ClusterConfigRepository clusterConfigRepository;
-    @Autowired private ClusterNodeRepository clusterNodeRepository;
-    @Autowired private ConfigRepository configRepository;
-    @Autowired private CaRepository caRepository;
-    @Autowired private NodeState nodeState;
+    @Autowired
+    private ClusterConfigRepository clusterConfigRepository;
+    @Autowired
+    private ClusterNodeRepository clusterNodeRepository;
+    @Autowired
+    private ConfigRepository configRepository;
+    @Autowired
+    private CaRepository caRepository;
+    @Autowired
+    private NodeState nodeState;
 
-    @Override public Integer faultNodeNum() {
+    @Override
+    public Integer faultNodeNum() {
         return faultNodeNum;
     }
 
-    @Override public String nodeName() {
+    @Override
+    public String nodeName() {
         return nodeState.getNodeName();
     }
 
-    @Override public List<String> clusterNodeNames() {
+    @Override
+    public List<String> clusterNodeNames() {
         if (clusterNodeNames.isEmpty()) {
             clusterNodeNames.addAll(clusters.keySet());
         }
         return clusterNodeNames;
     }
 
-    @Override public String pubKey(String nodeName) {
+    @Override
+    public String pubKey(String nodeName) {
         return clusters.get(nodeName);
     }
 
-    @Override public String privateKey() {
+    @Override
+    public String privateKey() {
         return nodeState.getPrivateKey();
     }
 
-    @Override public void init(ClusterInfoVo vo) {
+    @Override
+    public void init(ClusterInfoVo vo) {
         faultNodeNum = vo.getFaultNodeNum();
         clusters.clear();
         clusters.putAll(vo.getClusters());
@@ -79,11 +99,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
     public void refresh() {
         log.info("refresh cluster info");
+        log.info("[refresh] before refresh, cluster nodes = {}", clusterNodeNames);
         ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getClusterName());
         faultNodeNum = clusterConfig == null ? 0 : clusterConfig.getFaultNum();
         Config config = configRepository.getConfig(nodeState.getNodeName());
         nodeState.setPrivateKey(null != config ? config.getPriKey() : null);
         refreshPubkeys();
+        log.info("[refresh] end refresh, cluster nodes = {}", clusterNodeNames);
     }
 
     /**

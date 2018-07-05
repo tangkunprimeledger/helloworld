@@ -17,6 +17,7 @@ package bftsmart.tom.core.messages;
 
 import bftsmart.communication.SystemMessage;
 import bftsmart.tom.util.DebugInfo;
+import bftsmart.tom.util.Logger;
 
 import java.io.*;
 
@@ -289,7 +290,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		 try{
 			 m.rExternal(dis);
 		 }catch(Exception e) {
-			 System.out.println("error on bytesToMessage " + e);
+			 Logger.println("error on bytesToMessage " + e);
 			 return null;
 		 }
 

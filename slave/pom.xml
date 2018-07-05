@@ -17,9 +17,13 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>common</artifactId>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.higgs.trust</groupId>-->
+            <!--<artifactId>consensus-copycat</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.higgs.trust</groupId>
-            <artifactId>consensus-copycat</artifactId>
+            <artifactId>consensus-smart</artifactId>
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>

@@ -161,7 +161,7 @@ public class ServerCommunicationSystem extends Thread {
     
     public void shutdown() {
         
-        System.out.println("Shutting down communication layer");
+        Logger.println("Shutting down communication layer");
         
         this.doWork = false;        
         clientsConn.shutdown();

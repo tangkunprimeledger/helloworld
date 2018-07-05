@@ -207,7 +207,7 @@ public final class Acceptor {
                             factory.createWrite(cid, epoch.getTimestamp(), epoch.propValueHash));
 
                     Logger.println("(Acceptor.executePropose) WRITE sent for " + cid);
-                    System.out.println("(Acceptor.executePropose) WRITE sent for " + cid);
+                    Logger.println("(Acceptor.executePropose) WRITE sent for " + cid);
                 
                     computeWrite(cid, epoch, epoch.propValueHash);
                 
@@ -351,7 +351,7 @@ public final class Acceptor {
                     do {
                         key = communication.getServersConn().getSecretKey(id);
                         if (key == null) {
-                            System.out.println("(Acceptor.insertProof) I don't have yet a secret key with " + id + ". Retrying.");
+                            Logger.println("(Acceptor.insertProof) I don't have yet a secret key with " + id + ". Retrying.");
                             Thread.sleep(1000);
                         }
 
@@ -366,7 +366,7 @@ public final class Acceptor {
                     ex.printStackTrace();
                 } catch (InvalidKeyException ex) {
 
-                    System.out.println("Problem with secret key from " + id);
+                    Logger.println("Problem with secret key from " + id);
                     ex.printStackTrace();
                 }
             }

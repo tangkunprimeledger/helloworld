@@ -111,10 +111,10 @@ public class MessageHandler {
                     acceptor.deliver(consMsg);
                 else {
                     Logger.println("(MessageHandler.processData) WARNING: invalid MAC from " + sm.getSender());
-                    System.out.println("(MessageHandler.processData) WARNING: invalid MAC from " + sm.getSender());
+                    Logger.println("(MessageHandler.processData) WARNING: invalid MAC from " + sm.getSender());
                 }
             } else {
-                System.out.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
+                Logger.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
                 Logger.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
             }
 
@@ -141,7 +141,7 @@ public class MessageHandler {
 	                        break;
 	                }
 	
-	                System.out.println("(MessageHandler.processData) LC_MSG received: type " + type + ", regency " + lcMsg.getReg() + ", (replica " + lcMsg.getSender() + ")");
+	                Logger.println("(MessageHandler.processData) LC_MSG received: type " + type + ", regency " + lcMsg.getReg() + ", (replica " + lcMsg.getSender() + ")");
 	                if (lcMsg.TRIGGER_LC_LOCALLY) tomLayer.requestsTimer.run_lc_protocol();
 	                else tomLayer.getSynchronizer().deliverTimeoutRequest(lcMsg);
 	            /**************************************************************/
@@ -173,10 +173,10 @@ public class MessageHandler {
 	                }
 	            /******************************************************************/
 	            } else {
-	            	System.out.println("UNKNOWN MESSAGE TYPE: " + sm);
+	            	Logger.println("UNKNOWN MESSAGE TYPE: " + sm);
 	            }
 	        } else {
-	            System.out.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
+	            Logger.println("(MessageHandler.processData) Discarding unauthenticated message from " + sm.getSender());
 	        }
         }
     }

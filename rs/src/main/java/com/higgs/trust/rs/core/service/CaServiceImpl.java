@@ -2,9 +2,7 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.management.failover.service.SyncService;
 import com.higgs.trust.rs.common.enums.RespCodeEnum;
@@ -53,9 +51,7 @@ import java.util.*;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private RsNodeRepository rsNodeRepository;
-    @Autowired private SyncService syncService;
     @Autowired private ConsensusStateMachine consensusStateMachine;
-    @Autowired private ClusterInfo clusterInfo;
 
     /**
      * @return
@@ -80,7 +76,7 @@ import java.util.*;
         }
 
         // build pubKey and priKey
-        CaVO caVO = buildKeyPair(user);
+        CaVO caVO = generateKeyPair();
 
         // send CA auth request
         caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
@@ -135,7 +131,6 @@ import java.util.*;
      * @desc construct ca update tx and send to slave
      */
     @Override public RespData updateCaTx(CaVO caVO) {
-        // TODO 更新CA的过程中应该伴随着RS节点的下线和上线过程，或者是该RS节点先暂停给交易签名，CA更新完成后，再重新恢复签名
 
         //send and get callback result
         try {
@@ -305,27 +300,6 @@ import java.util.*;
         return actions;
     }
 
-    private CaVO buildKeyPair(String user) {
-
-        Config config = configRepository.getConfig(user);
-        if (null == config) {
-            log.error("config is null, authCA error");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_NOT_EXIST_ERROR, "config is null, authCA error");
-        }
-        String pubKey = config.getPubKey();
-
-        //construct caVO
-        CaVO caVO = new CaVO();
-        caVO.setVersion(VersionEnum.V1.getCode());
-        caVO.setPeriod(calculatePeriod());
-        caVO.setPubKey(pubKey);
-        caVO.setReqNo(HashUtil.getSHA256S(pubKey + InitPolicyEnum.CA_AUTH.getType()));
-        caVO.setUsage("consensus");
-        caVO.setUser(nodeState.getNodeName());
-
-        return caVO;
-    }
-
     private CaVO generateTmpKeyPair(Ca ca) {
 
         // generate temp pubKey and priKey and insert into db
@@ -386,25 +360,38 @@ import java.util.*;
         return ca;
     }
 
-    /**
-     * @param user
-     * @return
-     * @desc after ca auth successd, start to launch consensus and failover
-     */
-    @Override public void startConsensusAndFilover(String user) {
+    private CaVO generateKeyPair() {
 
-        log.info("[startConsensusAndFilover] start to launch consensus layer");
-        consensusStateMachine.joinConsensus();
+        // generate pubKey and priKey
+        Map<String, String> map = null;
+        try {
+            map = KeyGeneratorUtils.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            log.error("[generateKeyPair] generate pubKey/priKey has error, no such algorithm");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
+                "[generateKeyPair] generate pubKey/priKey has error, no such algorithm");
+        }
+        String pubKey = map.get(PUB_KEY);
+        String priKey = map.get(PRI_KEY);
+        //store pubKey and priKey
+        Config config = new Config();
+        config.setNodeName(nodeState.getNodeName());
+        config.setPubKey(pubKey);
+        config.setPriKey(priKey);
+        config.setValid(true);
+        config.setVersion(VersionEnum.V1.getCode());
+        configRepository.insertConfig(config);
 
-        log.info("[startConsensusAndFilover] start to launch failover");
-        nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
-        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-        nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
-//        clusterInfo.refresh();
-//                syncService.autoSync();
+        //construct caVO
+        CaVO caVO = new CaVO();
+        caVO.setVersion(VersionEnum.V1.getCode());
+        caVO.setPeriod(calculatePeriod());
+        caVO.setPubKey(pubKey);
+        caVO.setReqNo(HashUtil.getSHA256S(pubKey));
+        caVO.setUsage("consensus");
+        caVO.setUser(nodeState.getNodeName());
 
-        log.info("[startConsensusAndFilover] end start consensus and filover");
-
+        return caVO;
     }
 
 }

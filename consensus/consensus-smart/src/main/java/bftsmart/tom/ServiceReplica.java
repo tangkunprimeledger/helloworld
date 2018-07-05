@@ -31,6 +31,7 @@ import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.leaderchange.CertifiedDecision;
 import bftsmart.tom.server.*;
 import bftsmart.tom.server.defaultservices.DefaultReplier;
+import bftsmart.tom.util.Logger;
 import bftsmart.tom.util.ShutdownHookThread;
 import bftsmart.tom.util.TOMUtil;
 
@@ -38,8 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class receives messages from DeliveryThread and manages the execution
@@ -144,18 +143,18 @@ public class ServiceReplica {
         try {
             cs = new ServerCommunicationSystem(this.SVController, this);
         } catch (Exception ex) {
-            Logger.getLogger(ServiceReplica.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.println(ex.getMessage());
             throw new RuntimeException("Unable to build a communication system.");
         }
 
         if (this.SVController.isInCurrentView()) {
-            System.out.println("-- In current view: " + this.SVController.getCurrentView());
+            Logger.println("-- In current view: " + this.SVController.getCurrentView());
             initTOMLayer(); // initiaze the TOM layer
         } else {
-            System.out.println("-- Not in current view: " + this.SVController.getCurrentView());
+            Logger.println("-- Not in current view: " + this.SVController.getCurrentView());
             
             //Not in the initial view, just waiting for the view where the join has been executed
-            System.out.println("-- Waiting for the TTP: " + this.SVController.getCurrentView());
+            Logger.println("-- Waiting for the TTP: " + this.SVController.getCurrentView());
             waitTTPJoinMsgLock.lock();
             try {
                 canProceed.awaitUninterruptibly();
@@ -252,7 +251,7 @@ public class ServiceReplica {
                         tomLayer.getDeliveryThread().join();
 
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(ServiceReplica.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.println(ex.getMessage());
                     }
 
                     tomStackCreated = false;
@@ -379,8 +378,8 @@ public class ServiceReplica {
 
                 bftsmart.tom.util.Logger.println("(ServiceReplica.receiveMessages) Delivering a no-op to the recoverer");
 
-                System.out.println(" --- A consensus instance finished, but there were no commands to deliver to the application.");
-                System.out.println(" --- Notifying recoverable about a blank consensus.");
+                Logger.println(" --- A consensus instance finished, but there were no commands to deliver to the application.");
+                Logger.println(" --- Notifying recoverable about a blank consensus.");
 
                 byte[][] batch = null;
                 MessageContext[] msgCtx = null;

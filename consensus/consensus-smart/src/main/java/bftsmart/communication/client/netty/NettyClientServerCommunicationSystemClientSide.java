@@ -125,7 +125,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                     NettyClientServerSession cs = new NettyClientServerSession(future.channel(), macSend, macReceive, currV[i]);
                     sessionTable.put(currV[i], cs);
 
-                    System.out.println("Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
+                    Logger.println("Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
                     //******* EDUARDO END **************//
 
                     future.awaitUninterruptibly();
@@ -195,7 +195,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                         NettyClientServerSession cs = new NettyClientServerSession(future.channel(), macSend, macReceive, currV[i]);
                         sessionTable.put(currV[i], cs);
 
-                        System.out.println("Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
+                        Logger.println("Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
                         //******* EDUARDO END **************//
 
                         future.awaitUninterruptibly();
@@ -222,11 +222,11 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)  throws Exception {
         if(cause instanceof ClosedChannelException) {
-            System.out.println("Connection with replica closed.");
+            Logger.println("Connection with replica closed.");
         } else if(cause instanceof ConnectException) {
-            System.out.println("Impossible to connect to replica.");
+            Logger.println("Impossible to connect to replica.");
         } else {
-            System.out.println("Replica disconnected.");
+            Logger.println("Replica disconnected.");
         }
         cause.printStackTrace();
     }
@@ -252,7 +252,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             
             return;
         }
-        System.out.println("Channel active");
+        Logger.println("Channel active");
     }
 
     public void reconnect(final ChannelHandlerContext ctx){
@@ -293,7 +293,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                         sessionTable.remove(ncss.getReplicaId());
                         sessionTable.put(ncss.getReplicaId(), cs);
 
-                        System.out.println("re-connecting to replica "+ncss.getReplicaId()+" at " + controller.getRemoteAddress(ncss.getReplicaId()));
+                        Logger.println("re-connecting to replica "+ncss.getReplicaId()+" at " + controller.getRemoteAddress(ncss.getReplicaId()));
                     } else {
                         // This cleans an olde server from the session table
                         sessionTable.remove(ncss.getReplicaId());
@@ -320,7 +320,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
     @Override
     public void send(boolean sign, int[] targets, TOMMessage sm) {
 
-        listener.waitForChannels(targets.length); // wait for the previous transmission to complete
+//        listener.waitForChannels(targets.length); // wait for the previous transmission to complete
         
         Logger.println("Sending request from " + sm.getSender() + " with sequence number " + sm.getSequence() + " to " + Arrays.toString(targets));
                 
@@ -520,18 +520,18 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             @Override
             public void operationComplete(ChannelFuture f) {
                 
-                this.futureLock.lock();
-
-                this.remainingFutures--;
-
-                if (this.remainingFutures <= 0) {
-
-                    this.enoughCompleted.signalAll();
-                }
-
-                Logger.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
-                System.out.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
-                this.futureLock.unlock();
+//                this.futureLock.lock();
+//
+//                this.remainingFutures--;
+//
+//                if (this.remainingFutures <= 0) {
+//
+//                    this.enoughCompleted.signalAll();
+//                }
+//
+//                Logger.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
+//                System.out.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
+//                this.futureLock.unlock();
               
             }
             

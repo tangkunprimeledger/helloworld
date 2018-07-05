@@ -127,20 +127,24 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
     public synchronized void changeState(NodeStateEnum from, NodeStateEnum to) {
         Assert.notNull(from, "from state can't be null");
         Assert.notNull(to, "to state can't be null");
-
-        if (from != state || !checkState(from, to)) {
-            throw new ConsensusException(ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
-        }
-        LinkedHashSet<StateChangeListenerAdaptor> stateChangeListenerAdaptors = stateListeners.get(to);
-        if (stateChangeListenerAdaptors != null) {
-            stateChangeListenerAdaptors.stream().filter(StateChangeListenerAdaptor::isBefore)
-                .forEach(StateChangeListenerAdaptor::invoke);
-        }
-        state = to;
-        log.info("Node state changed from:{} to:{}", from, to);
-        if (stateChangeListenerAdaptors != null) {
-            stateChangeListenerAdaptors.stream().filter(adaptor -> !adaptor.isBefore())
-                .forEach(StateChangeListenerAdaptor::invoke);
+        try {
+            if (from != state || !checkState(from, to)) {
+                throw new ConsensusException(ConsensusError.CONFIG_NODE_STATE_CHANGE_FAILED);
+            }
+            LinkedHashSet<StateChangeListenerAdaptor> stateChangeListenerAdaptors = stateListeners.get(to);
+            if (stateChangeListenerAdaptors != null) {
+                stateChangeListenerAdaptors.stream().filter(StateChangeListenerAdaptor::isBefore)
+                    .forEach(StateChangeListenerAdaptor::invoke);
+            }
+            state = to;
+            log.info("Node state changed from:{} to:{}", from, to);
+            if (stateChangeListenerAdaptors != null) {
+                stateChangeListenerAdaptors.stream().filter(adaptor -> !adaptor.isBefore())
+                    .forEach(StateChangeListenerAdaptor::invoke);
+            }
+        } catch (Exception e) {
+            log.error("change state error", e);
+            throw e;
         }
     }
 

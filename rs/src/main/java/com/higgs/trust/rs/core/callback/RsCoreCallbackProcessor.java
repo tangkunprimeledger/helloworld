@@ -2,7 +2,6 @@ package com.higgs.trust.rs.core.callback;
 
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.config.p2p.AbstractClusterInfo;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.rs.common.enums.RequestEnum;
@@ -208,6 +207,7 @@ import org.springframework.stereotype.Component;
         Config config = configRepository.getConfig(user);
         config.setPubKey(config.getTmpPubKey());
         config.setPriKey(config.getTmpPriKey());
+        config.setValid(true);
         configRepository.updateConfig(config);
         log.info("[processCaUpdate] end update pubKey/priKey, nodeName={}", user);
     }
@@ -229,9 +229,9 @@ import org.springframework.stereotype.Component;
             return;
         }
 
-        if (nodeState.isState(NodeStateEnum.Running)) {
+        /*if (nodeState.isState(NodeStateEnum.Running)) {
             nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
-        }
+        }*/
 
         log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
         //set pubKey and priKey to invalid
@@ -248,6 +248,7 @@ import org.springframework.stereotype.Component;
             log.info("[processCaAuth]ca auth is fail,code:{}", respData.getRespCode());
             return;
         }
+
         clusterInfo.setRefresh();
         log.info("[processCaAuth] set cluster info refresh");
     }
