@@ -16,6 +16,7 @@ limitations under the License.
 package bftsmart.consensus;
 
 import bftsmart.tom.core.messages.TOMMessage;
+import bftsmart.tom.util.Logger;
 
 /**
  *
@@ -128,7 +129,7 @@ public class Decision {
         while (decisionEpoch == null &&
                 decisionEpoch.deserializedPropValue == null) {
             try {
-                System.out.println("waiting for propose for consensus" + cid);
+                Logger.println("waiting for propose for consensus" + cid);
                 Thread.sleep(1);
             } catch (InterruptedException ie) {
             }

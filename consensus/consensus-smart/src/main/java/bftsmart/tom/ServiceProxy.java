@@ -207,7 +207,7 @@ public class ServiceProxy extends TOMSender {
 			try {
                 if(reqType == TOMMessageType.UNORDERED_HASHED_REQUEST){
                     if (!this.sm.tryAcquire(invokeUnorderedHashedTimeout, TimeUnit.SECONDS)) {
-                        System.out.println("######## UNORDERED HASHED REQUEST TIMOUT ########");
+                        Logger.println("######## UNORDERED HASHED REQUEST TIMOUT ########");
                         return invoke(request, TOMMessageType.ORDERED_REQUEST);
                     }
                 }else{
@@ -215,7 +215,7 @@ public class ServiceProxy extends TOMSender {
                         Logger.println("###################TIMEOUT#######################");
                         Logger.println("Reply timeout for reqId=" + reqId);
                         System.out.print(getProcessId() + " // " + reqId + " // TIMEOUT // ");
-                        System.out.println("Replies received: " + receivedReplies);
+                        Logger.println("Replies received: " + receivedReplies);
                         return null;
                     }
                 }
@@ -375,14 +375,14 @@ public class ServiceProxy extends TOMSender {
 			} else {
 				Logger.println("Ignoring reply from " + reply.getSender()
 						+ " with reqId:" + reply.getSequence() + ". Currently wait reqId= " + reqId);
-				System.out.println("Ignoring reply from " + reply.getSender()
+				Logger.println("Ignoring reply from " + reply.getSender()
 						+ " with reqId:" + reply.getSequence() + ". Currently wait reqId= " + reqId);
 
 			}
 			// Critical section ends here. The semaphore can be released
 			canReceiveLock.unlock();
 		} catch (Exception ex) {
-			System.out.println("Problem at ServiceProxy.ReplyReceived()");
+			Logger.println("Problem at ServiceProxy.ReplyReceived()");
 			ex.printStackTrace();
 			canReceiveLock.unlock();
 		}

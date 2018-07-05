@@ -335,7 +335,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             throw new IllegalArgumentException();
         }
         int firstCID = cids[0];
-        System.out.println("(firstCID + 1) % checkpointPeriod -- " + (firstCID + 1) % checkpointPeriod);
+        Logger.println("(firstCID + 1) % checkpointPeriod -- " + (firstCID + 1) % checkpointPeriod);
         if ((firstCID + 1) % checkpointPeriod == 0) {
             return cidPosition(cids, firstCID);
         } else {
@@ -362,14 +362,14 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         if (cids[cids.length - 1] == cid) {
             return cids.length - 1;
         }
-        System.out.println("--cids " + Arrays.toString(cids) + "and cid " + cid);
+        Logger.println("--cids " + Arrays.toString(cids) + "and cid " + cid);
         for (int i = 0; i < cids.length; i++) {
             if (cids[i] > cid) {
                 break;
             }
             index++;
         }
-        System.out.println("--- Checkpoint is in position " + index);
+        Logger.println("--- Checkpoint is in position " + index);
         return index;
     }
    

@@ -104,10 +104,10 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 					controller.getStaticConf().getProcessId()),
 					controller.getStaticConf().getPort(controller.getStaticConf().getProcessId()))).sync(); 
 
-			System.out.println("-- ID = " + controller.getStaticConf().getProcessId());
-			System.out.println("-- N = " + controller.getCurrentViewN());
-			System.out.println("-- F = " + controller.getCurrentViewF());
-        		System.out.println("-- Port = " + controller.getStaticConf().getPort(controller.getStaticConf().getProcessId()));
+			Logger.println("-- ID = " + controller.getStaticConf().getProcessId());
+			Logger.println("-- N = " + controller.getCurrentViewN());
+			Logger.println("-- F = " + controller.getCurrentViewF());
+        		Logger.println("-- Port = " + controller.getStaticConf().getPort(controller.getStaticConf().getProcessId()));
 			System.out.println("-- requestTimeout = " + controller.getStaticConf().getRequestTimeout());
 			System.out.println("-- maxBatch = " + controller.getStaticConf().getMaxBatchSize());
 			if (controller.getStaticConf().getUseMACs() == 1) System.out.println("-- Using MACs");

@@ -277,12 +277,12 @@ public final class ExecutionManager {
                 tomLayer.getStateManager().analyzeState(msg.getNumber());
             }
             else {
-                System.out.println("##################################################################################");
-                System.out.println("- Ahead-of-time message discarded");
-                System.out.println("- If many messages of the same consensus are discarded, the replica can halt!");
-                System.out.println("- Try to increase the 'system.paxos.highMarc' configuration parameter.");
-                System.out.println("- Last consensus executed: " + lastConsId);
-                System.out.println("##################################################################################");
+                Logger.println("##################################################################################");
+                Logger.println("- Ahead-of-time message discarded");
+                Logger.println("- If many messages of the same consensus are discarded, the replica can halt!");
+                Logger.println("- Try to increase the 'system.paxos.highMarc' configuration parameter.");
+                Logger.println("- Last consensus executed: " + lastConsId);
+                Logger.println("##################################################################################");
             }
             /******************************************************************/
         }
