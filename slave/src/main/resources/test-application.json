@@ -158,7 +158,8 @@
         "1": "TRUST-TEST1",
         "2": "TRUST-TEST2",
         "3": "TRUST-TEST3"
-      }
+      },
+      "defaultDir": "C:/tmp/files0"
     }
   }
 }
