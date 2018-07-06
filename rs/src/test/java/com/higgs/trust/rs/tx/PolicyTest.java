@@ -1,7 +1,7 @@
 package com.higgs.trust.rs.tx;
 
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
-import com.higgs.trust.rs.custom.api.vo.manage.RegisterPolicyVO;
+import com.higgs.trust.rs.core.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import lombok.extern.slf4j.Slf4j;

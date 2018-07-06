@@ -40,7 +40,7 @@ public class HashUtil {
      * @param bytes
      * @return
      */
-    private static String byte2Hex(byte[] bytes) {
+    public static String byte2Hex(byte[] bytes) {
         StringBuffer stringBuffer = new StringBuffer();
         String temp = null;
         for (int i = 0; i < bytes.length; i++) {

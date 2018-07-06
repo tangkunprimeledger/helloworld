@@ -98,7 +98,7 @@ public class Server extends DefaultRecoverable {
             }
             return null;
         } catch (IOException e) {
-            System.out.println("Exception reading data in the replica: " + e.getMessage());
+            log.error("Exception reading data in the replica: " + e.getMessage());
             e.printStackTrace();
             return null;
         } catch (ClassNotFoundException e) {

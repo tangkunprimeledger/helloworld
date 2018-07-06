@@ -72,7 +72,7 @@ import java.util.concurrent.TimeUnit;
                 future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
                 flag = true;
             } catch (Throwable e) {
-                log.error("replicate log failed!", e);
+                log.error("replicate log failed! height = {}", packageVO.getHeight(), e);
                 //TODO 添加告警
             }
         }

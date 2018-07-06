@@ -68,8 +68,4 @@ public class SmartConfig {
     public void setTtpPubKey(String ttpPubKey) {
         this.ttpPubKey = ttpPubKey;
     }
-
-    public SmartConfig() {
-        System.out.println("----------------------- smart config---------------------");
-    }
 }

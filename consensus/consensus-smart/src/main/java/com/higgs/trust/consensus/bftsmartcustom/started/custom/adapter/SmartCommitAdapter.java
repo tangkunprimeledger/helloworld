@@ -6,7 +6,7 @@ import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 public class SmartCommitAdapter<T extends AbstractConsensusCommand> implements ConsensusCommit<T> {
 
     private T command;
-
+    private boolean isClosed;
     public SmartCommitAdapter(Object object) {
         if (object instanceof AbstractConsensusCommand) {
             this.command = (T) object;
@@ -22,11 +22,11 @@ public class SmartCommitAdapter<T extends AbstractConsensusCommand> implements C
 
     @Override
     public void close() {
-        //do nothing
+        this.isClosed = true;
     }
 
     @Override
     public boolean isClosed() {
-        return false;
+        return this.isClosed;
     }
 }

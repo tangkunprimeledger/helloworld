@@ -19,6 +19,7 @@ import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
+import bftsmart.tom.util.Logger;
 import bftsmart.tom.util.TOMUtil;
 
 import java.util.*;
@@ -174,7 +175,7 @@ public class RequestsTimer {
             }
 
             if (!pendingRequests.isEmpty()) {
-                System.out.println("Timeout for messages: " + pendingRequests);
+                Logger.println("Timeout for messages: " + pendingRequests);
                 //Logger.debug = true;
                 //tomLayer.requestTimeout(pendingRequests);
                 //if (reconfManager.getStaticConf().getProcessId() == 4) Logger.debug = true;
@@ -263,7 +264,7 @@ public class RequestsTimer {
          */
         public void run() {
 
-                System.out.println("(SendStopTask.run) Re-transmitting STOP message to install regency " + stop.getReg());
+                Logger.println("(SendStopTask.run) Re-transmitting STOP message to install regency " + stop.getReg());
                 communication.send(controller.getCurrentViewOtherAcceptors(),this.stop);
 
                 setSTOP(stop.getReg(), stop); //repeat

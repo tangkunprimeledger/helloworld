@@ -17,10 +17,13 @@ package bftsmart.tom.leaderchange;
 
 import bftsmart.communication.SystemMessage;
 import bftsmart.tom.util.TOMUtil;
+import com.higgs.trust.common.utils.HashUtil;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Message used during leader change and synchronization
@@ -99,5 +102,28 @@ public class LCMessage extends SystemMessage {
         type = in.readInt();
         ts = in.readInt();
         payload = (byte[]) in.readObject();
+    }
+
+    @Override
+    public int hashCode() {
+        String s =HashUtil.byte2Hex(this.payload);
+        String meta = s + this.type + this.ts;
+        return meta.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (Objects.isNull(obj)) {
+            return false;
+        }
+        if (obj instanceof LCMessage) {
+            LCMessage lcMessage = (LCMessage) obj;
+            if (lcMessage.type == this.type && lcMessage.ts == this.ts && Arrays.equals(this.payload, lcMessage.payload)) {
+                return true;
+            }
+            return false;
+        } else {
+            return false;
+        }
     }
 }
