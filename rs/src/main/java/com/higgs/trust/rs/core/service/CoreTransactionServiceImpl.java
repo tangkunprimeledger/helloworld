@@ -401,7 +401,7 @@ import java.util.List;
      */
     @Override public void submitToSlave() {
         //max size
-        int maxSize = 20;
+        int maxSize = 200;
         List<CoreTransactionPO> list = coreTxRepository.queryByStatus(CoreTxStatusEnum.WAIT, 0, maxSize);
         if (CollectionUtils.isEmpty(list)) {
             return;
