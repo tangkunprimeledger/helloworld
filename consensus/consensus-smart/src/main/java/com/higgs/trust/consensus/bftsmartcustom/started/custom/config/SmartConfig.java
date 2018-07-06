@@ -21,6 +21,16 @@ public class SmartConfig {
 
     private Map<String, String> idNodeNameMap;
 
+    private String defaultDir;
+
+    public String getDefaultDir() {
+        return defaultDir;
+    }
+
+    public void setDefaultDir(String defaultDir) {
+        this.defaultDir = defaultDir;
+    }
+
     public Map<String, String> getIdNodeNameMap() {
         return idNodeNameMap;
     }
