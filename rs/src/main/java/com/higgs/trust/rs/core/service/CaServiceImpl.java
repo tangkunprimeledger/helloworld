@@ -25,6 +25,7 @@ import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
+import com.higgs.trust.slave.model.bo.node.NodeAction;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -250,6 +251,13 @@ import java.util.*;
         caAction.setType(ActionTypeEnum.CA_AUTH);
         caAction.setIndex(0);
         actions.add(caAction);
+
+        /*NodeAction nodeAction = new NodeAction();
+        nodeAction.setNodeName(nodeState.getNodeName());
+        nodeAction.setType(ActionTypeEnum.NODE_JOIN);
+        nodeAction.setIndex(1);
+        actions.add(nodeAction);*/
+
         return actions;
     }
 

@@ -23,6 +23,8 @@ public enum ActionTypeEnum {
     CA_AUTH("CA_AUTH", "ca auth"),
     CA_CANCEL("CA_CANCEL", "ca cancel"),
     CA_UPDATE("CA_UPDATE", "ca update"),
+    NODE_JOIN("NODE_JOIN", "node join"),
+    NODE_LEAVE("NODE_LEAVE", "node leave"),
     RS_CANCEL("RS_CANCEL", "cancel rs"),;
 
     String code;

@@ -83,6 +83,12 @@ import org.springframework.stereotype.Component;
                 case CANCEL_RS:
                     processCancelRS(respData);
                     return;
+                case NODE_JOIN:
+                    processNodeJoin(respData);
+                    return;
+                case NODE_LEAVE:
+                    processNodeLeave(respData);
+                    return;
                 default:
                     break;
             }
@@ -251,5 +257,25 @@ import org.springframework.stereotype.Component;
 
         clusterInfo.setRefresh();
         log.info("[processCaAuth] set cluster info refresh");
+    }
+
+    private void processNodeJoin(RespData<CoreTransaction> respData) {
+        if (!respData.isSuccess()) {
+            log.info("[processNodeJoin]node join is fail,code:{}", respData.getRespCode());
+            return;
+        }
+
+        clusterInfo.setRefresh();
+        log.info("[processNodeJoin] set cluster info refresh");
+    }
+
+    private void processNodeLeave(RespData<CoreTransaction> respData) {
+        if (!respData.isSuccess()) {
+            log.info("[processNodeLeave]node leave is fail,code:{}", respData.getRespCode());
+            return;
+        }
+
+        clusterInfo.setRefresh();
+        log.info("[processNodeLeave] set cluster info refresh");
     }
 }

@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.common.config;
 
 import com.higgs.trust.config.p2p.AbstractClusterInfo;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
@@ -10,7 +9,6 @@ import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
-import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,65 +29,45 @@ import java.util.concurrent.ConcurrentHashMap;
  * @desc cluster node info and refresh method
  * @date 2018/6/28 20:01
  */
-@Slf4j
-@Configuration
-@Primary
-@ConfigurationProperties(prefix = "higgs.trust.p2p")
-public class ClusterNodesInfo
-        extends AbstractClusterInfo {
+@Slf4j @Configuration @Primary @ConfigurationProperties(prefix = "higgs.trust.p2p") public class ClusterNodesInfo
+    extends AbstractClusterInfo {
 
-    @Getter
-    @Setter
-    private int faultNodeNum = 0;
+    @Getter @Setter private int faultNodeNum = 0;
 
-    @Getter
-    private Map<String, String> clusters = new ConcurrentHashMap<>();
+    @Getter private Map<String, String> clusters = new ConcurrentHashMap<>();
 
-    @Getter
-    @Setter
-    private List<String> clusterNodeNames = new ArrayList<>();
+    @Getter @Setter private List<String> clusterNodeNames = new ArrayList<>();
 
-    @Autowired
-    private ClusterConfigRepository clusterConfigRepository;
-    @Autowired
-    private ClusterNodeRepository clusterNodeRepository;
-    @Autowired
-    private ConfigRepository configRepository;
-    @Autowired
-    private CaRepository caRepository;
-    @Autowired
-    private NodeState nodeState;
+    @Autowired private ClusterConfigRepository clusterConfigRepository;
+    @Autowired private ClusterNodeRepository clusterNodeRepository;
+    @Autowired private ConfigRepository configRepository;
+    @Autowired private CaRepository caRepository;
+    @Autowired private NodeState nodeState;
 
-    @Override
-    public Integer faultNodeNum() {
+    @Override public Integer faultNodeNum() {
         return faultNodeNum;
     }
 
-    @Override
-    public String nodeName() {
+    @Override public String nodeName() {
         return nodeState.getNodeName();
     }
 
-    @Override
-    public List<String> clusterNodeNames() {
+    @Override public List<String> clusterNodeNames() {
         if (clusterNodeNames.isEmpty()) {
             clusterNodeNames.addAll(clusters.keySet());
         }
         return clusterNodeNames;
     }
 
-    @Override
-    public String pubKey(String nodeName) {
+    @Override public String pubKey(String nodeName) {
         return clusters.get(nodeName);
     }
 
-    @Override
-    public String privateKey() {
+    @Override public String privateKey() {
         return nodeState.getPrivateKey();
     }
 
-    @Override
-    public void init(ClusterInfoVo vo) {
+    @Override public void init(ClusterInfoVo vo) {
         faultNodeNum = vo.getFaultNodeNum();
         clusters.clear();
         clusters.putAll(vo.getClusters());
@@ -113,7 +91,7 @@ public class ClusterNodesInfo
      *
      * @return
      */
-    public void refreshPubkeys() {
+    /*public void refreshPubkeys() {
         Map<String, String> clusterPubkeys = new HashMap<>();
         List<ClusterNode> list = clusterNodeRepository.getAllClusterNodes();
         if (list != null) {
@@ -125,6 +103,21 @@ public class ClusterNodesInfo
                     }
                 }
             });
+        }
+        synchronized (clusters) {
+            clusters.clear();
+            clusters.putAll(clusterPubkeys);
+            clusterNodeNames.clear();
+            clusterNodeNames.addAll(clusters.keySet());
+        }
+    }*/
+    public void refreshPubkeys() {
+        Map<String, String> clusterPubkeys = new HashMap<>();
+        List<Ca> list = caRepository.getAllCa();
+        for (Ca ca : list) {
+            if (ca != null) {
+                clusterPubkeys.put(ca.getUser(), ca.getPubKey());
+            }
         }
         synchronized (clusters) {
             clusters.clear();

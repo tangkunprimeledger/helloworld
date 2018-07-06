@@ -1,25 +1,25 @@
-package com.higgs.trust.slave.core.service.node;
+package com.higgs.trust.rs.core.service;
 
-import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
+import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.integration.NodeClient;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
-import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
-import com.higgs.trust.slave.integration.node.NodeClient;
-import com.higgs.trust.slave.model.bo.config.ClusterConfig;
-import com.higgs.trust.slave.model.bo.config.ClusterNode;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.node.NodeAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.UUID;
 
 /**
  * @author WangQuanzhou
@@ -30,32 +30,71 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
     @Autowired private ConsensusStateMachine consensusStateMachine;
     @Autowired private NodeState nodeState;
-    @Autowired private ClusterNodeRepository clusterNodeRepository;
-    @Autowired private ClusterConfigRepository clusterConfigRepository;
-    @Autowired private ClusterInfo clusterInfo;
+    @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private NodeClient nodeClient;
-    @Autowired private NodeProperties nodeProperties;
+
+    private static final String SUCCESS = "sucess";
+    private static final String FAIL = "fail";
 
     /**
      * @param
      * @return
      * @desc join consensus layer
      */
-    public void joinConsensus() {
+    public String joinConsensus() {
 
         log.info("[joinConsensus] start to join consensus layer");
-        consensusStateMachine.joinConsensus();
+
+        RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), nodeState.getNodeName());
+        if (!respData.isSuccess()) {
+            return FAIL;
+        }
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            log.error("[joinConsensus] error occured while thread sleep", e);
+            return FAIL;
+        }
 
         log.info("[joinConsensus] start to transform node status from offline to running");
         nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
         nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
         nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+        return SUCCESS;
+    }
 
-        log.info("[joinConsensus] start to update cluster config info");
-        sendJoinToEveryNode(nodeProperties.getStartupRetryTime(), nodeState.getNodeName());
+    public RespData joinConsensusTx(String user) {
 
-        log.info("[joinConsensus] end join consensus layer and transform node status");
+        //send and get callback result
+        try {
+            coreTransactionService.submitTx(constructJoinCoreTx(user));
+        } catch (Throwable e) {
+            log.error("send node join transaction error", e);
+            return new RespData(RespCodeEnum.SYS_FAIL.getRespCode());
+        }
+        log.info("[joinConsensusTx] submit joinConsensusTx to slave success");
+        return new RespData();
+    }
 
+    private CoreTransaction constructJoinCoreTx(String user) {
+        CoreTransaction coreTx = new CoreTransaction();
+        coreTx.setTxId(UUID.randomUUID().toString());
+        coreTx.setSender(user);
+        coreTx.setVersion(VersionEnum.V1.getCode());
+        coreTx.setPolicyId(InitPolicyEnum.NODE_JOIN.getPolicyId());
+        coreTx.setActionList(buildJoinActionList(user));
+        return coreTx;
+    }
+
+    private List<Action> buildJoinActionList(String user) {
+        List<Action> actions = new ArrayList<>();
+        NodeAction nodeAction = new NodeAction();
+        nodeAction.setNodeName(user);
+        nodeAction.setType(ActionTypeEnum.NODE_JOIN);
+        nodeAction.setIndex(0);
+        actions.add(nodeAction);
+        return actions;
     }
 
     /**
@@ -63,161 +102,54 @@ import java.util.concurrent.CopyOnWriteArraySet;
      * @return
      * @desc leave consensus layer
      */
-    public void leaveConsensus() {
-
-        log.info("[leaveConsensus] start to update cluster config info");
-        sendLeaveToEveryNode(nodeProperties.getStartupRetryTime(), nodeState.getNodeName());
+    public String leaveConsensus() {
 
         log.info("[leaveConsensus] start to leave consensus layer");
         consensusStateMachine.leaveConsensus();
+
+        //send and get callback result
+        try {
+            coreTransactionService.submitTx(constructLeaveCoreTx(nodeState.getNodeName()));
+        } catch (Throwable e) {
+            log.error("send node leave transaction error", e);
+            return FAIL;
+        }
+        log.info("[leaveConsensus] end join consensus layer and transform node status");
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            log.error("[leaveConsensus] error occured while thread sleep", e);
+            return FAIL;
+        }
 
         log.info("[leaveConsensus] start to transform node status from running to offline");
         nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
 
         log.info("[leaveConsensus] end leave consensus layer and transform node status");
+        return SUCCESS;
 
     }
 
-    private void sendLeaveToEveryNode(int retryCount, String user) {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        Set<String> nodeSet = new CopyOnWriteArraySet<>();
-        int i = 0;
-        do {
-            if (nodeSet.size() == nodeList.size()) {
-                return;
-            }
-            // send leave consensus to every node
-            nodeList.forEach((nodeName) -> {
-                try {
-                    if (!nodeSet.contains(nodeName)) {
-                        RespData<String> resp = nodeClient.nodeLeave(nodeName, user);
-                        if (resp.isSuccess()) {
-                            nodeSet.add(nodeName);
-                        }
-                    }
-                } catch (Throwable e) {
-                    log.warn("[sendLeaveToEveryNode] send leave consensus to every node error, node={}", nodeName);
-                }
-            });
-            if (nodeSet.size() < nodeList.size()) {
-                try {
-                    Thread.sleep(3 * 1000);
-                } catch (InterruptedException e) {
-                    log.warn("send leave consensus to every node error.", e);
-                }
-            }
-        } while (nodeSet.size() < nodeList.size() && ++i < retryCount);
 
-        if (nodeSet.size() < nodeList.size()) {
-            log.info("[sendLeaveToEveryNode]  send leave consensus to every node error, nodeSet = {}, nodeList={}",
-                nodeSet.toString(), nodeList.toString());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_LEAVE_CONSENSUS_ERROR,
-                "[sendLeaveToEveryNode] send leave consensus to every node error");
-        }
-
-        clusterInfo.setRefresh();
-        log.info("[sendLeaveToEveryNode] set cluster info refresh");
-
-        log.info("[sendLeaveToEveryNode] end send leave consensus to every node, nodeSet = {}, nodeList={}",
-            nodeSet.toString(), nodeList.toString());
+    private CoreTransaction constructLeaveCoreTx(String user) {
+        CoreTransaction coreTx = new CoreTransaction();
+        coreTx.setTxId(UUID.randomUUID().toString());
+        coreTx.setSender(user);
+        coreTx.setVersion(VersionEnum.V1.getCode());
+        coreTx.setPolicyId(InitPolicyEnum.NODE_LEAVE.getPolicyId());
+        coreTx.setActionList(buildLeaveActionList(user));
+        return coreTx;
     }
 
-    private void sendJoinToEveryNode(int retryCount, String user) {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        Set<String> nodeSet = new CopyOnWriteArraySet<>();
-        int i = 0;
-        do {
-            if (nodeSet.size() == nodeList.size()) {
-                return;
-            }
-            // send leave consensus to every node
-            nodeList.forEach((nodeName) -> {
-                try {
-                    if (!nodeSet.contains(nodeName)) {
-                        RespData<String> resp = nodeClient.nodeJoin(nodeName, user);
-                        if (resp.isSuccess()) {
-                            nodeSet.add(nodeName);
-                        }
-                    }
-                } catch (Throwable e) {
-                    log.warn("[sendJoinToEveryNode] send join consensus to every node error, node={}", nodeName);
-                }
-            });
-            if (nodeSet.size() < nodeList.size()) {
-                try {
-                    Thread.sleep(3 * 1000);
-                } catch (InterruptedException e) {
-                    log.warn("send join consensus to every node error.", e);
-                }
-            }
-        } while (nodeSet.size() < nodeList.size() && ++i < retryCount);
-
-        if (nodeSet.size() < nodeList.size()) {
-            log.info("[sendJoinToEveryNode]  send join consensus to every node error, nodeSet = {}, nodeList={}",
-                nodeSet.toString(), nodeList.toString());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_LEAVE_CONSENSUS_ERROR,
-                "[sendJoinToEveryNode] send join consensus to every node error");
-        }
-
-        clusterInfo.setRefresh();
-        log.info("[sendJoinToEveryNode] set cluster info refresh");
-
-        log.info("[sendJoinToEveryNode] end send join consensus to every node, nodeSet = {}, nodeList={}",
-            nodeSet.toString(), nodeList.toString());
-    }
-
-    public RespData updateConfigForJoin(String user) {
-        // every node update table cluster_node and cluster_config
-        if (log.isDebugEnabled()) {
-            log.debug("[updateConfigForJoin] start to update clusterNode info");
-        }
-        ClusterNode clusterNode = new ClusterNode();
-        clusterNode.setNodeName(user);
-        clusterNode.setP2pStatus(true);
-        clusterNode.setRsStatus(false);
-        clusterNodeRepository.insertClusterNode(clusterNode);
-        if (log.isDebugEnabled()) {
-            log.debug("[updateConfigForJoin] clusterNode={}", clusterNode.toString());
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("[updateConfigForJoin] start to update clusterConfig info");
-        }
-        ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getClusterName());
-        clusterConfig.setNodeNum(clusterConfig.getNodeNum() + 1);
-        clusterConfig.setFaultNum(clusterConfig.getNodeNum() / 3);
-        clusterConfigRepository.insertClusterConfig(clusterConfig);
-        if (log.isDebugEnabled()) {
-            log.debug("[updateConfigForJoin] clusterConfig={}", clusterConfig.toString());
-        }
-        return new RespData();
-    }
-
-    public RespData updateConfigForLeave(String user) {
-        // every node update table cluster_node and cluster_config
-        if (log.isDebugEnabled()) {
-            log.debug("[updateConfigForLeave] start to update clusterNode info");
-        }
-        ClusterNode clusterNode = new ClusterNode();
-        clusterNode.setNodeName(user);
-        clusterNode.setP2pStatus(false);
-        clusterNode.setRsStatus(false);
-        clusterNodeRepository.insertClusterNode(clusterNode);
-        if (log.isDebugEnabled()) {
-            log.debug("[updateConfigForLeave] clusterNode={}", clusterNode.toString());
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("[updateConfigForLeave] start to update clusterConfig info");
-        }
-        ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getClusterName());
-        clusterConfig.setNodeNum(clusterConfig.getNodeNum() - 1);
-        clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
-        clusterConfigRepository.insertClusterConfig(clusterConfig);
-        if (log.isDebugEnabled()) {
-            log.debug("[updateConfigForLeave] clusterConfig={}", clusterConfig.toString());
-        }
-        return new RespData();
+    private List<Action> buildLeaveActionList(String user) {
+        List<Action> actions = new ArrayList<>();
+        NodeAction nodeAction = new NodeAction();
+        nodeAction.setNodeName(user);
+        nodeAction.setType(ActionTypeEnum.NODE_LEAVE);
+        nodeAction.setIndex(0);
+        actions.add(nodeAction);
+        return actions;
     }
 
 }

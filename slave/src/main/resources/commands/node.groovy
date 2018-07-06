@@ -6,7 +6,6 @@ import com.higgs.trust.consensus.core.ConsensusStateMachine
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
-import com.higgs.trust.slave.core.service.node.NodeConsensusService
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*
@@ -108,27 +107,5 @@ class node {
         consensusStateMachine.start()
         out.println("start consensus successful")
     }
-
-
-    @Usage('join consensus layer')
-    @Command
-    def joinConsensus(InvocationContext context,
-                      @Usage("user") @Required @Argument String user) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def nodeService = beans.getBean(NodeConsensusService.class)
-        nodeService.joinConsensus(user)
-        out.println("join consensus layer successful, user= $user")
-    }
-
-    @Usage('leave consensus layer')
-    @Command
-    def leaveConsensus(InvocationContext context,
-                       @Usage("user") @Required @Argument String user) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def nodeService = beans.getBean(NodeConsensusService.class)
-        nodeService.leaveConsensus(user)
-        out.println("leave consensus layer successful, user= $user")
-    }
-
 
 }

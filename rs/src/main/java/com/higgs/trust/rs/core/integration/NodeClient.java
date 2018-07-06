@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.integration.node;
+package com.higgs.trust.rs.core.integration;
 
 import com.higgs.trust.common.feign.FeignRibbonConstants;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
      * @desc send node join request
      */
     @RequestMapping(value = "/node/join", method = RequestMethod.GET) RespData<String> nodeJoin(
-        @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName, @RequestParam("user") String user);
+        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeName, @RequestParam("user") String user);
 
     /**
      * @param

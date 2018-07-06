@@ -18,6 +18,8 @@ import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityAction
 import com.higgs.trust.slave.core.service.action.manage.CancelRsHandler;
 import com.higgs.trust.slave.core.service.action.manage.RegisterPolicyHandler;
 import com.higgs.trust.slave.core.service.action.manage.RegisterRsHandler;
+import com.higgs.trust.slave.core.service.action.node.NodeJoinHandler;
+import com.higgs.trust.slave.core.service.action.node.NodeLeaveHandler;
 import com.higgs.trust.slave.core.service.action.utxo.UTXOActionHandler;
 import com.higgs.trust.slave.core.service.contract.StandardExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
@@ -67,6 +69,9 @@ import java.util.*;
     @Autowired private CaCancelHandler caCancelHandler;
     @Autowired private CaUpdateHandler caUpdateHandler;
     @Autowired private CancelRsHandler cancelRsHandler;
+    @Autowired private NodeJoinHandler nodeJoinHandler;
+    @Autowired private NodeLeaveHandler nodeLeaveHandler;
+
 
     @Override public void afterPropertiesSet() throws Exception {
         txProcessorHolder.registVerisonProcessor(VersionEnum.V1, this);
@@ -150,6 +155,10 @@ import java.util.*;
                 return caCancelHandler;
             case CA_UPDATE:
                 return caUpdateHandler;
+            case NODE_JOIN:
+                return nodeJoinHandler;
+            case NODE_LEAVE:
+                return nodeLeaveHandler;
             default:
         }
         log.error("[getHandlerByType] action type not exist exception, actionType={}", JSON.toJSONString(typeEnum));
