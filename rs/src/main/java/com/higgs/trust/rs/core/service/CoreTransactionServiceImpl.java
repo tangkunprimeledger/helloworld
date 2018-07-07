@@ -436,15 +436,15 @@ import java.util.List;
     private void submitToSlave(List<CoreTxBO> boList) {
         List<SignedTransaction> txs = makeTxs(boList);
         try {
-            log.info("[submitToSlave] start");
+            log.debug("[submitToSlave] start");
             RespData respData = blockChainService.submitTransactions(txs);
             if (respData.getData() == null) {
-                log.info("[submitToSlave] end");
+                log.debug("[submitToSlave] end");
                 return;
             }
             //has fail tx
             List<TransactionVO> txsOfFail = (List<TransactionVO>)respData.getData();
-            log.info("[submitToSlave] has fail tx:{}", txsOfFail);
+            log.debug("[submitToSlave] has fail tx:{}", txsOfFail);
             for (TransactionVO txVo : txsOfFail) {
                 //dont need
                 if (!txVo.getRetry()) {

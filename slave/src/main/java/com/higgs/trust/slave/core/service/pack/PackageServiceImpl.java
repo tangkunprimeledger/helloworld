@@ -408,7 +408,7 @@ import java.util.stream.Collectors;
      */
     private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
         boolean isClusterPersisted, boolean isFailover,BlockHeader blockHeader) {
-        log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
+        log.debug("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         if (callbackHandler == null) {
             log.warn("[callbackRS]callbackHandler is not register");
@@ -435,18 +435,18 @@ import java.util.stream.Collectors;
                 }
             }
             if (isFailover) {
-                log.info("[callbackRS]start fail over rs txId:{}", txId);
+                log.debug("[callbackRS]start fail over rs txId:{}", txId);
                 callbackHandler.onFailover(respData, tx.getSignatureList(),blockHeader);
                 return;
             }
             //callback business
-            log.info("[callbackRS]start callback rs txId:{}", txId);
+            log.debug("[callbackRS]start callback rs txId:{}", txId);
             if (isClusterPersisted) {
                 callbackHandler.onClusterPersisted(respData, tx.getSignatureList(),blockHeader);
             } else {
                 callbackHandler.onPersisted(respData, tx.getSignatureList(),blockHeader);
             }
-            log.info("[callbackRS]end callback rs txId:{}", txId);
+            log.debug("[callbackRS]end callback rs txId:{}", txId);
         }
     }
 
