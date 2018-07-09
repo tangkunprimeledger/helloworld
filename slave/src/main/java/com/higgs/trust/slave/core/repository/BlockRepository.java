@@ -180,7 +180,9 @@ import java.util.List;
      * @param txReceipts
      */
     public void saveBlock(Block block, List<TransactionReceipt> txReceipts) {
-        log.info("[BlockRepository.saveBlock] is start");
+        if (log.isDebugEnabled()) {
+            log.debug("[BlockRepository.saveBlock] is start");
+        }
         BlockHeader blockHeader = block.getBlockHeader();
         BlockPO blockPO = new BlockPO();
         blockPO.setHeight(blockHeader.getHeight());
@@ -211,7 +213,9 @@ import java.util.List;
         }
         //save transactions
         transactionRepository.batchSaveTransaction(blockHeader.getHeight(), blockTime, txs, txReceipts);
-        log.info("[BlockRepository.saveBlock] is end");
+        if (log.isDebugEnabled()) {
+            log.debug("[BlockRepository.saveBlock] is end");
+        }
     }
 
     public List<BlockVO> queryBlocksWithCondition(Long height, String blockHash, Integer pageNum, Integer pageSize) {

@@ -8,6 +8,7 @@ import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -250,7 +251,10 @@ import java.util.stream.Collectors;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_PERSISTING_ERROR, e);
         } finally {
             Profiler.release();
-            Profiler.logDump();
+            //print if lager than 300 ms
+            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
+                Profiler.logDump();
+            }
         }
 
         //TODO:fashuang for test
@@ -390,7 +394,7 @@ import java.util.stream.Collectors;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR, e);
         } finally {
             Profiler.release();
-            if (Profiler.getDuration() > 0) {
+            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
                 Profiler.logDump();
             }
         }

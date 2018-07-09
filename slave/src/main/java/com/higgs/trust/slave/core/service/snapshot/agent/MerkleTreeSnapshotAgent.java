@@ -1,7 +1,11 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.merkle.MerkleService;
 import com.higgs.trust.slave.core.service.snapshot.CacheLoader;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
@@ -12,11 +16,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,47 +62,71 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
      * is exist node
      *
      * @param typeEnum
-     * @param obj
+     * @param node
      * @return
      */
-    public boolean isExist(MerkleTypeEnum typeEnum,Object obj) {
-        return merkleService.isExist(getMerkleTree(typeEnum),obj);
+    public boolean isExist(MerkleTypeEnum typeEnum, MerkleDataNode node) {
+        NodesCacheKey nodesCacheKey = new NodesCacheKey(typeEnum);
+        Map<String, MerkleDataNode> nodes = get(nodesCacheKey);
+        if (nodes == null) {
+            return false;
+        }
+        boolean result = nodes.containsKey(node.getUniqKey());
+
+        return result;
     }
+
+    /**
+     * add node to tmp node list
+     *
+     * @param merkleType
+     * @param _new
+     * @return
+     */
+    public void addNode(MerkleTypeEnum merkleType, MerkleDataNode _new) {
+        NodesCacheKey nodesCacheKey = new NodesCacheKey(merkleType);
+        Map<String, MerkleDataNode> nodes = get(nodesCacheKey);
+        if (nodes == null) {
+            nodes = Maps.newLinkedHashMap();
+            insert(nodesCacheKey, nodes);
+        }
+        nodes.put(_new.getUniqKey(), _new);
+    }
+
+    /**
+     * update the obj in the merkle tree
+     *
+     * @param merkleType
+     * @param _old
+     * @param _new
+     */
+    public void updateNode(MerkleTypeEnum merkleType, MerkleDataNode _old, MerkleDataNode _new) {
+        Map<String, Object> nodes = get(new NodesCacheKey(merkleType));
+        if (nodes == null) {
+            log.error("merkle update but nodes is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if (!nodes.containsKey(_old.getUniqKey())) {
+            log.error("merkle update but old value is not exist");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        nodes.put(_new.getUniqKey(), _new);
+    }
+
 
     /**
      * build an new merkle tree for obj and save to snapshot
      *
      * @param typeEnum
-     * @param datas
      * @return
      */
-    public MerkleTree buildMerleTree(MerkleTypeEnum typeEnum, Object[] datas) {
-        MerkleTree merkleTree = merkleService.build(typeEnum, Arrays.asList(datas));
-        insert(new MerkleTreeCacheKey(typeEnum), merkleTree);
+    public MerkleTree buildMerkleTree(MerkleTypeEnum typeEnum) {
+        LinkedHashMap<String, MerkleDataNode> nodes = get(new NodesCacheKey(typeEnum));
+        if (MapUtils.isEmpty(nodes)) {
+            return null;
+        }
+        MerkleTree merkleTree = merkleService.build(typeEnum, Lists.newLinkedList(nodes.values()));
         return merkleTree;
-    }
-
-    /**
-     * append an new obj to mekler tree and update snapshot
-     *
-     * @param merkleTree
-     * @param _new
-     */
-    public void appendChild(MerkleTree merkleTree, Object _new) {
-        merkleService.add(merkleTree, _new);
-        update(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
-    }
-
-    /**
-     * modify the obj in the merkle tree
-     *
-     * @param merkleTree
-     * @param _old
-     * @param _new
-     */
-    public void modifyMerkleTree(MerkleTree merkleTree, Object _old, Object _new) {
-        merkleService.update(merkleTree, _old, _new);
-        update(new MerkleTreeCacheKey(merkleTree.getTreeType()), merkleTree);
     }
 
     /**
@@ -130,14 +159,24 @@ public class MerkleTreeSnapshotAgent implements CacheLoader {
         return true;
     }
 
+
+    /**
+     * cache node
+     */
+    public interface MerkleDataNode {
+        String getUniqKey();
+    }
+
     /**
      * the cache key of merkle tree
      */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MerkleTreeCacheKey extends BaseBO {
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class MerkleTreeCacheKey extends BaseBO {
+        private MerkleTypeEnum merkleTypeEnum;
+    }
+    /**
+     * the cache node list of merkle tree
+     */
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class NodesCacheKey extends BaseBO {
         private MerkleTypeEnum merkleTypeEnum;
     }
 }

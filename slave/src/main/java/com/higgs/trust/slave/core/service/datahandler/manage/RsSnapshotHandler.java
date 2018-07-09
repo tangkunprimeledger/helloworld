@@ -32,14 +32,7 @@ public class RsSnapshotHandler implements RsHandler {
 
     @Override public void registerRsNode(RegisterRS registerRS) {
         RsNode rsNode = manageSnapshotAgent.registerRs(registerRS);
-
-        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.RS);
-
-        if (null == merkleTree) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.RS, new Object[] {rsNode});
-        } else {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, rsNode);
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.RS, rsNode);
     }
 
     @Override public void updateRsNode(String rsId, RsNodeStatusEnum rsNodeStatusEnum) {
@@ -51,14 +44,7 @@ public class RsSnapshotHandler implements RsHandler {
 
         rsNode.setStatus(rsNodeStatusEnum);
         manageSnapshotAgent.updateRs(rsNode);
-
-        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.RS);
-
-        if (null == merkleTree) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.RS, new Object[] {rsNode});
-        } else {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, rsNode);
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.RS, rsNode);
     }
 
 }

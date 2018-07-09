@@ -351,11 +351,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             boolean isExistedInTxCache = null != innerMap.get(innerKey);
             //whether the data existed in packageCache
             boolean isExistedInPackageCache = null != getDataFromPackageCache(key1, key2);
-            //whether the data existed in globalCache
-            boolean isExistedInGlobalCache = null != getDataFromGlobalCache(key1, key2);
-            //check whether there is data in the txCache
 
-            if (isExistedInTxCache || isExistedInPackageCache || isExistedInGlobalCache) {
+            if (isExistedInTxCache || isExistedInPackageCache) {
                 log.error("Insert snapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache duplicate key exception", key1, key2, value);
                 throw new DuplicateKeyException("Insert data into txCache duplicate key exception");
             }
@@ -386,13 +383,16 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
     public void update(SnapshotBizKeyEnum key1, Object key2, Object value) {
         Profiler.enter("[Snapshot.update]");
         try {
-            log.debug("Start to update data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
+            if (log.isDebugEnabled()) {
+                log.debug("Start to update data {}  for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
+            }
 
             //check  before insert and update
             putCheck(key1, key2, value);
 
-            log.debug("Update snapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache", key1, key2, value);
-
+            if (log.isDebugEnabled()) {
+                log.debug("Update snapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache", key1, key2, value);
+            }
             // put update Data into txCache
             putUpdateDataIntoTxCache(key1, key2, value);
 
@@ -401,7 +401,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             //check whether snapshot transaction has been started.
             isNotOpenTransactionException();
-            log.debug("End of update data {}  into txCache for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
+            if (log.isDebugEnabled()) {
+                log.debug("End of update data {}  into txCache for snapshotBizKeyEnum:{}, bizKey:{}", value, key1, key2);
+            }
         } finally {
             Profiler.release();
         }
@@ -421,10 +423,9 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         Value putInsertValue = buildValue(value, SnapshotValueStatusEnum.INSERT.getCode(), index);
         Value putUpdateValue = buildValue(value, SnapshotValueStatusEnum.UPDATE.getCode(), index);
 
-        //data in txCache
         Value txValue = innerMap.get(innerKey);
-
         if (null != txValue) {
+            //data in txCache
             if (StringUtils.equals(txValue.getStatus(), SnapshotValueStatusEnum.INSERT.getCode())) {
                 //use the index before in the cache
                 putInsertValue.setIndex(txValue.getIndex());
@@ -432,11 +433,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             } else {
                 innerMap.put(innerKey, (Value) transferValue(putUpdateValue));
             }
-            return;
-        }
-
-        //data not in txCache
-        if (null == txValue) {
+        } else {
+            //data not in txCache
             Value packageValue = getDataFromPackageCache(key1, key2);
             if (null != packageValue) {
                 innerMap.put(innerKey, (Value) transferValue(putUpdateValue));
@@ -819,19 +817,20 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             LoadingCache<String, Object> innerCache = globalCache.get(snapshotBizKeyEnum);
             for (Map.Entry<String, Value> innerEntry : innerMap.entrySet()) {
                 Value value = innerEntry.getValue();
-
-                //if data status is insert and there is data in global cache or db
-                if (StringUtils.equals(value.getStatus(), SnapshotValueStatusEnum.INSERT.getCode()) && null != getDataFromGlobalCache(snapshotBizKeyEnum, JSON.parse(innerEntry.getKey()))) {
-                    log.error("Insert snapshotBizKeyEnum: {} , innerKey : {} into globalCache exception, the data to be insert is  exist in globalCache or DB", snapshotBizKeyEnum, innerEntry.getKey());
-                    throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_EXIST_EXCEPTION, "Insert data into globalCache  exception, the data to be insert is  existed in globalCache or DB");
+                /**
+                 * TODO do not check data is in db for performance
+                 **/
+                if (log.isDebugEnabled()) {
+                    log.debug("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into globalCache",
+                        snapshotBizKeyEnum, innerEntry.getKey(), innerEntry.getValue());
                 }
-
-                log.debug("Put SnapshotBizKeyEnum: {} , innerKey : {} , value :{} into globalCache", snapshotBizKeyEnum, innerEntry.getKey(), innerEntry.getValue());
                 //put data into global cache
                 innerCache.put(innerEntry.getKey(), value.getObject());
             }
         }
-        log.debug("End  of copy data from txCache to globalCache");
+        if (log.isDebugEnabled()) {
+            log.debug("End  of copy data from txCache to globalCache");
+        }
     }
 
     /**
@@ -949,8 +948,10 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * @return
      */
     private Object transferValue(Object object) {
-        String valueTemp = JSON.toJSONString(object);
-        return JSON.parseObject(valueTemp, object.getClass());
+        //TODO find a way make the object const
+//        String valueTemp = JSON.toJSONString(object);
+//        return JSON.parseObject(valueTemp, object.getClass());
+        return object;
     }
 
     /**

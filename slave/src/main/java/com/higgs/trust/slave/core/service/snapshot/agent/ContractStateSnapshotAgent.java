@@ -50,7 +50,6 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
         updateList.forEach(pair -> {
             ContractState contractState = (ContractState) pair.getRight();
             ContractStatePO po = new ContractStatePO();
-            po.setId(contractState.getId());
             po.setAddress(contractState.getAddress());
             po.setState(JsonHelper.serialize(contractState.getState()));
             list.add(po);
@@ -112,12 +111,7 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
             snapshot.update(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey, contractState);
         }
 
-        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT);
-        if (merkleTree == null) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CONTRACT, new Object[]{newState});
-        } else {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, newState);
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.CONTRACT, contractState);
     }
 
     @Override
