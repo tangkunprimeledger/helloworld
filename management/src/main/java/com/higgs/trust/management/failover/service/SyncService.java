@@ -73,7 +73,7 @@ import java.util.List;
             do {
                 sync(currentHeight + 1, properties.getHeaderStep());
                 currentHeight = blockRepository.getMaxHeight();
-                if (currentHeight.equals(clusterHeight) && cache.getMinHeight() <= clusterHeight) {
+                if (currentHeight >= clusterHeight && cache.getMinHeight() <= clusterHeight) {
                     Long newHeight = getClusterHeight();
                     if (newHeight != null) {
                         clusterHeight = newHeight;

@@ -8,6 +8,12 @@ package com.higgs.trust.consensus.core;
 public interface ConsensusStateMachine {
 
     /**
+     * start a node when there is no cluster
+     */
+    void start();
+
+
+    /**
      * quit from consensus cluster
      */
     void  leaveConsensus();
@@ -16,11 +22,5 @@ public interface ConsensusStateMachine {
      * join a consensus cluster
      */
     void joinConsensus();
-
-
-    /**
-     * start a node when there is no cluster
-     */
-    void start();
 
 }
