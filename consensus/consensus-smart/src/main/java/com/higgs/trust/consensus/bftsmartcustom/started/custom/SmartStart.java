@@ -110,7 +110,7 @@ public class SmartStart implements ConsensusStateMachine {
                         break;
                     }
                 } catch (Exception e) {
-                    log.error("CA还没准备好");
+                    log.error("CA还没准备好", e);
                 }
                 try {
                     TimeUnit.MILLISECONDS.sleep(2000);
