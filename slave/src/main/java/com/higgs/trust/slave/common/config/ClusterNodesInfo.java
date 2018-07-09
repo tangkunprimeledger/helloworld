@@ -9,6 +9,7 @@ import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
+import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.Getter;
 import lombok.Setter;
@@ -91,7 +92,7 @@ import java.util.concurrent.ConcurrentHashMap;
      *
      * @return
      */
-    /*public void refreshPubkeys() {
+    public void refreshPubkeys() {
         Map<String, String> clusterPubkeys = new HashMap<>();
         List<ClusterNode> list = clusterNodeRepository.getAllClusterNodes();
         if (list != null) {
@@ -103,21 +104,6 @@ import java.util.concurrent.ConcurrentHashMap;
                     }
                 }
             });
-        }
-        synchronized (clusters) {
-            clusters.clear();
-            clusters.putAll(clusterPubkeys);
-            clusterNodeNames.clear();
-            clusterNodeNames.addAll(clusters.keySet());
-        }
-    }*/
-    public void refreshPubkeys() {
-        Map<String, String> clusterPubkeys = new HashMap<>();
-        List<Ca> list = caRepository.getAllCa();
-        for (Ca ca : list) {
-            if (ca != null) {
-                clusterPubkeys.put(ca.getUser(), ca.getPubKey());
-            }
         }
         synchronized (clusters) {
             clusters.clear();

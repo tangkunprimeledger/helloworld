@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
 import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
+import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import lombok.extern.slf4j.Slf4j;
@@ -26,43 +27,59 @@ import org.springframework.stereotype.Service;
         if (log.isDebugEnabled()) {
             log.debug("[nodeJoin] start to update clusterNodeInfo, clusterNode={}", JSON.toJSONString(clusterNode));
         }
-        if (null == caSnapshotAgent.getClusterNode(clusterNode.getNodeName())) {
-            caSnapshotAgent.saveClusterNode(clusterNode);
 
+        ClusterNodePO clusterNodeCache = caSnapshotAgent.getClusterNode(clusterNode.getNodeName());
+
+        if (null == clusterNodeCache) {
+            caSnapshotAgent.saveClusterNode(clusterNode);
+        } else {
+            caSnapshotAgent.updateClusterNode(clusterNode);
+        }
+
+        if (null == clusterNodeCache || clusterNodeCache.isP2pStatus() == false) {
             ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
             ClusterConfig clusterConfig = new ClusterConfig();
             clusterConfig.setClusterName(clusterConfigPO.getClusterName());
             clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() + 1);
             clusterConfig.setFaultNum(clusterConfigPO.getNodeNum() / 3);
             if (log.isDebugEnabled()) {
-                log.debug("[nodeJoin] start to update clusterNodeInfo, clusterConfig={}", JSON.toJSONString(clusterConfig));
+                log.debug("[nodeJoin] start to update clusterConfigInfo, clusterConfig={}",
+                    JSON.toJSONString(clusterConfig));
             }
             caSnapshotAgent.updateClusterConfig(clusterConfig);
-
-        } else {
-            caSnapshotAgent.updateClusterNode(clusterNode);
         }
 
     }
 
     @Override public void nodeLeave(ClusterNode clusterNode) {
 
-        clusterNode.setP2pStatus(false);
-        clusterNode.setRsStatus(false);
-        if (log.isDebugEnabled()) {
-            log.debug("[nodeLeave] start to update clusterNodeInfo, clusterNode={}", JSON.toJSONString(clusterNode));
-        }
-        caSnapshotAgent.updateClusterNode(clusterNode);
+        ClusterNodePO clusterNodeCache = caSnapshotAgent.getClusterNode(clusterNode.getNodeName());
 
-        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
-        ClusterConfig clusterConfig = new ClusterConfig();
-        clusterConfig.setClusterName(clusterConfigPO.getClusterName());
-        clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() - 1);
-        clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
         if (log.isDebugEnabled()) {
-            log.debug("[nodeLeave] start to update clusterNodeInfo, clusterConfig={}",
-                JSON.toJSONString(clusterConfig));
+            log.debug("[nodeLeave] start to update clusterNodeInfo, clusterNodeCache={}",
+                JSON.toJSONString(clusterNodeCache));
         }
-        caSnapshotAgent.updateClusterConfig(clusterConfig);
+
+        if (clusterNodeCache.isP2pStatus() == true) {
+            clusterNode.setP2pStatus(false);
+            clusterNode.setRsStatus(false);
+            if (log.isDebugEnabled()) {
+                log.debug("[nodeLeave] start to update clusterNodeInfo, clusterNode={}",
+                    JSON.toJSONString(clusterNode));
+            }
+            caSnapshotAgent.updateClusterNode(clusterNode);
+
+            ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
+            ClusterConfig clusterConfig = new ClusterConfig();
+            clusterConfig.setClusterName(clusterConfigPO.getClusterName());
+            clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() - 1);
+            clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
+            if (log.isDebugEnabled()) {
+                log.debug("[nodeLeave] start to update clusterConfigInfo, clusterConfig={}",
+                    JSON.toJSONString(clusterConfig));
+            }
+            caSnapshotAgent.updateClusterConfig(clusterConfig);
+        }
+
     }
 }
