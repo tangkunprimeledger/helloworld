@@ -66,7 +66,9 @@ public class DataIdentityService {
      * @return
      */
     public boolean validate(List<String> rsList, List<DataIdentity> dataIdentityList) {
-        log.info("Start to validate data attribution");
+        if (log.isDebugEnabled()) {
+            log.debug("Start to validate data attribution");
+        }
         // validate params
         if (CollectionUtils.isEmpty(rsList) || CollectionUtils.isEmpty(dataIdentityList)) {
             log.error("RsList or dataIdentityPOList can not null. RsList is {} , dataIdentityPOList is ", rsList, dataIdentityList);

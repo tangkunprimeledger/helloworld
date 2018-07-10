@@ -432,18 +432,24 @@ import java.util.stream.Collectors;
                 }
             }
             if (isFailover) {
-                log.info("[callbackRS]start fail over rs txId:{}", txId);
+                if (log.isDebugEnabled()) {
+                    log.debug("[callbackRS]start fail over rs txId:{}", txId);
+                }
                 callbackHandler.onFailover(respData, tx.getSignatureList(),blockHeader);
                 return;
             }
             //callback business
-            log.info("[callbackRS]start callback rs txId:{}", txId);
+            if (log.isDebugEnabled()) {
+                log.info("[callbackRS]start callback rs txId:{}", txId);
+            }
             if (isClusterPersisted) {
                 callbackHandler.onClusterPersisted(respData, tx.getSignatureList(),blockHeader);
             } else {
                 callbackHandler.onPersisted(respData, tx.getSignatureList(),blockHeader);
             }
-            log.info("[callbackRS]end callback rs txId:{}", txId);
+            if (log.isDebugEnabled()) {
+                log.info("[callbackRS]end callback rs txId:{}", txId);
+            }
         }
     }
 
