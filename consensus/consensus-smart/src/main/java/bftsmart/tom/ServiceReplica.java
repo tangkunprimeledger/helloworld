@@ -130,8 +130,11 @@ public class ServiceReplica {
         this.replier = (replier != null ? replier : new DefaultReplier());
         this.verifier = verifier;
         this.init();
+        Logger.println("Service replica inited");
         this.recoverer.setReplicaContext(replicaCtx);
+        Logger.println("recoverer set replica context");
         this.replier.setReplicaContext(replicaCtx);
+        Logger.println("replier set replica context");
     }
 
     public void setReplyController(Replier replier) {

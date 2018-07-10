@@ -136,4 +136,9 @@ public abstract class SMMessage extends SystemMessage {
         state = (ApplicationState) in.readObject();
         view = (View) in.readObject();
     }
+
+    @Override public String toString() {
+        return "SMMessage{" + "state=" + state + ", view=" + view + ", cid=" + cid + ", type=" + type + ", regency="
+            + regency + ", leader=" + leader + ", sender=" + sender + ", authenticated=" + authenticated + '}';
+    }
 }

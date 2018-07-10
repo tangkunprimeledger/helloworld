@@ -49,13 +49,13 @@ public class ServiceProxy extends TOMSender {
 	private TOMMessage replies[] = null; // Replies from replicas are stored here
 	private int receivedReplies = 0; // Number of received replies
 	private TOMMessage response = null; // Reply delivered to the application
-	private int invokeTimeout = 500;
+	private int invokeTimeout = 20000;
 	private Comparator<byte[]> comparator;
 	private Extractor extractor;
 	private Random rand = new Random(System.currentTimeMillis());
 	private int replyServer;
 	private HashResponseController hashResponseController;
-	private int invokeUnorderedHashedTimeout = 500;
+	private int invokeUnorderedHashedTimeout = 10000;
 
 	/**
 	 * Constructor

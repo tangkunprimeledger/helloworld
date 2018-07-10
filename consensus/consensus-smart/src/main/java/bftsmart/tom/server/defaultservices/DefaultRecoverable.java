@@ -400,7 +400,9 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         this.config = replicaContext.getStaticConfiguration();
         this.controller = replicaContext.getSVController();
         initLog();
+        Logger.println("recoverer inited log");
         getStateManager().askCurrentConsensusId();
+        Logger.println("recoverer state askCurrentConsensusId");
     }
 
     @Override
