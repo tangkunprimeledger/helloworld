@@ -417,9 +417,13 @@ import java.util.concurrent.locks.ReentrantLock;
      * @return List<QueuedSendPO>
      */
     private List<QueuedSendPO> takeSendList() {
+        List<QueuedSendPO> queuedSendList = queuedSendDao.querySendList();
+        if (!CollectionUtils.isEmpty(queuedSendList)) {
+            return queuedSendList;
+        }
         sendLock.lock();
         try {
-            List<QueuedSendPO> queuedSendList = queuedSendDao.querySendList();
+            queuedSendList = queuedSendDao.querySendList();
             while (CollectionUtils.isEmpty(queuedSendList)) {
                 sendCondition.await(20, TimeUnit.SECONDS);
                 queuedSendList = queuedSendDao.querySendList();
