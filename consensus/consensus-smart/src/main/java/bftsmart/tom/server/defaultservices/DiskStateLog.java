@@ -288,6 +288,7 @@ public class DiskStateLog extends StateLog {
 		int ckpLastConsensusId = fr.getCkpLastConsensusId();
 		int logLastConsensusId = fr.getLogLastConsensusId();
 		Logger.println("log last consensus di: " + logLastConsensusId);
+		Logger.println("ckp last consensus di: " + ckpLastConsensusId);
 		ApplicationState state = new DefaultApplicationState(log, ckpLastConsensusId,
 				logLastConsensusId, checkpoint, fr.getCkpStateHash(), this.id);
 		if(logLastConsensusId > ckpLastConsensusId) {
