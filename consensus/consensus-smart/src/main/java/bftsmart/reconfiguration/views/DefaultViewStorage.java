@@ -15,6 +15,9 @@ limitations under the License.
 */
 package bftsmart.reconfiguration.views;
 
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
+
 import java.io.*;
 
 /**
@@ -27,7 +30,8 @@ public class DefaultViewStorage implements ViewStorage {
 
     public DefaultViewStorage() {
         String sep = System.getProperty("file.separator");
-        path = System.getProperty("user.dir") + sep + "config";
+        SmartConfig smartConfig = SpringUtil.getBean(SmartConfig.class);
+        path = smartConfig.getDefaultDir() + sep + "config";
         File f = new File(path);
         if (!f.exists()) {
             f.mkdirs();

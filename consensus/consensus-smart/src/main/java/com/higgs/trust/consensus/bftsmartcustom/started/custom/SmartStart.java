@@ -24,8 +24,8 @@ import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class SmartStart implements ConsensusStateMachine, ApplicationListener<ApplicationReadyEvent> {
-
+public class SmartStart implements ConsensusStateMachine{
+//, ApplicationListener<ApplicationReadyEvent>
     private static final Logger log = LoggerFactory.getLogger(SmartStart.class);
 
     @Value("${bftSmart.systemConfigs.myId}")
@@ -95,6 +95,7 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
     }
 
     @Override
+    @StateChangeListener(NodeStateEnum.Running) @Order
     public synchronized void start() {
         log.info("smart server starting,myid={}", myId);
         if (server != null) {
@@ -142,8 +143,8 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
         }
     }
 
-    @Override
-    public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        start();
-    }
+//    @Override
+//    public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
+//        start();
+//    }
 }
