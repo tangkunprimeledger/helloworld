@@ -385,12 +385,14 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                 log = new DiskStateLog(replicaId, state, computeHash(state), isToLog, syncLog, syncCkp);
 
                 ApplicationState storedState = ((DiskStateLog) log).loadDurableState();
+                Logger.println("stored state last cid: " + storedState.getLastCID());
                 if (storedState.getLastCID() > 0) {
                     setState(storedState);
                     getStateManager().setLastCID(storedState.getLastCID());
                 }
             } else {
                 log = new StateLog(this.config.getProcessId(), checkpointPeriod, state, computeHash(state));
+                Logger.println("memory state log");
             }
         }
     }
