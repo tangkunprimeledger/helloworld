@@ -60,25 +60,16 @@ import java.util.Map;
     }
 
     /**
-     * validate the context before doing anything
-     */
-    private void preCheck(Object obj) {
-        // params check
-        BeanValidateResult validateResult = BeanValidator.validate(obj);
-        if (!validateResult.isSuccess()) {
-            log.error("[PackContext.preCheck] param validate is fail,first msg:{}", validateResult.getFirstMsg());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-    }
-
-    /**
      * set current transaction
      *
      * @param transaction
      * @return
      */
     @Override public void setCurrentTransaction(SignedTransaction transaction) {
-        preCheck(transaction);
+        if (transaction == null) {
+            log.error("transaction is null!");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
         this.currentTransaction = transaction;
     }
 
@@ -123,7 +114,10 @@ import java.util.Map;
      * @return
      */
     @Override public Block getCurrentBlock() {
-        preCheck(this);
+        if (block == null) {
+            log.error("block is null!");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
         return block;
     }
 
@@ -133,7 +127,10 @@ import java.util.Map;
      * @return
      */
     @Override public Package getCurrentPackage() {
-        preCheck(this);
+        if (pack == null) {
+            log.error("pack is null!");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
         return pack;
     }
 
@@ -170,7 +167,10 @@ import java.util.Map;
      * @return
      */
     @Override public void setCurrentAction(Action action) {
-        preCheck(action);
+        if (action == null) {
+            log.error("action is null!");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
         this.currentAction = action;
     }
 

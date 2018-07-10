@@ -101,8 +101,9 @@ import java.util.*;
                 log.error("[process] get action handler is null by action type:{}", action.getType());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_ACTION_HANDLER_IS_NOT_EXISTS_EXCEPTION);
             }
-            //execute contract
-            exeContract(action, transactionData.parseActionData());
+            //TODO do not bind account with contract
+            //exeContract(action, transactionData.parseActionData());
+
             //execute action
             actionHandler.process(transactionData.parseActionData());
         }

@@ -43,11 +43,11 @@ import java.util.List;
             log.error("[SnapshotRootHash.buildHeader]the txReceiptHash is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BUILD_TX_RECEIPT_ROOT_HASH_ERROR);
         }
-        String accountRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.ACCOUNT));
-        String contractRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CONTRACT));
-        String policyRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.POLICY));
-        String rsRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.RS));
-        String caRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CA));
+        String accountRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.buildMerkleTree(MerkleTypeEnum.ACCOUNT));
+        String contractRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.buildMerkleTree(MerkleTypeEnum.CONTRACT));
+        String policyRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.buildMerkleTree(MerkleTypeEnum.POLICY));
+        String rsRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.buildMerkleTree(MerkleTypeEnum.RS));
+        String caRootHash = txRootHashBuilder.getRootHash(merkleTreeSnapshotAgent.buildMerkleTree(MerkleTypeEnum.CA));
         StateRootHash stateRootHash = new StateRootHash();
         stateRootHash.setTxRootHash(txRootHash);
         stateRootHash.setTxReceiptRootHash(txReceiptHash);

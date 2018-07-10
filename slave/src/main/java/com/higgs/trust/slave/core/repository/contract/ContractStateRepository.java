@@ -50,7 +50,6 @@ public class ContractStateRepository {
 
         ContractState contractState = new ContractState();
         contractState.setAddress(po.getAddress());
-        contractState.setId(po.getId());
         contractState.setState(JSON.parseObject(po.getState()));
         return contractState;
     }

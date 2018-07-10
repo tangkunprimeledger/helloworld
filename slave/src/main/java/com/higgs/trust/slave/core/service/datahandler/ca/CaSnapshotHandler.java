@@ -110,11 +110,6 @@ import org.springframework.stereotype.Service;
     }
 
     private void check(Ca ca) {
-        MerkleTree merkleTree = (MerkleTree)merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CA);
-        if (null != merkleTree) {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, ca);
-        } else {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.CA, ca);
     }
 }

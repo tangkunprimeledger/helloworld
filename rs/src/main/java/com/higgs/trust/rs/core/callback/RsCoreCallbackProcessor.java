@@ -121,6 +121,10 @@ import org.springframework.stereotype.Component;
                     return;
                 case CANCEL_RS:
                     return;
+                case NODE_JOIN:
+                    return;
+                case NODE_LEAVE:
+                    return;
                 default:
                     break;
             }

@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.service;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
@@ -10,8 +11,10 @@ import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,7 @@ import java.util.UUID;
     @Autowired private NodeState nodeState;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private NodeClient nodeClient;
+    @Autowired private ClusterNodeRepository clusterNodeRepository;
 
     private static final String SUCCESS = "sucess";
     private static final String FAIL = "fail";
@@ -45,16 +49,20 @@ import java.util.UUID;
 
         log.info("[joinConsensus] start to join consensus layer");
 
-        RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), nodeState.getNodeName());
-        if (!respData.isSuccess()) {
-            return FAIL;
-        }
+        ClusterNode clusterNode = clusterNodeRepository.getClusterNode(nodeState.getNodeName());
+        log.info("clusterNode={}", JSON.toJSONString(clusterNode));
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            log.error("[joinConsensus] error occured while thread sleep", e);
-            return FAIL;
+        if (null != clusterNode && clusterNode.isP2pStatus() == false) {
+            RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), nodeState.getNodeName());
+            if (!respData.isSuccess()) {
+                return FAIL;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                log.error("[joinConsensus] error occured while thread sleep", e);
+                return FAIL;
+            }
         }
 
         log.info("[joinConsensus] start to transform node status from offline to running");
@@ -80,7 +88,7 @@ import java.util.UUID;
     private CoreTransaction constructJoinCoreTx(String user) {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId(UUID.randomUUID().toString());
-        coreTx.setSender(user);
+        coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.NODE_JOIN.getPolicyId());
         coreTx.setActionList(buildJoinActionList(user));
@@ -104,9 +112,6 @@ import java.util.UUID;
      */
     public String leaveConsensus() {
 
-        log.info("[leaveConsensus] start to leave consensus layer");
-        consensusStateMachine.leaveConsensus();
-
         //send and get callback result
         try {
             coreTransactionService.submitTx(constructLeaveCoreTx(nodeState.getNodeName()));
@@ -114,7 +119,7 @@ import java.util.UUID;
             log.error("send node leave transaction error", e);
             return FAIL;
         }
-        log.info("[leaveConsensus] end join consensus layer and transform node status");
+        log.info("[leaveConsensus] submit leaveConsensusTx to slave success");
 
         try {
             Thread.sleep(3000);
@@ -130,7 +135,6 @@ import java.util.UUID;
         return SUCCESS;
 
     }
-
 
     private CoreTransaction constructLeaveCoreTx(String user) {
         CoreTransaction coreTx = new CoreTransaction();

@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.model.bo.manage;
 
+import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RsNode extends BaseBO {
+public class RsNode extends BaseBO implements MerkleTreeSnapshotAgent.MerkleDataNode{
     /**
      * rs id
      */
@@ -29,4 +30,8 @@ public class RsNode extends BaseBO {
      * desc
      */
     private String desc;
+
+    @Override public String getUniqKey() {
+        return rsId;
+    }
 }

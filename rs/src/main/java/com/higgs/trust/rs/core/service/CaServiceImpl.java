@@ -4,7 +4,6 @@ import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
-import com.higgs.trust.management.failover.service.SyncService;
 import com.higgs.trust.rs.common.enums.RespCodeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -46,6 +45,9 @@ import java.util.*;
     public static final String PUB_KEY = "pubKey";
     public static final String PRI_KEY = "priKey";
 
+    private static final String SUCCESS = "sucess";
+    private static final String FAIL = "fail";
+
     @Autowired private ConfigRepository configRepository;
     @Autowired private CaRepository caRepository;
     @Autowired private NodeState nodeState;
@@ -58,7 +60,7 @@ import java.util.*;
      * @return
      * @desc generate pubKey and PriKey ,then insert into db
      */
-    @Override public void authKeyPair(String user) {
+    @Override public String authKeyPair(String user) {
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[authKeyPair] invalid node name");
@@ -80,7 +82,13 @@ import java.util.*;
         CaVO caVO = generateKeyPair();
 
         // send CA auth request
-        caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
+        RespData respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
+        if (respData.isSuccess()) {
+            log.error("send tx error");
+            return FAIL;
+        }
+
+        return SUCCESS;
     }
 
     /**
@@ -252,11 +260,11 @@ import java.util.*;
         caAction.setIndex(0);
         actions.add(caAction);
 
-        /*NodeAction nodeAction = new NodeAction();
-        nodeAction.setNodeName(nodeState.getNodeName());
+        NodeAction nodeAction = new NodeAction();
+        nodeAction.setNodeName(caVO.getUser());
         nodeAction.setType(ActionTypeEnum.NODE_JOIN);
         nodeAction.setIndex(1);
-        actions.add(nodeAction);*/
+        actions.add(nodeAction);
 
         return actions;
     }
