@@ -89,7 +89,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         TermInfo newTerm = TermInfo.builder().term(term).masterName(masterName).startHeight(startHeight)
             .endHeight(TermInfo.INIT_END_HEIGHT).build();
-        log.debug("start new term:{}", newTerm);
+        log.info("start new term:{}", newTerm);
         terms.add(newTerm);
         nodeState.changeMaster(masterName);
     }
@@ -104,7 +104,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         nodeState.setCurrentTerm(term);
         TermInfo newTerm = TermInfo.builder().term(term).masterName(masterName).startHeight(startHeight)
             .endHeight(TermInfo.INIT_END_HEIGHT).build();
-        log.debug("start new term:{}", newTerm);
+        log.info("start new term:{}", newTerm);
         terms.add(newTerm);
         nodeState.changeMaster(masterName);
     }

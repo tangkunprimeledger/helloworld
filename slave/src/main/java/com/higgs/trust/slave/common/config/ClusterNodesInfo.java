@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.common.config;
 
 import com.higgs.trust.config.p2p.AbstractClusterInfo;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
@@ -79,11 +78,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
     public void refresh() {
         log.info("refresh cluster info");
+        log.info("[refresh] before refresh, cluster nodes = {}", clusterNodeNames);
         ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getClusterName());
         faultNodeNum = clusterConfig == null ? 0 : clusterConfig.getFaultNum();
         Config config = configRepository.getConfig(nodeState.getNodeName());
         nodeState.setPrivateKey(null != config ? config.getPriKey() : null);
         refreshPubkeys();
+        log.info("[refresh] end refresh, cluster nodes = {}", clusterNodeNames);
     }
 
     /**

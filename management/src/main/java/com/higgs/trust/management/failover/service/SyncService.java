@@ -62,18 +62,7 @@ import java.util.List;
                 currentHeight = 1L;
             }
             Long clusterHeight = null;
-            int tryTimes = 0;
-            do {
-                clusterHeight = blockSyncService.getClusterHeight(3);
-                if (clusterHeight != null) {
-                    break;
-                }
-                try {
-                    Thread.sleep(3 * 1000);
-                } catch (InterruptedException e) {
-                    log.warn("self check error.", e);
-                }
-            } while (++tryTimes < properties.getTryTimes());
+            clusterHeight = getClusterHeight();
             if (clusterHeight == null) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
             }
@@ -84,6 +73,15 @@ import java.util.List;
             do {
                 sync(currentHeight + 1, properties.getHeaderStep());
                 currentHeight = blockRepository.getMaxHeight();
+                if (currentHeight >= clusterHeight && cache.getMinHeight() <= clusterHeight) {
+                    Long newHeight = getClusterHeight();
+                    if (newHeight != null) {
+                        clusterHeight = newHeight;
+                        cache.reset(clusterHeight);
+                    } else {
+                        throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
+                    }
+                }
                 //如果没有package接收，根据latestHeight判断是否在阈值内，否则，根据cache判断
             } while (cache.getMinHeight() <= clusterHeight ? clusterHeight > currentHeight + properties.getThreshold() :
                 currentHeight + 1 < cache.getMinHeight());
@@ -92,6 +90,26 @@ import java.util.List;
         } finally {
             clusterInfo.refresh();
         }
+    }
+
+    /**
+     * get the cluster height
+     */
+    private Long getClusterHeight() {
+        Long clusterHeight;
+        int tryTimes = 0;
+        do {
+            clusterHeight = blockSyncService.getClusterHeight(3);
+            if (clusterHeight != null) {
+                break;
+            }
+            try {
+                Thread.sleep(3 * 1000);
+            } catch (InterruptedException e) {
+                log.warn("self check error.", e);
+            }
+        } while (++tryTimes < properties.getTryTimes());
+        return clusterHeight;
     }
 
     /**

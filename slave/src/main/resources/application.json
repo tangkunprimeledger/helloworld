@@ -49,7 +49,7 @@
   },
   "mybatis": {
     "configLocation": "classpath:mybatis-config.xml",
-    "mapper-locations": "classpath:mybatis/**/*Mapper.xml"
+    "mapper-locations": "classpath*:mybatis/**/*Mapper.xml"
   },
   "primeJob": {
     "scheduler": {

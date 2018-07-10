@@ -1,16 +1,13 @@
 package com.higgs.trust.consensus.bftsmartcustom.started.custom.server;
 
-import com.google.common.base.Charsets;
-import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
-import com.higgs.trust.consensus.bftsmartcustom.started.custom.SmartCommitReplicateComposite;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultRecoverable;
+import com.google.common.base.Charsets;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SmartCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.ConsensusSnapshot;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
-import io.atomix.copycat.server.storage.snapshot.SnapshotReader;
-import io.atomix.copycat.server.storage.snapshot.SnapshotWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +95,7 @@ public class Server extends DefaultRecoverable {
             }
             return null;
         } catch (IOException e) {
-            System.out.println("Exception reading data in the replica: " + e.getMessage());
+            log.error("Exception reading data in the replica: " + e.getMessage());
             e.printStackTrace();
             return null;
         } catch (ClassNotFoundException e) {

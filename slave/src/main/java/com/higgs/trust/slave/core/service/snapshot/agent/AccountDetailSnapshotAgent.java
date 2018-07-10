@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author liuyu
@@ -73,7 +72,7 @@ import java.util.Map;
      * @return
      */
     @Override public boolean batchInsert(List<Pair<Object, Object>> insertList) {
-        if (CollectionUtils.isEmpty(insertList)){
+        if (CollectionUtils.isEmpty(insertList)) {
             return true;
         }
         List<AccountDetail> accountDetails = new ArrayList<>();
@@ -93,15 +92,19 @@ import java.util.Map;
                 continue;
             }
         }
-        if (!CollectionUtils.isEmpty(accountDetails)) {
-            accountRepository.batchInsertAccountDetail(accountDetails);
-        }
-        if (!CollectionUtils.isEmpty(dcRecords)) {
-            accountRepository.batchInsertDcRecords(dcRecords);
-        }
-        if (!CollectionUtils.isEmpty(detailFreezes)) {
-            freezeRepository.batchInsertDetailFreezes(detailFreezes);
-        }
+        /**
+         * no detail insert for performance
+         *
+         if (!CollectionUtils.isEmpty(accountDetails)) {
+         accountRepository.batchInsertAccountDetail(accountDetails);
+         }
+         if (!CollectionUtils.isEmpty(dcRecords)) {
+         accountRepository.batchInsertDcRecords(dcRecords);
+         }
+         if (!CollectionUtils.isEmpty(detailFreezes)) {
+         freezeRepository.batchInsertDetailFreezes(detailFreezes);
+         }
+         **/
         return true;
     }
 

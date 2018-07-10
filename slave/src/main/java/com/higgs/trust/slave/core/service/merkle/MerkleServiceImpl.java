@@ -50,8 +50,10 @@ import java.util.concurrent.ConcurrentHashMap;
                     "[build] param validate failed");
             }
 
-            log.debug("[build] start to build merkle tree, treeType={}, dataList size={}", type.getCode(),
-                dataList.size());
+            if (log.isDebugEnabled()) {
+                log.debug("[build] start to build merkle tree, treeType={}, dataList size={}", type.getCode(),
+                    dataList.size());
+            }
 
             // merkleTree
             MerkleTree merkleTree = new MerkleTree();
@@ -72,14 +74,18 @@ import java.util.concurrent.ConcurrentHashMap;
             Profiler.release();
             merkleTree.setTreeType(type);
             merkleTree.setMaxIndex((long)leafHashList.size() - 1L);
-            log.debug("total merkleNode count of level {} is {}", level, leafHashList.size());
+            if (log.isDebugEnabled()) {
+                log.debug("total merkleNode count of level {} is {}", level, leafHashList.size());
+            }
 
             // handle the other level
             while (leafHashList.size() != 1) {
                 Profiler.enter("[calculate node hash and add merkleNode into nodeMap]");
                 tempList = getNewHashList(leafHashList);
                 level++;
-                log.debug("total merkleNode count of level {} is {}", level, tempList.size());
+                if (log.isDebugEnabled()) {
+                    log.debug("total merkleNode count of level {} is {}", level, tempList.size());
+                }
                 addToNodeMap(tempList, level, type, nodeMap);
                 // update parent of sublevel
                 for (int j = 0; j < leafHashList.size(); j++) {
@@ -93,7 +99,10 @@ import java.util.concurrent.ConcurrentHashMap;
             merkleTree.setRootHash(leafHashList.get(0));
             merkleTree.setTotalLevel(level);
             merkleTree.setNodeMap(nodeMap);
-            log.debug("[build] end build merkle tree, treeType={}, dataList size={}", type.getCode(), dataList.size());
+            if (log.isDebugEnabled()) {
+                log.debug("[build] end build merkle tree, treeType={}, dataList size={}", type.getCode(),
+                    dataList.size());
+            }
 
             return merkleTree;
         } finally {
@@ -123,7 +132,7 @@ import java.util.concurrent.ConcurrentHashMap;
             // validate param
             if (null == merkleTree || null == objOld || null == objNew || null == merkleTree.getTreeType()
                 || null == merkleTree.getNodeMap()) {
-                log.debug("[update] param is null");
+                log.error("[update] param is null");
                 throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
                     "[update] param is null");
             }
@@ -134,8 +143,10 @@ import java.util.concurrent.ConcurrentHashMap;
             String newHash = getSHA2HexValue(JSON.toJSONString(objNew));
             long leafIndex = -1L;
 
-            log.debug("[update] start to udpate merkleTree, type={}, oldHash={}, objOld={}, newHash={}, objNew={}",
-                type, oldHash, JSON.toJSONString(objOld), newHash, JSON.toJSONString(objNew));
+            if (log.isDebugEnabled()) {
+                log.debug("[update] start to udpate merkleTree, type={}, oldHash={}, objOld={}, newHash={}, objNew={}",
+                    type, oldHash, JSON.toJSONString(objOld), newHash, JSON.toJSONString(objNew));
+            }
 
             // acquire nodeMap stored in merkleTree
             Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
@@ -186,8 +197,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
             for (int i = 1; i < totalLevel; i++) {
                 Profiler.enter("[update parentNode]");
-                log.debug("[update] start to update parentNode, leafIndex={}, maxIndex={}, currentLevel={}", leafIndex,
-                    maxIndex, i);
+                if (log.isDebugEnabled()) {
+                    log.debug("[update] start to update parentNode, leafIndex={}, maxIndex={}, currentLevel={}",
+                        leafIndex, maxIndex, i);
+                }
                 updateParent(merkleTree, i, leafIndex, maxIndex);
                 // refresh the index
                 leafIndex = leafIndex / N;
@@ -195,7 +208,9 @@ import java.util.concurrent.ConcurrentHashMap;
                 Profiler.release();
             }
             merkleTree.setRootHash(nodeMap.get(getKey(totalLevel, leafIndex)).getNodeHash());
-            log.debug("[update] end udpate merkleTree, type={}, new rootHash={}", type, merkleTree.getRootHash());
+            if (log.isDebugEnabled()) {
+                log.debug("[update] end udpate merkleTree, type={}, new rootHash={}", type, merkleTree.getRootHash());
+            }
 
         } finally {
             Profiler.release();
@@ -221,8 +236,10 @@ import java.util.concurrent.ConcurrentHashMap;
             Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
             String hash = getSHA2HexValue(JSON.toJSONString(obj));
             String type = merkleTree.getTreeType().getCode();
-            log.debug("[add] start to add hash(obj) to merkleTree, hash(obj)={}, obj={},type={}", hash,
-                JSON.toJSONString(obj), type);
+            if (log.isDebugEnabled()) {
+                log.debug("[add] start to add hash(obj) to merkleTree, hash(obj)={}, obj={},type={}", hash,
+                    JSON.toJSONString(obj), type);
+            }
 
             // check existence of merkleNode with exact nodeHash, it must not be in nodeMap before add
             Profiler.enter("[get merkleNode by hash]");
@@ -242,7 +259,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
             // if (maxIndex+1) = 2^n, then totalLevel =totalLevel+1, note maxIndex starts from zero
             if (0 == ((maxIndex + 1L) & (maxIndex))) {
-                log.debug("[add] (maxIndex+1)={},is 2^n", maxIndex + 1L);
+                if (log.isDebugEnabled()) {
+                    log.debug("[add] (maxIndex+1)={},is 2^n", maxIndex + 1L);
+                }
                 totalLevel++;
                 // construct a new rootNode and put it into top level of MerkleTree
                 MerkleNode rootNode =
@@ -279,8 +298,10 @@ import java.util.concurrent.ConcurrentHashMap;
                 Profiler.release();
             }
             merkleTree.setRootHash(nodeMap.get(getKey(totalLevel, leafIndex)).getNodeHash());
-            log.debug("[add] end add hash(obj) to merkleTree, hash(obj)={},type={}, new rootHash={}", hash, type,
-                merkleTree.getRootHash());
+            if (log.isDebugEnabled()) {
+                log.debug("[add] end add hash(obj) to merkleTree, hash(obj)={},type={}, new rootHash={}", hash, type,
+                    merkleTree.getRootHash());
+            }
         } finally {
             Profiler.release();
         }
@@ -299,7 +320,9 @@ import java.util.concurrent.ConcurrentHashMap;
             throw new MerkleException(SlaveErrorEnum.SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION,
                 "[queryMerkleTree] treeType is null");
         }
-        log.debug("[queryMerkleTree] start to queryMerkleTree, type={}", treeType);
+        if (log.isDebugEnabled()) {
+            log.debug("[queryMerkleTree] start to queryMerkleTree, type={}", treeType);
+        }
 
         return null;
     }
@@ -441,7 +464,9 @@ import java.util.concurrent.ConcurrentHashMap;
             merkleNode = nodeMap.get(key);
         }
 
-        log.debug("[getMerkleNodeByIndex] merkleNode={}", JSON.toJSONString(merkleNode));
+        if (log.isDebugEnabled()) {
+            log.debug("[getMerkleNodeByIndex] merkleNode={}", JSON.toJSONString(merkleNode));
+        }
         return merkleNode;
     }
 
@@ -459,11 +484,15 @@ import java.util.concurrent.ConcurrentHashMap;
         MerkleNode parent = null;
         Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
         String type = merkleTree.getTreeType().getCode();
-        log.debug("[updateParent] level={}, leafIndex={}, maxIndex={}, type={}", level, leafIndex, maxIndex, type);
+        if (log.isDebugEnabled()) {
+            log.debug("[updateParent] level={}, leafIndex={}, maxIndex={}, type={}", level, leafIndex, maxIndex, type);
+        }
 
         // this means leafIndex is lower than max index of the currrent level and (leafIndex+1) is even
         if (leafIndex <= maxIndex && 1 == (leafIndex % N)) {
-            log.debug("[updateParent] leafIndex <= maxIndex && 1 == (leafIndex % N)");
+            if (log.isDebugEnabled()) {
+                log.debug("[updateParent] leafIndex <= maxIndex && 1 == (leafIndex % N)");
+            }
             left = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex - 1), type);
             right = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex), type);
             parent = getMerkleNodeByIndex(nodeMap, getKey(level + 1, leafIndex / N), type);
@@ -483,7 +512,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
         // this means leafIndex is the max index of the currrent level and (leafIndex+1) is odd
         if (leafIndex == maxIndex && 0 == (leafIndex % N)) {
-            log.debug("[updateParent] leafIndex == maxIndex && 0 == (leafIndex % N)");
+            if (log.isDebugEnabled()) {
+                log.debug("[updateParent] leafIndex == maxIndex && 0 == (leafIndex % N)");
+            }
             left = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex), type);
             parent = getMerkleNodeByIndex(nodeMap, getKey(level + 1, leafIndex / N), type);
             if (!left.getParent().equals(parent.getUuid())) {
@@ -501,7 +532,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
         // this means leafIndex is not the max index of the currrent level and (leafIndex+1) is odd
         if (leafIndex < maxIndex && 0 == (leafIndex % N)) {
-            log.debug("[updateParent] leafIndex < maxIndex && 0 == (leafIndex % N)");
+            if (log.isDebugEnabled()) {
+                log.debug("[updateParent] leafIndex < maxIndex && 0 == (leafIndex % N)");
+            }
             left = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex), type);
             right = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex + 1), type);
             parent = getMerkleNodeByIndex(nodeMap, getKey(level + 1, leafIndex / N), type);
@@ -530,7 +563,10 @@ import java.util.concurrent.ConcurrentHashMap;
         MerkleNode merkleNode = null;
         Map<String, MerkleNode> nodeMap = merkleTree.getNodeMap();
         String type = merkleTree.getTreeType().getCode();
-        log.debug("[getMerkleNodeByHash] nodeHash={},type={}", nodeHash, type);
+        if (log.isDebugEnabled()) {
+            log.debug("[getMerkleNodeByHash] nodeHash={},type={}", nodeHash, type);
+        }
+
         Long leafIndex = -1L;
         if (!CollectionUtils.isEmpty(nodeMap)) {
             // loop through nodeMap to find merkleNode with exact nodeHash
@@ -544,8 +580,9 @@ import java.util.concurrent.ConcurrentHashMap;
                 }
             }
         }
-
-        log.debug("[getMerkleNodeByHash] merkleNode={}", JSON.toJSONString(merkleNode));
+        if (log.isDebugEnabled()) {
+            log.debug("[getMerkleNodeByHash] merkleNode={}", JSON.toJSONString(merkleNode));
+        }
         return merkleNode;
     }
 
@@ -563,12 +600,16 @@ import java.util.concurrent.ConcurrentHashMap;
         MerkleNode parent = null;
         Map nodeMap = merkleTree.getNodeMap();
         String type = merkleTree.getTreeType().getCode();
-        log.debug("[add] leafIndex={}, maxIndex={}, type={}, currentLevel={}", leafIndex, maxIndex, type, level);
+        if (log.isDebugEnabled()) {
+            log.debug("[add] leafIndex={}, maxIndex={}, type={}, currentLevel={}", leafIndex, maxIndex, type, level);
+        }
 
         if (0 == leafIndex % N) {
             // this means a parent should be added into nodeMap
             if ((leafIndex / N) > (maxIndex / N)) {
-                log.debug("[add] (leafIndex / N) > (maxIndex / N), add a parent node to merkleTree");
+                if (log.isDebugEnabled()) {
+                    log.debug("[add] (leafIndex / N) > (maxIndex / N), add a parent node to merkleTree");
+                }
                 left = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex), type);
                 parent = new MerkleNode(getSHA2HexValue(left.getNodeHash()), String.valueOf(snowflakeIdWorker.nextId()),
                     leafIndex / N, level + 1, null, merkleTree.getTreeType(), MerkleStatusEnum.ADD);
@@ -592,7 +633,9 @@ import java.util.concurrent.ConcurrentHashMap;
             return;
         }
         if (1 == leafIndex % N) {
-            log.debug("[add] 1 == leafIndex % N, update a parent node");
+            if (log.isDebugEnabled()) {
+                log.debug("[add] 1 == leafIndex % N, update a parent node");
+            }
             left = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex - 1L), type);
             right = getMerkleNodeByIndex(nodeMap, getKey(level, leafIndex), type);
             parent = getMerkleNodeByIndex(nodeMap, getKey(level + 1, leafIndex / N), type);

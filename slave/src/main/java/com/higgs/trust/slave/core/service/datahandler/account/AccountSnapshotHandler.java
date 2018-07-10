@@ -51,11 +51,7 @@ import java.util.*;
         // operation merkle tree
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.ACCOUNT);
         AccountMerkleData data = BeanConvertor.convertBean(accountInfo, AccountMerkleData.class);
-        if (merkleTree == null) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.ACCOUNT, new Object[] {data});
-        } else {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, data);
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.ACCOUNT, data);
     }
 
     @Override public void validateForOperation(AccountOperation accountOperation, String policyId) {
@@ -328,19 +324,14 @@ import java.util.*;
      * @param _new
      */
     private void updateMerkleTree(AccountInfo _old, AccountInfo _new) {
-        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.ACCOUNT);
-        if (merkleTree == null) {
-            log.info("[updateMerkleTree] the ACCOUNT merkle tree does not exist");
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.ACCOUNT, new Object[] {_new});
-        }else{
-            AccountMerkleData from = BeanConvertor.convertBean(_old, AccountMerkleData.class);
-            AccountMerkleData to = BeanConvertor.convertBean(_new, AccountMerkleData.class);
-            //check
-            if(merkleTreeSnapshotAgent.isExist(MerkleTypeEnum.ACCOUNT,from)){
-                merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, from, to);
-            }else{
-                merkleTreeSnapshotAgent.appendChild(merkleTree, to);
-            }
+        AccountMerkleData from = BeanConvertor.convertBean(_old, AccountMerkleData.class);
+        AccountMerkleData to = BeanConvertor.convertBean(_new, AccountMerkleData.class);
+
+        //check
+        if (merkleTreeSnapshotAgent.isExist(MerkleTypeEnum.ACCOUNT, from)) {
+            merkleTreeSnapshotAgent.updateNode(MerkleTypeEnum.ACCOUNT, from, to);
+        } else {
+            merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.ACCOUNT, to);
         }
     }
 }

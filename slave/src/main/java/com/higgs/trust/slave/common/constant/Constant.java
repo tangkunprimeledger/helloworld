@@ -29,4 +29,6 @@ public class Constant {
 
     public static final int MAX_EXIST_MAP_SIZE = 100000;
 
+    public static final int PERF_LOG_THRESHOLD = 300000;
+
 }

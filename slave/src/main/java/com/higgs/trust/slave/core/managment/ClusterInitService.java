@@ -1,10 +1,10 @@
 package com.higgs.trust.slave.core.managment;
 
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -23,11 +23,11 @@ import org.springframework.stereotype.Service;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-/**  
- * @desc cluster init service
+/**
  * @author WangQuanzhou
- * @date 2018/6/28 19:53    
- */  
+ * @desc cluster init service
+ * @date 2018/6/28 19:53
+ */
 @Service @Slf4j public class ClusterInitService {
 
     public static final String PUB_KEY = "pubKey";
@@ -58,16 +58,12 @@ import java.util.Map;
 
     private boolean needInit() {
         // 1、 本地没有创世块，集群也没有创世块时（即集群初始启动），需要生成公私钥，以及创世块
-        // 2、 本地没有创世块，集群有创世块时（即动态单节点加入），需要生成公私钥，然后进行failover得到创世块
+        // 2、 本地没有创世块，集群有创世块时（即动态单节点加入），需要进行failover得到创世块
         Long maxHeight = blockRepository.getMaxHeight();
         if (null == maxHeight && startMode.equals(RunModeEnum.CLUSTER.getCode())) {
             log.info("[ClusterInitService.needInit] start generateKeyPair, cluster mode");
             generateKeyPair();
             return true;
-        }
-        if (null == maxHeight && startMode.equals(RunModeEnum.SINGLE.getCode())) {
-            log.info("[ClusterInitService.needInit] start generateKeyPair, single mode");
-            generateKeyPair();
         }
         return false;
     }

@@ -96,6 +96,6 @@ public class ShutdownHookThread extends Thread {
 
         buffer.append("\n\n---------- ---------- ----------\n");
         
-        System.out.println(buffer);
+        Logger.println(buffer.toString());
     }
 }

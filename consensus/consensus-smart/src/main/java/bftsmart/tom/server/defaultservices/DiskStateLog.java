@@ -17,6 +17,9 @@ package bftsmart.tom.server.defaultservices;
 
 import bftsmart.statemanagement.ApplicationState;
 import bftsmart.tom.MessageContext;
+import bftsmart.tom.util.Logger;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -28,8 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class DiskStateLog extends StateLog {
 
 	private int id;
-	public final static String DEFAULT_DIR = "files".concat(System
-			.getProperty("file.separator"));
+	private String defaultDir;
 	private static final int INT_BYTE_SIZE = 4;
 	private static final int EOF = 0;
 
@@ -50,10 +52,22 @@ public class DiskStateLog extends StateLog {
 		this.syncLog = syncLog;
 		this.syncCkp = syncCkp;
 		this.logPointers = new HashMap<>();
+		SmartConfig smartConfig = SpringUtil.getBean(SmartConfig.class);
+		defaultDir = smartConfig.getDefaultDir().concat(System
+				.getProperty("file.separator"));
+		File file = new File(defaultDir);
+		if (!file.exists() || !file.isDirectory()) {
+			if (file.mkdirs()) {
+				Logger.println("disk directory create success");
+			} else {
+				Logger.println("disk directory create fail");
+
+			}
+		}
 	}
 
 	private void createLogFile() {
-		logPath = DEFAULT_DIR + String.valueOf(id) + "."
+		logPath = defaultDir + String.valueOf(id) + "."
 				+ System.currentTimeMillis() + ".log";
 		try {
 			log = new RandomAccessFile(logPath, (syncLog ? "rwd" : "rw"));
@@ -113,7 +127,7 @@ public class DiskStateLog extends StateLog {
 
         @Override
 	public void newCheckpoint(byte[] state, byte[] stateHash, int consensusId) {
-		String ckpPath = DEFAULT_DIR + String.valueOf(id) + "."
+		String ckpPath = defaultDir + String.valueOf(id) + "."
 				+ System.currentTimeMillis() + ".tmp";
 		try {
 			checkpointLock.lock();
@@ -187,14 +201,14 @@ public class DiskStateLog extends StateLog {
 
 		int lastCheckpointCID = getLastCheckpointCID();
 		int lastCID = getLastCID();
-		System.out.println("LAST CKP CID = " + lastCheckpointCID);
-		System.out.println("CID = " + cid);
-		System.out.println("LAST CID = " + lastCID);
+		Logger.println("LAST CKP CID = " + lastCheckpointCID);
+		Logger.println("CID = " + cid);
+		Logger.println("LAST CID = " + lastCID);
 		if (cid >= lastCheckpointCID && cid <= lastCID) {
 
 			int size = cid - lastCheckpointCID;
 
-			FileRecoverer fr = new FileRecoverer(id, DEFAULT_DIR);
+			FileRecoverer fr = new FileRecoverer(id, defaultDir);
 
 //			if (size > 0 && sendState) {
 			if (size > 0) {
@@ -211,7 +225,7 @@ public class DiskStateLog extends StateLog {
 			byte[] ckpStateHash = fr.getCkpStateHash();
 			checkpointLock.unlock();
 
-			System.out.println("--- FINISHED READING STATE");
+			Logger.println("--- FINISHED READING STATE");
 //			readingState = false;
 
 //			return new DefaultApplicationState((sendState ? batches : null), lastCheckpointCID,
@@ -223,7 +237,7 @@ public class DiskStateLog extends StateLog {
 	}
 	
 	public void transferApplicationState(SocketChannel sChannel, int cid) {
-		FileRecoverer fr = new FileRecoverer(id, DEFAULT_DIR);
+		FileRecoverer fr = new FileRecoverer(id, defaultDir);
 		fr.transferCkpState(sChannel, lastCkpPath);
 //		int lastCheckpointCID = getLastCheckpointCID();
 //		int lastCID = getLastCID();
@@ -239,7 +253,7 @@ public class DiskStateLog extends StateLog {
 		if((cid % checkpointPeriod) % checkpointPortion == checkpointPortion -1) {
 			int ckpReplicaIndex = (((cid % checkpointPeriod) + 1) / checkpointPortion) -1;
 			try {
-				System.out.println(" --- Replica " + ckpReplicaIndex + " took checkpoint. My current log pointer is " + log.getFilePointer());
+				Logger.println(" --- Replica " + ckpReplicaIndex + " took checkpoint. My current log pointer is " + log.getFilePointer());
 				logPointers.put(ckpReplicaIndex, log.getFilePointer());
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -262,7 +276,7 @@ public class DiskStateLog extends StateLog {
 	}
 	
 	protected ApplicationState loadDurableState() {
-		FileRecoverer fr = new FileRecoverer(id, DEFAULT_DIR);
+		FileRecoverer fr = new FileRecoverer(id, defaultDir);
 		lastCkpPath = fr.getLatestFile(".ckp");
 		logPath = fr.getLatestFile(".log");
 		byte[] checkpoint = null;
@@ -273,7 +287,7 @@ public class DiskStateLog extends StateLog {
 			log = fr.getLogState(0, logPath);
 		int ckpLastConsensusId = fr.getCkpLastConsensusId();
 		int logLastConsensusId = fr.getLogLastConsensusId();
-		System.out.println("log last consensus di: " + logLastConsensusId);
+		Logger.println("log last consensus di: " + logLastConsensusId);
 		ApplicationState state = new DefaultApplicationState(log, ckpLastConsensusId,
 				logLastConsensusId, checkpoint, fr.getCkpStateHash(), this.id);
 		if(logLastConsensusId > ckpLastConsensusId) {

@@ -45,7 +45,6 @@ import java.util.Map;
             }
             oldState.remove(tempKeyName);
         }
-//        merkleService.flush(merkleTree);
         newState.remove(tempKeyName);
         Profiler.release();
     }

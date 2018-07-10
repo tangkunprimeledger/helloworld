@@ -22,6 +22,7 @@ import bftsmart.tom.MessageContext;
 import bftsmart.tom.server.defaultservices.CommandsInfo;
 import bftsmart.tom.server.defaultservices.FileRecoverer;
 import bftsmart.tom.server.defaultservices.StateLog;
+import bftsmart.tom.util.Logger;
 import bftsmart.tom.util.TOMUtil;
 
 import java.io.*;
@@ -182,9 +183,9 @@ public class DurableStateLog extends StateLog {
 
 		int lastCheckpointCID = getLastCheckpointCID();
 		int lastCID = getLastCID();
-		System.out.println("LAST CKP CID = " + lastCheckpointCID);
-		System.out.println("CID = " + cid);
-		System.out.println("LAST CID = " + lastCID);
+		Logger.println("LAST CKP CID = " + lastCheckpointCID);
+		Logger.println("CID = " + cid);
+		Logger.println("LAST CID = " + lastCID);
 		
 		if(cstRequest instanceof CSTRequestF1) {
 			CSTRequestF1 requestF1 = (CSTRequestF1)cstRequest;
@@ -193,14 +194,14 @@ public class DurableStateLog extends StateLog {
 				checkpointLock.lock();
 				byte[] ckpState = fr.getCkpState(lastCkpPath);
 				checkpointLock.unlock();
-	    		System.out.println("--- sending checkpoint: " + ckpState.length);
+	    		Logger.println("--- sending checkpoint: " + ckpState.length);
 	    		CommandsInfo[] logLower = fr.getLogState(requestF1.getLogLowerSize(), logPath);
 	    		CommandsInfo[] logUpper = fr.getLogState(logPointers.get(requestF1.getLogUpper()), 0, requestF1.getLogUpperSize(), logPath);
 	    		byte[] logLowerBytes = TOMUtil.getBytes(logLower);
-	    		System.out.println(logLower.length + " Log lower bytes size: " + logLowerBytes.length);
+	    		Logger.println(logLower.length + " Log lower bytes size: " + logLowerBytes.length);
 	    		byte[] logLowerHash = TOMUtil.computeHash(logLowerBytes);
 	    		byte[] logUpperBytes = TOMUtil.getBytes(logUpper);
-	    		System.out.println(logUpper.length + " Log upper bytes size: " + logUpperBytes.length);
+	    		Logger.println(logUpper.length + " Log upper bytes size: " + logUpperBytes.length);
 	    		byte[] logUpperHash = TOMUtil.computeHash(logUpperBytes);
 	    		CSTState cstState = new CSTState(ckpState, null, null, logLowerHash, null, logUpperHash, lastCheckpointCID, lastCID, this.id);
 	    		return cstState;
@@ -208,20 +209,20 @@ public class DurableStateLog extends StateLog {
 				// This replica is expected to send the lower part of the log
 	    		System.out.print("--- sending lower log: " + requestF1.getLogLowerSize() + " from " + logPointers.get(requestF1.getCheckpointReplica())) ;
 	    		CommandsInfo[] logLower = fr.getLogState(logPointers.get(requestF1.getCheckpointReplica()), 0, requestF1.getLogLowerSize(), logPath);
-	    		System.out.println(" " + TOMUtil.getBytes(logLower).length + " bytes");
+	    		Logger.println(" " + TOMUtil.getBytes(logLower).length + " bytes");
 	    		CSTState cstState = new CSTState(null, null, logLower, null, null, null, lastCheckpointCID, lastCID, this.id);
 	    		return cstState;
 			} else {
 				// This replica is expected to send the upper part of the log plus the hash for its checkpoint
-	    		System.out.println("--- sending upper log: " + requestF1.getLogUpperSize());
+	    		Logger.println("--- sending upper log: " + requestF1.getLogUpperSize());
 				checkpointLock.lock();
 				fr.recoverCkpHash(lastCkpPath);
 				byte[] ckpHash = fr.getCkpStateHash();
 				byte[] ckpState = fr.getCkpState(lastCkpPath);
 				checkpointLock.unlock();
 	    		CommandsInfo[] logUpper = fr.getLogState(requestF1.getLogUpperSize(), logPath);
-	    		System.out.println(" " + TOMUtil.getBytes(logUpper).length + " bytes");
-	    		System.out.println("--- State size: " + ckpState.length + " Current state Hash: " + ckpHash);
+	    		Logger.println(" " + TOMUtil.getBytes(logUpper).length + " bytes");
+	    		Logger.println("--- State size: " + ckpState.length + " Current state Hash: " + ckpHash);
 	    		int lastCIDInState = lastCheckpointCID + requestF1.getLogUpperSize();
 	    		CSTState cstState = new CSTState(null, ckpHash, null, null, logUpper, null, lastCheckpointCID, lastCIDInState, this.id);
 	    		return cstState;
@@ -266,7 +267,7 @@ public class DurableStateLog extends StateLog {
 		if((cid % checkpointPeriod) % checkpointPortion == checkpointPortion -1) {
 			int ckpReplicaIndex = (((cid % checkpointPeriod) + 1) / checkpointPortion) -1;
 			try {
-				System.out.println(" --- Replica " + ckpReplicaIndex + " took checkpoint. My current log pointer is " + log.getFilePointer());
+				Logger.println(" --- Replica " + ckpReplicaIndex + " took checkpoint. My current log pointer is " + log.getFilePointer());
 				logPointers.put(ckpReplicaIndex, log.getFilePointer());
 			} catch (IOException e) {
 				e.printStackTrace();
