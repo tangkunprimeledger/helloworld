@@ -113,7 +113,7 @@ public class StandardStateManager extends BaseStateManager {
         };
 
         stateTimer = new Timer("state timer");
-        timeout = timeout * 2;
+//        timeout = timeout * 2; 多次执行后timeout越界
         stateTimer.schedule(stateTask,timeout);
     }
 
