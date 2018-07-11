@@ -1,5 +1,6 @@
 package com.higgs.trust.consensus.bftsmartcustom.started.custom;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @DependsOn("smartConfig")
+@Slf4j
 public class SpringUtil implements ApplicationContextAware {
 
 
@@ -18,7 +20,7 @@ public class SpringUtil implements ApplicationContextAware {
         if(SpringUtil.applicationContext == null) {
             SpringUtil.applicationContext = applicationContext;
         }
-        System.out.println("----------------- applicationContext -------------------");
+        log.debug("----------------- applicationContext -------------------");
     }
 
     //获取applicationContext

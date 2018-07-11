@@ -145,7 +145,7 @@ public abstract class DurabilityCoordinator implements Recoverable, BatchExecuta
 
 			// execute the second half if it exists
 			if(secondHalf.length > 0) {
-				//	        	System.out.println("----THERE IS A SECOND HALF----");
+				//	        	Logger.println(("----THERE IS A SECOND HALF----");
 				cid = msgCtx[msgCtx.length - 1].getConsensusId();
 				if (!noop) {
                                     
@@ -252,7 +252,7 @@ public abstract class DurabilityCoordinator implements Recoverable, BatchExecuta
 				installSnapshot(state.getSerializedState());
 			}
 
-			System.out.print("--- Installing log from " + (lastCheckpointCID+1) + " to " + lastCID);
+			Logger.println("--- Installing log from " + (lastCheckpointCID+1) + " to " + lastCID);
 
 			for (int cid = lastCheckpointCID + 1; cid <= lastCID; cid++) {
 				try {
@@ -325,12 +325,12 @@ public abstract class DurabilityCoordinator implements Recoverable, BatchExecuta
 				log.addMessageBatch(batch, batchMsgCtx, cid);
 				log.setLastCID(cid, globalCheckpointPeriod, checkpointPortion);
 				//				if(batchStart > 0)
-				//					System.out.println("Last batch: " + commands.length + "," + batchStart + "-" + i + "," + batch.length);
+				//					Logger.println(("Last batch: " + commands.length + "," + batchStart + "-" + i + "," + batch.length);
 			} else {
 				if(msgCtx[i].getConsensusId() > cid) { // saves commands when the CID changes or when it is the last batch
 					byte[][] batch = Arrays.copyOfRange(commands, batchStart, i);
 					MessageContext[] batchMsgCtx = Arrays.copyOfRange(msgCtx, batchStart, i);
-					//					System.out.println("THERE IS MORE THAN ONE CID in this batch." + commands.length + "," + batchStart + "-" + i + "," + batch.length);
+					//					Logger.println(("THERE IS MORE THAN ONE CID in this batch." + commands.length + "," + batchStart + "-" + i + "," + batch.length);
 					log.addMessageBatch(batch, batchMsgCtx, cid);
 					log.setLastCID(cid, globalCheckpointPeriod, checkpointPortion);
 					cid = msgCtx[i].getConsensusId();

@@ -18,12 +18,11 @@ import java.io.ObjectInputStream;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+
 /**
- *
  * @author: Zhouyafeng
  * @create: 2018/6/15 14:57
  * @description:
- *
  */
 public class Server extends DefaultRecoverable {
 
@@ -35,38 +34,35 @@ public class Server extends DefaultRecoverable {
 
     private ConsensusSnapshot snapshot;
 
-    public Server(int serverId,ConsensusSnapshot snapshot, SmartCommitReplicateComposite machine) {
+    public Server(int serverId, ConsensusSnapshot snapshot, SmartCommitReplicateComposite machine) {
         this.snapshot = snapshot;
         this.machine = machine;
         functionMap = machine.registerCommit();
         serviceReplica = new ServiceReplica(serverId, this, this);
         //先从spring容器中获取对应的bean，如果不存在则反射实例化一个
-//        try {
-//            try {
-//                machine = SpringUtil.getBean(SmartCommitReplicateComposite.class);
-//                functionMap = machine.registerCommit();
-//            } catch (Exception e) {
-//                log.info("Getting the bean from the container fails.");
-//            }
-//        } catch (Exception e) {
-//            log.info("IllegalAccessException:" + e.getLocalizedMessage());
-//            return;
-//        }
+        //        try {
+        //            try {
+        //                machine = SpringUtil.getBean(SmartCommitReplicateComposite.class);
+        //                functionMap = machine.registerCommit();
+        //            } catch (Exception e) {
+        //                log.info("Getting the bean from the container fails.");
+        //            }
+        //        } catch (Exception e) {
+        //            log.info("IllegalAccessException:" + e.getLocalizedMessage());
+        //            return;
+        //        }
     }
 
-    @Override
-    public void installSnapshot(byte[] state) {
+    @Override public void installSnapshot(byte[] state) {
         this.snapshot.installSnapshot(new String(state, Charsets.UTF_8));
     }
 
-    @Override
-    public byte[] getSnapshot() {
+    @Override public byte[] getSnapshot() {
         String snapshot = this.snapshot.getSnapshot();
         return snapshot.getBytes(Charsets.UTF_8);
     }
 
-    @Override
-    public byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs, boolean fromConsensus) {
+    @Override public byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs, boolean fromConsensus) {
         byte[][] replies = new byte[commands.length][];
         for (int i = 0; i < commands.length; i++) {
             replies[i] = executeSingle(commands[i], msgCtxs[i]);
@@ -79,7 +75,7 @@ public class Server extends DefaultRecoverable {
         ObjectInput objectInput = null;
         try {
             objectInput = new ObjectInputStream(in);
-            AbstractConsensusCommand abstractConsensusCommand = (AbstractConsensusCommand) objectInput.readObject();
+            AbstractConsensusCommand abstractConsensusCommand = (AbstractConsensusCommand)objectInput.readObject();
             //共识结束，回调客户端
             if (Objects.nonNull(abstractConsensusCommand)) {
                 if (functionMap.containsKey(abstractConsensusCommand.getClass())) {
@@ -87,26 +83,25 @@ public class Server extends DefaultRecoverable {
                     if (function != null) {
                         function.apply(abstractConsensusCommand);
                     } else {
-                        log.info("The corresponding method is not registered.-- {}",abstractConsensusCommand.getClass().getSimpleName());
+                        log.info("The corresponding method is not registered.-- {}",
+                            abstractConsensusCommand.getClass().getSimpleName());
                     }
                 } else {
-                    log.info("The corresponding method is not registered.-- {}",abstractConsensusCommand.getClass().getSimpleName());
+                    log.info("The corresponding method is not registered.-- {}",
+                        abstractConsensusCommand.getClass().getSimpleName());
                 }
             }
             return null;
         } catch (IOException e) {
-            log.error("Exception reading data in the replica: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Exception reading data in the replica: " + e.getMessage(), e);
             return null;
         } catch (ClassNotFoundException e) {
-            System.out.print("Coudn't find List: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Coudn't find List: " + e.getMessage(), e);
             return null;
         }
     }
 
-    @Override
-    public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
+    @Override public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
         return executeSingle(command, msgCtx);
     }
 

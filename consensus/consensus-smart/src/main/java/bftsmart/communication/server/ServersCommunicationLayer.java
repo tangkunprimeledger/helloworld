@@ -161,7 +161,7 @@ public class ServersCommunicationLayer extends Thread {
                     sm.authenticated = true;
                     inQueue.put(sm);
                 } else {
-                    //System.out.println("Going to send message to: "+i);
+                    //Logger.println(("Going to send message to: "+i);
                     //******* EDUARDO BEGIN **************//
                     //connections[i].send(data);
                     getConnection(i).send(data, useMAC);
@@ -175,7 +175,7 @@ public class ServersCommunicationLayer extends Thread {
 
     public void shutdown() {
         
-        System.out.println("Shutting down replica sockets");
+        bftsmart.tom.util.Logger.println("Shutting down replica sockets");
         
         doWork = false;
 
@@ -215,7 +215,7 @@ public class ServersCommunicationLayer extends Thread {
         while (doWork) {
             try {
 
-                //System.out.println("Waiting for server connections");
+                //Logger.println(("Waiting for server connections");
 
                 Socket newSocket = serverSocket.accept();
 
@@ -253,10 +253,10 @@ public class ServersCommunicationLayer extends Thread {
     private void establishConnection(Socket newSocket, int remoteId) throws IOException {
         if ((this.controller.getStaticConf().getTTPId() == remoteId) || this.controller.isCurrentViewMember(remoteId)) {
             connectionsLock.lock();
-            //System.out.println("Vai se conectar com: "+remoteId);
+            //Logger.println(("Vai se conectar com: "+remoteId);
             if (this.connections.get(remoteId) == null) { //This must never happen!!!
                 //first time that this connection is being established
-                //System.out.println("THIS DOES NOT HAPPEN....."+remoteId);
+                //Logger.println(("THIS DOES NOT HAPPEN....."+remoteId);
                 this.connections.put(remoteId, new ServerConnection(controller, newSocket, remoteId, inQueue, replica));
             } else {
                 //reconnection
@@ -265,7 +265,7 @@ public class ServersCommunicationLayer extends Thread {
             connectionsLock.unlock();
 
         } else {
-            //System.out.println("Closing connection of: "+remoteId);
+            //Logger.println(("Closing connection of: "+remoteId);
             newSocket.close();
         }
     }

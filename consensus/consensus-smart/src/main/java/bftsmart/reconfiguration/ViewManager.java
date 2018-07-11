@@ -105,7 +105,7 @@ public class ViewManager {
         connect();
         ReconfigureReply r = rec.execute();
         View v = r.getView();
-        System.out.println("New view f: " + v.getF());
+        bftsmart.tom.util.Logger.println("New view f: " + v.getF());
 
         VMMessage msg = new VMMessage(id, r);
 
@@ -191,10 +191,10 @@ public class ViewManager {
 
         try {
             ServerSocket ss = new ServerSocket(11100);
-            System.out.println("启动服务器....");
+            bftsmart.tom.util.Logger.println("启动服务器....");
             while (true) {
                 Socket s = ss.accept();
-                System.out.println("客户端:"+s.getInetAddress().getLocalHost()+"已连接到服务器");
+                bftsmart.tom.util.Logger.println("客户端:"+s.getInetAddress().getLocalHost()+"已连接到服务器");
 
                 ObjectInputStream objectInputStream = new ObjectInputStream(s.getInputStream());
                 RCMessage rcMessage = (RCMessage) objectInputStream.readObject();
