@@ -3,7 +3,6 @@ package com.higgs.trust.rs.core.service;
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.common.enums.RespCodeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -54,7 +53,6 @@ import java.util.*;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private RsNodeRepository rsNodeRepository;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
 
     /**
      * @return
@@ -64,7 +62,7 @@ import java.util.*;
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[authKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[authKeyPair] invalid node name");
         }
 
@@ -115,7 +113,7 @@ import java.util.*;
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[updateKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[updateKeyPair] invalid node name");
         }
 
@@ -160,7 +158,7 @@ import java.util.*;
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[cancelKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[cancelKeyPair] invalid node name");
         }
 
