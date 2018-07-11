@@ -388,7 +388,8 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                 Logger.println("stored state last cid: " + storedState.getLastCID());
                 if (storedState.getLastCID() > 0) {
                     setState(storedState);
-                    getStateManager().setLastCID(storedState.getLastCID());
+//                    getStateManager().setLastCID(storedState.getLastCID());
+                    getStateManager().analyzeState(storedState.getLastCID());
                 }
             } else {
                 log = new StateLog(this.config.getProcessId(), checkpointPeriod, state, computeHash(state));
