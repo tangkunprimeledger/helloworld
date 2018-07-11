@@ -81,7 +81,7 @@ import java.util.*;
 
         // send CA auth request
         RespData respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
-        if (respData.isSuccess()) {
+        if (!respData.isSuccess()) {
             log.error("send tx error");
             return FAIL;
         }
