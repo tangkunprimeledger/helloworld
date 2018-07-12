@@ -15,6 +15,8 @@ limitations under the License.
 */
 package bftsmart.reconfiguration;
 
+import bftsmart.tom.util.Logger;
+
 /**
  *
  * @author Andre Nogueira
@@ -27,13 +29,13 @@ public class VMServices {
 
 
 		if(args.length == 1){
-			System.out.println("####Tpp Service[Disjoint]####");
+			Logger.println("####Tpp Service[Disjoint]####");
 
 			int smartId = Integer.parseInt(args[0]);
 
 //			viewManager.removeServer(smartId);
 		}else if(args.length == 3){
-			System.out.println("####Tpp Service[Join]####");
+			Logger.println("####Tpp Service[Join]####");
 
 			int smartId = Integer.parseInt(args[0]);
 			String ipAddress = args[1];
@@ -42,7 +44,7 @@ public class VMServices {
 //			viewManager.addServer(smartId, ipAddress,port);
 
 		}else{
-			System.out.println("Usage: java -jar TppServices <smart id> [ip address] [port]");
+			Logger.println("Usage: java -jar TppServices <smart id> [ip address] [port]");
 			System.exit(1);
 		}
 

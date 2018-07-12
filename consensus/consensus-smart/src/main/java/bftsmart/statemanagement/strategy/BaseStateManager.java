@@ -165,7 +165,7 @@ public abstract class BaseStateManager implements StateManager {
     public void requestAppState(int cid) {
         lastCID = cid + 1;
         waitingCID = cid;
-        System.out.println("waitingcid is now " + cid);
+        Logger.println("waitingcid is now " + cid);
         appStateOnly = true;
         requestState();
     }
@@ -176,10 +176,10 @@ public abstract class BaseStateManager implements StateManager {
         if (waitingCID == -1) {
             Logger.println("(TOMLayer.analyzeState) I'm not waiting for any state, so I will keep record of this message");
             if (tomLayer.execManager.isDecidable(cid)) {
-                System.out.println("BaseStateManager.analyzeState: I have now more than " + SVController.getCurrentViewF() + " messages for CID " + cid + " which are beyond CID " + lastCID);
+                Logger.println("BaseStateManager.analyzeState: I have now more than " + SVController.getCurrentViewF() + " messages for CID " + cid + " which are beyond CID " + lastCID);
                 lastCID = cid;
                 waitingCID = cid - 1;
-                System.out.println("analyzeState " + waitingCID);
+                Logger.println("analyzeState " + waitingCID);
                 requestState();
             }
         }
@@ -250,7 +250,7 @@ public abstract class BaseStateManager implements StateManager {
             for (int key : cids.keySet()) {
                 if (cids.get(key) >= SVController.getQuorum()) {
                     if (key == lastCID) {
-                        System.out.println("-- Replica state is up to date");
+                        Logger.println("-- Replica state is up to date");
                         dt.deliverLock();
                         isInitializing = false;
                         tomLayer.setLastExec(key);
@@ -259,7 +259,7 @@ public abstract class BaseStateManager implements StateManager {
                         break;
                     } else {
                         //ask for state
-                        System.out.println("-- Requesting state from other replicas");
+                        Logger.println("-- Requesting state from other replicas");
                         lastCID = key + 1;
                         if (waitingCID == -1) {
                             waitingCID = key;
@@ -282,4 +282,8 @@ public abstract class BaseStateManager implements StateManager {
     @Override
     public abstract void SMReplyDeliver(SMMessage msg, boolean isBFT);
 
+    @Override public void initLastCID(int lastCID) {
+        this.lastCID = lastCID;
+        tomLayer.setLastExec(lastCID);
+    }
 }

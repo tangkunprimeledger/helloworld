@@ -26,9 +26,9 @@
 //    public void stringApply(ConsensusCommit<StringCommand> commit) {
 //        try {
 //            log.warn("command value is {}", commit.operation().get());
-//            System.out.println("value: " + commit.operation().get());
+//            Logger.println(("value: " + commit.operation().get());
 //        } finally {
-//            System.out.println("close the commit");
+//            Logger.println(("close the commit");
 //            commit.close();
 //        }
 //    }

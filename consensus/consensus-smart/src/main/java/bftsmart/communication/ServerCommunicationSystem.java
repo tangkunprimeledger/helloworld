@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.communication;
 
 import bftsmart.communication.client.CommunicationSystemServerSide;
@@ -63,9 +63,9 @@ public class ServerCommunicationSystem extends Thread {
         serversConn = new ServersCommunicationLayer(controller, inQueue, replica);
 
         //******* EDUARDO BEGIN **************//
-       // if (manager.isInCurrentView() || manager.isInInitView()) {
-            clientsConn = CommunicationSystemServerSideFactory.getCommunicationSystemServerSide(controller);
-       // }
+        // if (manager.isInCurrentView() || manager.isInInitView()) {
+        clientsConn = CommunicationSystemServerSideFactory.getCommunicationSystemServerSide(controller);
+        // }
         //******* EDUARDO END **************//
         //start();
     }
@@ -102,14 +102,14 @@ public class ServerCommunicationSystem extends Thread {
     /**
      * Thread method responsible for receiving messages sent by other servers.
      */
-    @Override
-    public void run() {
-        
+    @Override public void run() {
+
         long count = 0;
         while (doWork) {
             try {
                 if (count % 1000 == 0 && count > 0) {
-                    Logger.println("(ServerCommunicationSystem.run) After " + count + " messages, inQueue size=" + inQueue.size());
+                    Logger.println(
+                        "(ServerCommunicationSystem.run) After " + count + " messages, inQueue size=" + inQueue.size());
                 }
 
                 SystemMessage sm = inQueue.poll(MESSAGE_WAIT_TIME, TimeUnit.MILLISECONDS);
@@ -118,14 +118,17 @@ public class ServerCommunicationSystem extends Thread {
                     Logger.println("<-------receiving---------- " + sm);
                     messageHandler.processData(sm);
                     count++;
-                } else {                
-                    messageHandler.verifyPending();               
+                } else {
+                    messageHandler.verifyPending();
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace(System.err);
+            } catch (Exception e) {
+                Logger.printError("server communication error:", e);
             }
         }
-        java.util.logging.Logger.getLogger(ServerCommunicationSystem.class.getName()).log(Level.INFO, "ServerCommunicationSystem stopped.");
+        java.util.logging.Logger.getLogger(ServerCommunicationSystem.class.getName())
+            .log(Level.INFO, "ServerCommunicationSystem stopped.");
 
     }
 
@@ -139,7 +142,7 @@ public class ServerCommunicationSystem extends Thread {
      */
     public void send(int[] targets, SystemMessage sm) {
         if (sm instanceof TOMMessage) {
-            clientsConn.send(targets, (TOMMessage) sm, false);
+            clientsConn.send(targets, (TOMMessage)sm, false);
         } else {
             Logger.println("--------sending----------> " + sm);
             serversConn.send(targets, sm, true);
@@ -149,21 +152,20 @@ public class ServerCommunicationSystem extends Thread {
     public ServersCommunicationLayer getServersConn() {
         return serversConn;
     }
-    
+
     public CommunicationSystemServerSide getClientsConn() {
         return clientsConn;
     }
-    
-    @Override
-    public String toString() {
+
+    @Override public String toString() {
         return serversConn.toString();
     }
-    
+
     public void shutdown() {
-        
+
         Logger.println("Shutting down communication layer");
-        
-        this.doWork = false;        
+
+        this.doWork = false;
         clientsConn.shutdown();
         serversConn.shutdown();
     }

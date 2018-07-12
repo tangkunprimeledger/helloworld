@@ -16,6 +16,7 @@ limitations under the License.
 package bftsmart.reconfiguration;
 
 import bftsmart.reconfiguration.views.View;
+import bftsmart.tom.util.Logger;
 
 /**
  *
@@ -32,7 +33,7 @@ public class ReconfigurationTest {
         ReconfigureRequest request = new ReconfigureRequest(id);
         request.setProperty("f","1");
         
-        System.out.println("Going to send a reconf!!!");
+        Logger.println(("Going to send a reconf!!!");
         
         byte[] reply = proxy.invoke(TOMUtil.getBytes(request), ReconfigurationManager.TOM_RECONFIG_REQUEST, false);
         
@@ -49,7 +50,7 @@ public class ReconfigurationTest {
         
         View v = r.getView();
         
-        System.out.println("New view f: "+v.getF());
+        Logger.println("New view f: "+v.getF());
         
         rec.close();
    }

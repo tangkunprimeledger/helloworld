@@ -82,7 +82,7 @@ public class DurableStateLog extends StateLog {
 	 */
         @Override
 	public void addMessageBatch(byte[][] commands, MessageContext[] msgCtx, int consensusId) {
-//		System.out.println("DurableStateLog#addMessageBatch. consensusId: " + consensusId);
+//		Logger.println(("DurableStateLog#addMessageBatch. consensusId: " + consensusId);
 		CommandsInfo command = new CommandsInfo(commands, msgCtx);
 		if (isToLog) {
 			if(log == null)
@@ -207,7 +207,7 @@ public class DurableStateLog extends StateLog {
 	    		return cstState;
 			} else if(id == requestF1.getLogLower()) {
 				// This replica is expected to send the lower part of the log
-	    		System.out.print("--- sending lower log: " + requestF1.getLogLowerSize() + " from " + logPointers.get(requestF1.getCheckpointReplica())) ;
+	    		Logger.println("--- sending lower log: " + requestF1.getLogLowerSize() + " from " + logPointers.get(requestF1.getCheckpointReplica())) ;
 	    		CommandsInfo[] logLower = fr.getLogState(logPointers.get(requestF1.getCheckpointReplica()), 0, requestF1.getLogLowerSize(), logPath);
 	    		Logger.println(" " + TOMUtil.getBytes(logLower).length + " bytes");
 	    		CSTState cstState = new CSTState(null, null, logLower, null, null, null, lastCheckpointCID, lastCID, this.id);
@@ -235,7 +235,7 @@ public class DurableStateLog extends StateLog {
 //				byte[] ckpState = fr.getCkpState();
 //				checkpointLock.unlock(); 
 //	    		batches = fr.getLogState(requestFGT1.getLogSize());
-//	    		System.out.println("--- sending checkpoint: " + ckpState.length);
+//	    		Logger.println(("--- sending checkpoint: " + ckpState.length);
 //	            return new DefaultApplicationState(batches, lastCheckpointCID, cid, ckpState, null);
 //			} else { // Replica should send the checkpoint and log hashes
 //	    		batches = fr.getLogState(requestFGT1.getLogSize() - requestFGT1.getNbrHashesBeforeCkp());

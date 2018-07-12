@@ -15,6 +15,8 @@ limitations under the License.
 */
 package bftsmart.reconfiguration.views;
 
+import bftsmart.tom.util.Logger;
+
 import java.net.InetSocketAddress;
 
 public class TestViewSerialization {

@@ -132,17 +132,17 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
         thisLog.setLastCheckpointCID(lastCID);
 
         logLock.unlock();
-        /*System.out.println("fiz checkpoint");
-        System.out.println("tamanho do snapshot: " + snapshot.length);
-        System.out.println("tamanho do log: " + thisLog.getMessageBatches().length);*/
+        /*Logger.println(("fiz checkpoint");
+        Logger.println(("tamanho do snapshot: " + snapshot.length);
+        Logger.println(("tamanho do log: " + thisLog.getMessageBatches().length);*/
         Logger.println("(TOMLayer.saveState) Finished saving state of CID " + lastCID);
     }
 
     private void saveCommands(byte[][] commands, MessageContext[] msgCtx) {
         
         if (commands.length != msgCtx.length) {
-            System.out.println("----SIZE OF COMMANDS AND MESSAGE CONTEXTS IS DIFFERENT----");
-            System.out.println("----COMMANDS: " + commands.length + ", CONTEXTS: " + msgCtx.length + " ----");
+            Logger.println("----SIZE OF COMMANDS AND MESSAGE CONTEXTS IS DIFFERENT----");
+            Logger.println("----COMMANDS: " + commands.length + ", CONTEXTS: " + msgCtx.length + " ----");
         }
         logLock.lock();
 
@@ -177,7 +177,7 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
         // of not storing anything after a checkpoint and before logging more requests        
         if (ret == null || (config.isBFT() && ret.getCertifiedDecision(this.controller) == null)) ret = new DefaultApplicationState();
 
-        System.out.println("Getting log until CID " + cid + ", null: " + (ret == null));
+        Logger.println("Getting log until CID " + cid + ", null: " + (ret == null));
         logLock.unlock();
         return ret;
     }
@@ -189,7 +189,7 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
             
             DefaultApplicationState state = (DefaultApplicationState) recvState;
             
-            System.out.println("(DefaultSingleRecoverable.setState) last CID in state: " + state.getLastCID());
+            Logger.println("(DefaultSingleRecoverable.setState) last CID in state: " + state.getLastCID());
             
             logLock.lock();
             initLog();
@@ -200,7 +200,7 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
             
             lastCID = state.getLastCID();
 
-            bftsmart.tom.util.Logger.println("(DefaultSingleRecoverable.setState) I'm going to update myself from CID "
+            Logger.println("(DefaultSingleRecoverable.setState) I'm going to update myself from CID "
                     + lastCheckpointCID + " to CID " + lastCID);
 
             stateLock.lock();
@@ -208,7 +208,7 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
 
             for (int cid = lastCheckpointCID + 1; cid <= lastCID; cid++) {
                 try {
-                    bftsmart.tom.util.Logger.println("(DurabilityCoordinator.setState) interpreting and verifying batched requests for CID " + cid);
+                    Logger.println("(DurabilityCoordinator.setState) interpreting and verifying batched requests for CID " + cid);
 
                     CommandsInfo cmdInfo = state.getMessageBatch(cid); 
                     byte[][] cmds = cmdInfo.commands; // take a batch
@@ -222,12 +222,13 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
                     	appExecuteOrdered(cmds[i], msgCtxs[i]);
                     }
                 } catch (Exception e) {
+                    Logger.printError("(DurabilityCoordinator.setState) error",e);
                     e.printStackTrace(System.err);
                     if (e instanceof ArrayIndexOutOfBoundsException) {
-                        System.out.println("CID do ultimo checkpoint: " + state.getLastCheckpointCID());
-                        System.out.println("CID do ultimo consenso: " + state.getLastCID());
-                        System.out.println("numero de mensagens supostamente no batch: " + (state.getLastCID() - state.getLastCheckpointCID() + 1));
-                        System.out.println("numero de mensagens realmente no batch: " + state.getMessageBatches().length);
+                        Logger.println("CID do ultimo checkpoint: " + state.getLastCheckpointCID());
+                        Logger.println("CID do ultimo consenso: " + state.getLastCID());
+                        Logger.println("numero de mensagens supostamente no batch: " + (state.getLastCID() - state.getLastCheckpointCID() + 1));
+                        Logger.println("numero de mensagens realmente no batch: " + state.getMessageBatches().length);
                     }
                 }
             }

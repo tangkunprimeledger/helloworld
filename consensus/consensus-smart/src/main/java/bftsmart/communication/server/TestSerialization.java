@@ -17,6 +17,7 @@ package bftsmart.communication.server;
 
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
+import bftsmart.tom.util.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,7 +43,7 @@ public class TestSerialization {
 
 
         byte[] message = baos.toByteArray();
-        System.out.println(message.length);
+        Logger.println("message length" + message.length);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(message);
         DataInputStream ois = new DataInputStream(bais);
@@ -51,7 +52,7 @@ public class TestSerialization {
         TOMMessage tm2 = new TOMMessage();
         tm2.rExternal(ois);
 
-//        System.out.println(new String(tm2.getContent()));
+//        Logger.println((new String(tm2.getContent()));
     }
 
 }

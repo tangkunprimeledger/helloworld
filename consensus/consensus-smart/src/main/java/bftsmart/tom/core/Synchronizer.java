@@ -1042,7 +1042,7 @@ public class Synchronizer {
 
         } /*else if (tom.getLastExec() + 1 == lastHighestCID.getCID()) { // Is this replica still executing the last decided consensus?
 
-            System.out.println("(Synchronizer.finalise) I'm still at the CID before the most recent one!!! (" + lastHighestCID.getCID() + ")");
+            Logger.println(("(Synchronizer.finalise) I'm still at the CID before the most recent one!!! (" + lastHighestCID.getCID() + ")");
 
             cons = execManager.getConsensus(lastHighestCID.getCID());
             e = cons.getLastEpoch();
@@ -1151,7 +1151,7 @@ public class Synchronizer {
             //if (currentETS > ets) {
             if (regency > ets) {
                 
-                //System.out.println("(Synchronizer.finalise) Updating consensus' ETS after SYNC (from " + ets + " to " + currentETS +")");
+                //Logger.println(("(Synchronizer.finalise) Updating consensus' ETS after SYNC (from " + ets + " to " + currentETS +")");
                 Logger.println("(Synchronizer.finalise) Updating consensus' ETS after SYNC (from " + ets + " to " + regency +")");
 
                 /*do {

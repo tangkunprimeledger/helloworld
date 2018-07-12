@@ -36,7 +36,7 @@ import java.util.*;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
+ * @desc ca service
  * @date 2018/6/5 15:48
  */
 @Service @Slf4j public class CaServiceImpl implements CaService {
@@ -56,7 +56,7 @@ import java.util.*;
 
     /**
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc generate pubKey and PriKey ,send CA auth request to other TRUST node,then insert into db
      */
     @Override public String authKeyPair(String user) {
         //check nodeName
@@ -81,10 +81,15 @@ import java.util.*;
 
         // send CA auth request
         RespData respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
-        if (respData.isSuccess()) {
+        if (!respData.isSuccess()) {
             log.error("send tx error");
             return FAIL;
         }
+
+        // insert ca into db (temp)
+        ca = new Ca();
+        BeanUtils.copyProperties(caVO, ca);
+        caRepository.insertCa(ca);
 
         return SUCCESS;
     }

@@ -264,7 +264,7 @@ public class ServerViewController extends ViewController {
         if (forceLC) {
             
             //TODO: Reactive it and make it work
-            System.out.println("Shortening LC timeout");
+            bftsmart.tom.util.Logger.println("Shortening LC timeout");
             tomLayer.requestsTimer.stopTimer();
             tomLayer.requestsTimer.setShortTimeout(3000);
             tomLayer.requestsTimer.startTimer();

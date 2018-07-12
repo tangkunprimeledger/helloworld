@@ -16,6 +16,7 @@ limitations under the License.
 package bftsmart.statemanagement.strategy.durability;
 
 import bftsmart.statemanagement.ApplicationState;
+import bftsmart.tom.util.Logger;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -40,9 +41,9 @@ public class StateSender implements Runnable {
 		try {
 			OutputStream os = socket.getOutputStream();
 			ObjectOutputStream oos = new ObjectOutputStream(os);
-			System.out.print("--- Sending state in different socket");
+			Logger.println("--- Sending state in different socket");
 			oos.writeObject(state);
-			System.out.print("--- Sent state in different socket");
+			Logger.println("--- Sent state in different socket");
 			oos.close();
 			socket.close();
 		} catch (IOException e) {

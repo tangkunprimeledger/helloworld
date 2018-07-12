@@ -530,7 +530,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 //                }
 //
 //                Logger.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
-//                System.out.println("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
+//                Logger.println(("(SyncListener.operationComplete) " + this.remainingFutures + " channel operations remaining to complete");
 //                this.futureLock.unlock();
               
             }
