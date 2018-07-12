@@ -23,7 +23,7 @@ import java.util.List;
     /**
      * 交易提交接口地址
      */
-    public static String TX_URL = "http://10.200.172.98:7070/submitTx";
+    public static String TX_URL = "http://10.200.173.137:7071/submitTx";
     /**
      * 交易发起方，需跟配置一致，否则RS回调时可能会有问题
      */
