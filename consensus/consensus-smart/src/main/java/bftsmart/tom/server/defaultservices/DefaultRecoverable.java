@@ -302,7 +302,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             int lastCheckpointCID = state.getLastCheckpointCID();
             lastCID = state.getLastCID();
 
-            Logger.println("(DefaultRecoverable.setState) I'm going to update myself from CID "
+            Logger.println("(DefaultRecoverable.recoverState) I'm going to update myself from CID "
                 + lastCheckpointCID + " to CID " + lastCID);
 
             stateLock.lock();
@@ -316,9 +316,9 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 
             for (int cid = lastCheckpointCID + 1; cid <= lastCID; cid++) {
                 try {
-                    Logger.println("(DefaultRecoverable.setState) interpreting and verifying batched requests for cid " + cid);
+                    Logger.println("(DefaultRecoverable.recoverState) interpreting and verifying batched requests for cid " + cid);
                     if (state.getMessageBatch(cid) == null) {
-                        Logger.println("(DefaultRecoverable.setState) " + cid + " NULO!!!");
+                        Logger.println("(DefaultRecoverable.recoverState) " + cid + " NULO!!!");
                     }
                     CommandsInfo cmdInfo = state.getMessageBatch(cid);
                     byte[][] commands = cmdInfo.commands; // take a batch
@@ -328,6 +328,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                         continue;
                     }
                     appExecuteBatch(commands, msgCtx, false);
+                    stateManager.initLastCID(cid);
                 } catch (Exception e) {
                     Logger.printError("recover state failed!",e);
                     if (e instanceof ArrayIndexOutOfBoundsException) {
