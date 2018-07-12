@@ -42,6 +42,7 @@ public enum RsCoreErrorEnum {
     RS_CORE_GET_RS_CONFIG_NULL_ERROR("219", "get rs config is null error", false),
     RS_CORE_GET_CHAIN_OWNER_NULL_ERROR("220", "get chain owner is null error", false),
     RS_CORE_CONTRACT_ACTION_TYPE_ILLEGAL_ERROR("221", "process contract action type  error", false),
+    RS_CORE_CONTRACT_EXECUTE_ERROR("221", "contract process  error", false),
 
     RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
     RS_CORE_CA_CANCEL_ERROR("302", "rs core ca cancel error", false),
