@@ -36,31 +36,45 @@ import java.util.List;
  * @date 2918/04/14 16:52
  * @desc block chain service
  */
-@Slf4j @Service public class BlockChainServiceImpl implements BlockChainService {
+@Slf4j
+@Service
+public class BlockChainServiceImpl implements BlockChainService {
 
-    @Autowired private PendingStateImpl pendingState;
+    @Autowired
+    private PendingStateImpl pendingState;
 
-    @Autowired private NodeState nodeState;
+    @Autowired
+    private NodeState nodeState;
 
-    @Autowired private BlockChainClient blockChainClient;
+    @Autowired
+    private BlockChainClient blockChainClient;
 
-    @Autowired private BlockRepository blockRepository;
+    @Autowired
+    private BlockRepository blockRepository;
 
-    @Autowired private TransactionRepository transactionRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
 
-    @Autowired private TxOutRepository txOutRepository;
+    @Autowired
+    private TxOutRepository txOutRepository;
 
-    @Autowired private DataIdentityRepository dataIdentityRepository;
+    @Autowired
+    private DataIdentityRepository dataIdentityRepository;
 
-    @Autowired private CurrencyRepository currencyRepository;
+    @Autowired
+    private CurrencyRepository currencyRepository;
 
-    @Autowired private SystemPropertyRepository systemPropertyRepository;
+    @Autowired
+    private SystemPropertyRepository systemPropertyRepository;
 
-    @Autowired private UTXOSnapshotHandler utxoSnapshotHandler;
+    @Autowired
+    private UTXOSnapshotHandler utxoSnapshotHandler;
 
-    @Autowired private SystemPropertyHandler systemPropertyHandler;
+    @Autowired
+    private SystemPropertyHandler systemPropertyHandler;
 
-    @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
+    @Override
+    public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
         List<TransactionVO> transactionVOList;
         // when master is running , then add txs into local pending txs
@@ -74,15 +88,18 @@ import java.util.List;
             }
             respData.setData(transactionVOList);
         } else {
-            //when it is not master ,then send txs to master node
-            log.debug("this node is not  master, send txs:{} to master node", transactions);
+            if (log.isDebugEnabled()) {
+                //when it is not master ,then send txs to master node
+                log.debug("this node is not  master, send txs:{} to master node={}", transactions, nodeState.getMasterName());
+            }
             respData = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
         }
 
         return respData;
     }
 
-    @Override public RespData submitTransaction(SignedTransaction tx) {
+    @Override
+    public RespData submitTransaction(SignedTransaction tx) {
         List<SignedTransaction> transactions = new ArrayList<>();
         transactions.add(tx);
         RespData respData = submitTransactions(transactions);
@@ -120,15 +137,18 @@ import java.util.List;
         return transactionVOList;
     }
 
-    @Override public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
+    @Override
+    public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
         return blockRepository.listBlockHeaders(startHeight, size);
     }
 
-    @Override public List<Block> listBlocks(long startHeight, int size) {
+    @Override
+    public List<Block> listBlocks(long startHeight, int size) {
         return blockRepository.listBlocks(startHeight, size);
     }
 
-    @Override public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
+    @Override
+    public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
         if (null == req) {
             return null;
         }
@@ -148,7 +168,7 @@ import java.util.List;
             pageVO.setData(null);
         } else {
             List<BlockVO> list = blockRepository
-                .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+                    .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -156,7 +176,8 @@ import java.util.List;
         return pageVO;
     }
 
-    @Override public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
+    @Override
+    public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
 
         if (null == req) {
             return null;
@@ -179,8 +200,8 @@ import java.util.List;
             pageVO.setData(null);
         } else {
             List<CoreTransactionVO> list = transactionRepository
-                .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
-                    req.getPageSize());
+                    .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
+                            req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -188,7 +209,8 @@ import java.util.List;
         return pageVO;
     }
 
-    @Override public List<UTXOVO> queryUTXOByTxId(String txId) {
+    @Override
+    public List<UTXOVO> queryUTXOByTxId(String txId) {
         if (StringUtils.isBlank(txId)) {
             return null;
         }
@@ -204,7 +226,8 @@ import java.util.List;
      * @param identity
      * @return
      */
-    @Override public boolean isExistedIdentity(String identity) {
+    @Override
+    public boolean isExistedIdentity(String identity) {
         if (StringUtils.isBlank(identity)) {
             return false;
         }
@@ -217,7 +240,8 @@ import java.util.List;
      * @param currency
      * @return
      */
-    @Override public boolean isExistedCurrency(String currency) {
+    @Override
+    public boolean isExistedCurrency(String currency) {
         return currencyRepository.isExits(currency);
     }
 
@@ -227,7 +251,8 @@ import java.util.List;
      * @param key
      * @return
      */
-    @Override public SystemPropertyVO querySystemPropertyByKey(String key) {
+    @Override
+    public SystemPropertyVO querySystemPropertyByKey(String key) {
         return systemPropertyHandler.querySystemPropertyByKey(key);
     }
 
@@ -237,7 +262,8 @@ import java.util.List;
      * @param inputList
      * @return
      */
-    @Override public List<UTXO> queryUTXOList(List<TxIn> inputList) {
+    @Override
+    public List<UTXO> queryUTXOList(List<TxIn> inputList) {
         log.info("When process UTXO contract  querying queryTxOutList by inputList:{}", inputList);
         return utxoSnapshotHandler.queryUTXOList(inputList);
     }
@@ -248,15 +274,18 @@ import java.util.List;
      * @param name
      * @return
      */
-    @Override public UTXOActionTypeEnum getUTXOActionType(String name) {
+    @Override
+    public UTXOActionTypeEnum getUTXOActionType(String name) {
         return UTXOActionTypeEnum.getUTXOActionTypeEnumByName(name);
     }
 
-    @Override public BlockHeader getBlockHeader(Long blockHeight) {
+    @Override
+    public BlockHeader getBlockHeader(Long blockHeight) {
         return blockRepository.getBlockHeader(blockHeight);
     }
 
-    @Override public BlockHeader getMaxBlockHeader() {
+    @Override
+    public BlockHeader getMaxBlockHeader() {
         return blockRepository.getBlockHeader(blockRepository.getMaxHeight());
     }
 
