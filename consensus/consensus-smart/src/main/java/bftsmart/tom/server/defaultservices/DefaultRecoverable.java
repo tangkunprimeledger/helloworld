@@ -257,7 +257,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             if (state.getSerializedState() != null) {
                 Logger.println("The state is not null. Will install it");
                 initLog();
-                log.update(state);
+//                log.update(state);
                 installSnapshot(state.getSerializedState());
             }
 
