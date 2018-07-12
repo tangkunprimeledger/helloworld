@@ -12,7 +12,6 @@ import com.higgs.trust.slave.core.repository.DataIdentityRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.repository.TxOutRepository;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
-import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
@@ -36,61 +35,60 @@ import java.util.List;
  * @date 2918/04/14 16:52
  * @desc block chain service
  */
-@Slf4j
-@Service
-public class BlockChainServiceImpl implements BlockChainService {
+@Slf4j @Service public class BlockChainServiceImpl implements BlockChainService {
 
-    @Autowired
-    private PendingStateImpl pendingState;
+    private static final String MASTER_NA = "N/A";
 
-    @Autowired
-    private NodeState nodeState;
+    @Autowired private PendingStateImpl pendingState;
 
-    @Autowired
-    private BlockChainClient blockChainClient;
+    @Autowired private NodeState nodeState;
 
-    @Autowired
-    private BlockRepository blockRepository;
+    @Autowired private BlockChainClient blockChainClient;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+    @Autowired private BlockRepository blockRepository;
 
-    @Autowired
-    private TxOutRepository txOutRepository;
+    @Autowired private TransactionRepository transactionRepository;
 
-    @Autowired
-    private DataIdentityRepository dataIdentityRepository;
+    @Autowired private TxOutRepository txOutRepository;
 
-    @Autowired
-    private CurrencyRepository currencyRepository;
+    @Autowired private DataIdentityRepository dataIdentityRepository;
 
-    @Autowired
-    private SystemPropertyRepository systemPropertyRepository;
+    @Autowired private CurrencyRepository currencyRepository;
 
-    @Autowired
-    private UTXOSnapshotHandler utxoSnapshotHandler;
+    @Autowired private UTXOSnapshotHandler utxoSnapshotHandler;
 
-    @Autowired
-    private SystemPropertyHandler systemPropertyHandler;
+    @Autowired private SystemPropertyHandler systemPropertyHandler;
 
-    @Override
-    public RespData submitTransactions(List<SignedTransaction> transactions) {
+    @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
         List<TransactionVO> transactionVOList;
+
+        if (StringUtils.equals(nodeState.getMasterName(), MASTER_NA)) {
+            log.warn("cluster master is N/A");
+            respData.setCode(RespCodeEnum.SYS_FAIL.getRespCode());
+            respData.setData(buildTxVOList(transactions));
+            return respData;
+        }
+
         // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
             if (nodeState.isState(NodeStateEnum.Running)) {
-                log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);
+                if (log.isDebugEnabled()) {
+                    log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);
+                }
                 transactionVOList = pendingState.addPendingTransactions(transactions);
             } else {
-                log.debug("The node is master but the status is not running, cannot receive txs: {}", transactions);
+                if (log.isDebugEnabled()) {
+                    log.debug("The node is master but the status is not running, cannot receive txs: {}", transactions);
+                }
                 transactionVOList = buildTxVOList(transactions);
             }
             respData.setData(transactionVOList);
         } else {
             if (log.isDebugEnabled()) {
                 //when it is not master ,then send txs to master node
-                log.debug("this node is not  master, send txs:{} to master node={}", transactions, nodeState.getMasterName());
+                log.debug("this node is not  master, send txs:{} to master node={}", transactions,
+                    nodeState.getMasterName());
             }
             respData = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
         }
@@ -98,8 +96,7 @@ public class BlockChainServiceImpl implements BlockChainService {
         return respData;
     }
 
-    @Override
-    public RespData submitTransaction(SignedTransaction tx) {
+    @Override public RespData submitTransaction(SignedTransaction tx) {
         List<SignedTransaction> transactions = new ArrayList<>();
         transactions.add(tx);
         RespData respData = submitTransactions(transactions);
@@ -137,18 +134,15 @@ public class BlockChainServiceImpl implements BlockChainService {
         return transactionVOList;
     }
 
-    @Override
-    public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
+    @Override public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
         return blockRepository.listBlockHeaders(startHeight, size);
     }
 
-    @Override
-    public List<Block> listBlocks(long startHeight, int size) {
+    @Override public List<Block> listBlocks(long startHeight, int size) {
         return blockRepository.listBlocks(startHeight, size);
     }
 
-    @Override
-    public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
+    @Override public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
         if (null == req) {
             return null;
         }
@@ -168,7 +162,7 @@ public class BlockChainServiceImpl implements BlockChainService {
             pageVO.setData(null);
         } else {
             List<BlockVO> list = blockRepository
-                    .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+                .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -176,8 +170,7 @@ public class BlockChainServiceImpl implements BlockChainService {
         return pageVO;
     }
 
-    @Override
-    public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
+    @Override public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
 
         if (null == req) {
             return null;
@@ -200,8 +193,8 @@ public class BlockChainServiceImpl implements BlockChainService {
             pageVO.setData(null);
         } else {
             List<CoreTransactionVO> list = transactionRepository
-                    .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
-                            req.getPageSize());
+                .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
+                    req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -209,8 +202,7 @@ public class BlockChainServiceImpl implements BlockChainService {
         return pageVO;
     }
 
-    @Override
-    public List<UTXOVO> queryUTXOByTxId(String txId) {
+    @Override public List<UTXOVO> queryUTXOByTxId(String txId) {
         if (StringUtils.isBlank(txId)) {
             return null;
         }
@@ -226,8 +218,7 @@ public class BlockChainServiceImpl implements BlockChainService {
      * @param identity
      * @return
      */
-    @Override
-    public boolean isExistedIdentity(String identity) {
+    @Override public boolean isExistedIdentity(String identity) {
         if (StringUtils.isBlank(identity)) {
             return false;
         }
@@ -240,8 +231,7 @@ public class BlockChainServiceImpl implements BlockChainService {
      * @param currency
      * @return
      */
-    @Override
-    public boolean isExistedCurrency(String currency) {
+    @Override public boolean isExistedCurrency(String currency) {
         return currencyRepository.isExits(currency);
     }
 
@@ -251,8 +241,7 @@ public class BlockChainServiceImpl implements BlockChainService {
      * @param key
      * @return
      */
-    @Override
-    public SystemPropertyVO querySystemPropertyByKey(String key) {
+    @Override public SystemPropertyVO querySystemPropertyByKey(String key) {
         return systemPropertyHandler.querySystemPropertyByKey(key);
     }
 
@@ -262,8 +251,7 @@ public class BlockChainServiceImpl implements BlockChainService {
      * @param inputList
      * @return
      */
-    @Override
-    public List<UTXO> queryUTXOList(List<TxIn> inputList) {
+    @Override public List<UTXO> queryUTXOList(List<TxIn> inputList) {
         log.info("When process UTXO contract  querying queryTxOutList by inputList:{}", inputList);
         return utxoSnapshotHandler.queryUTXOList(inputList);
     }
@@ -274,18 +262,15 @@ public class BlockChainServiceImpl implements BlockChainService {
      * @param name
      * @return
      */
-    @Override
-    public UTXOActionTypeEnum getUTXOActionType(String name) {
+    @Override public UTXOActionTypeEnum getUTXOActionType(String name) {
         return UTXOActionTypeEnum.getUTXOActionTypeEnumByName(name);
     }
 
-    @Override
-    public BlockHeader getBlockHeader(Long blockHeight) {
+    @Override public BlockHeader getBlockHeader(Long blockHeight) {
         return blockRepository.getBlockHeader(blockHeight);
     }
 
-    @Override
-    public BlockHeader getMaxBlockHeader() {
+    @Override public BlockHeader getMaxBlockHeader() {
         return blockRepository.getBlockHeader(blockRepository.getMaxHeight());
     }
 
