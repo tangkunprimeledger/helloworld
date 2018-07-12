@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
@@ -37,7 +36,7 @@ import java.util.*;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
+ * @desc ca service
  * @date 2018/6/5 15:48
  */
 @Service @Slf4j public class CaServiceImpl implements CaService {
@@ -57,7 +56,7 @@ import java.util.*;
 
     /**
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc generate pubKey and PriKey ,send CA auth request to other TRUST node,then insert into db
      */
     @Override public String authKeyPair(String user) {
         //check nodeName
@@ -89,7 +88,7 @@ import java.util.*;
 
         // insert ca into db (temp)
         ca = new Ca();
-        BeanUtils.copyProperties(caVO,ca);
+        BeanUtils.copyProperties(caVO, ca);
         caRepository.insertCa(ca);
 
         return SUCCESS;
