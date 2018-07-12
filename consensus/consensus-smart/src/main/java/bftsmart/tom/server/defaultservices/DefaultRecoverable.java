@@ -257,6 +257,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 //                log.update(state);
                 log.setLastCheckpointCID(state.getLastCheckpointCID());
                 installSnapshot(state.getSerializedState());
+                stateManager.initLastCID(state.getLastCID());
             }
 
             for (int cid = lastCheckpointCID + 1; cid <= lastCID; cid++) {

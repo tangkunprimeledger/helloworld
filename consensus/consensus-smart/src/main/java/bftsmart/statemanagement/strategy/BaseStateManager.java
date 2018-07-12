@@ -282,4 +282,8 @@ public abstract class BaseStateManager implements StateManager {
     @Override
     public abstract void SMReplyDeliver(SMMessage msg, boolean isBFT);
 
+    @Override public void initLastCID(int lastCID) {
+        this.lastCID = lastCID;
+        tomLayer.setLastExec(lastCID);
+    }
 }

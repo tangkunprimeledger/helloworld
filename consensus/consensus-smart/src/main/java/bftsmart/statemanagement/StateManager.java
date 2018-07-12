@@ -46,7 +46,9 @@ public interface StateManager {
     public void currentConsensusIdReceived(SMMessage msg);
     
     public void setLastCID(int lastCID);
-    
+
+    public void initLastCID(int lastCID);
+
     public int getLastCID();
     
     public boolean isRetrievingState();
