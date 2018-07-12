@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.action.manage;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.RsSnapshotHandler;
@@ -23,16 +22,21 @@ import org.springframework.stereotype.Component;
  * @date 2018/03/28
  * @desc register RS handler
  */
-@Slf4j @Component public class RegisterRsHandler implements ActionHandler {
+@Slf4j
+@Component
+public class RegisterRsHandler implements ActionHandler {
 
-    @Autowired private RsSnapshotHandler rsSnapshotHandler;
+    @Autowired
+    private RsSnapshotHandler rsSnapshotHandler;
 
-    @Autowired private CaRepository caRepository;
+    @Autowired
+    private CaRepository caRepository;
 
-    @Override public void process(ActionData actionData) {
+    @Override
+    public void process(ActionData actionData) {
         log.info("[RegisterRSHandler.process] start, actionData: {} ", actionData);
 
-        RegisterRS bo = (RegisterRS)actionData.getCurrentAction();
+        RegisterRS bo = (RegisterRS) actionData.getCurrentAction();
         if (null == bo) {
             log.error("[RegisterRSHandler.process] convert to RegisterRS failed");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
@@ -42,8 +46,7 @@ import org.springframework.stereotype.Component;
         CoreTransaction coreTx = actionData.getCurrentTransaction().getCoreTx();
         String rsId = bo.getRsId();
         if (!StringUtils.equals(rsId, coreTx.getSender())) {
-            log.error("[RegisterRSHandler.process] register rsId:{} is not equals transaction sender: {}", rsId,
-                coreTx.getSender());
+            log.error("[RegisterRSHandler.process] register rsId:{} is not equals transaction sender: {}", rsId, coreTx.getSender());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 

@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.PackageVO;
@@ -59,6 +61,7 @@ import java.util.stream.Collectors;
     @Autowired private P2pHandler p2pHandler;
     @Autowired private RsNodeRepository rsNodeRepository;
     @Autowired private PendingTxRepository pendingTxRepository;
+    @Autowired private NodeState nodeState;
 
     /**
      * create new package from pending transactions
@@ -345,6 +348,8 @@ import java.util.stream.Collectors;
         //check hash
         if (blockHeader == null) {
             log.warn("[package.persisted] consensus header of db is null blockHeight:{}", header.getHeight());
+            //change state to offline
+            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
         }
 
@@ -352,6 +357,8 @@ import java.util.stream.Collectors;
         boolean r = blockService.compareBlockHeader(blockHeader, header);
         if (!r) {
             log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", header.getHeight());
+            //change state to offline
+            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
         }
         try {
