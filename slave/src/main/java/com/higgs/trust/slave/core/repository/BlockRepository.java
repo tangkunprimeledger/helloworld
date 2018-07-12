@@ -205,12 +205,13 @@ import java.util.List;
 
         //add transaction number to block table
         int txNum = txs.size();
+        blockPO.setTxNum(txNum);
+        //set total transaction num
         Long totalTxNum = blockHeader.getTotalTxNum();
         if(totalTxNum == null){
             totalTxNum = 0L;
         }
-        blockPO.setTxNum(txNum);
-        //set total tansaction num
+        //total=lastNum + currentNum
         blockPO.setTotalTxNum(totalTxNum + txNum);
         //save block
         try {
