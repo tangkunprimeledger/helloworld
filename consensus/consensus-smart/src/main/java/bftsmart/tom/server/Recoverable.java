@@ -47,7 +47,9 @@ public interface Recoverable {
      * @return 
      */
     public int setState(ApplicationState state);
-    
+
+    public int recoverState(ApplicationState state);
+
     /**
      * Recoverers implementing this interface will have to chose among
      * different options of state managers like DurableStateManager or

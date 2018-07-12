@@ -437,4 +437,8 @@ public abstract class DurabilityCoordinator implements Recoverable, BatchExecuta
 	public abstract byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs);
         
         public abstract byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx);
+
+	@Override public int recoverState(ApplicationState state) {
+		throw new UnsupportedOperationException("unsupported recover state");
+	}
 }
