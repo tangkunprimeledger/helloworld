@@ -250,21 +250,19 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             Logger.println("(DefaultRecoverable.setState) I'm going to update myself from CID "
                     + lastCheckpointCID + " to CID " + lastCID);
 
-            bftsmart.tom.util.Logger.println("(DefaultRecoverable.setState) I'm going to update myself from CID "
-                    + lastCheckpointCID + " to CID " + lastCID);
-
             stateLock.lock();
             if (state.getSerializedState() != null) {
                 Logger.println("The state is not null. Will install it");
                 initLog();
 //                log.update(state);
+                log.setLastCheckpointCID(state.getLastCheckpointCID());
                 installSnapshot(state.getSerializedState());
             }
 
             for (int cid = lastCheckpointCID + 1; cid <= lastCID; cid++) {
                 try {
 
-                    bftsmart.tom.util.Logger.println("(DefaultRecoverable.setState) interpreting and verifying batched requests for cid " + cid);
+                    Logger.println("(DefaultRecoverable.setState) interpreting and verifying batched requests for cid " + cid);
                     if (state.getMessageBatch(cid) == null) {
                         Logger.println("(DefaultRecoverable.setState) " + cid + " NULO!!!");
                     }
