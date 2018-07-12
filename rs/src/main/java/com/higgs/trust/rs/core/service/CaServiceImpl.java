@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
@@ -81,10 +82,15 @@ import java.util.*;
 
         // send CA auth request
         RespData respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
-        if (respData.isSuccess()) {
+        if (!respData.isSuccess()) {
             log.error("send tx error");
             return FAIL;
         }
+
+        // insert ca into db (temp)
+        ca = new Ca();
+        BeanUtils.copyProperties(caVO,ca);
+        caRepository.insertCa(ca);
 
         return SUCCESS;
     }
