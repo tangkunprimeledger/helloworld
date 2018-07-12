@@ -17,6 +17,7 @@ public class BlockConvert {
         header.setBlockHash(blockPO.getBlockHash());
         header.setPreviousHash(blockPO.getPreviousHash());
         header.setVersion(blockPO.getVersion());
+        header.setTotalTxNum(blockPO.getTotalTxNum());
 
         StateRootHash stateRootHash = new StateRootHash();
         stateRootHash.setTxRootHash(blockPO.getTxRootHash());

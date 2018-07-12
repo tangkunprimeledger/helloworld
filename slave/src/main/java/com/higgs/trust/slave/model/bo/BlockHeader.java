@@ -21,4 +21,8 @@ import javax.validation.constraints.NotNull;
     private StateRootHash stateRootHash;
 
     private Long blockTime;
+    /**
+     * the number of transactions recorded by the current block
+     */
+    private Long totalTxNum;
 }

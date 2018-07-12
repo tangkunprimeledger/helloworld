@@ -141,6 +141,7 @@ IF NOT EXISTS `block` (
 	`ca_root_hash` VARCHAR (64) NOT NULL COMMENT 'ca merkel tree root hash',
 	`block_time` datetime (3) NOT NULL COMMENT 'block time',
 	`tx_num` INT NOT NULL DEFAULT 0 COMMENT 'transaction num',
+	`total_tx_num` BIGINT (20) DEFAULT 0 COMMENT 'total transaction num',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_block` (`height`)
