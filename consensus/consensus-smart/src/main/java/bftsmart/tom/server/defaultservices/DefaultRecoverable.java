@@ -288,62 +288,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             stateLock.unlock();
 
         }
-        
-        return lastCID;
-    }
-
-    public int recoverState(ApplicationState recvState) {
-
-        int lastCID = -1;
-        if (recvState instanceof DefaultApplicationState) {
-
-            DefaultApplicationState state = (DefaultApplicationState) recvState;
-
-            int lastCheckpointCID = state.getLastCheckpointCID();
-            lastCID = state.getLastCID();
-
-            Logger.println("(DefaultRecoverable.recoverState) I'm going to update myself from CID "
-                + lastCheckpointCID + " to CID " + lastCID);
-
-            stateLock.lock();
-            if (state.getSerializedState() != null) {
-                Logger.println("The state is not null. Will install it");
-                initLog();
-                log.setLastCheckpointCID(state.getLastCheckpointCID());
-                installSnapshot(state.getSerializedState());
-                stateManager.initLastCID(state.getLastCheckpointCID());
-            }
-
-            for (int cid = lastCheckpointCID + 1; cid <= lastCID; cid++) {
-                try {
-                    Logger.println("(DefaultRecoverable.recoverState) interpreting and verifying batched requests for cid " + cid);
-                    if (state.getMessageBatch(cid) == null) {
-                        Logger.println("(DefaultRecoverable.recoverState) " + cid + " NULO!!!");
-                    }
-                    CommandsInfo cmdInfo = state.getMessageBatch(cid);
-                    byte[][] commands = cmdInfo.commands; // take a batch
-                    MessageContext[] msgCtx = cmdInfo.msgCtx;
-
-                    if (commands == null || msgCtx == null || msgCtx[0].isNoOp()) {
-                        continue;
-                    }
-                    appExecuteBatch(commands, msgCtx, false);
-                    stateManager.initLastCID(cid);
-                } catch (Exception e) {
-                    Logger.printError("recover state failed!",e);
-                    if (e instanceof ArrayIndexOutOfBoundsException) {
-                        Logger.println("CID do ultimo checkpoint: " + state.getLastCheckpointCID());
-                        Logger.println("CID do ultimo consenso: " + state.getLastCID());
-                        Logger.println("numero de mensagens supostamente no batch: " + (state.getLastCID() - state.getLastCheckpointCID() + 1));
-                        Logger.println("numero de mensagens realmente no batch: " + state.getMessageBatches().length);
-                    }
-                }
-
-            }
-            stateLock.unlock();
-
-        }
-
         return lastCID;
     }
 
@@ -439,7 +383,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                 Logger.println("stored state last cid: " + storedState.getLastCID());
                 if (storedState.getLastCID() > 0) {
                     setState(storedState);
-                    getStateManager().setLastCID(storedState.getLastCID());
+                    getStateManager().initLastCID(storedState.getLastCID());
                 }
             } else {
                 log = new StateLog(this.config.getProcessId(), checkpointPeriod, state, computeHash(state));
