@@ -407,7 +407,8 @@ import java.util.stream.Collectors;
         boolean isClusterPersisted, boolean isFailover,BlockHeader blockHeader) {
         log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
-        if (callbackHandler == null) {
+        //FIXME 压测回调暂停
+        if (callbackHandler != null) {
             log.warn("[callbackRS]callbackHandler is not register");
             //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             return;
