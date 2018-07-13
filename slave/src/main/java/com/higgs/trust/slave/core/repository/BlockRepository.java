@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.repository;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.vo.BlockVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -208,11 +210,16 @@ import java.util.List;
         blockPO.setTxNum(txNum);
         //set total transaction num
         Long totalTxNum = blockHeader.getTotalTxNum();
-        if(totalTxNum == null){
+        if (totalTxNum == null) {
             totalTxNum = 0L;
         }
         //total=lastNum + currentNum
         blockPO.setTotalTxNum(totalTxNum + txNum);
+        //total block size use txs.length,unit:KB
+        String blockData = JSON.toJSONString(txs);
+        BigDecimal size = new BigDecimal(blockData.length());
+        size = size.divide(new BigDecimal(1024), 2, BigDecimal.ROUND_HALF_DOWN);
+        blockPO.setTotalBlockSize(size);
         //save block
         try {
             blockDao.add(blockPO);
@@ -229,6 +236,7 @@ import java.util.List;
 
     /**
      * query by condition、page
+     *
      * @param height
      * @param blockHash
      * @param pageNum

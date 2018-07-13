@@ -4,6 +4,7 @@ import com.higgs.trust.slave.model.bo.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Setter
@@ -18,6 +19,10 @@ public class BlockVO extends BaseBO{
    private String previousHash;
 
    private Integer txNum;
+   /**
+    * total block size,unit:kb
+    */
+   private BigDecimal totalBlockSize;
 
    private Date BlockTime;
 
