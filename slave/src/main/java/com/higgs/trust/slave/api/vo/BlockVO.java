@@ -12,6 +12,10 @@ public class BlockVO extends BaseBO{
    private Long height;
 
    private String blockHash;
+   /**
+    * previous block hash
+    */
+   private String previousHash;
 
    private Integer txNum;
 

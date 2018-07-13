@@ -36,6 +36,7 @@ public interface BlockChainService {
      * @param req
      * @return
      */
+    @Deprecated
     PageVO<BlockVO> queryBlocks(QueryBlockVO req);
 
     /**
@@ -44,6 +45,7 @@ public interface BlockChainService {
      * @param req
      * @return
      */
+    @Deprecated
     PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req);
 
     /**
@@ -109,4 +111,39 @@ public interface BlockChainService {
      */
     BlockHeader getMaxBlockHeader();
 
+    /**
+     * query max height for block
+     *
+     * @return
+     */
+    Long getMaxBlockHeight();
+    /**
+     * query block by condition and page
+     *
+     * @param req
+     * @return
+     */
+    List<BlockVO> queryBlocksByPage(QueryBlockVO req);
+
+    /**
+     * query transaction by condition and page
+     *
+     * @param req
+     * @return
+     */
+    List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req);
+
+    /**
+     * query block info by height
+     * @param height
+     * @return
+     */
+    BlockVO queryBlockByHeight(Long height);
+
+    /**
+     *  query tx info by tx_id
+     * @param txId
+     * @return
+     */
+    CoreTransactionVO queryTxById(String txId);
 }

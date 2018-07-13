@@ -29,36 +29,27 @@ import java.util.List;
  * @date 2018/05/13 15:58
  * @desc block chain service
  */
-@Slf4j
-@Service
-public class RsChainServiceImpl implements RsBlockChainService {
+@Slf4j @Service public class RsChainServiceImpl implements RsBlockChainService {
     public static final String CHAIN_OWNER_KEY = "CHAIN_OWNER";
-    @Autowired
-    private BlockChainService blockChainService;
+    @Autowired private BlockChainService blockChainService;
 
-    @Autowired
-    private AccountInfoService accountInfoService;
+    @Autowired private AccountInfoService accountInfoService;
 
-    @Autowired
-    private RsUTXOSmartContract rsUTXOSmartContract;
+    @Autowired private RsUTXOSmartContract rsUTXOSmartContract;
 
-    @Override
-    public PageVO<BlockVO> queryBlock(QueryBlockVO req) {
+    @Override public PageVO<BlockVO> queryBlock(QueryBlockVO req) {
         return blockChainService.queryBlocks(req);
     }
 
-    @Override
-    public PageVO<CoreTransactionVO> queryTransaction(QueryTransactionVO req) {
+    @Override public PageVO<CoreTransactionVO> queryTransaction(QueryTransactionVO req) {
         return blockChainService.queryTransactions(req);
     }
 
-    @Override
-    public PageVO<AccountInfoVO> queryAccount(QueryAccountVO req) {
+    @Override public PageVO<AccountInfoVO> queryAccount(QueryAccountVO req) {
         return accountInfoService.queryAccountInfo(req);
     }
 
-    @Override
-    public List<UTXOVO> queryUTXO(String txId) {
+    @Override public List<UTXOVO> queryUTXO(String txId) {
 
         return blockChainService.queryUTXOByTxId(txId);
     }
@@ -69,8 +60,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
      * @param identity
      * @return
      */
-    @Override
-    public boolean isExistedIdentity(String identity) {
+    @Override public boolean isExistedIdentity(String identity) {
         return blockChainService.isExistedIdentity(identity);
     }
 
@@ -80,8 +70,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
      * @param currency
      * @return
      */
-    @Override
-    public boolean isExistedCurrency(String currency) {
+    @Override public boolean isExistedCurrency(String currency) {
         return blockChainService.isExistedCurrency(currency);
     }
 
@@ -91,8 +80,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
      * @param key
      * @return
      */
-    @Override
-    public SystemPropertyVO querySystemPropertyByKey(String key) {
+    @Override public SystemPropertyVO querySystemPropertyByKey(String key) {
         return blockChainService.querySystemPropertyByKey(key);
     }
 
@@ -102,8 +90,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
      * @param inputList
      * @return
      */
-    @Override
-    public List<UTXO> queryUTXOList(List<TxIn> inputList) {
+    @Override public List<UTXO> queryUTXOList(List<TxIn> inputList) {
         return blockChainService.queryUTXOList(inputList);
     }
 
@@ -113,8 +100,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
      * @param name
      * @return
      */
-    @Override
-    public UTXOActionTypeEnum getUTXOActionType(String name) {
+    @Override public UTXOActionTypeEnum getUTXOActionType(String name) {
         return blockChainService.getUTXOActionType(name);
     }
 
@@ -123,11 +109,11 @@ public class RsChainServiceImpl implements RsBlockChainService {
      *
      * @return
      */
-    @Override
-    public String queryChainOwner() {
+    @Override public String queryChainOwner() {
         SystemPropertyVO systemPropertyVO = blockChainService.querySystemPropertyByKey(CHAIN_OWNER_KEY);
         if (null == systemPropertyVO) {
-            log.error("there is no chain_owner in this node for key {}, please check system property DB", CHAIN_OWNER_KEY);
+            log.error("there is no chain_owner in this node for key {}, please check system property DB",
+                CHAIN_OWNER_KEY);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_CHAIN_OWNER_NULL_ERROR);
         }
         return systemPropertyVO.getValue();
@@ -139,16 +125,17 @@ public class RsChainServiceImpl implements RsBlockChainService {
      * @param blockHeight
      * @return
      */
-    @Override
-    public BlockHeader getBlockHeader(Long blockHeight) {
+    @Override public BlockHeader getBlockHeader(Long blockHeight) {
         return blockChainService.getBlockHeader(blockHeight);
     }
 
-    @Override
-    public BlockHeader getMaxBlockHeader() {
+    @Override public BlockHeader getMaxBlockHeader() {
         return blockChainService.getMaxBlockHeader();
     }
 
+    @Override public Long getMaxBlockHeight() {
+        return blockChainService.getMaxBlockHeight();
+    }
 
     /**
      * process UTXO contract
@@ -156,8 +143,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
      * @param coreTransaction
      * @return
      */
-    @Override
-    public boolean processContract(CoreTransaction coreTransaction) {
+    @Override public boolean processContract(CoreTransaction coreTransaction) {
         //check arguments
         if (null == coreTransaction) {
             log.error("process for contract arguments error, coreTransaction is null");
@@ -165,6 +151,22 @@ public class RsChainServiceImpl implements RsBlockChainService {
         }
         return processActions(coreTransaction.getActionList());
 
+    }
+
+    @Override public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
+        return blockChainService.queryBlocksByPage(req);
+    }
+
+    @Override public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
+        return blockChainService.queryTxsByPage(req);
+    }
+
+    @Override public BlockVO queryBlockByHeight(Long height) {
+        return blockChainService.queryBlockByHeight(height);
+    }
+
+    @Override public CoreTransactionVO queryTxById(String txId) {
+        return blockChainService.queryTxById(txId);
     }
 
     /**
@@ -188,7 +190,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
             }
             //execute contract
             UTXOActionNum = UTXOActionNum + 1;
-            UTXOAction utxoAction = (UTXOAction) action;
+            UTXOAction utxoAction = (UTXOAction)action;
             ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
             if (!rsUTXOSmartContract.execute(utxoAction.getContractAddress(), data)) {
                 log.info("UTXO contract process result is not pass");

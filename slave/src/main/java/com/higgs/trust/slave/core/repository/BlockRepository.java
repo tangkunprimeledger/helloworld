@@ -63,6 +63,7 @@ import java.util.List;
         blockHeader.setBlockTime(blockPO.getBlockTime() != null ? blockPO.getBlockTime().getTime() : null);
         blockHeader.setPreviousHash(blockPO.getPreviousHash());
         blockHeader.setVersion(blockPO.getVersion());
+        blockHeader.setTotalTxNum(blockPO.getTotalTxNum());
         StateRootHash rootHash = new StateRootHash();
         rootHash.setRsRootHash(blockPO.getRsRootHash());
         rootHash.setTxRootHash(blockPO.getTxRootHash());
@@ -102,6 +103,7 @@ import java.util.List;
             blockHeader.setBlockTime(blockPO.getBlockTime() != null ? blockPO.getBlockTime().getTime() : null);
             blockHeader.setPreviousHash(blockPO.getPreviousHash());
             blockHeader.setVersion(blockPO.getVersion());
+            blockHeader.setTotalTxNum(blockPO.getTotalTxNum());
             StateRootHash rootHash = new StateRootHash();
             rootHash.setRsRootHash(blockPO.getRsRootHash());
             rootHash.setTxRootHash(blockPO.getTxRootHash());
@@ -143,6 +145,7 @@ import java.util.List;
             blockHeader.setBlockTime(blockPO.getBlockTime() != null ? blockPO.getBlockTime().getTime() : null);
             blockHeader.setPreviousHash(blockPO.getPreviousHash());
             blockHeader.setVersion(blockPO.getVersion());
+            blockHeader.setTotalTxNum(blockPO.getTotalTxNum());
             StateRootHash rootHash = new StateRootHash();
             rootHash.setRsRootHash(blockPO.getRsRootHash());
             rootHash.setTxRootHash(blockPO.getTxRootHash());
@@ -157,7 +160,6 @@ import java.util.List;
 
         return headers;
     }
-
 
     /**
      * get block header data from db
@@ -202,8 +204,15 @@ import java.util.List;
         List<SignedTransaction> txs = block.getSignedTxList();
 
         //add transaction number to block table
-        blockPO.setTxNum(txs.size());
-
+        int txNum = txs.size();
+        blockPO.setTxNum(txNum);
+        //set total transaction num
+        Long totalTxNum = blockHeader.getTotalTxNum();
+        if(totalTxNum == null){
+            totalTxNum = 0L;
+        }
+        //total=lastNum + currentNum
+        blockPO.setTotalTxNum(totalTxNum + txNum);
         //save block
         try {
             blockDao.add(blockPO);
@@ -218,18 +227,37 @@ import java.util.List;
         }
     }
 
+    /**
+     * query by condition、page
+     * @param height
+     * @param blockHash
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
     public List<BlockVO> queryBlocksWithCondition(Long height, String blockHash, Integer pageNum, Integer pageSize) {
         if (null != blockHash) {
             blockHash = blockHash.trim();
         }
-
         List<BlockPO> list = blockDao.queryBlocksWithCondition(height, blockHash, (pageNum - 1) * pageSize, pageSize);
-
         return BeanConvertor.convertList(list, BlockVO.class);
     }
 
-    public long countBlocksWithCondition(Long height, String blockHash) {
-
+    @Deprecated public long countBlocksWithCondition(Long height, String blockHash) {
         return blockDao.countBlockWithCondition(height, blockHash);
+    }
+
+    /**
+     * query block by height
+     *
+     * @param height
+     * @return
+     */
+    public BlockVO queryBlockByHeight(Long height) {
+        BlockPO blockPO = blockDao.queryByHeight(height);
+        if (blockPO == null) {
+            return null;
+        }
+        return BeanConvertor.convertBean(blockPO, BlockVO.class);
     }
 }
