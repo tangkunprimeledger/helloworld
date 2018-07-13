@@ -122,6 +122,7 @@ public class DiskStateLog extends StateLog {
     }
 
     @Override public void newCheckpoint(byte[] state, byte[] stateHash, int consensusId) {
+        Logger.println("new check point");
         String ckpPath = defaultDir + String.valueOf(id) + "." + System.currentTimeMillis() + ".tmp";
         try {
             checkpointLock.lock();

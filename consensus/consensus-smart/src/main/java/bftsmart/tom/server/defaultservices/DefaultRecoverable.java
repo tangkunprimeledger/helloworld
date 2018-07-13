@@ -438,7 +438,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                 ApplicationState storedState = ((DiskStateLog) log).loadDurableState();
                 Logger.println("stored state last cid: " + storedState.getLastCID());
                 if (storedState.getLastCID() > 0) {
-                    recoverState(storedState);
+                    setState(storedState);
                     getStateManager().setLastCID(storedState.getLastCID());
                 }
             } else {
