@@ -313,7 +313,10 @@ import java.util.concurrent.locks.ReentrantLock;
      * @param sendCommand
      */
     private void sendCommand(SendCommandPO sendCommand) {
-        log.info("send command {}", sendCommand);
+        if (log.isDebugEnabled()) {
+            log.debug("command info:{}", sendCommand);
+        }
+        log.info("send command, messageDigest:{}", sendCommand.getMessageDigest());
         List<SendNodePO> sendNodeList =
             sendNodeDao.queryByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_WAIT_SEND);
         CountDownLatch countDownLatch = new CountDownLatch(sendNodeList.size());
@@ -370,7 +373,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
         if (sendCommand.getAckNodeNum() >= sendCommand.getGcThreshold()) {
             queuedGc(sendCommand);
-            log.info("ack node num >= gc threshold, add command to gc {}", sendCommand);
+            log.info("ack node num >= gc threshold, add command to gc, messageDigest:{}",
+                sendCommand.getMessageDigest());
         } else {
             sendCommandDao.increaseRetrySendNum(sendCommand.getMessageDigest());
 
@@ -378,8 +382,8 @@ import java.util.concurrent.locks.ReentrantLock;
             delayTime = Math.min(delayTime, delayDelayMax);
             queuedDelay(sendCommand, delayTime);
 
-            log.info("ack node num {} < gc threshold {}, add to delay send queue {}", sendCommand.getAckNodeNum(),
-                sendCommand.getGcThreshold(), sendCommand);
+            log.info("ack node num {} < gc threshold {}, add to delay send queue, messageDigest:{}",
+                sendCommand.getAckNodeNum(), sendCommand.getGcThreshold(), sendCommand.getMessageDigest());
         }
     }
 
