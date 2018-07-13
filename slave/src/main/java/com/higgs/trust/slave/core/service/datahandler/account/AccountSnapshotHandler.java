@@ -143,6 +143,7 @@ import java.util.*;
     @Override public void persistForOperation(AccountOperation accountOperation, Long blockHeight) {
         List<AccountTradeInfo> debitTradeInfo = accountOperation.getDebitTradeInfo();
         List<AccountTradeInfo> creditTradeInfo = accountOperation.getCreditTradeInfo();
+        int index = 0;
         //DEBIT trade
         for (AccountTradeInfo info : debitTradeInfo) {
             AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(info.getAccountNo());
@@ -166,10 +167,12 @@ import java.util.*;
                 .getBalanceChangeDirection(tradeDirection, FundDirectionEnum.getBycode(_new.getFundDirection()));
             //save detail
             saveAccountDetail(accountOperation, blockHeight, accountInfo, info.getAmount(), afterAmount,
-                changeDirectionEnum);
+                changeDirectionEnum,index);
             //save dc record
-            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount());
+            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount(),index);
+            index++;
         }
+        index = 0;
         //CREDIT trade
         for (AccountTradeInfo info : creditTradeInfo) {
             AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(info.getAccountNo());
@@ -193,9 +196,10 @@ import java.util.*;
                 .getBalanceChangeDirection(tradeDirection, FundDirectionEnum.getBycode(_new.getFundDirection()));
             //save detail
             saveAccountDetail(accountOperation, blockHeight, accountInfo, info.getAmount(), afterAmount,
-                changeDirectionEnum);
+                changeDirectionEnum,index);
             //save dc record
-            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount());
+            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount(),index);
+            index++;
         }
     }
 
@@ -253,8 +257,9 @@ import java.util.*;
      * @param changeDirectionEnum
      */
     private void saveAccountDetail(AccountOperation bo, Long blockHeight, AccountInfo accountInfo,
-        BigDecimal happenAmount, BigDecimal afterAmount, ChangeDirectionEnum changeDirectionEnum) {
+        BigDecimal happenAmount, BigDecimal afterAmount, ChangeDirectionEnum changeDirectionEnum,int index) {
         AccountDetail detail = new AccountDetail();
+        detail.setId((long)index);
         detail.setBizFlowNo(bo.getBizFlowNo());
         detail.setBlockHeight(blockHeight);
         detail.setAccountNo(accountInfo.getAccountNo());
@@ -277,8 +282,9 @@ import java.util.*;
      * @param amount
      */
     private void saveAccountDCRecord(AccountOperation bo, String accountNo, TradeDirectionEnum tradeDirectionEnum,
-        BigDecimal amount) {
+        BigDecimal amount,int index) {
         AccountDcRecord accountDcRecord = new AccountDcRecord();
+        accountDcRecord.setId((long)index);
         accountDcRecord.setBizFlowNo(bo.getBizFlowNo());
         accountDcRecord.setAccountNo(accountNo);
         accountDcRecord.setAmount(amount);
