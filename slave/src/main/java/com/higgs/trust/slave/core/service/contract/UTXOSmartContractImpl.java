@@ -32,7 +32,7 @@ import java.util.List;
         }
 
         ExecuteConfig executeConfig = new ExecuteConfig();
-        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.setInstructionCountQuota(100000000);
         executeConfig.allow(UTXOContextService.class)
             .allow(UTXO.class)
             .allow(UTXOAction.class)

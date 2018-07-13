@@ -125,13 +125,19 @@ import java.util.function.Function;
                 if (consensusCommit.isClosed()) {
                     return;
                 }
+                boolean logException = true;
                 while (true) {
                     try {
                         method.invoke(obj, consensusCommit);
                         TraceUtils.closeSpan(span);
                         return;
                     } catch (Exception e) {
-                        log.error("apply error {}", e.getMessage());
+                        if(logException) {
+                            log.error("apply error ", e);
+                            logException = false;
+                        }else{
+                            log.error("apply error {}", e.getMessage());
+                        }
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e1) {

@@ -348,8 +348,6 @@ import java.util.stream.Collectors;
         //check hash
         if (blockHeader == null) {
             log.warn("[package.persisted] consensus header of db is null blockHeight:{}", header.getHeight());
-            //change state to offline
-            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
         }
 
