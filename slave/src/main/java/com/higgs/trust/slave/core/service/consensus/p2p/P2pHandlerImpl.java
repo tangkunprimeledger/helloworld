@@ -39,7 +39,11 @@ import org.springframework.stereotype.Service;
 
         // send header to p2p consensus
         PersistCommand persistCommand = new PersistCommand(header.getHeight(), header);
-        log.info("start send persisting command to p2p consensus layer, persistCommand : {}", persistCommand);
+        log.info("start send persisting command to p2p consensus layer, command messageDigest: {}",
+            persistCommand.getMessageDigestHash());
+        if (log.isDebugEnabled()) {
+            log.debug("persist command:{}", persistCommand);
+        }
         validConsensus.submit(persistCommand);
         log.info("end send persisting command to p2p consensus layer");
     }

@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-@Replicator
-@Slf4j @Component public class PackageCommitReplicate implements ApplicationContextAware,InitializingBean {
+@Replicator @Slf4j @Component public class PackageCommitReplicate implements ApplicationContextAware, InitializingBean {
 
     @Autowired PackageService packageService;
 
@@ -57,8 +56,10 @@ import java.util.concurrent.ExecutorService;
         }
 
         PackageVO packageVO = commit.operation().get();
-        log.info("package reached consensus, log height: {}", packageVO);
-
+        log.info("package reached consensus, log height: {}", packageVO.getHeight());
+        if (log.isDebugEnabled()) {
+            log.debug("package info:{}", packageVO);
+        }
         // validate param
         if (null == packageVO) {
             log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause package is null ");

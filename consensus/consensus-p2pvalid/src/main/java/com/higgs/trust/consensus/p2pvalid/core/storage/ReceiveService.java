@@ -176,7 +176,7 @@ import java.util.concurrent.locks.ReentrantLock;
         //signal wait
         applyLock.lock();
         try {
-            log.info("signal the apply thread");
+            log.debug("signal the apply thread");
             applyCondition.signal();
         } finally {
             applyLock.unlock();
@@ -386,30 +386,35 @@ import java.util.concurrent.locks.ReentrantLock;
     private void checkReceiveStatus(String messageDigest) {
         //re-query db for avoid dirty read
         ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
-
+        if (log.isDebugEnabled()) {
+            log.debug("command info: {}", receiveCommand);
+        }
         //check status
         if (receiveCommand.getStatus().equals(COMMAND_QUEUED_GC)) {
-            log.warn("command has add to gc : {}", receiveCommand);
+            log.warn("command has add to gc, id:{}, messageDigest:{}", receiveCommand.getId(),
+                receiveCommand.getMessageDigest());
 
         } else if (receiveCommand.getStatus().equals(COMMAND_QUEUED_APPLY)) {
-            log.info("command has queued to apply : {}", receiveCommand);
+            log.info("command has queued to apply, id:{}, messageDigest: {}", receiveCommand.getId(),
+                receiveCommand.getMessageDigest());
 
         } else if (receiveCommand.getStatus().equals(COMMAND_APPLIED)) {
-
             if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
                 queuedGc(receiveCommand);
                 log.info(
-                    "command has consume by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                    receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
+                    "command has consume by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue, messageDigest: {}",
+                    receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
+                    receiveCommand.getMessageDigest());
             }
         } else if (receiveCommand.getStatus().equals(COMMAND_NORMAL)) {
             if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getApplyThreshold()) {
                 queuedApply(receiveCommand);
                 log.info(
-                    "command receive node num : {} >= command apply threshold : {}, add command to apply queue : {}",
-                    receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(), receiveCommand);
+                    "command receive node num : {} >= command apply threshold : {}, add command to apply queue，messageDigest: {}",
+                    receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(),
+                    receiveCommand.getMessageDigest());
             } else {
-                log.info("command receive ... {}", receiveCommand);
+                log.info("command receive ... {}", receiveCommand.getMessageDigest());
             }
         }
     }

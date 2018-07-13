@@ -43,7 +43,10 @@ import org.springframework.stereotype.Component;
 
         // get validated block p2p and package
         BlockHeader header = commit.operation().get();
-        log.info("the persisted p2p result is {}", header);
+        log.info("the package:{} persisted by p2p", header.getHeight());
+        if (log.isDebugEnabled()) {
+            log.debug("p2p persisted header:{}", header);
+        }
 
         doReceive(commit, header);
     }
