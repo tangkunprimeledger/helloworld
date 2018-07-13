@@ -340,7 +340,7 @@ import java.util.concurrent.locks.ReentrantLock;
                         if (count != 1) {
                             throw new RuntimeException("trans send node status failed when apply! count: " + count);
                         }
-                        log.info("send command to node success {} ", sendNode);
+                        log.debug("send command to node success {} ", sendNode);
                     } else {
                         log.error("send command to node failed {}, error {} ", sendNode,
                             sendValidResponse.getMessage());

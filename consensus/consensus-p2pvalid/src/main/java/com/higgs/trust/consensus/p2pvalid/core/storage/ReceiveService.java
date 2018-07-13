@@ -176,7 +176,7 @@ import java.util.concurrent.locks.ReentrantLock;
         //signal wait
         applyLock.lock();
         try {
-            log.info("signal the apply thread");
+            log.debug("signal the apply thread");
             applyCondition.signal();
         } finally {
             applyLock.unlock();

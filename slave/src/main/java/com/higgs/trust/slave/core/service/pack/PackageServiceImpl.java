@@ -196,13 +196,13 @@ import java.util.stream.Collectors;
      * @param isBatchSync
      */
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
-        log.info("process package start");
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (CollectionUtils.isEmpty(txs)) {
             log.error("[package.process]the transactions in the package is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
+        log.info("process package start, height:{},tx size:{}", pack.getHeight(), txs.size());
         Profiler.start("[PackageService.process.monitor]size:" + txs.size());
         try {
             //snapshot transactions should be init
@@ -233,7 +233,7 @@ import java.util.stream.Collectors;
 
             //call back business
             Profiler.enter("[callbackRS]");
-            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover,dbHeader);
+            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover, dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
@@ -372,12 +372,14 @@ import java.util.stream.Collectors;
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                     //call back business
                     Profiler.enter("[callbackRSForClusterPersisted]");
-                    callbackRS(txs, txReceipts, true, false,blockHeader);
+                    callbackRS(txs, txReceipts, true, false, blockHeader);
                     Profiler.release();
                     //check status for package
-                    boolean isPackageStatus = packageRepository.isPackageStatus(blockHeader.getHeight(),PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                    if(!isPackageStatus) {
-                        log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",blockHeader.getHeight());
+                    boolean isPackageStatus = packageRepository
+                        .isPackageStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+                    if (!isPackageStatus) {
+                        log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",
+                            blockHeader.getHeight());
                         return;
                     }
                     //update package status ---- PERSISTED
@@ -404,7 +406,7 @@ import java.util.stream.Collectors;
      * call back business
      */
     private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
-        boolean isClusterPersisted, boolean isFailover,BlockHeader blockHeader) {
+        boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
         log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         if (callbackHandler == null) {
@@ -435,7 +437,7 @@ import java.util.stream.Collectors;
                 if (log.isDebugEnabled()) {
                     log.debug("[callbackRS]start fail over rs txId:{}", txId);
                 }
-                callbackHandler.onFailover(respData, tx.getSignatureList(),blockHeader);
+                callbackHandler.onFailover(respData, tx.getSignatureList(), blockHeader);
                 return;
             }
             //callback business
@@ -443,9 +445,9 @@ import java.util.stream.Collectors;
                 log.info("[callbackRS]start callback rs txId:{}", txId);
             }
             if (isClusterPersisted) {
-                callbackHandler.onClusterPersisted(respData, tx.getSignatureList(),blockHeader);
+                callbackHandler.onClusterPersisted(respData, tx.getSignatureList(), blockHeader);
             } else {
-                callbackHandler.onPersisted(respData, tx.getSignatureList(),blockHeader);
+                callbackHandler.onPersisted(respData, tx.getSignatureList(), blockHeader);
             }
             if (log.isDebugEnabled()) {
                 log.info("[callbackRS]end callback rs txId:{}", txId);
