@@ -79,12 +79,13 @@ public class CoreTransactionConvertor {
      * @param amount
      * @return
      */
-    public TxOut buildTxOut(String accountId, Integer actionIndex, Integer index, String currency, BigDecimal amount) {
+    public TxOut buildTxOut(String accountId, String address, Integer actionIndex, Integer index, String currency, BigDecimal amount) {
         TxOut txOut = new TxOut();
         txOut.setIdentity(accountId);
         txOut.setActionIndex(actionIndex);
         txOut.setIndex(index);
         JSONObject state = new JSONObject();
+        state.put("address", address);
         state.put("currency", currency);
         state.put("amount", amount);
         txOut.setState(state);
