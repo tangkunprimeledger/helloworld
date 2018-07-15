@@ -8,8 +8,11 @@ import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
+import com.higgs.trust.slave.core.service.block.hash.TxRootHashBuilder;
 import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
@@ -28,17 +31,26 @@ import java.util.List;
  */
 public class TransactionRepositoryTest extends IntegrateBaseTest {
 
-    @Autowired TransactionRepository transactionRepository;
-    @Autowired TransactionDao transactionDao;
+    @Autowired
+    TransactionRepository transactionRepository;
+    @Autowired
+    TransactionDao transactionDao;
 
-    @Test public void test() {
+    @Autowired
+    TxRootHashBuilder txRootHashBuilder;
+
+    @Test
+    public void test() {
         transactionRepository.isExist("12345");
     }
-    @Test public void testAdd(){
+
+    @Test
+    public void testAdd() {
+        Long height = System.currentTimeMillis();
         UTXOAction utxoAction = new UTXOAction();
 
         List<TxIn> inputList = org.testng.collections.Lists.newArrayList();
-        TxIn  txIn = new TxIn();
+        TxIn txIn = new TxIn();
         txIn.setTxId("b76c4bac8007792e0b565d121c7213cd0f22d84e2d07b5e14c4e47675be33582");
         txIn.setActionIndex(0);
         txIn.setIndex(0);
@@ -46,7 +58,7 @@ public class TransactionRepositoryTest extends IntegrateBaseTest {
 
 
         List<TxOut> outputList = Lists.newArrayList();
-        TxOut txOut  = new TxOut();
+        TxOut txOut = new TxOut();
         txOut.setIdentity("8df8999bd048bef78f19ce7e9939b33a7e074b6ac6b49e15a7f50026db05b0d4");
         txOut.setIndex(0);
         txOut.setActionIndex(0);
@@ -56,7 +68,7 @@ public class TransactionRepositoryTest extends IntegrateBaseTest {
         state.put("amount", new BigDecimal("1889989979.0129460000"));
         txOut.setState(state);
 
-        TxOut txOut1  = new TxOut();
+        TxOut txOut1 = new TxOut();
         txOut1.setIdentity("b00e88e3c85e6759f8032171a9c26144e23b31541576237c6cf7a981e6629404");
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
@@ -83,22 +95,38 @@ public class TransactionRepositoryTest extends IntegrateBaseTest {
         coreTx.setSender("lingchao");
         coreTx.setPolicyId("123123");
         coreTx.setSendTime(new Date());
-        coreTx.setTxId("12312312");
+        coreTx.setTxId(height+"");
         coreTx.setVersion("1.0.0");
         JSONObject bizModel = new JSONObject();
-        bizModel.put("OO","ling");
+        bizModel.put("OO", "ling");
+        bizModel.put("OO11", "ling");
         coreTx.setBizModel(bizModel);
 
         TransactionPO po = BeanConvertor.convertBean(coreTx, TransactionPO.class);
         if (coreTx.getBizModel() != null) {
             po.setBizModel(coreTx.getBizModel().toJSONString());
         }
-        po.setBlockHeight(12312L);
+        po.setBlockHeight(height);
         po.setBlockTime(new Date());
-        po.setSignDatas("123123");
+        SignInfo signInfo = new SignInfo();
+
+        signInfo.setOwner("lingchao");
+        signInfo.setSign("123456");
+        po.setSignDatas(JSONObject.toJSONString(Lists.newArrayList(signInfo)));
         po.setActionDatas(JSON.toJSONString(coreTx.getActionList()));
         po.setSendTime(coreTx.getSendTime());
-      //  System.out.println(""+transactionDao.add(po));
-        System.out.println(transactionRepository.queryTxById(""));
+
+        SignedTransaction signedTransaction = new SignedTransaction();
+        signedTransaction.setCoreTx(coreTx);
+        signedTransaction.setSignatureList(Lists.newArrayList(signInfo));
+        System.out.println("" + transactionDao.add(po));
+
+        List<SignedTransaction> list = transactionRepository.queryTransactions(height);
+        System.out.println("origin tx_rootHash=" + txRootHashBuilder.buildTxs(Lists.newArrayList(signedTransaction)));
+        System.out.println("db     tx_rootHash="+ txRootHashBuilder.buildTxs(list));
+        System.out.println("origin bizModel="+ coreTx.getBizModel());
+        System.out.println("db     bizModel="+ list.get(0).getCoreTx().getBizModel());
+        System.out.println("origin actions="+ coreTx.getActionList());
+        System.out.println("db     actions="+ list.get(0).getCoreTx().getActionList());
     }
 }

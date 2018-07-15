@@ -87,7 +87,7 @@ import java.util.List;
             SignedTransaction signedTransaction = new SignedTransaction();
             CoreTransaction coreTx = BeanConvertor.convertBean(tx, CoreTransaction.class);
             if (tx.getBizModel() != null) {
-                coreTx.setBizModel(JSON.parseObject(String.valueOf(tx.getBizModel())));
+                coreTx.setBizModel(JSON.parseObject(tx.getBizModel()));
             }
             String actionDatas = tx.getActionDatas();
             List<Action> actions = JSON.parseArray(actionDatas, Action.class);
