@@ -735,11 +735,11 @@ public class Synchronizer {
                             Logger.println("No decision epoch for cid " + last);
                         } else {
                             Logger.println("epoch for cid: " + last + ": " + cons.getDecisionEpoch().toString());
-                        }
-                        if (cons.getDecisionEpoch().propValue == null) {
-                            Logger.println("No propose for cid " + last);
-                        } else {
-                            Logger.println("Propose hash for cid " + last + ": " + Base64.encodeBase64String(tom.computeHash(cons.getDecisionEpoch().propValue)));
+                            if (cons.getDecisionEpoch().propValue == null) {
+                                Logger.println("No propose for cid " + last);
+                            } else {
+                                Logger.println("Propose hash for cid " + last + ": " + Base64.encodeBase64String(tom.computeHash(cons.getDecisionEpoch().propValue)));
+                            }
                         }
                     }
                     

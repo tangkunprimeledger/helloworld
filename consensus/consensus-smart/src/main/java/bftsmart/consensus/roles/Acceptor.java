@@ -112,7 +112,9 @@ public final class Acceptor {
             processMessage(msg);
         } else {
             Logger.println("out of context msg with id " + msg.getNumber());
-            tomLayer.processOutOfContext();
+            if(!tomLayer.isRetrievingState()){
+                tomLayer.processOutOfContext();
+            }
         }
     }
    
