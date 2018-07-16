@@ -146,4 +146,12 @@ public interface BlockChainService {
      * @return
      */
     CoreTransactionVO queryTxById(String txId);
+
+    /**
+     * query by ids
+     *
+     * @param txIds
+     * @return
+     */
+    List<CoreTransactionVO> queryTxByIds(List<String> txIds);
 }

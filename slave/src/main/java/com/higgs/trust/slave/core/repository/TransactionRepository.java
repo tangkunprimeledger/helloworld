@@ -232,4 +232,19 @@ import java.util.List;
         }
         return BeanConvertor.convertBean(transactionPO, CoreTransactionVO.class);
     }
+
+    /**
+     * return CoreTransactionVO from db
+     *
+     * @param txIds
+     * @return
+     */
+    public List<CoreTransactionVO> queryTxs(List<String> txIds) {
+        if (CollectionUtils.isEmpty(txIds)) {
+            return null;
+        }
+        List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
+        return BeanConvertor.convertList(transactionPOS, CoreTransactionVO.class);
+    }
+
 }

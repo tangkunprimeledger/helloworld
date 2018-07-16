@@ -308,4 +308,8 @@ import java.util.List;
     @Override public CoreTransactionVO queryTxById(String txId) {
         return transactionRepository.queryTxById(txId);
     }
+
+    @Override public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
+        return transactionRepository.queryTxs(txIds);
+    }
 }
