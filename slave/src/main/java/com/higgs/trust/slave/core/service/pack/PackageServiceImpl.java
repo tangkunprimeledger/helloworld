@@ -409,8 +409,8 @@ import java.util.stream.Collectors;
         boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
         log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
-        //FIXME 压测回调暂停
-        if (callbackHandler != null) {
+
+        if (callbackHandler == null) {
             log.warn("[callbackRS]callbackHandler is not register");
             //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             return;
@@ -443,7 +443,7 @@ import java.util.stream.Collectors;
             }
             //callback business
             if (log.isDebugEnabled()) {
-                log.info("[callbackRS]start callback rs txId:{}", txId);
+                log.debug("[callbackRS]start callback rs txId:{}", txId);
             }
             if (isClusterPersisted) {
                 callbackHandler.onClusterPersisted(respData, tx.getSignatureList(), blockHeader);
@@ -451,7 +451,7 @@ import java.util.stream.Collectors;
                 callbackHandler.onPersisted(respData, tx.getSignatureList(), blockHeader);
             }
             if (log.isDebugEnabled()) {
-                log.info("[callbackRS]end callback rs txId:{}", txId);
+                log.debug("[callbackRS]end callback rs txId:{}", txId);
             }
         }
     }
