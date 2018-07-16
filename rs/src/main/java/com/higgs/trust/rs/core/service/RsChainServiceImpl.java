@@ -169,6 +169,10 @@ import java.util.List;
         return blockChainService.queryTxById(txId);
     }
 
+    @Override public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
+        return blockChainService.queryTxByIds(txIds);
+    }
+
     /**
      * process contract
      *
