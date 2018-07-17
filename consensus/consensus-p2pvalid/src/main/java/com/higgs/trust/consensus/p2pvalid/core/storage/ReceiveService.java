@@ -110,7 +110,10 @@ import java.util.concurrent.locks.ReentrantLock;
     }
 
     public void receive(ValidCommandWrap validCommandWrap) {
-        log.info("command receive : {}", validCommandWrap);
+        log.info("command receive : {}", validCommandWrap.getValidCommand().getMessageDigestHash());
+        if (log.isDebugEnabled()) {
+            log.debug("command info:{}", validCommandWrap);
+        }
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new P2pException(P2pErrorEnum.P2P_NODE_NOT_RUNNING_ERROR,
                 "the node state is not running, please try again latter");

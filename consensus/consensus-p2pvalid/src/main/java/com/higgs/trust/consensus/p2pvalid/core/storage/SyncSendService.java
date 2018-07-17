@@ -61,10 +61,12 @@ import java.util.concurrent.atomic.AtomicInteger;
                             for (ResponseCommand command : commands) {
                                 fetchCommand(resultMap, command);
                             }
+                        } else {
+                            throw new IllegalArgumentException("Unsupported return type:" + result);
                         }
                     }
                 } catch (Throwable throwable) {
-                    log.error("{}", throwable);
+                    log.error("submit p2p sync commend failed!", throwable);
                 } finally {
                     countDownLatch.countDown();
                 }
