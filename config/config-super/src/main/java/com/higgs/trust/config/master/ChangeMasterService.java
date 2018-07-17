@@ -124,6 +124,7 @@ import java.util.concurrent.*;
     }
 
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
+        log.info("change master verify");
         List<String> nodeNames = clusterInfo.clusterNodeNames();
         Map<String, ChangeMasterVerifyResponse> heightMap = new HashMap<>();
         Long maxHeight = nodeInfoService.blockHeight();
@@ -151,7 +152,7 @@ import java.util.concurrent.*;
                 }
 
             } catch (Throwable throwable) {
-                log.error("{}", throwable);
+                log.error("change master verify error", throwable);
             }
 
         });
