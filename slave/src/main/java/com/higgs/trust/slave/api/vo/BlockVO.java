@@ -23,6 +23,10 @@ public class BlockVO extends BaseBO{
     * total block size,unit:kb
     */
    private BigDecimal totalBlockSize;
+   /**
+    * the number of transactions recorded by the current block
+    */
+   private Long totalTxNum;
 
    private Date BlockTime;
 
