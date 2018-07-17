@@ -72,15 +72,15 @@ public class CoreTransactionConvertor {
     /**
      * build txOut
      *
-     * @param accountId
+     * @param identity
      * @param actionIndex
      * @param index
      * @param state
      * @return
      */
-    public TxOut buildTxOut(String accountId,Integer actionIndex, Integer index, JSONObject state) {
+    public TxOut buildTxOut(String identity,Integer actionIndex, Integer index, JSONObject state) {
         TxOut txOut = new TxOut();
-        txOut.setIdentity(accountId);
+        txOut.setIdentity(identity);
         txOut.setActionIndex(actionIndex);
         txOut.setIndex(index);
         txOut.setState(state);

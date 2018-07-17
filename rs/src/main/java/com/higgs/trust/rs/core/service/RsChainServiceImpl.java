@@ -147,7 +147,7 @@ import java.util.List;
         //check arguments
         if (null == coreTransaction) {
             log.error("process for contract arguments error, coreTransaction is null");
-            throw new IllegalArgumentException("process for contract arguments error, coreTransaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
         return processActions(coreTransaction.getActionList());
 
