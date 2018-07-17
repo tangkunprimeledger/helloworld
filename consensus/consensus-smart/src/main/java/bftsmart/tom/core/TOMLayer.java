@@ -146,9 +146,9 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         }
 
         this.prk = this.controller.getStaticConf().getRSAPrivateKey();
+        this.stateManager = recoverer.getStateManager();
         this.dt = new DeliveryThread(this, receiver, recoverer, this.controller); // Create delivery thread
         this.dt.start();
-        this.stateManager = recoverer.getStateManager();
         stateManager.init(this, dt);
         
         this.verifier = (verifier != null) ? verifier : new RequestVerifier() {
