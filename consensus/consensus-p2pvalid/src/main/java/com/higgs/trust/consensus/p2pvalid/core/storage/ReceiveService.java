@@ -310,7 +310,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedGc(receiveCommandTemp);
                 log.info(
                     "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                    receiveCommandTemp.getReceiveNodeNum(), receiveCommandTemp.getGcThreshold(), receiveCommandTemp);
+                    receiveCommandTemp.getReceiveNodeNum(), receiveCommandTemp.getGcThreshold(), receiveCommandTemp.getMessageDigest());
             }
 
         }
