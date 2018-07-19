@@ -96,6 +96,9 @@
         "process": 100,
         "submit": 1000
       }
+    },
+    "start":{
+      "mode": "single"
     }
   },
   "logging": {

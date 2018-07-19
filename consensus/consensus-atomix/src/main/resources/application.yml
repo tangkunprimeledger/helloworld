@@ -1,0 +1,15 @@
+copycat:
+  server:
+    cluster: "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803"
+eureka:
+  client:
+    enabled: false
+management:
+  shell:
+    auth:
+      simple:
+        user:
+          name: user
+          password: pwd
+  security:
+    enabled: false
