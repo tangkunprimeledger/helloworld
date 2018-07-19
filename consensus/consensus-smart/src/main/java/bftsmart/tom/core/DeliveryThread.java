@@ -247,7 +247,7 @@ public final class DeliveryThread extends Thread {
                     }
                 }
             } catch (Exception e) {
-                    e.printStackTrace(System.err);
+                Logger.printError("Delivery Thread execute failed!", e);
             }
 
             /** THIS IS JOAO'S CODE, TO HANDLE STATE TRANSFER */
