@@ -38,6 +38,7 @@ public class TOMConfiguration extends Configuration {
     protected int numberOfNonces;
     protected int inQueueSize;
     protected int outQueueSize;
+    protected int applyQueueSize;
     protected boolean shutdownHookEnabled;
     protected boolean useSenderThread;
     protected RSAKeyLoader rsaLoader;
@@ -263,6 +264,16 @@ public class TOMConfiguration extends Configuration {
                 }
             }
 
+            s = (String) configs.remove("system.communication.applyQueueSize");
+            if (s == null) {
+                applyQueueSize = 1000;
+            } else {
+                applyQueueSize = Integer.parseInt(s);
+                if (applyQueueSize < 1) {
+                    applyQueueSize = 1000;
+                }
+            }
+
 			s = (String) configs.remove("system.totalordermulticast.log");
 			if (s != null) {
 				isToLog = Boolean.parseBoolean(s);
@@ -410,6 +421,10 @@ public class TOMConfiguration extends Configuration {
 
     public int getOutQueueSize() {
         return outQueueSize;
+    }
+
+    public int getApplyQueueSize() {
+        return applyQueueSize;
     }
 
     public boolean isUseSenderThread() {

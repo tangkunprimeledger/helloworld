@@ -81,13 +81,25 @@ public class Server extends DefaultRecoverable {
                 if (functionMap.containsKey(abstractConsensusCommand.getClass())) {
                     Function function = functionMap.get(abstractConsensusCommand.getClass());
                     if (function != null) {
-                        function.apply(abstractConsensusCommand);
+                        while (true) {
+                            try {
+                                function.apply(abstractConsensusCommand);
+                                break;
+                            } catch (Throwable e) {
+                                log.error("apply error {}", e.getMessage());
+                                try {
+                                    Thread.sleep(500);
+                                } catch (InterruptedException e1) {
+                                    log.error(e1.getMessage());
+                                }
+                            }
+                        }
                     } else {
-                        log.info("The corresponding method is not registered.-- {}",
+                        log.error("The corresponding method is not registered.-- {}",
                             abstractConsensusCommand.getClass().getSimpleName());
                     }
                 } else {
-                    log.info("The corresponding method is not registered.-- {}",
+                    log.error("The corresponding method is not registered.-- {}",
                         abstractConsensusCommand.getClass().getSimpleName());
                 }
             }
