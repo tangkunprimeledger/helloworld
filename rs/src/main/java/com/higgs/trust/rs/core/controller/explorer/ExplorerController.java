@@ -4,6 +4,7 @@ import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.slave.api.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +16,7 @@ import java.util.List;
  * @description 区块链浏览器接口
  * @date 2018-07-13
  */
-@RequestMapping(value = "/explorer") @RestController @Slf4j public class ExplorerController {
+@CrossOrigin @RequestMapping(value = "/explorer") @RestController @Slf4j public class ExplorerController {
     @Autowired RsBlockChainService rsBlockChainService;
     @Autowired ExplorerCache explorerCache;
 
