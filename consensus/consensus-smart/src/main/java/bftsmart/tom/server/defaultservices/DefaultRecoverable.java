@@ -81,6 +81,8 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         byte[][] replies = new byte[commands.length][];
 
         if (checkpointIndex == -1) {
+            saveCommands(commands, msgCtxs);
+            Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + cids);
             if (!noop) {
 
                 stateLock.lock();
@@ -88,8 +90,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                 stateLock.unlock();
 
             }
-
-            saveCommands(commands, msgCtxs);
         } else {
             // there is a replica supposed to take the checkpoint. In this case, the commands
             // must be executed in two steps. First the batch of commands containing commands
@@ -135,15 +135,14 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             if (secondHalf.length > 0) {
 //	        	Logger.println(("----THERE IS A SECOND HALF----");
                 cid = msgCtxs[msgCtxs.length - 1].getConsensusId();
+                saveCommands(secondHalf, secondHalfMsgCtx);
+                Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + cids);
 
                 if (!noop) {
                     stateLock.lock();
                     secondHalfReplies = appExecuteBatch(secondHalf, secondHalfMsgCtx, true);
                     stateLock.unlock();
                 }
-
-                Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + cid);
-                saveCommands(secondHalf, secondHalfMsgCtx);
 
                 System.arraycopy(secondHalfReplies, 0, replies, firstHalfReplies.length, secondHalfReplies.length);
             }
