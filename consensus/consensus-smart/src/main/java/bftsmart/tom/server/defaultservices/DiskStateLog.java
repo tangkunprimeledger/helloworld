@@ -100,6 +100,7 @@ public class DiskStateLog extends StateLog {
     private void writeCommandToDisk(CommandsInfo commandsInfo, int consensusId) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
+            Logger.println("write command to disk, cid:" + consensusId);
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(commandsInfo);
             oos.flush();
@@ -117,7 +118,7 @@ public class DiskStateLog extends StateLog {
             // the EOF mark
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            Logger.printError("write command to disk error!", e);
         }
     }
 
@@ -150,10 +151,10 @@ public class DiskStateLog extends StateLog {
 
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            Logger.printError("new check point error!", e);
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            Logger.printError("new check point error!", e);
         } finally {
             checkpointLock.unlock();
         }

@@ -82,7 +82,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 
         if (checkpointIndex == -1) {
             saveCommands(commands, msgCtxs);
-            Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + cids);
+            Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + Arrays.toString(cids));
             if (!noop) {
 
                 stateLock.lock();
@@ -136,7 +136,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 //	        	Logger.println(("----THERE IS A SECOND HALF----");
                 cid = msgCtxs[msgCtxs.length - 1].getConsensusId();
                 saveCommands(secondHalf, secondHalfMsgCtx);
-                Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + cids);
+                Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + Arrays.toString(cids));
 
                 if (!noop) {
                     stateLock.lock();
