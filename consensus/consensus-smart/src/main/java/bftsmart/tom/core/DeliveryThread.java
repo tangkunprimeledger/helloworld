@@ -56,7 +56,6 @@ public final class DeliveryThread extends Thread {
      */
     public DeliveryThread(TOMLayer tomLayer, ServiceReplica receiver, Recoverable recoverer, ServerViewController controller) {
         super("Delivery Thread");
-        this.decided = new LinkedBlockingQueue<>();
 
         this.tomLayer = tomLayer;
         this.receiver = receiver;
@@ -64,6 +63,7 @@ public final class DeliveryThread extends Thread {
         //******* EDUARDO BEGIN **************//
         this.controller = controller;
         //******* EDUARDO END **************//
+        this.decided = new LinkedBlockingQueue<>(controller.getStaticConf().getApplyQueueSize());
     }
 
     

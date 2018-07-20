@@ -513,7 +513,6 @@ public class ServerConnection {
                             if (sm.getSender() == remoteId) {
                                 if (!inQueue.offer(sm)) {
                                     Logger.println("(ReceiverThread.run) in queue full (message from " + remoteId + " discarded).");
-                                    Logger.println("(ReceiverThread.run) in queue full (message from " + remoteId + " discarded).");
                                 }
                             }
                         } else {
