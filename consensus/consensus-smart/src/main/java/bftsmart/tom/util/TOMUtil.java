@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.tom.util;
 
 import bftsmart.reconfiguration.ViewController;
@@ -39,16 +39,15 @@ public class TOMUtil {
 
     public static final int TRIGGER_LC_LOCALLY = 8;
     public static final int TRIGGER_SM_LOCALLY = 9;
-    
+
     private static int signatureSize = -1;
-    
+
     public static int getSignatureSize(ViewController controller) {
         if (signatureSize > 0) {
             return signatureSize;
         }
 
-        byte[] signature = signMessage(controller.getStaticConf().getRSAPrivateKey(),
-                "a".getBytes());
+        byte[] signature = signMessage(controller.getStaticConf().getRSAPrivateKey(), "a".getBytes());
 
         if (signature != null) {
             signatureSize = signature.length;
@@ -56,7 +55,7 @@ public class TOMUtil {
 
         return signatureSize;
     }
-    
+
     //******* EDUARDO BEGIN **************//
     public static byte[] getBytes(Object o) {
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -69,7 +68,7 @@ public class TOMUtil {
             obOut.close();
             bOut.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Logger.printError(ex.getMessage(), ex);
             return null;
         }
 
@@ -96,7 +95,7 @@ public class TOMUtil {
     /**
      * Sign a message.
      *
-     * @param key the private key to be used to generate the signature
+     * @param key     the private key to be used to generate the signature
      * @param message the message to be signed
      * @return the signature
      */
@@ -113,7 +112,7 @@ public class TOMUtil {
 
             result = signatureEngine.sign();
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.printError(e.getMessage(), e);
         }
 
         return result;
@@ -122,8 +121,8 @@ public class TOMUtil {
     /**
      * Verify the signature of a message.
      *
-     * @param key the public key to be used to verify the signature
-     * @param message the signed message
+     * @param key       the public key to be used to verify the signature
+     * @param message   the signed message
      * @param signature the signature to be verified
      * @return true if the signature is valid, false otherwise
      */
@@ -138,7 +137,7 @@ public class TOMUtil {
 
             result = verifySignature(signatureEngine, message, signature);
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.printError(e.getMessage(), e);
         }
 
         return result;
@@ -148,12 +147,13 @@ public class TOMUtil {
      * Verify the signature of a message.
      *
      * @param initializedSignatureEngine a signature engine already initialized
-     *        for verification
-     * @param message the signed message
-     * @param signature the signature to be verified
+     *                                   for verification
+     * @param message                    the signed message
+     * @param signature                  the signature to be verified
      * @return true if the signature is valid, false otherwise
      */
-    public static boolean verifySignature(Signature initializedSignatureEngine, byte[] message, byte[] signature) throws SignatureException {
+    public static boolean verifySignature(Signature initializedSignatureEngine, byte[] message, byte[] signature)
+        throws SignatureException {
 
         initializedSignatureEngine.update(message);
         return initializedSignatureEngine.verify(signature);
@@ -173,18 +173,18 @@ public class TOMUtil {
     }
 
     public static final byte[] computeHash(byte[] data) {
-        
+
         byte[] result = null;
-        
+
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             result = md.digest(data);
-            
+
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            Logger.printError(e.getMessage(), e);
         } // TODO: shouldn't it be SHA?
-                
+
         return result;
     }
-    
+
 }

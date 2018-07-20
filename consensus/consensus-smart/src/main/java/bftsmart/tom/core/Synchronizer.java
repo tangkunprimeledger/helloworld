@@ -162,14 +162,14 @@ public class Synchronizer {
                 communication.send(this.controller.getCurrentViewOtherAcceptors(), stop);
 
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Logger.printError(ex.getMessage(), ex);
                 java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
                 try {
                     out.close();
                     bos.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Logger.printError(ex.getMessage(), ex);
                     java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -269,9 +269,9 @@ public class Synchronizer {
             }
 
         } catch (IOException ex) {
-            ex.printStackTrace(System.err);
+            Logger.printError(ex.getMessage(), ex);
         } catch (ClassNotFoundException ex) {
-            ex.printStackTrace(System.err);
+            Logger.printError(ex.getMessage(), ex);
         }
 
     }
@@ -314,10 +314,10 @@ public class Synchronizer {
             bis.close();
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Logger.printError(ex.getMessage(), ex);
             java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
+            Logger.printError(ex.getMessage(), ex);
             java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
 
         }
@@ -370,10 +370,10 @@ public class Synchronizer {
             bis.close();
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Logger.printError(ex.getMessage(), ex);
             java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
+            Logger.printError(ex.getMessage(), ex);
             java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
 
         }
@@ -516,14 +516,14 @@ public class Synchronizer {
                 communication.send(this.controller.getCurrentViewOtherAcceptors(), stop);
 
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Logger.printError(ex.getMessage(), ex);
                 java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
                 try {
                     out.close();
                     bos.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Logger.printError(ex.getMessage(), ex);
                     java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -698,14 +698,14 @@ public class Synchronizer {
 
                     //TODO: Turn on timeout again?
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Logger.printError(ex.getMessage(), ex);
                     java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
                 } finally {
                     try {
                         out.close();
                         bos.close();
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        Logger.printError(ex.getMessage(), ex);
                         java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
@@ -772,7 +772,8 @@ public class Synchronizer {
                             if (cons.getDecisionEpoch().propValue == null) {
                                 Logger.println("No propose for cid " + last);
                             } else {
-                                Logger.println("Propose hash for cid " + last + ": " + Base64.encodeBase64String(tom.computeHash(cons.getDecisionEpoch().propValue)));
+                                Logger.println("Propose hash for cid " + last + ": " + Base64
+                                    .encodeBase64String(tom.computeHash(cons.getDecisionEpoch().propValue)));
                             }
                         }
                     }
@@ -1030,14 +1031,14 @@ public class Synchronizer {
                 finalise(regency, lastHighestCID, signedCollects, propose, batchSize, true);
 
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Logger.printError(ex.getMessage(), ex);
                 java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
                 try {
                     out.close();
                     bos.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Logger.printError(ex.getMessage(), ex);
                     java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }

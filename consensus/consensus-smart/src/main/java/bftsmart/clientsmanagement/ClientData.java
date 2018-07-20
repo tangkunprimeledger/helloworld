@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.clientsmanagement;
 
 import bftsmart.tom.core.messages.TOMMessage;
@@ -24,7 +24,6 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
-
 
 public class ClientData {
 
@@ -45,23 +44,23 @@ public class ClientData {
     private RequestList orderedRequests = new RequestList(5);
 
     private Signature signatureVerificator = null;
-    
+
     /**
      * Class constructor. Just store the clientId and creates a signature
      * verificator for a given client public key.
      *
-     * @param clientId client unique id
+     * @param clientId  client unique id
      * @param publicKey client public key
      */
     public ClientData(int clientId, PublicKey publicKey) {
         this.clientId = clientId;
-        if(publicKey != null) {
+        if (publicKey != null) {
             try {
                 signatureVerificator = Signature.getInstance("SHA1withRSA");
                 signatureVerificator.initVerify(publicKey);
-                Logger.println("Signature verifier initialized for client "+clientId);
+                Logger.println("Signature verifier initialized for client " + clientId);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.printError(ex.getMessage(), ex);
             }
         }
     }
@@ -111,18 +110,18 @@ public class ClientData {
     }
 
     public boolean verifySignature(byte[] message, byte[] signature) {
-        if(signatureVerificator != null) {
+        if (signatureVerificator != null) {
             try {
                 return TOMUtil.verifySignature(signatureVerificator, message, signature);
             } catch (SignatureException ex) {
-                System.err.println("Error in processing client "+clientId+" signature: "+ex.getMessage());
+                Logger.printError("Error in processing client " + clientId + " signature: ", ex);
             }
         }
         return false;
     }
 
     public boolean removeOrderedRequest(TOMMessage request) {
-        if(pendingRequests.remove(request)) {
+        if (pendingRequests.remove(request)) {
             //anb: new code to deal with client requests that arrive after their execution
             orderedRequests.addLast(request);
             return true;
@@ -131,24 +130,24 @@ public class ClientData {
     }
 
     public boolean removeRequest(TOMMessage request) {
-	lastMessageExecuted = request.getSequence();
-	boolean result = pendingRequests.remove(request);
+        lastMessageExecuted = request.getSequence();
+        boolean result = pendingRequests.remove(request);
         //anb: new code to deal with client requests that arrive after their execution
         orderedRequests.addLast(request);
 
-	for(Iterator<TOMMessage> it = pendingRequests.iterator(); it.hasNext();){
-		TOMMessage msg = it.next();
-		if(msg.getSequence()<request.getSequence()){
-			it.remove();
-		}
-	}
+        for (Iterator<TOMMessage> it = pendingRequests.iterator(); it.hasNext(); ) {
+            TOMMessage msg = it.next();
+            if (msg.getSequence() < request.getSequence()) {
+                it.remove();
+            }
+        }
 
-    	return result;
+        return result;
     }
 
     public TOMMessage getReply(int reqSequence) {
         TOMMessage request = orderedRequests.getBySequence(reqSequence);
-        if(request != null) {
+        if (request != null) {
             return request.reply;
         } else {
             return null;

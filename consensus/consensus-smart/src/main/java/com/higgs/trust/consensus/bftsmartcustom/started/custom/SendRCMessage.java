@@ -97,10 +97,10 @@ public class SendRCMessage {
             objectOutputStream.writeObject(rcMessage);
             while (true) {
                 String res = reader.readLine();
-                if("success".equals(res)){
+                if ("success".equals(res)) {
                     log.info("Successful configuration update");
                     break;
-                } else if("fail".equals(res)){
+                } else if ("fail".equals(res)) {
                     log.info("Configuration update failed");
                     break;
                 }
@@ -112,7 +112,6 @@ public class SendRCMessage {
             s.close();
         } catch (Exception e) {
             log.error("Failed to get the private key : ", e);
-            e.printStackTrace();
         }
     }
 }

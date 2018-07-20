@@ -36,7 +36,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
 /**
- *
  * This class provides a basic state transfer protocol using the interface
  * 'BatchExecutable'.
  *
@@ -207,12 +206,14 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         int cid = msgCtx[0].getConsensusId();
         int batchStart = 0;
         for (int i = 0; i <= msgCtx.length; i++) {
-            if (i == msgCtx.length) { // the batch command contains only one command or it is the last position of the array
+            if (i
+                == msgCtx.length) { // the batch command contains only one command or it is the last position of the array
                 byte[][] batch = Arrays.copyOfRange(commands, batchStart, i);
                 MessageContext[] batchMsgCtx = Arrays.copyOfRange(msgCtx, batchStart, i);
                 log.addMessageBatch(batch, batchMsgCtx, cid);
             } else {
-                if (msgCtx[i].getConsensusId() > cid) { // saves commands when the cid changes or when it is the last batch
+                if (msgCtx[i].getConsensusId()
+                    > cid) { // saves commands when the cid changes or when it is the last batch
                     byte[][] batch = Arrays.copyOfRange(commands, batchStart, i);
                     MessageContext[] batchMsgCtx = Arrays.copyOfRange(msgCtx, batchStart, i);
                     log.addMessageBatch(batch, batchMsgCtx, cid);
@@ -297,7 +298,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         return lastCID;
     }
 
-
     @Override public int recoverState(ApplicationState recvState) {
 
         int lastCID = -1;
@@ -315,8 +315,8 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             stateLock.lock();
             if (state.getSerializedState() != null) {
                 Logger.println("The state is not null. Will install it");
-//                initLog();
-//                log.update(state);
+                //                initLog();
+                //                log.update(state);
                 installSnapshot(state.getSerializedState());
             }
 
@@ -379,7 +379,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
      * several consensus instances can be executed in the same batch of
      * commands, it is necessary to identify if the batch contains checkpoint
      * indexes.
-     *
+     * <p>
      * executed. There is one msgCtx message for each command to be executed
      *
      * @return the index in which a replica is supposed to take a checkpoint. If
@@ -411,8 +411,9 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
      * command executed prior to the checkpoint. That index is used by the state
      * transfer protocol to find the position of the log commands in the log
      * file.
-     *
+     * <p>
      * replica. There is one message context for each command
+     *
      * @param cid the CID of the consensus where a replica took a checkpoint
      * @return the higher position where the CID appears
      */

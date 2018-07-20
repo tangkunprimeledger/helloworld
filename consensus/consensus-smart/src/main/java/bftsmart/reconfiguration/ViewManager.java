@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.reconfiguration;
 
 import bftsmart.communication.server.ServerConnection;
@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author eduardo
  */
 public class ViewManager {
@@ -51,10 +50,10 @@ public class ViewManager {
         this.rec = new Reconfiguration(id);
     }
 
-    public void connect(){
+    public void connect() {
         this.rec.connect();
     }
-    
+
     private int loadID(String configHome) {
         try {
             String path = "";
@@ -70,8 +69,7 @@ public class ViewManager {
             while ((line = rd.readLine()) != null) {
                 if (!line.startsWith("#")) {
                     StringTokenizer str = new StringTokenizer(line, "=");
-                    if (str.countTokens() > 1
-                            && str.nextToken().trim().equals("system.ttp.id")) {
+                    if (str.countTokens() > 1 && str.nextToken().trim().equals("system.ttp.id")) {
                         fr.close();
                         rd.close();
                         return Integer.parseInt(str.nextToken().trim());
@@ -82,7 +80,7 @@ public class ViewManager {
             rd.close();
             return -1;
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            bftsmart.tom.util.Logger.printError(e.getMessage(), e);
             return -1;
         }
     }
@@ -97,9 +95,9 @@ public class ViewManager {
         rec.removeServer(id, sign);
     }
 
-//    public void setF(int f) {
-//        rec.setF(f);
-//    }
+    //    public void setF(int f) {
+    //        rec.setF(f);
+    //    }
 
     public void executeUpdates() {
         connect();
@@ -109,16 +107,15 @@ public class ViewManager {
 
         VMMessage msg = new VMMessage(id, r);
 
-        if (addIds.size() > 0) { 
+        if (addIds.size() > 0) {
             sendResponse(addIds.toArray(new Integer[1]), msg);
             addIds.clear();
         }
 
-
     }
 
     private ServerConnection getConnection(int remoteId) {
-         return new ServerConnection(controller, null, remoteId, null, null);
+        return new ServerConnection(controller, null, remoteId, null, null);
     }
 
     public void sendResponse(Integer[] targets, VMMessage sm) {
@@ -139,8 +136,7 @@ public class ViewManager {
                     getConnection(i.intValue()).send(data, true);
                 }
             } catch (InterruptedException ex) {
-               // ex.printStackTrace();
-                System.err.println(ex);
+                bftsmart.tom.util.Logger.printError(ex.getMessage(), ex);
             }
         }
         //br.ufsc.das.tom.util.Logger.println("(ServersCommunicationLayer.send) Finished sending messages to replicas");
@@ -154,53 +150,54 @@ public class ViewManager {
 
         ViewManager viewManager = new ViewManager();
 
-//        if (args.length > 0) {
-//            viewManager = new ViewManager(args[0]);
-//        } else {
-//            viewManager = new ViewManager("");
-//        }
-//
-//        Scanner scan = new Scanner(System.in);
-//        String str = null;
-//        do {
-//            str = scan.nextLine();
-//            String cmd = "";
-//            int arg = -1;
-//            try {
-//                StringTokenizer token = new StringTokenizer(str);
-//                cmd = token.nextToken();
-//                arg = Integer.parseInt(token.nextToken());
-//            } catch (Exception e) {
-//            }
-//
-//            if (arg >= 0) {
-//                if (cmd.equals("add")) {
-//
-//                    int port = (arg * 10) + 11000;
-//                    viewManager.addServer(arg, "127.0.0.1", port);
-//                } else if (cmd.equals("rem")) {
-//                    viewManager.removeServer(arg);
-//                }
-//
-//                viewManager.executeUpdates();
-//            }
-//
-//        } while (!str.equals("exit"));
-//        viewManager.close();
-//        System.exit(0);
+        //        if (args.length > 0) {
+        //            viewManager = new ViewManager(args[0]);
+        //        } else {
+        //            viewManager = new ViewManager("");
+        //        }
+        //
+        //        Scanner scan = new Scanner(System.in);
+        //        String str = null;
+        //        do {
+        //            str = scan.nextLine();
+        //            String cmd = "";
+        //            int arg = -1;
+        //            try {
+        //                StringTokenizer token = new StringTokenizer(str);
+        //                cmd = token.nextToken();
+        //                arg = Integer.parseInt(token.nextToken());
+        //            } catch (Exception e) {
+        //            }
+        //
+        //            if (arg >= 0) {
+        //                if (cmd.equals("add")) {
+        //
+        //                    int port = (arg * 10) + 11000;
+        //                    viewManager.addServer(arg, "127.0.0.1", port);
+        //                } else if (cmd.equals("rem")) {
+        //                    viewManager.removeServer(arg);
+        //                }
+        //
+        //                viewManager.executeUpdates();
+        //            }
+        //
+        //        } while (!str.equals("exit"));
+        //        viewManager.close();
+        //        System.exit(0);
 
         try {
             ServerSocket ss = new ServerSocket(11100);
             bftsmart.tom.util.Logger.println("启动服务器....");
             while (true) {
                 Socket s = ss.accept();
-                bftsmart.tom.util.Logger.println("客户端:"+s.getInetAddress().getLocalHost()+"已连接到服务器");
+                bftsmart.tom.util.Logger.println("客户端:" + s.getInetAddress().getLocalHost() + "已连接到服务器");
 
                 ObjectInputStream objectInputStream = new ObjectInputStream(s.getInputStream());
-                RCMessage rcMessage = (RCMessage) objectInputStream.readObject();
+                RCMessage rcMessage = (RCMessage)objectInputStream.readObject();
                 if (rcMessage != null) {
                     if ("add".equals(rcMessage.getOperation())) {
-                        viewManager.addServer(rcMessage.getNum(), rcMessage.getIp(), rcMessage.getPort(), rcMessage.getSignature());
+                        viewManager.addServer(rcMessage.getNum(), rcMessage.getIp(), rcMessage.getPort(),
+                            rcMessage.getSignature());
                     } else if ("rem".equals(rcMessage.getOperation())) {
                         viewManager.removeServer(rcMessage.getNum(), rcMessage.getSignature());
                     }
@@ -212,11 +209,11 @@ public class ViewManager {
                 viewManager.executeUpdates();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            bftsmart.tom.util.Logger.printError(e.getMessage(), e);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            bftsmart.tom.util.Logger.printError(e.getMessage(), e);
         }
-//        viewManager.close();
+        //        viewManager.close();
     }
-    
+
 }

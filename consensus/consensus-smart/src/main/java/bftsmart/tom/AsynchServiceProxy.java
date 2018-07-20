@@ -17,7 +17,6 @@ import java.util.HashMap;
  * asynchronously.
  *
  * @author Andre Nogueira
- *
  */
 public class AsynchServiceProxy extends ServiceProxy {
 
@@ -29,7 +28,6 @@ public class AsynchServiceProxy extends ServiceProxy {
     private HashMap<Integer, Integer> requestsAlias;
 
     /**
-     *
      * @param processId Replica id
      */
     public AsynchServiceProxy(int processId) {
@@ -38,8 +36,7 @@ public class AsynchServiceProxy extends ServiceProxy {
     }
 
     /**
-     *
-     * @param processId Replica id
+     * @param processId  Replica id
      * @param configHome Configuration folder
      */
     public AsynchServiceProxy(int processId, String configHome) {
@@ -47,8 +44,8 @@ public class AsynchServiceProxy extends ServiceProxy {
         init();
     }
 
-    public AsynchServiceProxy(int processId, String configHome,
-            Comparator<byte[]> replyComparator, Extractor replyExtractor) {
+    public AsynchServiceProxy(int processId, String configHome, Comparator<byte[]> replyComparator,
+        Extractor replyExtractor) {
         super(processId, configHome, replyComparator, replyExtractor);
         init();
     }
@@ -58,17 +55,17 @@ public class AsynchServiceProxy extends ServiceProxy {
         requestsReplies = new HashMap<>();
         requestsAlias = new HashMap<>();
     }
-    
+
     private View newView(byte[] bytes) {
-        
+
         Object o = TOMUtil.getObject(bytes);
-        return (o != null && o instanceof View ? (View) o : null);
+        return (o != null && o instanceof View ? (View)o : null);
     }
+
     /**
-     *
      * @param request
      * @param replyListener
-     * @param reqType Request type
+     * @param reqType       Request type
      * @return
      */
     public int invokeAsynchRequest(byte[] request, ReplyListener replyListener, TOMMessageType reqType) {
@@ -76,11 +73,10 @@ public class AsynchServiceProxy extends ServiceProxy {
     }
 
     /**
-     *
      * @param request
      * @param targets
      * @param replyListener
-     * @param reqType Request type
+     * @param reqType       Request type
      * @return
      */
     public int invokeAsynchRequest(byte[] request, int[] targets, ReplyListener replyListener, TOMMessageType reqType) {
@@ -88,7 +84,6 @@ public class AsynchServiceProxy extends ServiceProxy {
     }
 
     /**
-     *
      * @param requestId Request
      */
     public void cleanAsynchRequest(int requestId) {
@@ -109,9 +104,10 @@ public class AsynchServiceProxy extends ServiceProxy {
     /**
      *
      */
-    @Override
-    public void replyReceived(TOMMessage reply) {
-        Logger.println("Asynchronously received reply from " + reply.getSender() + " with sequence number " + reply.getSequence() + " and operation ID " + reply.getOperationId());
+    @Override public void replyReceived(TOMMessage reply) {
+        Logger.println(
+            "Asynchronously received reply from " + reply.getSender() + " with sequence number " + reply.getSequence()
+                + " and operation ID " + reply.getOperationId());
 
         try {
             canReceiveLock.lock();
@@ -123,22 +119,25 @@ public class AsynchServiceProxy extends ServiceProxy {
                 return;
             }
 
-            if (contains(requestContext.getTargets(), reply.getSender())
-                    && (reply.getSequence() == requestContext.getReqId())
-                    //&& (reply.getOperationId() == requestContext.getOperationId())
-                    && (reply.getReqType().compareTo(requestContext.getRequestType())) == 0) {
+            if (contains(requestContext.getTargets(), reply.getSender()) && (reply.getSequence() == requestContext
+                .getReqId())
+                //&& (reply.getOperationId() == requestContext.getOperationId())
+                && (reply.getReqType().compareTo(requestContext.getRequestType())) == 0) {
 
-                Logger.println("Deliverying message from " + reply.getSender() + " with sequence number " + reply.getSequence() + " and operation ID " + reply.getOperationId() + " to the listener");
+                Logger.println(
+                    "Deliverying message from " + reply.getSender() + " with sequence number " + reply.getSequence()
+                        + " and operation ID " + reply.getOperationId() + " to the listener");
 
                 ReplyListener replyListener = requestContext.getReplyListener();
-                
+
                 View v = null;
 
                 if (replyListener != null) {
 
                     //if (reply.getViewID() > getViewManager().getCurrentViewId()) { // Deal with a system reconfiguration
-                    if ((v = newView(reply.getContent())) != null && !requestsAlias.containsKey(reply.getOperationId())) { // Deal with a system reconfiguration
-    
+                    if ((v = newView(reply.getContent())) != null && !requestsAlias
+                        .containsKey(reply.getOperationId())) { // Deal with a system reconfiguration
+
                         TOMMessage[] replies = requestsReplies.get(reply.getOperationId());
 
                         int sameContent = 1;
@@ -150,12 +149,13 @@ public class AsynchServiceProxy extends ServiceProxy {
 
                         for (int i = 0; i < replies.length; i++) {
 
-                            if ((replies[i] != null) && (i != pos || getViewManager().getCurrentViewN() == 1)
-                                    && (reply.getReqType() != TOMMessageType.ORDERED_REQUEST || Arrays.equals(replies[i].getContent(), reply.getContent()))) {
+                            if ((replies[i] != null) && (i != pos || getViewManager().getCurrentViewN() == 1) && (
+                                reply.getReqType() != TOMMessageType.ORDERED_REQUEST || Arrays
+                                    .equals(replies[i].getContent(), reply.getContent()))) {
                                 sameContent++;
                             }
                         }
-                        
+
                         if (sameContent >= replyQuorum) {
 
                             if (v.getId() > getViewManager().getCurrentViewId()) {
@@ -167,10 +167,10 @@ public class AsynchServiceProxy extends ServiceProxy {
 
                             Thread t = new Thread() {
 
-                                @Override
-                                public void run() {
+                                @Override public void run() {
 
-                                    int id = invokeAsynch(requestContext.getRequest(), requestContext.getTargets(), requestContext.getReplyListener(), TOMMessageType.ORDERED_REQUEST);
+                                    int id = invokeAsynch(requestContext.getRequest(), requestContext.getTargets(),
+                                        requestContext.getReplyListener(), TOMMessageType.ORDERED_REQUEST);
 
                                     requestsAlias.put(reply.getOperationId(), id);
                                 }
@@ -180,23 +180,21 @@ public class AsynchServiceProxy extends ServiceProxy {
                             t.start();
 
                         }
-                        
-                        
+
                     } else if (!requestsAlias.containsKey(reply.getOperationId())) {
-                            
-                            requestContext.getReplyListener().replyReceived(requestContext, reply);
+
+                        requestContext.getReplyListener().replyReceived(requestContext, reply);
                     }
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.printError(ex.getMessage(), ex);
         } finally {
             canReceiveLock.unlock();
         }
     }
 
     /**
-     *
      * @param request
      * @param targets
      * @param replyListener
@@ -211,13 +209,14 @@ public class AsynchServiceProxy extends ServiceProxy {
 
         canSendLock.lock();
 
-        requestContext = new RequestContext(generateRequestId(reqType), generateOperationId(),
-                reqType, targets, System.currentTimeMillis(), replyListener, request);
+        requestContext = new RequestContext(generateRequestId(reqType), generateOperationId(), reqType, targets,
+            System.currentTimeMillis(), replyListener, request);
 
         try {
             Logger.println("Storing request context for " + requestContext.getOperationId());
             requestsContext.put(requestContext.getOperationId(), requestContext);
-            requestsReplies.put(requestContext.getOperationId(), new TOMMessage[super.getViewManager().getCurrentViewN()]);
+            requestsReplies
+                .put(requestContext.getOperationId(), new TOMMessage[super.getViewManager().getCurrentViewN()]);
 
             sendMessageToTargets(request, requestContext.getReqId(), requestContext.getOperationId(), targets, reqType);
 
@@ -229,7 +228,6 @@ public class AsynchServiceProxy extends ServiceProxy {
     }
 
     /**
-     *
      * @param targets
      * @param senderId
      * @return

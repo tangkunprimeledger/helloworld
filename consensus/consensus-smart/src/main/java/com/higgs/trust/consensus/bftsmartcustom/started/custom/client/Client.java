@@ -12,17 +12,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
-@Component
-public class Client implements ConsensusClient {
+@Component public class Client implements ConsensusClient {
 
     private static final Logger log = LoggerFactory.getLogger(Client.class);
 
     private ServiceProxy serviceProxy;
 
-    @Value("${bftSmart.systemConfigs.myClientId}")
-    private String myClientId;
+    @Value("${bftSmart.systemConfigs.myClientId}") private String myClientId;
 
     public void init() {
         log.info("-----ServiceProxy init-----");
@@ -60,8 +57,7 @@ public class Client implements ConsensusClient {
         }
     }
 
-    @Override
-    public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
+    @Override public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
         CompletableFuture completableFuture = CompletableFuture.runAsync(() -> {
             processingPackage(command);
         });

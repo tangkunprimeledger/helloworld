@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.StringUtils;
@@ -23,31 +21,23 @@ import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
-@Configuration
-public class SmartStart implements ConsensusStateMachine {
+@Configuration public class SmartStart implements ConsensusStateMachine {
 
     private static final Logger log = LoggerFactory.getLogger(SmartStart.class);
 
-    @Value("${bftSmart.systemConfigs.myId}")
-    private String myId;
+    @Value("${bftSmart.systemConfigs.myId}") private String myId;
 
-    @Value("${bftSmart.systemConfigs.configs.system.ttp.id}")
-    private String ttpId;
+    @Value("${bftSmart.systemConfigs.configs.system.ttp.id}") private String ttpId;
 
-    @Autowired
-    private RSAKeyLoader rsaKeyLoader;
+    @Autowired private RSAKeyLoader rsaKeyLoader;
 
-    @Autowired
-    private Client client;
+    @Autowired private Client client;
 
-    @Autowired
-    private SmartConfig smartConfig;
+    @Autowired private SmartConfig smartConfig;
 
-    @Autowired
-    private ConsensusSnapshot consensusSnapshot;
+    @Autowired private ConsensusSnapshot consensusSnapshot;
 
-    @Autowired
-    private SmartCommitReplicateComposite machine;
+    @Autowired private SmartCommitReplicateComposite machine;
 
     private Server server;
 
@@ -57,8 +47,7 @@ public class SmartStart implements ConsensusStateMachine {
     private String ip;
     private int port;
 
-    @Override
-    public void leaveConsensus() {
+    @Override public void leaveConsensus() {
         log.info("leave replica :" + myId);
         String hostsConfig = smartConfig.getHostsConfig();
         String[] configs = hostsConfig.split(",", -1);
@@ -75,8 +64,7 @@ public class SmartStart implements ConsensusStateMachine {
         sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
-    @Override
-    public void joinConsensus() {
+    @Override public void joinConsensus() {
         String hostsConfig = smartConfig.getHostsConfig();
         String[] configs = hostsConfig.split(",", -1);
         for (String config : configs) {
@@ -94,9 +82,7 @@ public class SmartStart implements ConsensusStateMachine {
         sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
-    @Override
-    @StateChangeListener(NodeStateEnum.Running) @Order
-    public synchronized void start() {
+    @Override @StateChangeListener(NodeStateEnum.Running) @Order public synchronized void start() {
         log.info("smart server starting,myid={}", myId);
         if (server != null) {
             log.warn("The service has started");
@@ -115,7 +101,7 @@ public class SmartStart implements ConsensusStateMachine {
                 try {
                     TimeUnit.MILLISECONDS.sleep(2000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 }
             }
             log.info("smart server initializing...");
@@ -123,18 +109,21 @@ public class SmartStart implements ConsensusStateMachine {
             log.info("smart server Initialization complete");
 
             while (true) {
-                if (server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size() == (server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN() - 1)) {
+                if (server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size()
+                    == (server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN() - 1)) {
                     client.init();
                     break;
                 } else {
-                    log.info("connection count : " + server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size());
-                    log.info("view N : " + server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN());
+                    log.info("connection count : " + server.getServiceReplica().getServerCommunicationSystem()
+                        .getServersConn().getConnections().size());
+                    log.info(
+                        "view N : " + server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN());
                     log.warn("server connection fail");
                 }
                 try {
                     TimeUnit.MILLISECONDS.sleep(500L);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 }
             }
         } else {

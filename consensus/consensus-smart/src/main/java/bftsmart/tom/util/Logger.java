@@ -48,7 +48,11 @@ public class Logger {
         }
     }
 
-    public static void printError(String msg, Exception e) {
+    public static void printError(String msg, Throwable e) {
         log.error(msg, e);
+    }
+
+    public static void printError(String msg) {
+        log.error(msg);
     }
 }

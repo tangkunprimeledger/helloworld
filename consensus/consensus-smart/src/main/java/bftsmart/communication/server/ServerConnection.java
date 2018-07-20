@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.communication.server;
 
 import bftsmart.communication.SystemMessage;
@@ -42,7 +42,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class represents a connection with other server.
- *
+ * <p>
  * ServerConnections are created by ServerCommunicationLayer.
  *
  * @author alysson
@@ -60,19 +60,21 @@ public class ServerConnection {
     private boolean useSenderThread;
     protected LinkedBlockingQueue<byte[]> outQueue;// = new LinkedBlockingQueue<byte[]>(SEND_QUEUE_SIZE);
     private HashSet<Integer> noMACs = null; // this is used to keep track of data to be sent without a MAC.
-                                            // It uses the reference id for that same data
+    // It uses the reference id for that same data
     private LinkedBlockingQueue<SystemMessage> inQueue;
     private SecretKey authKey = null;
     private Mac macSend;
     private Mac macReceive;
     private int macSize;
     private Lock connectLock = new ReentrantLock();
-    /** Only used when there is no sender Thread */
+    /**
+     * Only used when there is no sender Thread
+     */
     private Lock sendLock;
     private boolean doWork = true;
 
     public ServerConnection(ServerViewController controller, Socket socket, int remoteId,
-                            LinkedBlockingQueue<SystemMessage> inQueue, ServiceReplica replica) {
+        LinkedBlockingQueue<SystemMessage> inQueue, ServiceReplica replica) {
 
         this.controller = controller;
 
@@ -90,14 +92,15 @@ public class ServerConnection {
             //I have to connect to the remote server
             try {
                 this.socket = new Socket(this.controller.getStaticConf().getHost(remoteId),
-                        this.controller.getStaticConf().getServerToServerPort(remoteId));
+                    this.controller.getStaticConf().getServerToServerPort(remoteId));
                 ServersCommunicationLayer.setSocketOptions(this.socket);
-                new DataOutputStream(this.socket.getOutputStream()).writeInt(this.controller.getStaticConf().getProcessId());
+                new DataOutputStream(this.socket.getOutputStream())
+                    .writeInt(this.controller.getStaticConf().getProcessId());
 
             } catch (UnknownHostException ex) {
-                ex.printStackTrace();
+                Logger.printError(ex.getMessage(), ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Logger.printError(ex.getMessage(), ex);
             }
         }
         //else I have to wait a connection from the remote server
@@ -107,12 +110,12 @@ public class ServerConnection {
                 socketOutStream = new DataOutputStream(this.socket.getOutputStream());
                 socketInStream = new DataInputStream(this.socket.getInputStream());
             } catch (IOException ex) {
-                Logger.println("Error creating connection to "+remoteId);
-                ex.printStackTrace();
+                Logger.println("Error creating connection to " + remoteId);
+                Logger.printError(ex.getMessage(), ex);
             }
         }
-               
-       //******* EDUARDO BEGIN **************//
+
+        //******* EDUARDO BEGIN **************//
         this.useSenderThread = this.controller.getStaticConf().isUseSenderThread();
 
         if (useSenderThread && (this.controller.getStaticConf().getTTPId() != remoteId)) {
@@ -121,7 +124,7 @@ public class ServerConnection {
             sendLock = new ReentrantLock();
         }
         authenticateAndEstablishAuthKey();
-        
+
         if (!this.controller.getStaticConf().isTheTTP()) {
             if (this.controller.getStaticConf().getTTPId() == remoteId) {
                 //Uma thread "diferente" para as msgs recebidas da TTP
@@ -136,13 +139,13 @@ public class ServerConnection {
     public SecretKey getSecretKey() {
         return authKey;
     }
-    
+
     /**
      * Stop message sending and reception.
      */
     public void shutdown() {
-        Logger.println("SHUTDOWN for "+remoteId);
-        
+        Logger.println("SHUTDOWN for " + remoteId);
+
         doWork = false;
         closeSocket();
     }
@@ -172,25 +175,30 @@ public class ServerConnection {
      * try to send a message through the socket
      * if some problem is detected, a reconnection is done
      */
-    private final void sendBytes(byte[] messageData, boolean useMAC) {       
+    private final void sendBytes(byte[] messageData, boolean useMAC) {
         boolean abort = false;
         do {
-            if (abort) return; // if there is a need to reconnect, abort this method
+            if (abort)
+                return; // if there is a need to reconnect, abort this method
             if (socket != null && socketOutStream != null) {
                 try {
                     //do an extra copy of the data to be sent, but on a single out stream write
-                    byte[] mac = (useMAC && this.controller.getStaticConf().getUseMACs() == 1)?macSend.doFinal(messageData):null;
-                    byte[] data = new byte[5 +messageData.length+((mac!=null)?mac.length:0)];
+                    byte[] mac =
+                        (useMAC && this.controller.getStaticConf().getUseMACs() == 1) ? macSend.doFinal(messageData) :
+                            null;
+                    byte[] data = new byte[5 + messageData.length + ((mac != null) ? mac.length : 0)];
                     int value = messageData.length;
 
-                    System.arraycopy(new byte[]{(byte)(value >>> 24),(byte)(value >>> 16),(byte)(value >>> 8),(byte)value},0,data,0,4);
-                    System.arraycopy(messageData,0,data,4,messageData.length);
-                    if(mac != null) {
+                    System.arraycopy(
+                        new byte[] {(byte)(value >>> 24), (byte)(value >>> 16), (byte)(value >>> 8), (byte)value}, 0,
+                        data, 0, 4);
+                    System.arraycopy(messageData, 0, data, 4, messageData.length);
+                    if (mac != null) {
                         //System.arraycopy(mac,0,data,4+messageData.length,mac.length);
-                        System.arraycopy(new byte[]{ (byte) 1},0,data,4+messageData.length,1);
-                        System.arraycopy(mac,0,data,5+messageData.length,mac.length);
+                        System.arraycopy(new byte[] {(byte)1}, 0, data, 4 + messageData.length, 1);
+                        System.arraycopy(mac, 0, data, 5 + messageData.length, mac.length);
                     } else {
-                        System.arraycopy(new byte[]{(byte) 0},0,data,4+messageData.length,1);                        
+                        System.arraycopy(new byte[] {(byte)0}, 0, data, 4 + messageData.length, 1);
                     }
 
                     socketOutStream.write(data);
@@ -220,52 +228,51 @@ public class ServerConnection {
         }
         boolean ret = false;
         if (this.controller.isInCurrentView()) {
-            
-             //in this case, the node with higher ID starts the connection
-             if (this.controller.getStaticConf().getProcessId() > remoteId) {
-                 ret = true;
-             }
-                
+
+            //in this case, the node with higher ID starts the connection
+            if (this.controller.getStaticConf().getProcessId() > remoteId) {
+                ret = true;
+            }
+
             /** JCS: I commented the code below to fix a bug, but I am not sure
              whether its completely useless or not. The 'if' above was taken
              from that same code (its the only part I understand why is necessary)
              I keep the code commented just to be on the safe side*/
-            
+
             /**
-            
-            boolean me = this.controller.isInLastJoinSet(this.controller.getStaticConf().getProcessId());
-            boolean remote = this.controller.isInLastJoinSet(remoteId);
 
-            //either both endpoints are old in the system (entered the system in a previous view),
-            //or both entered during the last reconfiguration
-            if ((me && remote) || (!me && !remote)) {
-                //in this case, the node with higher ID starts the connection
-                if (this.controller.getStaticConf().getProcessId() > remoteId) {
-                    ret = true;
-                }
-            //this process is the older one, and the other one entered in the last reconfiguration
-            } else if (!me && remote) {
-                ret = true;
+             boolean me = this.controller.isInLastJoinSet(this.controller.getStaticConf().getProcessId());
+             boolean remote = this.controller.isInLastJoinSet(remoteId);
 
-            } //else if (me && !remote) { //this process entered in the last reconfig and the other one is old
-                //ret=false; //not necessary, as ret already is false
-            //}
-              
-            */
+             //either both endpoints are old in the system (entered the system in a previous view),
+             //or both entered during the last reconfiguration
+             if ((me && remote) || (!me && !remote)) {
+             //in this case, the node with higher ID starts the connection
+             if (this.controller.getStaticConf().getProcessId() > remoteId) {
+             ret = true;
+             }
+             //this process is the older one, and the other one entered in the last reconfiguration
+             } else if (!me && remote) {
+             ret = true;
+
+             } //else if (me && !remote) { //this process entered in the last reconfig and the other one is old
+             //ret=false; //not necessary, as ret already is false
+             //}
+
+             */
         }
         return ret;
     }
     //******* EDUARDO END **************//
 
-
     /**
      * (Re-)establish connection between peers.
      *
      * @param newSocket socket created when this server accepted the connection
-     * (only used if processId is less than remoteId)
+     *                  (only used if processId is less than remoteId)
      */
     protected void reconnect(Socket newSocket) {
-        
+
         connectLock.lock();
 
         if (socket == null || !socket.isConnected()) {
@@ -276,31 +283,32 @@ public class ServerConnection {
                 if (isToConnect()) {
 
                     socket = new Socket(this.controller.getStaticConf().getHost(remoteId),
-                            this.controller.getStaticConf().getServerToServerPort(remoteId));
+                        this.controller.getStaticConf().getServerToServerPort(remoteId));
                     ServersCommunicationLayer.setSocketOptions(socket);
-                    new DataOutputStream(socket.getOutputStream()).writeInt(this.controller.getStaticConf().getProcessId());
+                    new DataOutputStream(socket.getOutputStream())
+                        .writeInt(this.controller.getStaticConf().getProcessId());
 
-                //******* EDUARDO END **************//
+                    //******* EDUARDO END **************//
                 } else {
                     socket = newSocket;
                 }
             } catch (UnknownHostException ex) {
-                ex.printStackTrace();
+                Logger.printError(ex.getMessage(), ex);
             } catch (IOException ex) {
-                
+
                 Logger.println("Impossible to reconnect to replica " + remoteId);
-                //ex.printStackTrace();
+                //Logger.printError(ex.getMessage(),ex);
             }
 
             if (socket != null) {
                 try {
                     socketOutStream = new DataOutputStream(socket.getOutputStream());
                     socketInStream = new DataInputStream(socket.getInputStream());
-                    
+
                     authKey = null;
                     authenticateAndEstablishAuthKey();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Logger.printError(ex.getMessage(), ex);
                 }
             }
         }
@@ -322,38 +330,37 @@ public class ServerConnection {
             // I received a connection request, so I'm second on the auth protocol
             //DataInputStream dis = new DataInputStream(socket.getInputStream());
             //}
-            
+
             //Derive DH private key from replica's own RSA private key
-            
+
             PrivateKey RSAprivKey = controller.getStaticConf().getRSAPrivateKey();
-            BigInteger DHPrivKey =
-                    new BigInteger(RSAprivKey.getEncoded());
-            
+            BigInteger DHPrivKey = new BigInteger(RSAprivKey.getEncoded());
+
             //Create DH public key
             BigInteger myDHPubKey =
-                    controller.getStaticConf().getDHG().modPow(DHPrivKey, controller.getStaticConf().getDHP());
-            
+                controller.getStaticConf().getDHG().modPow(DHPrivKey, controller.getStaticConf().getDHP());
+
             //turn it into a byte array
             byte[] bytes = myDHPubKey.toByteArray();
-            
+
             byte[] signature = TOMUtil.signMessage(RSAprivKey, bytes);
-            
+
             //send my DH public key and signature
             socketOutStream.writeInt(bytes.length);
             socketOutStream.write(bytes);
-            
+
             socketOutStream.writeInt(signature.length);
             socketOutStream.write(signature);
-            
+
             //receive remote DH public key and signature
             int dataLength = socketInStream.readInt();
             bytes = new byte[dataLength];
             int read = 0;
             do {
                 read += socketInStream.read(bytes, read, dataLength - read);
-                
+
             } while (read < dataLength);
-            
+
             byte[] remote_Bytes = bytes;
 
             dataLength = socketInStream.readInt();
@@ -361,32 +368,31 @@ public class ServerConnection {
             read = 0;
             do {
                 read += socketInStream.read(bytes, read, dataLength - read);
-                
+
             } while (read < dataLength);
-            
+
             byte[] remote_Signature = bytes;
-            
+
             //verify signature
             PublicKey remoteRSAPubkey = controller.getStaticConf().getRSAPublicKey(remoteId);
-            
+
             if (!TOMUtil.verifySignature(remoteRSAPubkey, remote_Bytes, remote_Signature)) {
-                
+
                 Logger.println(remoteId + " sent an invalid signature!");
                 shutdown();
                 return;
             }
-            
+
             BigInteger remoteDHPubKey = new BigInteger(remote_Bytes);
 
             //Create secret key
-            BigInteger secretKey =
-                    remoteDHPubKey.modPow(DHPrivKey, controller.getStaticConf().getDHP());
-            
-           Logger.println("-- Diffie-Hellman complete with " + remoteId);
-            
+            BigInteger secretKey = remoteDHPubKey.modPow(DHPrivKey, controller.getStaticConf().getDHP());
+
+            Logger.println("-- Diffie-Hellman complete with " + remoteId);
+
             SecretKeyFactory fac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
             PBEKeySpec spec = new PBEKeySpec(secretKey.toString().toCharArray());
-            
+
             //PBEKeySpec spec = new PBEKeySpec(PASSWORD.toCharArray());
             authKey = fac.generateSecret(spec);
 
@@ -396,7 +402,8 @@ public class ServerConnection {
             macReceive.init(authKey);
             macSize = macSend.getMacLength();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.printError(ex.getMessage(), ex);
+            Logger.printError(ex.getMessage(), ex);
         }
     }
 
@@ -406,9 +413,9 @@ public class ServerConnection {
                 socketOutStream.flush();
                 socket.close();
             } catch (IOException ex) {
-                Logger.println("Error closing socket to "+remoteId);
+                Logger.println("Error closing socket to " + remoteId);
             } catch (NullPointerException npe) {
-            	Logger.println("Socket already closed");
+                Logger.println("Socket already closed");
             }
 
             socket = null;
@@ -438,8 +445,7 @@ public class ServerConnection {
             super("Sender for " + remoteId);
         }
 
-        @Override
-        public void run() {
+        @Override public void run() {
             byte[] data = null;
 
             while (doWork) {
@@ -453,7 +459,8 @@ public class ServerConnection {
                     //sendBytes(data, noMACs.contains(System.identityHashCode(data)));
                     int ref = System.identityHashCode(data);
                     boolean sendMAC = !noMACs.remove(ref);
-                    Logger.println("(ServerConnection.run) " + (sendMAC ? "Sending" : "Not sending") + " MAC for data " + ref);
+                    Logger.println(
+                        "(ServerConnection.run) " + (sendMAC ? "Sending" : "Not sending") + " MAC for data " + ref);
                     sendBytes(data, sendMAC);
                 }
             }
@@ -471,13 +478,12 @@ public class ServerConnection {
             super("Receiver for " + remoteId);
         }
 
-        @Override
-        public void run() {
+        @Override public void run() {
             byte[] receivedMac = null;
             try {
                 receivedMac = new byte[Mac.getInstance(MAC_ALGORITHM).getMacLength()];
             } catch (NoSuchAlgorithmException ex) {
-                ex.printStackTrace();
+                Logger.printError(ex.getMessage(), ex);
             }
 
             while (doWork) {
@@ -495,7 +501,7 @@ public class ServerConnection {
 
                         //read mac
                         boolean result = true;
-                        
+
                         byte hasMAC = socketInStream.readByte();
                         if (controller.getStaticConf().getUseMACs() == 1 && hasMAC == 1) {
                             read = 0;
@@ -507,12 +513,14 @@ public class ServerConnection {
                         }
 
                         if (result) {
-                            SystemMessage sm = (SystemMessage) (new ObjectInputStream(new ByteArrayInputStream(data)).readObject());
+                            SystemMessage sm =
+                                (SystemMessage)(new ObjectInputStream(new ByteArrayInputStream(data)).readObject());
                             sm.authenticated = (controller.getStaticConf().getUseMACs() == 1 && hasMAC == 1);
-                            
+
                             if (sm.getSender() == remoteId) {
                                 if (!inQueue.offer(sm)) {
-                                    Logger.println("(ReceiverThread.run) in queue full (message from " + remoteId + " discarded).");
+                                    Logger.println("(ReceiverThread.run) in queue full (message from " + remoteId
+                                        + " discarded).");
                                 }
                             }
                         } else {
@@ -552,8 +560,7 @@ public class ServerConnection {
             this.replica = replica;
         }
 
-        @Override
-        public void run() {
+        @Override public void run() {
             byte[] receivedMac = null;
             try {
                 receivedMac = new byte[Mac.getInstance(MAC_ALGORITHM).getMacLength()];
@@ -576,10 +583,10 @@ public class ServerConnection {
 
                         //read mac
                         boolean result = true;
-                        
+
                         byte hasMAC = socketInStream.readByte();
                         if (controller.getStaticConf().getUseMACs() == 1 && hasMAC == 1) {
-                            
+
                             Logger.println("TTP CON USEMAC");
                             read = 0;
                             do {
@@ -590,7 +597,8 @@ public class ServerConnection {
                         }
 
                         if (result) {
-                            SystemMessage sm = (SystemMessage) (new ObjectInputStream(new ByteArrayInputStream(data)).readObject());
+                            SystemMessage sm =
+                                (SystemMessage)(new ObjectInputStream(new ByteArrayInputStream(data)).readObject());
 
                             if (sm.getSender() == remoteId) {
                                 //Logger.println(("Mensagem recebia de: "+remoteId);
@@ -598,16 +606,16 @@ public class ServerConnection {
                                 bftsmartcustom.tom.util.Logger.println("(ReceiverThread.run) in queue full (message from " + remoteId + " discarded).");
                                 Logger.println(("(ReceiverThread.run) in queue full (message from " + remoteId + " discarded).");
                                 }*/
-                                this.replica.joinMsgReceived((VMMessage) sm);
+                                this.replica.joinMsgReceived((VMMessage)sm);
                             }
                         } else {
                             //TODO: violation of authentication... we should do something
                             Logger.println("WARNING: Violation of authentication in message received from " + remoteId);
                         }
                     } catch (ClassNotFoundException ex) {
-                        ex.printStackTrace();
+                        Logger.printError(ex.getMessage(), ex);
                     } catch (IOException ex) {
-                        //ex.printStackTrace();
+                        //Logger.printError(ex.getMessage(),ex);
                         if (doWork) {
                             closeSocket();
                             waitAndConnect();
@@ -619,5 +627,5 @@ public class ServerConnection {
             }
         }
     }
-        //******* EDUARDO END **************//
+    //******* EDUARDO END **************//
 }

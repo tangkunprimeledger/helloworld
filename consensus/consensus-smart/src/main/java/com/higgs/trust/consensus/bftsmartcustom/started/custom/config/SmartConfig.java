@@ -5,9 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
-@Configuration()
-@ConfigurationProperties(prefix = "bftSmart.systemConfigs")
-public class SmartConfig {
+@Configuration() @ConfigurationProperties(prefix = "bftSmart.systemConfigs") public class SmartConfig {
 
     private Map<String, String> configs;
 

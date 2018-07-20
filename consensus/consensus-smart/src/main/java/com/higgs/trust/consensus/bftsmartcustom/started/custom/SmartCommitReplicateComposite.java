@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
  * @create: 2018/06/05 17:47
  * @description:
  */
-@Component
-public class SmartCommitReplicateComposite extends AbstractCommitReplicateComposite {
+@Component public class SmartCommitReplicateComposite extends AbstractCommitReplicateComposite {
     @Override public ConsensusCommit commitAdapter(Object request) {
         return new SmartCommitAdapter(request);
     }

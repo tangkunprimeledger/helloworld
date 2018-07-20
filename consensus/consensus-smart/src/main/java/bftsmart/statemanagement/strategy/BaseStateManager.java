@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and
  * the authors indicated in the @author tags
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -35,9 +35,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- *
  * @author Marcel Santos
- *
  */
 public abstract class BaseStateManager implements StateManager {
 
@@ -94,45 +92,48 @@ public abstract class BaseStateManager implements StateManager {
         boolean result = counter > SVController.getQuorum();
         return result;
     }
-    
+
     // check if the consensus messages are consistent without checking the mac/signatures
     // if it is consistent, it returns the respective consensus ID; otherwise, returns -1
     private int proofIsConsistent(Set<ConsensusMessage> proof) {
-        
+
         int id = -1;
         byte[] value = null;
-        
+
         for (ConsensusMessage cm : proof) {
-            
-            if (id == -1) id = cm.getNumber();
-            if (value == null) value = cm.getValue();
-            
+
+            if (id == -1)
+                id = cm.getNumber();
+            if (value == null)
+                value = cm.getValue();
+
             if (id != cm.getNumber() || !Arrays.equals(value, cm.getValue())) {
                 return -1; // they are not consistent, so the proof is invalid
             }
-                    
+
         }
-        
+
         // if the values are still these, this means the proof is empty, thus is invalid
-        if (id == -1 || value == null) return -1;
-        
+        if (id == -1 || value == null)
+            return -1;
+
         return id;
     }
-        
+
     protected boolean enoughProofs(int cid, LCManager lc) {
-        
+
         int counter = 0;
         for (CertifiedDecision cDec : senderProofs.values()) {
-                                    
+
             if (cDec != null && cid == proofIsConsistent(cDec.getConsMessages()) && lc.hasValidProof(cDec)) {
                 counter++;
             }
-            
+
         }
         boolean result = counter > SVController.getQuorum();
         return result;
     }
-    
+
     /**
      * Clear the collections and state hold by this object. Calls clear() in the
      * States, Leaders, regencies and Views collections. Sets the state to
@@ -151,18 +152,15 @@ public abstract class BaseStateManager implements StateManager {
         return senderStates.values();
     }
 
-    @Override
-    public void setLastCID(int cid) {
+    @Override public void setLastCID(int cid) {
         lastCID = cid;
     }
 
-    @Override
-    public int getLastCID() {
+    @Override public int getLastCID() {
         return lastCID;
     }
 
-    @Override
-    public void requestAppState(int cid) {
+    @Override public void requestAppState(int cid) {
         lastCID = cid + 1;
         waitingCID = cid;
         Logger.println("waitingcid is now " + cid);
@@ -170,13 +168,14 @@ public abstract class BaseStateManager implements StateManager {
         requestState();
     }
 
-    @Override
-    public void analyzeState(int cid) {
+    @Override public void analyzeState(int cid) {
         Logger.println("(TOMLayer.analyzeState) The state transfer protocol is enabled");
         if (waitingCID == -1) {
-            Logger.println("(TOMLayer.analyzeState) I'm not waiting for any state, so I will keep record of this message");
+            Logger.println(
+                "(TOMLayer.analyzeState) I'm not waiting for any state, so I will keep record of this message");
             if (tomLayer.execManager.isDecidable(cid)) {
-                Logger.println("BaseStateManager.analyzeState: I have now more than " + SVController.getCurrentViewF() + " messages for CID " + cid + " which are beyond CID " + lastCID);
+                Logger.println("BaseStateManager.analyzeState: I have now more than " + SVController.getCurrentViewF()
+                    + " messages for CID " + cid + " which are beyond CID " + lastCID);
                 lastCID = cid;
                 waitingCID = cid - 1;
                 Logger.println("analyzeState " + waitingCID);
@@ -185,19 +184,16 @@ public abstract class BaseStateManager implements StateManager {
         }
     }
 
-    @Override
-    public abstract void init(TOMLayer tomLayer, DeliveryThread dt);
+    @Override public abstract void init(TOMLayer tomLayer, DeliveryThread dt);
 
-    @Override
-    public boolean isRetrievingState() {
+    @Override public boolean isRetrievingState() {
         if (isInitializing) {
             return true;
         }
         return waitingCID > -1;
     }
 
-    @Override
-    public void askCurrentConsensusId() {
+    @Override public void askCurrentConsensusId() {
         int me = SVController.getStaticConf().getProcessId();
         int[] target = SVController.getCurrentViewAcceptors();
 
@@ -211,22 +207,21 @@ public abstract class BaseStateManager implements StateManager {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Logger.printError(e.getMessage(), e);
             }
         }
     }
 
-    @Override
-    public void currentConsensusIdAsked(int sender) {
+    @Override public void currentConsensusIdAsked(int sender) {
         int me = SVController.getStaticConf().getProcessId();
         int lastConsensusId = tomLayer.getLastExec();
-        SMMessage currentCIDReply = new StandardSMMessage(me, lastConsensusId, TOMUtil.SM_REPLY_INITIAL, 0, null, null, 0, 0);
-        tomLayer.getCommunication().send(new int[]{sender}, currentCIDReply);
+        SMMessage currentCIDReply =
+            new StandardSMMessage(me, lastConsensusId, TOMUtil.SM_REPLY_INITIAL, 0, null, null, 0, 0);
+        tomLayer.getCommunication().send(new int[] {sender}, currentCIDReply);
     }
 
-    @Override
-    public synchronized void currentConsensusIdReceived(SMMessage smsg) {
-        if (!isInitializing || waitingCID > -1) {            
+    @Override public synchronized void currentConsensusIdReceived(SMMessage smsg) {
+        if (!isInitializing || waitingCID > -1) {
             return;
         }
         if (senderCIDs == null) {
@@ -237,9 +232,9 @@ public abstract class BaseStateManager implements StateManager {
 
             HashMap<Integer, Integer> cids = new HashMap<>();
             for (int id : senderCIDs.keySet()) {
-                                
+
                 int value = senderCIDs.get(id);
-                
+
                 Integer count = cids.get(value);
                 if (count == null) {
                     cids.put(value, 0);
@@ -273,14 +268,11 @@ public abstract class BaseStateManager implements StateManager {
 
     protected abstract void requestState();
 
-    @Override
-    public abstract void stateTimeout();
+    @Override public abstract void stateTimeout();
 
-    @Override
-    public abstract void SMRequestDeliver(SMMessage msg, boolean isBFT);
+    @Override public abstract void SMRequestDeliver(SMMessage msg, boolean isBFT);
 
-    @Override
-    public abstract void SMReplyDeliver(SMMessage msg, boolean isBFT);
+    @Override public abstract void SMReplyDeliver(SMMessage msg, boolean isBFT);
 
     @Override public void initLastCID(int lastCID) {
         this.lastCID = lastCID;

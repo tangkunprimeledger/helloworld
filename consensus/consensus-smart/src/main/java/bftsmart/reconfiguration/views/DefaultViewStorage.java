@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.reconfiguration.views;
 
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
@@ -21,7 +21,6 @@ import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfi
 import java.io.*;
 
 /**
- *
  * @author eduardo
  */
 public class DefaultViewStorage implements ViewStorage {
@@ -39,8 +38,7 @@ public class DefaultViewStorage implements ViewStorage {
         path = path + sep + "currentView";
     }
 
-    @Override
-    public boolean storeView(View view) {
+    @Override public boolean storeView(View view) {
         if (!view.equals(readView())) {
             File f = new File(path);
             try {
@@ -56,17 +54,16 @@ public class DefaultViewStorage implements ViewStorage {
         return true;
     }
 
-    @Override
-    public View readView() {
+    @Override public View readView() {
         File f = new File(path);
         if (!f.exists()) {
             return null;
         }
         try {
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f));
-            View ret = (View) ois.readObject();
+            View ret = (View)ois.readObject();
             ois.close();
-            
+
             return ret;
         } catch (Exception e) {
             return null;
@@ -88,7 +85,7 @@ public class DefaultViewStorage implements ViewStorage {
         try {
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             ObjectInputStream ois = new ObjectInputStream(bais);
-            return (View) ois.readObject();
+            return (View)ois.readObject();
         } catch (Exception e) {
             return null;
         }
