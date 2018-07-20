@@ -239,6 +239,10 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
         return lastCID;
     }
 
+    @Override public int recoverState(ApplicationState state) {
+        return setState(state);
+    }
+
     @Override
     public void setReplicaContext(ReplicaContext replicaContext) {
         this.replicaContext = replicaContext;

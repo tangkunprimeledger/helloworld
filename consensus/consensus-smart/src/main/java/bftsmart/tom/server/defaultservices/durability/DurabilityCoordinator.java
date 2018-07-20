@@ -279,6 +279,11 @@ public abstract class DurabilityCoordinator implements Recoverable, BatchExecuta
 		return lastCID;
 	}
 
+	@Override
+	public int recoverState(ApplicationState recvState) {
+		return setState(recvState);
+	}
+
 	private final byte[] computeHash(byte[] data) {
 		byte[] ret = null;
 		hashLock.lock();

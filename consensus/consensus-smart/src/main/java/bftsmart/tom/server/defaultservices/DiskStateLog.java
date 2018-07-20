@@ -74,7 +74,7 @@ public class DiskStateLog extends StateLog {
              * log.setLength(TEN_MB); log.seek(0);
              */
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Logger.printError("create log file error!",e);
         }
     }
 
@@ -175,9 +175,11 @@ public class DiskStateLog extends StateLog {
         try {
             if (log != null)
                 log.close();
-            new File(logPath).delete();
+            if(logPath!=null){
+                new File(logPath).delete();
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.printError("delete log file error!", e);
         }
     }
 
@@ -275,8 +277,15 @@ public class DiskStateLog extends StateLog {
         if (lastCkpPath != null)
             checkpoint = fr.getCkpState(lastCkpPath);
         CommandsInfo[] log = null;
-        if (logPath != null)
+        if (logPath != null){
             log = fr.getLogState(0, logPath);
+            try {
+                this.log = new RandomAccessFile(logPath, (syncLog ? "rwd" : "rw"));
+                this.log.seek(this.log.length() - 2 * INT_BYTE_SIZE);// Next write will overwrite
+            } catch (Exception e) {
+                Logger.printError("reopen log file failed!",e);
+            }
+        }
         int ckpLastConsensusId = fr.getCkpLastConsensusId();
         int logLastConsensusId = fr.getLogLastConsensusId();
         Logger.println("log last consensus di: " + logLastConsensusId);
