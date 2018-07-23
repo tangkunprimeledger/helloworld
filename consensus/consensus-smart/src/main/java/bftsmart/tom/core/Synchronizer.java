@@ -1272,10 +1272,10 @@ public class Synchronizer {
 
             }
 
+            tom.setInExec(currentCID);
             // resume normal operation
             execManager.restart();
             //leaderChanged = true;
-            tom.setInExec(currentCID);
             if (iAmLeader) {
                 Logger.println("(Synchronizer.finalise) wake up proposer thread");
                 tom.imAmTheLeader();
