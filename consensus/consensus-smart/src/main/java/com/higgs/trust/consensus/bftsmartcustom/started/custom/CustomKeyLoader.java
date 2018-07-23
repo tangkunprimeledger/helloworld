@@ -17,9 +17,11 @@ import java.util.Map;
  */
 @Component public class CustomKeyLoader extends RSAKeyLoader {
 
-    @Autowired private SmartConfig smartConfig;
+    @Autowired
+    private CaKeyLoader caKeyLoader;
 
-    @Autowired private CaKeyLoader caKeyLoader;
+    @Autowired
+    private NumberNameMapping numberNameMapping;
 
     @Override public PublicKey loadPublicKey(int id) throws Exception {
         String pubKey = caKeyLoader.loadPublicKey(getNodeNameById(id + ""));
@@ -38,9 +40,9 @@ import java.util.Map;
     }
 
     private String getNodeNameById(String id) throws Exception {
-        Map<String, String> map = smartConfig.getIdNodeNameMap();
+        Map<String, String> map = numberNameMapping.getMapping();
         if (map == null || map.isEmpty()) {
-            throw new Exception("");
+            throw new Exception("The mapping is empty");
         }
         return map.get(id);
     }

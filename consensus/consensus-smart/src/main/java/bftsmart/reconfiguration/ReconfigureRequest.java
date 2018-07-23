@@ -32,8 +32,17 @@ public class ReconfigureRequest implements Externalizable {
     private byte[] signature;
     private byte[] otherSignature;
     private int number;
+    private String nodeName;
 
     public ReconfigureRequest() {
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
     }
 
     public byte[] getOtherSignature() {
@@ -99,6 +108,7 @@ public class ReconfigureRequest implements Externalizable {
         out.writeInt(otherSignature.length);
         out.write(otherSignature);
         out.writeInt(number);
+        out.writeUTF(nodeName);
     }
 
     @Override public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -118,6 +128,7 @@ public class ReconfigureRequest implements Externalizable {
         this.otherSignature = new byte[in.readInt()];
         in.read(this.otherSignature);
         this.number = in.readInt();
+        this.nodeName = in.readUTF();
     }
 
     @Override public String toString() {

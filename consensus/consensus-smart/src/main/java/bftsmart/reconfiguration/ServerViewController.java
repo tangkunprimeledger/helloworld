@@ -15,27 +15,24 @@
  */
 package bftsmart.reconfiguration;
 
+import bftsmart.tom.util.Logger;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.NumberNameMapping;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.NumberNameMappingForDisk;
+import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.util.TOMUtil;
-import com.higgs.trust.consensus.bftsmartcustom.started.custom.SpringUtil;
+import org.springframework.util.StringUtils;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * @author eduardo
  */
 public class ServerViewController extends ViewController {
-
-    private static final Logger log = LoggerFactory.getLogger(ServerViewController.class);
 
     public static final int ADD_SERVER = 0;
     public static final int REMOVE_SERVER = 1;
@@ -61,11 +58,12 @@ public class ServerViewController extends ViewController {
     public ServerViewController(int procId, String configHome) {
         super(procId, configHome);
         View cv = getViewStore().readView();
-        if (cv == null) {
-            log.info("-- Creating current view from configuration file");
-            reconfigureTo(new View(0, getStaticConf().getInitialView(), getStaticConf().getF(), getInitAdddresses()));
-        } else {
-            log.info("-- Using view stored on disk");
+        if(cv == null){
+            Logger.println("-- Creating current view from configuration file");
+            reconfigureTo(new View(0, getStaticConf().getInitialView(),
+                getStaticConf().getF(), getInitAdddresses()));
+        }else{
+            Logger.println("-- Using view stored on disk");
             reconfigureTo(cv);
         }
 
@@ -106,14 +104,23 @@ public class ServerViewController extends ViewController {
         ReconfigureRequest request = (ReconfigureRequest)TOMUtil.getObject(up.getContent());
         //TODO 修改过，获取配置中的TTP公钥验签
         SmartConfig smartConfig = SpringUtil.getBean(SmartConfig.class);
-        log.info("ttp pubkey");
-        //        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getSender()),
-        if (TOMUtil
-            .verifySignature(getStaticConf().getRSAPublicKey(smartConfig.getTtpPubKey()), request.toString().getBytes(),
-                request.getSignature()) && TOMUtil
-            .verifySignature(getStaticConf().getRSAPublicKey(request.getNumber()), request.toString().getBytes(),
-                request.getOtherSignature())) {
-            log.info("---- ttp sign is true ----");
+        NumberNameMapping numberNameMapping = SpringUtil.getBean(NumberNameMappingForDisk.class);
+        Map<String, String> map = numberNameMapping.getMapping();
+        if (request != null && !StringUtils.isEmpty(request.getNodeName())) {
+            map.put(request.getNumber() + "", request.getNodeName());
+            boolean ret = numberNameMapping.addMapping(map);
+            if (ret) {
+                Logger.println("new number-name mapping add success, " + map.toString());
+            } else {
+                Logger.println("new number-name mapping add fail, " + map.toString());
+            }
+        }
+        Logger.println("ttp pubkey");
+//        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getSender()),
+        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(smartConfig.getTtpPubKey()),
+                request.toString().getBytes(), request.getSignature()) && TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getNumber()),
+                request.toString().getBytes(), request.getOtherSignature())) {
+            Logger.println("---- ttp sign is true ----");
             if (request.getSender() == getStaticConf().getTTPId()) {
                 this.updates.add(up);
             } else {
@@ -149,13 +156,11 @@ public class ServerViewController extends ViewController {
                 }
             }
         } else {
-            log.error("---- ttp sign is false ----");
-            log.error("ttp sign :" + TOMUtil
-                .verifySignature(getStaticConf().getRSAPublicKey(smartConfig.getTtpPubKey()),
+            Logger.println("---- ttp sign is false ----");
+            Logger.println("ttp sign :" + TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(smartConfig.getTtpPubKey()),
                     request.toString().getBytes(), request.getSignature()));
-            log.error("other sign :" + TOMUtil
-                .verifySignature(getStaticConf().getRSAPublicKey(request.getNumber()), request.toString().getBytes(),
-                    request.getOtherSignature()));
+            Logger.println("other sign :" + TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getNumber()),
+                    request.toString().getBytes(), request.getOtherSignature()));
         }
     }
 
@@ -251,9 +256,9 @@ public class ServerViewController extends ViewController {
 
         View newV = new View(currentView.getId() + 1, nextV, f, addresses);
 
-        log.info("new view:" + newV);
-        log.info("installed on CID: " + cid);
-        log.info("lastJoinSet: " + jSet);
+        Logger.println("new view:" + newV);
+        Logger.println("installed on CID: " + cid);
+        Logger.println("lastJoinSet: " + jSet);
 
         //TODO:Remove all information stored about each process in rSet
         //processes execute the leave!!!
