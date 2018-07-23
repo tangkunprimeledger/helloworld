@@ -31,7 +31,6 @@ import java.util.UUID;
  */
 @Service @Slf4j public class NodeConsensusService {
 
-    @Autowired private ConsensusStateMachine consensusStateMachine;
     @Autowired private NodeState nodeState;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private NodeClient nodeClient;
