@@ -316,6 +316,8 @@ public class StandardStateManager extends BaseStateManager {
                     } else if (otherReplicaState == null && (SVController.getCurrentViewN() / 2) < getReplies()) {
                         Logger.println(
                             "otherReplicaState == null && (SVController.getCurrentViewN() / 2) < getReplies()");
+                        //rollback lastCID
+                        lastCID = this.tomLayer.getLastExec();
                         waitingCID = -1;
                         reset();
 
@@ -343,6 +345,8 @@ public class StandardStateManager extends BaseStateManager {
                         reset();
                         if (stateTimer != null)
                             stateTimer.cancel();
+                        //rollback lastCID
+                        lastCID = this.tomLayer.getLastExec();
                         waitingCID = -1;
                         //requestState();
                     } else {

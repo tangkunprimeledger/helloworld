@@ -28,6 +28,7 @@ import bftsmart.tom.util.BatchReader;
 import bftsmart.tom.util.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -210,7 +211,7 @@ public final class DeliveryThread extends Thread {
                             new CertifiedDecision(this.controller.getStaticConf().getProcessId(), d.getConsensusId(),
                                 d.getValue(), d.getDecisionEpoch().proof);
                         cDecs[count] = cDec;
-
+                        Logger.println("decision request:" + Arrays.toString(requests[count]));
                         // cons.firstMessageProposed contains the performance counters
                         if (requests[count][0].equals(d.firstMessageProposed)) {
                             long time = requests[count][0].timestamp;

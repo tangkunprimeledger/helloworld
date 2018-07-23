@@ -21,6 +21,7 @@ import bftsmart.statemanagement.ApplicationState;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.leaderchange.CertifiedDecision;
 import bftsmart.tom.util.BatchBuilder;
+import bftsmart.tom.util.Logger;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -139,10 +140,14 @@ public class DefaultApplicationState implements ApplicationState {
             byte[] value = bb.makeBatch(requests, ci.msgCtx[0].getNumOfNonces(), ci.msgCtx[0].getSeed(),
                 ci.msgCtx[0].getTimestamp(), controller);
 
+            Logger.println("find the certified decision!");
+
             //Assemble and return the certified decision
             return new CertifiedDecision(pid, getLastCID(), value, proof);
-        } else
+        } else {
+            Logger.println("no certified decision!");
             return null; // there was no proof for the consensus
+        }
     }
 
     /**
@@ -277,4 +282,9 @@ public class DefaultApplicationState implements ApplicationState {
         return hash;
     }
 
+    @Override public String toString() {
+        return "DefaultApplicationState{" + "state=" + Arrays.toString(state) + ", stateHash=" + Arrays
+            .toString(stateHash) + ", lastCID=" + lastCID + ", hasState=" + hasState + ", lastCheckpointCID="
+            + lastCheckpointCID + ", logHash=" + Arrays.toString(logHash) + ", pid=" + pid + '}';
+    }
 }
