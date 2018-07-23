@@ -10,14 +10,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Map;
 
-
 /**
  * @author: zhouyafeng
  * @create: 2018/06/15 17:29
  * @description:
  */
-@Component
-public class CustomKeyLoader extends RSAKeyLoader{
+@Component public class CustomKeyLoader extends RSAKeyLoader {
 
     @Autowired
     private CaKeyLoader caKeyLoader;
@@ -25,22 +23,19 @@ public class CustomKeyLoader extends RSAKeyLoader{
     @Autowired
     private NumberNameMapping numberNameMapping;
 
-    @Override
-    public PublicKey loadPublicKey(int id) throws Exception {
+    @Override public PublicKey loadPublicKey(int id) throws Exception {
         String pubKey = caKeyLoader.loadPublicKey(getNodeNameById(id + ""));
         PublicKey ret = getPublicKeyFromString(pubKey);
         return ret;
     }
 
-    @Override
-    public PrivateKey loadPrivateKey() throws Exception {
+    @Override public PrivateKey loadPrivateKey() throws Exception {
         String priKey = caKeyLoader.loadPrivateKey();
         PrivateKey ret = getPrivateKeyFromString(priKey);
         return ret;
     }
 
-    @Override
-    public PublicKey loadPublicKey(String pubKeyStr) throws Exception {
+    @Override public PublicKey loadPublicKey(String pubKeyStr) throws Exception {
         return getPublicKeyFromString(pubKeyStr);
     }
 

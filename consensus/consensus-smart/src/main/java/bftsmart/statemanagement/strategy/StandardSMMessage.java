@@ -24,9 +24,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 /**
- *
  * @author Marcel Santos
- *
  */
 public class StandardSMMessage extends SMMessage {
 
@@ -44,6 +42,7 @@ public class StandardSMMessage extends SMMessage {
 
     /**
      * Retrieves the replica that should send the state
+     *
      * @return The replica that should send the state
      */
     public int getReplica() {

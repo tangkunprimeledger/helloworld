@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.reconfiguration;
 
 import bftsmart.reconfiguration.util.TOMConfiguration;
@@ -23,7 +23,6 @@ import bftsmart.reconfiguration.views.ViewStorage;
 import java.net.SocketAddress;
 
 /**
- *
  * @author eduardo
  */
 public class ViewController {
@@ -37,17 +36,15 @@ public class ViewController {
         this.staticConf = new TOMConfiguration(procId);
     }
 
-    
     public ViewController(int procId, String configHome) {
         this.staticConf = new TOMConfiguration(procId, configHome);
     }
 
-    
     public final ViewStorage getViewStore() {
         if (this.viewStore == null) {
             String className = staticConf.getViewStoreClass();
             try {
-                this.viewStore = (ViewStorage) Class.forName(className).newInstance();
+                this.viewStore = (ViewStorage)Class.forName(className).newInstance();
             } catch (Exception e) {
                 this.viewStore = new DefaultViewStorage();
             }
@@ -56,21 +53,21 @@ public class ViewController {
         return this.viewStore;
     }
 
-    public View getCurrentView(){
-        if(this.currentView == null){
-             this.currentView = getViewStore().readView();
+    public View getCurrentView() {
+        if (this.currentView == null) {
+            this.currentView = getViewStore().readView();
         }
         return this.currentView;
     }
-    
-    public View getLastView(){
+
+    public View getLastView() {
         return this.lastView;
     }
-    
+
     public SocketAddress getRemoteAddress(int id) {
         return getCurrentView().getAddress(id);
     }
-    
+
     public void reconfigureTo(View newView) {
         this.lastView = this.currentView;
         this.currentView = newView;

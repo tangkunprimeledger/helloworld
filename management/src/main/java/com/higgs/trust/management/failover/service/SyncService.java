@@ -99,7 +99,7 @@ import java.util.List;
         Long clusterHeight;
         int tryTimes = 0;
         do {
-            clusterHeight = blockSyncService.getClusterHeight(3);
+            clusterHeight = blockSyncService.getClusterHeight(properties.getTryTimes());
             if (clusterHeight != null) {
                 break;
             }

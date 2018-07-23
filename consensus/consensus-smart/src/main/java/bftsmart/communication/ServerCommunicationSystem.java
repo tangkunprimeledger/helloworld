@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
- *
  * @author alysson
  */
 public class ServerCommunicationSystem extends Thread {
@@ -122,7 +121,7 @@ public class ServerCommunicationSystem extends Thread {
                     messageHandler.verifyPending();
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace(System.err);
+                Logger.printError(e.getMessage(), e);
             } catch (Exception e) {
                 Logger.printError("server communication error:", e);
             }
@@ -133,12 +132,12 @@ public class ServerCommunicationSystem extends Thread {
     }
 
     /**
-     * Send a message to target processes. If the message is an instance of 
+     * Send a message to target processes. If the message is an instance of
      * TOMMessage, it is sent to the clients, otherwise it is set to the
      * servers.
      *
      * @param targets the target receivers of the message
-     * @param sm the message to be sent
+     * @param sm      the message to be sent
      */
     public void send(int[] targets, SystemMessage sm) {
         if (sm instanceof TOMMessage) {

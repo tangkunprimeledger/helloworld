@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.communication.client.netty;
 
 import bftsmart.reconfiguration.ViewController;
@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- *
  * @author Paulo Sousa
  */
 public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
@@ -58,18 +57,17 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
     //private long max=0;
     //private Storage st;
     //private int count = 0;
-   
+
     //private Signature signatureEngine;
-    
-    
-     //******* EDUARDO END **************//
-    
+
+    //******* EDUARDO END **************//
+
     private boolean useMAC;
 
     private org.slf4j.Logger logger = LoggerFactory.getLogger(NettyTOMMessageDecoder.class);
 
-    
-    public NettyTOMMessageDecoder(boolean isClient, Map sessionTable, int macLength, ViewController controller, ReentrantReadWriteLock rl, int signatureLength, boolean useMAC) {
+    public NettyTOMMessageDecoder(boolean isClient, Map sessionTable, int macLength, ViewController controller,
+        ReentrantReadWriteLock rl, int signatureLength, boolean useMAC) {
         this.isClient = isClient;
         this.sessionTable = sessionTable;
         this.macSize = macLength;
@@ -81,8 +79,7 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
         bftsmart.tom.util.Logger.println("new NettyTOMMessageDecoder!!, isClient=" + isClient);
     }
 
-    @Override
-    protected void decode(ChannelHandlerContext context, ByteBuf buffer, List<Object> list) throws Exception  {
+    @Override protected void decode(ChannelHandlerContext context, ByteBuf buffer, List<Object> list) throws Exception {
 
         // Wait until the length prefix is available.
         if (buffer.readableBytes() < 4) {
@@ -169,24 +166,26 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
                     }
                 } else {
                     //creates MAC/publick key stuff if it's the first message received from the client
-                    bftsmart.tom.util.Logger.println("Creating MAC/public key stuff, first message from client" + sm.getSender());
+                    bftsmart.tom.util.Logger
+                        .println("Creating MAC/public key stuff, first message from client" + sm.getSender());
                     bftsmart.tom.util.Logger.println("sessionTable size=" + sessionTable.size());
 
                     rl.readLock().unlock();
-                    
+
                     SecretKeyFactory fac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
-                    String str = sm.getSender() + ":" + this.controller.getStaticConf().getProcessId();                                        
+                    String str = sm.getSender() + ":" + this.controller.getStaticConf().getProcessId();
                     PBEKeySpec spec = new PBEKeySpec(str.toCharArray());
                     SecretKey authKey = fac.generateSecret(spec);
-            
+
                     Mac macSend = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
                     macSend.init(authKey);
                     Mac macReceive = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
                     macReceive.init(authKey);
-                    NettyClientServerSession cs = new NettyClientServerSession(context.channel(), macSend, macReceive, sm.getSender());
-                                       
+                    NettyClientServerSession cs =
+                        new NettyClientServerSession(context.channel(), macSend, macReceive, sm.getSender());
+
                     rl.writeLock().lock();
-//                    logger.info("PUT INTO SESSIONTABLE - [client id]:"+sm.getSender()+" [channel]: "+cs.getChannel());
+                    //                    logger.info("PUT INTO SESSIONTABLE - [client id]:"+sm.getSender()+" [channel]: "+cs.getChannel());
                     sessionTable.put(sm.getSender(), cs);
                     bftsmart.tom.util.Logger.println("#active clients " + sessionTable.size());
                     rl.writeLock().unlock();
@@ -199,9 +198,8 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
             Logger.println("Decoded reply from " + sm.getSender() + " with sequence number " + sm.getSequence());
             list.add(sm);
         } catch (Exception ex) {
-            bftsmart.tom.util.Logger.println("Impossible to decode message: "+
-                    ex.getMessage());
-            ex.printStackTrace();
+            bftsmart.tom.util.Logger.println("Impossible to decode message: " + ex.getMessage());
+            Logger.printError(ex.getMessage(), ex);
         }
         return;
     }
@@ -209,7 +207,7 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
     boolean verifyMAC(int id, byte[] data, byte[] digest) {
         //long startInstant = System.nanoTime();
         rl.readLock().lock();
-        Mac macReceive = ((NettyClientServerSession) sessionTable.get(id)).getMacReceive();
+        Mac macReceive = ((NettyClientServerSession)sessionTable.get(id)).getMacReceive();
         rl.readLock().unlock();
         boolean result = Arrays.equals(macReceive.doFinal(data), digest);
         //long duration = System.nanoTime() - startInstant;

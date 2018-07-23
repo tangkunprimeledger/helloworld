@@ -15,7 +15,7 @@
   "bftSmart": {
     "systemConfigs": {
       "myId": "2",
-      "myClientId":"1102",
+      "myClientId": "1102",
       "configs": {
         "system.communication.useSenderThread": true,
         "system.communication.defaultkeys": true,

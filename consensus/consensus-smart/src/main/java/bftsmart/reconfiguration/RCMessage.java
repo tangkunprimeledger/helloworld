@@ -15,7 +15,7 @@ public class RCMessage implements Serializable {
     private int num;
     private String ip;
     private int port;
-    private Hashtable<Integer,String> properties = new Hashtable<Integer,String>();
+    private Hashtable<Integer, String> properties = new Hashtable<Integer, String>();
     private byte[] signature;
     private String nodeName;
 
@@ -83,14 +83,13 @@ public class RCMessage implements Serializable {
         this.signature = signature;
     }
 
-    @Override
-    public String toString(){
-        String ret = "Sender :"+ sender+";";
-        Iterator<Integer> it = properties.keySet().iterator() ;
-        while(it.hasNext()){
+    @Override public String toString() {
+        String ret = "Sender :" + sender + ";";
+        Iterator<Integer> it = properties.keySet().iterator();
+        while (it.hasNext()) {
             int key = it.next();
             String value = properties.get(key);
-            ret = ret+key+value;
+            ret = ret + key + value;
         }
         return ret;
     }

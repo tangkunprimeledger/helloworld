@@ -71,9 +71,9 @@
 //                ConsensusCommit<? extends AbstractConsensusCommand> commit = new SmartCommitAdapter<>((AbstractConsensusCommand)c);
 //                method.invoke(this,commit);
 //            } catch (IllegalAccessException e) {
-//                e.printStackTrace();
+//                Logger.printError(e.getMessage(),e);
 //            } catch (InvocationTargetException e) {
-//                e.printStackTrace();
+//                Logger.printError(e.getMessage(),e);
 //            }
 //        };
 //    }
@@ -84,9 +84,9 @@
 //                ConsensusCommit<? extends AbstractConsensusCommand> commit = new SmartCommitAdapter<>((AbstractConsensusCommand)c);
 //                return method.invoke(this,commit);
 //            } catch (IllegalAccessException e) {
-//                e.printStackTrace();
+//                Logger.printError(e.getMessage(),e);
 //            } catch (InvocationTargetException e) {
-//                e.printStackTrace();
+//                Logger.printError(e.getMessage(),e);
 //            }
 //            return null;
 //        };
