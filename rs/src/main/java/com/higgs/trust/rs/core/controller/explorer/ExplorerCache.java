@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
      * 缓存对象
      */
     private Cache<Object, String> CACHE =
-        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(5, TimeUnit.MINUTES)
+        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(1, TimeUnit.MINUTES)
             .build(new CacheLoader<Object, String>() {
                 @Override public String load(Object key) throws Exception {
                     return null;
