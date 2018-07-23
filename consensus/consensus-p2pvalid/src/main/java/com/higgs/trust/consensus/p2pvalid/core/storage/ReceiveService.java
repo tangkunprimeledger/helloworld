@@ -278,7 +278,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
         if (receiveCommand.getStatus().equals(COMMAND_QUEUED_APPLY)) {
             log.info("command not consume by biz, retry app num {}, add command to delay queue : {}",
-                receiveCommand.getRetryApplyNum(), receiveCommand);
+                receiveCommand.getRetryApplyNum(), receiveCommand.getMessageDigest());
             receiveCommandDao.increaseRetryApplyNum(receiveCommand.getMessageDigest());
             Long delayTime = (receiveCommand.getRetryApplyNum() + 1) * delayIncreaseInterval;
             delayTime = Math.min(delayTime, delayDelayMax);
