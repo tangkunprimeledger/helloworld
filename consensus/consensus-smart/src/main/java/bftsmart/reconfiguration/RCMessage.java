@@ -17,6 +17,15 @@ public class RCMessage implements Serializable {
     private int port;
     private Hashtable<Integer,String> properties = new Hashtable<Integer,String>();
     private byte[] signature;
+    private String nodeName;
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
 
     public int getSender() {
         return sender;

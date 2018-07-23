@@ -23,7 +23,7 @@ public class SendRCMessage {
     private static final Logger log = LoggerFactory.getLogger(SendRCMessage.class);
     private RCMessage rcMessage;
 
-    public void add(int num, String ip, int port) {
+    public void add(int num, String ip, int port, String nodeName) {
         if (num < 0) {
             log.error("This value cannot be less than 0: {}", num);
             return;
@@ -42,12 +42,13 @@ public class SendRCMessage {
         rcMessage.setIp(ip);
         rcMessage.setPort(port);
         rcMessage.setOperation("add");
+        rcMessage.setNodeName(nodeName);
         Hashtable<Integer, String> hashtable = new Hashtable<>();
         hashtable.put(0, rcMessage.getNum() + ":" + rcMessage.getIp() + ":" + rcMessage.getPort());
         rcMessage.setProperties(hashtable);
     }
 
-    public void remove(int num) {
+    public void remove(int num, String nodeName) {
         if (num < 0) {
             log.error("This value cannot be less than 0: {}", num);
             return;
@@ -56,6 +57,7 @@ public class SendRCMessage {
         rcMessage = new RCMessage();
         rcMessage.setNum(num);
         rcMessage.setOperation("rem");
+        rcMessage.setNodeName(nodeName);
         Hashtable<Integer, String> hashtable = new Hashtable<>();
         hashtable.put(1, String.valueOf(num));
         rcMessage.setProperties(hashtable);

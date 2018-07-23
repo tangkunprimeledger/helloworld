@@ -20,10 +20,10 @@ import java.util.Map;
 public class CustomKeyLoader extends RSAKeyLoader{
 
     @Autowired
-    private SmartConfig smartConfig;
+    private CaKeyLoader caKeyLoader;
 
     @Autowired
-    private CaKeyLoader caKeyLoader;
+    private NumberNameMapping numberNameMapping;
 
     @Override
     public PublicKey loadPublicKey(int id) throws Exception {
@@ -45,9 +45,9 @@ public class CustomKeyLoader extends RSAKeyLoader{
     }
 
     private String getNodeNameById(String id) throws Exception {
-        Map<String, String> map = smartConfig.getIdNodeNameMap();
+        Map<String, String> map = numberNameMapping.getMapping();
         if (map == null || map.isEmpty()) {
-            throw new Exception("");
+            throw new Exception("The mapping is empty");
         }
         return map.get(id);
     }

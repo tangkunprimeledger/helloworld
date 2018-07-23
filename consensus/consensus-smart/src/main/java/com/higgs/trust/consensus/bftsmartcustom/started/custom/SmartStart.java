@@ -19,6 +19,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.util.StringUtils;
 
 import java.security.PublicKey;
+import java.util.Map;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,9 @@ public class SmartStart implements ConsensusStateMachine {
     @Value("${bftSmart.systemConfigs.configs.system.ttp.id}")
     private String ttpId;
 
+    @Value("${higgs.trust.nodeName}")
+    private String nodeName;
+
     @Autowired
     private RSAKeyLoader rsaKeyLoader;
 
@@ -48,6 +52,9 @@ public class SmartStart implements ConsensusStateMachine {
 
     @Autowired
     private SmartCommitReplicateComposite machine;
+
+    @Autowired
+    private NumberNameMapping numberNameMapping;
 
     private Server server;
 
@@ -71,7 +78,7 @@ public class SmartStart implements ConsensusStateMachine {
             }
         }
         SendRCMessage sendRCMessage = new SendRCMessage();
-        sendRCMessage.remove(Integer.valueOf(myId));
+        sendRCMessage.remove(Integer.valueOf(myId), nodeName);
         sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
@@ -90,7 +97,7 @@ public class SmartStart implements ConsensusStateMachine {
             }
         }
         SendRCMessage sendRCMessage = new SendRCMessage();
-        sendRCMessage.add(Integer.valueOf(myId), ip, port);
+        sendRCMessage.add(Integer.valueOf(myId), ip, port, nodeName);
         sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
@@ -103,6 +110,19 @@ public class SmartStart implements ConsensusStateMachine {
             return;
         }
         if (!StringUtils.isEmpty(myId)) {
+
+            Map<String, String> map = smartConfig.getIdNodeNameMap();
+            if (map != null) {
+                boolean addRet = numberNameMapping.addMapping(map);
+                if (addRet) {
+                    log.info("number-name mapping add success,{}", map.toString());
+                } else {
+                    log.info("number-name mapping add fail,{}", map.toString());
+                }
+            } else {
+                log.warn("can not read number-name mapping config");
+                return;
+            }
             while (true) {
                 try {
                     PublicKey publicKey = rsaKeyLoader.loadPublicKey(Integer.valueOf(myId));
@@ -119,6 +139,7 @@ public class SmartStart implements ConsensusStateMachine {
                 }
             }
             log.info("smart server initializing...");
+
             server = new Server(Integer.valueOf(myId), consensusSnapshot, machine);
             log.info("smart server Initialization complete");
 
