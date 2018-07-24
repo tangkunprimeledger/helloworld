@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
      * 缓存对象
      */
     private Cache<Object, String> CACHE =
-        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(5, TimeUnit.MINUTES)
+        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(1, TimeUnit.MINUTES)
             .build(new CacheLoader<Object, String>() {
                 @Override public String load(Object key) throws Exception {
                     return null;
@@ -52,15 +53,17 @@ import java.util.concurrent.TimeUnit;
             String value = null;
             value = CACHE.get(JSON.toJSONString(key), new Callable<String>() {
                 @Override public String call() throws Exception {
-                    return null;
+                    return "-1";
                 }
             });
-            if (StringUtils.isEmpty(value)) {
+            if (StringUtils.isEmpty(value) || StringUtils.equals("-1",value)) {
                 return null;
             }
             return JSON.parseObject(value, clazz);
         } catch (CacheLoader.InvalidCacheLoadException e) {
+            log.error("get has error", e);
         } catch (ExecutionException e) {
+            log.error("get has error", e);
         } catch (Exception e) {
             log.error("get has error", e);
         }

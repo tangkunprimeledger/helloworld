@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.common.util.asynctosync;
 
-import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.common.constant.Constant;
 import org.testng.annotations.Test;
 
 public class HashBlockingMapTest {

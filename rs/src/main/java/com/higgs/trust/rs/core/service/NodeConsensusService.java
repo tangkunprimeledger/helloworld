@@ -3,7 +3,6 @@ package com.higgs.trust.rs.core.service;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.integration.NodeClient;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -31,7 +30,6 @@ import java.util.UUID;
  */
 @Service @Slf4j public class NodeConsensusService {
 
-    @Autowired private ConsensusStateMachine consensusStateMachine;
     @Autowired private NodeState nodeState;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private NodeClient nodeClient;

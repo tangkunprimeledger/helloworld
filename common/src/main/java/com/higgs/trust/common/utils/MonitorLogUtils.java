@@ -1,7 +1,7 @@
-package com.higgs.trust.slave.common.util;
+package com.higgs.trust.common.utils;
 
-import com.higgs.trust.slave.common.constant.Constant;
-import com.higgs.trust.slave.common.constant.LoggerName;
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.constant.LoggerName;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;

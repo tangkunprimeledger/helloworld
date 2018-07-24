@@ -30,9 +30,10 @@ import java.util.Set;
 
     @Override
     public void process(ActionData actionData) {
-        log.info("[RegisterPolicyHandler.process] start, actionData:{}", actionData);
-
         RegisterPolicy bo = (RegisterPolicy)actionData.getCurrentAction();
+
+        log.info("[RegisterPolicyHandler.process] start, actionData:{}", bo);
+
         if (null == bo) {
             log.error("[RegisterPolicyHandler.process] convert to RegisterPolicy error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);

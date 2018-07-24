@@ -181,8 +181,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-  <!-- <build>
+  <build>
         <finalName>rs</finalName>
         <plugins>
             <plugin>
@@ -216,7 +215,7 @@
                 </executions>
             </plugin>
         </plugins>
-    </build>-->
+    </build>
 
     <distributionManagement>
         <repository>

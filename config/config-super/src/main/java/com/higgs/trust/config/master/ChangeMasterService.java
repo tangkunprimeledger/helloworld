@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.config.master;
 
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.*;
 import com.higgs.trust.consensus.config.NodeProperties;
@@ -151,7 +152,7 @@ import java.util.concurrent.*;
                 }
 
             } catch (Throwable throwable) {
-                log.error("{}", throwable);
+                log.error("change master verify failed", throwable);
             }
 
         });
@@ -173,6 +174,7 @@ import java.util.concurrent.*;
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("submit change master to consensus failed!", e);
+            MonitorLogUtils.logIntMonitorInfo("submit_change_master_command_failed", 1);
         }
     }
 

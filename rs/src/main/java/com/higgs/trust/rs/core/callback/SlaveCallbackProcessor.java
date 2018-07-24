@@ -129,8 +129,17 @@ import java.util.List;
             log.debug("[onFailover]only call self");
             return;
         }
-        //add tx,status=END
-        coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
+        //check exists
+        CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(tx.getTxId(),false);
+        if(coreTransactionPO == null){
+            //add tx,status=END
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
+        }else{
+            //update tx,status=END
+            CoreTxStatusEnum from = CoreTxStatusEnum.formCode(coreTransactionPO.getStatus());
+            coreTxRepository.updateStatus(tx.getTxId(), from, CoreTxStatusEnum.END);
+            log.info("[onFailover]updateStatus txId:{},from:{},to:{}",tx.getTxId(),from,CoreTxStatusEnum.END);
+        }
         //save process result
         coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
         //callback custom rs
