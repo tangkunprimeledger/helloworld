@@ -7,6 +7,7 @@ import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.MonitorLogUtils;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.integration.ca.CaInitClient;
@@ -131,6 +132,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
             log.info(
                 "[CaInitServiceImpl.acquirePubKeys]  error acquire all nodes' pubKey, caActionList size = {},caActionList={}, nodeList.size={},nodeList={}",
                 caActionList.size(), caActionList.toString(), nodeList.size(), nodeList.toString());
+            MonitorLogUtils.logTextMonitorInfo("acquire_pubKey_error",1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR,
                 "[CaInitServiceImpl.acquirePubKeys] cluster init CA error, can not acquire enough pubKeys");
         }
