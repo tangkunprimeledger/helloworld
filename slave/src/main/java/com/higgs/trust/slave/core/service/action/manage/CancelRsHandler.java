@@ -72,7 +72,6 @@ public class CancelRsHandler implements ActionHandler {
             throw new SlaveException(SlaveErrorEnum.SLAVE_RS_ALREADY_CANCELED_ERROR);
         }
 
-        //TODO snapshot
         rsSnapshotHandler.updateRsNode(rsId, RsNodeStatusEnum.CANCELED);
         log.info("[CancelRSHandler.process] finish");
     }

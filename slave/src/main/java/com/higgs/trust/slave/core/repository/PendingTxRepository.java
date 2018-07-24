@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.repository;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.MonitorLogUtils;
 import com.higgs.trust.slave.dao.pack.PendingTransactionDao;
 import com.higgs.trust.slave.dao.po.pack.PendingTransactionPO;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -85,10 +86,14 @@ import java.util.List;
             int r = pendingTransactionDao.batchInsert(list);
             if (r != signedTransactions.size()) {
                 log.error("[batchSavePendingTransaction]batch insert pending transaction has error");
+                //TODO 添加告警
+                MonitorLogUtils.logIntMonitorInfo("BATCH_INSERT_PENDING_TX_ERROR", 1);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
         } catch (DuplicateKeyException e) {
             log.error("[batchSavePendingTransaction] is idempotent packHeight:{}", packHeight);
+            //TODO 添加告警
+            MonitorLogUtils.logIntMonitorInfo("PENDING_TRANSACTION_IDEMPOTENT_EXCEPTION", 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
     }
@@ -169,6 +174,7 @@ import java.util.List;
                 log.error("Pending transaction which status equals 'INIT' can not have height value, txId={}",
                     pendingTransactionPO.getTxId());
                 //TODO 添加告警
+                MonitorLogUtils.logIntMonitorInfo("PENDING_TX_STATUS_EXCEPTION", 1);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
             SignedTransaction signedTransaction = convertPendingTxPOToSignedTx(pendingTransactionPO);
@@ -200,6 +206,8 @@ import java.util.List;
             signedTransaction = JSON.parseObject(pendingTransactionPO.getTxData(), SignedTransaction.class);
         } catch (Throwable e) {
             log.error("signedTransaction json parse exception. ", e);
+            //TODO 添加告警
+            MonitorLogUtils.logIntMonitorInfo("PENDING_TX_TO_SIGNED_TX_EXCEPTION", 1);
             return null;
         }
         return signedTransaction;

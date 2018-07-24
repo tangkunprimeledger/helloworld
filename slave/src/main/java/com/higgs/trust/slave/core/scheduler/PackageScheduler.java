@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.slave.common.util.MonitorLogUtils;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
@@ -109,6 +110,7 @@ import java.util.Set;
         if (null == maxBlockHeight) {
             log.error("please initial Genesis block.");
             //TODO 添加告警
+            MonitorLogUtils.logIntMonitorInfo("GENESIS_BLOCK_NOT_EXISTS", 1);
             return;
         }
         //check if the next package to be process is exited

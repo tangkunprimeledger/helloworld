@@ -14,6 +14,7 @@ import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.MonitorLogUtils;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
@@ -129,6 +130,7 @@ import java.util.stream.Collectors;
             if (!checkHash) {
                 log.error("receive package is not the same as db package. height={}", pack.getHeight());
                 //TODO 添加告警
+                MonitorLogUtils.logIntMonitorInfo("PACKAGE_HASH_NOT_EQUALS", 1);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             } else {
                 log.info("receive package is the same as db package. height={}", pack.getHeight());
@@ -355,6 +357,8 @@ import java.util.stream.Collectors;
         boolean r = blockService.compareBlockHeader(blockHeader, header);
         if (!r) {
             log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", header.getHeight());
+            //TODO 添加告警
+            MonitorLogUtils.logIntMonitorInfo("BLOCK_HEADER_NOT_EQUALS", 1);
             //change state to offline
             nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
