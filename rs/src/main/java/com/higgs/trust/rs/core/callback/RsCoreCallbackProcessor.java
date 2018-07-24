@@ -140,6 +140,7 @@ import org.springframework.stereotype.Component;
         if (policyEnum != null) {
             switch (policyEnum) {
                 case NA:
+                case REGISTER_RS:
                     return;
                 case REGISTER_POLICY:
                     processRegisterPolicy(respData);
