@@ -3,6 +3,7 @@ package com.higgs.trust.contract.rhino.types;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +35,9 @@ public class NativeJavaMap extends NativeJavaObject {
     @Override
     public Object get(String name, Scriptable start) {
         Object result = this.map.get(name);
+        if (result instanceof BigInteger) {
+            return new BigDecimalWrap((BigInteger) result);
+        }
         return result;
     }
 
