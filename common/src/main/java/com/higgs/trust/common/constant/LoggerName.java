@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.common.constant;
+package com.higgs.trust.common.constant;
 
 /**
  * @Description:

@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.api;
 
-import com.higgs.trust.slave.common.constant.LoggerName;
-import com.higgs.trust.slave.common.util.MonitorLogUtils;
+import com.higgs.trust.common.constant.LoggerName;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.common.util.Profiler;
 import com.higgs.trust.slave.integration.usercenter.vo.User;
 import lombok.extern.slf4j.Slf4j;

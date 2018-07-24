@@ -3,7 +3,7 @@ package com.higgs.trust.slave.core.service.action;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.MonitorLogUtils;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
