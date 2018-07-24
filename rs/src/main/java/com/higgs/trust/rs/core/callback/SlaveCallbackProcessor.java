@@ -157,12 +157,6 @@ import java.util.List;
                 throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR);
             }
             callbackType = voteRule.getCallbackType();
-        }else{
-            //default UTXO policy should call back self
-            if(policyEnum == InitPolicyEnum.UTXO_ISSUE
-                || policyEnum == InitPolicyEnum.UTXO_DESTROY){
-                callbackType = CallbackTypeEnum.SELF;
-            }
         }
         log.debug("[getCallbackType]callbackType:{}", callbackType);
         return callbackType;
