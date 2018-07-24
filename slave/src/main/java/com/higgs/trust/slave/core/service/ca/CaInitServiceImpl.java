@@ -7,7 +7,7 @@ import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.MonitorLogUtils;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.integration.ca.CaInitClient;
