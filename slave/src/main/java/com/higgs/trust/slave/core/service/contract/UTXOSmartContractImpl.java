@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.contract;
 
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -15,8 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j @Service public class UTXOSmartContractImpl implements UTXOSmartContract {
 
@@ -34,11 +33,11 @@ import java.util.List;
         ExecuteConfig executeConfig = new ExecuteConfig();
         executeConfig.setInstructionCountQuota(100000000);
         executeConfig.allow(UTXOContextService.class)
-            .allow(UTXO.class)
-            .allow(UTXOAction.class)
-            .allow(TxIn.class)
-            .allow(TxOut.class)
-            .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
+                .allow(UTXO.class)
+                .allow(UTXOAction.class)
+                .allow(TxIn.class)
+                .allow(TxOut.class)
+                .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);
         manager.setExecuteConfig(executeConfig);
@@ -72,11 +71,17 @@ import java.util.List;
 
         Profiler.enter("execute utxo contract");
         try {
+            Long startTime = System.currentTimeMillis();
             ExecuteEngineManager manager = getExecuteEngineManager();
             ExecuteContext context = ExecuteContext.newContext(contextData);
             ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
             Object result = engine.execute("verify");
+            Long duration = System.currentTimeMillis() - startTime;
+            MonitorLogUtils.logIntMonitorInfo("contract_execute_time_cost", duration);
             return (Boolean)result;
+        } catch (QuotaExceededException ex) {
+            MonitorLogUtils.logIntMonitorInfo("contract_execute_quota_exceeded", 1);
+            throw ex;
         } finally {
             Profiler.release();
         }
