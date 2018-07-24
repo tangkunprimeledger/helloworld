@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,15 +53,17 @@ import java.util.concurrent.TimeUnit;
             String value = null;
             value = CACHE.get(JSON.toJSONString(key), new Callable<String>() {
                 @Override public String call() throws Exception {
-                    return null;
+                    return "-1";
                 }
             });
-            if (StringUtils.isEmpty(value)) {
+            if (StringUtils.isEmpty(value) || StringUtils.equals("-1",value)) {
                 return null;
             }
             return JSON.parseObject(value, clazz);
         } catch (CacheLoader.InvalidCacheLoadException e) {
+            log.error("get has error", e);
         } catch (ExecutionException e) {
+            log.error("get has error", e);
         } catch (Exception e) {
             log.error("get has error", e);
         }
