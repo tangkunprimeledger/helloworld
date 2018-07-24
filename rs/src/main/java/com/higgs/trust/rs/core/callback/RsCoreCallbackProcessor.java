@@ -141,6 +141,14 @@ import org.springframework.stereotype.Component;
             switch (policyEnum) {
                 case NA:
                 case REGISTER_RS:
+                case CONTRACT_ISSUE:
+                case CONTRACT_DESTROY:
+                case CA_UPDATE:
+                case CA_CANCEL:
+                case CA_AUTH:
+                case CANCEL_RS:
+                case NODE_JOIN:
+                case NODE_LEAVE:
                     return;
                 case REGISTER_POLICY:
                     processRegisterPolicy(respData);
