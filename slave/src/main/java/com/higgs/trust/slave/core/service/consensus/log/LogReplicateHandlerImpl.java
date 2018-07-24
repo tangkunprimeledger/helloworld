@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
-
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
@@ -8,12 +7,10 @@ import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
+import com.higgs.trust.slave.common.util.MonitorLogUtils;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -74,6 +71,7 @@ import java.util.concurrent.TimeUnit;
             } catch (Throwable e) {
                 log.error("replicate log failed! height = {}", packageVO.getHeight(), e);
                 //TODO 添加告警
+                MonitorLogUtils.logIntMonitorInfo("SEND_PACKAGE_TO_CONSENSUS_TIMEOUT", 1);
             }
         }
 

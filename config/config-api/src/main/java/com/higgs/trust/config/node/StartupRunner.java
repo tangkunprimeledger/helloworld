@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.config.node;
 
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Component;
             nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
         } catch (Exception e) {
             log.error("startup error:", e);
+            MonitorLogUtils.logIntMonitorInfo("startup_failed", 1);
             nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
         }
     }
