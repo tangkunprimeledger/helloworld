@@ -2,10 +2,9 @@ package com.higgs.trust.slave.core.scheduler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.slave.common.constant.Constant;
-import com.higgs.trust.slave.common.util.MonitorLogUtils;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.BlockRepository;

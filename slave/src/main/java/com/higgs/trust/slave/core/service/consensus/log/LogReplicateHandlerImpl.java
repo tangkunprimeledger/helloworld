@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
@@ -7,7 +8,6 @@ import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.MonitorLogUtils;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
