@@ -65,7 +65,7 @@ public class TxOutRepository {
             affectRows = txOutJDBCDao.batchInsert(txOutPOList);
         } catch (DuplicateKeyException e) {
             log.error("batch insert UTXO fail, because there is DuplicateKeyException for txOutPOList:", txOutPOList);
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_DUPLICAT_KEY_EXCEPTION.getMonitorTarget(), 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_DUPLICATE_KEY_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
         return affectRows == txOutPOList.size();

@@ -9,7 +9,7 @@ public enum MonitorTargetEnum {
 
     SLAVE_DATA_NOT_EXIST_EXCEPTION("slave data not exist exception", "slave_data_not_exist_exception"),
     SLAVE_DATA_NOT_UPDATED_EXCEPTION("slave data not updated exception", "slave_data_not_updated_exception"),
-    SLAVE_DUPLICAT_KEY_EXCEPTION("slave duplicat key exception", "slave_duplicat_key_exception"),
+    SLAVE_DUPLICATE_KEY_EXCEPTION("slave duplicate key exception", "slave_duplicate_key_exception"),
     SLAVE_BATCH_INSERT_PENDING_TX_ERROR("批量插入pengding_tx异常", "slave_batch_insert_pending_tx_error"),
     SLAVE_PENDING_TRANSACTION_IDEMPOTENT_EXCEPTION("批量插入pending_tx幂等", "slave_pending_transaction_idempotent_exception"),
     SLAVE_PENDING_TX_STATUS_EXCEPTION("pending_tx状态异常", "slave_pending_tx_status_exception"),
