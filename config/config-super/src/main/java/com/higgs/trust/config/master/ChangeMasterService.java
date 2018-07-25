@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.config.master;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.*;
@@ -174,7 +175,7 @@ import java.util.concurrent.*;
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("submit change master to consensus failed!", e);
-            MonitorLogUtils.logIntMonitorInfo("submit_change_master_command_failed", 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SUBMIT_CHANGE_MASTER_COMMAND_FAILED, 1);
         }
     }
 

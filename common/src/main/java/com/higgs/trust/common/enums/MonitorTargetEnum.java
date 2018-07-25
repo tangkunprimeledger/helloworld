@@ -6,10 +6,7 @@ package com.higgs.trust.common.enums;
  * @desc monitor target enum
  */
 public enum MonitorTargetEnum {
-
-    SLAVE_DATA_NOT_EXIST_EXCEPTION("slave data not exist exception", "slave_data_not_exist_exception"),
-    SLAVE_DATA_NOT_UPDATED_EXCEPTION("slave data not updated exception", "slave_data_not_updated_exception"),
-    SLAVE_DUPLICATE_KEY_EXCEPTION("slave duplicate key exception", "slave_duplicate_key_exception"),
+    //@formatter:off
     SLAVE_BATCH_INSERT_PENDING_TX_ERROR("批量插入pengding_tx异常", "slave_batch_insert_pending_tx_error"),
     SLAVE_PENDING_TRANSACTION_IDEMPOTENT_EXCEPTION("批量插入pending_tx幂等", "slave_pending_transaction_idempotent_exception"),
     SLAVE_PENDING_TX_STATUS_EXCEPTION("pending_tx状态异常", "slave_pending_tx_status_exception"),
@@ -31,7 +28,14 @@ public enum MonitorTargetEnum {
     SLAVE_SNAPSHOT_QUERY_EXCEPTION("slave snapshot query exception", "slave_snapshot_query_exception"),
     SLAVE_SNAPSHOT_PACKAGE_OVERSIZE_EXCEPTION("slave snapshot package oversize exception", "slave_snapshot_package_oversize_exception"),
     SLAVE_SNAPSHOT_FLUSH_EXCEPTION("slave snapshot flush exception", "slave_snapshot_flush_exception"),
+    STARTUP_FAILED("启动失败", "startup_failed"),
+    REJECTED_PACKAGE_COMMAND("拒绝package command", "rejected_package_command"),
+    SUBMIT_CHANGE_MASTER_COMMAND_FAILED("提交切换master command失败", "submit_change_master_command_failed"),
+    FAILOVER_BLOCK_ERROR("failover the block failed","failover_block_error"),
+    SELF_CHECK_FAILED("self check failed", "self_check_failed"),
+    SYNC_BLOCKS_FAILED("sync block failed", "sync_blocks_failed"),
     ;
+    //@formatter:on
 
     MonitorTargetEnum(String description, String monitorTarget) {
         this.description = description;

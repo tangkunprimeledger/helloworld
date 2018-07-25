@@ -3,6 +3,7 @@
  */
 package com.higgs.trust.config.filter;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.master.ChangeMasterService;
 import com.higgs.trust.config.master.MasterHeartbeatService;
@@ -40,7 +41,7 @@ import org.springframework.stereotype.Component;
             String nodeName = command.getNodeName();
             if (!termManager.isTermHeight(term, nodeName, height)) {
                 log.warn("package command rejected,current termInfo:{}", termManager.getTermInfo(term));
-                MonitorLogUtils.logIntMonitorInfo("rejected_package_command", 1);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.REJECTED_PACKAGE_COMMAND, 1);
                 commit.close();
                 return;
             }

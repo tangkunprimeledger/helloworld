@@ -1,5 +1,6 @@
 package com.higgs.trust.management.failover.service;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -87,7 +88,7 @@ import java.util.List;
             } while (cache.getMinHeight() <= clusterHeight ? clusterHeight > currentHeight + properties.getThreshold() :
                 currentHeight + 1 < cache.getMinHeight());
         } catch (Exception e) {
-            MonitorLogUtils.logIntMonitorInfo("sync_blocks_failed", 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SYNC_BLOCKS_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
         } finally {
             clusterInfo.refresh();
