@@ -1,7 +1,9 @@
 package com.higgs.trust.rs.core.service;
 
 import com.google.common.collect.Lists;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -85,6 +87,7 @@ import java.util.List;
             respData = new RespData();
             respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
             respData.setMsg("tx handle timeout");
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_WAIT_TIME_OUT_ERROR.getMonitorTarget(), 1);
         }
 
         return respData;
@@ -471,8 +474,10 @@ import java.util.List;
             }
         } catch (SlaveException e) {
             log.error("[submitToSlave] has slave error", e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 1);
         } catch (Throwable e) {
             log.error("[submitToSlave] has unknown error", e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 1);
         }
     }
 

@@ -15,6 +15,8 @@ public enum MonitorTargetEnum {
     SLAVE_PACKAGE_HASH_NOT_EQUAL("相同高度的packagehash不一致", "slave_package_hash_not_equal"),
     SLAVE_BLOCK_HEADER_NOT_EQUAL("blockheader不一致", "slave_block_header_not_equal"),
     SLAVE_PACKAGE_PROCESS_ERROR("package处理发生未知异常", "slave_package_process_error"),
+    RS_WAIT_TIME_OUT_ERROR("RS等待超时异常", "rs_wait_time_out_error"),
+    RS_SUBMIT_TO_SLAVE_ERROR("RS提交交易到SLAVE发生未知异常", "rs_submit_to_slave_error"),
     ;
 
 
