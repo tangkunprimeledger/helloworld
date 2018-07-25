@@ -445,7 +445,7 @@ import java.util.stream.Collectors;
                     log.debug("[callbackRS]start fail over rs txId:{}", txId);
                 }
                 callbackHandler.onFailover(respData, tx.getSignatureList(),blockHeader);
-                return;
+                continue;
             }
             //callback business
             if (log.isDebugEnabled()) {
