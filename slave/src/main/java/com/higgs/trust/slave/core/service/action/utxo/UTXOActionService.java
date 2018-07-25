@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.action.utxo;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
@@ -143,6 +144,7 @@ public class UTXOActionService {
         // inputs and outputs can not be null or empty together
         if (CollectionUtils.isEmpty(utxoAction.getInputList()) && CollectionUtils.isEmpty(utxoAction.getOutputList())) {
             log.error("The inputs and outputs are null in utxoAction");
+           // MonitorLogUtils.logIntMonitorInfo();
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 

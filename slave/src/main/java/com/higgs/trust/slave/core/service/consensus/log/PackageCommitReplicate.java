@@ -1,14 +1,14 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
 import com.higgs.trust.consensus.annotation.Replicator;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.slave.api.vo.PackageVO;
-import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Package;
@@ -28,15 +28,21 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 @Replicator
-@Slf4j @Component public class PackageCommitReplicate implements ApplicationContextAware,InitializingBean {
+@Slf4j
+@Component
+public class PackageCommitReplicate implements ApplicationContextAware, InitializingBean {
 
-    @Autowired PackageService packageService;
+    @Autowired
+    PackageService packageService;
 
-    @Autowired ExecutorService packageThreadPool;
+    @Autowired
+    ExecutorService packageThreadPool;
 
-    @Autowired PackageProcess packageProcess;
+    @Autowired
+    PackageProcess packageProcess;
 
-    @Autowired private NodeState nodeState;
+    @Autowired
+    private NodeState nodeState;
 
     private ApplicationContext applicationContext;
 
@@ -51,13 +57,17 @@ import java.util.concurrent.ExecutorService;
     public void packageReplicated(ConsensusCommit<PackageCommand> commit) {
         // validate param
         if (null == commit) {
-            log.error(
-                "[LogReplicateHandler.packageReplicated]param validate failed, cause package command commit is null ");
+            log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause package command commit is null ");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
         PackageVO packageVO = commit.operation().get();
-        log.info("package reached consensus, log height: {}", packageVO);
+        log.info("package reached consensus, log height: {}", packageVO.getHeight());
+
+        if (log.isDebugEnabled()) {
+            log.debug("package reached consensus, log packageVO: {}", packageVO);
+        }
+
 
         // validate param
         if (null == packageVO) {
@@ -105,7 +115,8 @@ import java.util.concurrent.ExecutorService;
             this.height = height;
         }
 
-        @Override public void run() {
+        @Override
+        public void run() {
             /**
              * if the header satisfy the following conditions, just async start process
              * 1.header.height == max(blockHeight) + 1
@@ -115,11 +126,13 @@ import java.util.concurrent.ExecutorService;
         }
     }
 
-    @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    @Override public void afterPropertiesSet() {
+    @Override
+    public void afterPropertiesSet() {
         Map<String, PackageListener> beansOfType = applicationContext.getBeansOfType(PackageListener.class);
         listeners.addAll(beansOfType.values());
     }
