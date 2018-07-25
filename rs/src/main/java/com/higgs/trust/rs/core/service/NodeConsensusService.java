@@ -36,6 +36,8 @@ import java.util.UUID;
     @Autowired private NodeClient nodeClient;
     @Autowired private ClusterNodeRepository clusterNodeRepository;
 
+    @Autowired private ConsensusStateMachine consensusStateMachine;
+
     private static final String SUCCESS = "sucess";
     private static final String FAIL = "fail";
 
@@ -51,7 +53,7 @@ import java.util.UUID;
         ClusterNode clusterNode = clusterNodeRepository.getClusterNode(nodeState.getNodeName());
         log.info("clusterNode={}", JSON.toJSONString(clusterNode));
 
-        if (null != clusterNode && clusterNode.isP2pStatus() == false) {
+        /*if (null != clusterNode && clusterNode.isP2pStatus() == false) {
             RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), nodeState.getNodeName());
             if (!respData.isSuccess()) {
                 return FAIL;
@@ -62,7 +64,10 @@ import java.util.UUID;
                 log.error("[joinConsensus] error occured while thread sleep", e);
                 return FAIL;
             }
-        }
+        }*/
+
+
+        consensusStateMachine.joinConsensus();
 
         log.info("[joinConsensus] start to transform node status from offline to running");
         nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
