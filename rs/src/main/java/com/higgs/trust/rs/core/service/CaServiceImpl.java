@@ -79,17 +79,22 @@ import java.util.*;
         // build pubKey and priKey
         CaVO caVO = generateKeyPair();
 
-        // send CA auth request
-        RespData respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
-        if (!respData.isSuccess()) {
-            log.error("send tx error");
-            return FAIL;
+        try{
+            // send CA auth request
+            RespData respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
+            if (!respData.isSuccess()) {
+                log.error("send tx error");
+                return FAIL;
+            }
+        }catch (Throwable e){
+            log.error("send ca auth error ", e);
         }
 
         // insert ca into db (temp)
         ca = new Ca();
         BeanUtils.copyProperties(caVO, ca);
         caRepository.insertCa(ca);
+        log.info("isnert ca end (temp)");
 
         return SUCCESS;
     }
