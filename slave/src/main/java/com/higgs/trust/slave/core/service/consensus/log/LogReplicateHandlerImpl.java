@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.consensus.config.NodeProperties;
@@ -70,8 +71,7 @@ import java.util.concurrent.TimeUnit;
                 flag = true;
             } catch (Throwable e) {
                 log.error("replicate log failed! height = {}", packageVO.getHeight(), e);
-                //TODO 添加告警
-                MonitorLogUtils.logIntMonitorInfo("SEND_PACKAGE_TO_CONSENSUS_TIMEOUT", 1);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SEND_PACKAGE_TO_CONSENSUS_TIMEOUT.getMonitorTarget(), 1);
             }
         }
 

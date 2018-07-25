@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.scheduler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -109,8 +110,7 @@ import java.util.Set;
 
         if (null == maxBlockHeight) {
             log.error("please initial Genesis block.");
-            //TODO 添加告警
-            MonitorLogUtils.logIntMonitorInfo("GENESIS_BLOCK_NOT_EXISTS", 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_GENESIS_BLOCK_NOT_EXISTS.getMonitorTarget(), 1);
             return;
         }
         //check if the next package to be process is exited

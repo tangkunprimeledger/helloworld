@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -129,8 +130,7 @@ import java.util.stream.Collectors;
             boolean checkHash = StringUtils.equals(buildPackHash(pack), buildPackHash(packageBO));
             if (!checkHash) {
                 log.error("receive package is not the same as db package. height={}", pack.getHeight());
-                //TODO 添加告警
-                MonitorLogUtils.logIntMonitorInfo("PACKAGE_HASH_NOT_EQUALS", 1);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_HASH_NOT_EQUAL.getMonitorTarget(), 1);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             } else {
                 log.info("receive package is the same as db package. height={}", pack.getHeight());
@@ -357,8 +357,7 @@ import java.util.stream.Collectors;
         boolean r = blockService.compareBlockHeader(blockHeader, header);
         if (!r) {
             log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", header.getHeight());
-            //TODO 添加告警
-            MonitorLogUtils.logIntMonitorInfo("BLOCK_HEADER_NOT_EQUALS", 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_BLOCK_HEADER_NOT_EQUAL.getMonitorTarget(), 1);
             //change state to offline
             nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
