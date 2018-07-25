@@ -25,6 +25,7 @@ import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -86,8 +87,11 @@ import java.util.*;
                 log.error("send tx error");
                 return FAIL;
             }
-        }catch (Throwable e){
-            log.error("send ca auth error ", e);
+        }catch (HystrixRuntimeException e1){
+            log.error("wait timeOut", e1);
+        }catch (Throwable e2){
+            log.error("send ca auth error",e2);
+            return FAIL;
         }
 
         // insert ca into db (temp)

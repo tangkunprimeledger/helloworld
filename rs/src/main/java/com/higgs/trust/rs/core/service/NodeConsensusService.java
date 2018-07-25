@@ -66,13 +66,18 @@ import java.util.UUID;
             }
         }*/
 
-
-        consensusStateMachine.joinConsensus();
+        //        consensusStateMachine.joinConsensus();
 
         log.info("[joinConsensus] start to transform node status from offline to running");
-        nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
-        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-        nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+        try {
+            nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
+            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
+            nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+        } catch (Throwable e) {
+            log.error("join consensus error, nodeName = {}",nodeState.getNodeName());
+            return FAIL;
+        }
+
         log.info("[joinConsensus] end transform node status from offline to running");
         return SUCCESS;
     }
