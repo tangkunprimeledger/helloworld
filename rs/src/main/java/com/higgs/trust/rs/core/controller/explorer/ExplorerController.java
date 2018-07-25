@@ -1,13 +1,12 @@
 package com.higgs.trust.rs.core.controller.explorer;
 
 import com.higgs.trust.rs.core.api.RsBlockChainService;
+import com.higgs.trust.rs.core.controller.explorer.vo.QueryBlockByHeightVO;
+import com.higgs.trust.rs.core.controller.explorer.vo.QueryTxVO;
 import com.higgs.trust.slave.api.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,15 +22,10 @@ import java.util.List;
     /**
      * query block info by page
      *
-     * @param pageNo
-     * @param pageSize
      * @return
      */
-    @RequestMapping(value = "/queryBlocksByPage") @ResponseBody public RespData<List<BlockVO>> queryBlocksByPage(
-        int pageNo, int pageSize) {
-        QueryBlockVO req = new QueryBlockVO();
-        req.setPageNo(pageNo);
-        req.setPageSize(pageSize);
+    @RequestMapping(value = "/queryBlocksByPage", method = RequestMethod.POST) @ResponseBody
+    public RespData<List<BlockVO>> queryBlocksByPage(@RequestBody QueryBlockVO req) {
 
         RespData<List<BlockVO>> respData = explorerCache.get(req, RespData.class);
         if (respData != null) {
@@ -54,8 +48,8 @@ import java.util.List;
      * @param req
      * @return
      */
-    @RequestMapping(value = "/queryTxsByPage") @ResponseBody public RespData<List<CoreTransactionVO>> queryTxsByPage(
-        QueryTransactionVO req) {
+    @RequestMapping(value = "/queryTxsByPage", method = RequestMethod.POST) @ResponseBody
+    public RespData<List<CoreTransactionVO>> queryTxsByPage(@RequestBody QueryTransactionVO req) {
 
         RespData<List<CoreTransactionVO>> respData = explorerCache.get(req, RespData.class);
         if (respData != null) {
@@ -75,11 +69,12 @@ import java.util.List;
     /**
      * query block info by height
      *
-     * @param height
+     * @param vo
      * @return
      */
-    @RequestMapping(value = "/queryBlockByHeight") @ResponseBody public RespData<BlockVO> queryBlockByHeight(
-        Long height) {
+    @RequestMapping(value = "/queryBlockByHeight", method = RequestMethod.POST) @ResponseBody
+    public RespData<BlockVO> queryBlockByHeight(@RequestBody QueryBlockByHeightVO vo) {
+        Long height = vo.getHeight();
         RespData<BlockVO> respData = explorerCache.get(height, RespData.class);
         if (respData != null) {
             return respData;
@@ -97,10 +92,12 @@ import java.util.List;
     /**
      * query tx info by tx_id
      *
-     * @param txId
+     * @param vo
      * @return
      */
-    @RequestMapping(value = "/queryTxById") @ResponseBody public RespData<CoreTransactionVO> queryTxById(String txId) {
+    @RequestMapping(value = "/queryTxById", method = RequestMethod.POST) @ResponseBody
+    public RespData<CoreTransactionVO> queryTxById(@RequestBody QueryTxVO vo) {
+        String txId = vo.getTxId();
         RespData<CoreTransactionVO> respData = explorerCache.get(txId, RespData.class);
         if (respData != null) {
             return respData;
