@@ -18,6 +18,7 @@ public enum MonitorTargetEnum {
     SLAVE_SEND_PACKAGE_TO_CONSENSUS_TIMEOUT("发送package给协议层超时", "slave_send_package_to_consensus_timeout"),
     SLAVE_PACKAGE_HASH_NOT_EQUAL("相同高度的packagehash不一致", "slave_package_hash_not_equal"),
     SLAVE_BLOCK_HEADER_NOT_EQUAL("blockheader不一致", "slave_block_header_not_equal"),
+    SLAVE_PACKAGE_PROCESS_ERROR("package处理发生未知异常", "slave_package_process_error"),
     SLAVE_UTXO_ACTION_TYPE_NOT_LEGAL_EXCEPTION("UTXO action type not legal exception", "slave_utxo_action_type_not_legal_exception"),
     SLAVE_UTXO_CONTRACT_ADDRESS_NOT_LEGAL_EXCEPTION("UTXO contract address not legal exception", "slave_utxo_contract_address_not_legal_exception"),
     SLAVE_UTXO_ACTION_INDEX_NOT_LEGAL_EXCEPTION("UTXO contract address not legal exception", "slave_utxo_action_index_not_legal_exception"),

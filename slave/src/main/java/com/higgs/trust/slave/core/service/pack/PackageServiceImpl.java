@@ -253,6 +253,7 @@ import java.util.stream.Collectors;
             //snapshot transactions should be destroy
             snapshotService.destroy();
             log.error("[package.process]has unknown error");
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_PERSISTING_ERROR, e);
         } finally {
             Profiler.release();
