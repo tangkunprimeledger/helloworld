@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -86,14 +87,12 @@ import java.util.List;
             int r = pendingTransactionDao.batchInsert(list);
             if (r != signedTransactions.size()) {
                 log.error("[batchSavePendingTransaction]batch insert pending transaction has error");
-                //TODO 添加告警
-                MonitorLogUtils.logIntMonitorInfo("BATCH_INSERT_PENDING_TX_ERROR", 1);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_BATCH_INSERT_PENDING_TX_ERROR.getMonitorTarget(), 1);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
         } catch (DuplicateKeyException e) {
             log.error("[batchSavePendingTransaction] is idempotent packHeight:{}", packHeight);
-            //TODO 添加告警
-            MonitorLogUtils.logIntMonitorInfo("PENDING_TRANSACTION_IDEMPOTENT_EXCEPTION", 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PENDING_TRANSACTION_IDEMPOTENT_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
     }
@@ -173,8 +172,7 @@ import java.util.List;
             if (StringUtils.equals(PendingTxStatusEnum.INIT.getCode(), pendingTransactionPO.getStatus())) {
                 log.error("Pending transaction which status equals 'INIT' can not have height value, txId={}",
                     pendingTransactionPO.getTxId());
-                //TODO 添加告警
-                MonitorLogUtils.logIntMonitorInfo("PENDING_TX_STATUS_EXCEPTION", 1);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PENDING_TX_STATUS_EXCEPTION.getMonitorTarget(), 1);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             }
             SignedTransaction signedTransaction = convertPendingTxPOToSignedTx(pendingTransactionPO);
@@ -206,8 +204,7 @@ import java.util.List;
             signedTransaction = JSON.parseObject(pendingTransactionPO.getTxData(), SignedTransaction.class);
         } catch (Throwable e) {
             log.error("signedTransaction json parse exception. ", e);
-            //TODO 添加告警
-            MonitorLogUtils.logIntMonitorInfo("PENDING_TX_TO_SIGNED_TX_EXCEPTION", 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PENDING_TX_TO_SIGNED_TX_EXCEPTION.getMonitorTarget(), 1);
             return null;
         }
         return signedTransaction;
