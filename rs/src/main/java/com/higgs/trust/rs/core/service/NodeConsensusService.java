@@ -73,6 +73,7 @@ import java.util.UUID;
         nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
         nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
         nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+        log.info("[joinConsensus] end transform node status from offline to running");
         return SUCCESS;
     }
 
