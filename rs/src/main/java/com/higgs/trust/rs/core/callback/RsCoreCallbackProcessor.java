@@ -1,6 +1,8 @@
 package com.higgs.trust.rs.core.callback;
 
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.rs.common.enums.RequestEnum;
@@ -15,7 +17,6 @@ import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -207,7 +208,7 @@ import org.springframework.stereotype.Component;
     private void processCaUpdate(RespData<CoreTransaction> respData) {
         if (!respData.isSuccess()) {
             log.info("[processCaUpdate]ca update is fail,code:{}", respData.getRespCode());
-            MonitorLogUtils.logTextMonitorInfo("ca_update_error", 1);
+            MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_UPDATE_ERROR, 1);
             return;
         }
 
@@ -235,7 +236,7 @@ import org.springframework.stereotype.Component;
     private void processCaCancel(RespData<CoreTransaction> respData) {
         if (!respData.isSuccess()) {
             log.info("[processCaCancel]ca cancel is fail,code:{}", respData.getRespCode());
-            MonitorLogUtils.logTextMonitorInfo("ca_cancel_error", 1);
+            MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_CANCEL_ERROR, 1);
             return;
         }
 
@@ -267,7 +268,7 @@ import org.springframework.stereotype.Component;
     private void processCaAuth(RespData<CoreTransaction> respData) {
         if (!respData.isSuccess()) {
             log.info("[processCaAuth]ca auth is fail,code:{}", respData.getRespCode());
-            MonitorLogUtils.logTextMonitorInfo("ca_auth_error", 1);
+            MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_AUTH_ERROR, 1);
             return;
         }
 
@@ -278,7 +279,7 @@ import org.springframework.stereotype.Component;
     private void processNodeJoin(RespData<CoreTransaction> respData) {
         if (!respData.isSuccess()) {
             log.info("[processNodeJoin]node join is fail,code:{}", respData.getRespCode());
-            MonitorLogUtils.logTextMonitorInfo("node_join_error", 1);
+            MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_JOIN_ERROR, 1);
             return;
         }
 
@@ -289,7 +290,7 @@ import org.springframework.stereotype.Component;
     private void processNodeLeave(RespData<CoreTransaction> respData) {
         if (!respData.isSuccess()) {
             log.info("[processNodeLeave]node leave is fail,code:{}", respData.getRespCode());
-            MonitorLogUtils.logTextMonitorInfo("node_leave_error", 1);
+            MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_LEAVE_ERROR, 1);
             return;
         }
 
