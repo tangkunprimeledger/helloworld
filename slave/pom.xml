@@ -260,4 +260,40 @@
             <version>4.3.13.RELEASE</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>slave</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.higgs.trust</groupId>
+                                    <artifactId>slave</artifactId>
+                                    <type>jar</type>
+                                    <destFileName>trust.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>../target/</outputDirectory>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
