@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.core.service.action.dataidentity;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
@@ -49,6 +51,7 @@ public class DataIdentityService {
         DataIdentity dataIdentity = dataIdentityHandler.getDataIdentity(dataIdentityAction.getIdentity());
         if (null != dataIdentity) {
             log.error("DataIdentity：{} idempotent exception for identity:{}", dataIdentity, dataIdentityAction.getIdentity());
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_DATA_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
 

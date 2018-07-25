@@ -3,6 +3,8 @@ package com.higgs.trust.slave.core.service.snapshot;
 import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.api.enums.SnapshotValueStatusEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -354,6 +356,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             if (isExistedInTxCache || isExistedInPackageCache) {
                 log.error("Insert snapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache duplicate key exception", key1, key2, value);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_DUPLICATE_KEY_EXCEPTION.getMonitorTarget(), 1);
                 throw new DuplicateKeyException("Insert data into txCache duplicate key exception");
             }
 
@@ -459,6 +462,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             innerMap.put(innerKey, (Value) transferValue(putUpdateValue));
         } else {
             log.error("Update snapshotBizKeyEnum: {} , innerKey : {} into packageCache exception, the data to be updated is not exist in packageCache  and and globalCache and DB and txCache", key1, innerKey);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION, "Update data into packageCache  exception, the data to be updated is not exist in packageCache  and and globalCache and DB and txCache");
         }
     }
@@ -586,7 +590,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         //check whether there is snapshotBizKeyEnum in globalCache
         if (!globalCache.containsKey(bizKey)) {
             log.error("There is no key:{} for bizCache in globalCache!", bizKey);
-            //TODO lingchao 加监控
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION.getMonitorTarget(), 1);
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
         }
         LoadingCache<String, Object> merkleCache = globalCache.get(bizKey);
@@ -679,7 +683,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         //check whether there is snapshotBizKeyEnum in globalCache
         if (!globalCache.containsKey(key1)) {
             log.error("There is no key:{} for bizCache in globalCache!", key1);
-            //TODO lingchao 加监控
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION.getMonitorTarget(), 1);
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
         }
         //1.Get data from globalCache.It will return data when there is data in the globalCache
@@ -695,6 +699,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         } catch (Throwable e) {
             if (!(e instanceof com.google.common.cache.CacheLoader.InvalidCacheLoadException)) {
                 log.error("There is  exception happened to query data for  snapshotBizKeyEnum: {} , innerKey : {}  in  snapshot and db", key1, innerKey, e);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_QUERY_EXCEPTION.getMonitorTarget(), 1);
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_QUERY_EXCEPTION, e);
             }
             log.debug("There is no data for  snapshotBizKeyEnum: {} , innerKey : {}  in  snapshot and db", key1, innerKey);
@@ -730,7 +735,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
                 //check  cache size
                 if (innerCache.size() >= PACKAGE_MAXIMUN_SIZE) {
                     log.error("Cache size  : {} for key:{} in packageCache is equal or bigger than {}!", innerCache.size(), snapshotBizKeyEnum, PACKAGE_MAXIMUN_SIZE);
-                    //TODO lingchao 加监控
+                    MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_PACKAGE_OVERSIZE_EXCEPTION.getMonitorTarget(), 1);
                     throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_CACHE_SIZE_NOT_ENOUGH_EXCEPTION);
                 }
 
@@ -749,7 +754,6 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * @param txCacheInnerEntry
      * @param snapshotBizKeyEnum
      */
-    //TODO lingchao check whether cover all case to put into data
     private void putDataIntoPackageCache(ConcurrentHashMap<String, Value> packageInnerCache, Map.Entry<String, Value> txCacheInnerEntry, SnapshotBizKeyEnum snapshotBizKeyEnum) {
 
         String innerKey = txCacheInnerEntry.getKey();
@@ -774,6 +778,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         //if the txCache value is insert status and there is data in package cache, it is a exception
         if (isInsert && isExistedInPackageCache) {
             log.error("Insert snapshotBizKeyEnum: {} , innerKey : {} into packageCache duplicate key exception", snapshotBizKeyEnum, innerKey);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_DUPLICATE_KEY_EXCEPTION.getMonitorTarget(), 1);
             throw new DuplicateKeyException("Insert data into packageCache duplicate key exception");
         }
 
@@ -803,7 +808,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //check whether there is snapshotBizKeyEnum in globalCache
             if (!globalCache.containsKey(snapshotBizKeyEnum)) {
                 log.error("There is no key:{} in globalCache!", snapshotBizKeyEnum);
-                //TODO lingchao 加监控
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION.getMonitorTarget(), 1);
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
             }
 
@@ -852,7 +857,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //check whether there is snapshotBizKeyEnum in cacheLoaderCache
             if (!cacheLoaderCache.containsKey(snapshotBizKeyEnum)) {
                 log.error("There is no key:{} for cacheLoader in cacheLoaderCache!", snapshotBizKeyEnum);
-                //TODO lingchao 加监控
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION.getMonitorTarget(), 1);
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
             }
 
@@ -889,10 +894,11 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
                 //flush update data into db
                 if (CollectionUtils.isNotEmpty(updateList) && !cacheLoader.batchUpdate(updateList)) {
                     log.error("Flush data for batchUpdate db failed error");
-                    throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_UPDATE_EXCEPTION);
+                     throw new SnapshotException(SlaveErrorEnum.SLAVE_DATA_NOT_UPDATE_EXCEPTION);
                 }
             } catch (Throwable e) {
                 log.error("Flush db exception", e);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_FLUSH_EXCEPTION.getMonitorTarget(), 1);
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_FLUSH_DATA_EXCEPTION);
             }
         }
@@ -949,9 +955,8 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      */
     private Object transferValue(Object object) {
         //TODO find a way make the object const
-//        String valueTemp = JSON.toJSONString(object);
-//        return JSON.parseObject(valueTemp, object.getClass());
-        return object;
+        String valueTemp = JSON.toJSONString(object);
+        return JSON.parseObject(valueTemp, object.getClass());
     }
 
     /**
