@@ -50,7 +50,7 @@ public class LCManager {
     private List<TOMMessage> currentRequestTimedOut = null;
 
     //requests received in STOP messages
-    private Set<TOMMessage> requestsFromSTOP = null;
+    private List<TOMMessage> requestsFromSTOP = null;
 
     //data structures for info in stop, sync and catch-up messages
     private HashMap<Integer, HashSet<Integer>> stops;
@@ -166,9 +166,10 @@ public class LCManager {
      */
     public void addRequestsFromSTOP(TOMMessage[] requestsFromSTOP) {
         if (this.requestsFromSTOP == null)
-            this.requestsFromSTOP = new LinkedHashSet<>();
+            this.requestsFromSTOP = new LinkedList<>();
 
-        this.requestsFromSTOP.addAll(Arrays.asList(requestsFromSTOP));
+        for (TOMMessage m : requestsFromSTOP)
+            this.requestsFromSTOP.add(m);
     }
 
     /**
@@ -177,7 +178,7 @@ public class LCManager {
      * @return requests received in STOP messages
      */
     public List<TOMMessage> getRequestsFromSTOP() {
-        return new ArrayList<>(requestsFromSTOP);
+        return requestsFromSTOP;
     }
 
     /**
