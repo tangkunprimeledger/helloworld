@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.contract;
 
-import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.ContractException;
@@ -92,15 +91,9 @@ import org.springframework.stereotype.Service;
 
     public Object execute(String address, ExecuteContextData data, Object... args) {
         try {
-            Long startTime = System.currentTimeMillis();
             Profiler.enter(String.format("execute contract at %s", address));
             Object result = execute(address, address, data, args);
-            Long duration = System.currentTimeMillis() - startTime;
-            MonitorLogUtils.logIntMonitorInfo("contract_execute_time_cost", duration);
             return result;
-        } catch (QuotaExceededException ex) {
-            MonitorLogUtils.logIntMonitorInfo("contract_execute_quota_exceeded", 1);
-            throw ex;
         } finally {
             Profiler.release();
         }
@@ -131,15 +124,9 @@ import org.springframework.stereotype.Service;
                 log.warn("binding is null");
                 return null;
             }
-            Long startTime = System.currentTimeMillis();
             Object args = com.alibaba.fastjson.JSON.parse(binding.getArgs());
             Object result = execute(binding.getContractAddress(), binding.getHash(), data, args);
-            Long duration = System.currentTimeMillis() - startTime;
-            MonitorLogUtils.logIntMonitorInfo("contract_execute_time_cost", duration);
             return result;
-        } catch (QuotaExceededException ex) {
-            MonitorLogUtils.logIntMonitorInfo("contract_execute_quota_exceeded", 1);
-            throw ex;
         } finally {
             Profiler.release();
         }

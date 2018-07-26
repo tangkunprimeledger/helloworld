@@ -1,5 +1,6 @@
 package com.higgs.trust.contract.rhino;
 
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.contract.*;
 import com.higgs.trust.contract.rhino.function.PrintNativeFunction;
 import com.higgs.trust.contract.rhino.function.SafeEvalFunction;
@@ -69,7 +70,10 @@ public class RhinoExecuteEngine implements ExecuteEngine {
                     log.debug("try to initialization contract, but init method not find");
                     return null;
                 }
-                throw new SmartContractException(String.format("method %s not find", methodName));
+                String msg = String.format("method %s not find", methodName);
+                SmartContractException exception = new SmartContractException(msg);
+                MonitorLogUtils.logTextMonitorInfo("contract_execute_exception", msg);
+                throw exception;
             }
             Object result = ((Function) func).call(context, scope, scope, bizArgs);
 
@@ -83,13 +87,18 @@ public class RhinoExecuteEngine implements ExecuteEngine {
                 return ((NativeJavaObject) result).unwrap();
             }
             return result;
+        } catch (QuotaExceededException ex) {
+            MonitorLogUtils.logIntMonitorInfo("contract_execute_quota_exceeded", 1);
+            throw  ex;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            MonitorLogUtils.logTextMonitorInfo("contract_execute_exception", ex.getMessage());
             throw new SmartContractException(ex.getMessage());
         } finally {
             Context.exit();
             ExecuteContext.Clear();
-            log.info("execute contract duration: {} ms", System.currentTimeMillis() - startTime);
+            long duration = System.currentTimeMillis() - startTime;
+            MonitorLogUtils.logIntMonitorInfo("contract_execute_time_cost", duration);
+            log.info("execute contract duration: {} ms", duration);
         }
     }
 

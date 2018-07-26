@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.contract;
 
-import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -71,18 +70,12 @@ import org.springframework.stereotype.Service;
 
         Profiler.enter("execute utxo contract");
         try {
-            Long startTime = System.currentTimeMillis();
             ExecuteEngineManager manager = getExecuteEngineManager();
             ExecuteContext context = ExecuteContext.newContext(contextData);
             ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
             Object result = engine.execute("verify");
-            Long duration = System.currentTimeMillis() - startTime;
-            MonitorLogUtils.logIntMonitorInfo("contract_execute_time_cost", duration);
             return (Boolean)result;
-        } catch (QuotaExceededException ex) {
-            MonitorLogUtils.logIntMonitorInfo("contract_execute_quota_exceeded", 1);
-            throw ex;
-        } finally {
+        }  finally {
             Profiler.release();
         }
     }
