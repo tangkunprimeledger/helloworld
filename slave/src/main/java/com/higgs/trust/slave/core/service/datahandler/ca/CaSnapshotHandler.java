@@ -5,11 +5,7 @@ import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
-import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
 import com.higgs.trust.slave.model.bo.ca.Ca;
-import com.higgs.trust.slave.model.bo.config.ClusterConfig;
-import com.higgs.trust.slave.model.bo.config.ClusterNode;
-import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,9 +29,12 @@ import org.springframework.stereotype.Service;
     @Override public void authCa(Ca ca) {
         // operate merkle tree
         check(ca);
+        log.info("start to auth ca,user={}", ca.getUser());
         if (null != caSnapshotAgent.getCa(ca.getUser())) {
+            log.info("snapshot and db do not have ca");
             caSnapshotAgent.updateCa(ca);
         } else {
+            log.info("insert ca ...");
             caSnapshotAgent.saveCa(ca);
         }
 

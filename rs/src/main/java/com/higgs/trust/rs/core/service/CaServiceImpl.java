@@ -3,6 +3,7 @@ package com.higgs.trust.rs.core.service;
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.rs.common.enums.RespCodeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -97,8 +98,27 @@ import java.util.*;
         // insert ca into db (temp)
         ca = new Ca();
         BeanUtils.copyProperties(caVO, ca);
+//        ca.setValid(true);
         caRepository.insertCa(ca);
         log.info("isnert ca end (temp)");
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            log.error("[joinConsensus] error occured while thread sleep", e);
+            return FAIL;
+        }
+
+        log.info("[joinConsensus] start to transform node status from offline to running");
+        try {
+            nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
+            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
+            nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+        } catch (Throwable e) {
+            log.error("join consensus error, nodeName = {}",nodeState.getNodeName());
+            return FAIL;
+        }
+        log.info("[joinConsensus] end transform node status from offline to running");
 
         return SUCCESS;
     }

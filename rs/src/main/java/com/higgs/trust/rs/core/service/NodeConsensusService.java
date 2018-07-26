@@ -1,6 +1,5 @@
 package com.higgs.trust.rs.core.service;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
@@ -14,7 +13,6 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
-import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +48,8 @@ import java.util.UUID;
 
         log.info("[joinConsensus] start to join consensus layer");
 
-        ClusterNode clusterNode = clusterNodeRepository.getClusterNode(nodeState.getNodeName());
-        log.info("clusterNode={}", JSON.toJSONString(clusterNode));
+        //        ClusterNode clusterNode = clusterNodeRepository.getClusterNode(nodeState.getNodeName());
+        //        log.info("clusterNode={}", JSON.toJSONString(clusterNode));
 
         /*if (null != clusterNode && clusterNode.isP2pStatus() == false) {
             RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), nodeState.getNodeName());
@@ -66,9 +64,16 @@ import java.util.UUID;
             }
         }*/
 
-        //        consensusStateMachine.joinConsensus();
+        try {
+            consensusStateMachine.joinConsensus();
+        } catch (Throwable e) {
+            log.error("join consensus error, ", e);
+            return FAIL;
+        }
 
-        log.info("[joinConsensus] start to transform node status from offline to running");
+        log.info("[joinConsensus] end join consensus layer");
+
+       /* log.info("[joinConsensus] start to transform node status from offline to running");
         try {
             nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
@@ -78,7 +83,7 @@ import java.util.UUID;
             return FAIL;
         }
 
-        log.info("[joinConsensus] end transform node status from offline to running");
+        log.info("[joinConsensus] end transform node status from offline to running");*/
         return SUCCESS;
     }
 
