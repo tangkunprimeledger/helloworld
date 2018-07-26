@@ -590,7 +590,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         //check whether there is snapshotBizKeyEnum in globalCache
         if (!globalCache.containsKey(bizKey)) {
             log.error("There is no key:{} for bizCache in globalCache!", bizKey);
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION.getMonitorTarget(), 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
         }
         LoadingCache<String, Object> merkleCache = globalCache.get(bizKey);
@@ -683,7 +683,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         //check whether there is snapshotBizKeyEnum in globalCache
         if (!globalCache.containsKey(key1)) {
             log.error("There is no key:{} for bizCache in globalCache!", key1);
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION.getMonitorTarget(), 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
         }
         //1.Get data from globalCache.It will return data when there is data in the globalCache
@@ -808,7 +808,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //check whether there is snapshotBizKeyEnum in globalCache
             if (!globalCache.containsKey(snapshotBizKeyEnum)) {
                 log.error("There is no key:{} in globalCache!", snapshotBizKeyEnum);
-                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION.getMonitorTarget(), 1);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
             }
 
@@ -857,7 +857,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             //check whether there is snapshotBizKeyEnum in cacheLoaderCache
             if (!cacheLoaderCache.containsKey(snapshotBizKeyEnum)) {
                 log.error("There is no key:{} for cacheLoader in cacheLoaderCache!", snapshotBizKeyEnum);
-                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION.getMonitorTarget(), 1);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
                 throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
             }
 
