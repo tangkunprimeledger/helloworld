@@ -276,6 +276,7 @@ import java.util.List;
             //submit by async
             txSubmitExecutorPool.execute(new Runnable() {
                 @Override public void run() {
+                    log.info("submitToSlave by signal");
                     submitToSlave(Lists.newArrayList(finalTx[0]));
                 }
             });
