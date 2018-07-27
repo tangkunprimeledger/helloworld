@@ -3,7 +3,7 @@ package com.higgs.trust.slave.core.service.action.ca;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
 import com.higgs.trust.slave.model.bo.ca.Ca;

@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.common.util;
+package com.higgs.trust.consensus.p2pvalid.utils;
 
 import com.higgs.trust.common.utils.LoggerName;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +25,8 @@ import org.springframework.stereotype.Repository;
  * @author pengdi
  * @date
  */
-@Aspect @Repository public class TrustDaoDigestLogInterceptor {
+@Aspect @Repository public class P2pDaoDigestLogInterceptor {
+
     private static final Logger log = LoggerFactory.getLogger(LoggerName.DAO_DIGEST_LOGGER);
 
     /**
@@ -83,7 +84,7 @@ import org.springframework.stereotype.Repository;
      * @return
      * @throws Throwable
      */
-    @Around("execution(* com.higgs.trust.slave.dao.*.*Dao.*(..)))") public Object invoke(ProceedingJoinPoint pj)
+    @Around("execution(* com.higgs.trust.consensus.p2pvalid.dao.*Dao.*(..)))") public Object invoke(ProceedingJoinPoint pj)
         throws Throwable {
 
         //日志开始时间

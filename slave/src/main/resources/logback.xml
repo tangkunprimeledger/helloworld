@@ -169,7 +169,7 @@
         <appender-ref ref="MANAGE-APPENDER"/>
     </logger>
 
-    <Logger name="com.higgs.trust.slave.common.util.TrustDaoDigestLogInterceptor" level="INFO" additivity="false">
+    <Logger name="DAO-DIGEST" level="INFO" additivity="false">
         <appender-ref ref="DAO-DIGEST-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
@@ -179,7 +179,7 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <Logger name="com.higgs.trust.slave.common.util.Profiler" level="INFO" additivity="false">
+    <Logger name="com.higgs.trust.common.utils.Profiler" level="INFO" additivity="false">
         <appender-ref ref="PERF-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>

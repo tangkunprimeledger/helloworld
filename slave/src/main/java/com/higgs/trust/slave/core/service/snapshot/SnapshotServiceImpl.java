@@ -8,7 +8,7 @@ import com.higgs.trust.slave.api.enums.SnapshotValueStatusEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
-import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.agent.*;
 import com.higgs.trust.slave.model.bo.snapshot.Value;
 import lombok.extern.slf4j.Slf4j;

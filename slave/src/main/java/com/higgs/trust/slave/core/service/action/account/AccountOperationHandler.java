@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.core.service.action.account;
 
-import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHandler;
 import com.higgs.trust.slave.model.bo.account.AccountOperation;

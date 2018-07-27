@@ -5,7 +5,7 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.hash.SnapshotRootHashBuilder;
 import com.higgs.trust.slave.model.bo.Block;

@@ -2,9 +2,7 @@ package com.higgs.trust.slave.core.service.action.dataidentity;
 
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.Profiler;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
-import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityDBHandler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentityHandler;
 import com.higgs.trust.slave.core.service.datahandler.dataidentity.DataIdentitySnapshotHandler;
 import com.higgs.trust.slave.model.bo.DataIdentity;

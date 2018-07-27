@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.common.util;
+package com.higgs.trust.common.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

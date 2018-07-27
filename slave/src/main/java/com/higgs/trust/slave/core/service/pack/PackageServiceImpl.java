@@ -12,7 +12,7 @@ import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;

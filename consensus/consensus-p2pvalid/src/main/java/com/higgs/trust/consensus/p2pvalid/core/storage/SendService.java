@@ -1,6 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.consensus.config.NodeState;
@@ -127,12 +128,16 @@ import java.util.concurrent.locks.ReentrantLock;
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new RuntimeException(String.format("the node state is not running, please try again latter"));
         }
+        Profiler.enter("Query send command");
         SendCommandPO sendCommand = sendCommandDao.queryByMessageDigest(validCommand.getMessageDigestHash());
+        Profiler.release();
+
         if (null != sendCommand) {
             log.warn("duplicate command {}", validCommand);
             return;
         }
 
+        Profiler.enter("Insert send command");
         txRequiresNew.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                 SendCommandPO sendCommand = new SendCommandPO();
@@ -163,6 +168,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedSend(sendCommand);
             }
         });
+        Profiler.release();
 
         //signal wait
         sendLock.lock();
