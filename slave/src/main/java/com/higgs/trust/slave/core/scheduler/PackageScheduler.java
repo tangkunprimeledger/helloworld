@@ -51,8 +51,7 @@ import java.util.Set;
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
 
-        if(nodeState.isMaster()
-            && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
+        if (nodeState.isMaster() && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
 
             List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
@@ -64,7 +63,8 @@ import java.util.Set;
             CollectionUtils.addAll(txSet, signedTransactions);
             signedTransactions = Lists.newArrayList(txSet);
 
-            log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}", packageCache.getPackHeight());
+            log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}",
+                packageCache.getPackHeight());
             Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
 
             if (null == pack) {
@@ -102,26 +102,37 @@ import java.util.Set;
             return;
         }
         //get max block height
-        Long maxBlockHeight = blockRepository.getMaxHeight();
+        Long currentHeight = blockRepository.getMaxHeight();
 
-        if (null == maxBlockHeight) {
+        if (null == currentHeight) {
             log.error("please initial Genesis block.");
             //TODO 添加告警
             return;
         }
-        //check if the next package to be process is exited
-        Long height = maxBlockHeight + 1;
-        Package pack = packageRepository.load(height);
-        if (null == pack) {
-            return;
-        }
 
-        // process next block as height = maxBlockHeight + 1
-        try {
-            packageProcess.process(height);
-        } catch (Throwable e) {
-            log.error("package process scheduled execute failed. ", e);
-        }
+        while (true) {
+            //check if the next package to be process is exited
+            List<Long> heights = packageRepository.loadHeightList(currentHeight);
 
+            if (CollectionUtils.isEmpty(heights)) {
+                return;
+            }
+
+            for (Long height : heights) {
+                // process next block as height = maxBlockHeight + 1
+                if (height != currentHeight + 1) {
+                    log.warn("package height is not continuous!");
+                    return;
+                }
+
+                try {
+                    packageProcess.process(height);
+                    currentHeight++;
+                } catch (Throwable e) {
+                    log.error("package process scheduled execute failed. ", e);
+                    return;
+                }
+            }
+        }
     }
 }

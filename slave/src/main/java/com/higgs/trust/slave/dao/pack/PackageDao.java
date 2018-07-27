@@ -19,6 +19,14 @@ import java.util.Set;
     PackagePO queryByHeight(@Param("height") Long height);
 
     /**
+     * query package list by block height
+     *
+     * @param height
+     * @return
+     */
+    List<Long> queryHeightListByHeight(@Param("height") Long height);
+
+    /**
      * query packagePO by height for update
      *
      * @param height
