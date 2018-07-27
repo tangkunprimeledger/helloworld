@@ -2,7 +2,6 @@ package com.higgs.trust.slave.integration.ca;
 
 import com.higgs.trust.common.feign.FeignRibbonConstants;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
