@@ -282,12 +282,10 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         boolean readOnly = (msg.getReqType() == TOMMessageType.UNORDERED_REQUEST
             || msg.getReqType() == TOMMessageType.UNORDERED_HASHED_REQUEST);
         if (readOnly) {
-            Logger.println("(TOMLayer.requestReceived) Received read-only TOMMessage from client " + msg.getSender()
-                + " with sequence number " + msg.getSequence() + " for session " + msg.getSession());
+            Logger.println("(TOMLayer.requestReceived) Received read-only TOMMessage:" + msg);
             dt.deliverUnordered(msg, syncher.getLCManager().getLastReg());
         } else {
-            Logger.println("(TOMLayer.requestReceived) Received TOMMessage from client " + msg.getSender()
-                + " with sequence number " + msg.getSequence() + " for session " + msg.getSession());
+            Logger.println("(TOMLayer.requestReceived) Received TOMMessage:" + msg);
             if (clientsManager.requestReceived(msg, true, communication)) {
                 haveMessages();
             } else {

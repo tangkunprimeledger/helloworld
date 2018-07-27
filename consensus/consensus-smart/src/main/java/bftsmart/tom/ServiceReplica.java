@@ -289,9 +289,8 @@ public class ServiceReplica {
             for (TOMMessage request : requestsFromConsensus) {
 
                 bftsmart.tom.util.Logger.println(
-                    "(ServiceReplica.receiveMessages) Processing TOMMessage from client " + request.getSender()
-                        + " with sequence number " + request.getSequence() + " for session " + request.getSession()
-                        + " decided in consensus " + consId[consensusCount]);
+                    "(ServiceReplica.receiveMessages) Processing TOMMessage: " + request + " decided in consensus "
+                        + consId[consensusCount]);
 
                 if (request.getViewID() == SVController.getCurrentViewId()) {
 
@@ -340,7 +339,7 @@ public class ServiceReplica {
                             if (this.recoverer != null)
                                 this.recoverer.Op(msgCtx.getConsensusId(), request.getContent(), msgCtx);
 
-                            // This is used to deliver the requests to the application and obtain a reply to deliver
+                            // This is used to deliver the requests to the applicReplica state is up to dateation and obtain a reply to deliver
                             //to the clients. The raw decision is passed to the application in the line above.
                             byte[] response = ((FIFOExecutable)executor)
                                 .executeOrderedFIFO(request.getContent(), msgCtx, request.getSender(),

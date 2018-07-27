@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;

@@ -32,7 +32,12 @@ import org.springframework.stereotype.Component;
 
         if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())) {
             log.info("leave consensus layer, user={}", nodeAction.getNodeName());
-            consensusStateMachine.leaveConsensus();
+            try {
+                consensusStateMachine.leaveConsensus();
+            } catch (Throwable e) {
+                log.error("leave consensus layer error,", e);
+                return;
+            }
         }
 
         Profiler.enter("[NodeLeaveHandler.nodeLeave]");

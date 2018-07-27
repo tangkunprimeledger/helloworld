@@ -32,13 +32,13 @@ import java.util.concurrent.atomic.AtomicLong;
             PackageCommand command = (PackageCommand)commit.operation();
             Long packageHeight = command.getPackageHeight();
             if (packageHeight <= blockHeight.get()) {
-                log.warn("package command rejected,current block height:{}", blockHeight.get());
+                log.warn("package command:{} rejected,current block height:{}", packageHeight, blockHeight.get());
                 commit.close();
                 return;
             } else {
                 blockHeight.set(blockRepository.getMaxHeight());
                 if (packageHeight <= blockHeight.get()) {
-                    log.warn("package command rejected,current block height:{}", blockHeight.get());
+                    log.warn("package command:{} rejected,current block height:{}", packageHeight, blockHeight.get());
                     commit.close();
                     return;
                 }
