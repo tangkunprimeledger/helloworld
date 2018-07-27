@@ -87,7 +87,7 @@ import java.util.List;
             respData = new RespData();
             respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
             respData.setMsg("tx handle timeout");
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_WAIT_TIME_OUT_ERROR.getMonitorTarget(), 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_WAIT_TIME_OUT_ERROR.getMonitorTarget(), 200);
         }
 
         return respData;
@@ -217,6 +217,8 @@ import java.util.List;
                     log.warn("[processInitTx]need voters is empty txId:{}", bo.getTxId());
                     //still submit to slave
                     coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+                    finalTx[0] = bo;
+                    finalVotePattern[0] = votePattern;
                     return;
                 }
                 //request voting
@@ -274,6 +276,7 @@ import java.util.List;
             //submit by async
             txSubmitExecutorPool.execute(new Runnable() {
                 @Override public void run() {
+                    log.info("submitToSlave by signal");
                     submitToSlave(Lists.newArrayList(finalTx[0]));
                 }
             });
@@ -474,10 +477,10 @@ import java.util.List;
             }
         } catch (SlaveException e) {
             log.error("[submitToSlave] has slave error", e);
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 10);
         } catch (Throwable e) {
             log.error("[submitToSlave] has unknown error", e);
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 10);
         }
     }
 
