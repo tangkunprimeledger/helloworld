@@ -56,6 +56,11 @@
         <include refid="baseColumnList"/>
         from package where height=#{height}
     </select>
+    <!-- 根据id查询 -->
+    <select id="queryHeightListByHeight" resultMap="baseResultMap" parameterType="java.lang.Long">
+        select height
+        from package where height > #{height} order by height limit 30
+    </select>
     <!-- 列表总数 -->
     <select id="queryByCount" resultType="java.lang.Integer"
             parameterType="object">
