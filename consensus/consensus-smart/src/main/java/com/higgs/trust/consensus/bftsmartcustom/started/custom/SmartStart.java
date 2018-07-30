@@ -133,7 +133,7 @@ import java.util.concurrent.TimeUnit;
 
             while (true) {
                 if (server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size()
-                    == (server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN() - 1)) {
+                    >= (server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN() - 1)) {
                     client.init();
                     break;
                 } else {
