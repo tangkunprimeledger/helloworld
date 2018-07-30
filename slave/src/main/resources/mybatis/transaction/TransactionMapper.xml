@@ -110,6 +110,7 @@
         <foreach collection="txIds" index="index" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
+        order by id desc
     </select>
     <select id="queryTxWithCondition" resultType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
         select
