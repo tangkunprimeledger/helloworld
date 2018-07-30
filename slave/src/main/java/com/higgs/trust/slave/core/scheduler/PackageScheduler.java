@@ -44,7 +44,6 @@ import java.util.Set;
     @Autowired private MasterPackageCache packageCache;
 
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
-    @Value("${higgs.trust.package.batchSize:100}") private int batchSize;
 
     /**
      * master node create package
@@ -88,8 +87,7 @@ import java.util.Set;
      * master node submit package
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.submit}") public void submitPackage() {
-        int i = 0;
-        while (nodeState.isMaster() && packageCache.getPendingPackSize() > 0 && ++i < batchSize) {
+        while (nodeState.isMaster() && packageCache.getPendingPackSize() > 0) {
             packageService.submitConsensus(packageCache.getPackage());
         }
     }
