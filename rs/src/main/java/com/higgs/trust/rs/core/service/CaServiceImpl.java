@@ -102,14 +102,14 @@ import java.util.*;
         caRepository.insertCa(ca);
         log.info("isnert ca end (temp)");
 
-        try {
+       /* try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             log.error("[joinConsensus] error occured while thread sleep", e);
             return FAIL;
-        }
+        }*/
 
-        log.info("[joinConsensus] start to transform node status from offline to running");
+        /*log.info("[joinConsensus] start to transform node status from offline to running");
         try {
             nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
@@ -118,7 +118,7 @@ import java.util.*;
             log.error("join consensus error, nodeName = {}",nodeState.getNodeName());
             return FAIL;
         }
-        log.info("[joinConsensus] end transform node status from offline to running");
+        log.info("[joinConsensus] end transform node status from offline to running");*/
 
         return SUCCESS;
     }

@@ -1,7 +1,7 @@
 package com.higgs.trust.consensus.core;
 
-import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.common.utils.TraceUtils;
+import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CompositeCommandFilter;
 import lombok.extern.slf4j.Slf4j;
@@ -131,7 +131,7 @@ import java.util.function.Function;
                         TraceUtils.closeSpan(span);
                         return;
                     } catch (Exception e) {
-                        log.error("apply error {}", e.getMessage());
+                        log.error("apply error, ", e);
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e1) {

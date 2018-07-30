@@ -3,7 +3,6 @@
  */
 package com.higgs.trust.config.master;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.ArtificialChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterCommand;
@@ -45,12 +44,20 @@ import java.util.stream.Collectors;
                 verifyResponseMap.entrySet().stream().filter(e -> {
                     String pubKey = clusterInfo.pubKey(e.getKey());
                     ChangeMasterVerifyResponse value = e.getValue();
-                    boolean verify = SignUtils.verify(value.getSignValue(), value.getSign(), pubKey);
+                    boolean verify = false;
+                    try {
+                        verify = SignUtils.verify(value.getSignValue(), value.getSign(), pubKey);
+                    } catch (Throwable throwable) {
+                        log.warn("verify sign of {} failed", e.getKey());
+                    }
                     return value.isChangeMaster() && verify && operation.getTerm() == value.getTerm() && operation
                         .getMasterName().equalsIgnoreCase(value.getProposer()) && value.getVoter()
                         .equalsIgnoreCase(e.getKey());
                 }).collect(Collectors.toList());
             if (collect.size() >= (2 * clusterInfo.faultNodeNum() + 1)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("new term is {}, new master is {}", operation.getTerm(), operation.getMasterName());
+                }
                 termManager.startNewTerm(operation.getTerm(), operation.getMasterName());
             }
         }
