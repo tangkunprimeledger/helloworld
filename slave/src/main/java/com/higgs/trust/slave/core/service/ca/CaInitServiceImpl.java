@@ -104,14 +104,16 @@ import java.util.concurrent.CopyOnWriteArraySet;
             // acquire all nodes' pubKey
             nodeList.forEach((nodeName) -> {
                 try {
-                    if (!nodeSet.contains(nodeName)) {
-                        RespData<String> resp = caClient.caInit(nodeName);
-                        if (resp.isSuccess()) {
-                            CaAction caAction = new CaAction();
-                            caAction.setUser(nodeName);
-                            caAction.setPubKey(resp.getData());
-                            caActionList.add(caAction);
-                            nodeSet.add(nodeName);
+                    synchronized (CaInitServiceImpl.class){
+                        if (!nodeSet.contains(nodeName)) {
+                            RespData<String> resp = caClient.caInit(nodeName);
+                            if (resp.isSuccess()) {
+                                CaAction caAction = new CaAction();
+                                caAction.setUser(nodeName);
+                                caAction.setPubKey(resp.getData());
+                                caActionList.add(caAction);
+                                nodeSet.add(nodeName);
+                            }
                         }
                     }
                 } catch (Throwable e) {

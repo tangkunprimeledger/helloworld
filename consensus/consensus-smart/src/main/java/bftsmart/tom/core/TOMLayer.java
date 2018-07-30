@@ -332,7 +332,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             // blocks until this replica learns to be the leader for the current epoch of the current consensus
             leaderLock.lock();
             Logger.println("Next leader for CID=" + (getLastExec() + 1) + ": " + execManager.getCurrentLeader());
-            Logger.println("Next leader for CID=" + (getLastExec() + 1) + ": " + execManager.getCurrentLeader());
             //******* EDUARDO BEGIN **************//
             if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
                 iAmLeader.awaitUninterruptibly();
@@ -348,7 +347,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             proposeLock.lock();
 
             if (getInExec() != -1) { //there is some consensus running
-                Logger.println("(TOMLayer.run) Waiting for consensus " + getInExec() + " termination.");
                 Logger.println("(TOMLayer.run) Waiting for consensus " + getInExec() + " termination.");
                 canPropose.awaitUninterruptibly();
             }
@@ -371,11 +369,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             Logger.println("(TOMLayer.run) There are messages to be ordered.");
 
-            Logger.println("(TOMLayer.run) I can try to propose.");
-
             if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
                 (clientsManager.havePendingRequests()) && //there are messages to be ordered
                 (getInExec() == -1)) { //there is no consensus in execution
+
+                Logger.println("(TOMLayer.run) I can try to propose.");
 
                 // Sets the current consensus
                 int execId = getLastExec() + 1;
