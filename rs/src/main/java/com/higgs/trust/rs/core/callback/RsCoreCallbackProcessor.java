@@ -40,17 +40,19 @@ import org.springframework.stereotype.Component;
     @Autowired AbstractClusterInfo clusterInfo;
 
     private TxCallbackHandler getCallbackHandler() {
+        //TODO 需确认
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
-        if (txCallbackHandler == null) {
-            log.error("[getCallbackHandler]call back handler is not register");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
-        }
         return txCallbackHandler;
     }
 
     @Override public void onVote(VotingRequest votingRequest) {
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onVote(votingRequest);
+        if (null != callbackHandler) {
+            callbackHandler.onVote(votingRequest);
+        } else {
+            log.warn("[getCallbackHandler]call back handler is not register");
+            return;
+        }
     }
 
     @Override public void onPersisted(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
@@ -94,7 +96,12 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onPersisted(respData, blockHeader);
+        if (null != callbackHandler) {
+            callbackHandler.onPersisted(respData, blockHeader);
+        } else {
+            log.warn("[getCallbackHandler]call back handler is not register");
+            return;
+        }
     }
 
     @Override public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
@@ -130,7 +137,12 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onEnd(respData, blockHeader);
+        if (null != callbackHandler) {
+            callbackHandler.onEnd(respData, blockHeader);
+        } else {
+            log.warn("[getCallbackHandler]call back handler is not register");
+            return;
+        }
     }
 
     @Override public void onFailover(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
@@ -149,7 +161,12 @@ import org.springframework.stereotype.Component;
             }
         }
         TxCallbackHandler callbackHandler = getCallbackHandler();
-        callbackHandler.onFailover(respData, blockHeader);
+        if (null != callbackHandler) {
+            callbackHandler.onFailover(respData, blockHeader);
+        } else {
+            log.warn("[getCallbackHandler]call back handler is not register");
+            return;
+        }
     }
 
     /**
