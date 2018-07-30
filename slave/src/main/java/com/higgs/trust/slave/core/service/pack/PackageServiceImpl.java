@@ -244,6 +244,11 @@ import java.util.stream.Collectors;
                 packageRepository.updateStatus(pack.getHeight(), from, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
                 p2pHandler.sendPersisting(dbHeader);
             }
+
+            //TODO:fashuang for test
+            for (SignedTransaction signedTx : txs) {
+                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
+            }
         } catch (Throwable e) {
             //snapshot transactions should be destroy
             snapshotService.destroy();
@@ -257,14 +262,6 @@ import java.util.stream.Collectors;
             }
         }
 
-        //TODO:fashuang for test
-        pack.getSignedTxList().forEach(signedTx -> {
-            try {
-                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
-            } catch (InterruptedException e) {
-                log.error("interrupted exception. txId={}", signedTx.getCoreTx().getTxId());
-            }
-        });
         log.info("process package finish");
     }
 
