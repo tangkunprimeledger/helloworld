@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
         }
 
         ExecuteConfig executeConfig = new ExecuteConfig();
-        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.setInstructionCountQuota(100000000);
         executeConfig.allow(StandardContractContextService.class);
 
         ExecuteEngineManager manager = new ExecuteEngineManager();
@@ -92,7 +92,8 @@ import org.springframework.stereotype.Service;
     public Object execute(String address, ExecuteContextData data, Object... args) {
         try {
             Profiler.enter(String.format("execute contract at %s", address));
-            return execute(address, address, data, args);
+            Object result = execute(address, address, data, args);
+            return result;
         } finally {
             Profiler.release();
         }
@@ -124,7 +125,8 @@ import org.springframework.stereotype.Service;
                 return null;
             }
             Object args = com.alibaba.fastjson.JSON.parse(binding.getArgs());
-            return execute(binding.getContractAddress(), binding.getHash(), data, args);
+            Object result = execute(binding.getContractAddress(), binding.getHash(), data, args);
+            return result;
         } finally {
             Profiler.release();
         }

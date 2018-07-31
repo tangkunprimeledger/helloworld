@@ -1,0 +1,242 @@
+[
+    {
+        "target_name": "slave_package_process_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "rs_submit_to_slave_error", 
+        "threshold": 10, 
+        "compare": ">", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "rs_wait_time_out_error", 
+        "threshold": 500, 
+        "compare": ">", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "batch_insert_pending_tx_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "pending_transaction_idempotent_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "pending_tx_status_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "pending_tx_to_signed_tx_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "genesis_block_not_exists", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "send_package_to_consensus_timeout", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "package_hash_not_equals", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "block_header_not_equals", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "contract_execute_quota_exceeded", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "contract_execute_time_cost", 
+        "threshold": 500, 
+        "compare": ">", 
+        "method": "avg"
+    }, 
+    {
+        "target_name": "contract_execute_exception", 
+        "threshold": 5, 
+        "compare": ">", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_data_not_exist_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_data_not_updated_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_duplicate_key_exception", 
+        "threshold": 5, 
+        "compare": ">", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_utxo_action_type_not_legal_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_utxo_contract_address_not_legal_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_utxo_action_index_not_legal_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_utxo_data_identity_not_legal_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_snapshot_duplicate_key_exception", 
+        "threshold": 3, 
+        "compare": ">", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_snapshot_data_not_exist_exception", 
+        "threshold": 3, 
+        "compare": ">", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_snapshot_biz_key_not_exist_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_snapshot_query_exception", 
+        "threshold": 3, 
+        "compare": ">", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_snapshot_package_oversize_exception", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "slave_snapshot_flush_exception", 
+        "threshold": 3, 
+        "compare": ">=", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "failover_block_error", 
+        "threshold": 6, 
+        "compare": ">", 
+        "method": "sum"
+    }, 
+    {
+        "target_name": "self_check_failed", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "sync_blocks_failed", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "submit_change_master_command_failed", 
+        "threshold": 30, 
+        "compare": ">", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "rejected_package_command", 
+        "threshold": 10, 
+        "compare": ">", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "startup_failed", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "slave_acquire_pubKey_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "slave_generate_genius_block_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "slave_ca_update_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "slave_ca_cancel_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "slave_ca_auth_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "slave_node_join_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }, 
+    {
+        "target_name": "slave_node_leave_error", 
+        "threshold": 1, 
+        "compare": ">=", 
+        "method": "text"
+    }
+]

@@ -51,7 +51,7 @@ public class DataIdentityService {
         DataIdentity dataIdentity = dataIdentityHandler.getDataIdentity(dataIdentityAction.getIdentity());
         if (null != dataIdentity) {
             log.error("DataIdentity：{} idempotent exception for identity:{}", dataIdentity, dataIdentityAction.getIdentity());
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_DATA_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_DUPLICATE_KEY_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
         }
 

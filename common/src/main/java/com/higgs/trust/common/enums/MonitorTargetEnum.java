@@ -27,7 +27,7 @@ public enum MonitorTargetEnum {
     SLAVE_UTXO_DATA_IDENTITY_NOT_LEGAL_EXCEPTION("UTXO action data identity not legal exception", "slave_utxo_data_identity_not_legal_exception"),
     SLAVE_SNAPSHOT_DUPLICATE_KEY_EXCEPTION("slave snapshot duplicate key exception", "slave_snapshot_duplicate_key_exception"),
     SLAVE_SNAPSHOT_DATA_NOT_EXIST_EXCEPTION("slave snapshot data not exist exception", "slave_snapshot_data_not_exist_exception"),
-    SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXCEPTION("slave snapshot biz key not exception", "slave_snapshot_biz_key_not_exception"),
+    SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXIST_EXCEPTION("slave snapshot biz key not exist exception", "slave_snapshot_biz_key_not_exist_exception"),
     SLAVE_SNAPSHOT_QUERY_EXCEPTION("slave snapshot query exception", "slave_snapshot_query_exception"),
     SLAVE_SNAPSHOT_PACKAGE_OVERSIZE_EXCEPTION("slave snapshot package oversize exception", "slave_snapshot_package_oversize_exception"),
     SLAVE_SNAPSHOT_FLUSH_EXCEPTION("slave snapshot flush exception", "slave_snapshot_flush_exception"),
