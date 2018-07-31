@@ -42,6 +42,9 @@ import java.util.concurrent.atomic.AtomicInteger;
      * Randomly choose from all living servers
      */
     public Server choose(ILoadBalancer lb, Object key) {
+        if (log.isDebugEnabled()) {
+            log.debug("key:{}",key);
+        }
         if (lb == null) {
             log.warn("no load balancer");
             return null;
