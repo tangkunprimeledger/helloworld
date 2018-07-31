@@ -142,10 +142,10 @@ public class Synchronizer {
                             + regency);
                 }
 
-                byte[] payload = bos.toByteArray();
-
                 out.flush();
                 bos.flush();
+
+                byte[] payload = bos.toByteArray();
 
                 out.close();
                 bos.close();

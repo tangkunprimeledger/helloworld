@@ -213,6 +213,9 @@ public class StandardStateManager extends BaseStateManager {
                     }
 
                     Logger.println("haveState: " + haveState);
+                    Logger.println(
+                        "currentRegency:" + currentRegency + ", currentLeader:" + currentLeader + ", currentView:"
+                            + currentView + ", currentProof" + currentProof);
 
                     if (otherReplicaState != null && haveState == 1 && currentRegency > -1 && currentLeader > -1
                         && currentView != null && (!isBFT || currentProof != null || appStateOnly)) {
