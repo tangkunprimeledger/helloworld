@@ -71,20 +71,9 @@ import java.util.concurrent.TimeUnit;
          * retry times
          */
         int retryTimes = 0;
-        /**
-         * retry time limit
-         */
-        Date retryTimeLimit = null;
 
         while (!flag) {
             if (!nodeState.isMaster()) {
-                return;
-            }
-
-            if (retryTimeLimit != null && retryTimeLimit.after(new Date())) {
-                log.info(
-                    "retry submit consensus，retry times[{}]，retry interval[{}]ms，retry date[{}]，need wait",
-                    retryTimes, getRetryInterval(retryTimes), retryTimeLimit);
                 return;
             }
 
@@ -96,20 +85,18 @@ import java.util.concurrent.TimeUnit;
                 log.error("replicate log failed! height = {}", packageVO.getHeight(), e);
                 //TODO 添加告警
 
+                // wait for a while
                 retryTimes++;
-                retryTimeLimit = getRetryTimeLimit(retryTimes);
+                int retryInterval = getRetryInterval(retryTimes);
+                try {
+                    Thread.sleep(retryInterval);
+                } catch (Throwable e1) {
+                    log.error("submit consensus sleep failed", e1);
+                }
             }
         }
 
         log.info("package has been sent to consensus layer package height = {}", packageVO.getHeight());
-    }
-
-    /**
-     * get retry time limit by retryTimes
-     */
-    private Date getRetryTimeLimit(int retryTimes) {
-        int retryInterval = getRetryInterval(retryTimes);
-        return DateUtils.addMilliseconds(new Date(), retryInterval);
     }
 
     /**
