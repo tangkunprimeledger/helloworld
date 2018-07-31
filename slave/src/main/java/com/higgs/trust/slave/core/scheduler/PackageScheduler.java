@@ -50,7 +50,8 @@ import java.util.Set;
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
 
-        if (nodeState.isMaster() && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
+        if (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster()
+            && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
 
             List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
@@ -87,7 +88,8 @@ import java.util.Set;
      * master node submit package
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.submit}") public void submitPackage() {
-        while (nodeState.isMaster() && packageCache.getPendingPackSize() > 0) {
+        while (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster()
+            && packageCache.getPendingPackSize() > 0) {
             packageService.submitConsensus(packageCache.getPackage());
         }
     }
