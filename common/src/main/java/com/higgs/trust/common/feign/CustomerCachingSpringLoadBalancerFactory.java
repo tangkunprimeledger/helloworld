@@ -88,7 +88,7 @@ public class CustomerCachingSpringLoadBalancerFactory {
 		this.loadBalancedRetryPolicyFactory = loadBalancedRetryPolicyFactory;
 		this.loadBalancedBackOffPolicyFactory = loadBalancedBackOffPolicyFactory;
 		this.loadBalancedRetryListenerFactory = loadBalancedRetryListenerFactory;
-		this.enableRetry = true;
+//		this.enableRetry = true;
 	}
 
 	////////////////////////////////////////
