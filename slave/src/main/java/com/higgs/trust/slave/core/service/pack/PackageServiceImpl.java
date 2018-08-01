@@ -262,15 +262,6 @@ import java.util.stream.Collectors;
                 Profiler.logDump();
             }
         }
-
-        //TODO:fashuang for test
-        pack.getSignedTxList().forEach(signedTx -> {
-            try {
-                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
-            } catch (InterruptedException e) {
-                log.error("interrupted exception. txId={}", signedTx.getCoreTx().getTxId());
-            }
-        });
         log.info("process package finish");
     }
 
