@@ -6,11 +6,10 @@ import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.common.constant.LoggerName;
 import com.higgs.trust.slave.common.context.AppContext;
-import com.higgs.trust.slave.core.repository.BlockRepository;
-import com.higgs.trust.slave.core.repository.DataIdentityRepository;
-import com.higgs.trust.slave.core.repository.TransactionRepository;
-import com.higgs.trust.slave.core.repository.TxOutRepository;
+import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
@@ -23,8 +22,13 @@ import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,7 +39,7 @@ import java.util.List;
  * @date 2918/04/14 16:52
  * @desc block chain service
  */
-@Slf4j @Service public class BlockChainServiceImpl implements BlockChainService {
+@Slf4j @Service public class BlockChainServiceImpl implements BlockChainService, InitializingBean {
 
     private static final String MASTER_NA = "N/A";
 
@@ -59,9 +63,17 @@ import java.util.List;
 
     @Autowired private SystemPropertyHandler systemPropertyHandler;
 
+    @Autowired private PendingTxRepository pendingTxRepository;
+
+    @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
+
+    @Value("${trust.sleep.submitToMaster:50}") private int SLEEP_FOR_SUBMIT_TO_MASTER;
+
+    private static final Logger PERF_LOGGER = LoggerFactory.getLogger(LoggerName.PERF_LOGGER);
+
     @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
-        List<TransactionVO> transactionVOList;
+        List<TransactionVO> transactionVOList = new ArrayList<>();
 
         if (StringUtils.equals(nodeState.getMasterName(), MASTER_NA)) {
             log.warn("cluster master is N/A");
@@ -69,6 +81,87 @@ import java.util.List;
             respData.setData(buildTxVOList(transactions));
             return respData;
         }
+
+        List<SignedTransaction> newSignedTxList = checkDbIdempotent(transactions, transactionVOList);
+        if (CollectionUtils.isEmpty(newSignedTxList)) {
+            log.warn("all transactions idempotent");
+            respData.setData(transactionVOList.size() > 0 ? transactionVOList : null);
+            return respData;
+        }
+
+        RespData masterResp = submitToMaster(newSignedTxList);
+        if (null != masterResp.getData()) {
+            transactionVOList.addAll((List<TransactionVO>)respData.getData());
+        }
+
+        respData.setData(transactionVOList);
+        return respData;
+    }
+
+    private List<SignedTransaction> checkDbIdempotent(List<SignedTransaction> transactions, List<TransactionVO> transactionVOList) {
+
+        List<SignedTransaction> signedTransactions = new ArrayList<>();
+
+        for (SignedTransaction signedTx : transactions) {
+            TransactionVO transactionVO = new TransactionVO();
+            String txId = signedTx.getCoreTx().getTxId();
+            transactionVO.setTxId(txId);
+
+            // chained transaction idempotent check, need retry
+            if (transactionRepository.isExist(txId)) {
+                log.warn("transaction idempotent, txId={}", txId);
+                transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.TX_IDEMPOTENT.getDesc());
+                transactionVO.setRetry(true);
+                transactionVOList.add(transactionVO);
+                continue;
+            }
+
+            // pending transaction idempotent check, need retry
+            if (pendingTxRepository.isExist(txId)) {
+                log.warn("pending transaction table idempotent, txId={}", txId);
+                transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
+                transactionVO.setRetry(true);
+                transactionVOList.add(transactionVO);
+                continue;
+            }
+            signedTransactions.add(signedTx);
+        }
+        return signedTransactions;
+    }
+
+    /**
+     * for performance test
+     * @param tx
+     * @return
+     */
+    @Override public RespData submitTransaction(SignedTransaction tx) {
+
+        //TODO 放到消费队列里面
+        AppContext.PENDING_TO_SUBMIT_QUEUE.offer(tx);
+
+        RespData respData;
+        try {
+            respData = AppContext.TX_HANDLE_RESULT_MAP.poll(tx.getCoreTx().getTxId(), 1000);
+        } catch (InterruptedException e) {
+            log.error("tx handle exception. ", e);
+            respData = new RespData();
+            respData.setCode(RespCodeEnum.SYS_FAIL.getRespCode());
+            respData.setMsg("handle transaction exception.");
+        }
+
+        if (null == respData) {
+            respData = new RespData();
+            respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
+            respData.setMsg("tx handle timeout");
+        }
+        return respData;
+    }
+
+    @Override public RespData submitToMaster(List<SignedTransaction> transactions) {
+        RespData respData = new RespData();
+        List<TransactionVO> transactionVOList;
 
         // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
@@ -90,31 +183,7 @@ import java.util.List;
                 log.debug("this node is not  master, send txs:{} to master node={}", transactions,
                     nodeState.getMasterName());
             }
-            respData = blockChainClient.submitTransaction(nodeState.getMasterName(), transactions);
-        }
-
-        return respData;
-    }
-
-    @Override public RespData submitTransaction(SignedTransaction tx) {
-        List<SignedTransaction> transactions = new ArrayList<>();
-        transactions.add(tx);
-        RespData respData = submitTransactions(transactions);
-        if (null == respData.getData()) {
-            try {
-                respData = AppContext.TX_HANDLE_RESULT_MAP.poll(tx.getCoreTx().getTxId(), 1000);
-            } catch (InterruptedException e) {
-                log.error("tx handle exception. ", e);
-                respData = new RespData();
-                respData.setCode(RespCodeEnum.SYS_FAIL.getRespCode());
-                respData.setMsg("handle transaction exception.");
-            }
-        }
-
-        if (null == respData) {
-            respData = new RespData();
-            respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
-            respData.setMsg("tx handle timeout");
+            respData = blockChainClient.submitToMaster(nodeState.getMasterName(), transactions);
         }
         return respData;
     }
@@ -272,6 +341,58 @@ import java.util.List;
 
     @Override public BlockHeader getMaxBlockHeader() {
         return blockRepository.getBlockHeader(blockRepository.getMaxHeight());
+    }
+
+    @Override public void afterPropertiesSet() throws Exception {
+        new ConsumerTx().start();
+    }
+
+    /**
+     * for test
+     */
+    private class ConsumerTx extends Thread {
+
+        public ConsumerTx() {
+        }
+
+        @Override public void run() {
+            while (true) {
+                try {
+                    Thread.sleep(SLEEP_FOR_SUBMIT_TO_MASTER);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (null == AppContext.PENDING_TO_SUBMIT_QUEUE.peek()) {
+                    log.debug("queue is empty");
+                    continue;
+                } else {
+                    submit();
+                }
+            }
+        }
+
+        private void submit() {
+            int i = 0;
+            List<SignedTransaction> signedTxList = new ArrayList<>();
+            log.info("pending transaction to submit, size={}", AppContext.PENDING_TO_SUBMIT_QUEUE.size());
+            Profiler.start("start submit transactions");
+            Profiler.enter("build transactionList");
+            while (i++ < TX_PENDING_COUNT && (null != AppContext.PENDING_TO_SUBMIT_QUEUE.peek())) {
+                signedTxList.add(AppContext.PENDING_TO_SUBMIT_QUEUE.poll());
+            }
+            Profiler.release();
+
+            log.info("submit transactions, size={}", signedTxList.size());
+            Profiler.enter("submit transactions");
+            submitTransactions(signedTxList);
+            Profiler.release();
+
+            Profiler.release();
+
+            if (Profiler.getDuration() > 0) {
+                PERF_LOGGER.info(Profiler.dump());
+            }
+        }
     }
 
 }
