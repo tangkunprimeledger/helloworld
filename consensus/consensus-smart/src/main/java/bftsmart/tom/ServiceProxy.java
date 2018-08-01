@@ -201,7 +201,9 @@ public class ServiceProxy extends TOMSender {
             // The thread will be unblocked when the method replyReceived is invoked
             // by the client side communication system
             int permitNum = sm.drainPermits();
-            Logger.println("available permits:" + permitNum);
+            if (permitNum > 0) {
+                Logger.println("available permits:" + permitNum);
+            }
             try {
                 if (reqType == TOMMessageType.UNORDERED_HASHED_REQUEST) {
                     if (!this.sm.tryAcquire(invokeUnorderedHashedTimeout, TimeUnit.MILLISECONDS)) {
