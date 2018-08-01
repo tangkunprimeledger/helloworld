@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.scheduler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.common.constant.Constant;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.sleuth.Span;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -90,7 +92,12 @@ import java.util.Set;
     @Scheduled(fixedRateString = "${trust.schedule.package.submit}") public void submitPackage() {
         while (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster()
             && packageCache.getPendingPackSize() > 0) {
-            packageService.submitConsensus(packageCache.getPackage());
+            Span span = TraceUtils.createSpan();
+            try {
+                packageService.submitConsensus(packageCache.getPackage());
+            } finally {
+                TraceUtils.closeSpan(span);
+            }
         }
     }
 
@@ -125,12 +132,15 @@ import java.util.Set;
                     return;
                 }
 
+                Span span = TraceUtils.createSpan();
                 try {
                     packageProcess.process(height);
                     currentHeight++;
                 } catch (Throwable e) {
                     log.error("package process scheduled execute failed. ", e);
                     return;
+                } finally {
+                    TraceUtils.closeSpan(span);
                 }
             }
         }
