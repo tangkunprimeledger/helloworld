@@ -6,6 +6,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -19,18 +20,24 @@ import java.util.concurrent.TimeUnit;
  * @description
  * @date 2018-07-17
  */
-@Component @Slf4j public class ExplorerCache {
+@Component @Slf4j public class ExplorerCache implements InitializingBean {
     @Value("${rs.core.explorer.duration:60}") private Long duration;
     /**
      * 缓存对象
      */
-    private Cache<Object, String> CACHE =
-        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(duration, TimeUnit.SECONDS)
-            .build(new CacheLoader<Object, String>() {
+    private Cache<Object, String> CACHE = null;
+
+    @Override public void afterPropertiesSet() throws Exception {
+        if(duration == null){
+            duration = 60L;
+        }
+        CACHE = CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000)
+            .refreshAfterWrite(duration, TimeUnit.SECONDS).build(new CacheLoader<Object, String>() {
                 @Override public String load(Object key) throws Exception {
                     return null;
                 }
             });
+    }
 
     /**
      * put
@@ -71,4 +78,5 @@ import java.util.concurrent.TimeUnit;
         }
         return null;
     }
+
 }
