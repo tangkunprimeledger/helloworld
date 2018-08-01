@@ -6,6 +6,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.Callable;
@@ -19,11 +20,12 @@ import java.util.concurrent.TimeUnit;
  * @date 2018-07-17
  */
 @Component @Slf4j public class ExplorerCache {
+    @Value("${rs.explorer.duration:1}") private Long duration;
     /**
      * 缓存对象
      */
     private Cache<Object, String> CACHE =
-        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(1, TimeUnit.MINUTES)
+        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(duration, TimeUnit.MINUTES)
             .build(new CacheLoader<Object, String>() {
                 @Override public String load(Object key) throws Exception {
                     return null;
@@ -56,7 +58,7 @@ import java.util.concurrent.TimeUnit;
                     return "-1";
                 }
             });
-            if (StringUtils.isEmpty(value) || StringUtils.equals("-1",value)) {
+            if (StringUtils.isEmpty(value) || StringUtils.equals("-1", value)) {
                 return null;
             }
             return JSON.parseObject(value, clazz);
