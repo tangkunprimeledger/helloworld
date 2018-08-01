@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2018-07-17
  */
 @Component @Slf4j public class ExplorerCache {
-    @Value("${rs.explorer.duration:1}") private Long duration;
+    @Value("${rs.core.explorer.duration:1}") private Long duration;
     /**
      * 缓存对象
      */
