@@ -20,12 +20,12 @@ import java.util.concurrent.TimeUnit;
  * @date 2018-07-17
  */
 @Component @Slf4j public class ExplorerCache {
-    @Value("${rs.core.explorer.duration:1}") private Long duration;
+    @Value("${rs.core.explorer.duration:60}") private Long duration;
     /**
      * 缓存对象
      */
     private Cache<Object, String> CACHE =
-        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(duration, TimeUnit.MINUTES)
+        CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000).refreshAfterWrite(duration, TimeUnit.SECONDS)
             .build(new CacheLoader<Object, String>() {
                 @Override public String load(Object key) throws Exception {
                     return null;
