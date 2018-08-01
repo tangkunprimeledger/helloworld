@@ -18,22 +18,35 @@ import java.util.List;
 @RequestMapping(value = "/transaction")
 @RestController
 @Slf4j
-public class TransactionController {
+public class TransactionController{
     @Autowired
     private BlockChainService blockChainService;
 
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     @ResponseBody
     public RespData submitTransactions(@RequestBody List<SignedTransaction> transactions) {
-        log.debug("submit transactions receive parameter :{}", transactions);
+        if (log.isDebugEnabled()) {
+            log.debug("submit transactions receive parameter :{}", transactions);
+        }
         return blockChainService.submitTransactions(transactions);
     }
 
     @RequestMapping(value = "/post", method = RequestMethod.POST)
     @ResponseBody
     public RespData submitTransaction(@RequestBody SignedTransaction transaction) {
-//        log.debug("submit transaction receive parameter :{}", transaction);
-        log.info("submit transaction received txId={}", transaction.getCoreTx().getTxId());
+
+        if (log.isDebugEnabled()) {
+            log.debug("submit transaction receive parameter :{}", transaction);
+        }
         return blockChainService.submitTransaction(transaction);
+    }
+
+    @RequestMapping(value = "/master/submit", method = RequestMethod.POST)
+    @ResponseBody
+    public RespData masterReceive(@RequestBody List<SignedTransaction> transactions) {
+        if (log.isDebugEnabled()) {
+            log.debug("master receive transactions, parameter :{}", transactions);
+        }
+        return blockChainService.submitToMaster(transactions);
     }
 }

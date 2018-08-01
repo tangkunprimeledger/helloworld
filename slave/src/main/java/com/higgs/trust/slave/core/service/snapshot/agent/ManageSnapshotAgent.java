@@ -96,12 +96,12 @@ public class ManageSnapshotAgent implements CacheLoader {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_SNAPSHOT_DATA_TYPE_ERROR_EXCEPTION);
             }
         }
-        if (!CollectionUtils.isEmpty(rsNodePOList)) {
-            return rsNodeRepository.batchInsert(rsNodePOList) == rsNodePOList.size();
+        if (!CollectionUtils.isEmpty(rsNodePOList) && !(rsNodeRepository.batchInsert(rsNodePOList) == rsNodePOList.size())) {
+            return false;
         }
 
-        if (!CollectionUtils.isEmpty(policyPOList)) {
-            return policyRepository.batchInsert(policyPOList) == policyPOList.size();
+        if (!CollectionUtils.isEmpty(policyPOList) &&!(policyRepository.batchInsert(policyPOList) == policyPOList.size())) {
+            return false;
         }
         return true;
     }

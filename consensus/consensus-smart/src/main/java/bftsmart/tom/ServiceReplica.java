@@ -387,8 +387,8 @@ public class ServiceReplica {
                     } else {
                         throw new RuntimeException("Should never reach here!");
                     }
-                } else if (request.getViewID() < SVController
-                    .getCurrentViewId()) { // message sender had an old view, resend the message to
+                } else if (request.getViewID() < SVController.getCurrentViewId()) {
+                    // message sender had an old view, resend the message to
                     // him (but only if it came from consensus an not state transfer)
 
                     tomLayer.getCommunication().send(new int[] {request.getSender()},
