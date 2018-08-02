@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.ca;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -104,13 +105,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
             // acquire all nodes' pubKey
             nodeList.forEach((nodeName) -> {
                 try {
-                    synchronized (CaInitServiceImpl.class){
+                    synchronized (CaInitServiceImpl.class) {
                         if (!nodeSet.contains(nodeName)) {
                             RespData<String> resp = caClient.caInit(nodeName);
                             if (resp.isSuccess()) {
                                 CaAction caAction = new CaAction();
+                                caAction.setType(ActionTypeEnum.CA_INIT);
                                 caAction.setUser(nodeName);
                                 caAction.setPubKey(resp.getData());
+                                log.info("user={}, pubKey={}", nodeName, resp.getData());
                                 caActionList.add(caAction);
                                 nodeSet.add(nodeName);
                             }
@@ -138,8 +141,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
         }
 
         log.info(
-            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}, nodeSet size={}, nodeList.size()={}",
-            caActionList.size(), nodeSet.size(), nodeList.size());
+            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}, nodeSet size={}, nodeList.size()={}, caActionList = {}",
+            caActionList.size(), nodeSet.size(), nodeList.size(), caActionList);
         return caActionList;
     }
 
