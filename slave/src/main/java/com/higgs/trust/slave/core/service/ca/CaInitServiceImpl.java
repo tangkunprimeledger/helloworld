@@ -5,6 +5,7 @@ import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -106,14 +107,18 @@ import java.util.concurrent.CopyOnWriteArraySet;
             // acquire all nodes' pubKey
             nodeList.forEach((nodeName) -> {
                 try {
-                    if (!nodeSet.contains(nodeName)) {
-                        RespData<String> resp = caClient.caInit(nodeName);
-                        if (resp.isSuccess()) {
-                            CaAction caAction = new CaAction();
-                            caAction.setUser(nodeName);
-                            caAction.setPubKey(resp.getData());
-                            caActionList.add(caAction);
-                            nodeSet.add(nodeName);
+                    synchronized (CaInitServiceImpl.class) {
+                        if (!nodeSet.contains(nodeName)) {
+                            RespData<String> resp = caClient.caInit(nodeName);
+                            if (resp.isSuccess()) {
+                                CaAction caAction = new CaAction();
+                                caAction.setType(ActionTypeEnum.CA_INIT);
+                                caAction.setUser(nodeName);
+                                caAction.setPubKey(resp.getData());
+                                log.info("user={}, pubKey={}", nodeName, resp.getData());
+                                caActionList.add(caAction);
+                                nodeSet.add(nodeName);
+                            }
                         }
                     }
                 } catch (Throwable e) {
