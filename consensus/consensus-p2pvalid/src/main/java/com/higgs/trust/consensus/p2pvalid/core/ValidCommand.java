@@ -8,6 +8,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author cwy
@@ -15,10 +16,13 @@ import java.io.Serializable;
 @Slf4j @Setter @Getter @ToString public abstract class ValidCommand<T extends Serializable> implements Serializable {
 
     private static final long serialVersionUID = -1L;
+    private static ConcurrentHashMap cmdTypeMap = new ConcurrentHashMap();
 
     private T t;
+    private String cmdName;
 
     public ValidCommand() {
+
     }
 
     public ValidCommand(T t) {
@@ -27,6 +31,10 @@ import java.io.Serializable;
 
     public T get() {
         return t;
+    }
+
+    public String getCmdName() {
+        return this.getClass().getSimpleName();
     }
 
     public Class<?> type() {
@@ -41,5 +49,4 @@ import java.io.Serializable;
         log.trace("message digest:{}, hash digest:{}", messageDigest, digest);
         return Hashing.sha256().hashString(digest, Charsets.UTF_8).toString();
     }
-
 }

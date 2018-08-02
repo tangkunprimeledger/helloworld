@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
     private ReceiveCommandPO receiveCommand;
 
     private ValidCommit(ReceiveCommandPO receiveCommand) {
-        super((T)JSON.parse(receiveCommand.getValidCommand()));
+        super((T)JSON.parseObject(receiveCommand.getValidCommand(), ValidCommand.class));
         this.receiveCommand = receiveCommand;
     }
 

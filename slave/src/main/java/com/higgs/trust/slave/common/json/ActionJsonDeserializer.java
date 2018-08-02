@@ -4,10 +4,15 @@ package com.higgs.trust.slave.common.json;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.higgs.trust.common.lambda.Mapper;
+import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.model.bo.account.*;
+import com.higgs.trust.slave.model.bo.account.AccountOperation;
+import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
+import com.higgs.trust.slave.model.bo.account.IssueCurrency;
+import com.higgs.trust.slave.model.bo.account.OpenAccount;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.DataIdentityAction;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
@@ -19,6 +24,8 @@ import com.higgs.trust.slave.model.bo.manage.CancelRS;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -28,6 +35,7 @@ import java.util.Map;
  * @author duhongming
  * @date 2018/8/2
  */
+@Slf4j
 public class ActionJsonDeserializer implements ObjectDeserializer {
 
     static Map<String, Mapper<JSONObject, Action>> convertMap = new HashMap<>(20);
@@ -49,10 +57,12 @@ public class ActionJsonDeserializer implements ObjectDeserializer {
         actionMap.put(ActionTypeEnum.CONTRACT_STATE_MIGRATION, ContractStateMigrationAction.class);
         actionMap.put(ActionTypeEnum.CA_AUTH, CaAction.class);
         actionMap.put(ActionTypeEnum.CA_CANCEL, CaAction.class);
+        actionMap.put(ActionTypeEnum.CA_INIT, CaAction.class);
         actionMap.put(ActionTypeEnum.CA_UPDATE, CaAction.class);
         actionMap.put(ActionTypeEnum.NODE_JOIN, NodeAction.class);
         actionMap.put(ActionTypeEnum.NODE_LEAVE, NodeAction.class);
 
+        ParserConfig.getGlobalInstance().putDeserializer(ValidCommand.class, new ValidCommandJsonDeserializer());
         //convertMap.put(ActionTypeEnum.REGISTER_CONTRACT.name(), obj -> CreateContractAction.fromMap(obj));
     }
 
@@ -66,7 +76,15 @@ public class ActionJsonDeserializer implements ObjectDeserializer {
         // parser.parseObject()
         JSONObject jsonObject = (JSONObject) obj;
         String actionTypeName = jsonObject.getString("type");
+        if (StringUtils.isEmpty(actionTypeName)) {
+            log.error("action type is empty, {}", ((JSONObject) obj).toJSONString());
+            return null;
+        }
         ActionTypeEnum actionType = ActionTypeEnum.valueOf(actionTypeName);
+        if (actionType == null) {
+            log.error("action type is invalid: {}", actionTypeName);
+            return null;
+        }
         Mapper mapper = convertMap.get(actionType);
         if (mapper != null) {
             return (T) convertMap.get(actionType).mapping(jsonObject);
