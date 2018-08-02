@@ -47,10 +47,7 @@ import java.util.List;
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
 
                     log.info("[process] transaction start, insert genius block into db");
-                    List<TransactionReceipt> txReceipts = new LinkedList();
-                    TransactionReceipt transactionReceipt = new TransactionReceipt();
-                    transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
-                    txReceipts.add(transactionReceipt);
+                    List<TransactionReceipt> txReceipts = buildtxReceipts(block);
                     blockRepository.saveBlock(block, txReceipts);
 
                     log.info("[process]insert clusterNode information into db");
@@ -126,5 +123,14 @@ import java.util.List;
         List<SignedTransaction> signedTransactionList = block.getSignedTxList();
         CoreTransaction coreTransaction = signedTransactionList.get(0).getCoreTx();
         return coreTransaction.getActionList();
+    }
+
+    private List<TransactionReceipt> buildtxReceipts(Block block) {
+        List<TransactionReceipt> txReceipts = new LinkedList();
+        TransactionReceipt transactionReceipt = new TransactionReceipt();
+        transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
+        transactionReceipt.setResult(true);
+        txReceipts.add(transactionReceipt);
+        return txReceipts;
     }
 }
