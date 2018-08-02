@@ -1,8 +1,8 @@
 package commands
 
-import com.higgs.trust.consensus.config.NodeStateEnum
-import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.config.p2p.ClusterInfo
+import com.higgs.trust.consensus.config.NodeState
+import com.higgs.trust.consensus.config.NodeStateEnum
 import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService
 import com.higgs.trust.management.failover.scheduler.FailoverSchedule
 import com.higgs.trust.management.failover.service.SelfCheckingService
@@ -38,7 +38,7 @@ class failover {
             out.println("self check failed, please check the current block")
             return
         }
-        syncService.autoSync()
+        syncService.asyncAutoSync()
         def blockService = beans.getBean(BlockService.class)
         def height = blockService.getMaxHeight().toString()
         out.println("auto sync blocks successful, current height:$height")
