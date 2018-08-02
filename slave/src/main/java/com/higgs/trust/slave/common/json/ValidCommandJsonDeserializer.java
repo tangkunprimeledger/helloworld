@@ -29,7 +29,7 @@ public class ValidCommandJsonDeserializer implements ObjectDeserializer {
     static {
         typeMap.put(BlockHeaderCmd.class.getSimpleName(), BlockHeaderCmd.class);
 //        typeMap.put(ChangeMasterVerifyCmd.class.getSimpleName(), ChangeMasterVerifyCmd.class);
-        typeMap.put(ClusterHeightCmd.class.getSimpleName(), ClusterHeightCmd.class);got
+        typeMap.put(ClusterHeightCmd.class.getSimpleName(), ClusterHeightCmd.class);
         typeMap.put(ClusterInfoCmd.class.getSimpleName(), ClusterInfoCmd.class);
         typeMap.put(PersistCommand.class.getSimpleName(), PersistCommand.class);
     }
