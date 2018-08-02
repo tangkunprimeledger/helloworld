@@ -5,6 +5,7 @@ import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -110,6 +111,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
                         RespData<String> resp = caClient.caInit(nodeName);
                         if (resp.isSuccess()) {
                             CaAction caAction = new CaAction();
+                            caAction.setType(ActionTypeEnum.CA_INIT);
                             caAction.setUser(nodeName);
                             caAction.setPubKey(resp.getData());
                             caActionList.add(caAction);
