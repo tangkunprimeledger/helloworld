@@ -13,6 +13,7 @@ import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
@@ -46,7 +47,11 @@ import java.util.List;
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
 
                     log.info("[process] transaction start, insert genius block into db");
-                    blockRepository.saveBlock(block, null);
+                    List<TransactionReceipt> txReceipts = new LinkedList();
+                    TransactionReceipt transactionReceipt = new TransactionReceipt();
+                    transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
+                    txReceipts.add(transactionReceipt);
+                    blockRepository.saveBlock(block, txReceipts);
 
                     log.info("[process]insert clusterNode information into db");
                     saveClusterNode(block);

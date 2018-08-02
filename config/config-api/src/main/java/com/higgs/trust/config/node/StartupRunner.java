@@ -18,8 +18,9 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/6/13
  */
-@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
-@Order @Component @Slf4j public class StartupRunner implements CommandLineRunner {
+@ConditionalOnProperty(prefix = "higgs.trust", name = {"joinConsensus", "autoRunning"}, havingValue = "true", matchIfMissing = true)
+@Order @Component @Slf4j public class StartupRunner
+    implements CommandLineRunner {
 
     @Autowired NodeState nodeState;
 
