@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.JsonUtils;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.api.enums.SnapshotValueStatusEnum;
@@ -346,7 +347,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
 
             log.debug("Insert snapshotBizKeyEnum: {} , innerKey : {} , value :{} into txCache", key1, key2, value);
 
-            String innerKey = JSON.toJSONString(key2);
+            String innerKey = serializeJsonString(key2);
             ConcurrentHashMap<String, Value> innerMap = txCache.get(key1);
 
             //whether the data  existed in txCache
@@ -421,7 +422,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      */
     private void putUpdateDataIntoTxCache(SnapshotBizKeyEnum key1, Object key2, Object value) {
 
-        String innerKey = JSON.toJSONString(key2);
+        String innerKey = serializeJsonString(key2);
         ConcurrentHashMap<String, Value> innerMap = txCache.get(key1);
         Value putInsertValue = buildValue(value, SnapshotValueStatusEnum.INSERT.getCode(), index);
         Value putUpdateValue = buildValue(value, SnapshotValueStatusEnum.UPDATE.getCode(), index);
@@ -639,7 +640,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      * @return
      */
     private Value getDataFromTxCache(SnapshotBizKeyEnum key1, Object key2) {
-        String innerKey = JSON.toJSONString(key2);
+        String innerKey = serializeJsonString(key2);
         //check where there is key1 in txCache
         if (!txCache.containsKey(key1)) {
             log.debug("There is no  snapshotBizKeyEnum: {} in the txCache ", key1);
@@ -659,15 +660,15 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      */
     private Value getDataFromPackageCache(SnapshotBizKeyEnum key1, Object key2) {
 
-        String innerKey = JSON.toJSONString(key2);
+        String innerKey = serializeJsonString(key2);
         //check where there is key1 in packageCache
         if (!packageCache.containsKey(key1)) {
             log.debug("There is no  snapshotBizKeyEnum: {} in the packageCache ", key1);
             return null;
         }
         //get data from packageCacheInnerMap
-        ConcurrentHashMap<String, Value> txCacheInnerMap = packageCache.get(key1);
-        return txCacheInnerMap.get(innerKey);
+        ConcurrentHashMap<String, Value> packageCacheInnerMap = packageCache.get(key1);
+        return packageCacheInnerMap.get(innerKey);
     }
 
 
@@ -691,7 +692,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
         //3.If there is no data in db ,it will return null
         //4.else return data and put data into globalCache
         Object value = null;
-        String innerKey = JSON.toJSONString(key2);
+        String innerKey = serializeJsonString(key2);
         LoadingCache<String, Object> innerMap = globalCache.get(key1);
         try {
             value = innerMap.get(innerKey);
@@ -955,7 +956,7 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
      */
     private Object transferValue(Object object) {
         //TODO find a way make the object const
-        String valueTemp = JSON.toJSONString(object);
+        String valueTemp = serializeJsonString(object);
         return JSON.parseObject(valueTemp, object.getClass());
     }
 
@@ -1055,5 +1056,14 @@ public class SnapshotServiceImpl implements SnapshotService, InitializingBean {
             log.debug("The snapshot transaction has not been started ! So we can't deal with this action");
             throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_TRANSACTION_NOT_STARTED_EXCEPTION);
         }
+    }
+
+    /**
+     * serialize Json String
+     * @param object
+     * @return
+     */
+    private String serializeJsonString(Object object){
+       return JsonUtils.serializeWithType(object);
     }
 }
