@@ -326,7 +326,7 @@ import java.util.concurrent.locks.ReentrantLock;
                     validCommandWrap.setCommandClass(sendCommand.getValidCommand().getClass());
                     validCommandWrap.setFromNode(sendCommand.getNodeName());
                     validCommandWrap.setSign(sendCommand.getCommandSign());
-                    validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parse(sendCommand.getValidCommand()));
+                    validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parseObject(sendCommand.getValidCommand(),ValidCommand.class));
                     ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
                         p2pConsensusClient.send(sendNode.getToNodeName(), validCommandWrap);
 
