@@ -61,8 +61,7 @@ import java.util.concurrent.*;
         FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverter();
         FastJsonConfig fastJsonConfig = new FastJsonConfig();
         fastJsonConfig.setSerializerFeatures(SerializerFeature.DisableCircularReferenceDetect,
-            SerializerFeature.WriteMapNullValue, SerializerFeature.SortField, SerializerFeature.MapSortField,
-            SerializerFeature.WriteClassName);
+            SerializerFeature.WriteMapNullValue, SerializerFeature.SortField, SerializerFeature.MapSortField);
         fastConverter.setFastJsonConfig(fastJsonConfig);
         List<MediaType> supportedMediaTypes = new ArrayList<>();
         supportedMediaTypes.add(MediaType.APPLICATION_JSON);
