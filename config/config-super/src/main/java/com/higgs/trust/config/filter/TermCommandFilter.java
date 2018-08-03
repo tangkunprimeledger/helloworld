@@ -13,6 +13,7 @@ import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CommandFilter;
 import com.higgs.trust.consensus.core.filter.CommandFilterChain;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,12 @@ import org.springframework.stereotype.Component;
             Long[] height = command.getPackageHeight();
 
             //check height array
+            if (ArrayUtils.isEmpty(height)) {
+                log.warn("package height array is empty");
+                commit.close();
+                return;
+            }
+
             if (!checkHeight(height)) {
                 log.warn("package command height list is not continuous, height={}", height);
                 commit.close();
