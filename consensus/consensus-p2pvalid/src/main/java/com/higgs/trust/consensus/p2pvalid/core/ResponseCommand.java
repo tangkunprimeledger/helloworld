@@ -23,6 +23,7 @@ import java.io.Serializable;
     }
 
     public ResponseCommand(T t) {
+        this();
         this.t = t;
     }
 
