@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "${higgs.trust.prefix}") public interface P2pConsensusClient {
     @RequestMapping(value = "/consensus/p2p/receive_command", method = RequestMethod.POST) @ResponseBody
-    ValidResponseWrap<? extends ResponseCommand> send(@RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName,
+    ValidResponseWrap<ResponseCommand> send(@RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName,
         @RequestBody ValidCommandWrap validCommandWrap);
 
     @RequestMapping(value = "/consensus/p2p/receive_command_sync", method = RequestMethod.POST) @ResponseBody
-    ValidResponseWrap<? extends ResponseCommand> syncSend(
+    ValidResponseWrap<ResponseCommand> syncSend(
         @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName, @RequestBody ValidCommandWrap validCommandWrap);
 
     @RequestMapping(value = "/consensus/p2p/receive_command_sync", method = RequestMethod.POST) @ResponseBody
-    ValidResponseWrap<? extends ResponseCommand> syncSendFeign(
+    ValidResponseWrap<ResponseCommand> syncSendFeign(
         @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody ValidCommandWrap validCommandWrap);
 }
