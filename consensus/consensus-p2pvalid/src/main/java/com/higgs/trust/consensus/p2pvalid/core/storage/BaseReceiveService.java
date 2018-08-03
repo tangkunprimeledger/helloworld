@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
     public ValidResponseWrap<? extends ResponseCommand> receive(ValidCommandWrap validCommandWrap) {
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
+        clusterInfo.refreshIfNeed();
         String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNode());
 
         log.debug("[BaseReceiveService] user={}", validCommandWrap.getFromNode());

@@ -143,7 +143,7 @@ import java.util.concurrent.*;
                 ValidResponseWrap<? extends ResponseCommand> validResponseWrap =
                     p2pConsensusClient.syncSend(nodeName, validCommandWrap);
                 if (validResponseWrap.isSucess()) {
-                    Object response = validResponseWrap.getResult();
+                    Object response = validResponseWrap.result();
                     if (response instanceof ChangeMasterVerifyResponseCmd) {
                         ChangeMasterVerifyResponseCmd command = (ChangeMasterVerifyResponseCmd)response;
                         if (command.get().isChangeMaster() && verifyResponse(command)) {

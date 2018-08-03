@@ -7,6 +7,7 @@ import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.higgs.trust.common.lambda.Mapper;
+import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.model.bo.account.AccountOperation;
@@ -63,6 +64,7 @@ public class ActionJsonDeserializer implements ObjectDeserializer {
         actionMap.put(ActionTypeEnum.NODE_LEAVE, NodeAction.class);
 
         ParserConfig.getGlobalInstance().putDeserializer(ValidCommand.class, new ValidCommandJsonDeserializer());
+        ParserConfig.getGlobalInstance().putDeserializer(ResponseCommand.class, new ResponseCommandJsonDeserializer());
         //convertMap.put(ActionTypeEnum.REGISTER_CONTRACT.name(), obj -> CreateContractAction.fromMap(obj));
     }
 

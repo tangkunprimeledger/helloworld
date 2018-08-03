@@ -74,7 +74,7 @@ import java.util.Map;
             try {
                 ValidResponseWrap<? extends ResponseCommand> validResponseWrap =
                     p2pConsensusClient.syncSend(nodeName, validCommandWrap);
-                Object response = validResponseWrap.getResult();
+                Object response = validResponseWrap.result();
                 if (response != null) {
                     if (response instanceof List) {
                         List<ResponseCommand> commands = (List)response;
