@@ -9,12 +9,21 @@ import org.springframework.stereotype.Repository;
  */
 @Repository public class SlaveCallbackRegistor {
     private SlaveCallbackHandler slaveCallbackHandler;
+    private SlaveBatchCallbackHandler slaveBatchCallbackHandler;
 
-    public void registCallbackHandler(SlaveCallbackHandler callbackHandler){
+    public void registCallbackHandler(SlaveCallbackHandler callbackHandler) {
         this.slaveCallbackHandler = callbackHandler;
+    }
+
+    public void registBatchCallbackHandler(SlaveBatchCallbackHandler callbackHandler) {
+        this.slaveBatchCallbackHandler = callbackHandler;
     }
 
     public SlaveCallbackHandler getSlaveCallbackHandler() {
         return slaveCallbackHandler;
+    }
+
+    public SlaveBatchCallbackHandler getSlaveBatchCallbackHandler() {
+        return slaveBatchCallbackHandler;
     }
 }
