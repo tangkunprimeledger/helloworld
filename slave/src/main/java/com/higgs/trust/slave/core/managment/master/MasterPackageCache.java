@@ -5,7 +5,6 @@ import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
-import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -30,7 +30,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
-    @Autowired private PendingTxRepository pendingTxRepository;
+
+    private static int BATCH_PACKAGE = 10;
 
     private AtomicLong packHeight = new AtomicLong(0);
     private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
@@ -150,6 +151,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
     public Package getPackage() {
         return pendingPack.poll();
+    }
+
+    public List<Package> getPackages() {
+        int i = 0;
+        List<Package> packageList = new LinkedList<>();
+        while ((null != pendingPack.peek()) && (i++ < BATCH_PACKAGE)) {
+            packageList.add(pendingPack.poll());
+        }
+
+        return packageList;
     }
 
 }

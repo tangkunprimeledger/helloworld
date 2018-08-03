@@ -36,10 +36,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -96,9 +93,15 @@ import java.util.stream.Collectors;
         return pack;
     }
 
-    @Override public void submitConsensus(Package pack) {
-        PackageVO packageVO = PackageConvert.convertPackToPackVO(pack);
-        logReplicateHandler.replicatePackage(packageVO);
+    @Override public void submitConsensus(List<Package> packs) {
+
+        List<PackageVO> voList = new LinkedList<>();
+        for (Package pack : packs) {
+            voList.add(PackageConvert.convertPackToPackVO(pack));
+        }
+
+
+        logReplicateHandler.replicatePackage(voList);
     }
 
     /**

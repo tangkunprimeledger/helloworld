@@ -7,6 +7,7 @@ import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.constant.LoggerName;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.core.repository.*;
@@ -73,6 +74,12 @@ import java.util.List;
 
     @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
+
+        if (CollectionUtils.isEmpty(transactions)) {
+            log.error("received transaction list is empty");
+            return new RespData(RespCodeEnum.PARAM_NOT_VALID);
+        }
+
         List<TransactionVO> transactionVOList = new ArrayList<>();
 
         if (StringUtils.equals(nodeState.getMasterName(), MASTER_NA)) {
@@ -138,10 +145,13 @@ import java.util.List;
      */
     @Override public RespData submitTransaction(SignedTransaction tx) {
 
-        //TODO 放到消费队列里面
-        AppContext.PENDING_TO_SUBMIT_QUEUE.offer(tx);
-
         RespData respData;
+        //TODO 放到消费队列里面
+        if (AppContext.PENDING_TO_SUBMIT_QUEUE.size() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
+            return new RespData(RespCodeEnum.SYS_FAIL);
+        }
+
+        AppContext.PENDING_TO_SUBMIT_QUEUE.offer(tx);
         try {
             respData = AppContext.TX_HANDLE_RESULT_MAP.poll(tx.getCoreTx().getTxId(), 1000);
         } catch (InterruptedException e) {
@@ -161,6 +171,12 @@ import java.util.List;
 
     @Override public RespData submitToMaster(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
+
+        if (CollectionUtils.isEmpty(transactions)) {
+            log.warn("transactions is empty");
+            return respData;
+        }
+
         List<TransactionVO> transactionVOList;
 
         // when master is running , then add txs into local pending txs

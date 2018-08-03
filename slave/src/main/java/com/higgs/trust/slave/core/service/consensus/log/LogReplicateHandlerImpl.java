@@ -9,13 +9,13 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
-import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
+import com.higgs.trust.slave.model.bo.consensus.BatchPackageCommand;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -49,19 +49,23 @@ import java.util.concurrent.TimeUnit;
     /**
      * replicate sorted package to the cluster
      *
-     * @param packageVO
+     * @param packageVOList
      */
-    @Override public void replicatePackage(PackageVO packageVO) {
+    @Override public void replicatePackage(List<PackageVO> packageVOList) {
         // validate param
-        if (null == packageVO) {
+        if (CollectionUtils.isEmpty(packageVOList)) {
             log.error("[LogReplicateHandler.replicatePackage]param validate failed, cause package is null ");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
+        Long startHeight = packageVOList.get(0).getHeight();
+        int size = packageVOList.size();
+        Long endHeight = packageVOList.get(size - 1).getHeight();
+
         // replicate package to all nodes
-        log.info("package starts to distribute to each node through consensus layer package height = {}", packageVO.getHeight());
-        PackageCommand packageCommand =
-            new PackageCommand(nodeState.getCurrentTerm(), nodeState.getMasterName(), packageVO);
+        log.info("package starts to distribute to each node through consensus layer package startHeight={}, endHeight={}, size={}", startHeight, endHeight, size);
+        BatchPackageCommand packageCommand =
+            new BatchPackageCommand(nodeState.getCurrentTerm(), nodeState.getMasterName(), packageVOList);
         String signValue = packageCommand.getSignValue();
         packageCommand.setSign(SignUtils.sign(signValue, nodeState.getPrivateKey()));
 
@@ -82,7 +86,7 @@ import java.util.concurrent.TimeUnit;
                 future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
                 flag = true;
             } catch (Throwable e) {
-                log.error("replicate log failed! height = {}", packageVO.getHeight(), e);
+                log.error("replicate log failed! startHeight={}, endHeight={}, size={}", startHeight, endHeight, size, e);
                 //TODO 添加告警
 
                 // wait for a while
@@ -96,7 +100,7 @@ import java.util.concurrent.TimeUnit;
             }
         }
 
-        log.info("package has been sent to consensus layer package height = {}", packageVO.getHeight());
+        log.info("package has been sent to consensus layer package startHeight={}, endHeight={}, size={}", startHeight, endHeight, size);
     }
 
     /**

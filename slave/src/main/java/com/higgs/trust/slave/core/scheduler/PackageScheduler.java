@@ -94,7 +94,7 @@ import java.util.Set;
             && packageCache.getPendingPackSize() > 0) {
             Span span = TraceUtils.createSpan();
             try {
-                packageService.submitConsensus(packageCache.getPackage());
+                packageService.submitConsensus(packageCache.getPackages());
             } finally {
                 TraceUtils.closeSpan(span);
             }
