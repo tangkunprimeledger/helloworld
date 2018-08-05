@@ -37,6 +37,9 @@ public class ValidCommandJsonDeserializer implements ObjectDeserializer {
     @Override
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
         Object obj = parser.parse();
+        if (obj == null) {
+            return null;
+        }
         if(obj instanceof ValidCommand) {
             return (T) obj;
         }

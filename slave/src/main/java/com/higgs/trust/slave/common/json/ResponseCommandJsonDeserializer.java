@@ -34,10 +34,12 @@ public class ResponseCommandJsonDeserializer implements ObjectDeserializer {
     @Override
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
         Object obj = parser.parse();
+        if (obj == null) {
+            return null;
+        }
         if(obj instanceof ResponseCommand) {
             return (T) obj;
         }
-
         JSONObject jsonObject = (JSONObject) obj;
         String cmdName = jsonObject.getString("cmdName");
         if (StringUtils.isEmpty(cmdName)) {
