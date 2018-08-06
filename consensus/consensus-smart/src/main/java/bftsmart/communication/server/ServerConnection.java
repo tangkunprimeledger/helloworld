@@ -374,14 +374,14 @@ public class ServerConnection {
             byte[] remote_Signature = bytes;
 
             //verify signature
-            PublicKey remoteRSAPubkey = controller.getStaticConf().getRSAPublicKey(remoteId);
+            /*PublicKey remoteRSAPubkey = controller.getStaticConf().getRSAPublicKey(remoteId);
 
             if (!TOMUtil.verifySignature(remoteRSAPubkey, remote_Bytes, remote_Signature)) {
 
                 Logger.println(remoteId + " sent an invalid signature!");
                 shutdown();
                 return;
-            }
+            }*/
 
             BigInteger remoteDHPubKey = new BigInteger(remote_Bytes);
 

@@ -26,6 +26,13 @@ public interface BlockChainService {
 
     RespData submitTransaction(SignedTransaction transaction);
 
+    /**
+     * submit transactions to master node
+     * @param transactions
+     * @return
+     */
+    RespData submitToMaster(List<SignedTransaction> transactions);
+
     List<BlockHeader> listBlockHeaders(long startHeight, int size);
 
     List<Block> listBlocks(long startHeight, int size);

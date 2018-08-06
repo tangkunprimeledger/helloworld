@@ -6,7 +6,6 @@ import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
-import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
@@ -23,9 +22,8 @@ import java.util.List;
  * @author: pengdi
  **/
 @Service @Slf4j public class PendingStateImpl implements PendingState {
-    @Autowired private PendingTxRepository pendingTxRepository;
 
-    @Autowired private TransactionRepository transactionRepository;
+    @Autowired private PendingTxRepository pendingTxRepository;
 
     @Autowired private MasterPackageCache packageCache;
 
@@ -59,30 +57,11 @@ import java.util.List;
                 return;
             }
 
-            // chained transaction idempotent check, need retry
-            if (transactionRepository.isExist(txId)) {
-                log.warn("transaction idempotent, txId={}", txId);
-                transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
-                transactionVO.setErrMsg(TxSubmitResultEnum.TX_IDEMPOTENT.getDesc());
-                transactionVO.setRetry(true);
-                transactionVOList.add(transactionVO);
-                return;
-            }
-
             //limit queue size
             if (packageCache.getPendingTxQueueSize() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
                 log.warn("pending transaction queue size is too large , txId={}", txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.TX_QUEUE_SIZE_TOO_LARGE.getCode());
                 transactionVO.setErrMsg(TxSubmitResultEnum.TX_QUEUE_SIZE_TOO_LARGE.getDesc());
-                transactionVO.setRetry(true);
-                transactionVOList.add(transactionVO);
-                return;
-            }
-
-            if (pendingTxRepository.isExist(txId)) {
-                log.warn("pending transaction table idempotent, txId={}", txId);
-                transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
-                transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
                 transactionVO.setRetry(true);
                 transactionVOList.add(transactionVO);
                 return;

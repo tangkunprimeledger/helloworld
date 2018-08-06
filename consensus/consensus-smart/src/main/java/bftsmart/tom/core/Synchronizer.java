@@ -142,10 +142,10 @@ public class Synchronizer {
                             + regency);
                 }
 
-                byte[] payload = bos.toByteArray();
-
                 out.flush();
                 bos.flush();
+
+                byte[] payload = bos.toByteArray();
 
                 out.close();
                 bos.close();
@@ -1060,11 +1060,13 @@ public class Synchronizer {
             e.clear();
         }
 
-        byte[] hash = tom.computeHash(tempLastHighestCID.getDecision());
-        e.propValueHash = hash;
-        e.propValue = tempLastHighestCID.getDecision();
+        if (tempLastHighestCID.getDecision() != null) {
+            byte[] hash = tom.computeHash(tempLastHighestCID.getDecision());
+            e.propValueHash = hash;
+            e.propValue = tempLastHighestCID.getDecision();
 
-        e.deserializedPropValue = tom.checkProposedValue(tempLastHighestCID.getDecision(), false);
+            e.deserializedPropValue = tom.checkProposedValue(tempLastHighestCID.getDecision(), false);
+        }
 
         finalise(tempRegency, tempLastHighestCID, tempSignedCollects, tempPropose, tempBatchSize, tempIAmLeader);
 

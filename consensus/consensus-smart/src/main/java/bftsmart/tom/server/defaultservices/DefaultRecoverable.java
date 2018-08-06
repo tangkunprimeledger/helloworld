@@ -68,7 +68,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 
     private byte[][] executeBatch(byte[][] commands, MessageContext[] msgCtxs, boolean noop) {
 
-        int cid = msgCtxs[msgCtxs.length - 1].getConsensusId();
+        int cid;
 
         // As the delivery thread may deliver several consensus at once it is necessary
         // to find if a checkpoint might be taken in the middle of the batch execution
@@ -206,14 +206,12 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         int cid = msgCtx[0].getConsensusId();
         int batchStart = 0;
         for (int i = 0; i <= msgCtx.length; i++) {
-            if (i
-                == msgCtx.length) { // the batch command contains only one command or it is the last position of the array
+            if (i == msgCtx.length) { // the batch command contains only one command or it is the last position of the array
                 byte[][] batch = Arrays.copyOfRange(commands, batchStart, i);
                 MessageContext[] batchMsgCtx = Arrays.copyOfRange(msgCtx, batchStart, i);
                 log.addMessageBatch(batch, batchMsgCtx, cid);
             } else {
-                if (msgCtx[i].getConsensusId()
-                    > cid) { // saves commands when the cid changes or when it is the last batch
+                if (msgCtx[i].getConsensusId() > cid) { // saves commands when the cid changes or when it is the last batch
                     byte[][] batch = Arrays.copyOfRange(commands, batchStart, i);
                     MessageContext[] batchMsgCtx = Arrays.copyOfRange(msgCtx, batchStart, i);
                     log.addMessageBatch(batch, batchMsgCtx, cid);
@@ -309,7 +307,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             lastCID = state.getLastCID();
 
             Logger.println(
-                "(DefaultRecoverable.setState) I'm going to update myself from CID " + lastCheckpointCID + " to CID "
+                "(DefaultRecoverable.recoverState) I'm going to update myself from CID " + lastCheckpointCID + " to CID "
                     + lastCID);
 
             stateLock.lock();
@@ -324,9 +322,9 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                 try {
 
                     Logger.println(
-                        "(DefaultRecoverable.setState) interpreting and verifying batched requests for cid " + cid);
+                        "(DefaultRecoverable.recoverState) interpreting and verifying batched requests for cid " + cid);
                     if (state.getMessageBatch(cid) == null) {
-                        Logger.println("(DefaultRecoverable.setState) " + cid + " NULO!!!");
+                        Logger.println("(DefaultRecoverable.recoverState) " + cid + " NULO!!!");
                     }
 
                     CommandsInfo cmdInfo = state.getMessageBatch(cid);
@@ -338,7 +336,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                     }
                     appExecuteBatch(commands, msgCtx, false);
                 } catch (Exception e) {
-                    Logger.printError("set state failed!", e);
+                    Logger.printError("recover state failed!", e);
                     if (e instanceof ArrayIndexOutOfBoundsException) {
                         Logger.println("CID do ultimo checkpoint: " + state.getLastCheckpointCID());
                         Logger.println("CID do ultimo consenso: " + state.getLastCID());
