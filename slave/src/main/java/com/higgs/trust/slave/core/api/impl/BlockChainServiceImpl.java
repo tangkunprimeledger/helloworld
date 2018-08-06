@@ -148,6 +148,7 @@ import java.util.List;
         RespData respData;
         //TODO 放到消费队列里面
         if (AppContext.PENDING_TO_SUBMIT_QUEUE.size() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
+            log.warn("pending to submit queue is full, size={}", AppContext.PENDING_TO_SUBMIT_QUEUE.size());
             return new RespData(RespCodeEnum.SYS_FAIL);
         }
 
@@ -360,7 +361,7 @@ import java.util.List;
     }
 
     @Override public void afterPropertiesSet() throws Exception {
-        new ConsumerTx().start();
+        new ConsumerTx("consumerTx").start();
     }
 
     /**
@@ -368,21 +369,26 @@ import java.util.List;
      */
     private class ConsumerTx extends Thread {
 
-        public ConsumerTx() {
+        public ConsumerTx(String name) {
+            super.setName(name);
         }
 
         @Override public void run() {
+            log.info("thread.name={}", Thread.currentThread().getName());
             while (true) {
                 try {
                     Thread.sleep(SLEEP_FOR_SUBMIT_TO_MASTER);
+
+                    if (null == AppContext.PENDING_TO_SUBMIT_QUEUE.peek()) {
+                        log.debug("queue is empty");
+                        continue;
+                    } else {
+                        submit();
+                    }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (null == AppContext.PENDING_TO_SUBMIT_QUEUE.peek()) {
-                    log.debug("queue is empty");
-                    continue;
-                } else {
-                    submit();
+                    log.error("Consumer tx thread InterruptedException");
+                } catch (Throwable e) {
+                    log.error("Consumer tx thread handle exception, ", e);
                 }
             }
         }
