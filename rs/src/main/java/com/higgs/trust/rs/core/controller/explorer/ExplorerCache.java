@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,7 +31,7 @@ import java.util.concurrent.TimeUnit;
     private Cache<Object, String> CACHE = null;
 
     @Override public void afterPropertiesSet() throws Exception {
-        if(duration == null){
+        if (duration == null) {
             duration = 60L;
         }
         CACHE = CacheBuilder.newBuilder().initialCapacity(100).maximumSize(5000)
@@ -45,7 +48,7 @@ import java.util.concurrent.TimeUnit;
      * @param key
      * @param value
      */
-    public void put(Object key, Object value) {
+    public void put(CacheKey key, Object value) {
         CACHE.put(JSON.toJSONString(key), JSON.toJSONString(value));
     }
 
@@ -57,7 +60,7 @@ import java.util.concurrent.TimeUnit;
      * @param <T>
      * @return
      */
-    public <T> T get(Object key, Class<T> clazz) {
+    public <T> T get(CacheKey key, Class<T> clazz) {
         try {
             String value = null;
             value = CACHE.get(JSON.toJSONString(key), new Callable<String>() {
@@ -79,4 +82,8 @@ import java.util.concurrent.TimeUnit;
         return null;
     }
 
+    @AllArgsConstructor @Getter @Setter public static class CacheKey<T> {
+        private String type;
+        private T keyData;
+    }
 }
