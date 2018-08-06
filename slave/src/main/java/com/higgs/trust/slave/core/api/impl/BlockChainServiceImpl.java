@@ -98,7 +98,7 @@ import java.util.List;
 
         RespData masterResp = submitToMaster(newSignedTxList);
         if (null != masterResp.getData()) {
-            transactionVOList.addAll((List<TransactionVO>)respData.getData());
+            transactionVOList.addAll((List<TransactionVO>)masterResp.getData());
         }
 
         respData.setData(transactionVOList);
