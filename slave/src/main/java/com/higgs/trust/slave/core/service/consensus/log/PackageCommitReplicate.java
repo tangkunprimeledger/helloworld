@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
+import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -19,6 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.Span;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -73,32 +75,38 @@ import java.util.concurrent.ExecutorService;
         }
 
         for (PackageVO vo : voList) {
-            BeanValidateResult result = BeanValidator.validate(vo);
-            if (!result.isSuccess()) {
-                log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
-                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-            }
-
-            // receive package
-            Package pack = PackageConvert.convertPackVOToPack(vo);
-            boolean isRunning = nodeState.isState(NodeStateEnum.Running);
+            Span span = TraceUtils.createSpan();
             try {
-                packageService.receive(pack);
-                listeners.forEach(listener -> listener.received(pack));
-            } catch (SlaveException e) {
-                //idempotent as success, other exceptions make the consensus layer retry
-                if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {
-                    throw e;
+                BeanValidateResult result = BeanValidator.validate(vo);
+                if (!result.isSuccess()) {
+                    log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
                 }
-            }
 
-            if (isRunning) {
-                //async start package process
+                // receive package
+                Package pack = PackageConvert.convertPackVOToPack(vo);
+                boolean isRunning = nodeState.isState(NodeStateEnum.Running);
                 try {
-                    packageThreadPool.execute(new AsyncPackageProcess(pack.getHeight()));
-                } catch (Throwable e) {
-                    log.error("package's async process failed after package replicated", e);
+                    packageService.receive(pack);
+                    listeners.forEach(listener -> listener.received(pack));
+                } catch (SlaveException e) {
+                    //idempotent as success, other exceptions make the consensus layer retry
+                    if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {
+                        throw e;
+                    }
                 }
+
+                if (isRunning) {
+                    //async start package process
+                    try {
+
+                        packageThreadPool.execute(new AsyncPackageProcess(pack.getHeight()));
+                    } catch (Throwable e) {
+                        log.error("package's async process failed after package replicated", e);
+                    }
+                }
+            } finally {
+                TraceUtils.closeSpan(span);
             }
         }
         commit.close();
