@@ -6,13 +6,17 @@ import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 @Configuration @ConfigurationProperties(prefix = "copycat.server") @Getter @Setter @ToString public class AtomixRaftProperties {
 
     private String client;
 
     private String address;
 
-    private String cluster;
+    private String nodeName;
+
+    private Map<String,String> cluster;
 
     private String serverId;
 

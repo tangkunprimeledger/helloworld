@@ -3,11 +3,8 @@
  */
 package com.higgs.trust.consensus.atomix.config;
 
-import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.core.ConsensusClient;
-import com.higgs.trust.consensus.core.command.ConsensusCommand;
-import io.atomix.protocols.raft.RaftServer;
-import io.atomix.protocols.raft.protocol.RaftServerProtocol;
+import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -17,13 +14,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class AtomixRaftClient implements ConsensusClient {
 
-    NodeProperties nodeProperties;
-
-    public void init() {
-    }
-
-    @Override public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
-//        atomix.getCommunicationService().broadcast(command.getClass().getSimpleName(), command);
+    @Override public <T> CompletableFuture<?> submit(AbstractConsensusCommand<T> command) {
         return null;
     }
 }

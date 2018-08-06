@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Replicator
 public class ExampleCommandReplicator {
+
     public void artificialChangeMaster(ConsensusCommit<ExampleCommand> commit) {
         ExampleCommand operation = commit.operation();
         log.debug("ExampleCommandReplicator received ExampleCommand:{}",operation.getMsg());
