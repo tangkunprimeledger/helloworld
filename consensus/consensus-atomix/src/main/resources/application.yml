@@ -1,6 +1,8 @@
 copycat:
   server:
     cluster: "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803"
+    address: 127.0.0.1:8800
+    serverId: member-1
 eureka:
   client:
     enabled: false

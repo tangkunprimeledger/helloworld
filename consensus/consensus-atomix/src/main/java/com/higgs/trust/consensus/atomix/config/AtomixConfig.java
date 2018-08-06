@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
         return new AtomixCommitReplicateComposite();
     }
 
-    @Bean public AtomixRaftProfile profile(AtomixRaftProperties properties) {
-        return new AtomixRaftProfile(properties);
-    }
+//    @Bean public AtomixRaftProfile profile(AtomixRaftProperties properties) {
+//        return new AtomixRaftProfile(properties);
+//    }
 }
