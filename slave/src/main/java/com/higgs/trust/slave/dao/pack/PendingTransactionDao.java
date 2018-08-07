@@ -52,4 +52,11 @@ import java.util.List;
      * @return
      */
     int batchInsert(List<PendingTransactionPO> list);
+
+    /**
+     * query pending transaction
+     * @param txIds
+     * @return
+     */
+    List<PendingTransactionPO> queryByTxIds(@Param("txIds") List<String> txIds);
 }

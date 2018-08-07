@@ -98,6 +98,15 @@
         <include refid="baseColumnList"/>
         from pending_transaction where height=#{height} order by tx_id asc
     </select>
+    <select id="queryByTxIds" resultType="com.higgs.trust.slave.dao.po.pack.PendingTransactionPO">
+        select
+        <include refid="baseColumnList"/>
+        from pending_transaction
+        where tx_id in
+        <foreach collection="txIds" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 
     <insert id ="batchInsert" parameterType="java.util.List" >
         insert into

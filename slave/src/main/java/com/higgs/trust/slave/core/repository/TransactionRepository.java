@@ -190,6 +190,25 @@ import java.util.List;
         return datas;
     }
 
+    public List<String> queryTxIdsByIds(List<String> txIds) {
+        if (CollectionUtils.isEmpty(txIds)) {
+            return null;
+        }
+
+        List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
+
+        if (CollectionUtils.isEmpty(transactionPOS)) {
+            return null;
+        }
+
+        List<String> datas = new ArrayList<>();
+
+        for (TransactionPO transactionPO : transactionPOS) {
+            datas.add(transactionPO.getTxId());
+        }
+        return datas;
+    }
+
     public List<CoreTransactionVO> queryTxsWithCondition(Long blockHeight, String txId,
         String sender, Integer pageNum, Integer pageSize) {
         if (null != txId) {

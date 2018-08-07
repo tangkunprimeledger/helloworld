@@ -204,4 +204,22 @@ import java.util.List;
         }
         return signedTransaction;
     }
+
+    public List<String> queryTxIds(List<String> txIds) {
+
+        if (CollectionUtils.isEmpty(txIds)) {
+            return null;
+        }
+
+        List<PendingTransactionPO> pTxPOs = pendingTransactionDao.queryByTxIds(txIds);
+        if (CollectionUtils.isEmpty(pTxPOs)) {
+            return null;
+        }
+
+        List<String> pTxIds = new ArrayList<>();
+        for (PendingTransactionPO po : pTxPOs) {
+            pTxIds.add(po.getTxId());
+        }
+        return pTxIds;
+    }
 }

@@ -8,7 +8,6 @@ import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.common.constant.Constant;
-import com.higgs.trust.slave.common.constant.LoggerName;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
@@ -25,8 +24,6 @@ import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -121,38 +118,64 @@ import java.util.concurrent.Executor;
 
         List<SignedTransaction> signedTransactions = new ArrayList<>();
 
+        //build tx_id set
+        List<String> signedTxIds = new ArrayList<>();
         for (SignedTransaction signedTx : transactions) {
-            TransactionVO transactionVO = new TransactionVO();
-            String txId = signedTx.getCoreTx().getTxId();
-            transactionVO.setTxId(txId);
+            signedTxIds.add(signedTx.getCoreTx().getTxId());
+        }
 
-            // chained transaction idempotent check, need retry
-            if (transactionRepository.isExist(txId)) {
+        Profiler.enter("transaction idempotent");
+        //check transaction db
+        List<String> txIds = transactionRepository.queryTxIdsByIds(signedTxIds);
+        if (!CollectionUtils.isEmpty(txIds)) {
+            for (String txId : txIds) {
                 log.warn("transaction idempotent, txId={}", txId);
+                TransactionVO transactionVO = new TransactionVO();
+                transactionVO.setTxId(txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
                 transactionVO.setErrMsg(TxSubmitResultEnum.TX_IDEMPOTENT.getDesc());
                 transactionVO.setRetry(true);
                 transactionVOList.add(transactionVO);
-                continue;
-            }
 
-            // pending transaction idempotent check, need retry
-            if (pendingTxRepository.isExist(txId)) {
+                //remove tx_id
+                signedTxIds.remove(txId);
+            }
+        }
+
+        Profiler.release();
+
+        Profiler.enter("pending transaction idempotent");
+        //check pending_transaction db
+        List<String> pTxIds = pendingTxRepository.queryTxIds(signedTxIds);
+        if (!CollectionUtils.isEmpty(pTxIds)) {
+            for (String txId : pTxIds) {
                 log.warn("pending transaction table idempotent, txId={}", txId);
+                TransactionVO transactionVO = new TransactionVO();
+                transactionVO.setTxId(txId);
                 transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
                 transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
                 transactionVO.setRetry(true);
                 transactionVOList.add(transactionVO);
-                continue;
+
+                //remove tx_id
+                signedTxIds.remove(pTxIds);
             }
-            signedTransactions.add(signedTx);
         }
+
+        Profiler.release();
+
+        Profiler.enter("build signedTx");
+        for (SignedTransaction signedTx : transactions) {
+            if (signedTxIds.contains(signedTx.getCoreTx().getTxId())) {
+                signedTransactions.add(signedTx);
+            }
+        }
+        Profiler.release();
         return signedTransactions;
     }
 
     /**
      * for performance test
-     *
      * @param tx
      * @return
      */
