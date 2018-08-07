@@ -144,6 +144,8 @@ import java.util.List;
      * @return
      */
     @Override public RespData submitTransaction(SignedTransaction tx) {
+        //TODO for load test
+        log.info("accept tx with thread: " + Thread.currentThread().getName());
 
         RespData respData;
         //TODO 放到消费队列里面
