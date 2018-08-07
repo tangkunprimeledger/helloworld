@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,8 +31,6 @@ import java.util.concurrent.TimeUnit;
     @Autowired ConsensusClient consensusClient;
 
     @Autowired PackageService packageService;
-
-    @Autowired ExecutorService packageThreadPool;
 
     @Autowired PackageProcess packageProcess;
 

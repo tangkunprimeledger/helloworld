@@ -48,8 +48,8 @@ import java.util.concurrent.*;
         tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return tx;
     }
-
-    @Bean public ExecutorService packageThreadPool() {
+    @Bean(name = "packageThreadPool")
+    public ExecutorService packageThreadPool() {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("package-pool-%d").build();
         ExecutorService packageExecutor =
             new ThreadPoolExecutor(1, 1, 0L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1024), namedThreadFactory,

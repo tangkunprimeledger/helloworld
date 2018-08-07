@@ -26,8 +26,9 @@ import java.util.List;
      */
     @RequestMapping(value = "/queryBlocksByPage", method = RequestMethod.POST) @ResponseBody
     public RespData<List<BlockVO>> queryBlocksByPage(@RequestBody QueryBlockVO req) {
+        ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryBlocksByPage",req);
 
-        RespData<List<BlockVO>> respData = explorerCache.get(req, RespData.class);
+        RespData<List<BlockVO>> respData = explorerCache.get(key, RespData.class);
         if (respData != null) {
             return respData;
         } else {
@@ -37,7 +38,7 @@ import java.util.List;
         List<BlockVO> list = rsBlockChainService.queryBlocksByPage(req);
         respData.setData(list);
 
-        explorerCache.put(req, respData);
+        explorerCache.put(key, respData);
 
         return respData;
     }
@@ -50,8 +51,8 @@ import java.util.List;
      */
     @RequestMapping(value = "/queryTxsByPage", method = RequestMethod.POST) @ResponseBody
     public RespData<List<CoreTransactionVO>> queryTxsByPage(@RequestBody QueryTransactionVO req) {
-
-        RespData<List<CoreTransactionVO>> respData = explorerCache.get(req, RespData.class);
+        ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryTxsByPage",req);
+        RespData<List<CoreTransactionVO>> respData = explorerCache.get(key, RespData.class);
         if (respData != null) {
             return respData;
         } else {
@@ -61,7 +62,7 @@ import java.util.List;
         List<CoreTransactionVO> list = rsBlockChainService.queryTxsByPage(req);
         respData.setData(list);
 
-        explorerCache.put(req, respData);
+        explorerCache.put(key, respData);
 
         return respData;
     }
@@ -75,7 +76,8 @@ import java.util.List;
     @RequestMapping(value = "/queryBlockByHeight", method = RequestMethod.POST) @ResponseBody
     public RespData<BlockVO> queryBlockByHeight(@RequestBody QueryBlockByHeightVO vo) {
         Long height = vo.getHeight();
-        RespData<BlockVO> respData = explorerCache.get(height, RespData.class);
+        ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryBlockByHeight",height);
+        RespData<BlockVO> respData = explorerCache.get(key, RespData.class);
         if (respData != null) {
             return respData;
         } else {
@@ -85,7 +87,7 @@ import java.util.List;
         BlockVO blockVO = rsBlockChainService.queryBlockByHeight(height);
         respData.setData(blockVO);
 
-        explorerCache.put(height, respData);
+        explorerCache.put(key, respData);
         return respData;
     }
 
@@ -98,7 +100,8 @@ import java.util.List;
     @RequestMapping(value = "/queryTxById", method = RequestMethod.POST) @ResponseBody
     public RespData<CoreTransactionVO> queryTxById(@RequestBody QueryTxVO vo) {
         String txId = vo.getTxId();
-        RespData<CoreTransactionVO> respData = explorerCache.get(txId, RespData.class);
+        ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryTxById",txId);
+        RespData<CoreTransactionVO> respData = explorerCache.get(key, RespData.class);
         if (respData != null) {
             return respData;
         } else {
@@ -107,7 +110,7 @@ import java.util.List;
         CoreTransactionVO coreTransactionVO = rsBlockChainService.queryTxById(txId);
         respData.setData(coreTransactionVO);
 
-        explorerCache.put(txId, respData);
+        explorerCache.put(key, respData);
         return respData;
     }
 
