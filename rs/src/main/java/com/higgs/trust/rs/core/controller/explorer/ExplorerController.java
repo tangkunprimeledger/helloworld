@@ -110,4 +110,29 @@ import java.util.List;
         explorerCache.put(txId, respData);
         return respData;
     }
+
+
+
+    /**
+     * query tx info by tx_id
+     *
+     * @param vo
+     * @return
+     */
+    @RequestMapping(value = "/queryUTXO", method = RequestMethod.POST) @ResponseBody
+    public RespData<List<UTXOVO>> queryUTXO(@RequestBody QueryTxVO vo) {
+        String txId = vo.getTxId();
+        String key = txId + "|" + "queryUTXO";
+        RespData<List<UTXOVO>> respData = explorerCache.get(key, RespData.class);
+        if (respData != null) {
+            return respData;
+        } else {
+            respData = new RespData<>();
+        }
+        List<UTXOVO> UTXOs = rsBlockChainService.queryUTXO(txId);
+        respData.setData(UTXOs);
+
+        explorerCache.put(txId, respData);
+        return respData;
+    }
 }
