@@ -25,7 +25,7 @@ import java.util.function.Function;
 
     public CommandPrimitiveService(CommandPrimitiveType type, ServiceConfig config,
         AbstractCommitReplicateComposite replicateComposite) {
-        super(type);
+        super(type, ICommandPrimitive.class);
         this.replicateComposite = replicateComposite;
         if (log.isDebugEnabled()) {
             log.debug("new service");
@@ -34,8 +34,9 @@ import java.util.function.Function;
 
     @Override public void submit(AbstractConsensusCommand command) {
         log.debug("service submit");
-        Function function = replicateComposite.registerCommit().get(command.getClass());
-        function.apply(command);
+//        Function function = replicateComposite.registerCommit().get(command.getClass());
+//        function.apply(command);
+        log.debug("apply command:{}",command);
     }
 
     @Override public void backup(BackupOutput output) {

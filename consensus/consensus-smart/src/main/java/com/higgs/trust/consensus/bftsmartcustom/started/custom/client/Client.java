@@ -2,6 +2,7 @@ package com.higgs.trust.consensus.bftsmartcustom.started.custom.client;
 
 import bftsmart.tom.ServiceProxy;
 import com.higgs.trust.consensus.core.ConsensusClient;
+import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.ConsensusCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +58,7 @@ import java.util.concurrent.CompletableFuture;
         }
     }
 
-    @Override public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
+    @Override public <T> CompletableFuture<?> submit(AbstractConsensusCommand<T> command) {
         CompletableFuture completableFuture = CompletableFuture.runAsync(() -> {
             processingPackage(command);
         });

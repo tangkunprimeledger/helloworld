@@ -15,14 +15,23 @@ import io.atomix.utils.serializer.Namespaces;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 /**
  * @author suimi
  * @date 2018/7/6
  */
-@Component public class CommandPrimitiveType
+public class CommandPrimitiveType
     implements PrimitiveType<CommandPrimitiveBuilder, CommandPrimitiveConfig, ICommandPrimitive> {
 
-    @Autowired private AbstractCommitReplicateComposite replicateComposite;
+    private AbstractCommitReplicateComposite replicateComposite;
+
+    public CommandPrimitiveType() {
+    }
+
+    public CommandPrimitiveType(AbstractCommitReplicateComposite replicateComposite) {
+        this.replicateComposite = replicateComposite;
+    }
 
     @Override public CommandPrimitiveConfig newConfig() {
         return new CommandPrimitiveConfig(this);
@@ -38,13 +47,15 @@ import org.springframework.stereotype.Component;
     }
 
     @Override public String name() {
-        return "consensus-command";
+        return CommandPrimitiveType.class.getSimpleName();
     }
 
     @Override public Namespace namespace() {
+//        Set<Class<?>> classes = replicateComposite.registerCommit().keySet();
+//        Class[] classArray = classes.toArray(new Class[classes.size()]);
         return Namespace.builder()
-            .register(Namespaces.BASIC)
-            .register(ServiceConfig.class)
+            .register(PrimitiveType.super.namespace())
+//            .register(classArray)
             .register(ExampleCommand.class)
             .register(AbstractConsensusCommand.class)
             .build();

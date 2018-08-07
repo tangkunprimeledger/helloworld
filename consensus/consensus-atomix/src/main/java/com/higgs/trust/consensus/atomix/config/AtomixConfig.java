@@ -4,10 +4,9 @@
 package com.higgs.trust.consensus.atomix.config;
 
 import com.higgs.trust.consensus.atomix.core.AtomixCommitReplicateComposite;
+import com.higgs.trust.consensus.atomix.core.primitive.CommandPrimitiveType;
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
-import io.atomix.core.profile.Profile;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.jta.atomikos.AtomikosProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
         return new AtomixCommitReplicateComposite();
     }
 
-//    @Bean public AtomixRaftProfile profile(AtomixRaftProperties properties) {
-//        return new AtomixRaftProfile(properties);
-//    }
+    @Bean public CommandPrimitiveType commandPrimitiveType(AbstractCommitReplicateComposite replicateComposite) {
+        return new CommandPrimitiveType(replicateComposite);
+    }
 }

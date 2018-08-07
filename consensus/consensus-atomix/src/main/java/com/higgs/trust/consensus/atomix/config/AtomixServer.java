@@ -11,15 +11,11 @@ import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import io.atomix.cluster.Member;
-import io.atomix.cluster.MemberId;
 import io.atomix.cluster.Node;
 import io.atomix.cluster.discovery.BootstrapDiscoveryProvider;
 import io.atomix.core.Atomix;
 import io.atomix.protocols.raft.partition.RaftPartitionGroup;
 import io.atomix.storage.StorageLevel;
-import io.atomix.utils.serializer.Namespace;
-import io.atomix.utils.serializer.Namespaces;
-import io.atomix.utils.serializer.Serializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -29,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -44,8 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
     implements ConsensusStateMachine, ConsensusClient, ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired private AtomixRaftProperties properties;
-
-    @Autowired private AbstractCommitReplicateComposite replicateComposite;
 
     @Autowired private CommandPrimitiveType primitiveType;
 
@@ -91,16 +84,7 @@ import java.util.concurrent.atomic.AtomicReference;
             //@formatter:on
             log.info("start atomix, with nodes:{}", nodes);
             atomix.start().join();
-            Set<Class<?>> classes = replicateComposite.registerCommit().keySet();
-            Class[] classArray = classes.toArray(new Class[classes.size()]);
-            Serializer serializer = Serializer.using(
-                Namespace.builder().register(Namespaces.BASIC).register(MemberId.class)
-                    .register(AbstractConsensusCommand.class).register(ExampleCommand.class).register(classArray)
-                    .register(CompletableFuture.class).build());
-            commandPrimitive =
-                atomix.primitiveBuilder(primitiveType.name(), primitiveType)
-//                    .withSerializer(serializer)
-                    .build();
+            commandPrimitive = atomix.primitiveBuilder(primitiveType.name(), primitiveType).build();
         }
     }
 
@@ -120,20 +104,22 @@ import java.util.concurrent.atomic.AtomicReference;
     @Override public void onApplicationEvent(ApplicationReadyEvent event) {
         start();
 
-        Executors.newSingleThreadExecutor().submit(() -> {
-            while (true) {
-                try {
-                    ExampleCommand command = new ExampleCommand(properties.getAddress() + " " + UUID.randomUUID());
-                    if (log.isDebugEnabled()) {
-                        log.debug("submit command:{}", command.getMsg());
+        if ("127.0.0.1:8800".equals(properties.getAddress())) {
+            Executors.newSingleThreadExecutor().submit(() -> {
+                while (true) {
+                    try {
+                        ExampleCommand command = new ExampleCommand(properties.getAddress() + " " + UUID.randomUUID());
+                        if (log.isDebugEnabled()) {
+                            log.debug("submit command:{}", command.getMsg());
+                        }
+                        this.submit(command).get(20000, TimeUnit.MILLISECONDS);
+                        Thread.sleep(20000);
+                    } catch (Exception e) {
+                        log.error("error", e);
                     }
-                    this.submit(command).get(1000, TimeUnit.MILLISECONDS);
-                    Thread.sleep(20000);
-                } catch (Exception e) {
-                    log.error("error", e);
                 }
-            }
-        });
+            });
+        }
     }
 }
 

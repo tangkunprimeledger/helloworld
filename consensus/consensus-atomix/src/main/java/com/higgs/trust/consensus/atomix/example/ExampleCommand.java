@@ -17,4 +17,8 @@ public class ExampleCommand extends AbstractConsensusCommand<String> {
         super(value);
         msg = value;
     }
+
+    @Override public String toString() {
+        return "ExampleCommand{" + "msg='" + msg + '\'' + '}';
+    }
 }

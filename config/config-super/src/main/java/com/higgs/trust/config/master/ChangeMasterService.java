@@ -114,7 +114,7 @@ import java.util.concurrent.*;
         ArtificialChangeMasterCommand command =
             new ArtificialChangeMasterCommand(term, nodeState.getNodeName(), startHeight);
         command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
-        CompletableFuture<Long> future = consensusClient.submit(command);
+        CompletableFuture<?> future = consensusClient.submit(command);
         try {
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
@@ -169,7 +169,7 @@ import java.util.concurrent.*;
         log.info("change master, term:{}", term);
         ChangeMasterCommand command = new ChangeMasterCommand(term, nodeState.getNodeName(), verifies);
         command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
-        CompletableFuture<Map<String, ChangeMasterVerifyResponse>> future = consensusClient.submit(command);
+        CompletableFuture<?> future = consensusClient.submit(command);
         try {
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
