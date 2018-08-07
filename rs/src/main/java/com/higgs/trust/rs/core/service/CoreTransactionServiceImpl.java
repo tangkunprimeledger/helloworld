@@ -447,15 +447,15 @@ import java.util.List;
         List<SignedTransaction> txs = makeTxs(boList);
         try {
             log.debug("[submitToSlave] start");
-            RespData respData = blockChainService.submitTransactions(txs);
+            RespData<List<TransactionVO>> respData = blockChainService.submitTransactions(txs);
             if (respData.getData() == null) {
                 log.debug("[submitToSlave] end");
                 return;
             }
             //has fail tx
-            List<TransactionVO> txsOfFail = (List<TransactionVO>)respData.getData();
+            List<TransactionVO> txsOfFail = respData.getData();
             if (log.isDebugEnabled()) {
-                log.debug("[submitToSlave] has fail tx:{}", txsOfFail);
+                log.debug("[submitToSlave] tx result:{}", txsOfFail);
             }
             for (TransactionVO txVo : txsOfFail) {
                 //dont need
