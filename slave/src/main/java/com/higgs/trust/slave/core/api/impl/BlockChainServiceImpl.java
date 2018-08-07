@@ -73,8 +73,6 @@ import java.util.concurrent.Executor;
 
     @Value("${trust.sleep.submitToMaster:50}") private int SLEEP_FOR_SUBMIT_TO_MASTER;
 
-    private static final Logger PERF_LOGGER = LoggerFactory.getLogger(LoggerName.PERF_LOGGER);
-
     @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
         RespData respData = new RespData();
 
@@ -92,16 +90,26 @@ import java.util.concurrent.Executor;
             return respData;
         }
 
+        Profiler.start("submit transactions");
+        Profiler.enter("check db idempotent start");
         List<SignedTransaction> newSignedTxList = checkDbIdempotent(transactions, transactionVOList);
+        Profiler.release();
         if (CollectionUtils.isEmpty(newSignedTxList)) {
             log.warn("all transactions idempotent");
             respData.setData(transactionVOList.size() > 0 ? transactionVOList : null);
             return respData;
         }
 
+        Profiler.enter("submit to master");
         RespData masterResp = submitToMaster(newSignedTxList);
         if (null != masterResp.getData()) {
             transactionVOList.addAll((List<TransactionVO>)masterResp.getData());
+        }
+        Profiler.release();
+        Profiler.release();
+
+        if (Profiler.getDuration() > 0) {
+            Profiler.logDump();
         }
 
         respData.setData(transactionVOList);
@@ -414,7 +422,7 @@ import java.util.concurrent.Executor;
             Profiler.release();
 
             if (Profiler.getDuration() > 0) {
-                PERF_LOGGER.info(Profiler.dump());
+                Profiler.logDump();
             }
         }
     }
