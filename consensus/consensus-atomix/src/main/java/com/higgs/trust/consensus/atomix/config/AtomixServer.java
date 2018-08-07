@@ -11,11 +11,15 @@ import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import io.atomix.cluster.Member;
+import io.atomix.cluster.MemberId;
 import io.atomix.cluster.Node;
 import io.atomix.cluster.discovery.BootstrapDiscoveryProvider;
 import io.atomix.core.Atomix;
 import io.atomix.protocols.raft.partition.RaftPartitionGroup;
 import io.atomix.storage.StorageLevel;
+import io.atomix.utils.serializer.Namespace;
+import io.atomix.utils.serializer.Namespaces;
+import io.atomix.utils.serializer.Serializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -25,9 +29,11 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -40,6 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
     @Autowired private AtomixRaftProperties properties;
 
     @Autowired private AbstractCommitReplicateComposite replicateComposite;
+
+    @Autowired private CommandPrimitiveType primitiveType;
 
     private ICommandPrimitive commandPrimitive;
 
@@ -64,6 +72,8 @@ import java.util.concurrent.atomic.AtomicReference;
                 .withManagementGroup(
                     RaftPartitionGroup.builder(properties.getSystemGroup())
                         .withStorageLevel(StorageLevel.DISK)
+                        .withNumPartitions(1)
+                        .withPartitionSize(properties.getCluster().size())
                         .withMembers(properties.getCluster().keySet())
                         .withDataDirectory(new File(String.format("%s/%s/%s", properties.getDataPath(),
                             properties.getSystemGroup(), currentMember.get())))
@@ -72,6 +82,8 @@ import java.util.concurrent.atomic.AtomicReference;
                     RaftPartitionGroup.builder(properties.getGroup())
                         .withStorageLevel(StorageLevel.DISK)
                         .withMembers(properties.getCluster().keySet())
+                        .withNumPartitions(1)
+                        .withPartitionSize(properties.getCluster().size())
                         .withDataDirectory(new File(String.format("%s/%s/%s", properties.getDataPath(),
                             properties.getGroup(), currentMember.get())))
                         .build())
@@ -79,8 +91,15 @@ import java.util.concurrent.atomic.AtomicReference;
             //@formatter:on
             log.info("start atomix, with nodes:{}", nodes);
             atomix.start().join();
+            Set<Class<?>> classes = replicateComposite.registerCommit().keySet();
+            Class[] classArray = classes.toArray(new Class[classes.size()]);
+            Serializer serializer = Serializer.using(
+                Namespace.builder().register(Namespaces.BASIC).register(MemberId.class)
+                    .register(AbstractConsensusCommand.class).register(ExampleCommand.class).register(classArray)
+                    .register(CompletableFuture.class).build());
             commandPrimitive =
-                atomix.primitiveBuilder(CommandPrimitiveType.instance().name(), CommandPrimitiveType.instance())
+                atomix.primitiveBuilder(primitiveType.name(), primitiveType)
+//                    .withSerializer(serializer)
                     .build();
         }
     }
@@ -104,12 +123,12 @@ import java.util.concurrent.atomic.AtomicReference;
         Executors.newSingleThreadExecutor().submit(() -> {
             while (true) {
                 try {
-                    ExampleCommand command = new ExampleCommand(properties.getAddress() + UUID.randomUUID());
+                    ExampleCommand command = new ExampleCommand(properties.getAddress() + " " + UUID.randomUUID());
                     if (log.isDebugEnabled()) {
                         log.debug("submit command:{}", command.getMsg());
                     }
-                    this.submit(command);
-                    Thread.sleep(1000);
+                    this.submit(command).get(1000, TimeUnit.MILLISECONDS);
+                    Thread.sleep(20000);
                 } catch (Exception e) {
                     log.error("error", e);
                 }

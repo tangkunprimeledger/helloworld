@@ -11,7 +11,13 @@ import io.atomix.primitive.config.PrimitiveConfig;
  */
 public class CommandPrimitiveConfig extends PrimitiveConfig<CommandPrimitiveConfig> {
 
+    private CommandPrimitiveType primitiveType;
+
+    public CommandPrimitiveConfig(CommandPrimitiveType primitiveType) {
+        this.primitiveType = primitiveType;
+    }
+
     @Override public CommandPrimitiveType getType() {
-        return CommandPrimitiveType.INSTANCE;
+        return primitiveType;
     }
 }
