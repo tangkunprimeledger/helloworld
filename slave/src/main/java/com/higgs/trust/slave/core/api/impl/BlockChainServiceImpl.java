@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * @author tangfashuang
@@ -65,6 +66,8 @@ import java.util.List;
     @Autowired private SystemPropertyHandler systemPropertyHandler;
 
     @Autowired private PendingTxRepository pendingTxRepository;
+
+    @Autowired private Executor txConsumerExecutor;
 
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
 
@@ -105,7 +108,8 @@ import java.util.List;
         return respData;
     }
 
-    private List<SignedTransaction> checkDbIdempotent(List<SignedTransaction> transactions, List<TransactionVO> transactionVOList) {
+    private List<SignedTransaction> checkDbIdempotent(List<SignedTransaction> transactions,
+        List<TransactionVO> transactionVOList) {
 
         List<SignedTransaction> signedTransactions = new ArrayList<>();
 
@@ -140,6 +144,7 @@ import java.util.List;
 
     /**
      * for performance test
+     *
      * @param tx
      * @return
      */
@@ -363,20 +368,15 @@ import java.util.List;
     }
 
     @Override public void afterPropertiesSet() throws Exception {
-        new ConsumerTx("consumerTx").start();
+        txConsumerExecutor.execute(new ConsumerTx());
     }
 
     /**
      * for test
      */
-    private class ConsumerTx extends Thread {
-
-        public ConsumerTx(String name) {
-            super.setName(name);
-        }
+    private class ConsumerTx implements Runnable {
 
         @Override public void run() {
-            log.info("thread.name={}", Thread.currentThread().getName());
             while (true) {
                 try {
                     Thread.sleep(SLEEP_FOR_SUBMIT_TO_MASTER);

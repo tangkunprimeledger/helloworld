@@ -4,11 +4,12 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
+import org.springframework.cloud.sleuth.instrument.async.LazyTraceExecutor;
 import org.springframework.cloud.sleuth.instrument.async.LazyTraceThreadPoolTaskExecutor;
 import org.springframework.cloud.sleuth.instrument.async.TraceableExecutorService;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
+import reactor.core.support.NamedDaemonThreadFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,5 +119,11 @@ import java.util.concurrent.*;
         threadPoolTaskExecutor.setThreadNamePrefix("asyncVotingExecutorPool-");
         threadPoolTaskExecutor.initialize();
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
+
+    @Bean public Executor txConsumerExecutor() {
+        NamedDaemonThreadFactory namedDaemonThreadFactory = new NamedDaemonThreadFactory("txConsumerExecutor-");
+        ExecutorService service = Executors.newSingleThreadExecutor(namedDaemonThreadFactory);
+        return new LazyTraceExecutor(beanFactory, service);
     }
 }
