@@ -9,6 +9,8 @@ import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.context.AppContext;
+import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
+import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
@@ -79,6 +81,7 @@ import java.util.concurrent.Executor;
         }
 
         List<TransactionVO> transactionVOList = new ArrayList<>();
+        List<SignedTransaction> newSignedTxList = new ArrayList<>();
 
         if (StringUtils.equals(nodeState.getMasterName(), MASTER_NA)) {
             log.warn("cluster master is N/A");
@@ -87,10 +90,29 @@ import java.util.concurrent.Executor;
             return respData;
         }
 
+        for (SignedTransaction signedTx : transactions) {
+            TransactionVO transactionVO = new TransactionVO();
+            String txId = signedTx.getCoreTx().getTxId();
+            transactionVO.setTxId(txId);
+
+            // params check
+            BeanValidateResult validateResult = BeanValidator.validate(signedTx);
+            if (!validateResult.isSuccess()) {
+                log.error("transaction invalid. errMsg={}, txId={}", validateResult.getFirstMsg(), txId);
+                transactionVO.setErrCode(TxSubmitResultEnum.PARAM_INVALID.getCode());
+                transactionVO.setErrMsg(TxSubmitResultEnum.PARAM_INVALID.getDesc());
+                transactionVO.setRetry(false);
+                transactionVOList.add(transactionVO);
+            }
+            else {
+                newSignedTxList.add(signedTx);
+            }
+        }
+
         Profiler.start("submit transactions");
 
         Profiler.enter("check db idempotent start");
-        List<SignedTransaction> newSignedTxList = checkDbIdempotent(transactions, transactionVOList);
+        newSignedTxList = checkDbIdempotent(newSignedTxList, transactionVOList);
         Profiler.release();
         if (CollectionUtils.isEmpty(newSignedTxList)) {
             log.warn("all transactions idempotent");
