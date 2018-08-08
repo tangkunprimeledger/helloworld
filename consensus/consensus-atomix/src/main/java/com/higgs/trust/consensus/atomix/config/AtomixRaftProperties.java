@@ -10,41 +10,9 @@ import java.util.Map;
 
 @Configuration @ConfigurationProperties(prefix = "atomix") @Getter @Setter @ToString public class AtomixRaftProperties {
 
-    private String client;
-
     private String address;
 
-    private String nodeName;
-
     private Map<String,String> cluster;
-
-    private String serverId;
-
-    private Integer nettyThreadNum = 10;
-
-    private String logDir = "copycat/logs";
-
-    private Long minorCompactionInterval = 12000L;
-
-    private Integer entryBufferSize = 200;
-
-    private Integer compactionThreads = 4;
-
-    private Integer maxEntriesPerSegment = 20000;
-
-    private Long majorCompactionInterval = 60000L;
-
-    private Double compactionThreshold = 0.01;
-
-    private Long electionTimeout = 2000L;
-
-    private Long heartbeatInterval = 500L;
-
-    private Long sessionTimeout = 5000L;
-
-    private Integer backlog = 1000;
-
-    private String name = "consensus";
 
     private String systemGroup = "sys-group";
 
@@ -52,7 +20,7 @@ import java.util.Map;
 
     private String dataPath = "/tmp/raft";
 
-    private int partitionSize = 3;
+    private int partitionSize = 4;
 
     private int numPartitions = 1;
 }
