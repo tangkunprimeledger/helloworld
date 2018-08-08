@@ -6,7 +6,6 @@ package com.higgs.trust.consensus.atomix.config;
 import com.higgs.trust.consensus.atomix.core.primitive.CommandPrimitiveType;
 import com.higgs.trust.consensus.atomix.core.primitive.ICommandPrimitive;
 import com.higgs.trust.consensus.atomix.example.ExampleCommand;
-import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
@@ -14,6 +13,9 @@ import io.atomix.cluster.Member;
 import io.atomix.cluster.Node;
 import io.atomix.cluster.discovery.BootstrapDiscoveryProvider;
 import io.atomix.core.Atomix;
+import io.atomix.core.AtomixBuilder;
+import io.atomix.core.AtomixConfig;
+import io.atomix.core.AtomixRegistry;
 import io.atomix.protocols.raft.partition.RaftPartitionGroup;
 import io.atomix.storage.StorageLevel;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +44,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
     @Autowired private CommandPrimitiveType primitiveType;
 
-    private ICommandPrimitive commandPrimitive;
+    @Autowired private AtomixRegistry atomixRegistry;
+
+    @Autowired private AtomixConfig atomixConfig;
 
     private Atomix atomix;
 
@@ -58,7 +62,7 @@ import java.util.concurrent.atomic.AtomicReference;
         });
         if (atomix == null) {
             //@formatter:off
-            atomix = Atomix.builder()
+            atomix = new CustomAtomixBuilder(atomixConfig,atomixRegistry)
                 .withAddress(properties.getAddress())
                 .withMemberId(currentMember.get())
                 .withMembershipProvider(BootstrapDiscoveryProvider.builder().withNodes(nodes).build())
@@ -84,7 +88,6 @@ import java.util.concurrent.atomic.AtomicReference;
             //@formatter:on
             log.info("start atomix, with nodes:{}", nodes);
             atomix.start().join();
-            commandPrimitive = atomix.primitiveBuilder(primitiveType.name(), primitiveType).build();
         }
     }
 
@@ -97,7 +100,8 @@ import java.util.concurrent.atomic.AtomicReference;
     }
 
     @Override public <T> CompletableFuture<Void> submit(AbstractConsensusCommand<T> command) {
-        CompletableFuture<Void> submit = commandPrimitive.async().submit(command);
+        ICommandPrimitive primitive = atomix.getPrimitive(primitiveType.name(), primitiveType);
+        CompletableFuture<Void> submit = primitive.async().submit(command);
         return submit;
     }
 

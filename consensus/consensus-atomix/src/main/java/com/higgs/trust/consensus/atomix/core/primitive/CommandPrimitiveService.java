@@ -4,6 +4,7 @@
 package com.higgs.trust.consensus.atomix.core.primitive;
 
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
+import com.higgs.trust.consensus.core.ConsensusSnapshot;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import io.atomix.primitive.service.AbstractPrimitiveService;
 import io.atomix.primitive.service.BackupInput;
@@ -19,32 +20,28 @@ import java.util.function.Function;
  */
 @Slf4j public class CommandPrimitiveService extends AbstractPrimitiveService implements ICommandPrimitiveService {
 
-    private Long index = 0L;
-
     private AbstractCommitReplicateComposite replicateComposite;
 
+    private ConsensusSnapshot snapshot;
+
     public CommandPrimitiveService(CommandPrimitiveType type, ServiceConfig config,
-        AbstractCommitReplicateComposite replicateComposite) {
+        AbstractCommitReplicateComposite replicateComposite, ConsensusSnapshot snapshot) {
         super(type, ICommandPrimitive.class);
         this.replicateComposite = replicateComposite;
-        if (log.isDebugEnabled()) {
-            log.debug("new service");
-        }
+        this.snapshot = snapshot;
     }
 
     @Override public void submit(AbstractConsensusCommand command) {
-        log.debug("service submit");
-//        Function function = replicateComposite.registerCommit().get(command.getClass());
-//        function.apply(command);
-        log.debug("apply command:{}",command);
+        Function function = replicateComposite.registerCommit().get(command.getClass());
+        function.apply(command);
     }
 
     @Override public void backup(BackupOutput output) {
-        output.writeObject(index);
+        output.writeObject(snapshot.getSnapshot());
     }
 
     @Override public void restore(BackupInput input) {
-        index = input.readObject();
-
+        String snapshotStr = input.readObject();
+        snapshot.installSnapshot(snapshotStr);
     }
 }
