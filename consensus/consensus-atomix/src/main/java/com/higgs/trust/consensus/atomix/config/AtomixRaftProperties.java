@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
-@Configuration @ConfigurationProperties(prefix = "copycat.server") @Getter @Setter @ToString public class AtomixRaftProperties {
+@Configuration @ConfigurationProperties(prefix = "atomix") @Getter @Setter @ToString public class AtomixRaftProperties {
 
     private String client;
 

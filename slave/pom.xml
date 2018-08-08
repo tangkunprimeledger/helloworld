@@ -23,7 +23,7 @@
         <!--</dependency>-->
         <dependency>
             <groupId>com.higgs.trust</groupId>
-            <artifactId>consensus-smart</artifactId>
+            <artifactId>consensus-atomix</artifactId>
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>

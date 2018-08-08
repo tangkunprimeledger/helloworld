@@ -363,7 +363,6 @@ import java.util.List;
                     e.printStackTrace();
                 }
                 if (null == AppContext.PENDING_TO_SUBMIT_QUEUE.peek()) {
-                    log.debug("queue is empty");
                     continue;
                 } else {
                     submit();

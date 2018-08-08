@@ -3,7 +3,6 @@
  */
 package com.higgs.trust.consensus.atomix.core.primitive;
 
-import com.higgs.trust.consensus.atomix.example.ExampleCommand;
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusSnapshot;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
@@ -12,12 +11,9 @@ import io.atomix.primitive.PrimitiveType;
 import io.atomix.primitive.service.PrimitiveService;
 import io.atomix.primitive.service.ServiceConfig;
 import io.atomix.utils.serializer.Namespace;
-import io.atomix.utils.serializer.Namespaces;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author suimi
@@ -54,12 +50,15 @@ public class CommandPrimitiveType
     }
 
     @Override public Namespace namespace() {
-        Set<Class<?>> classes = replicateComposite.registerCommit().keySet();
-        Class[] classArray = classes.toArray(new Class[classes.size()]);
+        Set<Class<?>> commandClasses = replicateComposite.registerCommit().keySet();
+        Set<Class<?>> classes = new HashSet<>(commandClasses);
+        List<Class<?>> classList = new ArrayList<>();
+        classes.stream().sorted(Comparator.comparing(Class::getSimpleName)).forEach(clazz->classList.add(clazz));
         return Namespace.builder()
+            .setRegistrationRequired(false)
             .register(PrimitiveType.super.namespace())
             .register(AbstractConsensusCommand.class)
-            .register(classArray)
+            .register(classList.toArray(new Class[classList.size()]))
             .build();
     }
 }

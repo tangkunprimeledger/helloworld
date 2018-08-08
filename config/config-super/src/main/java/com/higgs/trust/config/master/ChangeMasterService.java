@@ -169,8 +169,8 @@ import java.util.concurrent.*;
         log.info("change master, term:{}", term);
         ChangeMasterCommand command = new ChangeMasterCommand(term, nodeState.getNodeName(), verifies);
         command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
-        CompletableFuture<?> future = consensusClient.submit(command);
         try {
+            CompletableFuture<?> future = consensusClient.submit(command);
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("submit change master to consensus failed!", e);
