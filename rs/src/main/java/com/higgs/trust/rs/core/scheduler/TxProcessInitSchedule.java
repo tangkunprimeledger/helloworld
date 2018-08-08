@@ -13,7 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 @ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
-@Service @Slf4j public class TxProcessInitSchedule {
+@Service @Slf4j public class
+TxProcessInitSchedule {
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTxRepository coreTxRepository;
 

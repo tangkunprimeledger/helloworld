@@ -7,12 +7,13 @@ import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.SignService;
+import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.VoteService;
 import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRequestRecord;
-import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
+import com.higgs.trust.rs.core.callback.RsCoreBatchCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.integration.ServiceProviderClient;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
@@ -60,7 +61,7 @@ import java.util.concurrent.Future;
     @Autowired private ServiceProviderClient serviceProviderClient;
     @Autowired private RsNodeRepository rsNodeRepository;
     @Autowired private SignService signService;
-    @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
+    @Autowired private TxCallbackRegistor txCallbackRegistor;
 
     @Autowired private ThreadPoolTaskExecutor syncVotingExecutorPool;
     @Autowired private ThreadPoolTaskExecutor asyncVotingExecutorPool;
@@ -123,7 +124,7 @@ import java.util.concurrent.Future;
                             boolean r = checkSelfNodeStatus();
                             if(r){
                                 //callback custom rs
-                                rsCoreCallbackHandler.onVote(votingRequest);
+                                txCallbackRegistor.onVote(votingRequest);
                             }else {
                                 log.info("[acceptVoting]self.rs status is not COMMON");
                                 voteResult = VoteResultEnum.DISAGREE;
