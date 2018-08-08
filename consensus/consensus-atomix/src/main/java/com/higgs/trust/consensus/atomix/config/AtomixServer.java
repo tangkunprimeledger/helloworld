@@ -69,8 +69,8 @@ import java.util.concurrent.atomic.AtomicReference;
                 .withManagementGroup(
                     RaftPartitionGroup.builder(properties.getSystemGroup())
                         .withStorageLevel(StorageLevel.DISK)
-                        .withNumPartitions(1)
-                        .withPartitionSize(properties.getCluster().size())
+                        .withNumPartitions(properties.getNumPartitions())
+                        .withPartitionSize(properties.getPartitionSize())
                         .withMembers(properties.getCluster().keySet())
                         .withDataDirectory(new File(String.format("%s/%s/%s", properties.getDataPath(),
                             properties.getSystemGroup(), currentMember.get())))
@@ -79,8 +79,8 @@ import java.util.concurrent.atomic.AtomicReference;
                     RaftPartitionGroup.builder(properties.getGroup())
                         .withStorageLevel(StorageLevel.DISK)
                         .withMembers(properties.getCluster().keySet())
-                        .withNumPartitions(1)
-                        .withPartitionSize(properties.getCluster().size())
+                        .withNumPartitions(properties.getNumPartitions())
+                        .withPartitionSize(properties.getPartitionSize())
                         .withDataDirectory(new File(String.format("%s/%s/%s", properties.getDataPath(),
                             properties.getGroup(), currentMember.get())))
                         .build())
