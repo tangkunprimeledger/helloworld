@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -101,11 +98,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
         int num = 0;
         List<SignedTransaction> list = new ArrayList<>();
-        while (num < count) {
+        Set<String> txIdSet = new HashSet<>();
+        while (num++ < count) {
             SignedTransaction signedTx = pendingTxQueue.pollFirst();
-            if (null != signedTx) {
+            if (null != signedTx && !txIdSet.contains(signedTx.getCoreTx().getTxId())) {
                 list.add(signedTx);
-                num++;
+                txIdSet.add(signedTx.getCoreTx().getTxId());
             } else {
                 break;
             }
@@ -120,7 +118,7 @@ import java.util.concurrent.atomic.AtomicLong;
     /**
      * @return if exist will return false
      */
-    public synchronized boolean appendDequeLast(SignedTransaction signedTx) {
+    public boolean appendDequeLast(SignedTransaction signedTx) {
         String txId = signedTx.getCoreTx().getTxId();
         if (existTxMap.containsKey(txId)) {
             return false;
