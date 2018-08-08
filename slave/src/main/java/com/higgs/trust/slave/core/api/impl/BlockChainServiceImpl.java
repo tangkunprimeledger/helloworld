@@ -60,8 +60,8 @@ import java.util.List;
 
     @Autowired private SystemPropertyHandler systemPropertyHandler;
 
-    @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
-        RespData respData = new RespData();
+    @Override public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
+        RespData<List<TransactionVO>> respData = new RespData();
         List<TransactionVO> transactionVOList;
         // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {

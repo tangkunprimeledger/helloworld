@@ -22,7 +22,7 @@ public interface BlockChainService {
      * @param transactions
      * @return
      */
-    RespData submitTransactions(List<SignedTransaction> transactions);
+    RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions);
 
     RespData submitTransaction(SignedTransaction transaction);
 
