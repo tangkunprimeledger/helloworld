@@ -23,7 +23,7 @@ public class Constant {
 
     public static final Long GENESIS_HEIGHT = 1L;
 
-    public static final int MAX_BLOCKING_QUEUE_SIZE = 100000;
+    public static final int MAX_BLOCKING_QUEUE_SIZE = 1000;
 
     public static final int MAX_PENDING_TX_QUEUE_SIZE = 200000;
 
