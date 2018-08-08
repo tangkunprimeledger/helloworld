@@ -89,19 +89,17 @@ import java.util.concurrent.Executor;
 
         Profiler.start("submit transactions");
 
-        //TODO 压测分析注释代码，需还原
-//        Profiler.enter("check db idempotent start");
-//        List<SignedTransaction> newSignedTxList = checkDbIdempotent(transactions, transactionVOList);
-//        Profiler.release();
-//        if (CollectionUtils.isEmpty(newSignedTxList)) {
-//            log.warn("all transactions idempotent");
-//            respData.setData(transactionVOList.size() > 0 ? transactionVOList : null);
-//            return respData;
-//        }
+        Profiler.enter("check db idempotent start");
+        List<SignedTransaction> newSignedTxList = checkDbIdempotent(transactions, transactionVOList);
+        Profiler.release();
+        if (CollectionUtils.isEmpty(newSignedTxList)) {
+            log.warn("all transactions idempotent");
+            respData.setData(transactionVOList.size() > 0 ? transactionVOList : null);
+            return respData;
+        }
 
         Profiler.enter("submit to master");
-        //TODO 压测分析代码，还原需修改transactions为newSignedTxList
-        RespData masterResp = submitToMaster(transactions);
+        RespData masterResp = submitToMaster(newSignedTxList);
         if (null != masterResp.getData()) {
             transactionVOList.addAll((List<TransactionVO>)masterResp.getData());
         }

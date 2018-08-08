@@ -41,7 +41,6 @@ import java.util.List;
             return null;
         }
 
-        Profiler.enter("master to check transaction");
         List<TransactionVO> transactionVOList = new ArrayList<>();
         transactions.forEach(signedTransaction -> {
             TransactionVO transactionVO = new TransactionVO();
@@ -83,7 +82,6 @@ import java.util.List;
                 log.error("transaction insert into memory exception. txId={}, ", txId, e);
             }
         });
-        Profiler.release();
 
         // if all transaction received success, RespData will set data 'null'
         if (CollectionUtils.isEmpty(transactionVOList)) {
