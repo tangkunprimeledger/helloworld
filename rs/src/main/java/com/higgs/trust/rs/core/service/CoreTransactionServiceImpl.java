@@ -130,7 +130,7 @@ import java.util.List;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
         //save to db
-        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), CoreTxStatusEnum.INIT);
+        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), CoreTxStatusEnum.INIT,0L);
         //process by async
         txProcessExecutorPool.execute(new Runnable() {
             @Override public void run() {

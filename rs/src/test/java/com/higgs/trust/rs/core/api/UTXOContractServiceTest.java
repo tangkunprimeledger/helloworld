@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.higgs.trust.IntegrateBaseTest;
@@ -20,8 +21,11 @@ import java.util.List;
 public class UTXOContractServiceTest extends IntegrateBaseTest {
     @Autowired
     private RsBlockChainService rsBlockChainService;
+    public static void main(String[] args){
+            processTest();
+    }
     @Test
-    public void processTest() {
+    public static void processTest() {
         UTXOAction utxoAction = new UTXOAction();
 
         List<TxIn> inputList = org.testng.collections.Lists.newArrayList();
@@ -81,7 +85,9 @@ public class UTXOContractServiceTest extends IntegrateBaseTest {
         CoreTransaction coreTransaction = new CoreTransaction();
 
         coreTransaction.setActionList(actionList);
-        System.out.println("contract resault:"+rsBlockChainService.processContract(coreTransaction));
+
+        System.out.println(JSON.toJSONString(coreTransaction));
+//        System.out.println("contract resault:"+rsBlockChainService.processContract(coreTransaction));
     }
 
     @Test

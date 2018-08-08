@@ -26,7 +26,15 @@ import org.springframework.stereotype.Component;
             }
         }
 
-        if (type != ActionTypeEnum.CA_AUTH) {
+        if (type == ActionTypeEnum.CA_CANCEL) {
+            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        if (type == ActionTypeEnum.CA_UPDATE) {
             if (null != caPO && !StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
                 return true;
             } else {
