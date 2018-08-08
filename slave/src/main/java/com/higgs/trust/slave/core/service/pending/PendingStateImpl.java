@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.pending;
 
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
@@ -40,6 +41,7 @@ import java.util.List;
             return null;
         }
 
+        Profiler.enter("master to check transaction");
         List<TransactionVO> transactionVOList = new ArrayList<>();
         transactions.forEach(signedTransaction -> {
             TransactionVO transactionVO = new TransactionVO();
@@ -81,6 +83,7 @@ import java.util.List;
                 log.error("transaction insert into memory exception. txId={}, ", txId, e);
             }
         });
+        Profiler.release();
 
         // if all transaction received success, RespData will set data 'null'
         if (CollectionUtils.isEmpty(transactionVOList)) {

@@ -88,17 +88,20 @@ import java.util.concurrent.Executor;
         }
 
         Profiler.start("submit transactions");
-        Profiler.enter("check db idempotent start");
-        List<SignedTransaction> newSignedTxList = checkDbIdempotent(transactions, transactionVOList);
-        Profiler.release();
-        if (CollectionUtils.isEmpty(newSignedTxList)) {
-            log.warn("all transactions idempotent");
-            respData.setData(transactionVOList.size() > 0 ? transactionVOList : null);
-            return respData;
-        }
+
+        //TODO 压测分析注释代码，需还原
+//        Profiler.enter("check db idempotent start");
+//        List<SignedTransaction> newSignedTxList = checkDbIdempotent(transactions, transactionVOList);
+//        Profiler.release();
+//        if (CollectionUtils.isEmpty(newSignedTxList)) {
+//            log.warn("all transactions idempotent");
+//            respData.setData(transactionVOList.size() > 0 ? transactionVOList : null);
+//            return respData;
+//        }
 
         Profiler.enter("submit to master");
-        RespData masterResp = submitToMaster(newSignedTxList);
+        //TODO 压测分析代码，还原需修改transactions为newSignedTxList
+        RespData masterResp = submitToMaster(transactions);
         if (null != masterResp.getData()) {
             transactionVOList.addAll((List<TransactionVO>)masterResp.getData());
         }
@@ -209,6 +212,8 @@ import java.util.concurrent.Executor;
     }
 
     @Override public RespData submitToMaster(List<SignedTransaction> transactions) {
+
+        Profiler.start("submit to master");
         RespData respData = new RespData();
 
         if (CollectionUtils.isEmpty(transactions)) {
@@ -220,6 +225,7 @@ import java.util.concurrent.Executor;
 
         // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
+            Profiler.enter("submit transactions to self");
             if (nodeState.isState(NodeStateEnum.Running)) {
                 if (log.isDebugEnabled()) {
                     log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);
@@ -232,14 +238,19 @@ import java.util.concurrent.Executor;
                 transactionVOList = buildTxVOList(transactions);
             }
             respData.setData(transactionVOList);
+            Profiler.release();
         } else {
             if (log.isDebugEnabled()) {
                 //when it is not master ,then send txs to master node
                 log.debug("this node is not  master, send txs:{} to master node={}", transactions,
                     nodeState.getMasterName());
             }
+            Profiler.enter("submit transactions to master node");
             respData = blockChainClient.submitToMaster(nodeState.getMasterName(), transactions);
+            Profiler.release();
         }
+
+        Profiler.release();
         return respData;
     }
 
