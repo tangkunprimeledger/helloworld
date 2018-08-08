@@ -38,8 +38,14 @@ public interface RsBlockChainService {
      * @param req
      * @return
      */
-    PageVO<AccountInfoVO> queryAccount(QueryAccountVO req);
+    @Deprecated PageVO<AccountInfoVO> queryAccount(QueryAccountVO req);
 
+    /**
+     *query accounts
+     * @param req
+     * @return
+     */
+     List<AccountInfoVO> queryAccountsByPage(QueryAccountVO req);
     /**
      * query utxo
      *
@@ -164,4 +170,10 @@ public interface RsBlockChainService {
      * @return
      */
     List<CoreTransactionVO> queryTxByIds(List<String> txIds);
+
+    /**
+     *
+     * @return
+     */
+    List<NodeInfoVO> queryPeersInfo();
 }

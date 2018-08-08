@@ -1,5 +1,8 @@
 package com.higgs.trust.rs.core.service;
 
+import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -10,6 +13,7 @@ import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -18,38 +22,62 @@ import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.testng.collections.Lists;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author tangfashuang
  * @date 2018/05/13 15:58
  * @desc block chain service
  */
-@Slf4j @Service public class RsChainServiceImpl implements RsBlockChainService {
+@Slf4j
+@Service
+public class RsChainServiceImpl implements RsBlockChainService {
     public static final String CHAIN_OWNER_KEY = "CHAIN_OWNER";
-    @Autowired private BlockChainService blockChainService;
+    @Autowired
+    private BlockChainService blockChainService;
 
-    @Autowired private AccountInfoService accountInfoService;
+    @Autowired
+    private AccountInfoService accountInfoService;
 
-    @Autowired private RsUTXOSmartContract rsUTXOSmartContract;
+    @Autowired
+    private RsUTXOSmartContract rsUTXOSmartContract;
 
-    @Override public PageVO<BlockVO> queryBlock(QueryBlockVO req) {
+    @Autowired
+    private NodeState nodeState;
+    @Autowired
+    private ClusterInfo clusterInfo;
+    @Autowired
+    private ClusterService clusterService;
+
+    @Override
+    public PageVO<BlockVO> queryBlock(QueryBlockVO req) {
         return blockChainService.queryBlocks(req);
     }
 
-    @Override public PageVO<CoreTransactionVO> queryTransaction(QueryTransactionVO req) {
+    @Override
+    public PageVO<CoreTransactionVO> queryTransaction(QueryTransactionVO req) {
         return blockChainService.queryTransactions(req);
     }
 
-    @Override public PageVO<AccountInfoVO> queryAccount(QueryAccountVO req) {
+    @Override
+    public PageVO<AccountInfoVO> queryAccount(QueryAccountVO req) {
         return accountInfoService.queryAccountInfo(req);
     }
 
-    @Override public List<UTXOVO> queryUTXO(String txId) {
+    @Override
+    public List<AccountInfoVO> queryAccountsByPage(QueryAccountVO req) {
+        return accountInfoService.queryAccountsByPage(req);
+    }
+
+    @Override
+    public List<UTXOVO> queryUTXO(String txId) {
 
         return blockChainService.queryUTXOByTxId(txId);
     }
@@ -60,7 +88,8 @@ import java.util.List;
      * @param identity
      * @return
      */
-    @Override public boolean isExistedIdentity(String identity) {
+    @Override
+    public boolean isExistedIdentity(String identity) {
         return blockChainService.isExistedIdentity(identity);
     }
 
@@ -70,7 +99,8 @@ import java.util.List;
      * @param currency
      * @return
      */
-    @Override public boolean isExistedCurrency(String currency) {
+    @Override
+    public boolean isExistedCurrency(String currency) {
         return blockChainService.isExistedCurrency(currency);
     }
 
@@ -80,7 +110,8 @@ import java.util.List;
      * @param key
      * @return
      */
-    @Override public SystemPropertyVO querySystemPropertyByKey(String key) {
+    @Override
+    public SystemPropertyVO querySystemPropertyByKey(String key) {
         return blockChainService.querySystemPropertyByKey(key);
     }
 
@@ -90,7 +121,8 @@ import java.util.List;
      * @param inputList
      * @return
      */
-    @Override public List<UTXO> queryUTXOList(List<TxIn> inputList) {
+    @Override
+    public List<UTXO> queryUTXOList(List<TxIn> inputList) {
         return blockChainService.queryUTXOList(inputList);
     }
 
@@ -100,7 +132,8 @@ import java.util.List;
      * @param name
      * @return
      */
-    @Override public UTXOActionTypeEnum getUTXOActionType(String name) {
+    @Override
+    public UTXOActionTypeEnum getUTXOActionType(String name) {
         return blockChainService.getUTXOActionType(name);
     }
 
@@ -109,11 +142,11 @@ import java.util.List;
      *
      * @return
      */
-    @Override public String queryChainOwner() {
+    @Override
+    public String queryChainOwner() {
         SystemPropertyVO systemPropertyVO = blockChainService.querySystemPropertyByKey(CHAIN_OWNER_KEY);
         if (null == systemPropertyVO) {
-            log.error("there is no chain_owner in this node for key {}, please check system property DB",
-                CHAIN_OWNER_KEY);
+            log.error("there is no chain_owner in this node for key {}, please check system property DB", CHAIN_OWNER_KEY);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_CHAIN_OWNER_NULL_ERROR);
         }
         return systemPropertyVO.getValue();
@@ -125,15 +158,18 @@ import java.util.List;
      * @param blockHeight
      * @return
      */
-    @Override public BlockHeader getBlockHeader(Long blockHeight) {
+    @Override
+    public BlockHeader getBlockHeader(Long blockHeight) {
         return blockChainService.getBlockHeader(blockHeight);
     }
 
-    @Override public BlockHeader getMaxBlockHeader() {
+    @Override
+    public BlockHeader getMaxBlockHeader() {
         return blockChainService.getMaxBlockHeader();
     }
 
-    @Override public Long getMaxBlockHeight() {
+    @Override
+    public Long getMaxBlockHeight() {
         return blockChainService.getMaxBlockHeight();
     }
 
@@ -143,7 +179,8 @@ import java.util.List;
      * @param coreTransaction
      * @return
      */
-    @Override public boolean processContract(CoreTransaction coreTransaction) {
+    @Override
+    public boolean processContract(CoreTransaction coreTransaction) {
         //check arguments
         if (null == coreTransaction) {
             log.error("process for contract arguments error, coreTransaction is null");
@@ -153,23 +190,28 @@ import java.util.List;
 
     }
 
-    @Override public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
+    @Override
+    public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
         return blockChainService.queryBlocksByPage(req);
     }
 
-    @Override public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
+    @Override
+    public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
         return blockChainService.queryTxsByPage(req);
     }
 
-    @Override public BlockVO queryBlockByHeight(Long height) {
+    @Override
+    public BlockVO queryBlockByHeight(Long height) {
         return blockChainService.queryBlockByHeight(height);
     }
 
-    @Override public CoreTransactionVO queryTxById(String txId) {
+    @Override
+    public CoreTransactionVO queryTxById(String txId) {
         return blockChainService.queryTxById(txId);
     }
 
-    @Override public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
+    @Override
+    public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
         return blockChainService.queryTxByIds(txIds);
     }
 
@@ -194,7 +236,7 @@ import java.util.List;
             }
             //execute contract
             UTXOActionNum = UTXOActionNum + 1;
-            UTXOAction utxoAction = (UTXOAction)action;
+            UTXOAction utxoAction = (UTXOAction) action;
             ExecuteContextData data = new UTXOExecuteContextData().setAction(utxoAction);
             if (!rsUTXOSmartContract.execute(utxoAction.getContractAddress(), data)) {
                 log.info("UTXO contract process result is not pass");
@@ -207,5 +249,40 @@ import java.util.List;
             return false;
         }
         return true;
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public List<NodeInfoVO> queryPeersInfo() {
+        List<NodeInfoVO> peersInfo = Lists.newArrayList();
+        List<String> nodeNames = null;
+        Map<String, Long> mapHeight = null;
+        String masterName = null;
+
+        //query peers info
+        try {
+            nodeNames = clusterInfo.clusterNodeNames();
+            mapHeight = clusterService.getAllClusterHeight();
+            masterName = nodeState.getMasterName();
+        } catch (Throwable e) {
+            log.error("query peers info error", e);
+            return null;
+        }
+
+        // build nodeInfoVO
+        for (String nodeName : nodeNames) {
+            NodeInfoVO nodeInfoVO = new NodeInfoVO();
+            nodeInfoVO.setNodeName(nodeName);
+            nodeInfoVO.setHeight(mapHeight.get(nodeName));
+            nodeInfoVO.setMaster(StringUtils.equals(nodeName, masterName));
+            //TODO lingchao get real status
+            nodeInfoVO.setNodeState(NodeStateEnum.Running.name());
+            peersInfo.add(nodeInfoVO);
+
+        }
+
+        return peersInfo;
     }
 }
