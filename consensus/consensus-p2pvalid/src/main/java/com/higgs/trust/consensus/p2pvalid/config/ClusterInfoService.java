@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
      */
     public void initWithCluster() {
         log.info("init clusterInfo by cluster");
-        initFormAnyNode();
+        initFromAnyNode();
         ResponseCommand<?> responseCommand = null;
         int i = 0;
         do {
@@ -69,7 +69,7 @@ import org.springframework.stereotype.Service;
         clusterInfo.init((ClusterInfoVo)responseCommand.get());
     }
 
-    private void initFormAnyNode() {
+    private void initFromAnyNode() {
         log.info("init cluster info from any node");
         ValidResponseWrap<? extends ResponseCommand> response = null;
         int i = 0;
@@ -90,7 +90,7 @@ import org.springframework.stereotype.Service;
         if (response != null && response.isSucess()) {
             ValidClusterInfoCmd infoCmd = (ValidClusterInfoCmd)response.getResult();
             clusterInfo.init(infoCmd.get());
-            // TODO  打印clusterInfo
+            log.info("init cluster info from any node successful");
         } else {
             throw new RuntimeException("init clusterInfo from any node failed");
         }

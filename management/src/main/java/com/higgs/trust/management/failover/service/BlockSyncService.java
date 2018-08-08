@@ -85,10 +85,9 @@ import java.util.List;
      * @return
      */
     public Long getClusterHeight(int size) {
+        log.info("start to acquire the cluster height");
         Long clusterHeight = clusterService.getClusterHeight(size);
-        if (log.isDebugEnabled()) {
-            log.debug("get the cluster height:{}", clusterHeight);
-        }
+        log.info("get the cluster height:{}", clusterHeight);
         return clusterHeight;
     }
 
