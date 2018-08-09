@@ -23,7 +23,6 @@ import io.atomix.primitive.partition.PartitionGroupConfig;
 import io.atomix.primitive.protocol.PrimitiveProtocol;
 import io.atomix.primitive.protocol.PrimitiveProtocolConfig;
 import io.atomix.protocols.raft.partition.RaftPartitionGroup;
-import io.atomix.utils.NamedType;
 import io.atomix.utils.config.ConfigMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -37,14 +36,6 @@ import java.util.Arrays;
  * @date 2018/7/5
  */
 @Configuration @Slf4j public class AtomixBeanConfig {
-    {
-        try {
-            Class.forName(RaftPartitionGroup.class.getName());
-            Class.forName(NamedType.class.getName());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Bean public AbstractCommitReplicateComposite replicateComposite() {
         return new AtomixCommitReplicateComposite();
@@ -63,6 +54,10 @@ import java.util.Arrays;
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         if (log.isDebugEnabled()) {
             log.debug("registry context class loader:{}", contextClassLoader);
+        }
+        RaftPartitionGroup.Type type = RaftPartitionGroup.TYPE;
+        if (log.isDebugEnabled()) {
+            log.debug("typ:{}, classLoader:{}", type, type.getClass().getClassLoader());
         }
         return new SpringBeanAtomixRegistry(contextClassLoader, PartitionGroup.Type.class, PrimitiveType.class,
             PrimitiveProtocol.Type.class, Profile.Type.class, NodeDiscoveryProvider.Type.class);
