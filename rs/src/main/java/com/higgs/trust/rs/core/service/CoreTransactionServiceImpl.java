@@ -399,14 +399,12 @@ import java.util.List;
                         rsCoreCallbackHandler.onEnd(respData, null);
                     }else{
                         //for batch interface
-                        List<RsCoreTxVO> txs = Lists.newArrayList();
                         RsCoreTxVO vo = BeanConvertor.convertBean(bo,RsCoreTxVO.class);
                         vo.setStatus(CoreTxStatusEnum.END);
                         vo.setExecuteResult(CoreTxResultEnum.FAIL);
                         vo.setErrorCode(respData.getRespCode());
                         vo.setErrorMsg(respData.getMsg());
-                        txs.add(vo);
-                        rsCoreBatchCallbackProcessor.onEnd(txs,null);
+                        rsCoreBatchCallbackProcessor.onEnd(Lists.newArrayList(vo),null);
                     }
                 }
             }
