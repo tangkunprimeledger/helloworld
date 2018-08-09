@@ -90,7 +90,7 @@ import java.util.Map;
                 throw e;
             }
         }
-        //TODO:callback custom rs
+        //callback custom rs
         if (callbackCustom) {
             rsCoreBatchCallbackProcessor.onPersisted(allTxs,blockHeader);
         }
