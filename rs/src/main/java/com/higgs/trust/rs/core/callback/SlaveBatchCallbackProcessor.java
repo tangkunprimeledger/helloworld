@@ -78,16 +78,16 @@ import java.util.Map;
                     blockHeader.getHeight());
                 callbackCustom = true;
             } catch (RsCoreException e) {
-                if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED == e.getCode()) {
-                    log.warn(
-                        "[onPersisted]callback self batchUpdateStatus is fail (core_tx is not exist or status not WAIT), blockHeight:{}",
-                        blockHeader.getHeight());
-                    log.warn("onPersisted]try batchInsert.coreTx,status=PERSISTED,blockHeight:{}",
-                        blockHeader.getHeight());
-                    coreTxRepository.batchInsert(selfTxs, CoreTxStatusEnum.PERSISTED, blockHeader.getHeight());
-                    return;
+                if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
+                    throw e;
                 }
-                throw e;
+                log.warn(
+                    "[onPersisted]callback self batchUpdateStatus is fail (core_tx is not exist or status not WAIT), blockHeight:{}",
+                    blockHeader.getHeight());
+                log.warn("onPersisted]try batchInsert.coreTx,status=PERSISTED,blockHeight:{}",
+                    blockHeader.getHeight());
+                coreTxRepository.batchInsert(selfTxs, CoreTxStatusEnum.PERSISTED, blockHeader.getHeight());
+                callbackCustom = true;
             }
         }
         //callback custom rs
