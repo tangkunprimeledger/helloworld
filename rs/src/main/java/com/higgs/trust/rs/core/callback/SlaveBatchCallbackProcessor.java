@@ -67,7 +67,7 @@ import java.util.Map;
         //sendByOther
         if (!CollectionUtils.isEmpty(otherTxs)) {
             log.info("[onPersisted]batchInsert.coreTx,blockHeight:{}", blockHeader.getHeight());
-            coreTxRepository.batchInsert(otherTxs, CoreTxStatusEnum.END, blockHeader.getHeight());
+            coreTxRepository.batchInsert(otherTxs, CoreTxStatusEnum.PERSISTED, blockHeader.getHeight());
             callbackCustom = true;
         }
         //sendBySelf
@@ -80,7 +80,7 @@ import java.util.Map;
             } catch (RsCoreException e) {
                 if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED == e.getCode()) {
                     log.warn(
-                        "onPersisted]callback self batchUpdateStatus is fail (core_tx is not exist or status not WAIT), blockHeight:{}",
+                        "[onPersisted]callback self batchUpdateStatus is fail (core_tx is not exist or status not WAIT), blockHeight:{}",
                         blockHeader.getHeight());
                     log.warn("onPersisted]try batchInsert.coreTx,status=PERSISTED,blockHeight:{}",
                         blockHeader.getHeight());
@@ -92,7 +92,11 @@ import java.util.Map;
         }
         //callback custom rs
         if (callbackCustom) {
-            rsCoreBatchCallbackProcessor.onPersisted(allTxs,blockHeader);
+            rsCoreBatchCallbackProcessor.onPersisted(allTxs, blockHeader);
+        }
+        if(CollectionUtils.isEmpty(allTxs)){
+            log.warn("[onPersisted]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
+            return;
         }
         //同步通知
         for (RsCoreTxVO tx : allTxs) {
@@ -111,22 +115,24 @@ import java.util.Map;
         BlockHeader blockHeader) {
         Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
+        if (CollectionUtils.isEmpty(allTxs)) {
+            log.warn("[onClusterPersisted]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
+            return;
+        }
         boolean callbackCustom = false;
-        if (!CollectionUtils.isEmpty(allTxs)) {
-            log.info("[onClusterPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
-            try {
-                coreTxRepository.batchUpdateStatus(allTxs, CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END,
-                    blockHeader.getHeight());
-                callbackCustom = true;
-            } catch (RsCoreException e) {
-                if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
-                    throw e;
-                }
-                callbackCustom = processEndForEach(allTxs,false,blockHeader.getHeight());
+        log.info("[onClusterPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
+        try {
+            coreTxRepository
+                .batchUpdateStatus(allTxs, CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END, blockHeader.getHeight());
+            callbackCustom = true;
+        } catch (RsCoreException e) {
+            if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
+                throw e;
             }
+            callbackCustom = processEndForEach(allTxs, false, blockHeader.getHeight());
         }
         if (callbackCustom) {
-            rsCoreBatchCallbackProcessor.onEnd(allTxs,blockHeader);
+            rsCoreBatchCallbackProcessor.onEnd(allTxs, blockHeader);
         }
         //同步通知
         for (RsCoreTxVO tx : allTxs) {
@@ -146,19 +152,20 @@ import java.util.Map;
         Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         boolean callbackCustom = false;
-        if (!CollectionUtils.isEmpty(allTxs)) {
-            log.info("[onFailover]batchInsert.coreTx,blockHeight:{}", blockHeader.getHeight());
-            try {
-                coreTxRepository.batchInsert(allTxs, CoreTxStatusEnum.END, blockHeader.getHeight());
-            }catch (RsCoreException e){
-                if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
-                    throw e;
-                }
-                callbackCustom = processEndForEach(allTxs,true,blockHeader.getHeight());
-            }
+        if (CollectionUtils.isEmpty(allTxs)) {
+            log.warn("[onFailover]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
         }
-        if(callbackCustom){
-            rsCoreBatchCallbackProcessor.onFailover(allTxs,blockHeader);
+        log.info("[onFailover]batchInsert.coreTx,blockHeight:{}", blockHeader.getHeight());
+        try {
+            coreTxRepository.batchInsert(allTxs, CoreTxStatusEnum.END, blockHeader.getHeight());
+        } catch (RsCoreException e) {
+            if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
+                throw e;
+            }
+            callbackCustom = processEndForEach(allTxs, true, blockHeader.getHeight());
+        }
+        if (callbackCustom) {
+            rsCoreBatchCallbackProcessor.onFailover(allTxs, blockHeader);
         }
     }
 
@@ -217,14 +224,15 @@ import java.util.Map;
      * @param blockHeight
      * @return
      */
-    private boolean processEndForEach(List<RsCoreTxVO> txs,boolean isfailOver,Long blockHeight) {
+    private boolean processEndForEach(List<RsCoreTxVO> txs, boolean isfailOver, Long blockHeight) {
         int num = 0;
         for (RsCoreTxVO tx : txs) {
             CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(tx.getTxId(), false);
             if (coreTransactionPO == null) {
                 log.info("[processEndForEach]coreTransactionPO is null so add id,txId:{}", tx.getTxId());
                 //add tx,status=END
-                coreTxRepository.add(coreTxRepository.convertTxVO(tx), tx.getSignDatas(), CoreTxStatusEnum.END,blockHeight);
+                coreTxRepository
+                    .add(coreTxRepository.convertTxVO(tx), tx.getSignDatas(), CoreTxStatusEnum.END, blockHeight);
                 //save process result
                 coreTxRepository
                     .saveExecuteResult(tx.getTxId(), tx.getExecuteResult(), tx.getErrorCode(), tx.getErrorMsg());
@@ -233,7 +241,7 @@ import java.util.Map;
                 //check status
                 if (CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()) != CoreTxStatusEnum.END) {
                     CoreTxStatusEnum from = CoreTxStatusEnum.PERSISTED;
-                    if(isfailOver){
+                    if (isfailOver) {
                         from = CoreTxStatusEnum.formCode(coreTransactionPO.getStatus());
                     }
                     //update status
