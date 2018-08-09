@@ -30,15 +30,15 @@ import java.util.concurrent.atomic.AtomicLong;
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
         if (commit.operation() instanceof PackageCommand) {
             PackageCommand command = (PackageCommand)commit.operation();
-            Long packageHeight = command.getPackageHeight();
-            if (packageHeight <= blockHeight.get()) {
-                log.warn("package command rejected,current block height:{}", blockHeight.get());
+            Long[] packageHeight = command.getPackageHeight();
+            if (packageHeight[0] <= blockHeight.get()) {
+                log.warn("package command:{} rejected,current block height:{}", packageHeight, blockHeight.get());
                 commit.close();
                 return;
             } else {
                 blockHeight.set(blockRepository.getMaxHeight());
-                if (packageHeight <= blockHeight.get()) {
-                    log.warn("package command rejected,current block height:{}", blockHeight.get());
+                if (packageHeight[0] <= blockHeight.get()) {
+                    log.warn("package command:{} rejected,current block height:{}", packageHeight, blockHeight.get());
                     commit.close();
                     return;
                 }

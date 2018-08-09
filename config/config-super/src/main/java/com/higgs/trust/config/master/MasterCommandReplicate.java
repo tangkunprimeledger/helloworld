@@ -4,13 +4,14 @@
 package com.higgs.trust.config.master;
 
 import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.config.master.command.ArtificialChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.term.TermManager;
 import com.higgs.trust.consensus.annotation.Replicator;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,15 +44,31 @@ import java.util.stream.Collectors;
                 verifyResponseMap.entrySet().stream().filter(e -> {
                     String pubKey = clusterInfo.pubKey(e.getKey());
                     ChangeMasterVerifyResponse value = e.getValue();
-                    boolean verify = SignUtils.verify(value.getSignValue(), value.getSign(), pubKey);
+                    boolean verify = false;
+                    try {
+                        verify = SignUtils.verify(value.getSignValue(), value.getSign(), pubKey);
+                    } catch (Throwable throwable) {
+                        log.warn("verify sign of {} failed", e.getKey());
+                    }
                     return value.isChangeMaster() && verify && operation.getTerm() == value.getTerm() && operation
                         .getMasterName().equalsIgnoreCase(value.getProposer()) && value.getVoter()
                         .equalsIgnoreCase(e.getKey());
                 }).collect(Collectors.toList());
             if (collect.size() >= (2 * clusterInfo.faultNodeNum() + 1)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("new term is {}, new master is {}", operation.getTerm(), operation.getMasterName());
+                }
                 termManager.startNewTerm(operation.getTerm(), operation.getMasterName());
             }
         }
+        commit.close();
+    }
+
+    public void artificialChangeMaster(ConsensusCommit<ArtificialChangeMasterCommand> commit) {
+        log.debug("received change master commit");
+        ArtificialChangeMasterCommand operation = commit.operation();
+        termManager.getTerms().clear();
+        termManager.startNewTerm(operation.getTerm(), operation.getMasterName(), operation.getStartHeight());
         commit.close();
     }
 

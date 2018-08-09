@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.repository;
 
+import com.google.common.collect.Lists;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.pack.PackageDao;
@@ -103,6 +104,22 @@ import java.util.Set;
         }
 
         return convertPackagePOToPackage(packagePO);
+    }
+
+    /**
+     * load package from repository
+     *
+     * @param height
+     * @return
+     */
+    public List<Long> loadHeightList(Long height) {
+        List<Long> heights = packageDao.queryHeightListByHeight(height);
+
+        if (CollectionUtils.isEmpty(heights)) {
+            return null;
+        }
+
+        return heights;
     }
 
     /**
@@ -220,6 +237,25 @@ import java.util.Set;
 
         packageBO.setSignedTxList(pendingTxRepository.getTransactionsByHeight(packagePO.getHeight()));
         return packageBO;
+    }
+
+    /**
+     * convert packagePO to package
+     *
+     * @param packagePOs
+     * @return
+     */
+    private List<Package> convertPackagePOsToPackages(List<PackagePO> packagePOs) {
+        List<Package> packages = Lists.newLinkedList();
+        for (PackagePO packagePO : packagePOs) {
+            Package pack = new Package();
+            pack.setHeight(packagePO.getHeight());
+            pack.setPackageTime(packagePO.getPackageTime());
+            pack.setStatus(PackageStatusEnum.getByCode(packagePO.getStatus()));
+            pack.setSignedTxList(pendingTxRepository.getTransactionsByHeight(packagePO.getHeight()));
+            packages.add(pack);
+        }
+        return packages;
     }
 
     /**

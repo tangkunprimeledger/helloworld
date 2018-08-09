@@ -2,17 +2,14 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.utils.HashUtil;
 import com.higgs.trust.common.utils.KeyGeneratorUtils;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.consensus.core.ConsensusStateMachine;
-import com.higgs.trust.management.failover.service.SyncService;
+import com.higgs.trust.rs.common.enums.RespCodeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.integration.CaClient;
-import com.higgs.trust.rs.custom.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -27,7 +24,9 @@ import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
+import com.higgs.trust.slave.model.bo.node.NodeAction;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -39,7 +38,7 @@ import java.util.*;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
+ * @desc ca service
  * @date 2018/6/5 15:48
  */
 @Service @Slf4j public class CaServiceImpl implements CaService {
@@ -47,25 +46,25 @@ import java.util.*;
     public static final String PUB_KEY = "pubKey";
     public static final String PRI_KEY = "priKey";
 
+    private static final String SUCCESS = "sucess";
+    private static final String FAIL = "fail";
+
     @Autowired private ConfigRepository configRepository;
     @Autowired private CaRepository caRepository;
     @Autowired private NodeState nodeState;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private RsNodeRepository rsNodeRepository;
-    @Autowired private SyncService syncService;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
-    @Autowired private ClusterInfo clusterInfo;
 
     /**
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc generate pubKey and PriKey ,send CA auth request to other TRUST node,then insert into db
      */
-    @Override public void authKeyPair(String user) {
+    @Override public String authKeyPair(String user) {
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[authKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[authKeyPair] invalid node name");
         }
 
@@ -80,10 +79,48 @@ import java.util.*;
         }
 
         // build pubKey and priKey
-        CaVO caVO = buildKeyPair(user);
+        CaVO caVO = generateKeyPair();
 
-        // send CA auth request
-        caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
+        try{
+            // send CA auth request
+            RespData respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
+            if (!respData.isSuccess()) {
+                log.error("send tx error");
+                return FAIL;
+            }
+        }catch (HystrixRuntimeException e1){
+            log.error("wait timeOut", e1);
+        }catch (Throwable e2){
+            log.error("send ca auth error",e2);
+            return FAIL;
+        }
+
+        // insert ca into db (temp)
+        ca = new Ca();
+        BeanUtils.copyProperties(caVO, ca);
+//        ca.setValid(true);
+        caRepository.insertCa(ca);
+        log.info("isnert ca end (temp)");
+
+       /* try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            log.error("[joinConsensus] error occured while thread sleep", e);
+            return FAIL;
+        }*/
+
+        /*log.info("[joinConsensus] start to transform node status from offline to running");
+        try {
+            nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
+            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
+            nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+        } catch (Throwable e) {
+            log.error("join consensus error, nodeName = {}",nodeState.getNodeName());
+            return FAIL;
+        }
+        log.info("[joinConsensus] end transform node status from offline to running");*/
+
+        return SUCCESS;
     }
 
     /**
@@ -110,7 +147,7 @@ import java.util.*;
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[updateKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[updateKeyPair] invalid node name");
         }
 
@@ -135,7 +172,6 @@ import java.util.*;
      * @desc construct ca update tx and send to slave
      */
     @Override public RespData updateCaTx(CaVO caVO) {
-        // TODO 更新CA的过程中应该伴随着RS节点的下线和上线过程，或者是该RS节点先暂停给交易签名，CA更新完成后，再重新恢复签名
 
         //send and get callback result
         try {
@@ -156,7 +192,7 @@ import java.util.*;
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[cancelKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[cancelKeyPair] invalid node name");
         }
 
@@ -255,6 +291,13 @@ import java.util.*;
         caAction.setType(ActionTypeEnum.CA_AUTH);
         caAction.setIndex(0);
         actions.add(caAction);
+
+        NodeAction nodeAction = new NodeAction();
+        nodeAction.setNodeName(caVO.getUser());
+        nodeAction.setType(ActionTypeEnum.NODE_JOIN);
+        nodeAction.setIndex(1);
+        actions.add(nodeAction);
+
         return actions;
     }
 
@@ -303,27 +346,6 @@ import java.util.*;
         caAction.setPubKey(caVO.getPubKey());
         actions.add(caAction);
         return actions;
-    }
-
-    private CaVO buildKeyPair(String user) {
-
-        Config config = configRepository.getConfig(user);
-        if (null == config) {
-            log.error("config is null, authCA error");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_NOT_EXIST_ERROR, "config is null, authCA error");
-        }
-        String pubKey = config.getPubKey();
-
-        //construct caVO
-        CaVO caVO = new CaVO();
-        caVO.setVersion(VersionEnum.V1.getCode());
-        caVO.setPeriod(calculatePeriod());
-        caVO.setPubKey(pubKey);
-        caVO.setReqNo(HashUtil.getSHA256S(pubKey + InitPolicyEnum.CA_AUTH.getType()));
-        caVO.setUsage("consensus");
-        caVO.setUser(nodeState.getNodeName());
-
-        return caVO;
     }
 
     private CaVO generateTmpKeyPair(Ca ca) {
@@ -386,25 +408,38 @@ import java.util.*;
         return ca;
     }
 
-    /**
-     * @param user
-     * @return
-     * @desc after ca auth successd, start to launch consensus and failover
-     */
-    @Override public void startConsensusAndFilover(String user) {
+    private CaVO generateKeyPair() {
 
-        log.info("[startConsensusAndFilover] start to launch consensus layer");
-        consensusStateMachine.joinConsensus();
+        // generate pubKey and priKey
+        Map<String, String> map = null;
+        try {
+            map = KeyGeneratorUtils.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            log.error("[generateKeyPair] generate pubKey/priKey has error, no such algorithm");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
+                "[generateKeyPair] generate pubKey/priKey has error, no such algorithm");
+        }
+        String pubKey = map.get(PUB_KEY);
+        String priKey = map.get(PRI_KEY);
+        //store pubKey and priKey
+        Config config = new Config();
+        config.setNodeName(nodeState.getNodeName());
+        config.setPubKey(pubKey);
+        config.setPriKey(priKey);
+        config.setValid(true);
+        config.setVersion(VersionEnum.V1.getCode());
+        configRepository.insertConfig(config);
 
-        log.info("[startConsensusAndFilover] start to launch failover");
-        nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
-        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-        nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
-        //        clusterInfo.refresh();
-        //        syncService.autoSync();
+        //construct caVO
+        CaVO caVO = new CaVO();
+        caVO.setVersion(VersionEnum.V1.getCode());
+        caVO.setPeriod(calculatePeriod());
+        caVO.setPubKey(pubKey);
+        caVO.setReqNo(HashUtil.getSHA256S(pubKey));
+        caVO.setUsage("consensus");
+        caVO.setUser(nodeState.getNodeName());
 
-        log.info("[startConsensusAndFilover] end start consensus and filover");
-
+        return caVO;
     }
 
 }

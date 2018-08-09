@@ -1,11 +1,10 @@
 package commands
 
+import com.higgs.trust.config.master.ChangeMasterService
 import com.higgs.trust.config.master.INodeInfoService
 import com.higgs.trust.config.term.TermManager
 import lombok.extern.slf4j.Slf4j
-import org.crsh.cli.Command
-import org.crsh.cli.Option
-import org.crsh.cli.Usage
+import org.crsh.cli.*
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
 
@@ -44,8 +43,22 @@ class term {
     def election(InvocationContext context, @Option(names = ["e", "election"]) Boolean election) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeInfoService = beans.getBean(INodeInfoService.class)
-        nodeInfoService.setElectionMaster(election)
+        if (election) {
+            nodeInfoService.setElectionMaster(election)
+        } else {
+            nodeInfoService.setElectionMaster(false)
+        }
         context.provide([Name: "Master Election", Value: nodeInfoService.isElectionMaster()])
         out.println("")
+    }
+
+    @Usage('start new term')
+    @Command
+    def startNewTerm(InvocationContext context, @Usage("term")
+    @Required @Argument String term, @Usage("term start package height") @Required @Argument String startHeight) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def changeMasterService = beans.getBean(ChangeMasterService.class)
+        changeMasterService.artificialChangeMaster(Integer.parseInt(term), Long.parseLong(startHeight))
+        out.println("submit artificial change master ")
     }
 }

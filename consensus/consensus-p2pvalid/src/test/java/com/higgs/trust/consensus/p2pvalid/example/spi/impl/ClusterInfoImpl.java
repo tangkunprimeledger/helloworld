@@ -1,6 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.example.spi.impl;
 
 
+import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 
@@ -9,7 +10,7 @@ import java.util.List;
 /**
  * @author cwy
  */
-public class ClusterInfoImpl implements ClusterInfo {
+public class ClusterInfoImpl extends AbstractClusterInfo{
 
     private String myNodeName;
     private List<String> clusterNodeNames;

@@ -16,7 +16,7 @@ public interface CaService {
      * @return
      * @desc generate pubKey and PriKey ,then insert into db
      */
-    void authKeyPair(String user);
+    String authKeyPair(String user);
 
     /**
      * @param
@@ -74,10 +74,4 @@ public interface CaService {
      */
     Ca getCa(String user);
 
-    /** 
-     * @desc  after ca auth successd, start to launch consensus and failover
-     * @param user
-     * @return   
-     */  
-    void startConsensusAndFilover(String user);
 }

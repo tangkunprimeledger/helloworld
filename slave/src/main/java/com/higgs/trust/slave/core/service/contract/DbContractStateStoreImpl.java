@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.higgs.trust.contract.ContractStateStore;
 import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
-import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.repository.contract.ContractStateRepository;
 import com.higgs.trust.slave.core.service.merkle.MerkleService;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
@@ -45,7 +45,6 @@ import java.util.Map;
             }
             oldState.remove(tempKeyName);
         }
-        merkleService.flush(merkleTree);
         newState.remove(tempKeyName);
         Profiler.release();
     }

@@ -5,9 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
-@Configuration()
-@ConfigurationProperties(prefix = "bftSmart.systemConfigs")
-public class SmartConfig {
+@Configuration() @ConfigurationProperties(prefix = "bftSmart.systemConfigs") public class SmartConfig {
 
     private Map<String, String> configs;
 
@@ -20,6 +18,16 @@ public class SmartConfig {
     private String myClientId;
 
     private Map<String, String> idNodeNameMap;
+
+    private String defaultDir;
+
+    public String getDefaultDir() {
+        return defaultDir;
+    }
+
+    public void setDefaultDir(String defaultDir) {
+        this.defaultDir = defaultDir;
+    }
 
     public Map<String, String> getIdNodeNameMap() {
         return idNodeNameMap;
@@ -67,9 +75,5 @@ public class SmartConfig {
 
     public void setTtpPubKey(String ttpPubKey) {
         this.ttpPubKey = ttpPubKey;
-    }
-
-    public SmartConfig() {
-        System.out.println("----------------------- smart config---------------------");
     }
 }

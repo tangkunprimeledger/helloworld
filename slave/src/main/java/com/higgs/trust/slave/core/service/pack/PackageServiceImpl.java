@@ -8,10 +8,11 @@ import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
@@ -35,10 +36,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -74,15 +72,6 @@ import java.util.stream.Collectors;
             return null;
         }
 
-        // check package if exist
-        Long maxBlockHeight = blockRepository.getMaxHeight();
-        if (maxBlockHeight != null && maxBlockHeight.compareTo(currentPackageHeight) < 0) {
-            if (null == packageRepository.load(currentPackageHeight)) {
-                log.error("package is not exist. packHeight={}", currentPackageHeight);
-                return null;
-            }
-        }
-
         // sort signedTransactions by txId asc
         Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
             @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
@@ -90,8 +79,8 @@ import java.util.stream.Collectors;
             }
         });
 
-        log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, txList: {}, package.height: {}",
-            signedTransactions.size(), signedTransactions, currentPackageHeight + 1);
+        log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, package.height: {}",
+            signedTransactions.size(), currentPackageHeight + 1);
 
         /**
          * initial package
@@ -104,9 +93,15 @@ import java.util.stream.Collectors;
         return pack;
     }
 
-    @Override public void submitConsensus(Package pack) {
-        PackageVO packageVO = PackageConvert.convertPackToPackVO(pack);
-        logReplicateHandler.replicatePackage(packageVO);
+    @Override public void submitConsensus(List<Package> packs) {
+
+        List<PackageVO> voList = new LinkedList<>();
+        for (Package pack : packs) {
+            voList.add(PackageConvert.convertPackToPackVO(pack));
+        }
+
+
+        logReplicateHandler.replicatePackage(voList);
     }
 
     /**
@@ -204,13 +199,13 @@ import java.util.stream.Collectors;
      * @param isBatchSync
      */
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
-        log.info("process package start");
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (CollectionUtils.isEmpty(txs)) {
             log.error("[package.process]the transactions in the package is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
+        log.info("process package start, height:{},tx size:{}", pack.getHeight(), txs.size());
         Profiler.start("[PackageService.process.monitor]size:" + txs.size());
         try {
             //snapshot transactions should be init
@@ -241,7 +236,7 @@ import java.util.stream.Collectors;
 
             //call back business
             Profiler.enter("[callbackRS]");
-            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover);
+            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover, dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
@@ -252,6 +247,11 @@ import java.util.stream.Collectors;
                 packageRepository.updateStatus(pack.getHeight(), from, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
                 p2pHandler.sendPersisting(dbHeader);
             }
+
+            //TODO:fashuang for test
+            for (SignedTransaction signedTx : txs) {
+                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
+            }
         } catch (Throwable e) {
             //snapshot transactions should be destroy
             snapshotService.destroy();
@@ -259,17 +259,12 @@ import java.util.stream.Collectors;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_PERSISTING_ERROR, e);
         } finally {
             Profiler.release();
-            Profiler.logDump();
+            //print if lager than 300 ms
+            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
+                Profiler.logDump();
+            }
         }
 
-        //TODO:fashuang for test
-        pack.getSignedTxList().forEach(signedTx -> {
-            try {
-                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
-            } catch (InterruptedException e) {
-                log.error("interrupted exception. txId={}", signedTx.getCoreTx().getTxId());
-            }
-        });
         log.info("process package finish");
     }
 
@@ -362,12 +357,14 @@ import java.util.stream.Collectors;
         try {
             Profiler.enter("[queryTransactions]");
             List<SignedTransaction> txs = transactionRepository.queryTransactions(header.getHeight());
-            // sort signedTransactions by txId asc
-            Collections.sort(txs, new Comparator<SignedTransaction>() {
-                @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
-                    return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
-                }
-            });
+            if (!CollectionUtils.isEmpty(txs)) {
+                // sort signedTransactions by txId asc
+                Collections.sort(txs, new Comparator<SignedTransaction>() {
+                    @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+                        return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
+                    }
+                });
+            }
             List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
             Profiler.release();
 
@@ -375,12 +372,14 @@ import java.util.stream.Collectors;
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                     //call back business
                     Profiler.enter("[callbackRSForClusterPersisted]");
-                    callbackRS(txs, txReceipts, true, false);
+                    callbackRS(txs, txReceipts, true, false, blockHeader);
                     Profiler.release();
                     //check status for package
-                    boolean isPackageStatus = packageRepository.isPackageStatus(blockHeader.getHeight(),PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                    if(!isPackageStatus) {
-                        log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",blockHeader.getHeight());
+                    boolean isPackageStatus = packageRepository
+                        .isPackageStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+                    if (!isPackageStatus) {
+                        log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",
+                            blockHeader.getHeight());
                         return;
                     }
                     //update package status ---- PERSISTED
@@ -397,7 +396,7 @@ import java.util.stream.Collectors;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR, e);
         } finally {
             Profiler.release();
-            if (Profiler.getDuration() > 0) {
+            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
                 Profiler.logDump();
             }
         }
@@ -407,17 +406,18 @@ import java.util.stream.Collectors;
      * call back business
      */
     private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
-        boolean isClusterPersisted, boolean isFailover) {
+        boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
         log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
+
         if (callbackHandler == null) {
             log.warn("[callbackRS]callbackHandler is not register");
             //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             return;
         }
         if (CollectionUtils.isEmpty(txs)) {
-            log.error("[callbackRS]txs is empty");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
+            log.warn("[callbackRS]txs is empty");
+            return;
         }
         for (SignedTransaction tx : txs) {
             String txId = tx.getCoreTx().getTxId();
@@ -435,18 +435,24 @@ import java.util.stream.Collectors;
                 }
             }
             if (isFailover) {
-                log.info("[callbackRS]start fail over rs txId:{}", txId);
-                callbackHandler.onFailover(respData, tx.getSignatureList());
+                if (log.isDebugEnabled()) {
+                    log.debug("[callbackRS]start fail over rs txId:{}", txId);
+                }
+                callbackHandler.onFailover(respData, tx.getSignatureList(), blockHeader);
                 return;
             }
             //callback business
-            log.info("[callbackRS]start callback rs txId:{}", txId);
-            if (isClusterPersisted) {
-                callbackHandler.onClusterPersisted(respData, tx.getSignatureList());
-            } else {
-                callbackHandler.onPersisted(respData, tx.getSignatureList());
+            if (log.isDebugEnabled()) {
+                log.debug("[callbackRS]start callback rs txId:{}", txId);
             }
-            log.info("[callbackRS]end callback rs txId:{}", txId);
+            if (isClusterPersisted) {
+                callbackHandler.onClusterPersisted(respData, tx.getSignatureList(), blockHeader);
+            } else {
+                callbackHandler.onPersisted(respData, tx.getSignatureList(), blockHeader);
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("[callbackRS]end callback rs txId:{}", txId);
+            }
         }
     }
 

@@ -41,5 +41,9 @@
             <artifactId>commons-codec</artifactId>
             <version>1.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
     </dependencies>
 </project>

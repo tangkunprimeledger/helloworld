@@ -13,6 +13,7 @@ import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CommandFilter;
 import com.higgs.trust.consensus.core.filter.CommandFilterChain;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -35,15 +36,29 @@ import org.springframework.stereotype.Component;
         if (commit.operation() instanceof TermCommand) {
             TermCommand command = (TermCommand)commit.operation();
             Long term = command.getTerm();
-            Long height = command.getPackageHeight();
+            Long[] height = command.getPackageHeight();
+
+            //check height array
+            if (ArrayUtils.isEmpty(height)) {
+                log.warn("package height array is empty");
+                commit.close();
+                return;
+            }
+
+            if (!checkHeight(height)) {
+                log.warn("package command height list is not continuous, height={}", height);
+                commit.close();
+                return;
+            }
+
             String nodeName = command.getNodeName();
-            if (!termManager.isTermHeight(term, nodeName, height)) {
+            if (!termManager.isTermHeight(term, nodeName, height[0])) {
                 log.warn("package command rejected,current termInfo:{}", termManager.getTermInfo(term));
                 commit.close();
                 return;
             }
             if (term == nodeState.getCurrentTerm()) {
-                termManager.resetEndHeight(height);
+                termManager.resetEndHeight(height[height.length - 1]);
                 changeMasterService.renewHeartbeatTimeout();
                 if (nodeState.isMaster()) {
                     masterHeartbeatService.resetMasterHeartbeat();
@@ -51,5 +66,14 @@ import org.springframework.stereotype.Component;
             }
         }
         chain.doFilter(commit);
+    }
+
+    private boolean checkHeight(Long[] height) {
+        for (int i = 0; i < height.length - 1; i++) {
+            if ((height[i] + 1) != height[i + 1]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

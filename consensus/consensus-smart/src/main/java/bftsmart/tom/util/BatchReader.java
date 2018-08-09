@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.tom.util;
 
 import bftsmart.reconfiguration.ServerViewController;
@@ -25,15 +25,16 @@ import java.util.Random;
 
 /**
  * Batch format: N_MESSAGES(int) + N_MESSAGES*[MSGSIZE(int),MSG(byte)] +
- *               TIMESTAMP(long) + N_NONCES(int) + NONCES(byte[])
- *
+ * TIMESTAMP(long) + N_NONCES(int) + NONCES(byte[])
  */
 public final class BatchReader {
 
     private ByteBuffer proposalBuffer;
     private boolean useSignatures;
 
-    /** wrap buffer */
+    /**
+     * wrap buffer
+     */
     public BatchReader(byte[] batch, boolean useSignatures) {
         proposalBuffer = ByteBuffer.wrap(batch);
         this.useSignatures = useSignatures;
@@ -45,16 +46,16 @@ public final class BatchReader {
         long timestamp = proposalBuffer.getLong();
 
         int numberOfNonces = proposalBuffer.getInt();
-        
+
         long seed = 0;
 
         Random rnd = null;
-        if(numberOfNonces > 0){
+        if (numberOfNonces > 0) {
             seed = proposalBuffer.getLong();
             rnd = new Random(seed);
-        }
-        else numberOfNonces = 0; // make sure the value is correct
-        
+        } else
+            numberOfNonces = 0; // make sure the value is correct
+
         int numberOfMessages = proposalBuffer.getInt();
 
         TOMMessage[] requests = new TOMMessage[numberOfMessages];
@@ -67,7 +68,7 @@ public final class BatchReader {
             proposalBuffer.get(message);
 
             byte[] signature = null;
-            if(useSignatures){
+            if (useSignatures) {
                 signature = new byte[TOMUtil.getSignatureSize(controller)];
                 proposalBuffer.get(signature);
             }
@@ -89,7 +90,7 @@ public final class BatchReader {
                 requests[i] = tm;
 
             } catch (Exception e) {
-                e.printStackTrace(System.out);
+                Logger.printError(e.getMessage(), e);
             }
         }
         return requests;

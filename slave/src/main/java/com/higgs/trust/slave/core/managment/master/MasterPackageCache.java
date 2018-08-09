@@ -1,21 +1,17 @@
 package com.higgs.trust.slave.core.managment.master;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
-import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -31,8 +27,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
-    @Autowired private NodeState nodeState;
-    @Autowired private PendingTxRepository pendingTxRepository;
+
+    private static int BATCH_PACKAGE = 5;
 
     private AtomicLong packHeight = new AtomicLong(0);
     private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
@@ -97,13 +93,17 @@ import java.util.concurrent.atomic.AtomicLong;
             return null;
         }
 
+        //TODO 压测分析日志
+        log.info("pendingTxQueue.size={}", pendingTxQueue.size());
+
         int num = 0;
         List<SignedTransaction> list = new ArrayList<>();
-        while (num < count) {
+        Set<String> txIdSet = new HashSet<>();
+        while (num++ < count) {
             SignedTransaction signedTx = pendingTxQueue.pollFirst();
-            if (null != signedTx) {
+            if (null != signedTx && !txIdSet.contains(signedTx.getCoreTx().getTxId())) {
                 list.add(signedTx);
-                num++;
+                txIdSet.add(signedTx.getCoreTx().getTxId());
             } else {
                 break;
             }
@@ -118,9 +118,9 @@ import java.util.concurrent.atomic.AtomicLong;
     /**
      * @return if exist will return false
      */
-    public synchronized boolean appendDequeLast(SignedTransaction signedTx) {
+    public boolean appendDequeLast(SignedTransaction signedTx) {
         String txId = signedTx.getCoreTx().getTxId();
-        if (existTxMap.containsKey(txId) || pendingTxRepository.isExist(txId)) {
+        if (existTxMap.containsKey(txId)) {
             return false;
         }
         pendingTxQueue.offerLast(signedTx);
@@ -134,9 +134,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
     public void putPendingPack(Package pack) throws InterruptedException {
         synchronized (this) {
-            long packageHeight = packHeight.incrementAndGet();
-            pack.setHeight(packageHeight);
-            pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+            try {
+                long packageHeight = packHeight.incrementAndGet();
+                pack.setHeight(packageHeight);
+                pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+            } catch (Throwable e) {
+                //set packHeight
+                packHeight.getAndDecrement();
+                throw e;
+            }
         }
     }
 
@@ -146,6 +152,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
     public Package getPackage() {
         return pendingPack.poll();
+    }
+
+    public List<Package> getPackages() {
+        int i = 0;
+        List<Package> packageList = new LinkedList<>();
+        while ((null != pendingPack.peek()) && (i++ < BATCH_PACKAGE)) {
+            packageList.add(pendingPack.poll());
+        }
+
+        return packageList;
     }
 
 }

@@ -47,7 +47,7 @@ import java.math.BigDecimal;
         } else if (StringUtils.equals(changeDirectionEnum.getCode(), ChangeDirectionEnum.DECREASE.getCode())) {
             afterAmount = accountInfo.getBalance().subtract(happenAmount);
         }
-        //check useable balance = afterAmount - freeze
+        //check usable balance = afterAmount - freeze
         if (afterAmount.subtract(accountInfo.getFreezeAmount()).compareTo(BigDecimal.ZERO) < 0) {
             log.error("[accountOperation.validateTradeInfo] account balance is not enough,accountNo:{}",
                 accountInfo.getAccountNo());

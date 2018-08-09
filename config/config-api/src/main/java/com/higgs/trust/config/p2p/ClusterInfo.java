@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @author cwy
  */
-public interface ClusterInfo {
+public interface ClusterInfo extends Refreshable {
 
     /**
      * get faultNode num
@@ -49,9 +49,4 @@ public interface ClusterInfo {
      * @param vo
      */
     void init(ClusterInfoVo vo);
-
-    /**
-     * refresh the cluster info
-     */
-    void refresh();
 }

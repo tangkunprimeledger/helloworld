@@ -1,6 +1,7 @@
 package com.higgs.trust.contract.rhino;
 
 import com.higgs.trust.contract.*;
+import com.higgs.trust.contract.rhino.function.MathFuncs;
 import com.higgs.trust.contract.rhino.function.PrintNativeFunction;
 import com.higgs.trust.contract.rhino.function.SafeEvalFunction;
 import com.higgs.trust.contract.rhino.types.JsDate;
@@ -102,6 +103,7 @@ public class RhinoExecuteEngine implements ExecuteEngine {
 
         scope.defineProperty("print", new PrintNativeFunction(), ScriptableObject.DONTENUM);
         scope.defineProperty("eval", new SafeEvalFunction(), ScriptableObject.DONTENUM);
+        scope.put("math", scope, MathFuncs.getInstance());
 
         ExecuteContext context = ExecuteContext.getCurrent();
         ContractStateStore dbStateStore = context.getStateStore();

@@ -1,14 +1,11 @@
 package com.higgs.trust.slave.core.service.datahandler.ca;
 
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
-import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
 import com.higgs.trust.slave.model.bo.ca.Ca;
-import com.higgs.trust.slave.model.bo.config.ClusterConfig;
-import com.higgs.trust.slave.model.bo.config.ClusterNode;
-import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +19,7 @@ import org.springframework.stereotype.Service;
 
     @Autowired private CaSnapshotAgent caSnapshotAgent;
     @Autowired MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
+    @Autowired NodeState nodeState;
 
     /**
      * @param ca
@@ -31,25 +29,31 @@ import org.springframework.stereotype.Service;
     @Override public void authCa(Ca ca) {
         // operate merkle tree
         check(ca);
+        log.info("start to auth ca,user={}", ca.getUser());
         if (null != caSnapshotAgent.getCa(ca.getUser())) {
-            log.error("[CaSnapshotHandler.authCa] ca already existuser={}, pubKey={}", ca.getUser(), ca.getPubKey());
-            return;
+            log.info("snapshot and db do not have ca");
+            caSnapshotAgent.updateCa(ca);
+        } else {
+            log.info("insert ca ...");
+            caSnapshotAgent.saveCa(ca);
         }
-        caSnapshotAgent.saveCa(ca);
 
-        ClusterNode clusterNode = new ClusterNode();
+        /*ClusterNode clusterNode = new ClusterNode();
         clusterNode.setNodeName(ca.getUser());
         clusterNode.setP2pStatus(true);
         clusterNode.setRsStatus(false);
-        caSnapshotAgent.saveClusterNode(clusterNode);
+        if (null == caSnapshotAgent.getClusterNode(ca.getUser())) {
+            caSnapshotAgent.saveClusterNode(clusterNode);
+        } else {
+            caSnapshotAgent.updateClusterNode(clusterNode);
+        }
 
-        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig("TRUST");
+        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
         ClusterConfig clusterConfig = new ClusterConfig();
-        // TODO 集群名称应该从配置动态读取
         clusterConfig.setClusterName(clusterConfigPO.getClusterName());
         clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() + 1);
         clusterConfig.setFaultNum(clusterConfigPO.getNodeNum() / 3);
-        caSnapshotAgent.updateClusterConfig(clusterConfig);
+        caSnapshotAgent.updateClusterConfig(clusterConfig);*/
 
     }
 
@@ -79,21 +83,20 @@ import org.springframework.stereotype.Service;
         log.info("[cancelCa] start to update CA to invalid, user={}", ca.getUser());
         caSnapshotAgent.updateCa(ca);
 
-        ClusterNode clusterNode = new ClusterNode();
+        /*ClusterNode clusterNode = new ClusterNode();
         clusterNode.setNodeName(ca.getUser());
         clusterNode.setP2pStatus(false);
         clusterNode.setRsStatus(false);
         log.info("[cancelCa] start to update clusterNodeInfo, user={}", ca.getUser());
         caSnapshotAgent.updateClusterNode(clusterNode);
 
-        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig("TRUST");
+        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
         ClusterConfig clusterConfig = new ClusterConfig();
-        // TODO 集群名称应该从配置动态读取
         clusterConfig.setClusterName(clusterConfigPO.getClusterName());
         clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() - 1);
         clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
         log.info("[cancelCa] start to update clusterConfigInfo, user={}", ca.getUser());
-        caSnapshotAgent.updateClusterConfig(clusterConfig);
+        caSnapshotAgent.updateClusterConfig(clusterConfig);*/
     }
 
     /**
@@ -106,16 +109,6 @@ import org.springframework.stereotype.Service;
     }
 
     private void check(Ca ca) {
-        MerkleTree merkleTree = (MerkleTree)merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CA);
-        if (null != merkleTree) {
-            if (merkleTreeSnapshotAgent.isExist(merkleTree.getTreeType(), ca)) {
-                log.error("[CaSnapshotHandler.check] ca already exist, user={}, pubKey={}", ca.getUser(),
-                    ca.getPubKey());
-                return;
-            }
-            merkleTreeSnapshotAgent.appendChild(merkleTree, ca);
-        } else {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.CA, ca);
     }
 }

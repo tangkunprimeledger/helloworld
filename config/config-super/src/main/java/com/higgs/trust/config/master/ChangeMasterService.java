@@ -92,10 +92,10 @@ import java.util.concurrent.*;
         if (log.isDebugEnabled()) {
             log.debug("start change master verify");
         }
+        termManager.setMasterHeartbeat(false);
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
-        termManager.setMasterHeartbeat(false);
         if (!nodeInfoService.hasMasterQualify()) {
             log.warn("not have master qualify");
             resetHeartbeatTimeout();
@@ -110,7 +110,21 @@ import java.util.concurrent.*;
         resetHeartbeatTimeout();
     }
 
+    public void artificialChangeMaster(int term, long startHeight) {
+        ArtificialChangeMasterCommand command =
+            new ArtificialChangeMasterCommand(term, nodeState.getNodeName(), startHeight);
+        command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        CompletableFuture<Long> future = consensusClient.submit(command);
+        try {
+            future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("submit artificial change master to consensus failed!", e);
+        }
+        resetHeartbeatTimeout();
+    }
+
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
+        log.info("change master verify");
         List<String> nodeNames = clusterInfo.clusterNodeNames();
         Map<String, ChangeMasterVerifyResponse> heightMap = new HashMap<>();
         Long maxHeight = nodeInfoService.blockHeight();
@@ -138,7 +152,7 @@ import java.util.concurrent.*;
                 }
 
             } catch (Throwable throwable) {
-                log.error("{}", throwable);
+                log.error("change master verify error", throwable);
             }
 
         });

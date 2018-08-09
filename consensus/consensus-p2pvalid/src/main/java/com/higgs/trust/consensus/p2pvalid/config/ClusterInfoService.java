@@ -90,6 +90,7 @@ import org.springframework.stereotype.Service;
         if (response != null && response.isSucess()) {
             ValidClusterInfoCmd infoCmd = (ValidClusterInfoCmd)response.getResult();
             clusterInfo.init(infoCmd.get());
+            // TODO  打印clusterInfo
         } else {
             throw new RuntimeException("init clusterInfo from any node failed");
         }

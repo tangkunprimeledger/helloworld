@@ -48,11 +48,18 @@
 
 
     <update id="updateCa" parameterType="com.higgs.trust.slave.dao.po.ca.CaPO">
-		UPDATE ca SET
-		            period=#{period},
-		            pub_key=#{pubKey},
-		            update_time=now(3)
-		          WHERE `user`=#{user} and valid=1
+		UPDATE ca
+		<trim prefix="SET" suffixOverrides=",">
+            update_time=now(3),
+            valid=#{valid},
+            <if test="period != null and period!=''">
+                period=#{period},
+            </if>
+            <if test="pubKey != null and pubKey!=''">
+                pub_key=#{pubKey},
+            </if>
+		</trim>
+		WHERE `user`=#{user} and valid=1
 	</update>
 
 
@@ -62,7 +69,7 @@
 			<!-- set update_time -->
 			<trim prefix="`update_time` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user} and valid=1
+					WHEN `user`=#{item.user}
 					THEN now(3)
 				</foreach>
 				ELSE `update_time`
@@ -70,7 +77,7 @@
 			<!-- set period -->
 			<trim prefix="`period` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user} and valid=1
+					WHEN `user`=#{item.user}
 					THEN #{item.period}
 				</foreach>
 				ELSE `period`
@@ -78,7 +85,7 @@
 			<!-- set pub_key -->
 			<trim prefix="`pub_key` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user} and valid=1
+					WHEN `user`=#{item.user}
 					THEN #{item.pubKey}
 				</foreach>
 				ELSE `pub_key`
@@ -86,7 +93,7 @@
 			<!-- set valid -->
 			<trim prefix="`valid` = CASE" suffix="END">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user} and valid=1
+					WHEN `user`=#{item.user}
 					THEN #{item.valid}
 				</foreach>
 				ELSE `valid`
@@ -94,7 +101,7 @@
 		</trim>
 		<where>
 			<foreach collection="list" item="item" separator="or" open="(" close=")">
-				`user`=#{item.user} and valid=1
+				`user`=#{item.user}
 			</foreach>
 		</where>
 	</update>
@@ -110,7 +117,21 @@
 								`usage` as `usage`,
 								create_time as createTime,
 								update_time as updateTime
-		      FROM ca WHERE `user`=#{user} and valid=1
+		      FROM ca WHERE `user`=#{user}
+	</select>
+
+
+    <select id="getCaForConsensus" parameterType="java.lang.String"
+            resultType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		SELECT    version as version,
+								period as period,
+								valid as valid,
+								pub_key as pubKey,
+								`user` as `user`,
+								`usage` as `usage`,
+								create_time as createTime,
+								update_time as updateTime
+		      FROM ca WHERE `user`=#{user} and `usage`='consensus'
 	</select>
 
     <select id="getAllCa"  resultType="com.higgs.trust.slave.dao.po.ca.CaPO">

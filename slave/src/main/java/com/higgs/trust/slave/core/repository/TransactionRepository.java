@@ -7,6 +7,7 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
 import com.higgs.trust.slave.dao.transaction.TransactionDao;
+import com.higgs.trust.slave.dao.transaction.TransactionJDBCDao;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -31,6 +32,7 @@ import java.util.List;
 
 @Repository @Slf4j public class TransactionRepository {
     @Autowired TransactionDao transactionDao;
+    @Autowired TransactionJDBCDao transactionJDBCDao;
 
     public boolean isExist(String txId) {
         TransactionPO transactionPO = transactionDao.queryByTxId(txId);
@@ -105,7 +107,9 @@ import java.util.List;
      */
     public void batchSaveTransaction(Long blockHeight, Date blockTime, List<SignedTransaction> txs,
         List<TransactionReceipt> txReceipts) {
-        log.info("[TransactionRepository.batchSaveTransaction] is start");
+        if (log.isDebugEnabled()) {
+            log.debug("[TransactionRepository.batchSaveTransaction] is start");
+        }
         if (CollectionUtils.isEmpty(txs)) {
             log.info("[batchSaveTransaction] txs is empty");
             return;
@@ -130,7 +134,7 @@ import java.util.List;
             txPOs.add(po);
         }
         try {
-            int r = transactionDao.batchInsert(txPOs);
+            int r = transactionJDBCDao.batchInsertTransaction(txPOs);
             if (r != txPOs.size()) {
                 log.error("[batchSaveTransaction]batch insert txs has error");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
@@ -180,6 +184,25 @@ import java.util.List;
         if (CollectionUtils.isEmpty(transactionPOS)) {
             return datas;
         }
+        for (TransactionPO transactionPO : transactionPOS) {
+            datas.add(transactionPO.getTxId());
+        }
+        return datas;
+    }
+
+    public List<String> queryTxIdsByIds(List<String> txIds) {
+        if (CollectionUtils.isEmpty(txIds)) {
+            return null;
+        }
+
+        List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
+
+        if (CollectionUtils.isEmpty(transactionPOS)) {
+            return null;
+        }
+
+        List<String> datas = new ArrayList<>();
+
         for (TransactionPO transactionPO : transactionPOS) {
             datas.add(transactionPO.getTxId());
         }

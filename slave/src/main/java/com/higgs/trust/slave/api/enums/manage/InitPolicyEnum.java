@@ -14,10 +14,12 @@ public enum InitPolicyEnum {
     UTXO_DESTROY("UTXO_DESTROY", "000004", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"utxo destroy"),
     CONTRACT_ISSUE("CONTRACT_ISSUE", "000005", VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"contract issue"),
     CONTRACT_DESTROY("CONTRACT_DESTROY", "000006",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "contract destroy"),
-    CA_AUTH("CA_AUTH", "000007",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA AUTH"),
-    CA_UPDATE("CA_UPDATE", "000008",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA UPDATE"),
-    CA_CANCEL("CA_CANCEL", "000009",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE,"CA CANCEL"),
-    CANCEL_RS("CANCEL_RS", "000010", VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE, "cancel rs");
+    CA_AUTH("CA_AUTH", "000007",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"ca auth"),
+    CA_UPDATE("CA_UPDATE", "000008",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"ca update"),
+    CA_CANCEL("CA_CANCEL", "000009",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"ca cancel"),
+    CANCEL_RS("CANCEL_RS", "000010", VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE, "cancel rs"),
+    NODE_JOIN("NODE_JOIN", "000011",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"node join"),
+    NODE_LEAVE("NODE_LEAVE", "000012",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"node leave"),;
     private String type;
 
     private String policyId;

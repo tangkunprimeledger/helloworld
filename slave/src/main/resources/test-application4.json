@@ -22,6 +22,7 @@
   },
   "higgs": {
     "trust": {
+      "electionMaster":false,
       "masterName":"TRUST-TEST0",
       "nodeName": "TRUST-TEST4",
       "prefix": "TRUST",
@@ -96,16 +97,14 @@
         "process": 100,
         "submit": 1000
       }
+    },
+    "start": {
+      "mode": "single"
     }
   },
   "logging": {
     "config": "classpath:logback.xml",
     "path": "/tmp/log4"
-  },
-  "bftSmart": {
-    "systemConfigs":{
-      "myId":"TRUST-TEST4"
-    }
   },
   "hystrix": {
     "command": {
@@ -119,6 +118,52 @@
         "coreSize": 40,
         "maximumSize": 100
       }
+    }
+  },
+  "bftSmart": {
+    "systemConfigs": {
+      "myId": "4",
+      "myClientId":"1104",
+      "configs": {
+        "system.communication.useSenderThread": true,
+        "system.communication.defaultkeys": true,
+        "system.servers.num": "4",
+        "system.servers.f": "1",
+        "system.totalordermulticast.timeout": "2000",
+        "system.totalordermulticast.maxbatchsize": "400",
+        "system.totalordermulticast.nonces": "10",
+        "system.totalordermulticast.verifyTimestamps": false,
+        "system.communication.inQueueSize": "500000",
+        "system.communication.outQueueSize": "500000",
+        "system.communication.useSignatures": "0",
+        "system.communication.useMACs": "0",
+        "system.debug": "1",
+        "system.shutdownhook": true,
+        "system.totalordermulticast.state_transfer": true,
+        "system.totalordermulticast.highMark": "10000",
+        "system.totalordermulticast.revival_highMark": "10",
+        "system.totalordermulticast.timeout_highMark": "200",
+        "system.totalordermulticast.log": true,
+        "system.totalordermulticast.log_parallel": false,
+        "system.totalordermulticast.log_to_disk": true,
+        "system.totalordermulticast.sync_log": false,
+        "system.totalordermulticast.checkpoint_period": "1000",
+        "system.totalordermulticast.global_checkpoint_period": "120000",
+        "system.totalordermulticast.checkpoint_to_disk": false,
+        "system.totalordermulticast.sync_ckp": false,
+        "system.bft": true,
+        "system.ttp.id": "7001"
+      },
+      "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030,4 127.0.0.1 11040,7001 127.0.0.1 11100",
+      "ttpPubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwuoTWbSFDnVjohwdZftoAwv3oCxUPnUiiNNH9pXryEW8kSFRGVJ7zJCwxJnt3YZGnpPGxnC3hAI4XkG26hO7+TxkgaYmv5GbamL946uZISxv0aNX3YbaOf//MC6F8tShFfCnpWlj68FYulM5dC2OOOHaUJfofQhmXfsaEWU251wIDAQAB",
+      "idNodeNameMap": {
+        "0": "TRUST-TEST0",
+        "1": "TRUST-TEST1",
+        "2": "TRUST-TEST2",
+        "3": "TRUST-TEST3",
+        "4": "TRUST-TEST4"
+      },
+      "defaultDir": "D:/tmp/files4"
     }
   }
 }

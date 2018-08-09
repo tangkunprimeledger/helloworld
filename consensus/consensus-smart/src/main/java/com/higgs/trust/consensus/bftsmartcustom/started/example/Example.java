@@ -19,7 +19,7 @@
 //            try {
 //                TimeUnit.MILLISECONDS.sleep(50L);
 //            } catch (InterruptedException e) {
-//                e.printStackTrace();
+//                Logger.printError(e.getMessage(),e);
 //            }
 //            StringCommand stringCommand = new StringCommand("zyf test -- " + i);
 //            consensusClient.submit(stringCommand);

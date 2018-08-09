@@ -7,10 +7,11 @@
         <result column="status" property="status"/>
         <result column="desc" property="desc"/>
         <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
     </resultMap>
     <!-- rs_pub_key table all fields -->
     <sql id="baseColumnList">
-		rs_id,`status`,`desc`,create_time
+		rs_id,`status`,`desc`,create_time,update_time
 	</sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">
@@ -27,6 +28,9 @@
             </if>
             <if test="createTime != null">
                 and create_time=#{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time=#{updateTime}
             </if>
         </trim>
     </sql>
@@ -98,7 +102,7 @@
     <update id="batchUpdate" parameterType="java.util.List">
         <foreach collection="list" separator=";" item="item">
             update rs_node SET
-              status = #{item.status}
+              status = #{item.status}, update_time=now(3)
             where rs_id=#{item.rsId}
         </foreach>
     </update>

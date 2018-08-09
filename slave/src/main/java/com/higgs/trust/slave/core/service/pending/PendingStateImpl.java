@@ -1,12 +1,12 @@
 package com.higgs.trust.slave.core.service.pending;
 
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
-import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
@@ -23,9 +23,8 @@ import java.util.List;
  * @author: pengdi
  **/
 @Service @Slf4j public class PendingStateImpl implements PendingState {
-    @Autowired private PendingTxRepository pendingTxRepository;
 
-    @Autowired private TransactionRepository transactionRepository;
+    @Autowired private PendingTxRepository pendingTxRepository;
 
     @Autowired private MasterPackageCache packageCache;
 
@@ -41,34 +40,13 @@ import java.util.List;
             log.error("received transaction list is empty");
             return null;
         }
+        Profiler.start("add pending transaction");
 
         List<TransactionVO> transactionVOList = new ArrayList<>();
         transactions.forEach(signedTransaction -> {
             TransactionVO transactionVO = new TransactionVO();
             String txId = signedTransaction.getCoreTx().getTxId();
             transactionVO.setTxId(txId);
-
-            // params check
-            BeanValidateResult validateResult = BeanValidator.validate(signedTransaction);
-            if (!validateResult.isSuccess()) {
-                log.error("transaction invalid. errMsg={}, txId={}", validateResult.getFirstMsg(), txId);
-                transactionVO.setErrCode(TxSubmitResultEnum.PARAM_INVALID.getCode());
-                transactionVO.setErrMsg(TxSubmitResultEnum.PARAM_INVALID.getDesc());
-                transactionVO.setRetry(false);
-                transactionVOList.add(transactionVO);
-                return;
-            }
-
-            // chained transaction idempotent check, cannot retry
-            //TODO rocks db isExist method
-            if (transactionRepository.isExist(txId)) {
-                log.warn("transaction idempotent, txId={}", txId);
-                transactionVO.setErrCode(TxSubmitResultEnum.TX_IDEMPOTENT.getCode());
-                transactionVO.setErrMsg(TxSubmitResultEnum.TX_IDEMPOTENT.getDesc());
-                transactionVO.setRetry(true);
-                transactionVOList.add(transactionVO);
-                return;
-            }
 
             //limit queue size
             if (packageCache.getPendingTxQueueSize() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
@@ -81,23 +59,27 @@ import java.util.List;
             }
 
             try {
+                Profiler.enter("append deque last");
                 //insert memory
-                boolean result = packageCache.
-
-
-
-                    appendDequeLast(signedTransaction);
+                boolean result = packageCache.appendDequeLast(signedTransaction);
                 if (!result) {
-                    log.warn("pending transaction idempotent, txId={}", txId);
+                    log.warn("pending transaction map idempotent, txId={}", txId);
                     transactionVO.setErrCode(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getCode());
                     transactionVO.setErrMsg(TxSubmitResultEnum.PENDING_TX_IDEMPOTENT.getDesc());
                     transactionVO.setRetry(true);
                     transactionVOList.add(transactionVO);
                 }
+                Profiler.release();
             } catch (Throwable e) {
                 log.error("transaction insert into memory exception. txId={}, ", txId, e);
             }
         });
+
+        Profiler.release();
+
+        if (Profiler.getDuration() > 0) {
+            Profiler.logDump();
+        }
 
         // if all transaction received success, RespData will set data 'null'
         if (CollectionUtils.isEmpty(transactionVOList)) {

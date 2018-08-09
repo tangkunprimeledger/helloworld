@@ -113,4 +113,32 @@ class failover {
         out.println("refresh successful")
     }
 
+
+    @Usage('sync the genesis block')
+    @Command
+    def genesis(InvocationContext context, @Option(names = ["f", "from"]) String fromNode) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def nodeState = beans.getBean(NodeState.class)
+        def blockService = beans.getBean(BlockService.class)
+        def syncService = beans.getBean(SyncService.class)
+        if (!nodeState.isState(NodeStateEnum.ArtificialSync)) {
+            out.println("Node state is $nodeState.state, not allowed sync block")
+            return
+        }
+
+        if (StringUtils.isBlank(fromNode)) {
+            syncService.syncGenesis()
+            def height = blockService.getMaxHeight().toString()
+            out.println("sync blocks successful, current height:$height")
+        } else {
+            def clusterInfo = beans.getBean(ClusterInfo.class)
+            if (!clusterInfo.clusterNodeNames().contains(fromNode)) {
+                out.println("The from node: $fromNode not exist")
+                return
+            }
+            syncService.syncGenesis(fromNode)
+            def height = blockService.getMaxHeight().toString()
+            out.println("sync blocks from $fromNode successful, current height:$height")
+        }
+    }
 }

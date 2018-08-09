@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.scheduler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.common.constant.Constant;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.sleuth.Span;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -44,15 +46,15 @@ import java.util.Set;
     @Autowired private MasterPackageCache packageCache;
 
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
-    @Value("${higgs.trust.package.batchSize:100}") private int batchSize;
 
     /**
      * master node create package
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
-        int i = 0;
-        while (nodeState.isMaster() && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE
-            && ++i <= batchSize) {
+
+        if (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster()
+            && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
+
             List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
             if (CollectionUtils.isEmpty(signedTransactions)) {
@@ -63,6 +65,8 @@ import java.util.Set;
             CollectionUtils.addAll(txSet, signedTransactions);
             signedTransactions = Lists.newArrayList(txSet);
 
+            log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}",
+                packageCache.getPackHeight());
             Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
 
             if (null == pack) {
@@ -77,6 +81,8 @@ import java.util.Set;
                 log.warn("pending pack offer InterruptedException. ", e);
                 pendingState.addPendingTxsToQueueFirst(signedTransactions);
             }
+
+            log.debug("[PackageScheduler.createPackage] create package finished, packHeight={}", pack.getHeight());
         }
     }
 
@@ -84,9 +90,14 @@ import java.util.Set;
      * master node submit package
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.submit}") public void submitPackage() {
-        int i = 0;
-        while (nodeState.isMaster() && packageCache.getPendingPackSize() > 0 && ++i < batchSize) {
-            packageService.submitConsensus(packageCache.getPackage());
+        while (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster()
+            && packageCache.getPendingPackSize() > 0) {
+            Span span = TraceUtils.createSpan();
+            try {
+                packageService.submitConsensus(packageCache.getPackages());
+            } finally {
+                TraceUtils.closeSpan(span);
+            }
         }
     }
 
@@ -98,26 +109,40 @@ import java.util.Set;
             return;
         }
         //get max block height
-        Long maxBlockHeight = blockRepository.getMaxHeight();
+        Long currentHeight = blockRepository.getMaxHeight();
 
-        if (null == maxBlockHeight) {
+        if (null == currentHeight) {
             log.error("please initial Genesis block.");
             //TODO 添加告警
             return;
         }
-        //check if the next package to be process is exited
-        Long height = maxBlockHeight + 1;
-        Package pack = packageRepository.load(height);
-        if (null == pack) {
-            return;
-        }
 
-        // process  next block as height = maxBlockHeight + 1
-        try {
-            packageProcess.process(height);
-        } catch (Throwable e) {
-            log.error("package process scheduled execute failed", e);
-        }
+        while (true) {
+            //check if the next package to be process is exited
+            List<Long> heights = packageRepository.loadHeightList(currentHeight);
 
+            if (CollectionUtils.isEmpty(heights)) {
+                return;
+            }
+
+            for (Long height : heights) {
+                // process next block as height = maxBlockHeight + 1
+                if (height != currentHeight + 1) {
+                    log.warn("package height is not continuous!");
+                    return;
+                }
+
+                Span span = TraceUtils.createSpan();
+                try {
+                    packageProcess.process(height);
+                    currentHeight++;
+                } catch (Throwable e) {
+                    log.error("package process scheduled execute failed. ", e);
+                    return;
+                } finally {
+                    TraceUtils.closeSpan(span);
+                }
+            }
+        }
     }
 }

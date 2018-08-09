@@ -4,19 +4,23 @@
 
     <insert id="insertConfig" parameterType="com.higgs.trust.slave.dao.po.config.ConfigPO">
         INSERT INTO config(version,
-        valid,
-        pub_key,
-        pri_key,
-        node_name,
-        create_time,
-        update_time)
+            valid,
+            pub_key,
+            pri_key,
+            node_name,
+            create_time,
+            update_time)
         VALUES (#{version},
-        #{valid},
-        #{pubKey},
-        #{priKey},
-        #{nodeName},
-        now(3),
-        now(3))
+            #{valid},
+            #{pubKey},
+            #{priKey},
+            #{nodeName},
+            now(3),
+            now(3))
+        ON DUPLICATE KEY UPDATE valid=#{valid},
+            update_time=now(3),
+            pub_key=#{pubKey},
+            pri_key=#{priKey}
     </insert>
 
 

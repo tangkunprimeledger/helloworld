@@ -270,26 +270,26 @@
             </dependency>
 
             <!--copycat start-->
-            <!--<dependency>-->
-                <!--<groupId>io.atomix.copycat</groupId>-->
-                <!--<artifactId>copycat-protocol</artifactId>-->
-                <!--<version>${copycat.version}</version>-->
-            <!--</dependency>-->
-            <!--<dependency>-->
-                <!--<groupId>io.atomix.copycat</groupId>-->
-                <!--<artifactId>copycat-client</artifactId>-->
-                <!--<version>${copycat.version}</version>-->
-            <!--</dependency>-->
-            <!--<dependency>-->
-                <!--<groupId>io.atomix.catalyst</groupId>-->
-                <!--<artifactId>catalyst-netty</artifactId>-->
-                <!--<version>1.1.1</version>-->
-            <!--</dependency>-->
-            <!--<dependency>-->
-                <!--<groupId>io.atomix.copycat</groupId>-->
-                <!--<artifactId>copycat-server</artifactId>-->
-                <!--<version>${copycat.version}</version>-->
-            <!--</dependency>-->
+            <dependency>
+                <groupId>io.atomix.copycat</groupId>
+                <artifactId>copycat-protocol</artifactId>
+                <version>${copycat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.atomix.copycat</groupId>
+                <artifactId>copycat-client</artifactId>
+                <version>${copycat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.atomix.catalyst</groupId>
+                <artifactId>catalyst-netty</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.atomix.copycat</groupId>
+                <artifactId>copycat-server</artifactId>
+                <version>${copycat.version}</version>
+            </dependency>
             <!--copycat end-->
 
             <!--seg-->

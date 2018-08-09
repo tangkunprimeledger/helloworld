@@ -37,7 +37,7 @@ import java.util.List;
      * @param coreTx
      * @param signInfos
      */
-    public void add(CoreTransaction coreTx, List<SignInfo> signInfos,CoreTxStatusEnum statusEnum) {
+    public void add(CoreTransaction coreTx, List<SignInfo> signInfos, CoreTxStatusEnum statusEnum) {
         if (!rsConfig.isUseMySQL()) {
             //TODO: liuyu for rocksdb handler
             return;
@@ -56,7 +56,7 @@ import java.util.List;
         try {
             coreTransactionDao.add(po);
         } catch (DuplicateKeyException e) {
-            log.error("[add.core_transaction]has idempotent error");
+            log.error("[add.core_transaction]has idempotent error, txId = {}", po.getTxId());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
     }
@@ -94,12 +94,12 @@ import java.util.List;
      * @param count
      * @return
      */
-    public List<CoreTransactionPO> queryByStatus(CoreTxStatusEnum coreTxStatusEnum, int row, int count){
+    public List<CoreTransactionPO> queryByStatus(CoreTxStatusEnum coreTxStatusEnum, int row, int count) {
         if (!rsConfig.isUseMySQL()) {
             //TODO: liuyu for rocksdb handler
             return null;
         }
-        return coreTransactionDao.queryByStatus(coreTxStatusEnum.getCode(),row,count);
+        return coreTransactionDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
     }
 
     /**
@@ -135,7 +135,7 @@ import java.util.List;
         }
         int r = coreTransactionDao.updateStatus(txId, from.getCode(), to.getCode());
         if (r != 1) {
-            log.error("[updateStatus]from {} to {} is fail txId:{}",from,to, txId);
+            log.error("[updateStatus]from {} to {} is fail txId:{}", from, to, txId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
         }
     }
@@ -146,15 +146,16 @@ import java.util.List;
      * @param txId
      * @param executResult
      * @param respCode
+     * @param respMsg
      */
-    public void saveExecuteResult(String txId,CoreTxResultEnum executResult,String respCode){
+    public void saveExecuteResult(String txId, CoreTxResultEnum executResult, String respCode, String respMsg) {
         if (!rsConfig.isUseMySQL()) {
             //TODO: liuyu for rocksdb handler
             return;
         }
-        int r = coreTransactionDao.saveExecuteResult(txId,executResult.getCode(), respCode);
+        int r = coreTransactionDao.saveExecuteResult(txId, executResult.getCode(), respCode, respMsg);
         if (r != 1) {
-            log.error("[saveExecuteResult]executResult:{},respCode:{} is fail txId:{}",executResult,respCode, txId);
+            log.error("[saveExecuteResult]executResult:{},respCode:{} is fail txId:{}", executResult, respCode, txId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
         }
     }

@@ -64,9 +64,9 @@ public interface PackageService {
 
     /**
      * submit package to consensus
-     * @param pack
+     * @param packs
      */
-    void submitConsensus(Package pack);
+    void submitConsensus(List<Package> packs);
 
     /**
      * persisted

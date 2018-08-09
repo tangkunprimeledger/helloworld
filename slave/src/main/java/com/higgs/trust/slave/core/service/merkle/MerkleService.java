@@ -45,12 +45,6 @@ public interface MerkleService {
      */
     void add(MerkleTree merkleTree, Object obj);
 
-    /**
-     * flush merkle tree info into database
-     *
-     * @param merkleTree
-     */
-    void flush(MerkleTree merkleTree);
 
     /**
      * query a merkle tree with the exact type

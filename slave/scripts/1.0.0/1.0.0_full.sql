@@ -222,6 +222,7 @@ IF NOT EXISTS `rs_node` (
 	`desc` VARCHAR (128) NOT NULL COMMENT 'business RS description',
 	`status` VARCHAR (32) NOT NULL COMMENT 'rs status',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
+	`update_time` datetime (3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_rs` (`rs_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'rs node info';
@@ -441,3 +442,15 @@ CREATE TABLE IF NOT EXISTS `cluster_node` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_node` (`node_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds cluster node configuration';
+
+
+CREATE TABLE IF NOT EXISTS `system_property` (
+	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+	`key` VARCHAR (190) NOT NULL COMMENT 'property key',
+	`value` VARCHAR (1024) NOT NULL COMMENT 'property value',
+	`desc` VARCHAR (255) DEFAULT NULL COMMENT 'desc for the ',
+	`create_time` datetime (3) NOT NULL COMMENT 'the create time',
+	`update_time` datetime (3) NOT NULL COMMENT 'the update time',
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `uniq_key` (`key`)
+) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table for system property';

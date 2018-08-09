@@ -6,14 +6,20 @@ import com.higgs.trust.slave.api.vo.PackageVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class LogReplicateHandlerImplTest extends BaseTest {
     @Autowired LogReplicateHandler logReplicateHandler;
 
     @Test public void testReplicatePackage() throws Exception {
+        List<PackageVO> packageVOList = new LinkedList<>();
         PackageVO packageVO = new PackageVO();
         packageVO.setHeight(10L);
         packageVO.setSignedTxList(Lists.newArrayList());
-        logReplicateHandler.replicatePackage(packageVO);
+
+        packageVOList.add(packageVO);
+        logReplicateHandler.replicatePackage(packageVOList);
     }
 
 }

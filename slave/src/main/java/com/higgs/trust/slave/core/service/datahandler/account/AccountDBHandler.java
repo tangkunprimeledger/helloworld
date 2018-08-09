@@ -60,8 +60,6 @@ import java.util.*;
         } else {
             merkleService.add(merkleTree, _new);
         }
-        //flush
-        merkleService.flush(merkleTree);
     }
 
     @Override public void validateForOperation(AccountOperation accountOperation, String policyId) {
@@ -343,7 +341,5 @@ import java.util.*;
         //update
         merkleService.update(merkleTree, BeanConvertor.convertBean(_old, AccountMerkleData.class),
             BeanConvertor.convertBean(_new, AccountMerkleData.class));
-        //flush
-        merkleService.flush(merkleTree);
     }
 }

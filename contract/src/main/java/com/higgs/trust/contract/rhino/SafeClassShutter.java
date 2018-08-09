@@ -1,13 +1,12 @@
 package com.higgs.trust.contract.rhino;
 
 import com.higgs.trust.contract.ExecuteConfig;
+import com.higgs.trust.contract.StateManager;
+import com.higgs.trust.contract.rhino.function.MathFuncs;
+import com.higgs.trust.contract.rhino.types.BigDecimalWrap;
 import org.mozilla.javascript.ClassShutter;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,9 +32,12 @@ public class SafeClassShutter implements ClassShutter {
         buildInClasses.add("java.util.LinkedList");
         buildInClasses.add("java.util.TreeSet");
 
-        buildInClasses.add("com.higgs.trust.contract.StateManager");
         buildInClasses.add("com.alibaba.fastjson.JSONArray");
         buildInClasses.add("com.alibaba.fastjson.JSONObject");
+
+        buildInClasses.add(StateManager.class.getName());
+        buildInClasses.add(MathFuncs.class.getName());
+        buildInClasses.add(BigDecimalWrap.class.getName());
 
     }
 

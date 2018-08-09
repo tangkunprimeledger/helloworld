@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.dao.contract;
 
-import com.higgs.trust.slave.dao.BaseDao;
-import com.higgs.trust.slave.dao.po.contract.AccountContractBindingPO;
+import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.contract.ContractStatePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

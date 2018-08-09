@@ -2,6 +2,7 @@ package commands
 
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
+import com.higgs.trust.consensus.core.ConsensusStateMachine
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
@@ -58,7 +59,6 @@ class node {
     }
 
 
-
     @Usage('show the current height of node')
     @Command
     def height(InvocationContext context,
@@ -97,4 +97,15 @@ class node {
         nodeState.changeState(from, to)
         out.println("State changed to $nodeState.state")
     }
+
+
+    @Usage('start consensus layer')
+    @Command
+    def startConsensus(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def consensusStateMachine = beans.getBean(ConsensusStateMachine.class)
+        consensusStateMachine.start()
+        out.println("start consensus successful")
+    }
+
 }

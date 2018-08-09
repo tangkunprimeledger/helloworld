@@ -1,10 +1,12 @@
 package com.higgs.trust.slave.common.util;
 
-import lombok.extern.slf4j.Slf4j;
+import com.higgs.trust.common.utils.LoggerName;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -23,7 +25,8 @@ import org.springframework.stereotype.Repository;
  * @author pengdi
  * @date
  */
-@Slf4j @Aspect @Repository public class TrustDaoDigestLogInterceptor {
+@Aspect @Repository public class TrustDaoDigestLogInterceptor {
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.DAO_DIGEST_LOGGER);
 
     /**
      * 日志默认值

@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.dao.pack;
 
-import com.higgs.trust.slave.dao.BaseDao;
+import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.pack.PackagePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,6 +17,14 @@ import java.util.Set;
      * @return
      */
     PackagePO queryByHeight(@Param("height") Long height);
+
+    /**
+     * query package list by block height
+     *
+     * @param height
+     * @return
+     */
+    List<Long> queryHeightListByHeight(@Param("height") Long height);
 
     /**
      * query packagePO by height for update

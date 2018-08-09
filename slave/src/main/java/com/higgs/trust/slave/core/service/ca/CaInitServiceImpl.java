@@ -14,31 +14,29 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.util.ConcurrentHashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
+ * @desc ca init service
  * @date 2018/6/5 15:48
  */
 @Service @Slf4j public class CaInitServiceImpl implements CaInitService {
-
-    public static final String PUB_KEY = "pubKey";
-    public static final String PRI_KEY = "priKey";
 
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
     @Autowired private CaInitClient caClient;
     @Autowired private ClusterInfo clusterInfo;
     @Autowired private CaInitHandler caInitHandler;
-
     @Autowired private NodeProperties nodeProperties;
-
-    // TODO 单节点的加入是否也应该和集群初始启动一样，在自检过程中发现没有创世块，自动生成公私钥，然后插入DB？？
 
     /**
      * @return
@@ -90,8 +88,8 @@ import java.util.*;
 
     private List<Action> acquirePubKeys(int retryCount) {
         List<String> nodeList = clusterInfo.clusterNodeNames();
-        Set<String> nodeSet = new ConcurrentHashSet<>();
-        List<Action> caActionList = new LinkedList<>();
+        Set<String> nodeSet = new CopyOnWriteArraySet<>();
+        List<Action> caActionList = new CopyOnWriteArrayList<>();
         log.info(
             "[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKey, nodeList size = {}, nodeList = {}",
             nodeList.size(), nodeList.toString());
@@ -106,14 +104,16 @@ import java.util.*;
             // acquire all nodes' pubKey
             nodeList.forEach((nodeName) -> {
                 try {
-                    if (!nodeSet.contains(nodeName)) {
-                        RespData<String> resp = caClient.caInit(nodeName);
-                        if (resp.isSuccess()) {
-                            CaAction caAction = new CaAction();
-                            caAction.setUser(nodeName);
-                            caAction.setPubKey(resp.getData());
-                            caActionList.add(caAction);
-                            nodeSet.add(nodeName);
+                    synchronized (CaInitServiceImpl.class){
+                        if (!nodeSet.contains(nodeName)) {
+                            RespData<String> resp = caClient.caInit(nodeName);
+                            if (resp.isSuccess()) {
+                                CaAction caAction = new CaAction();
+                                caAction.setUser(nodeName);
+                                caAction.setPubKey(resp.getData());
+                                caActionList.add(caAction);
+                                nodeSet.add(nodeName);
+                            }
                         }
                     }
                 } catch (Throwable e) {
@@ -137,14 +137,13 @@ import java.util.*;
                 "[CaInitServiceImpl.acquirePubKeys] cluster init CA error, can not acquire enough pubKeys");
         }
 
-        log.info("[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}",
-            caActionList.size());
+        log.info(
+            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}, nodeSet size={}, nodeList.size()={}",
+            caActionList.size(), nodeSet.size(), nodeList.size());
         return caActionList;
     }
 
     @Override public RespData<String> initCaTx() {
-        // TODO 公私钥的生成会在集群自检时，发现没有创世块，那么就应该生成公私钥
-
         // acquire pubKey from DB
         Config config = configRepository.getConfig(nodeState.getNodeName());
         if (null == config) {

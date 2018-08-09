@@ -1,0 +1,12 @@
+copycat:
+  server:
+    address: 127.0.0.1:8803
+logging:
+  path: /tmp/consensus3
+management:
+  shell:
+    ssh:
+      port: 2003
+  port: 6063
+server:
+  port: 7073

@@ -13,15 +13,13 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.CompletableFuture;
 
-@Component
-public class Client implements ConsensusClient {
+@Component public class Client implements ConsensusClient {
 
     private static final Logger log = LoggerFactory.getLogger(Client.class);
 
     private ServiceProxy serviceProxy;
 
-    @Value("${bftSmart.systemConfigs.myClientId}")
-    private String myClientId;
+    @Value("${bftSmart.systemConfigs.myClientId}") private String myClientId;
 
     public void init() {
         log.info("-----ServiceProxy init-----");
@@ -37,33 +35,31 @@ public class Client implements ConsensusClient {
             objectOutputStream.writeObject(command);
             objectOutputStream.flush();
             bytes = byteArrayOutputStream.toByteArray();
+            log.debug("service invoke ordered");
             byte[] reply = serviceProxy.invokeOrdered(bytes);
         } catch (Exception e) {
-            log.info("------submit error-----: " + e.getMessage());
+            throw new RuntimeException(e);
         } finally {
             if (objectOutputStream != null) {
                 try {
                     objectOutputStream.close();
                 } catch (IOException e) {
-                    log.error("source close error");
-                    e.printStackTrace();
+                    log.error("source close error", e);
                 }
             }
             if (byteArrayOutputStream != null) {
                 try {
                     byteArrayOutputStream.close();
                 } catch (IOException e) {
-                    log.error("source close error");
+                    log.error("source close error", e);
                 }
             }
         }
     }
 
-    @Override
-    public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
-        CompletableFuture completableFuture = CompletableFuture.completedFuture(null).thenApply(s -> {
+    @Override public <T> CompletableFuture<T> submit(ConsensusCommand<T> command) {
+        CompletableFuture completableFuture = CompletableFuture.runAsync(() -> {
             processingPackage(command);
-            return null;
         });
         return completableFuture;
     }

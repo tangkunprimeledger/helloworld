@@ -3,14 +3,16 @@ package com.higgs.trust.consensus.p2pvalid.core.storage;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.common.utils.TraceUtils;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.dao.*;
 import com.higgs.trust.consensus.p2pvalid.dao.po.*;
+import com.higgs.trust.consensus.p2pvalid.enums.P2pErrorEnum;
+import com.higgs.trust.consensus.p2pvalid.exception.P2pException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -108,9 +110,13 @@ import java.util.concurrent.locks.ReentrantLock;
     }
 
     public void receive(ValidCommandWrap validCommandWrap) {
-        log.info("command receive : {}", validCommandWrap);
+        log.info("command receive : {}", validCommandWrap.getValidCommand().getMessageDigestHash());
+        if (log.isDebugEnabled()) {
+            log.debug("command info:{}", validCommandWrap);
+        }
         if (!nodeState.isState(NodeStateEnum.Running)) {
-            throw new RuntimeException(String.format("the node state is not running, please try again latter"));
+            throw new P2pException(P2pErrorEnum.P2P_NODE_NOT_RUNNING_ERROR,
+                "the node state is not running, please try again latter");
         }
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
 
@@ -173,7 +179,7 @@ import java.util.concurrent.locks.ReentrantLock;
         //signal wait
         applyLock.lock();
         try {
-            log.info("signal the apply thread");
+            log.debug("signal the apply thread");
             applyCondition.signal();
         } finally {
             applyLock.unlock();
@@ -196,7 +202,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedApplyList.forEach((queuedApply) -> {
                     Span span = TraceUtils.createSpan();
                     try {
-                        log.debug("apply:{}",queuedApply);
+                        log.debug("apply:{}", queuedApply);
                         ReceiveCommandPO receiveCommand =
                             receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
                         if (null == receiveCommand) {
@@ -236,7 +242,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedApplyDelayList.forEach((queuedApplyDelay) -> {
                     Span span = TraceUtils.createSpan();
                     try {
-                        log.debug("apply delay :{}",queuedApplyDelay);
+                        log.debug("apply delay :{}", queuedApplyDelay);
                         ReceiveCommandPO receiveCommand =
                             receiveCommandDao.queryByMessageDigest(queuedApplyDelay.getMessageDigest());
                         if (null == receiveCommand) {
@@ -272,7 +278,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
         if (receiveCommand.getStatus().equals(COMMAND_QUEUED_APPLY)) {
             log.info("command not consume by biz, retry app num {}, add command to delay queue : {}",
-                receiveCommand.getRetryApplyNum(), receiveCommand);
+                receiveCommand.getRetryApplyNum(), receiveCommand.getMessageDigest());
             receiveCommandDao.increaseRetryApplyNum(receiveCommand.getMessageDigest());
             Long delayTime = (receiveCommand.getRetryApplyNum() + 1) * delayIncreaseInterval;
             delayTime = Math.min(delayTime, delayDelayMax);
@@ -304,7 +310,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedGc(receiveCommandTemp);
                 log.info(
                     "command has closed by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                    receiveCommandTemp.getReceiveNodeNum(), receiveCommandTemp.getGcThreshold(), receiveCommandTemp);
+                    receiveCommandTemp.getReceiveNodeNum(), receiveCommandTemp.getGcThreshold(), receiveCommandTemp.getMessageDigest());
             }
 
         }
@@ -383,30 +389,35 @@ import java.util.concurrent.locks.ReentrantLock;
     private void checkReceiveStatus(String messageDigest) {
         //re-query db for avoid dirty read
         ReceiveCommandPO receiveCommand = receiveCommandDao.queryByMessageDigest(messageDigest);
-
+        if (log.isDebugEnabled()) {
+            log.debug("command info: {}", receiveCommand);
+        }
         //check status
         if (receiveCommand.getStatus().equals(COMMAND_QUEUED_GC)) {
-            log.warn("command has add to gc : {}", receiveCommand);
+            log.warn("command has add to gc, id:{}, messageDigest:{}", receiveCommand.getId(),
+                receiveCommand.getMessageDigest());
 
         } else if (receiveCommand.getStatus().equals(COMMAND_QUEUED_APPLY)) {
-            log.info("command has queued to apply : {}", receiveCommand);
+            log.info("command has queued to apply, id:{}, messageDigest: {}", receiveCommand.getId(),
+                receiveCommand.getMessageDigest());
 
         } else if (receiveCommand.getStatus().equals(COMMAND_APPLIED)) {
-
             if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getGcThreshold()) {
                 queuedGc(receiveCommand);
                 log.info(
-                    "command has consume by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue : {}",
-                    receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(), receiveCommand);
+                    "command has consume by biz and receive node num :{} >=  gc threshold :{} ,add command to gc queue, messageDigest: {}",
+                    receiveCommand.getReceiveNodeNum(), receiveCommand.getGcThreshold(),
+                    receiveCommand.getMessageDigest());
             }
         } else if (receiveCommand.getStatus().equals(COMMAND_NORMAL)) {
             if (receiveCommand.getReceiveNodeNum() >= receiveCommand.getApplyThreshold()) {
                 queuedApply(receiveCommand);
                 log.info(
-                    "command receive node num : {} >= command apply threshold : {}, add command to apply queue : {}",
-                    receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(), receiveCommand);
+                    "command receive node num : {} >= command apply threshold : {}, add command to apply queue，messageDigest: {}",
+                    receiveCommand.getReceiveNodeNum(), receiveCommand.getApplyThreshold(),
+                    receiveCommand.getMessageDigest());
             } else {
-                log.info("command receive ... {}", receiveCommand);
+                log.info("command receive ... {}", receiveCommand.getMessageDigest());
             }
         }
     }

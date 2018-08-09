@@ -3,7 +3,7 @@ package com.higgs.trust.slave.core.service.contract;
 import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.ContractException;
-import com.higgs.trust.slave.common.util.Profiler;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
 import com.higgs.trust.slave.model.bo.contract.Contract;
