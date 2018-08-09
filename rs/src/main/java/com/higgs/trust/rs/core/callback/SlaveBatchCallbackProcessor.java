@@ -203,7 +203,7 @@ import java.util.Map;
             }
             allList.add(vo);
         }
-        map.put(KEY_ALL, selfList);
+        map.put(KEY_ALL, allList);
         map.put(KEY_SELF, selfList);
         map.put(KEY_OTHER, otherList);
         return map;
