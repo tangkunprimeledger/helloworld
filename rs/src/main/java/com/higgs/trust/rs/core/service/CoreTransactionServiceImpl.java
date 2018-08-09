@@ -16,6 +16,7 @@ import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRule;
+import com.higgs.trust.rs.core.callback.RsCoreBatchCallbackProcessor;
 import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
@@ -62,6 +63,7 @@ import java.util.List;
     @Autowired private PolicyRepository policyRepository;
     @Autowired private BlockChainService blockChainService;
     @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
+    @Autowired private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired private SignServiceImpl signService;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
@@ -393,7 +395,17 @@ import java.util.List;
                 respData.setData(coreTxRepository.convertTxVO(bo));
                 //callback custom rs
                 if (isCallback) {
-                    rsCoreCallbackHandler.onEnd(respData, null);
+                    if(!rsConfig.isBatchCallback()) {
+                        rsCoreCallbackHandler.onEnd(respData, null);
+                    }else{
+                        //for batch interface
+                        RsCoreTxVO vo = BeanConvertor.convertBean(bo,RsCoreTxVO.class);
+                        vo.setStatus(CoreTxStatusEnum.END);
+                        vo.setExecuteResult(CoreTxResultEnum.FAIL);
+                        vo.setErrorCode(respData.getRespCode());
+                        vo.setErrorMsg(respData.getMsg());
+                        rsCoreBatchCallbackProcessor.onEnd(Lists.newArrayList(vo),null);
+                    }
                 }
             }
         });

@@ -52,6 +52,7 @@ import java.util.*;
 
     public void onPersisted(List<RsCoreTxVO> txs, BlockHeader blockHeader) {
         Map<String, List<RsCoreTxVO>> map = parseTx(txs);
+        log.debug("[onPersisted]map:{}",map);
         for (String policyId : map.keySet()) {
             List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -197,6 +198,7 @@ import java.util.*;
      * @param rsCoreTxVOS
      */
     private void processRegisterPolicy(List<RsCoreTxVO> rsCoreTxVOS) {
+        log.debug("[processRegisterPolicy]txs:{}",rsCoreTxVOS);
         List<VoteRule> voteRules = new ArrayList<>();
         for (RsCoreTxVO tx : rsCoreTxVOS) {
             if (tx.getExecuteResult() == CoreTxResultEnum.SUCCESS) {
