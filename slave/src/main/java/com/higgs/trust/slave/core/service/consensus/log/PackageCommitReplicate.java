@@ -85,7 +85,6 @@ import java.util.concurrent.ExecutorService;
 
                 // receive package
                 Package pack = PackageConvert.convertPackVOToPack(vo);
-                boolean isRunning = nodeState.isState(NodeStateEnum.Running);
                 try {
                     packageService.receive(pack);
                     listeners.forEach(listener -> listener.received(pack));
@@ -93,16 +92,6 @@ import java.util.concurrent.ExecutorService;
                     //idempotent as success, other exceptions make the consensus layer retry
                     if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {
                         throw e;
-                    }
-                }
-
-                if (isRunning) {
-                    //async start package process
-                    try {
-
-                        packageThreadPool.execute(new AsyncPackageProcess(pack.getHeight()));
-                    } catch (Throwable e) {
-                        log.error("package's async process failed after package replicated", e);
                     }
                 }
             } finally {
