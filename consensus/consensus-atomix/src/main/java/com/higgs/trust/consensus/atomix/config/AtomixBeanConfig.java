@@ -22,6 +22,7 @@ import io.atomix.primitive.partition.PartitionGroup;
 import io.atomix.primitive.partition.PartitionGroupConfig;
 import io.atomix.primitive.protocol.PrimitiveProtocol;
 import io.atomix.primitive.protocol.PrimitiveProtocolConfig;
+import io.atomix.protocols.raft.partition.RaftPartitionGroup;
 import io.atomix.utils.config.ConfigMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -54,8 +55,9 @@ import java.util.Arrays;
         if (log.isDebugEnabled()) {
             log.debug("registry context class loader:{}", contextClassLoader);
         }
-        return new SpringBeanAtomixRegistry(contextClassLoader, PartitionGroup.Type.class, PrimitiveType.class,
-            PrimitiveProtocol.Type.class, Profile.Type.class, NodeDiscoveryProvider.Type.class);
+        return new SpringBeanAtomixRegistry(contextClassLoader, RaftPartitionGroup.Type.class,
+            PartitionGroup.Type.class, PrimitiveType.class, PrimitiveProtocol.Type.class, Profile.Type.class,
+            NodeDiscoveryProvider.Type.class);
     }
 
     @Bean public AtomixConfig atomixConfig(AtomixRegistry registry) {
