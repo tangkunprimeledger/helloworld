@@ -50,12 +50,20 @@ import java.util.Arrays;
     }
 
     @Bean public AtomixRegistry atomixRegistry() {
-        return new SpringBeanAtomixRegistry(Thread.currentThread().getContextClassLoader(), PartitionGroup.Type.class,
-            PrimitiveType.class, PrimitiveProtocol.Type.class, Profile.Type.class, NodeDiscoveryProvider.Type.class);
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (log.isDebugEnabled()) {
+            log.debug("registry context class loader:{}", contextClassLoader);
+        }
+        return new SpringBeanAtomixRegistry(contextClassLoader, PartitionGroup.Type.class, PrimitiveType.class,
+            PrimitiveProtocol.Type.class, Profile.Type.class, NodeDiscoveryProvider.Type.class);
     }
 
     @Bean public AtomixConfig atomixConfig(AtomixRegistry registry) {
-        ConfigMapper mapper = new PolymorphicConfigMapper(Thread.currentThread().getContextClassLoader(), registry,
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (log.isDebugEnabled()) {
+            log.debug("config context class loader:{}", contextClassLoader);
+        }
+        ConfigMapper mapper = new PolymorphicConfigMapper(contextClassLoader, registry,
             new PolymorphicTypeMapper("type", PartitionGroupConfig.class, PartitionGroup.Type.class),
             new PolymorphicTypeMapper("type", PrimitiveConfig.class, PrimitiveType.class),
             new PolymorphicTypeMapper(null, PrimitiveConfig.class, PrimitiveType.class),

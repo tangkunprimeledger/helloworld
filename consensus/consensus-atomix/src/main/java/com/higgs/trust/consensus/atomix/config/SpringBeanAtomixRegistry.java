@@ -62,8 +62,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
                         Object bean = null;
                         try {
+                            if (log.isDebugEnabled()) {
+                                log.debug("get the bean from context:{}", classInfo.loadClass());
+                            }
                             bean = applicationContext.getBean(classInfo.loadClass());
-                        }catch (NoSuchBeanDefinitionException e){
+                            if (log.isDebugEnabled()) {
+                                log.debug("get the bean:{}, classLoader:{}, NamedType classLoader:{}", bean,
+                                    bean.getClass().getClassLoader(), NamedType.class.getClassLoader());
+                            }
+                        } catch (NoSuchBeanDefinitionException e) {
 
                         }
                         final NamedType instance;
