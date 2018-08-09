@@ -44,8 +44,11 @@ import java.util.concurrent.ConcurrentHashMap;
             CACHE.computeIfAbsent(classLoader, cl -> new ConcurrentHashMap<>());
         final Map<Class<? extends NamedType>, Map<String, NamedType>> registrations =
             mappings.computeIfAbsent(new SpringBeanAtomixRegistry.CacheKey(types), cacheKey -> {
-                final String[] whitelistPackages =
-                    StringUtils.split(System.getProperty("io.atomix.whitelistPackages"), ",");
+                String classpath = System.getProperty("io.atomix.whitelistPackages");
+                if (org.apache.commons.lang3.StringUtils.isBlank(classpath)) {
+                    classpath = "io.atomix";
+                }
+                final String[] whitelistPackages = StringUtils.split(classpath, ",");
                 final ClassGraph classGraph = whitelistPackages != null ?
                     new ClassGraph().enableClassInfo().whitelistPackages(whitelistPackages)
                         .addClassLoader(classLoader) : new ClassGraph().enableClassInfo().addClassLoader(classLoader);
