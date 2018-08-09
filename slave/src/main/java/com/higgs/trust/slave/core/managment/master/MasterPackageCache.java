@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
 
-    private static int BATCH_PACKAGE = 10;
+    private static int BATCH_PACKAGE = 5;
 
     private AtomicLong packHeight = new AtomicLong(0);
     private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();

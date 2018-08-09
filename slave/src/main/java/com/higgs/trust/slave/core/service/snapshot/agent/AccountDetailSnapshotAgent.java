@@ -37,7 +37,7 @@ import java.util.List;
      * @param detail
      */
     public void createAccountDetail(AccountDetail detail) {
-        insert(detail, detail);
+//        insert(detail, detail);
     }
 
     /**
@@ -46,7 +46,7 @@ import java.util.List;
      * @param dcRecord
      */
     public void createAccountDCRecord(AccountDcRecord dcRecord) {
-        insert(dcRecord, dcRecord);
+//        insert(dcRecord, dcRecord);
     }
 
     /**

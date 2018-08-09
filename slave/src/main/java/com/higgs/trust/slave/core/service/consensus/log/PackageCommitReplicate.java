@@ -2,8 +2,6 @@ package com.higgs.trust.slave.core.service.consensus.log;
 
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.consensus.annotation.Replicator;
-import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -37,8 +35,6 @@ import java.util.concurrent.ExecutorService;
     @Autowired ExecutorService packageThreadPool;
 
     @Autowired PackageProcess packageProcess;
-
-    @Autowired private NodeState nodeState;
 
     private ApplicationContext applicationContext;
 
