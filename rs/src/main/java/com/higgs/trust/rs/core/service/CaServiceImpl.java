@@ -71,7 +71,7 @@ import java.util.*;
         log.info("[authKeyPair] start to auth CA pubKey/priKey, nodeName={}", user);
         // CA existence check
         Ca ca = caRepository.getCa(user);
-        if (null != ca) {
+        if (null != ca && ca.isValid()) {
             log.error("[authKeyPair] ca information for node={} already exist, pubKey={}", ca.getUser(),
                 ca.getPubKey());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_ALREADY_EXIST_ERROR,
@@ -81,44 +81,40 @@ import java.util.*;
         // build pubKey and priKey
         CaVO caVO = generateKeyPair();
 
-        try{
+        try {
             // send CA auth request
-            RespData respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
+            RespData respData = null;
+            if (nodeState.isState(NodeStateEnum.Offline)) {
+                log.info("current node is Offline, send tx by other node");
+                respData = caClient.caAuth(nodeState.notMeNodeNameReg(), caVO);
+            }
+            if (nodeState.isState(NodeStateEnum.Running)) {
+                log.info("current node is Running, send tx by self");
+                respData = authCaTx(caVO);
+            }
             if (!respData.isSuccess()) {
                 log.error("send tx error");
                 return FAIL;
             }
-        }catch (HystrixRuntimeException e1){
+        } catch (HystrixRuntimeException e1) {
             log.error("wait timeOut", e1);
-        }catch (Throwable e2){
-            log.error("send ca auth error",e2);
+        } catch (Throwable e2) {
+            log.error("send ca auth error", e2);
             return FAIL;
         }
 
         // insert ca into db (temp)
         ca = new Ca();
         BeanUtils.copyProperties(caVO, ca);
-//        ca.setValid(true);
-        caRepository.insertCa(ca);
-        log.info("isnert ca end (temp)");
-
-       /* try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            log.error("[joinConsensus] error occured while thread sleep", e);
-            return FAIL;
-        }*/
-
-        /*log.info("[joinConsensus] start to transform node status from offline to running");
-        try {
-            nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
-            nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-            nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
-        } catch (Throwable e) {
-            log.error("join consensus error, nodeName = {}",nodeState.getNodeName());
-            return FAIL;
+        if (nodeState.isState(NodeStateEnum.Offline)) {
+            caRepository.insertCa(ca);
+            log.info("insert ca end (temp)");
         }
-        log.info("[joinConsensus] end transform node status from offline to running");*/
+        /*if(nodeState.isState(NodeStateEnum.Running)){
+            //        ca.setValid(true);
+            caRepository.insertCa(ca);
+            log.info("isnert ca end (temp)");
+        }*/
 
         return SUCCESS;
     }
