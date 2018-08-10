@@ -4,33 +4,43 @@
 package com.higgs.trust.consensus.atomix.core.primitive;
 
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
-import io.atomix.primitive.AbstractAsyncPrimitive;
-import io.atomix.primitive.PrimitiveRegistry;
-import io.atomix.primitive.SyncPrimitive;
-import io.atomix.primitive.proxy.ProxyClient;
+import io.atomix.primitive.Synchronous;
+import lombok.extern.slf4j.Slf4j;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author suimi
  * @date 2018/7/6
  */
-public class CommandPrimitive extends AbstractAsyncPrimitive<ICommandPrimitive, ICommandPrimitiveService>
-    implements ICommandPrimitive {
-    protected CommandPrimitive(ProxyClient<ICommandPrimitiveService> client, PrimitiveRegistry registry) {
-        super(client, registry);
+@Slf4j
+public class CommandPrimitive extends Synchronous<IAsyncCommandPrimitive> implements ICommandPrimitive {
+
+    private IAsyncCommandPrimitive asyncCommandPrimitive;
+
+    private final long operationTimeoutMillis;
+
+    public CommandPrimitive(IAsyncCommandPrimitive primitive, long operationTimeoutMillis) {
+        super(primitive);
+        this.asyncCommandPrimitive = primitive;
+        this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
-    @Override public CompletableFuture<Void> submit(AbstractConsensusCommand command) {
-        return getProxyClient().applyBy(name(), service -> service.submit(command));
+    @Override public void submit(AbstractConsensusCommand command) {
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("sync submit");
+            }
+            asyncCommandPrimitive.submit(command).get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            throw new RuntimeException("submit command failed", e);
+        }
     }
 
-    @Override public SyncPrimitive sync() {
-        return null;
-    }
-
-    @Override public SyncPrimitive sync(Duration operationTimeout) {
-        return null;
+    @Override public IAsyncCommandPrimitive async() {
+        if (log.isDebugEnabled()) {
+            log.debug("sync async");
+        }
+        return asyncCommandPrimitive;
     }
 }

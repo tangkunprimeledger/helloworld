@@ -12,5 +12,5 @@ import io.atomix.primitive.operation.Command;
  */
 public interface ICommandPrimitiveService {
 
-    @Command Void submit(AbstractConsensusCommand command);
+    @Command void submit(AbstractConsensusCommand command);
 }

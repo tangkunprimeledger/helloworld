@@ -475,7 +475,7 @@ import java.util.concurrent.Executor;
 
             Profiler.release();
 
-            if (Profiler.getDuration() > 0) {
+            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
                 Profiler.logDump();
             }
         }

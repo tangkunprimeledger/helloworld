@@ -4,11 +4,11 @@
 package com.higgs.trust.consensus.atomix.core.primitive;
 
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
-import io.atomix.primitive.AsyncPrimitive;
+import io.atomix.primitive.SyncPrimitive;
 
-import java.util.concurrent.CompletableFuture;
+public interface ICommandPrimitive extends SyncPrimitive {
 
-public interface ICommandPrimitive extends AsyncPrimitive {
+    void submit(AbstractConsensusCommand command);
 
-    CompletableFuture<Void> submit(AbstractConsensusCommand command);
+    @Override IAsyncCommandPrimitive async();
 }

@@ -37,7 +37,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     private <T extends ResponseCommand> ConcurrentHashMap<String, CommandCounter<T>> sendAndHandle(
         ValidCommand<?> validCommand) {
-        log.debug("sync send command {}", validCommand);
+        if (log.isDebugEnabled()){
+            log.debug("sync send command {}", validCommand);
+        }
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(validCommand.getClass());
         validCommandWrap.setFromNode(clusterInfo.nodeName());
@@ -66,7 +68,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                         }
                     }
                 } catch (Throwable throwable) {
-                    log.error("submit p2p sync commend failed!", throwable);
+                    log.error("submit p2p sync command failed!", throwable);
                 } finally {
                     countDownLatch.countDown();
                 }

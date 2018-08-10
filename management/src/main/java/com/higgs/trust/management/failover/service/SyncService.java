@@ -1,9 +1,9 @@
 package com.higgs.trust.management.failover.service;
 
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
@@ -31,6 +31,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.concurrent.Executors;
 
 @Order(2) @Service @Slf4j public class SyncService implements PackageListener {
 
@@ -45,6 +46,16 @@ import java.util.List;
     @Autowired private ClusterInfoService clusterInfoService;
     @Autowired private TransactionTemplate txNested;
     @Autowired private GeniusBlockService geniusBlockService;
+
+    public void asyncAutoSync() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                autoSync();
+            } catch (Exception e) {
+                log.error("auto sync block failed!", e);
+            }
+        });
+    }
 
     /**
      * 自动同步区块

@@ -13,6 +13,15 @@
       "logDir": "/tmp/higgs/trust/copycat/log1"
     }
   },
+  "atomix": {
+    "address": "127.0.0.1:8801",
+    "cluster": {
+      "TRUST-TEST0": "127.0.0.1:8800",
+      "TRUST-TEST1": "127.0.0.1:8801",
+      "TRUST-TEST2": "127.0.0.1:8802",
+      "TRUST-TEST3": "127.0.0.1:8803"
+    }
+  },
   "eureka": {
     "client": {
       "enabled": true,

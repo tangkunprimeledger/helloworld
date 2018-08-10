@@ -155,9 +155,10 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </logger>
 
-    <logger name="io.atomix.copycat" level="debug" additivity="false">
+    <logger name="io.atomix" level="debug" additivity="false">
         <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
+        <appender-ref ref="CONSOLE"/>
     </logger>
 
 

@@ -1,6 +1,11 @@
 copycat:
   server:
-    cluster: "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803"
+    cluster:
+      node-A: 127.0.0.1:8800
+      node-B: 127.0.0.1:8801
+      node-C: 127.0.0.1:8802
+      node-D: 127.0.0.1:8803
+    address: 127.0.0.1:8800
 eureka:
   client:
     enabled: false

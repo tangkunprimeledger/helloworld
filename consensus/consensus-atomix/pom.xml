@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>consensus-atomix</artifactId>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -19,12 +20,12 @@
         <dependency>
             <groupId>io.atomix</groupId>
             <artifactId>atomix-raft</artifactId>
-            <version>3.0.0-rc1</version>
+            <version>3.0.0-rc8</version>
         </dependency>
         <dependency>
             <groupId>io.atomix</groupId>
             <artifactId>atomix</artifactId>
-            <version>3.0.0-rc1</version>
+            <version>3.0.0-rc8</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
