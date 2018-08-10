@@ -158,6 +158,7 @@ import java.util.Map;
         log.info("[onFailover]batchInsert.coreTx,blockHeight:{}", blockHeader.getHeight());
         try {
             coreTxRepository.batchInsert(allTxs, CoreTxStatusEnum.END, blockHeader.getHeight());
+            callbackCustom = true;
         } catch (RsCoreException e) {
             if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
                 throw e;
