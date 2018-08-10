@@ -21,13 +21,13 @@ public class AccountTxTest{
 
     @Test
     public void test(){
-//        testCreateCurrency();
+        testCreateCurrency();
 //        testOpenAccount();
 //        testIn();
 //        testOut();
 //        testTransafer();
 //        testFreeze();
-        testUnFreeze();
+//        testUnFreeze();
     }
     /**
      * 创建币种

@@ -16,7 +16,7 @@ public interface CaService {
      * @return
      * @desc generate pubKey and PriKey ,then insert into db
      */
-    void authKeyPair(String user);
+    String authKeyPair(String user);
 
     /**
      * @param

@@ -120,7 +120,7 @@ import java.util.List;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
 
         if (null == initPolicyEnum) {
-            log.error("cannot acquire policy, policyId={}", policyId);
+            log.warn("cannot acquire policy, policyId={}", policyId);
             return null;
         }
         return initPolicyEnum.getType();

@@ -60,8 +60,8 @@ import java.util.List;
 
     @Autowired private SystemPropertyHandler systemPropertyHandler;
 
-    @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
-        RespData respData = new RespData();
+    @Override public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
+        RespData<List<TransactionVO>> respData = new RespData();
         List<TransactionVO> transactionVOList;
         // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
@@ -260,4 +260,56 @@ import java.util.List;
         return blockRepository.getBlockHeader(blockRepository.getMaxHeight());
     }
 
+    @Override public Long getMaxBlockHeight() {
+        return blockRepository.getMaxHeight();
+    }
+
+    @Override public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
+        if (null == req) {
+            return null;
+        }
+        //less than minimum，use default value
+        Integer minNo = 0;
+        if (null == req.getPageNo() || req.getPageNo().compareTo(minNo) <= 0) {
+            req.setPageNo(1);
+        }
+        //over the maximum，use default value
+        Integer maxSize = 100;
+        if (null == req.getPageSize() || req.getPageSize().compareTo(maxSize) == 1) {
+            req.setPageSize(20);
+        }
+        return blockRepository
+            .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+    }
+
+    @Override public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
+        if (null == req) {
+            return null;
+        }
+        //less than minimum，use default value
+        Integer minNo = 0;
+        if (null == req.getPageNo() || req.getPageNo().compareTo(minNo) <= 0) {
+            req.setPageNo(1);
+        }
+        //over the maximum，use default value
+        Integer maxSize = 100;
+        if (null == req.getPageSize() || req.getPageSize().compareTo(maxSize) == 1) {
+            req.setPageSize(20);
+        }
+        return transactionRepository
+            .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
+                req.getPageSize());
+    }
+
+    @Override public BlockVO queryBlockByHeight(Long height) {
+        return blockRepository.queryBlockByHeight(height);
+    }
+
+    @Override public CoreTransactionVO queryTxById(String txId) {
+        return transactionRepository.queryTxById(txId);
+    }
+
+    @Override public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
+        return transactionRepository.queryTxs(txIds);
+    }
 }

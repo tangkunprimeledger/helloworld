@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.ContractService;
@@ -15,8 +16,8 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
+import com.higgs.trust.slave.api.vo.QueryContractVO;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -35,7 +36,9 @@ import java.util.List;
  * @author duhongming
  * @date 2018/5/14
  */
-@Service @Slf4j public class ContractServiceImpl implements ContractService {
+@Service
+@Slf4j
+public class ContractServiceImpl implements ContractService {
 
     @Autowired
     private NodeState nodeState;
@@ -125,6 +128,26 @@ import java.util.List;
         result.setTotal(contractRepository.queryCount(height, txId));
         List<com.higgs.trust.slave.model.bo.contract.Contract> list = contractRepository.query(height, txId, pageIndex, pageSize);
         result.setData(BeanConvertor.convertList(list, ContractVO.class));
+        return result;
+    }
+
+    @Override
+    public List<ContractVO> queryContractsByPage(QueryContractVO req) {
+        if (null == req) {
+            return null;
+        }
+        //less than minimum，use default value
+        Integer minNo = 0;
+        if (null == req.getPageNo() || req.getPageNo().compareTo(minNo) <= 0) {
+            req.setPageNo(1);
+        }
+        //over the maximum，use default value
+        Integer maxSize = 100;
+        if (null == req.getPageSize() || req.getPageSize().compareTo(maxSize) == 1) {
+            req.setPageSize(20);
+        }
+        List<com.higgs.trust.slave.model.bo.contract.Contract> list = contractRepository.query(req.getHeight(), req.getTxId(), req.getPageNo(), req.getPageSize());
+        List<ContractVO> result = BeanConvertor.convertList(list, ContractVO.class);
         return result;
     }
 

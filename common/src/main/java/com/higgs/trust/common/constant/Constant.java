@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.common.constant;
+package com.higgs.trust.common.constant;
 
 public class Constant {
     public static final String APP_NAME = "slave";
@@ -23,10 +23,12 @@ public class Constant {
 
     public static final Long GENESIS_HEIGHT = 1L;
 
-    public static final int MAX_BLOCKING_QUEUE_SIZE = 100000;
+    public static final int MAX_BLOCKING_QUEUE_SIZE = 1000;
 
-    public static final int MAX_PENDING_TX_QUEUE_SIZE = 200000;
+    public static final int MAX_PENDING_TX_QUEUE_SIZE = 20000;
 
-    public static final int MAX_EXIST_MAP_SIZE = 100000;
+    public static final int MAX_EXIST_MAP_SIZE = 50000;
+
+    public static final int PERF_LOG_THRESHOLD = 30000;
 
 }

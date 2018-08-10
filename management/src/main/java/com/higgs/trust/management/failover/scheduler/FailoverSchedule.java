@@ -1,5 +1,7 @@
 package com.higgs.trust.management.failover.scheduler;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.management.exception.FailoverExecption;
@@ -66,8 +68,10 @@ import java.util.List;
                 nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
             }
             log.error("failover block error：{}", e.getCode().getDescription(), e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.FAILOVER_BLOCK_ERROR, 1);
         } catch (Exception e) {
             log.error("failover error", e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.FAILOVER_BLOCK_ERROR, 1);
         }
     }
 
@@ -194,7 +198,7 @@ import java.util.List;
         PackContext packContext = packageService.createPackContext(pack);
         txNested.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                packageService.process(packContext, true,false);
+                packageService.process(packContext, true, false);
             }
         });
     }

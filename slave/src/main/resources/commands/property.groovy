@@ -17,6 +17,16 @@ import org.springframework.beans.factory.BeanFactory
 @Usage("about system property operation")
 class property {
 
+    @Usage('get system property')
+    @Command
+    def get(InvocationContext context, @Usage("property key")
+    @Required @Argument String key) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def systemPropertyHandler = beans.getBean(SystemPropertyHandler.class)
+        def msg = systemPropertyHandler.get(key)
+        out.println(msg)
+    }
+
     @Usage('add system property')
     @Command
     def add(InvocationContext context, @Usage("property key")

@@ -1,10 +1,10 @@
 package com.higgs.trust.rs.core.api;
 
-import com.higgs.trust.rs.core.bo.Contract;
 import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
 import com.higgs.trust.rs.core.bo.ContractQueryRequest;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
+import com.higgs.trust.slave.api.vo.QueryContractVO;
 import com.higgs.trust.slave.api.vo.RespData;
 
 import java.util.List;
@@ -16,6 +16,7 @@ import java.util.List;
 public interface ContractService {
     /**
      * deploy contract
+     *
      * @param txId
      * @param code
      * @return
@@ -24,16 +25,28 @@ public interface ContractService {
 
     /**
      * query contract list
+     *
      * @param height
      * @param txId
      * @param pageIndex
      * @param pageSize
      * @return
      */
+    @Deprecated
     PageVO<ContractVO> queryList(Long height, String txId, Integer pageIndex, Integer pageSize);
+
+
+    /**
+     * query contract list
+     *
+     * @param queryContractVO
+     * @return
+     */
+    List<ContractVO> queryContractsByPage(QueryContractVO queryContractVO);
 
     /**
      * invoke contract
+     *
      * @param txId
      * @param address
      * @param args
@@ -42,6 +55,7 @@ public interface ContractService {
 
     /**
      * migration contract state
+     *
      * @param migrationRequest
      * @return
      */
@@ -49,6 +63,7 @@ public interface ContractService {
 
     /**
      * query contract state
+     *
      * @param request
      * @return
      */

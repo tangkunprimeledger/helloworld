@@ -1,11 +1,8 @@
 package commands
 
-import com.higgs.trust.rs.core.api.CaService
-import com.higgs.trust.slave.core.service.ca.CaInitService
+import com.higgs.trust.rs.core.service.NodeConsensusService
 import lombok.extern.slf4j.Slf4j
-import org.crsh.cli.Argument
 import org.crsh.cli.Command
-import org.crsh.cli.Required
 import org.crsh.cli.Usage
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory
@@ -17,61 +14,23 @@ import org.springframework.beans.factory.BeanFactory
  */
 
 @Slf4j
-@Usage("ca information")
-class ca {
-
-    @Usage('query CA')
+@Usage("cluster config")
+class cluster {
+    @Usage('join consensus layer')
     @Command
-    def acquireCA(InvocationContext context,
-                  @Usage("user") @Required @Argument String user) {
+    def joinConsensus(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def caService = beans.getBean(CaService.class)
-        def ca = caService.getCa(user)
-        if (ca) {
-            out.println("acquire CA successful, user= $ca.user, pubKey= $ca.pubKey")
-        } else {
-            out.println("acquire CA error, user= $user")
-        }
+        def nodeService = beans.getBean(NodeConsensusService.class)
+        def result = nodeService.joinConsensus()
+        out.println("join consensus layer result= $result")
     }
 
-
-    @Usage('auth CA')
+    @Usage('leave consensus layer')
     @Command
-    def authCA(InvocationContext context,
-               @Usage("user") @Required @Argument String user) {
+    def leaveConsensus(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def caService = beans.getBean(CaService.class)
-        caService.authKeyPair(user)
-        out.println("send CA auth tx successful, user= $user")
+        def nodeService = beans.getBean(NodeConsensusService.class)
+        def result = nodeService.leaveConsensus()
+        out.println("leave consensus layer result= $result")
     }
-
-    @Usage('update CA')
-    @Command
-    def updateCA(InvocationContext context,
-                 @Usage("user") @Required @Argument String user) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def caService = beans.getBean(CaService.class)
-        caService.updateKeyPair(user)
-        out.println("send CA update tx successful, user= $user")
-    }
-
-    @Usage('cancel CA')
-    @Command
-    def cancelCA(InvocationContext context,
-                 @Usage("user") @Required @Argument String user) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def caService = beans.getBean(CaService.class)
-        caService.cancelKeyPair(user)
-        out.println("send CA cancel tx successful, user= $user")
-    }
-
-    @Usage('init CA')
-    @Command
-    def initCA(InvocationContext context) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def caInitService = beans.getBean(CaInitService.class)
-        caInitService.initStart()
-        out.println("send CA init tx successful")
-    }
-
 }

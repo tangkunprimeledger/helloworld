@@ -63,6 +63,24 @@ public class SystemPropertyHandler {
 
 
     /**
+     * query System Property by key  for command
+     *
+     * @param key
+     * @return
+     */
+    public String get(String key) {
+        if (StringUtils.isBlank(key)) {
+            return "Key can not be null!";
+        }
+        SystemPropertyVO systemPropertyVO = querySystemPropertyByKey(key);
+        if (null == systemPropertyVO) {
+            return "There is no system property value for key =" + key;
+        }
+        return "key = " + key + " value = " + systemPropertyVO.getValue();
+    }
+
+
+    /**
      * add property into db
      *
      * @param key
@@ -73,7 +91,7 @@ public class SystemPropertyHandler {
     public String add(String key, String value, String desc) {
         //check arguments
         if (StringUtils.isBlank(key) || StringUtils.isBlank(value)) {
-            log.error("key and value can not be null. key = {},value = {}", key, value);
+            log.error("Key and value can not be null. key = {},value = {}", key, value);
             return "Add property into system failed! Key or value can not be null. key = " + key + " ,value = " + value;
         }
 
@@ -104,7 +122,7 @@ public class SystemPropertyHandler {
     public String update(String key, String value) {
         //check arguments
         if (StringUtils.isBlank(key) || StringUtils.isBlank(value)) {
-            log.error("key and value can not be null. key = {},value = {}", key, value);
+            log.error("Key and value can not be null. key = {},value = {}", key, value);
             return "Update property into system failed! Key or value can not be null. key = " + key + " ,value = " + value;
         }
 

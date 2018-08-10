@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.core.service.action;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -11,6 +13,7 @@ import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
@@ -44,7 +47,8 @@ import java.util.List;
                 @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
 
                     log.info("[process] transaction start, insert genius block into db");
-                    blockRepository.saveBlock(block, null);
+                    List<TransactionReceipt> txReceipts = buildtxReceipts(block);
+                    blockRepository.saveBlock(block, txReceipts);
 
                     log.info("[process]insert clusterNode information into db");
                     saveClusterNode(block);
@@ -58,6 +62,7 @@ import java.util.List;
             });
         } catch (Throwable e) {
             log.error("[process] store ca init data error", e);
+            MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_GENERATE_GENIUS_BLOCK_ERROR, 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR, "[process] store ca init data error", e);
         }
     }
@@ -118,5 +123,14 @@ import java.util.List;
         List<SignedTransaction> signedTransactionList = block.getSignedTxList();
         CoreTransaction coreTransaction = signedTransactionList.get(0).getCoreTx();
         return coreTransaction.getActionList();
+    }
+
+    private List<TransactionReceipt> buildtxReceipts(Block block) {
+        List<TransactionReceipt> txReceipts = new LinkedList();
+        TransactionReceipt transactionReceipt = new TransactionReceipt();
+        transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
+        transactionReceipt.setResult(true);
+        txReceipts.add(transactionReceipt);
+        return txReceipts;
     }
 }

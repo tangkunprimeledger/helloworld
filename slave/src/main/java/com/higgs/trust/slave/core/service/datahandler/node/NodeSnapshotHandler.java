@@ -1,12 +1,12 @@
 package com.higgs.trust.slave.core.service.datahandler.node;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
-import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
-import com.higgs.trust.slave.dao.po.ca.CaPO;
-import com.higgs.trust.slave.model.bo.ca.Ca;
-import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
+import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
+import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
+import com.higgs.trust.slave.model.bo.config.ClusterConfig;
+import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,99 +19,67 @@ import org.springframework.stereotype.Service;
 @Service @Slf4j public class NodeSnapshotHandler implements NodeHandler {
 
     @Autowired private CaSnapshotAgent caSnapshotAgent;
-    @Autowired MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
-    @Autowired NodeState nodeState;
+    @Autowired private NodeState nodeState;
 
-    /**
-     * @param ca
-     * @return
-     * @desc insert CA into cache
-     */
-    @Override public void authCa(Ca ca) {
-        // operate merkle tree
-        check(ca);
-        if (null != caSnapshotAgent.getCa(ca.getUser())) {
-            caSnapshotAgent.updateCa(ca);
-        } else {
-            caSnapshotAgent.saveCa(ca);
-        }
-
-        /*ClusterNode clusterNode = new ClusterNode();
-        clusterNode.setNodeName(ca.getUser());
+    @Override public void nodeJoin(ClusterNode clusterNode) {
         clusterNode.setP2pStatus(true);
         clusterNode.setRsStatus(false);
-        if (null == caSnapshotAgent.getClusterNode(ca.getUser())) {
+        if (log.isDebugEnabled()) {
+            log.debug("[nodeJoin] start to update clusterNodeInfo, clusterNode={}", JSON.toJSONString(clusterNode));
+        }
+
+        ClusterNodePO clusterNodeCache = caSnapshotAgent.getClusterNode(clusterNode.getNodeName());
+
+        if (null == clusterNodeCache) {
             caSnapshotAgent.saveClusterNode(clusterNode);
         } else {
             caSnapshotAgent.updateClusterNode(clusterNode);
         }
 
-        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
-        ClusterConfig clusterConfig = new ClusterConfig();
-        clusterConfig.setClusterName(clusterConfigPO.getClusterName());
-        clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() + 1);
-        clusterConfig.setFaultNum(clusterConfigPO.getNodeNum() / 3);
-        caSnapshotAgent.updateClusterConfig(clusterConfig);*/
-
-    }
-
-    /**
-     * @param ca
-     * @return
-     * @desc update CA information
-     */
-    @Override public void updateCa(Ca ca) {
-        // operate merkle tree
-        check(ca);
-
-        caSnapshotAgent.updateCa(ca);
-    }
-
-    /**
-     * @param ca
-     * @return
-     * @desc cancel CA information
-     */
-    @Override public void cancelCa(Ca ca) {
-        log.info("[cancelCa] start to cancel CA, user={}", ca.getUser());
-
-        // operate merkle tree
-        check(ca);
-
-        log.info("[cancelCa] start to update CA to invalid, user={}", ca.getUser());
-        caSnapshotAgent.updateCa(ca);
-
-        /*ClusterNode clusterNode = new ClusterNode();
-        clusterNode.setNodeName(ca.getUser());
-        clusterNode.setP2pStatus(false);
-        clusterNode.setRsStatus(false);
-        log.info("[cancelCa] start to update clusterNodeInfo, user={}", ca.getUser());
-        caSnapshotAgent.updateClusterNode(clusterNode);
-
-        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
-        ClusterConfig clusterConfig = new ClusterConfig();
-        clusterConfig.setClusterName(clusterConfigPO.getClusterName());
-        clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() - 1);
-        clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
-        log.info("[cancelCa] start to update clusterConfigInfo, user={}", ca.getUser());
-        caSnapshotAgent.updateClusterConfig(clusterConfig);*/
-    }
-
-    /**
-     * @param nodeName
-     * @return Ca
-     * @desc get CA information by nodeName
-     */
-    @Override public CaPO getCa(String nodeName) {
-        return caSnapshotAgent.getCa(nodeName);
-    }
-
-    private void check(Ca ca) {
-        MerkleTree merkleTree = (MerkleTree)merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CA);
-        if (null != merkleTree) {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, ca);
-        } else {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
+        if (null == clusterNodeCache || clusterNodeCache.isP2pStatus() == false) {
+            ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
+            ClusterConfig clusterConfig = new ClusterConfig();
+            clusterConfig.setClusterName(clusterConfigPO.getClusterName());
+            clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() + 1);
+            clusterConfig.setFaultNum(clusterConfigPO.getNodeNum() / 3);
+            if (log.isDebugEnabled()) {
+                log.debug("[nodeJoin] start to update clusterConfigInfo, clusterConfig={}",
+                    JSON.toJSONString(clusterConfig));
+            }
+            caSnapshotAgent.updateClusterConfig(clusterConfig);
         }
+
+    }
+
+    @Override public void nodeLeave(ClusterNode clusterNode) {
+
+        ClusterNodePO clusterNodeCache = caSnapshotAgent.getClusterNode(clusterNode.getNodeName());
+
+        if (log.isDebugEnabled()) {
+            log.debug("[nodeLeave] start to update clusterNodeInfo, clusterNodeCache={}",
+                JSON.toJSONString(clusterNodeCache));
+        }
+
+        if (clusterNodeCache.isP2pStatus() == true) {
+            clusterNode.setP2pStatus(false);
+            clusterNode.setRsStatus(false);
+            if (log.isDebugEnabled()) {
+                log.debug("[nodeLeave] start to update clusterNodeInfo, clusterNode={}",
+                    JSON.toJSONString(clusterNode));
+            }
+            caSnapshotAgent.updateClusterNode(clusterNode);
+
+            ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
+            ClusterConfig clusterConfig = new ClusterConfig();
+            clusterConfig.setClusterName(clusterConfigPO.getClusterName());
+            clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() - 1);
+            clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
+            if (log.isDebugEnabled()) {
+                log.debug("[nodeLeave] start to update clusterConfigInfo, clusterConfig={}",
+                    JSON.toJSONString(clusterConfig));
+            }
+            caSnapshotAgent.updateClusterConfig(clusterConfig);
+        }
+
     }
 }

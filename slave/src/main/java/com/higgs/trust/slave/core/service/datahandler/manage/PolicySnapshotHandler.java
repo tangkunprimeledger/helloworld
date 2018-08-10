@@ -61,13 +61,7 @@ public class PolicySnapshotHandler implements PolicyHandler {
 
     @Override public void registerPolicy(RegisterPolicy registerPolicy) {
         Policy policy = manageSnapshotAgent.registerPolicy(registerPolicy);
-
-        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.POLICY);
-        if (null == merkleTree) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.POLICY, new Object[]{policy});
-        } else {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, policy);
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.POLICY, policy);
     }
 
     private Policy convertPolicyPOToPolicy(PolicyPO policyPO) {

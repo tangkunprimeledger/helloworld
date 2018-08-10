@@ -11,14 +11,15 @@ CREATE TABLE IF NOT EXISTS `core_transaction` (
 	`lock_time` datetime(3) DEFAULT NULL COMMENT 'the lock time create the tx . use in rs and slave to deal tx',
 	`sender` VARCHAR (32) NOT NULL COMMENT 'the rsId if the sender  for the tx',
 	`version` VARCHAR (32) NOT NULL COMMENT 'the version create the tx',
-	`biz_model` MEDIUMTEXT DEFAULT NULL COMMENT 'the save data create the biz',
-	`action_datas` varchar(4096) DEFAULT NULL COMMENT 'the action datas for tx',
+	`biz_model` TEXT DEFAULT NULL COMMENT 'the save data create the biz',
+	`action_datas` TEXT DEFAULT NULL COMMENT 'the action datas for tx',
 	`sign_datas` varchar(4096) NOT NULL COMMENT 'the signature for tx',
 	`status` VARCHAR (32) NOT NULL COMMENT 'the status create the row: 1.INIT 2.NEED_VOTE/WAIT 3.PERSISTED 4.END',
 	`execute_result` varchar (24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
 	`error_msg` varchar(256) DEFAULT NULL COMMENT 'tx execute error msg',
 	`send_time` datetime(3) NOT NULL COMMENT 'tx send time',
+	`block_height` BIGINT (20) DEFAULT '0' COMMENT 'the block height',
 	`create_time` datetime(3) NOT NULL COMMENT 'create time',
 	`update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
@@ -75,3 +76,16 @@ CREATE TABLE IF NOT EXISTS `biz_type` (
 	UNIQUE KEY `uniq_policy_id` (`policy_id`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table of business type';
 
+
+CREATE TABLE IF NOT EXISTS `request` (
+	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+	`request_id` VARCHAR (64) NOT NULL COMMENT 'request id',
+	`data` varchar(12288) NULL COMMENT 'the request data',
+	`status` VARCHAR(32) NOT NULL COMMENT 'request status',
+	`resp_code` VARCHAR(10) DEFAULT NULL COMMENT 'response code',
+	`resp_msg` varchar(2048) DEFAULT NULL COMMENT 'response msg',
+	`create_time` datetime (3) NOT NULL COMMENT 'the create time',
+	`update_time` datetime (3) NOT NULL COMMENT 'the update time',
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `uniq_request_id` (`request_id`)
+) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table request';

@@ -1,7 +1,9 @@
 package com.higgs.trust.rs.core.service;
 
 import com.google.common.collect.Lists;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -14,6 +16,7 @@ import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRule;
+import com.higgs.trust.rs.core.callback.RsCoreBatchCallbackProcessor;
 import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
@@ -60,6 +63,7 @@ import java.util.List;
     @Autowired private PolicyRepository policyRepository;
     @Autowired private BlockChainService blockChainService;
     @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
+    @Autowired private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired private SignServiceImpl signService;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
@@ -85,6 +89,7 @@ import java.util.List;
             respData = new RespData();
             respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
             respData.setMsg("tx handle timeout");
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_WAIT_TIME_OUT_ERROR.getMonitorTarget(), 200);
         }
 
         return respData;
@@ -107,8 +112,8 @@ import java.util.List;
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
         if (initPolicyEnum == null) {
             String bizType = bizTypeService.getByPolicyId(coreTx.getPolicyId());
-            if(StringUtils.isEmpty(bizType)){
-                log.error("[submitTx] get bizType is null,policyId:{}",coreTx.getPolicyId());
+            if (StringUtils.isEmpty(bizType)) {
+                log.error("[submitTx] get bizType is null,policyId:{}", coreTx.getPolicyId());
                 throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONFIGURATION_ERROR);
             }
         }
@@ -127,7 +132,7 @@ import java.util.List;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
         //save to db
-        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), CoreTxStatusEnum.INIT);
+        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), CoreTxStatusEnum.INIT,0L);
         //process by async
         txProcessExecutorPool.execute(new Runnable() {
             @Override public void run() {
@@ -160,7 +165,7 @@ import java.util.List;
                 if (policy == null) {
                     log.error("[processInitTx]get policy is null by policyId:{}", policyId);
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED,true);
+                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED, true);
                     return;
                 }
                 // vote rule
@@ -179,7 +184,7 @@ import java.util.List;
                 if (voteRule == null) {
                     log.error("[processInitTx]get voteRule is null by policyId:{}", policyId);
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR,true);
+                        RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR, true);
                     return;
                 }
                 //check rs ids
@@ -189,14 +194,14 @@ import java.util.List;
                     if (initPolicyEnum == InitPolicyEnum.REGISTER_POLICY || initPolicyEnum == InitPolicyEnum.REGISTER_RS
                         || initPolicyEnum == InitPolicyEnum.CA_AUTH || initPolicyEnum == InitPolicyEnum.CA_UPDATE
                         || initPolicyEnum == InitPolicyEnum.CA_CANCEL || initPolicyEnum == InitPolicyEnum.CANCEL_RS
-                        || initPolicyEnum == InitPolicyEnum.NA
-                        ) {
+                        || initPolicyEnum == InitPolicyEnum.NA || initPolicyEnum == InitPolicyEnum.NODE_JOIN
+                        || initPolicyEnum == InitPolicyEnum.NODE_LEAVE) {
                         //still submit to slave
                         coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
                         return;
                     } else {
                         toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
-                            RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR,true);
+                            RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR, true);
                         return;
                     }
                 }
@@ -205,7 +210,7 @@ import java.util.List;
                 if (votePattern == null) {
                     log.error("[processInitTx]votePattern is empty");
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
-                        RsCoreErrorEnum.RS_CORE_VOTE_PATTERN_NOT_EXISTS_ERROR,true);
+                        RsCoreErrorEnum.RS_CORE_VOTE_PATTERN_NOT_EXISTS_ERROR, true);
                     return;
                 }
                 //get need voters from saved sign info
@@ -214,6 +219,8 @@ import java.util.List;
                     log.warn("[processInitTx]need voters is empty txId:{}", bo.getTxId());
                     //still submit to slave
                     coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+                    finalTx[0] = bo;
+                    finalVotePattern[0] = votePattern;
                     return;
                 }
                 //request voting
@@ -249,7 +256,8 @@ import java.util.List;
                     boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
                     log.info("[processInitTx]decision:{}", decision);
                     if (!decision) {
-                        toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,true);
+                        toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,
+                            true);
                         return;
                     }
                     //change status to WAIT for SYNC pattern
@@ -270,6 +278,7 @@ import java.util.List;
             //submit by async
             txSubmitExecutorPool.execute(new Runnable() {
                 @Override public void run() {
+                    log.info("submitToSlave by signal");
                     submitToSlave(Lists.newArrayList(finalTx[0]));
                 }
             });
@@ -299,14 +308,14 @@ import java.util.List;
                 if (policy == null) {
                     log.error("[processNeedVoteTx]get policy is null by policyId:{}", policyId);
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
-                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED,true);
+                        RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED, true);
                     return;
                 }
                 List<String> rsIds = policy.getRsIds();
                 if (CollectionUtils.isEmpty(rsIds)) {
                     log.error("[processNeedVoteTx]rsIds is empty by txId:{}", bo.getTxId());
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE,
-                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR,true);
+                        RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR, true);
                     return;
                 }
                 //query receipts by txId
@@ -317,8 +326,8 @@ import java.util.List;
                 }
                 //filter self
                 List<String> lastRsIds = new ArrayList<>();
-                for(String rsName : rsIds){
-                    if(!StringUtils.equals(rsName,rsConfig.getRsName())){
+                for (String rsName : rsIds) {
+                    if (!StringUtils.equals(rsName, rsConfig.getRsName())) {
                         lastRsIds.add(rsName);
                     }
                 }
@@ -331,13 +340,14 @@ import java.util.List;
                 boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
                 log.info("[processNeedVoteTx]decision:{}", decision);
                 if (!decision) {
-                    toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,true);
+                    toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,
+                        true);
                     return;
                 }
                 List<SignInfo> signInfos = voteService.getSignInfos(receipts);
                 List<SignInfo> lastSigns = bo.getSignDatas();
-                for(SignInfo signInfo : lastSigns){
-                    if(StringUtils.equals(rsConfig.getRsName(),signInfo.getOwner())){
+                for (SignInfo signInfo : lastSigns) {
+                    if (StringUtils.equals(rsConfig.getRsName(), signInfo.getOwner())) {
                         signInfos.add(signInfo);
                         break;
                     }
@@ -357,11 +367,12 @@ import java.util.List;
      * @param from
      * @param rsCoreErrorEnum
      */
-    private void toEndOrCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RsCoreErrorEnum rsCoreErrorEnum,boolean isCallback) {
+    private void toEndOrCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RsCoreErrorEnum rsCoreErrorEnum,
+        boolean isCallback) {
         RespData respData = new RespData();
         respData.setCode(rsCoreErrorEnum.getCode());
         respData.setMsg(rsCoreErrorEnum.getDescription());
-        toEndOrCallBackByError(bo, from, respData,isCallback);
+        toEndOrCallBackByError(bo, from, respData, isCallback);
     }
 
     /**
@@ -371,19 +382,30 @@ import java.util.List;
      * @param from
      * @param respData
      */
-    private void toEndOrCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RespData respData,boolean isCallback) {
+    private void toEndOrCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RespData respData, boolean isCallback) {
         log.info("[toEndOrCallBackByError]tx:{},from:{},respData:{}", bo, from, respData);
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 //save execute result and error code
                 String txId = bo.getTxId();
-                coreTxRepository.saveExecuteResult(txId, CoreTxResultEnum.FAIL, respData.getRespCode(),respData.getMsg());
+                coreTxRepository
+                    .saveExecuteResult(txId, CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg());
                 //update status from 'from' to END
                 coreTxRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
                 respData.setData(coreTxRepository.convertTxVO(bo));
                 //callback custom rs
-                if(isCallback) {
-                    rsCoreCallbackHandler.onEnd(respData,null);
+                if (isCallback) {
+                    if(!rsConfig.isBatchCallback()) {
+                        rsCoreCallbackHandler.onEnd(respData, null);
+                    }else{
+                        //for batch interface
+                        RsCoreTxVO vo = BeanConvertor.convertBean(bo,RsCoreTxVO.class);
+                        vo.setStatus(CoreTxStatusEnum.END);
+                        vo.setExecuteResult(CoreTxResultEnum.FAIL);
+                        vo.setErrorCode(respData.getRespCode());
+                        vo.setErrorMsg(respData.getMsg());
+                        rsCoreBatchCallbackProcessor.onEnd(Lists.newArrayList(vo),null);
+                    }
                 }
             }
         });
@@ -401,7 +423,7 @@ import java.util.List;
      */
     @Override public void submitToSlave() {
         //max size
-        int maxSize = 20;
+        int maxSize = 200;
         List<CoreTransactionPO> list = coreTxRepository.queryByStatus(CoreTxStatusEnum.WAIT, 0, maxSize);
         if (CollectionUtils.isEmpty(list)) {
             return;
@@ -415,12 +437,12 @@ import java.util.List;
     }
 
     @Override public RsCoreTxVO queryCoreTx(String txId) {
-        CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(txId,false);
-        if(coreTransactionPO == null){
+        CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(txId, false);
+        if (coreTransactionPO == null) {
             return null;
         }
         CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
-        RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO,RsCoreTxVO.class);
+        RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO, RsCoreTxVO.class);
         coreTxVO.setStatus(CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()));
         coreTxVO.setExecuteResult(CoreTxResultEnum.formCode(coreTransactionPO.getExecuteResult()));
         coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
@@ -436,15 +458,17 @@ import java.util.List;
     private void submitToSlave(List<CoreTxBO> boList) {
         List<SignedTransaction> txs = makeTxs(boList);
         try {
-            log.info("[submitToSlave] start");
-            RespData respData = blockChainService.submitTransactions(txs);
+            log.debug("[submitToSlave] start");
+            RespData<List<TransactionVO>> respData = blockChainService.submitTransactions(txs);
             if (respData.getData() == null) {
-                log.info("[submitToSlave] end");
+                log.debug("[submitToSlave] end");
                 return;
             }
             //has fail tx
-            List<TransactionVO> txsOfFail = (List<TransactionVO>)respData.getData();
-            log.info("[submitToSlave] has fail tx:{}", txsOfFail);
+            List<TransactionVO> txsOfFail = respData.getData();
+            if (log.isDebugEnabled()) {
+                log.debug("[submitToSlave] tx result:{}", txsOfFail);
+            }
             for (TransactionVO txVo : txsOfFail) {
                 //dont need
                 if (!txVo.getRetry()) {
@@ -457,7 +481,7 @@ import java.util.List;
                     mRes.setMsg(txVo.getErrMsg());
                     try {
                         //require db-transaction and try self
-                        toEndOrCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes,true);
+                        toEndOrCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes, true);
                     } catch (Throwable e) {
                         log.error("[submitToSlave.toEndOrCallBackByError] has error", e);
                     }
@@ -465,8 +489,10 @@ import java.util.List;
             }
         } catch (SlaveException e) {
             log.error("[submitToSlave] has slave error", e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 10);
         } catch (Throwable e) {
             log.error("[submitToSlave] has unknown error", e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 10);
         }
     }
 

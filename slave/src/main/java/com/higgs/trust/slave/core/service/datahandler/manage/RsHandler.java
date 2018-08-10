@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.datahandler.manage;
 
-import com.higgs.trust.slave.model.bo.manage.CancelRS;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;

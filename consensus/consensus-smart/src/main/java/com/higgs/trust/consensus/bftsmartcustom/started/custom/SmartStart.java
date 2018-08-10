@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class SmartStart implements ConsensusStateMachine, ApplicationListener<ApplicationReadyEvent> {
+public class SmartStart implements ConsensusStateMachine {
 
     private static final Logger log = LoggerFactory.getLogger(SmartStart.class);
 
@@ -95,6 +95,7 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
     }
 
     @Override
+    @StateChangeListener(NodeStateEnum.Running) @Order
     public synchronized void start() {
         log.info("smart server starting,myid={}", myId);
         if (server != null) {
@@ -109,7 +110,7 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
                         break;
                     }
                 } catch (Exception e) {
-                    log.error("CA还没准备好");
+                    log.error("CA还没准备好", e);
                 }
                 try {
                     TimeUnit.MILLISECONDS.sleep(2000);
@@ -142,8 +143,4 @@ public class SmartStart implements ConsensusStateMachine, ApplicationListener<Ap
         }
     }
 
-    @Override
-    public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        start();
-    }
 }

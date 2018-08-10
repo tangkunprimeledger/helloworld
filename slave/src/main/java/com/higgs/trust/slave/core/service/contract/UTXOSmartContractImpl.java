@@ -16,8 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Slf4j @Service public class UTXOSmartContractImpl implements UTXOSmartContract {
 
     @Autowired private UTXOContextService contextService;
@@ -32,13 +30,13 @@ import java.util.List;
         }
 
         ExecuteConfig executeConfig = new ExecuteConfig();
-        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.setInstructionCountQuota(100000000);
         executeConfig.allow(UTXOContextService.class)
-            .allow(UTXO.class)
-            .allow(UTXOAction.class)
-            .allow(TxIn.class)
-            .allow(TxOut.class)
-            .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
+                .allow(UTXO.class)
+                .allow(UTXOAction.class)
+                .allow(TxIn.class)
+                .allow(TxOut.class)
+                .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);
         manager.setExecuteConfig(executeConfig);
@@ -77,7 +75,7 @@ import java.util.List;
             ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
             Object result = engine.execute("verify");
             return (Boolean)result;
-        } finally {
+        }  finally {
             Profiler.release();
         }
     }

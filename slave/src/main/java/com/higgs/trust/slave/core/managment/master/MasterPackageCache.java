@@ -2,10 +2,9 @@ package com.higgs.trust.slave.core.managment.master;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
-import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
-import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
-    @Autowired private PendingTxRepository pendingTxRepository;
 
     private AtomicLong packHeight = new AtomicLong(0);
     private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();

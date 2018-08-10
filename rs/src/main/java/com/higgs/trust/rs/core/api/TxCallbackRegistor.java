@@ -1,6 +1,11 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
+import com.higgs.trust.rs.common.exception.RsCoreException;
+import com.higgs.trust.rs.core.callback.TxBatchCallbackHandler;
 import com.higgs.trust.rs.core.callback.TxCallbackHandler;
+import com.higgs.trust.rs.core.vo.VotingRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -8,15 +13,39 @@ import org.springframework.stereotype.Repository;
  * @description
  * @date 2018-05-12
  */
-@Repository
-public class TxCallbackRegistor {
+@Repository @Slf4j public class TxCallbackRegistor {
     private TxCallbackHandler coreTxCallback;
+    private TxBatchCallbackHandler txBatchCallbackHandler;
 
-    public void registCallback(TxCallbackHandler callback){
+    public void registCallback(TxCallbackHandler callback) {
         this.coreTxCallback = callback;
+    }
+
+    public void registBatchCallback(TxBatchCallbackHandler callback) {
+        this.txBatchCallbackHandler = callback;
     }
 
     public TxCallbackHandler getCoreTxCallback() {
         return coreTxCallback;
+    }
+
+    public TxBatchCallbackHandler getCoreTxBatchCallback() {
+        return txBatchCallbackHandler;
+    }
+
+    /**
+     * vote for custom
+     *
+     * @param votingRequest
+     */
+    public void onVote(VotingRequest votingRequest) {
+        if (coreTxCallback != null) {
+            coreTxCallback.onVote(votingRequest);
+        } else if (txBatchCallbackHandler != null) {
+            txBatchCallbackHandler.onVote(votingRequest);
+        } else {
+            log.error("[onVote] callback handler is not register");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
+        }
     }
 }

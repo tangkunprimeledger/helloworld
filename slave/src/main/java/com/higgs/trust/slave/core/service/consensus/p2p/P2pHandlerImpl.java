@@ -31,12 +31,6 @@ import org.springframework.stereotype.Service;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        BeanValidateResult result = BeanValidator.validate(header);
-        if (!result.isSuccess()) {
-            log.error("[P2pReceiver.sendPersisting]param validate failed, cause: {}", result.getFirstMsg());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
         // send header to p2p consensus
         PersistCommand persistCommand = new PersistCommand(header.getHeight(), header);
         log.info("start send persisting command to p2p consensus layer, persistCommand : {}", persistCommand);

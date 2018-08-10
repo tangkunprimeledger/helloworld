@@ -1,7 +1,8 @@
-package com.higgs.trust.slave.common.util;
+package com.higgs.trust.common.utils;
 
-import com.higgs.trust.slave.common.constant.Constant;
-import com.higgs.trust.slave.common.constant.LoggerName;
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.constant.LoggerName;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
@@ -26,23 +27,46 @@ public class MonitorLogUtils {
      * @param info   输出的的具体内容
      * @Test public void test(){ LogUtils.logMonitor("synchronizer","pacakge_count","int",1); }
      */
+    public static <T> void logMonitorInfo(String module, MonitorTargetEnum target, TargetInfoType type, T info) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String date = dateFormat.format(new Date());
+        LOGGER.info(String.format("Monitor,%s,%s,%s,%s,%s", module, target.getMonitorTarget(), date, type, String.valueOf(info)));
+    }
+
+    public static <T> void logIntMonitorInfo(MonitorTargetEnum target, T info) {
+        logMonitorInfo(Constant.APP_NAME, target, TargetInfoType.INT, info);
+    }
+
+    public static <T> void logFloatMonitorInfo(MonitorTargetEnum target, T info) {
+        logMonitorInfo(Constant.APP_NAME, target, TargetInfoType.FLOAT, info);
+    }
+
+    public static <T> void logTextMonitorInfo(MonitorTargetEnum target, T info) {
+        logMonitorInfo(Constant.APP_NAME, target, TargetInfoType.TEXT, info);
+    }
+
+    @Deprecated
     public static <T> void logMonitorInfo(String module, String target, TargetInfoType type, T info) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String date = dateFormat.format(new Date());
         LOGGER.info(String.format("Monitor,%s,%s,%s,%s,%s", module, target, date, type, String.valueOf(info)));
     }
 
+    @Deprecated
     public static <T> void logIntMonitorInfo(String target, T info) {
         logMonitorInfo(Constant.APP_NAME, target, TargetInfoType.INT, info);
     }
 
+    @Deprecated
     public static <T> void logFloatMonitorInfo(String target, T info) {
         logMonitorInfo(Constant.APP_NAME, target, TargetInfoType.FLOAT, info);
     }
 
+    @Deprecated
     public static <T> void logTextMonitorInfo(String target, T info) {
         logMonitorInfo(Constant.APP_NAME, target, TargetInfoType.TEXT, info);
     }
+
 
     public enum TargetInfoType {
         TEXT("text"), FLOAT("float"), INT("int");

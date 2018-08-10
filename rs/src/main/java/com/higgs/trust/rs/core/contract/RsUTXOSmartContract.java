@@ -4,7 +4,6 @@ import com.higgs.trust.contract.*;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.Profiler;
-import com.higgs.trust.slave.core.service.contract.UTXOContextService;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.contract.Contract;
@@ -35,7 +34,7 @@ public class RsUTXOSmartContract {
         manager.registerService("ctx", contextService);
 
         ExecuteConfig executeConfig = new ExecuteConfig();
-        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.setInstructionCountQuota(100000000);
         executeConfig.allow(RsUTXOContextService.class)
                 .allow(UTXO.class)
                 .allow(UTXOAction.class)

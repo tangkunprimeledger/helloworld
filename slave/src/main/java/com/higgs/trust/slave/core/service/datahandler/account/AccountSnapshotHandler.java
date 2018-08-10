@@ -51,11 +51,7 @@ import java.util.*;
         // operation merkle tree
         MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.ACCOUNT);
         AccountMerkleData data = BeanConvertor.convertBean(accountInfo, AccountMerkleData.class);
-        if (merkleTree == null) {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.ACCOUNT, new Object[] {data});
-        } else {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, data);
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.ACCOUNT, data);
     }
 
     @Override public void validateForOperation(AccountOperation accountOperation, String policyId) {
@@ -147,6 +143,7 @@ import java.util.*;
     @Override public void persistForOperation(AccountOperation accountOperation, Long blockHeight) {
         List<AccountTradeInfo> debitTradeInfo = accountOperation.getDebitTradeInfo();
         List<AccountTradeInfo> creditTradeInfo = accountOperation.getCreditTradeInfo();
+        int index = 0;
         //DEBIT trade
         for (AccountTradeInfo info : debitTradeInfo) {
             AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(info.getAccountNo());
@@ -170,10 +167,12 @@ import java.util.*;
                 .getBalanceChangeDirection(tradeDirection, FundDirectionEnum.getBycode(_new.getFundDirection()));
             //save detail
             saveAccountDetail(accountOperation, blockHeight, accountInfo, info.getAmount(), afterAmount,
-                changeDirectionEnum);
+                changeDirectionEnum,index);
             //save dc record
-            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount());
+            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount(),index);
+            index++;
         }
+        index = 0;
         //CREDIT trade
         for (AccountTradeInfo info : creditTradeInfo) {
             AccountInfo accountInfo = accountSnapshotAgent.getAccountInfo(info.getAccountNo());
@@ -197,9 +196,10 @@ import java.util.*;
                 .getBalanceChangeDirection(tradeDirection, FundDirectionEnum.getBycode(_new.getFundDirection()));
             //save detail
             saveAccountDetail(accountOperation, blockHeight, accountInfo, info.getAmount(), afterAmount,
-                changeDirectionEnum);
+                changeDirectionEnum,index);
             //save dc record
-            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount());
+            saveAccountDCRecord(accountOperation, accountInfo.getAccountNo(), tradeDirection, info.getAmount(),index);
+            index++;
         }
     }
 
@@ -257,8 +257,9 @@ import java.util.*;
      * @param changeDirectionEnum
      */
     private void saveAccountDetail(AccountOperation bo, Long blockHeight, AccountInfo accountInfo,
-        BigDecimal happenAmount, BigDecimal afterAmount, ChangeDirectionEnum changeDirectionEnum) {
+        BigDecimal happenAmount, BigDecimal afterAmount, ChangeDirectionEnum changeDirectionEnum,int index) {
         AccountDetail detail = new AccountDetail();
+        detail.setId((long)index);
         detail.setBizFlowNo(bo.getBizFlowNo());
         detail.setBlockHeight(blockHeight);
         detail.setAccountNo(accountInfo.getAccountNo());
@@ -281,8 +282,9 @@ import java.util.*;
      * @param amount
      */
     private void saveAccountDCRecord(AccountOperation bo, String accountNo, TradeDirectionEnum tradeDirectionEnum,
-        BigDecimal amount) {
+        BigDecimal amount,int index) {
         AccountDcRecord accountDcRecord = new AccountDcRecord();
+        accountDcRecord.setId((long)index);
         accountDcRecord.setBizFlowNo(bo.getBizFlowNo());
         accountDcRecord.setAccountNo(accountNo);
         accountDcRecord.setAmount(amount);
@@ -328,19 +330,14 @@ import java.util.*;
      * @param _new
      */
     private void updateMerkleTree(AccountInfo _old, AccountInfo _new) {
-        MerkleTree merkleTree = merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.ACCOUNT);
-        if (merkleTree == null) {
-            log.info("[updateMerkleTree] the ACCOUNT merkle tree does not exist");
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.ACCOUNT, new Object[] {_new});
-        }else{
-            AccountMerkleData from = BeanConvertor.convertBean(_old, AccountMerkleData.class);
-            AccountMerkleData to = BeanConvertor.convertBean(_new, AccountMerkleData.class);
-            //check
-            if(merkleTreeSnapshotAgent.isExist(MerkleTypeEnum.ACCOUNT,from)){
-                merkleTreeSnapshotAgent.modifyMerkleTree(merkleTree, from, to);
-            }else{
-                merkleTreeSnapshotAgent.appendChild(merkleTree, to);
-            }
+        AccountMerkleData from = BeanConvertor.convertBean(_old, AccountMerkleData.class);
+        AccountMerkleData to = BeanConvertor.convertBean(_new, AccountMerkleData.class);
+
+        //check
+        if (merkleTreeSnapshotAgent.isExist(MerkleTypeEnum.ACCOUNT, from)) {
+            merkleTreeSnapshotAgent.updateNode(MerkleTypeEnum.ACCOUNT, from, to);
+        } else {
+            merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.ACCOUNT, to);
         }
     }
 }

@@ -39,7 +39,7 @@ import org.springframework.stereotype.Service;
             caSnapshotAgent.saveCa(ca);
         }
 
-        ClusterNode clusterNode = new ClusterNode();
+        /*ClusterNode clusterNode = new ClusterNode();
         clusterNode.setNodeName(ca.getUser());
         clusterNode.setP2pStatus(true);
         clusterNode.setRsStatus(false);
@@ -54,7 +54,7 @@ import org.springframework.stereotype.Service;
         clusterConfig.setClusterName(clusterConfigPO.getClusterName());
         clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() + 1);
         clusterConfig.setFaultNum(clusterConfigPO.getNodeNum() / 3);
-        caSnapshotAgent.updateClusterConfig(clusterConfig);
+        caSnapshotAgent.updateClusterConfig(clusterConfig);*/
 
     }
 
@@ -84,7 +84,7 @@ import org.springframework.stereotype.Service;
         log.info("[cancelCa] start to update CA to invalid, user={}", ca.getUser());
         caSnapshotAgent.updateCa(ca);
 
-        ClusterNode clusterNode = new ClusterNode();
+        /*ClusterNode clusterNode = new ClusterNode();
         clusterNode.setNodeName(ca.getUser());
         clusterNode.setP2pStatus(false);
         clusterNode.setRsStatus(false);
@@ -97,7 +97,7 @@ import org.springframework.stereotype.Service;
         clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() - 1);
         clusterConfig.setFaultNum((clusterConfig.getNodeNum() - 1) / 3);
         log.info("[cancelCa] start to update clusterConfigInfo, user={}", ca.getUser());
-        caSnapshotAgent.updateClusterConfig(clusterConfig);
+        caSnapshotAgent.updateClusterConfig(clusterConfig);*/
     }
 
     /**
@@ -110,11 +110,6 @@ import org.springframework.stereotype.Service;
     }
 
     private void check(Ca ca) {
-        MerkleTree merkleTree = (MerkleTree)merkleTreeSnapshotAgent.getMerkleTree(MerkleTypeEnum.CA);
-        if (null != merkleTree) {
-            merkleTreeSnapshotAgent.appendChild(merkleTree, ca);
-        } else {
-            merkleTreeSnapshotAgent.buildMerleTree(MerkleTypeEnum.CA, new Object[] {ca});
-        }
+        merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.CA, ca);
     }
 }

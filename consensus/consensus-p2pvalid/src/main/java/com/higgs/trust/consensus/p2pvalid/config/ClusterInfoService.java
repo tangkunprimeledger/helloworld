@@ -88,7 +88,7 @@ import org.springframework.stereotype.Service;
             }
         } while ((response == null || !response.isSucess()) && ++i <= 10);
         if (response != null && response.isSucess()) {
-            ValidClusterInfoCmd infoCmd = (ValidClusterInfoCmd)response.getResult();
+            ValidClusterInfoCmd infoCmd = (ValidClusterInfoCmd)response.result();
             clusterInfo.init(infoCmd.get());
         } else {
             throw new RuntimeException("init clusterInfo from any node failed");

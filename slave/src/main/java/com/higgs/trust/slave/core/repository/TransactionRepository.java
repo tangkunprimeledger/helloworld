@@ -7,6 +7,7 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
 import com.higgs.trust.slave.dao.transaction.TransactionDao;
+import com.higgs.trust.slave.dao.transaction.TransactionJDBCDao;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -31,6 +32,7 @@ import java.util.List;
 
 @Repository @Slf4j public class TransactionRepository {
     @Autowired TransactionDao transactionDao;
+    @Autowired TransactionJDBCDao transactionJDBCDao;
 
     public boolean isExist(String txId) {
         TransactionPO transactionPO = transactionDao.queryByTxId(txId);
@@ -42,6 +44,7 @@ import java.util.List;
 
     /**
      * query more execute receipt for txs
+     *
      * @param txs
      * @return
      */
@@ -61,12 +64,13 @@ import java.util.List;
         for (TransactionPO transactionPO : transactionPOS) {
             TransactionReceipt receipt = new TransactionReceipt();
             receipt.setTxId(transactionPO.getTxId());
-            receipt.setResult(StringUtils.equals(transactionPO.getExecuteResult(),"1")?true:false);
+            receipt.setResult(StringUtils.equals(transactionPO.getExecuteResult(), "1") ? true : false);
             receipt.setErrorCode(transactionPO.getErrorCode());
             receipts.add(receipt);
         }
         return receipts;
     }
+
     /**
      * query transactions by block height
      *
@@ -83,7 +87,7 @@ import java.util.List;
             SignedTransaction signedTransaction = new SignedTransaction();
             CoreTransaction coreTx = BeanConvertor.convertBean(tx, CoreTransaction.class);
             if (tx.getBizModel() != null) {
-                coreTx.setBizModel(JSON.parseObject(String.valueOf(tx.getBizModel())));
+                coreTx.setBizModel(JSON.parseObject(tx.getBizModel()));
             }
             String actionDatas = tx.getActionDatas();
             List<Action> actions = JSON.parseArray(actionDatas, Action.class);
@@ -105,7 +109,9 @@ import java.util.List;
      */
     public void batchSaveTransaction(Long blockHeight, Date blockTime, List<SignedTransaction> txs,
         List<TransactionReceipt> txReceipts) {
-        log.info("[TransactionRepository.batchSaveTransaction] is start");
+        if (log.isDebugEnabled()) {
+            log.debug("[TransactionRepository.batchSaveTransaction] is start");
+        }
         if (CollectionUtils.isEmpty(txs)) {
             log.info("[batchSaveTransaction] txs is empty");
             return;
@@ -130,7 +136,7 @@ import java.util.List;
             txPOs.add(po);
         }
         try {
-            int r = transactionDao.batchInsert(txPOs);
+            int r = transactionJDBCDao.batchInsertTransaction(txPOs);
             if (r != txPOs.size()) {
                 log.error("[batchSaveTransaction]batch insert txs has error");
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
@@ -186,22 +192,59 @@ import java.util.List;
         return datas;
     }
 
-    public List<CoreTransactionVO> queryTxsWithCondition(Long blockHeight, String txId,
-        String sender, Integer pageNum, Integer pageSize) {
+    /**
+     * query by condition、page
+     *
+     * @param blockHeight
+     * @param txId
+     * @param sender
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public List<CoreTransactionVO> queryTxsWithCondition(Long blockHeight, String txId, String sender, Integer pageNum,
+        Integer pageSize) {
         if (null != txId) {
             txId = txId.trim();
         }
-
         if (null != sender) {
             sender = sender.trim();
         }
-
-        List<TransactionPO> list = transactionDao.queryTxWithCondition(blockHeight, txId, sender, (pageNum - 1) * pageSize, pageSize);
+        List<TransactionPO> list =
+            transactionDao.queryTxWithCondition(blockHeight, txId, sender, (pageNum - 1) * pageSize, pageSize);
         return BeanConvertor.convertList(list, CoreTransactionVO.class);
     }
 
-    public long countTxsWithCondition(Long blockHeight, String txId, String sender) {
-
+    @Deprecated public long countTxsWithCondition(Long blockHeight, String txId, String sender) {
         return transactionDao.countTxWithCondition(blockHeight, txId, sender);
     }
+
+    /**
+     * query tx by id
+     *
+     * @param txId
+     * @return
+     */
+    public CoreTransactionVO queryTxById(String txId) {
+        TransactionPO transactionPO = transactionDao.queryByTxId(txId);
+        if (null == transactionPO) {
+            return null;
+        }
+        return BeanConvertor.convertBean(transactionPO, CoreTransactionVO.class);
+    }
+
+    /**
+     * return CoreTransactionVO from db
+     *
+     * @param txIds
+     * @return
+     */
+    public List<CoreTransactionVO> queryTxs(List<String> txIds) {
+        if (CollectionUtils.isEmpty(txIds)) {
+            return null;
+        }
+        List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
+        return BeanConvertor.convertList(transactionPOS, CoreTransactionVO.class);
+    }
+
 }

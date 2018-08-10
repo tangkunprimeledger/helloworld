@@ -2,9 +2,11 @@ package com.higgs.trust.slave.core.scheduler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
@@ -17,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +30,7 @@ import java.util.Set;
  * @author tangfashuang
  * @date 2018/04/09 15:30
  */
+@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
 @Service @Slf4j public class PackageScheduler {
 
     @Autowired private PendingState pendingState;
@@ -51,8 +55,7 @@ import java.util.Set;
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
 
-        if(nodeState.isMaster()
-            && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
+        if (nodeState.isMaster() && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
 
             List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(TX_PENDING_COUNT);
 
@@ -64,7 +67,8 @@ import java.util.Set;
             CollectionUtils.addAll(txSet, signedTransactions);
             signedTransactions = Lists.newArrayList(txSet);
 
-            log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}", packageCache.getPackHeight());
+            log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}",
+                packageCache.getPackHeight());
             Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
 
             if (null == pack) {
@@ -102,26 +106,37 @@ import java.util.Set;
             return;
         }
         //get max block height
-        Long maxBlockHeight = blockRepository.getMaxHeight();
+        Long currentHeight = blockRepository.getMaxHeight();
 
-        if (null == maxBlockHeight) {
+        if (null == currentHeight) {
             log.error("please initial Genesis block.");
-            //TODO 添加告警
-            return;
-        }
-        //check if the next package to be process is exited
-        Long height = maxBlockHeight + 1;
-        Package pack = packageRepository.load(height);
-        if (null == pack) {
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_GENESIS_BLOCK_NOT_EXISTS.getMonitorTarget(), 1);
             return;
         }
 
-        // process next block as height = maxBlockHeight + 1
-        try {
-            packageProcess.process(height);
-        } catch (Throwable e) {
-            log.error("package process scheduled execute failed. ", e);
-        }
+        while (true) {
+            //check if the next package to be process is exited
+            List<Long> heights = packageRepository.loadHeightList(currentHeight);
 
+            if (CollectionUtils.isEmpty(heights)) {
+                return;
+            }
+
+            for (Long height : heights) {
+                // process next block as height = maxBlockHeight + 1
+                if (height != currentHeight + 1) {
+                    log.warn("package height is not continuous!");
+                    return;
+                }
+
+                try {
+                    packageProcess.process(height);
+                    currentHeight++;
+                } catch (Throwable e) {
+                    log.error("package process scheduled execute failed. ", e);
+                    return;
+                }
+            }
+        }
     }
 }

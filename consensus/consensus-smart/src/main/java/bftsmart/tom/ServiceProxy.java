@@ -49,13 +49,13 @@ public class ServiceProxy extends TOMSender {
 	private TOMMessage replies[] = null; // Replies from replicas are stored here
 	private int receivedReplies = 0; // Number of received replies
 	private TOMMessage response = null; // Reply delivered to the application
-	private int invokeTimeout = 20;
+	private int invokeTimeout = 500;
 	private Comparator<byte[]> comparator;
 	private Extractor extractor;
 	private Random rand = new Random(System.currentTimeMillis());
 	private int replyServer;
 	private HashResponseController hashResponseController;
-	private int invokeUnorderedHashedTimeout = 10;
+	private int invokeUnorderedHashedTimeout = 500;
 
 	/**
 	 * Constructor
@@ -206,12 +206,12 @@ public class ServiceProxy extends TOMSender {
 			// by the client side communication system
 			try {
                 if(reqType == TOMMessageType.UNORDERED_HASHED_REQUEST){
-                    if (!this.sm.tryAcquire(invokeUnorderedHashedTimeout, TimeUnit.SECONDS)) {
+                    if (!this.sm.tryAcquire(invokeUnorderedHashedTimeout, TimeUnit.MILLISECONDS)) {
                         Logger.println("######## UNORDERED HASHED REQUEST TIMOUT ########");
                         return invoke(request, TOMMessageType.ORDERED_REQUEST);
                     }
                 }else{
-                    if (!this.sm.tryAcquire(invokeTimeout, TimeUnit.SECONDS)) {
+                    if (!this.sm.tryAcquire(invokeTimeout, TimeUnit.MILLISECONDS)) {
                         Logger.println("###################TIMEOUT#######################");
                         Logger.println("Reply timeout for reqId=" + reqId);
                         System.out.print(getProcessId() + " // " + reqId + " // TIMEOUT // ");

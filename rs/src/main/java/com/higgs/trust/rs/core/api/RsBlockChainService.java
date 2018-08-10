@@ -22,7 +22,7 @@ public interface RsBlockChainService {
      * @param req
      * @return
      */
-    PageVO<BlockVO> queryBlock(QueryBlockVO req);
+    @Deprecated PageVO<BlockVO> queryBlock(QueryBlockVO req);
 
     /**
      * query transaction
@@ -30,7 +30,7 @@ public interface RsBlockChainService {
      * @param req
      * @return
      */
-    PageVO<CoreTransactionVO> queryTransaction(QueryTransactionVO req);
+    @Deprecated PageVO<CoreTransactionVO> queryTransaction(QueryTransactionVO req);
 
     /**
      * query account
@@ -38,8 +38,14 @@ public interface RsBlockChainService {
      * @param req
      * @return
      */
-    PageVO<AccountInfoVO> queryAccount(QueryAccountVO req);
+    @Deprecated PageVO<AccountInfoVO> queryAccount(QueryAccountVO req);
 
+    /**
+     *query accounts
+     * @param req
+     * @return
+     */
+     List<AccountInfoVO> queryAccountsByPage(QueryAccountVO req);
     /**
      * query utxo
      *
@@ -63,7 +69,6 @@ public interface RsBlockChainService {
      * @return
      */
     boolean isExistedCurrency(String currency);
-
 
     /**
      * query System Property by key
@@ -112,10 +117,63 @@ public interface RsBlockChainService {
     BlockHeader getMaxBlockHeader();
 
     /**
+     * query max height for block
+     *
+     * @return
+     */
+    Long getMaxBlockHeight();
+
+    /**
      * process UTXO contract
      *
      * @param coreTransaction
      * @return
      */
     boolean processContract(CoreTransaction coreTransaction);
+
+    /**
+     * query block by condition and page
+     *
+     * @param req
+     * @return
+     */
+    List<BlockVO> queryBlocksByPage(QueryBlockVO req);
+
+    /**
+     * query transaction by condition and page
+     *
+     * @param req
+     * @return
+     */
+    List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req);
+
+    /**
+     * query block info by height
+     *
+     * @param height
+     * @return
+     */
+    BlockVO queryBlockByHeight(Long height);
+
+    /**
+     * query tx info by tx_id
+     *
+     * @param txId
+     * @return
+     */
+    CoreTransactionVO queryTxById(String txId);
+
+    /**
+     * query by ids
+     *
+     * @param txIds
+     * @return
+     */
+    List<CoreTransactionVO> queryTxByIds(List<String> txIds);
+
+    /**
+     *
+     * @return
+     */
+    List<NodeInfoVO> queryPeersInfo();
 }

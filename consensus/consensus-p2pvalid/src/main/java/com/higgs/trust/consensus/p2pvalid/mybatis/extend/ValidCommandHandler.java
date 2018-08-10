@@ -31,7 +31,7 @@ public class ValidCommandHandler implements TypeHandler<ValidCommand<?>> {
         if(StringUtils.isEmpty(jsonStr)){
             return null;
         }
-        return (ValidCommand<?>) JSON.parse(jsonStr);
+        return (ValidCommand<?>) JSON.parseObject(jsonStr, ValidCommand.class);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ValidCommandHandler implements TypeHandler<ValidCommand<?>> {
         if(StringUtils.isEmpty(jsonStr)){
             return null;
         }
-        return (ValidCommand<?>) JSON.parse(jsonStr);
+        return (ValidCommand<?>) JSON.parseObject(jsonStr, ValidCommand.class);
     }
 
     @Override
@@ -49,6 +49,6 @@ public class ValidCommandHandler implements TypeHandler<ValidCommand<?>> {
         if(StringUtils.isEmpty(jsonStr)){
             return null;
         }
-        return (ValidCommand<?>) JSON.parse(jsonStr);
+        return (ValidCommand<?>) JSON.parseObject(jsonStr, ValidCommand.class);
     }
 }
