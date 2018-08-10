@@ -69,6 +69,8 @@ import java.util.List;
             coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED,blockHeader.getHeight());
             //save process result
             coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
+            //callback custom rs
+            rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
             return;
         }
         //for self
