@@ -1,0 +1,11 @@
+atomix:
+  address: 127.0.0.1:8804
+logging:
+  path: /tmp/consensus4
+management:
+  shell:
+    ssh:
+      port: 2004
+  port: 6064
+server:
+  port: 7074

@@ -20,12 +20,12 @@
         <dependency>
             <groupId>io.atomix</groupId>
             <artifactId>atomix-raft</artifactId>
-            <version>3.0.0-rc8</version>
+            <version>3.0.0-rc11</version>
         </dependency>
         <dependency>
             <groupId>io.atomix</groupId>
             <artifactId>atomix</artifactId>
-            <version>3.0.0-rc8</version>
+            <version>3.0.0-rc11</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -48,6 +48,10 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-    </dependencies>
 
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
+    </dependencies>
 </project>

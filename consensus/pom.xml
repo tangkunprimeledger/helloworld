@@ -16,6 +16,7 @@
         <module>consensus-copycat</module>
         <module>consensus-smart</module>
         <module>consensus-p2pvalid</module>
+        <module>consensus-atomix</module>
     </modules>
 
     <dependencies>

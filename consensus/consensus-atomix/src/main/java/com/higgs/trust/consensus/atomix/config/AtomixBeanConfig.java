@@ -55,10 +55,7 @@ import java.util.Arrays;
         if (log.isDebugEnabled()) {
             log.debug("registry context class loader:{}", contextClassLoader);
         }
-        RaftPartitionGroup.Type type = RaftPartitionGroup.TYPE;
-        if (log.isDebugEnabled()) {
-            log.debug("typ:{}, classLoader:{}", type, type.getClass().getClassLoader());
-        }
+
         return new SpringBeanAtomixRegistry(contextClassLoader, PartitionGroup.Type.class, PrimitiveType.class,
             PrimitiveProtocol.Type.class, Profile.Type.class, NodeDiscoveryProvider.Type.class);
     }

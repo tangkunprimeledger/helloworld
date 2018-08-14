@@ -44,54 +44,55 @@ import java.util.concurrent.ConcurrentHashMap;
             CACHE.computeIfAbsent(classLoader, cl -> new ConcurrentHashMap<>());
         final Map<Class<? extends NamedType>, Map<String, NamedType>> registrations =
             mappings.computeIfAbsent(new SpringBeanAtomixRegistry.CacheKey(types), cacheKey -> {
-                String classpath = System.getProperty("io.atomix.whitelistPackages");
-                if (org.apache.commons.lang3.StringUtils.isBlank(classpath)) {
-                    classpath = "io.atomix";
-                }
-                final String[] whitelistPackages = StringUtils.split(classpath, ",");
+                final String[] whitelistPackages =
+                    StringUtils.split(System.getProperty("io.atomix.whitelistPackages"), ",");
                 final ClassGraph classGraph = whitelistPackages != null ?
-                    new ClassGraph().enableClassInfo().whitelistPackages(whitelistPackages)
-                        .addClassLoader(classLoader) : new ClassGraph().enableClassInfo().addClassLoader(classLoader);
-
-                final ScanResult scanResult = classGraph.scan();
-                final Map<Class<? extends NamedType>, Map<String, NamedType>> result = new ConcurrentHashMap<>();
-                for (Class<? extends NamedType> type : cacheKey.types) {
-                    final Map<String, NamedType> tmp = new ConcurrentHashMap<>();
-                    scanResult.getClassesImplementing(type.getName()).forEach(classInfo -> {
-                        if (classInfo.isInterface() || classInfo.isAbstract() || Modifier
-                            .isPrivate(classInfo.getModifiers())) {
-                            return;
-                        }
-
-                        Object bean = null;
-                        try {
-                            if (log.isDebugEnabled()) {
-                                log.debug("get the bean from context:{}, classLoader:{}, NamedType classLoader:{}",
-                                    classInfo.loadClass(), classInfo.loadClass().getClassLoader(),
-                                    NamedType.class.getClassLoader());
-                            }
-                            bean = applicationContext.getBean(classInfo.loadClass());
-                            if (log.isDebugEnabled()) {
-                                log.debug("get the bean:{}", bean);
-                            }
-                        } catch (NoSuchBeanDefinitionException e) {
-
-                        }
-                        final NamedType instance;
-                        if (bean != null) {
-                            instance = (NamedType)bean;
-                        } else {
-                            instance = newInstance(classInfo.loadClass());
-                        }
-                        final NamedType oldInstance = tmp.put(instance.name(), instance);
-                        if (oldInstance != null) {
-                            log.warn("Found multiple types with name={}, classes=[{}, {}]", instance.name(),
-                                oldInstance.getClass().getName(), instance.getClass().getName());
-                        }
-                    });
-                    result.put(type, Collections.unmodifiableMap(tmp));
+                    new ClassGraph().enableClassInfo().whitelistPackages(whitelistPackages).addClassLoader(classLoader)
+                        .overrideClassLoaders(classLoader).ignoreParentClassLoaders() :
+                    new ClassGraph().enableClassInfo().addClassLoader(classLoader).overrideClassLoaders(classLoader)
+                        .ignoreParentClassLoaders();
+                if (log.isTraceEnabled()) {
+                    classGraph.verbose();
                 }
-                return result;
+                try (final ScanResult scanResult = classGraph.scan()) {
+                    final Map<Class<? extends NamedType>, Map<String, NamedType>> result = new ConcurrentHashMap<>();
+                    for (Class<? extends NamedType> type : cacheKey.types) {
+                        final Map<String, NamedType> tmp = new ConcurrentHashMap<>();
+                        scanResult.getClassesImplementing(type.getName()).forEach(classInfo -> {
+                            if (classInfo.isInterface() || classInfo.isAbstract() || Modifier
+                                .isPrivate(classInfo.getModifiers())) {
+                                return;
+                            }
+                            Object bean = null;
+                            try {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("get the bean from context:{}, classLoader:{}, NamedType classLoader:{}",
+                                        classInfo.loadClass(), classInfo.loadClass().getClassLoader(),
+                                        NamedType.class.getClassLoader());
+                                }
+                                bean = applicationContext.getBean(classInfo.loadClass());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("get the bean:{}", bean);
+                                }
+                            } catch (NoSuchBeanDefinitionException e) {
+
+                            }
+                            final NamedType instance;
+                            if (bean != null) {
+                                instance = (NamedType)bean;
+                            } else {
+                                instance = newInstance(classInfo.loadClass());
+                            }
+                            final NamedType oldInstance = tmp.put(instance.name(), instance);
+                            if (oldInstance != null) {
+                                log.warn("Found multiple types with name={}, classes=[{}, {}]", instance.name(),
+                                    oldInstance.getClass().getName(), instance.getClass().getName());
+                            }
+                        });
+                        result.put(type, Collections.unmodifiableMap(tmp));
+                    }
+                    return result;
+                }
             });
         this.registrations.putAll(registrations);
     }
