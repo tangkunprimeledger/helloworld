@@ -4,11 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.slave.api.SlaveBatchCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -56,6 +61,7 @@ import java.util.stream.Collectors;
     @Autowired private P2pHandler p2pHandler;
     @Autowired private RsNodeRepository rsNodeRepository;
     @Autowired private PendingTxRepository pendingTxRepository;
+    @Autowired private NodeState nodeState;
 
     /**
      * create new package from pending transactions
@@ -128,7 +134,7 @@ import java.util.stream.Collectors;
             boolean checkHash = StringUtils.equals(buildPackHash(pack), buildPackHash(packageBO));
             if (!checkHash) {
                 log.error("receive package is not the same as db package. height={}", pack.getHeight());
-                //TODO 添加告警
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_HASH_NOT_EQUAL.getMonitorTarget(), 1);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION);
             } else {
                 log.info("receive package is the same as db package. height={}", pack.getHeight());
@@ -206,7 +212,6 @@ import java.util.stream.Collectors;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
         log.info("process package start, height:{},tx size:{}", pack.getHeight(), txs.size());
-        Profiler.start("[PackageService.process.monitor]size:" + txs.size());
         try {
             //snapshot transactions should be init
             snapshotService.clear();
@@ -256,6 +261,7 @@ import java.util.stream.Collectors;
             //snapshot transactions should be destroy
             snapshotService.destroy();
             log.error("[package.process]has unknown error");
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_PERSISTING_ERROR, e);
         } finally {
             Profiler.release();
@@ -352,6 +358,9 @@ import java.util.stream.Collectors;
         boolean r = blockService.compareBlockHeader(blockHeader, header);
         if (!r) {
             log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", header.getHeight());
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_BLOCK_HEADER_NOT_EQUAL.getMonitorTarget(), 1);
+            //change state to offline
+            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
         }
         try {
@@ -407,18 +416,48 @@ import java.util.stream.Collectors;
      */
     private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
         boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
-        log.info("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
-        SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
-
-        if (callbackHandler == null) {
-            log.warn("[callbackRS]callbackHandler is not register");
-            //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
-            return;
+        if (log.isDebugEnabled()) {
+            log.debug("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         }
         if (CollectionUtils.isEmpty(txs)) {
             log.warn("[callbackRS]txs is empty");
             return;
         }
+        SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
+        SlaveBatchCallbackHandler batchCallbackHandler = null;
+        if (callbackHandler == null) {
+            log.warn("[callbackRS]callbackHandler is not register");
+            //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
+            batchCallbackHandler = slaveCallbackRegistor.getSlaveBatchCallbackHandler();
+            if (batchCallbackHandler == null) {
+                log.warn("[callbackRS]batchCallbackHandler is not register");
+                return;
+            }
+        }
+        //batch callback
+        if (batchCallbackHandler != null) {
+            if (isFailover) {
+                if (log.isDebugEnabled()) {
+                    log.debug("[callbackRS]start fail-over batch rs height:{}", blockHeader.getHeight());
+                }
+                batchCallbackHandler.onFailover(txs, txReceipts, blockHeader);
+                return;
+            }
+            //callback business
+            if (log.isDebugEnabled()) {
+                log.info("[callbackRS]start batchCallback rs height:{}", blockHeader.getHeight());
+            }
+            if (isClusterPersisted) {
+                batchCallbackHandler.onClusterPersisted(txs, txReceipts, blockHeader);
+            } else {
+                batchCallbackHandler.onPersisted(txs, txReceipts, blockHeader);
+            }
+            if (log.isDebugEnabled()) {
+                log.info("[callbackRS]end batchCallback rs height:{}", blockHeader.getHeight());
+            }
+            return;
+        }
+        //for each callback
         for (SignedTransaction tx : txs) {
             String txId = tx.getCoreTx().getTxId();
             RespData<CoreTransaction> respData = new RespData<>();
@@ -439,11 +478,11 @@ import java.util.stream.Collectors;
                     log.debug("[callbackRS]start fail over rs txId:{}", txId);
                 }
                 callbackHandler.onFailover(respData, tx.getSignatureList(), blockHeader);
-                return;
+                continue;
             }
             //callback business
             if (log.isDebugEnabled()) {
-                log.debug("[callbackRS]start callback rs txId:{}", txId);
+                log.info("[callbackRS]start callback rs txId:{}", txId);
             }
             if (isClusterPersisted) {
                 callbackHandler.onClusterPersisted(respData, tx.getSignatureList(), blockHeader);
@@ -451,7 +490,7 @@ import java.util.stream.Collectors;
                 callbackHandler.onPersisted(respData, tx.getSignatureList(), blockHeader);
             }
             if (log.isDebugEnabled()) {
-                log.debug("[callbackRS]end callback rs txId:{}", txId);
+                log.info("[callbackRS]end callback rs txId:{}", txId);
             }
         }
     }

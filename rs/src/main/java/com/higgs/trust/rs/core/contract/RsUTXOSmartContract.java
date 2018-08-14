@@ -34,7 +34,7 @@ public class RsUTXOSmartContract {
         manager.registerService("ctx", contextService);
 
         ExecuteConfig executeConfig = new ExecuteConfig();
-        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.setInstructionCountQuota(100000000);
         executeConfig.allow(RsUTXOContextService.class)
                 .allow(UTXO.class)
                 .allow(UTXOAction.class)

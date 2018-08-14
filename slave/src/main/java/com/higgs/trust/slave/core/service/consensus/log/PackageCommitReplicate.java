@@ -28,13 +28,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-@Replicator @Slf4j @Component public class PackageCommitReplicate implements ApplicationContextAware, InitializingBean {
+@Replicator
+@Slf4j
+@Component
+public class PackageCommitReplicate implements ApplicationContextAware, InitializingBean {
 
-    @Autowired PackageService packageService;
+    @Autowired
+    PackageService packageService;
 
-    @Autowired ExecutorService packageThreadPool;
+    @Autowired
+    ExecutorService packageThreadPool;
 
-    @Autowired PackageProcess packageProcess;
+    @Autowired
+    PackageProcess packageProcess;
 
     private ApplicationContext applicationContext;
 
@@ -62,66 +68,48 @@ import java.util.concurrent.ExecutorService;
         log.info("package reached consensus, log startHeight: {}, endHeight: {}, size: {}", starHeight, endHeight, size);
         if (log.isDebugEnabled()) {
             log.debug("package info:{}", voList);
-        }
 
-        // validate param
-        if (CollectionUtils.isEmpty(voList)) {
-            log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause packageList is null ");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
-        for (PackageVO vo : voList) {
-            Span span = TraceUtils.createSpan();
-            try {
-                BeanValidateResult result = BeanValidator.validate(vo);
-                if (!result.isSuccess()) {
-                    log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
-                    throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-                }
-
-                // receive package
-                Package pack = PackageConvert.convertPackVOToPack(vo);
-                try {
-                    packageService.receive(pack);
-                    listeners.forEach(listener -> listener.received(pack));
-                } catch (SlaveException e) {
-                    //idempotent as success, other exceptions make the consensus layer retry
-                    if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {
-                        throw e;
-                    }
-                }
-            } finally {
-                TraceUtils.closeSpan(span);
+            // validate param
+            if (CollectionUtils.isEmpty(voList)) {
+                log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause packageList is null ");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
+
+            for (PackageVO vo : voList) {
+                Span span = TraceUtils.createSpan();
+                try {
+                    BeanValidateResult result = BeanValidator.validate(vo);
+                    if (!result.isSuccess()) {
+                        log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
+                        throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+                    }
+
+                    // receive package
+                    Package pack = PackageConvert.convertPackVOToPack(vo);
+                    try {
+                        packageService.receive(pack);
+                        listeners.forEach(listener -> listener.received(pack));
+                    } catch (SlaveException e) {
+                        //idempotent as success, other exceptions make the consensus layer retry
+                        if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {
+                            throw e;
+                        }
+                    }
+                } finally {
+                    TraceUtils.closeSpan(span);
+                }
+            }
+            commit.close();
         }
-        commit.close();
     }
 
-    /**
-     * thread for async package process
-     */
-    private class AsyncPackageProcess implements Runnable {
-        private Long height;
-
-        public AsyncPackageProcess(Long height) {
-            this.height = height;
-        }
-
-        @Override public void run() {
-            /**
-             * if the header satisfy the following conditions, just async start process
-             * 1.header.height == max(blockHeight) + 1
-             * 2.package.status is RECEIVED
-             */
-            packageProcess.process(height);
-        }
-    }
-
-    @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    @Override public void afterPropertiesSet() {
+    @Override
+    public void afterPropertiesSet() {
         Map<String, PackageListener> beansOfType = applicationContext.getBeansOfType(PackageListener.class);
         listeners.addAll(beansOfType.values());
     }

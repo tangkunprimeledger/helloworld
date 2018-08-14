@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.action.manage;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.RsSnapshotHandler;
@@ -30,9 +29,9 @@ import org.springframework.stereotype.Component;
     @Autowired private CaRepository caRepository;
 
     @Override public void process(ActionData actionData) {
-        log.info("[RegisterRSHandler.process] start, actionData: {} ", actionData);
-
         RegisterRS bo = (RegisterRS)actionData.getCurrentAction();
+        log.info("[RegisterRSHandler.process] start, actionData: {} ", bo);
+
         if (null == bo) {
             log.error("[RegisterRSHandler.process] convert to RegisterRS failed");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);

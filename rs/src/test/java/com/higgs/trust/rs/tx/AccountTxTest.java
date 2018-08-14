@@ -20,14 +20,16 @@ import java.util.List;
  */
 public class AccountTxTest {
 
-    @Test public void test() {
+
+    @Test
+    public void test(){
         testCreateCurrency();
-        //        testOpenAccount();
-        //        testIn();
-        //        testOut();
-        //        testTransafer();
-        //        testFreeze();
-        //        testUnFreeze();
+//        testOpenAccount();
+//        testIn();
+//        testOut();
+//        testTransafer();
+//        testFreeze();
+//        testUnFreeze();
     }
 
     /**

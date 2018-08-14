@@ -1,5 +1,8 @@
 package com.higgs.trust.rs.core.service;
 
+import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -10,6 +13,7 @@ import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
+import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -18,11 +22,14 @@ import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.testng.collections.Lists;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author tangfashuang
@@ -42,6 +49,13 @@ public class RsChainServiceImpl implements RsBlockChainService {
     @Autowired
     private RsUTXOSmartContract rsUTXOSmartContract;
 
+    @Autowired
+    private NodeState nodeState;
+    @Autowired
+    private ClusterInfo clusterInfo;
+    @Autowired
+    private ClusterService clusterService;
+
     @Override
     public PageVO<BlockVO> queryBlock(QueryBlockVO req) {
         return blockChainService.queryBlocks(req);
@@ -55,6 +69,11 @@ public class RsChainServiceImpl implements RsBlockChainService {
     @Override
     public PageVO<AccountInfoVO> queryAccount(QueryAccountVO req) {
         return accountInfoService.queryAccountInfo(req);
+    }
+
+    @Override
+    public List<AccountInfoVO> queryAccountsByPage(QueryAccountVO req) {
+        return accountInfoService.queryAccountsByPage(req);
     }
 
     @Override
@@ -149,6 +168,10 @@ public class RsChainServiceImpl implements RsBlockChainService {
         return blockChainService.getMaxBlockHeader();
     }
 
+    @Override
+    public Long getMaxBlockHeight() {
+        return blockChainService.getMaxBlockHeight();
+    }
 
     /**
      * process UTXO contract
@@ -161,10 +184,35 @@ public class RsChainServiceImpl implements RsBlockChainService {
         //check arguments
         if (null == coreTransaction) {
             log.error("process for contract arguments error, coreTransaction is null");
-            throw new IllegalArgumentException("process for contract arguments error, coreTransaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
         return processActions(coreTransaction.getActionList());
 
+    }
+
+    @Override
+    public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
+        return blockChainService.queryBlocksByPage(req);
+    }
+
+    @Override
+    public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
+        return blockChainService.queryTxsByPage(req);
+    }
+
+    @Override
+    public BlockVO queryBlockByHeight(Long height) {
+        return blockChainService.queryBlockByHeight(height);
+    }
+
+    @Override
+    public CoreTransactionVO queryTxById(String txId) {
+        return blockChainService.queryTxById(txId);
+    }
+
+    @Override
+    public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
+        return blockChainService.queryTxByIds(txIds);
     }
 
     /**
@@ -201,5 +249,40 @@ public class RsChainServiceImpl implements RsBlockChainService {
             return false;
         }
         return true;
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public List<NodeInfoVO> queryPeersInfo() {
+        List<NodeInfoVO> peersInfo = Lists.newArrayList();
+        List<String> nodeNames = null;
+        Map<String, Long> mapHeight = null;
+        String masterName = null;
+
+        //query peers info
+        try {
+            nodeNames = clusterInfo.clusterNodeNames();
+            mapHeight = clusterService.getAllClusterHeight();
+            masterName = nodeState.getMasterName();
+        } catch (Throwable e) {
+            log.error("query peers info error", e);
+            return null;
+        }
+
+        // build nodeInfoVO
+        for (String nodeName : nodeNames) {
+            NodeInfoVO nodeInfoVO = new NodeInfoVO();
+            nodeInfoVO.setNodeName(nodeName);
+            nodeInfoVO.setHeight(mapHeight.get(nodeName));
+            nodeInfoVO.setMaster(StringUtils.equals(nodeName, masterName));
+            //TODO lingchao get real status
+            nodeInfoVO.setNodeState(NodeStateEnum.Running.name());
+            peersInfo.add(nodeInfoVO);
+
+        }
+
+        return peersInfo;
     }
 }

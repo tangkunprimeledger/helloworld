@@ -10,7 +10,7 @@ import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
-import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.consensus.BlockHeaderCmd;
 import com.higgs.trust.slave.model.bo.consensus.ClusterHeightCmd;
@@ -74,7 +74,7 @@ import java.util.Map;
             try {
                 ValidResponseWrap<? extends ResponseCommand> validResponseWrap =
                     p2pConsensusClient.syncSend(nodeName, validCommandWrap);
-                Object response = validResponseWrap.getResult();
+                Object response = validResponseWrap.result();
                 if (response != null) {
                     if (response instanceof List) {
                         List<ResponseCommand> commands = (List)response;

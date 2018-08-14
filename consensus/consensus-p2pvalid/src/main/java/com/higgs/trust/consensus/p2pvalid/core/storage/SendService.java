@@ -319,10 +319,7 @@ import java.util.concurrent.locks.ReentrantLock;
      * @param sendCommand
      */
     private void sendCommand(SendCommandPO sendCommand) {
-        if (log.isDebugEnabled()) {
-            log.debug("command info:{}", sendCommand);
-        }
-        log.info("send command, messageDigest:{}", sendCommand.getMessageDigest());
+        log.info("send command {}", sendCommand);
         List<SendNodePO> sendNodeList =
             sendNodeDao.queryByDigestAndStatus(sendCommand.getMessageDigest(), SEND_NODE_WAIT_SEND);
         CountDownLatch countDownLatch = new CountDownLatch(sendNodeList.size());
@@ -335,7 +332,7 @@ import java.util.concurrent.locks.ReentrantLock;
                     validCommandWrap.setCommandClass(sendCommand.getValidCommand().getClass());
                     validCommandWrap.setFromNode(sendCommand.getNodeName());
                     validCommandWrap.setSign(sendCommand.getCommandSign());
-                    validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parse(sendCommand.getValidCommand()));
+                    validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parseObject(sendCommand.getValidCommand(),ValidCommand.class));
                     ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
                         p2pConsensusClient.send(sendNode.getToNodeName(), validCommandWrap);
 
@@ -346,7 +343,7 @@ import java.util.concurrent.locks.ReentrantLock;
                         if (count != 1) {
                             throw new RuntimeException("trans send node status failed when apply! count: " + count);
                         }
-                        log.debug("send command to node success {} ", sendNode);
+                        log.info("send command to node success {} ", sendNode);
                     } else {
                         log.error("send command to node failed {}, error {} ", sendNode,
                             sendValidResponse.getMessage());
@@ -379,8 +376,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
         if (sendCommand.getAckNodeNum() >= sendCommand.getGcThreshold()) {
             queuedGc(sendCommand);
-            log.info("ack node num >= gc threshold, add command to gc, messageDigest:{}",
-                sendCommand.getMessageDigest());
+            log.info("ack node num >= gc threshold, add command to gc {}", sendCommand);
         } else {
             sendCommandDao.increaseRetrySendNum(sendCommand.getMessageDigest());
 
@@ -388,8 +384,8 @@ import java.util.concurrent.locks.ReentrantLock;
             delayTime = Math.min(delayTime, delayDelayMax);
             queuedDelay(sendCommand, delayTime);
 
-            log.info("ack node num {} < gc threshold {}, add to delay send queue, messageDigest:{}",
-                sendCommand.getAckNodeNum(), sendCommand.getGcThreshold(), sendCommand.getMessageDigest());
+            log.info("ack node num {} < gc threshold {}, add to delay send queue {}", sendCommand.getAckNodeNum(),
+                sendCommand.getGcThreshold(), sendCommand);
         }
     }
 

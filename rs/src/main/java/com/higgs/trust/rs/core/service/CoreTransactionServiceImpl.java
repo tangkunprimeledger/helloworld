@@ -1,7 +1,9 @@
 package com.higgs.trust.rs.core.service;
 
 import com.google.common.collect.Lists;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -14,6 +16,7 @@ import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRule;
+import com.higgs.trust.rs.core.callback.RsCoreBatchCallbackProcessor;
 import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
@@ -60,6 +63,7 @@ import java.util.List;
     @Autowired private PolicyRepository policyRepository;
     @Autowired private BlockChainService blockChainService;
     @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
+    @Autowired private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired private SignServiceImpl signService;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
@@ -85,6 +89,7 @@ import java.util.List;
             respData = new RespData();
             respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
             respData.setMsg("tx handle timeout");
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_WAIT_TIME_OUT_ERROR.getMonitorTarget(), 200);
         }
 
         return respData;
@@ -127,7 +132,7 @@ import java.util.List;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
         //save to db
-        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), CoreTxStatusEnum.INIT);
+        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), CoreTxStatusEnum.INIT,0L);
         //process by async
         txProcessExecutorPool.execute(new Runnable() {
             @Override public void run() {
@@ -214,6 +219,8 @@ import java.util.List;
                     log.warn("[processInitTx]need voters is empty txId:{}", bo.getTxId());
                     //still submit to slave
                     coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+                    finalTx[0] = bo;
+                    finalVotePattern[0] = votePattern;
                     return;
                 }
                 //request voting
@@ -271,6 +278,7 @@ import java.util.List;
             //submit by async
             txSubmitExecutorPool.execute(new Runnable() {
                 @Override public void run() {
+                    log.info("submitToSlave by signal");
                     submitToSlave(Lists.newArrayList(finalTx[0]));
                 }
             });
@@ -387,7 +395,17 @@ import java.util.List;
                 respData.setData(coreTxRepository.convertTxVO(bo));
                 //callback custom rs
                 if (isCallback) {
-                    rsCoreCallbackHandler.onEnd(respData, null);
+                    if(!rsConfig.isBatchCallback()) {
+                        rsCoreCallbackHandler.onEnd(respData, null);
+                    }else{
+                        //for batch interface
+                        RsCoreTxVO vo = BeanConvertor.convertBean(bo,RsCoreTxVO.class);
+                        vo.setStatus(CoreTxStatusEnum.END);
+                        vo.setExecuteResult(CoreTxResultEnum.FAIL);
+                        vo.setErrorCode(respData.getRespCode());
+                        vo.setErrorMsg(respData.getMsg());
+                        rsCoreBatchCallbackProcessor.onEnd(Lists.newArrayList(vo),null);
+                    }
                 }
             }
         });
@@ -441,15 +459,15 @@ import java.util.List;
         List<SignedTransaction> txs = makeTxs(boList);
         try {
             log.debug("[submitToSlave] start");
-            RespData respData = blockChainService.submitTransactions(txs);
+            RespData<List<TransactionVO>> respData = blockChainService.submitTransactions(txs);
             if (respData.getData() == null) {
                 log.debug("[submitToSlave] end");
                 return;
             }
             //has fail tx
-            List<TransactionVO> txsOfFail = (List<TransactionVO>)respData.getData();
+            List<TransactionVO> txsOfFail = respData.getData();
             if (log.isDebugEnabled()) {
-                log.debug("[submitToSlave] has fail tx:{}", txsOfFail);
+                log.debug("[submitToSlave] tx result:{}", txsOfFail);
             }
             for (TransactionVO txVo : txsOfFail) {
                 //dont need
@@ -471,8 +489,10 @@ import java.util.List;
             }
         } catch (SlaveException e) {
             log.error("[submitToSlave] has slave error", e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 10);
         } catch (Throwable e) {
             log.error("[submitToSlave] has unknown error", e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_SUBMIT_TO_SLAVE_ERROR.getMonitorTarget(), 10);
         }
     }
 

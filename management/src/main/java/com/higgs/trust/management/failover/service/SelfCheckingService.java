@@ -1,5 +1,7 @@
 package com.higgs.trust.management.failover.service;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
         boolean selfChecked = selfCheck(properties.getStartupRetryTime());
         log.info("self checked result:{}", selfChecked);
         if (!selfChecked) {
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SELF_CHECK_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_SELF_CHECK_FAILED);
         }
     }

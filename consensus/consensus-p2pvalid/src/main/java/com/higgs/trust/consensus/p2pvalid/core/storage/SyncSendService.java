@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                     log.info("sync send command to node {} ", nodeName);
                     ValidResponseWrap<? extends ResponseCommand> validResponseWrap =
                         p2pConsensusClient.syncSend(nodeName, validCommandWrap);
-                    Object result = validResponseWrap.getResult();
+                    Object result = validResponseWrap.result();
                     if (result != null) {
                         if (result instanceof ResponseCommand) {
                             fetchCommand(resultMap, (ResponseCommand)result);
@@ -63,8 +63,6 @@ import java.util.concurrent.atomic.AtomicInteger;
                             for (ResponseCommand command : commands) {
                                 fetchCommand(resultMap, command);
                             }
-                        } else {
-                            throw new IllegalArgumentException("Unsupported return type:" + result);
                         }
                     }
                 } catch (Throwable throwable) {

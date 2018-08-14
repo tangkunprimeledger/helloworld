@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.action.utxo;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
@@ -76,6 +78,7 @@ public class UTXOActionService {
         boolean isLegalUTXOActionType = validateUTXOActionType(utxoAction, policyId);
         if (!isLegalUTXOActionType) {
             log.error("UTXOActionType is not legal!");
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_UTXO_ACTION_TYPE_NOT_LEGAL_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
@@ -83,6 +86,7 @@ public class UTXOActionService {
         boolean isLegalContractAddress = isLegalContractAddress(utxoAction.getContractAddress(), utxoAction.getInputList());
         if (!isLegalContractAddress) {
             log.error("utxoAction contract address is not legal!");
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_UTXO_CONTRACT_ADDRESS_NOT_LEGAL_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
@@ -91,6 +95,7 @@ public class UTXOActionService {
             for (TxOut txOut : utxoAction.getOutputList()) {
                 if (!txOut.getActionIndex().equals(utxoAction.getIndex())) {
                     log.error("One of txOut {} actionIndex :{}  in  outputs is not the same with index: {} in utxoAction", txOut, txOut.getActionIndex(), utxoAction.getIndex());
+                    MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_UTXO_ACTION_INDEX_NOT_LEGAL_EXCEPTION.getMonitorTarget(), 1);
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
                 }
             }
@@ -100,6 +105,7 @@ public class UTXOActionService {
         Profiler.enter("[UTXO.validateIdentity]");
         boolean validateIdentitySuccess = validateIdentity(utxoAction, policyId);
         if (!validateIdentitySuccess) {
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_UTXO_DATA_IDENTITY_NOT_LEGAL_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         Profiler.release();
@@ -472,6 +478,7 @@ public class UTXOActionService {
             TxOutPO txOutPO = STXOBuilder(txIn, actionData);
             if (null == txOutPO) {
                 log.error("STXO  not existed exception！");
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_DATA_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_TX_OUT_NOT_EXISTS_ERROR);
             }
             txOutList.add(txOutPO);
@@ -483,6 +490,7 @@ public class UTXOActionService {
         boolean isUpdate = utxoHandler.batchUpdate(txOutList);
         if (!isUpdate) {
             log.error("STXO  not update exception for txOutList:{}", txOutList);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_DATA_NOT_UPDATED_EXCEPTION.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_DATA_NOT_UPDATE_EXCEPTION);
         }
         log.info("End of  bachUpdate STXO");

@@ -23,7 +23,6 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -33,7 +32,6 @@ import java.util.List;
  * @date 2018-05-13
  */
 @Component @Slf4j public class SlaveCallbackProcessor implements SlaveCallbackHandler, InitializingBean {
-    @Autowired private TransactionTemplate txRequired;
     @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
     @Autowired private CoreTxRepository coreTxRepository;
     @Autowired private RsCoreCallbackProcessor rsCoreCallbackProcessor;
@@ -43,7 +41,9 @@ import java.util.List;
     @Autowired private RsConfig rsConfig;
 
     @Override public void afterPropertiesSet() throws Exception {
-        slaveCallbackRegistor.registCallbackHandler(this);
+        if(!rsConfig.isBatchCallback()) {
+            slaveCallbackRegistor.registCallbackHandler(this);
+        }
     }
 
     @Override public void onPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
@@ -56,7 +56,7 @@ import java.util.List;
         //not send by myself
         if (!sendBySelf(tx.getSender())) {
             //add tx,status=PERSISTED
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED,blockHeader.getHeight());
             //save process result
             coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
             //callback custom rs
@@ -66,9 +66,11 @@ import java.util.List;
         //check core_tx record
         if(!coreTxRepository.isExist(tx.getTxId())){
             log.warn("onPersisted]call back self but core_tx is not exist txId:{}",tx.getTxId());
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED);
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED,blockHeader.getHeight());
             //save process result
             coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
+            //callback custom rs
+            rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
             return;
         }
         //for self
@@ -97,7 +99,7 @@ import java.util.List;
         if(coreTransactionPO == null){
             log.info("[onClusterPersisted]coreTransactionPO is null so add id,txId:{}",tx.getTxId());
             //add tx,status=END
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END,blockHeader.getHeight());
             //save process result
             coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
             //callback custom rs
@@ -133,7 +135,7 @@ import java.util.List;
         CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(tx.getTxId(),false);
         if(coreTransactionPO == null){
             //add tx,status=END
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END);
+            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END,blockHeader.getHeight());
         }else{
             //update tx,status=END
             CoreTxStatusEnum from = CoreTxStatusEnum.formCode(coreTransactionPO.getStatus());
@@ -166,12 +168,6 @@ import java.util.List;
                 throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR);
             }
             callbackType = voteRule.getCallbackType();
-        }else{
-            //default UTXO policy should call back self
-            if(policyEnum == InitPolicyEnum.UTXO_ISSUE
-                || policyEnum == InitPolicyEnum.UTXO_DESTROY){
-                callbackType = CallbackTypeEnum.SELF;
-            }
         }
         log.debug("[getCallbackType]callbackType:{}", callbackType);
         return callbackType;

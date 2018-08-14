@@ -16,11 +16,14 @@ import java.io.Serializable;
     private static final long serialVersionUID = -1L;
 
     private T t;
+    private String cmdName;
 
     public ResponseCommand() {
+        this.setCmdName(this.getClass().getSimpleName());
     }
 
     public ResponseCommand(T t) {
+        this();
         this.t = t;
     }
 

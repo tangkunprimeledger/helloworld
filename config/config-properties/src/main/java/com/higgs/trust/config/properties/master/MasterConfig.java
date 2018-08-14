@@ -12,12 +12,14 @@ import org.springframework.context.annotation.Configuration;
  * @author suimi
  * @date 2018/6/13
  */
-@Getter @Setter @ConfigurationProperties(prefix = "higgs.trust") @Configuration public class MasterConfig {
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "higgs.trust")
+@Configuration
+public class MasterConfig {
 
     /**
      * master name
      */
     private String masterName;
-
-
 }

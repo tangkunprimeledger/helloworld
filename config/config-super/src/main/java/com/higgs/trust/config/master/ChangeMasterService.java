@@ -3,6 +3,8 @@
  */
 package com.higgs.trust.config.master;
 
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.*;
 import com.higgs.trust.consensus.config.NodeProperties;
@@ -124,7 +126,6 @@ import java.util.concurrent.*;
     }
 
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
-        log.info("change master verify");
         List<String> nodeNames = clusterInfo.clusterNodeNames();
         Map<String, ChangeMasterVerifyResponse> heightMap = new HashMap<>();
         Long maxHeight = nodeInfoService.blockHeight();
@@ -142,7 +143,7 @@ import java.util.concurrent.*;
                 ValidResponseWrap<? extends ResponseCommand> validResponseWrap =
                     p2pConsensusClient.syncSend(nodeName, validCommandWrap);
                 if (validResponseWrap.isSucess()) {
-                    Object response = validResponseWrap.getResult();
+                    Object response = validResponseWrap.result();
                     if (response instanceof ChangeMasterVerifyResponseCmd) {
                         ChangeMasterVerifyResponseCmd command = (ChangeMasterVerifyResponseCmd)response;
                         if (command.get().isChangeMaster() && verifyResponse(command)) {
@@ -152,7 +153,7 @@ import java.util.concurrent.*;
                 }
 
             } catch (Throwable throwable) {
-                log.error("change master verify error", throwable);
+                log.error("change master verify failed", throwable);
             }
 
         });
@@ -174,6 +175,7 @@ import java.util.concurrent.*;
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.error("submit change master to consensus failed!", e);
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SUBMIT_CHANGE_MASTER_COMMAND_FAILED, 1);
         }
     }
 

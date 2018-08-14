@@ -3,9 +3,11 @@ package com.higgs.trust.slave.core.scheduler;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.higgs.trust.common.utils.TraceUtils;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.slave.common.constant.Constant;
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
@@ -19,6 +21,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.sleuth.Span;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +32,7 @@ import java.util.Set;
  * @author tangfashuang
  * @date 2018/04/09 15:30
  */
+@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
 @Service @Slf4j public class PackageScheduler {
 
     @Autowired private PendingState pendingState;
@@ -113,7 +117,7 @@ import java.util.Set;
 
         if (null == currentHeight) {
             log.error("please initial Genesis block.");
-            //TODO 添加告警
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_GENESIS_BLOCK_NOT_EXISTS.getMonitorTarget(), 1);
             return;
         }
 

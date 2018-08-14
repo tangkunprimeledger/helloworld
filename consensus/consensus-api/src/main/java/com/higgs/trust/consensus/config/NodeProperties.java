@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Configuration;
     /**
      * the wait time for command consensus
      */
-    private long consensusWaitTime = 20000L;
+    private long consensusWaitTime = 1000L;
 
     public boolean isMock() {
         return "Mock".equalsIgnoreCase(runMode);

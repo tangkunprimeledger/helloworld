@@ -1,6 +1,8 @@
 package com.higgs.trust.management.failover.service;
 
 import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
@@ -97,6 +99,7 @@ import java.util.concurrent.Executors;
             } while (cache.getMinHeight() <= clusterHeight ? clusterHeight > currentHeight + properties.getThreshold() :
                 currentHeight + 1 < cache.getMinHeight());
         } catch (Exception e) {
+            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SYNC_BLOCKS_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
         } finally {
             clusterInfo.refresh();
@@ -110,7 +113,7 @@ import java.util.concurrent.Executors;
         Long clusterHeight;
         int tryTimes = 0;
         do {
-            clusterHeight = blockSyncService.getClusterHeight(properties.getTryTimes());
+            clusterHeight = blockSyncService.getClusterHeight(3);
             if (clusterHeight != null) {
                 break;
             }

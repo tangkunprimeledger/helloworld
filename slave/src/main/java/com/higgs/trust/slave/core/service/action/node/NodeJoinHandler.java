@@ -29,10 +29,10 @@ import org.springframework.stereotype.Component;
 
         log.info("[NodeJoinHandler.process] start to process node join action, user={}", nodeAction.getNodeName());
 
-        /*if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())) {
+        if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())) {
             log.info("join consensus layer, user={}", nodeAction.getNodeName());
             consensusStateMachine.joinConsensus();
-        }*/
+        }
 
         Profiler.enter("[NodeJoinHandler.nodeJoin]");
         ClusterNode clusterNode = new ClusterNode();

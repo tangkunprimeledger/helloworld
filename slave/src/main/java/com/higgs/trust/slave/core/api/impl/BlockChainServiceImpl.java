@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.api.impl;
 
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -7,12 +8,12 @@ import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
-import com.higgs.trust.slave.common.constant.Constant;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
+import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
@@ -35,14 +36,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
+
 /**
  * @author tangfashuang
  * @date 2918/04/14 16:52
  * @desc block chain service
  */
 @Slf4j @Service public class BlockChainServiceImpl implements BlockChainService, InitializingBean {
-
-    private static final String MASTER_NA = "N/A";
 
     @Autowired private PendingStateImpl pendingState;
 
@@ -60,6 +61,8 @@ import java.util.concurrent.Executor;
 
     @Autowired private CurrencyRepository currencyRepository;
 
+    @Autowired private SystemPropertyRepository systemPropertyRepository;
+
     @Autowired private UTXOSnapshotHandler utxoSnapshotHandler;
 
     @Autowired private SystemPropertyHandler systemPropertyHandler;
@@ -72,8 +75,8 @@ import java.util.concurrent.Executor;
 
     @Value("${trust.sleep.submitToMaster:50}") private int SLEEP_FOR_SUBMIT_TO_MASTER;
 
-    @Override public RespData submitTransactions(List<SignedTransaction> transactions) {
-        RespData respData = new RespData();
+    @Override public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
+        RespData<List<TransactionVO>> respData = new RespData();
 
         if (CollectionUtils.isEmpty(transactions)) {
             log.error("received transaction list is empty");
@@ -243,18 +246,14 @@ import java.util.concurrent.Executor;
 
         List<TransactionVO> transactionVOList;
 
-        // when master is running , then add txs into local pending txs
+                // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
             Profiler.enter("submit transactions to self");
             if (nodeState.isState(NodeStateEnum.Running)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);
-                }
+                log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);
                 transactionVOList = pendingState.addPendingTransactions(transactions);
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("The node is master but the status is not running, cannot receive txs: {}", transactions);
-                }
+                log.debug("The node is master but the status is not running, cannot receive txs: {}", transactions);
                 transactionVOList = buildTxVOList(transactions);
             }
             respData.setData(transactionVOList);
@@ -270,7 +269,6 @@ import java.util.concurrent.Executor;
             Profiler.release();
         }
 
-        Profiler.release();
         return respData;
     }
 
@@ -481,4 +479,56 @@ import java.util.concurrent.Executor;
         }
     }
 
+    @Override public Long getMaxBlockHeight() {
+        return blockRepository.getMaxHeight();
+    }
+
+    @Override public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
+        if (null == req) {
+            return null;
+        }
+        //less than minimum，use default value
+        Integer minNo = 0;
+        if (null == req.getPageNo() || req.getPageNo().compareTo(minNo) <= 0) {
+            req.setPageNo(1);
+        }
+        //over the maximum，use default value
+        Integer maxSize = 100;
+        if (null == req.getPageSize() || req.getPageSize().compareTo(maxSize) == 1) {
+            req.setPageSize(20);
+        }
+        return blockRepository
+            .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+    }
+
+    @Override public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
+        if (null == req) {
+            return null;
+        }
+        //less than minimum，use default value
+        Integer minNo = 0;
+        if (null == req.getPageNo() || req.getPageNo().compareTo(minNo) <= 0) {
+            req.setPageNo(1);
+        }
+        //over the maximum，use default value
+        Integer maxSize = 100;
+        if (null == req.getPageSize() || req.getPageSize().compareTo(maxSize) == 1) {
+            req.setPageSize(20);
+        }
+        return transactionRepository
+            .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
+                req.getPageSize());
+    }
+
+    @Override public BlockVO queryBlockByHeight(Long height) {
+        return blockRepository.queryBlockByHeight(height);
+    }
+
+    @Override public CoreTransactionVO queryTxById(String txId) {
+        return transactionRepository.queryTxById(txId);
+    }
+
+    @Override public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
+        return transactionRepository.queryTxs(txIds);
+    }
 }

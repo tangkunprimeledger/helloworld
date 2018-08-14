@@ -21,4 +21,11 @@ public interface AccountInfoService {
     List<AccountInfoVO> queryByAccountNos(List<String> accountNos);
 
     PageVO<AccountInfoVO> queryAccountInfo(QueryAccountVO req);
+
+    /**
+     * query accounts
+     * @param req
+     * @return
+     */
+    List<AccountInfoVO> queryAccountsByPage(QueryAccountVO req);
 }

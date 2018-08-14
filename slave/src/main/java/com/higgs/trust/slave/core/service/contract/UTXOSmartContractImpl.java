@@ -30,13 +30,13 @@ import org.springframework.stereotype.Service;
         }
 
         ExecuteConfig executeConfig = new ExecuteConfig();
-        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.setInstructionCountQuota(100000000);
         executeConfig.allow(UTXOContextService.class)
-            .allow(UTXO.class)
-            .allow(UTXOAction.class)
-            .allow(TxIn.class)
-            .allow(TxOut.class)
-            .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
+                .allow(UTXO.class)
+                .allow(UTXOAction.class)
+                .allow(TxIn.class)
+                .allow(TxOut.class)
+                .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);
         manager.setExecuteConfig(executeConfig);
@@ -75,7 +75,7 @@ import org.springframework.stereotype.Service;
             ExecuteEngine engine = manager.getExecuteEngine(contract.getCode(), ExecuteEngine.JAVASCRIPT);
             Object result = engine.execute("verify");
             return (Boolean)result;
-        } finally {
+        }  finally {
             Profiler.release();
         }
     }

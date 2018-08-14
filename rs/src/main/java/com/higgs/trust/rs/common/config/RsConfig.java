@@ -13,11 +13,13 @@ import javax.validation.constraints.NotNull;
     @NotNull @Value("${higgs.trust.nodeName}") private String rsName;
     @NotNull @Value("${rs.core.useHttpChannel:false}") private boolean useHttpChannel;
     @NotNull @Value("${rs.core.syncRequestTimeout:200}") private long syncRequestTimeout;
+    @NotNull @Value("${rs.core.batchCallback:false}") private boolean batchCallback;
     @NotNull @Value("${server.port}") private int serverPort;
 
     @NotNull @Value("${rs.custom.contractAddress:100}") private String contractAddress;
 
     @NotNull @Value("${trust.useMySQL:true}") private boolean useMySQL;
+
 
     @Override public void afterPropertiesSet() throws Exception {
         BeanValidator.validate(this).failThrow();

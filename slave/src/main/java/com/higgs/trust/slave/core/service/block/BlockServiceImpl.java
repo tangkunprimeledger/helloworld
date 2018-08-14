@@ -58,12 +58,15 @@ import java.util.List;
         blockHeader.setPreviousHash(mBlockHeader.getBlockHash());
         blockHeader.setBlockTime(packageData.getCurrentPackage().getPackageTime());
         blockHeader.setVersion(BlockVersionEnum.V1.getCode());
-        Profiler.enter("[buildRootHash]");
-        //build all root hash for block header
-        StateRootHash stateRootHash = snapshotRootHashBuilder.build(packageData, txReceipts);
+        blockHeader.setTotalTxNum(mBlockHeader.getTotalTxNum());
 
+        //build all root hash for block header
+        Profiler.enter("[buildRootHash]");
+        StateRootHash stateRootHash = snapshotRootHashBuilder.build(packageData, txReceipts);
         Profiler.release();
+
         blockHeader.setStateRootHash(stateRootHash);
+
         //to calculate the hash of block header
         Profiler.enter("[buildBlockHash]");
         String blockHash = buildBlockHash(blockHeader);
@@ -80,9 +83,7 @@ import java.util.List;
      * @return
      */
      @Override public BlockHeader getHeader(Long height) {
-        Block block = blockRepository.getBlock(height);
-
-        return (block == null) ? null : block.getBlockHeader();
+        return blockRepository.getBlockHeader(height);
     }
 
     @Override public Block buildBlock(PackageData packageData, BlockHeader blockHeader) {

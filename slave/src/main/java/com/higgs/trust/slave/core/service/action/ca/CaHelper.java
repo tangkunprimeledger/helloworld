@@ -19,14 +19,22 @@ import org.springframework.stereotype.Component;
         //validate idempotent
         CaPO caPO = caSnapshotHandler.getCa(caAction.getUser());
         if (type == ActionTypeEnum.CA_AUTH) {
-            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey()) && caPO.isValid()) {
+            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
                 return false;
             } else {
                 return true;
             }
         }
 
-        if (type != ActionTypeEnum.CA_AUTH) {
+        if (type == ActionTypeEnum.CA_CANCEL) {
+            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        if (type == ActionTypeEnum.CA_UPDATE) {
             if (null != caPO && !StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
                 return true;
             } else {

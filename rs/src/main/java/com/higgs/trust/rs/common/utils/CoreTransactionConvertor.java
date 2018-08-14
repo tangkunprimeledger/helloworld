@@ -72,21 +72,17 @@ public class CoreTransactionConvertor {
     /**
      * build txOut
      *
-     * @param accountId
+     * @param identity
      * @param actionIndex
      * @param index
-     * @param currency
-     * @param amount
+     * @param state
      * @return
      */
-    public TxOut buildTxOut(String accountId, Integer actionIndex, Integer index, String currency, BigDecimal amount) {
+    public TxOut buildTxOut(String identity,Integer actionIndex, Integer index, JSONObject state) {
         TxOut txOut = new TxOut();
-        txOut.setIdentity(accountId);
+        txOut.setIdentity(identity);
         txOut.setActionIndex(actionIndex);
         txOut.setIndex(index);
-        JSONObject state = new JSONObject();
-        state.put("currency", currency);
-        state.put("amount", amount);
         txOut.setState(state);
         return txOut;
     }
