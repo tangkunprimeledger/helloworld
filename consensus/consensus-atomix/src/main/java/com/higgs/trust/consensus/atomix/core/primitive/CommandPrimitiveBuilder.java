@@ -6,6 +6,7 @@ package com.higgs.trust.consensus.atomix.core.primitive;
 import io.atomix.primitive.PrimitiveBuilder;
 import io.atomix.primitive.PrimitiveManagementService;
 import io.atomix.primitive.PrimitiveType;
+import io.atomix.primitive.protocol.PrimitiveProtocol;
 import io.atomix.primitive.service.ServiceConfig;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,4 +36,7 @@ public class CommandPrimitiveBuilder
             .thenApply(AsyncCommandPrimitive::sync);
     }
 
+    @Override public CommandPrimitiveBuilder withProtocol(PrimitiveProtocol protocol) {
+        return super.withProtocol(protocol);
+    }
 }

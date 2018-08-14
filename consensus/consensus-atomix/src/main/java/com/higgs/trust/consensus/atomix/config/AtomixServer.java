@@ -11,9 +11,10 @@ import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import io.atomix.cluster.Member;
 import io.atomix.cluster.Node;
+import io.atomix.cluster.NodeBuilder;
+import io.atomix.cluster.NodeId;
 import io.atomix.cluster.discovery.BootstrapDiscoveryProvider;
 import io.atomix.core.Atomix;
-import io.atomix.core.AtomixBuilder;
 import io.atomix.core.AtomixConfig;
 import io.atomix.core.AtomixRegistry;
 import io.atomix.protocols.raft.partition.RaftPartitionGroup;
@@ -27,10 +28,10 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -56,15 +57,16 @@ import java.util.concurrent.atomic.AtomicReference;
         properties.getCluster().forEach((key, value) -> {
             Member member = Member.builder().withAddress(value).withId(key).build();
             nodes.add(member);
-            if (properties.getAddress().equals(value)) {
+            if (properties.getAddress().trim().equals(value.trim())) {
                 currentMember.set(key);
             }
         });
         if (atomix == null) {
             //@formatter:off
+            String localMemberId = currentMember.get();
             atomix = new CustomAtomixBuilder(atomixConfig,atomixRegistry)
                 .withAddress(properties.getAddress())
-                .withMemberId(currentMember.get())
+                .withMemberId(localMemberId)
                 .withMembershipProvider(BootstrapDiscoveryProvider.builder().withNodes(nodes).build())
                 .withManagementGroup(
                     RaftPartitionGroup.builder(properties.getSystemGroup())
@@ -73,7 +75,7 @@ import java.util.concurrent.atomic.AtomicReference;
                         .withPartitionSize(properties.getPartitionSize())
                         .withMembers(properties.getCluster().keySet())
                         .withDataDirectory(new File(String.format("%s/%s/%s", properties.getDataPath(),
-                            properties.getSystemGroup(), currentMember.get())))
+                            properties.getSystemGroup(), localMemberId)))
                         .build())
                 .withPartitionGroups(
                     RaftPartitionGroup.builder(properties.getGroup())
@@ -82,7 +84,7 @@ import java.util.concurrent.atomic.AtomicReference;
                         .withNumPartitions(properties.getNumPartitions())
                         .withPartitionSize(properties.getPartitionSize())
                         .withDataDirectory(new File(String.format("%s/%s/%s", properties.getDataPath(),
-                            properties.getGroup(), currentMember.get())))
+                            properties.getGroup(), localMemberId)))
                         .build())
                 .build();
             //@formatter:on
@@ -106,7 +108,26 @@ import java.util.concurrent.atomic.AtomicReference;
     }
 
     @Override public void onApplicationEvent(ApplicationReadyEvent event) {
+
         start();
+
+        AtomicLong atomicLong = new AtomicLong(0);
+        if ("127.0.0.1:8800".equals(properties.getAddress().trim())) {
+            Executors.newSingleThreadExecutor().submit(() -> {
+                while (true) {
+                    try {
+                        ExampleCommand command = new ExampleCommand("id:" + atomicLong.incrementAndGet());
+                        if (log.isDebugEnabled()) {
+                            log.debug("submit command:{}", command.getMsg());
+                        }
+                        this.submit(command).get(20000, TimeUnit.MILLISECONDS);
+                        Thread.sleep(20000);
+                    } catch (Exception e) {
+                        log.error("error", e);
+                    }
+                }
+            });
+        }
     }
 }
 
