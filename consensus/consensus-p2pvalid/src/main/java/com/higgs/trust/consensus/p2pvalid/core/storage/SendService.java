@@ -1,8 +1,8 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -59,6 +59,8 @@ import java.util.concurrent.locks.ReentrantLock;
     @Autowired private P2pConsensusClient p2pConsensusClient;
 
     @Autowired private NodeState nodeState;
+
+    @Autowired private Crypto crypto;
 
     @Value("${p2p.send.gc.interval:6000}") private Long gcInterval;
 
@@ -145,7 +147,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 sendCommand.setGcThreshold(clusterInfo.clusterNodeNames().size());
                 sendCommand.setNodeName(clusterInfo.nodeName());
                 sendCommand
-                    .setCommandSign(SignUtils.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
+                    .setCommandSign(crypto.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
                 sendCommand.setMessageDigest(validCommand.getMessageDigestHash());
                 sendCommand.setStatus(COMMAND_QUEUED_SEND);
                 sendCommand.setRetrySendNum(0);
@@ -332,7 +334,7 @@ import java.util.concurrent.locks.ReentrantLock;
                     validCommandWrap.setCommandClass(sendCommand.getValidCommand().getClass());
                     validCommandWrap.setFromNode(sendCommand.getNodeName());
                     validCommandWrap.setSign(sendCommand.getCommandSign());
-                    validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parseObject(sendCommand.getValidCommand(),ValidCommand.class));
+                    validCommandWrap.setValidCommand((ValidCommand<?>)JSON.parse(sendCommand.getValidCommand()));
                     ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
                         p2pConsensusClient.send(sendNode.getToNodeName(), validCommandWrap);
 
@@ -376,7 +378,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
         if (sendCommand.getAckNodeNum() >= sendCommand.getGcThreshold()) {
             queuedGc(sendCommand);
-            log.info("ack node num >= gc threshold, add command to gc {}", sendCommand);
+            log.info("ack node num >= gc threshold, add command to gc, messageDigest:{}",
+                sendCommand.getMessageDigest());
         } else {
             sendCommandDao.increaseRetrySendNum(sendCommand.getMessageDigest());
 
@@ -384,8 +387,8 @@ import java.util.concurrent.locks.ReentrantLock;
             delayTime = Math.min(delayTime, delayDelayMax);
             queuedDelay(sendCommand, delayTime);
 
-            log.info("ack node num {} < gc threshold {}, add to delay send queue {}", sendCommand.getAckNodeNum(),
-                sendCommand.getGcThreshold(), sendCommand);
+            log.info("ack node num {} < gc threshold {}, add to delay send queue, messageDigest:{}",
+                sendCommand.getAckNodeNum(), sendCommand.getGcThreshold(), sendCommand.getMessageDigest());
         }
     }
 

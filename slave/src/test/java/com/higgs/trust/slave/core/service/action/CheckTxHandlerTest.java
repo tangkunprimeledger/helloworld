@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.service.action;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.rsa.Rsa;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -63,21 +63,20 @@ public class CheckTxHandlerTest extends BaseTest {
 
         stx.setCoreTx(ctx);
 
-        String sign1 = SignUtils.sign(JSON.toJSONString(ctx), priKey1);
-        String sign2 = SignUtils.sign(JSON.toJSONString(ctx), priKey2);
-        String sign3 = SignUtils.sign(JSON.toJSONString(ctx), priKey3);
+        String sign1 = Rsa.sign(JSON.toJSONString(ctx), priKey1);
+        String sign2 = Rsa.sign(JSON.toJSONString(ctx), priKey2);
+        String sign3 = Rsa.sign(JSON.toJSONString(ctx), priKey3);
         List<String> signList = new ArrayList<>();
         signList.add(sign1);
         signList.add(sign2);
         signList.add(sign3);
-//        stx.setSignatureList(signList);
+        //        stx.setSignatureList(signList);
 
         //        checkTxHandler.verifySignatures(stx);
         Assert.assertEquals(true, checkTxHandler.verifySignatures(stx, null));
     }
 
-    @Test
-    public void checkActions() {
+    @Test public void checkActions() {
         List<String> rsIds = new ArrayList<>();
         rsIds.add("rs-test1");
         RegisterPolicy registerPolicyAction = new RegisterPolicy();
@@ -110,7 +109,6 @@ public class CheckTxHandlerTest extends BaseTest {
         boolean flag = checkTxHandler.checkActions(ctx);
 
         Assert.assertEquals(flag, false);
-
 
     }
 }

@@ -180,6 +180,10 @@
             <artifactId>shazamcrest</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
+            <artifactId>consensus-api</artifactId>
+        </dependency>
     </dependencies>
 
    <!--<build>-->

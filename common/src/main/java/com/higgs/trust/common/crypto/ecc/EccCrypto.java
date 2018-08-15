@@ -1,21 +1,24 @@
-package com.higgs.trust.common.crypto.gm;
+package com.higgs.trust.common.crypto.ecc;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
 import com.higgs.trust.common.utils.Base64Util;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
+import java.math.BigInteger;
+
 @Configuration
-@ConditionalOnProperty(prefix = "higgs.trust", name = "crypto", havingValue = "SM", matchIfMissing = true)
-public class GmCrypto implements Crypto {
+@ConditionalOnProperty(prefix = "higgs.trust", name = "crypto", havingValue = "ECC", matchIfMissing = false) @Slf4j
+public class EccCrypto implements Crypto {
 
     /**
      * @return
      * @desc generate pub/pri key pair
      */
     @Override public KeyPair generateKeyPair() {
-        return SM2.generateEncodedKeyPair();
+        return ECKey.generateEncodedKeyPair();
     }
 
     /**
@@ -25,7 +28,8 @@ public class GmCrypto implements Crypto {
      * @desc encrypt, suport ECC, SM2, RSA encrypt
      */
     @Override public String encrypt(String input, String publicKey) throws Exception {
-        return Base64Util.byteArrayToHexStr(SM2.encrypt(input, publicKey));
+        log.warn("encrypt not support for ecc until now");
+        return null;
     }
 
     /**
@@ -35,26 +39,35 @@ public class GmCrypto implements Crypto {
      * @desc decrypt,  suport ECC, SM2, RSA decrypt
      */
     @Override public String decrypt(String input, String privateKey) throws Exception {
-        return SM2.decrypt(input, privateKey);
+        log.warn("decrypt not support for ecc until now");
+        return null;
     }
 
     /**
      * @param message
      * @param privateKey
      * @return
-     * @desc sign message
+     * @desc sign message   Base64 Encoded
      */
     @Override public String sign(String message, String privateKey) {
-        return SM2.sign(message, privateKey).toString();
+        BigInteger priKey = null;
+        try {
+            priKey = new BigInteger(Base64Util.decryptBASE64(privateKey));
+        } catch (Exception e) {
+            throw new RuntimeException("ECC sign, decode privateKey error", e);
+        }
+        ECKey newEcKey = ECKey.fromPrivate(priKey, false);
+        return newEcKey.signMessage(message);
     }
 
     /**
      * @param message
+     * @param signature
      * @param publicKey
      * @return
      * @desc verify signature
      */
     @Override public boolean verify(String message, String signature, String publicKey) {
-        return SM2.verify(message, signature, publicKey);
+        return ECKey.verify(message, signature, publicKey);
     }
 }

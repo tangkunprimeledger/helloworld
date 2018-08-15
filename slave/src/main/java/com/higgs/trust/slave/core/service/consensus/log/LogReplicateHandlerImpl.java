@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusClient;
@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired NodeProperties properties;
 
+    @Autowired private Crypto crypto;
+
     /**
      * retry time interval
      */
@@ -67,7 +69,7 @@ import java.util.concurrent.TimeUnit;
         BatchPackageCommand packageCommand =
             new BatchPackageCommand(nodeState.getCurrentTerm(), nodeState.getMasterName(), packageVOList);
         String signValue = packageCommand.getSignValue();
-        packageCommand.setSign(SignUtils.sign(signValue, nodeState.getPrivateKey()));
+        packageCommand.setSign(crypto.sign(signValue, nodeState.getPrivateKey()));
 
         boolean flag = false;
 

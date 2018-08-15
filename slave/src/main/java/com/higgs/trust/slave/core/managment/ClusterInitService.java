@@ -1,14 +1,13 @@
 package com.higgs.trust.slave.core.managment;
 
-import com.higgs.trust.common.utils.KeyGeneratorUtils;
+import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.crypto.KeyPair;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.ca.CaInitService;
@@ -19,9 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
-
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 /**
  * @author WangQuanzhou
@@ -42,6 +38,8 @@ import java.util.Map;
     @Autowired private NodeState nodeState;
 
     @Autowired private ClusterInfo clusterInfo;
+
+    @Autowired private Crypto crypto;
 
     @Value("${trust.start.mode:cluster}") private String startMode;
 
@@ -75,16 +73,9 @@ import java.util.Map;
             return;
         }
 
-        Map<String, String> map = null;
-        try {
-            map = KeyGeneratorUtils.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            log.error("[init] generate pubKey/priKey has error, no such algorithm");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_GENERATE_KEY_ERROR,
-                "[init] generate pubKey/priKey has error, no such algorithm");
-        }
-        String pubKey = map.get(PUB_KEY);
-        String priKey = map.get(PRI_KEY);
+        KeyPair keyPair = crypto.generateKeyPair();
+        String pubKey = keyPair.getPubKey();
+        String priKey = keyPair.getPriKey();
         Config config = new Config();
         config.setValid(true);
         config.setPubKey(pubKey);

@@ -3,15 +3,15 @@
  */
 package com.higgs.trust.config.master;
 
+import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
-import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.master.command.*;
+import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.term.TermManager;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.config.term.TermManager;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
@@ -50,6 +50,8 @@ import java.util.concurrent.*;
     @Autowired private TermManager termManager;
 
     @Autowired private INodeInfoService nodeInfoService;
+
+    @Autowired Crypto crypto;
 
     private ScheduledFuture heartbeatTimer;
 
@@ -115,7 +117,7 @@ import java.util.concurrent.*;
     public void artificialChangeMaster(int term, long startHeight) {
         ArtificialChangeMasterCommand command =
             new ArtificialChangeMasterCommand(term, nodeState.getNodeName(), startHeight);
-        command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        command.setSign(crypto.sign(command.getSignValue(), nodeState.getPrivateKey()));
         CompletableFuture<?> future = consensusClient.submit(command);
         try {
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
@@ -126,6 +128,7 @@ import java.util.concurrent.*;
     }
 
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
+        log.info("change master verify");
         List<String> nodeNames = clusterInfo.clusterNodeNames();
         Map<String, ChangeMasterVerifyResponse> heightMap = new HashMap<>();
         Long maxHeight = nodeInfoService.blockHeight();
@@ -136,7 +139,7 @@ import java.util.concurrent.*;
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
         validCommandWrap.setFromNode(clusterInfo.nodeName());
-        validCommandWrap.setSign(SignUtils.sign(cmd.getMessageDigestHash(), clusterInfo.privateKey()));
+        validCommandWrap.setSign(crypto.sign(cmd.getMessageDigestHash(), clusterInfo.privateKey()));
         validCommandWrap.setValidCommand(cmd);
         nodeNames.forEach((nodeName) -> {
             try {
@@ -153,7 +156,7 @@ import java.util.concurrent.*;
                 }
 
             } catch (Throwable throwable) {
-                log.error("change master verify failed", throwable);
+                log.error("change master verify error", throwable);
             }
 
         });
@@ -163,13 +166,13 @@ import java.util.concurrent.*;
     private boolean verifyResponse(ChangeMasterVerifyResponseCmd cmd) {
         ChangeMasterVerifyResponse response = cmd.get();
         String pubKey = clusterInfo.pubKey(response.getVoter());
-        return SignUtils.verify(response.getSignValue(), response.getSign(), pubKey);
+        return crypto.verify(response.getSignValue(), response.getSign(), pubKey);
     }
 
     private void consensusChangeMaster(long term, Map<String, ChangeMasterVerifyResponse> verifies) {
         log.info("change master, term:{}", term);
         ChangeMasterCommand command = new ChangeMasterCommand(term, nodeState.getNodeName(), verifies);
-        command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        command.setSign(crypto.sign(command.getSignValue(), nodeState.getPrivateKey()));
         try {
             CompletableFuture<?> future = consensusClient.submit(command);
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);

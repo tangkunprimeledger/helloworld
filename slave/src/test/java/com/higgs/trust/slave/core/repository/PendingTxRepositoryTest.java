@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.rsa.Rsa;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -32,9 +32,9 @@ public class PendingTxRepositoryTest extends BaseTest {
     private static final String priKey2 =
         "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAKQwv8kaTmN15Z7c6gz3/7a8wmtuJqgn25uWAkBO5vTs6DpfB0Nf7N5jOH2pMhkgqkdiOlpNpTb+zoJZ+DNy28mHHbpb99GDEoa5zvcXxypU5yrNhmrch1bJbKZQiGoX/5NAia9t/Kltxdcs6EmWuOQB79fLhLDgwHeUDzYOdM13AgMBAAECgYAFWznGe78262+0QQy5o5WKBpppGszUC4jUiI5GPsy2DMx+qv73qbd2gdIj91MVEsW7Um8I5yOOqb1e70RzmTmmSgmIbc7L2ogkEVa/AWdnmFIqVV7EOokc7pExc0UMlIBXCiNynrQic0YtxV65JjaE/JAFomCCAUBbsP9TSs/ZMQJBANRq8rBvR1PCA9pwzqfwalKAAzpwsOs0tavP8XF80xm7XKNZrnOIIiLSj+ME630ECYJZ2XTKF1g/TblIHV8zAYMCQQDF4LQcqKuNbeUeu0Xf3VX0TXPImIdB3ZbbQyPuynhk5D0Fx72q29gRKUZifrm1Kog6fvrwN1IyuoZem3oijEX9AkApkKPckmnKofRPEjPd+NVVP2diUBrOa4oBDLeaFWrZZihCbpIMWV8UoU82hQfvdpLFxv8eM01OH1T+JHZa4ogxAkA2WEs/H7fV5NurQAWlwPUNXoQxEGr9VO1MlLj2qRa9ps13m+7kUPKba/mPrXw1XFQDtMIYXSkvE3k53HuDp4DFAkAxhxi9veGOKa24Fp+4MFSF3L9UdR6MROqIYVGgE0gHj7r+NIuCqk/l9acw9W4E5gAN03P3RAKpjmcqxOkZyj7h";
 
-    private static final String priKey3 = "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBANDzTWjIRJ6Y3dKT4Z08/QuUMjj3OFSgt8qD9ZFgT3TXik44olP7O0gVJiL+tBtCuqsW6nU2BWt2S/1/SmGVq1dxco1VSCU/Dk7ReBTMRyZBOxfzdMnaTWMbiO+ETodJl3eQbK1miJyVbg7hLe7s/8xiH7AGsKkppW6GC7Kpb4zJAgMBAAECgYBORbYLuGmsF4uQ5ICxjDUmbz9ZA5MAcKwomsIU0UUyecN/hcuZNhWA7Rs6JLuHMroGeTEe8zuYg9n3fgV5BL4H96z3SBSrY+BsCf1CxYGXEVCHzlt6g8575MqtxIlqPXnpKr9S1663EtsCCJ93t5rZmMA7z8bUbFRTcrUsajYzAQJBAPynP0a6Pk5JlF0TW5vbzusZb3CsEdPTp39NxlHEx9v/2xuREti1CSVMhdm8ZDdC5hDoETZn4DTiBAF0Z5it6pkCQQDTt9uSFv16v+62yJIz0KE9EUZrLua1BlfTIyvgBZQ6Lp5ORS2S9iVzfOS77mufysbfGSpmD6Oc5ElY2coUy8GxAkAlFB5zMM4IC0Bc0IR3QTECy77RGE+deMhyJGXghjKWlNwBFa9gYmEvOiXCqKVEfurovEYaZ/A9kpXn6L9zZsKxAkAuym+IdfRHcKu9Uc6eDPnVmT/K6G6si15Vl2xW8mS0ByGNgtRzqlrUj0GuFx9KDXKuU81/CO3L+tgK/vceaXnBAkEAk+OjzXA0KXZGKm+O8/Vl8yiJQpuvpuO4cxy4E7nEAjevFip88p4tO03DVxjyq2Az7457q/T+C/Ohr1X9uS/v/Q==";
-    @Autowired
-    private PendingTxRepository pendingTxRepository;
+    private static final String priKey3 =
+        "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBANDzTWjIRJ6Y3dKT4Z08/QuUMjj3OFSgt8qD9ZFgT3TXik44olP7O0gVJiL+tBtCuqsW6nU2BWt2S/1/SmGVq1dxco1VSCU/Dk7ReBTMRyZBOxfzdMnaTWMbiO+ETodJl3eQbK1miJyVbg7hLe7s/8xiH7AGsKkppW6GC7Kpb4zJAgMBAAECgYBORbYLuGmsF4uQ5ICxjDUmbz9ZA5MAcKwomsIU0UUyecN/hcuZNhWA7Rs6JLuHMroGeTEe8zuYg9n3fgV5BL4H96z3SBSrY+BsCf1CxYGXEVCHzlt6g8575MqtxIlqPXnpKr9S1663EtsCCJ93t5rZmMA7z8bUbFRTcrUsajYzAQJBAPynP0a6Pk5JlF0TW5vbzusZb3CsEdPTp39NxlHEx9v/2xuREti1CSVMhdm8ZDdC5hDoETZn4DTiBAF0Z5it6pkCQQDTt9uSFv16v+62yJIz0KE9EUZrLua1BlfTIyvgBZQ6Lp5ORS2S9iVzfOS77mufysbfGSpmD6Oc5ElY2coUy8GxAkAlFB5zMM4IC0Bc0IR3QTECy77RGE+deMhyJGXghjKWlNwBFa9gYmEvOiXCqKVEfurovEYaZ/A9kpXn6L9zZsKxAkAuym+IdfRHcKu9Uc6eDPnVmT/K6G6si15Vl2xW8mS0ByGNgtRzqlrUj0GuFx9KDXKuU81/CO3L+tgK/vceaXnBAkEAk+OjzXA0KXZGKm+O8/Vl8yiJQpuvpuO4cxy4E7nEAjevFip88p4tO03DVxjyq2Az7457q/T+C/Ohr1X9uS/v/Q==";
+    @Autowired private PendingTxRepository pendingTxRepository;
 
     private SignedTransaction signedTx;
 
@@ -53,7 +53,7 @@ public class PendingTxRepositoryTest extends BaseTest {
         signedTransactions.add(signedTx2);
     }
 
-    private SignedTransaction initTx() throws Exception{
+    private SignedTransaction initTx() throws Exception {
         SignedTransaction signedTransaction = new SignedTransaction();
 
         RegisterPolicy registerPolicy = new RegisterPolicy();
@@ -76,13 +76,13 @@ public class PendingTxRepositoryTest extends BaseTest {
         coreTx1.setVersion("2.0.0");
         coreTx1.setPolicyId("000000");
 
-        String sign1 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey3);
-//        String sign2 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey2);
+        String sign1 = Rsa.sign(JSON.toJSONString(coreTx1), priKey3);
+        //        String sign2 = Rsa.sign(JSON.toJSONString(coreTx1), priKey2);
         List<String> signList = new ArrayList<>();
         signList.add(sign1);
-//        signList.add(sign2);
+        //        signList.add(sign2);
         signedTransaction.setCoreTx(coreTx1);
-//        signedTransaction.setSignatureList(signList);
+        //        signedTransaction.setSignatureList(signList);
 
         return signedTransaction;
     }
@@ -92,7 +92,8 @@ public class PendingTxRepositoryTest extends BaseTest {
     }
 
     @Test public void batchUpdateStatus() {
-        pendingTxRepository.batchUpdateStatus(signedTransactions, PendingTxStatusEnum.INIT, PendingTxStatusEnum.PACKAGED, 3L);
+        pendingTxRepository
+            .batchUpdateStatus(signedTransactions, PendingTxStatusEnum.INIT, PendingTxStatusEnum.PACKAGED, 3L);
 
     }
 
@@ -101,12 +102,13 @@ public class PendingTxRepositoryTest extends BaseTest {
     }
 
     @Test public void getTransactionsByStatus() {
-        List<SignedTransaction> signedTransactionList = pendingTxRepository.getTransactionsByStatus(PendingTxStatusEnum.PACKAGED.getCode(), 4);
+        List<SignedTransaction> signedTransactionList =
+            pendingTxRepository.getTransactionsByStatus(PendingTxStatusEnum.PACKAGED.getCode(), 4);
 
         Assert.assertEquals(4, signedTransactionList.size());
 
-//        Assert.assertEquals("pending-tx-test-3", signedTransactionList.get(0).getCoreTx().getTxId());
-//        Assert.assertEquals("pending-tx-test-4", signedTransactionList.get(1).getCoreTx().getTxId());
+        //        Assert.assertEquals("pending-tx-test-3", signedTransactionList.get(0).getCoreTx().getTxId());
+        //        Assert.assertEquals("pending-tx-test-4", signedTransactionList.get(1).getCoreTx().getTxId());
     }
 
     @Test public void getTransactionsByHeight() {

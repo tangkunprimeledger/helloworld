@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.config.master;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.config.master.command.ChangeMasterVerify;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyCmd;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;
@@ -28,6 +28,8 @@ import org.springframework.stereotype.Component;
 
     @Autowired INodeInfoService nodeInfoService;
 
+    @Autowired Crypto crypto;
+
     /**
      * handle the consensus result of validating block header
      *
@@ -47,7 +49,7 @@ import org.springframework.stereotype.Component;
         ChangeMasterVerifyResponse response =
             new ChangeMasterVerifyResponse(verify.getTerm(), nodeState.getNodeName(), verify.getProposer(),
                 verify.getPackageHeight(), changeMaster);
-        String sign = SignUtils.sign(response.getSignValue(), nodeState.getPrivateKey());
+        String sign = crypto.sign(response.getSignValue(), nodeState.getPrivateKey());
         response.setSign(sign);
         return new ChangeMasterVerifyResponseCmd(operation.messageDigest(), response);
     }

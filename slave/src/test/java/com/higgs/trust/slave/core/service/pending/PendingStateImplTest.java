@@ -2,7 +2,7 @@ package com.higgs.trust.slave.core.service.pending;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.rsa.Rsa;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.vo.TransactionVO;
@@ -10,7 +10,6 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
-import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -64,8 +63,8 @@ public class PendingStateImplTest extends BaseTest {
         coreTx1.setVersion("1.1.0");
         coreTx1.setPolicyId("000000");
 
-        String sign1 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey1);
-        String sign2 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey2);
+        String sign1 = Rsa.sign(JSON.toJSONString(coreTx1), priKey1);
+        String sign2 = Rsa.sign(JSON.toJSONString(coreTx1), priKey2);
         List<String> signList1 = new ArrayList<>();
         signList1.add(sign1);
         signList1.add(sign2);
@@ -94,8 +93,8 @@ public class PendingStateImplTest extends BaseTest {
         coreTx2.setVersion("1.2.0");
         coreTx2.setPolicyId("000000");
 
-        String sign3 = SignUtils.sign(JSON.toJSONString(coreTx2), priKey1);
-        String sign4 = SignUtils.sign(JSON.toJSONString(coreTx2), priKey2);
+        String sign3 = Rsa.sign(JSON.toJSONString(coreTx2), priKey1);
+        String sign4 = Rsa.sign(JSON.toJSONString(coreTx2), priKey2);
         List<String> signList2 = new ArrayList<>();
         signList2.add(sign3);
         signList2.add(sign4);

@@ -51,6 +51,7 @@ import java.util.List;
                     List<TransactionReceipt> txReceipts = new LinkedList();
                     TransactionReceipt transactionReceipt = new TransactionReceipt();
                     transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
+                    transactionReceipt.setResult(true);
                     txReceipts.add(transactionReceipt);
 
                     blockRepository.saveBlock(block, txReceipts);
