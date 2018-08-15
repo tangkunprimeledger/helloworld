@@ -4,28 +4,14 @@ import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
 import com.higgs.trust.common.utils.RsaKeyGeneratorUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
-@Configuration @Slf4j public class RsaCrypto implements Crypto {
-
-    /**
-     * @param
-     * @return
-     * @desc default constructor
-     */
-    private RsaCrypto() {
-    }
-
-    /**
-     * @desc inner class
-     */
-    private static class SingletonHolder {
-        // 私有的 静态的  final类型的
-        private static final RsaCrypto INSTANCE = new RsaCrypto();
-    }
-
+@Configuration @Slf4j
+@ConditionalOnProperty(prefix = "higgs.trust", name = "crypto", havingValue = "RSA", matchIfMissing = false)
+public class RsaCrypto implements Crypto {
     /**
      * @return
      * @desc generate pub/pri key pair
@@ -76,13 +62,5 @@ import java.util.Map;
      */
     @Override public boolean verify(String message, String signature, String publicKey) {
         return Rsa.verify(message, signature, publicKey);
-    }
-
-    /**
-     * @return
-     * @desc get singleton instance
-     */
-    public static final RsaCrypto getSingletonInstance() {
-        return SingletonHolder.INSTANCE;
     }
 }

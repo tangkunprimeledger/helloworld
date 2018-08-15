@@ -4,27 +4,14 @@ import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
 import com.higgs.trust.common.utils.Base64Util;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 import java.math.BigInteger;
 
-@Configuration @Slf4j public class EccCrypto implements Crypto {
-
-    /**
-     * @param
-     * @return
-     * @desc default constructor
-     */
-    private EccCrypto() {
-    }
-
-    /**
-     * @desc inner class
-     */
-    private static class SingletonHolder {
-        // 私有的 静态的  final类型的
-        private static final EccCrypto INSTANCE = new EccCrypto();
-    }
+@Configuration
+@ConditionalOnProperty(prefix = "higgs.trust", name = "crypto", havingValue = "ECC", matchIfMissing = false) @Slf4j
+public class EccCrypto implements Crypto {
 
     /**
      * @return
@@ -82,13 +69,5 @@ import java.math.BigInteger;
      */
     @Override public boolean verify(String message, String signature, String publicKey) {
         return ECKey.verify(message, signature, publicKey);
-    }
-
-    /**
-     * @return
-     * @desc get singleton instance
-     */
-    public static final EccCrypto getSingletonInstance() {
-        return SingletonHolder.INSTANCE;
     }
 }
