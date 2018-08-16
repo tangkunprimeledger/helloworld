@@ -20,7 +20,7 @@ import java.util.Map;
 
     private String dataPath = "/tmp/raft";
 
-    private int partitionSize = 4;
+    private int partitionSize = 7;
 
     private int numPartitions = 1;
 }

@@ -11,8 +11,6 @@ import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import io.atomix.cluster.Member;
 import io.atomix.cluster.Node;
-import io.atomix.cluster.NodeBuilder;
-import io.atomix.cluster.NodeId;
 import io.atomix.cluster.discovery.BootstrapDiscoveryProvider;
 import io.atomix.core.Atomix;
 import io.atomix.core.AtomixConfig;
@@ -116,12 +114,13 @@ import java.util.concurrent.atomic.AtomicReference;
             Executors.newSingleThreadExecutor().submit(() -> {
                 while (true) {
                     try {
-                        ExampleCommand command = new ExampleCommand("id:" + atomicLong.incrementAndGet());
+                        long i = atomicLong.incrementAndGet();
+                        ExampleCommand command = new ExampleCommand("id:" + i, i);
                         if (log.isDebugEnabled()) {
                             log.debug("submit command:{}", command.getMsg());
                         }
                         this.submit(command).get(20000, TimeUnit.MILLISECONDS);
-                        Thread.sleep(20000);
+                        Thread.sleep(1000);
                     } catch (Exception e) {
                         log.error("error", e);
                     }
