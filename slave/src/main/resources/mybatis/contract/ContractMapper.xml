@@ -68,7 +68,7 @@
         <if test="height != null">
             and block_height = #{height}
         </if>
-        <if test="txId != null">
+        <if test="txId != null and txId!=''">
             and tx_id = #{txId}
         </if>
         ORDER BY id DESC
