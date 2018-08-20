@@ -1,15 +1,13 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
 import com.higgs.trust.consensus.p2pvalid.annotation.P2pvalidReplicator;
-import com.higgs.trust.consensus.p2pvalid.core.storage.SendService;
+import com.higgs.trust.consensus.p2pvalid.core.service.P2PSendService;
 import com.higgs.trust.consensus.p2pvalid.core.storage.SyncSendService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -27,7 +25,7 @@ import java.util.function.Function;
 
     private ApplicationContext applicationContext;
 
-    @Autowired private SendService sendService;
+    @Autowired private P2PSendService sendService;
 
     @Autowired private SyncSendService syncSendService;
 

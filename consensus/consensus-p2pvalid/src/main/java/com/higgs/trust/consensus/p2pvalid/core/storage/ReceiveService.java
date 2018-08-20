@@ -32,7 +32,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-@Component @Slf4j public class ReceiveService {
+//@Component
+@Slf4j public class ReceiveService {
 
     public static final Integer COMMAND_NORMAL = 0;
     public static final Integer COMMAND_QUEUED_APPLY = 1;

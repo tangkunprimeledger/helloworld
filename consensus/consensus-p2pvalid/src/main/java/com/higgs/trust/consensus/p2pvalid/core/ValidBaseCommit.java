@@ -1,8 +1,5 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
-import com.alibaba.fastjson.JSON;
-import com.higgs.trust.consensus.p2pvalid.core.storage.ReceiveService;
-import com.higgs.trust.consensus.p2pvalid.dao.po.ReceiveCommandPO;
 import lombok.extern.slf4j.Slf4j;
 
 /**
