@@ -9,7 +9,6 @@ import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import io.atomix.primitive.service.AbstractPrimitiveService;
 import io.atomix.primitive.service.BackupInput;
 import io.atomix.primitive.service.BackupOutput;
-import io.atomix.primitive.service.ServiceConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Function;
@@ -24,8 +23,8 @@ import java.util.function.Function;
 
     private ConsensusSnapshot snapshot;
 
-    public CommandPrimitiveService(CommandPrimitiveType type, ServiceConfig config,
-        AbstractCommitReplicateComposite replicateComposite, ConsensusSnapshot snapshot) {
+    public CommandPrimitiveService(CommandPrimitiveType type, AbstractCommitReplicateComposite replicateComposite,
+        ConsensusSnapshot snapshot) {
         super(type, ICommandPrimitive.class);
         this.replicateComposite = replicateComposite;
         this.snapshot = snapshot;

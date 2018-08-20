@@ -19,8 +19,7 @@ import java.util.*;
  * @author suimi
  * @date 2018/7/6
  */
-@Slf4j
-public class CommandPrimitiveType
+@Slf4j public class CommandPrimitiveType
     implements PrimitiveType<CommandPrimitiveBuilder, CommandPrimitiveConfig, ICommandPrimitive> {
 
     private AbstractCommitReplicateComposite replicateComposite;
@@ -42,7 +41,7 @@ public class CommandPrimitiveType
     }
 
     @Override public PrimitiveService newService(ServiceConfig config) {
-        return new CommandPrimitiveService(this, config, replicateComposite, snapshot);
+        return new CommandPrimitiveService(this, replicateComposite, snapshot);
     }
 
     @Override public String name() {
