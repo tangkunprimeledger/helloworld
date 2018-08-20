@@ -69,6 +69,8 @@ import java.util.concurrent.atomic.AtomicReference;
                 .withManagementGroup(
                     RaftPartitionGroup.builder(properties.getSystemGroup())
                         .withStorageLevel(StorageLevel.DISK)
+                        .withSegmentSize(properties.getSegmentSize())
+                        .withMaxEntrySize(properties.getMaxEntrySize())
                         .withNumPartitions(properties.getNumPartitions())
                         .withPartitionSize(properties.getPartitionSize())
                         .withMembers(properties.getCluster().keySet())
@@ -78,6 +80,8 @@ import java.util.concurrent.atomic.AtomicReference;
                 .withPartitionGroups(
                     RaftPartitionGroup.builder(properties.getGroup())
                         .withStorageLevel(StorageLevel.DISK)
+                        .withSegmentSize(properties.getSegmentSize())
+                        .withMaxEntrySize(properties.getMaxEntrySize())
                         .withMembers(properties.getCluster().keySet())
                         .withNumPartitions(properties.getNumPartitions())
                         .withPartitionSize(properties.getPartitionSize())
