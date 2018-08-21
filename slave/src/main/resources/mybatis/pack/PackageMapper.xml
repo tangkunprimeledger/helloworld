@@ -96,7 +96,7 @@
     <select id="queryHeightsByStatusAndLimit" resultType="java.lang.Long" parameterType="object">
         select
         height
-        from package where status=#{status} order by height asc  limit 0,#{limit}
+        from package where status=#{status} limit #{limit}
     </select>
 
     <select id="getMinHeightWithStatus" resultType="java.lang.Long" parameterType="object">

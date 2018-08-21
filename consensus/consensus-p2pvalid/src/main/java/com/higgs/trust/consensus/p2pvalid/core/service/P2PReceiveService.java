@@ -1,7 +1,9 @@
 package com.higgs.trust.consensus.p2pvalid.core.service;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
@@ -31,7 +33,7 @@ import java.util.concurrent.*;
      * store max received command number
      */
     @Value("${p2p.receive.maxCommandNum:5000}") int maxCommandNum;
-    @Value("${p2p.receive.retryNum:50}") int retryNum;
+    @Value("${p2p.receive.retryNum:10}") int retryNum;
 
     /**
      * store received command
@@ -117,7 +119,7 @@ import java.util.concurrent.*;
                     break;
                 }
                 try {
-                    Thread.sleep(100 + 100 * num);
+                    Thread.sleep(100L + 100 * num);
                 } catch (InterruptedException e) {
                     log.error("has InterruptedException", e);
                 }
@@ -126,6 +128,7 @@ import java.util.concurrent.*;
             if (!validCommit.isClosed()) {
                 log.warn("execute validCommit:{} is fail,so change state to offline", validCommit);
                 nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
+                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
             }
         });
     }

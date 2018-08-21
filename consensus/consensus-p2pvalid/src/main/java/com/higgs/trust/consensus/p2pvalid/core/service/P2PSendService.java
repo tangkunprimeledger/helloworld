@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 
     /**
      * submit command to p2p layer
+     *
      * @param validCommand
      */
     public void submit(ValidCommand<?> validCommand) {
@@ -62,25 +63,35 @@ import java.util.concurrent.TimeUnit;
 
         clusterInfo.clusterNodeNames().forEach((toNodeName) -> {
             sendExecutorService.execute(() -> {
-                int i = 0;
-                do {
-                    try {
-                        Profiler.enter("send p2p command");
-                        ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
-                            p2pConsensusClient.send(toNodeName, validCommandWrap);
-                        if (sendValidResponse.isSucess()) {
-                            log.info("send command to node:{} success", toNodeName);
-                            break;
-                        } else {
-                            log.error("send command to node:{} failed {}, response:{} ", toNodeName, sendValidResponse);
-                        }
-                    } catch (Throwable t) {
-                        log.error("send to node:{},command:{},error {}", toNodeName, validCommand, t);
-                    } finally {
-                        Profiler.release();
-                    }
-                } while (++i < retryNum);
+                execute(toNodeName, validCommandWrap);
             });
         });
+    }
+
+    /**
+     * execute
+     *
+     * @param toNodeName
+     * @param validCommandWrap
+     */
+    private void execute(String toNodeName, ValidCommandWrap validCommandWrap) {
+        int i = 0;
+        do {
+            try {
+                Profiler.enter("send p2p command");
+                ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
+                    p2pConsensusClient.send(toNodeName, validCommandWrap);
+                if (sendValidResponse.isSucess()) {
+                    log.info("send command to node:{} success", toNodeName);
+                    break;
+                } else {
+                    log.error("send command to node:{} failed {}, response:{} ", toNodeName, sendValidResponse);
+                }
+            } catch (Throwable t) {
+                log.error("send to node:{},command:{},error {}", toNodeName, validCommandWrap.getValidCommand(), t);
+            } finally {
+                Profiler.release();
+            }
+        } while (++i < retryNum);
     }
 }
