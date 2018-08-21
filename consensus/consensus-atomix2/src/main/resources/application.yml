@@ -1,0 +1,19 @@
+atomix:
+  cluster:
+    node-A: 127.0.0.1:8800
+    node-B: 127.0.0.1:8801
+    node-C: 127.0.0.1:8802
+    node-D: 127.0.0.1:8803
+#    node-E: 127.0.0.1:8804
+eureka:
+  client:
+    enabled: false
+management:
+  shell:
+    auth:
+      simple:
+        user:
+          name: user
+          password: pwd
+  security:
+    enabled: false

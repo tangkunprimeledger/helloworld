@@ -17,6 +17,7 @@
         <module>consensus-smart</module>
         <module>consensus-p2pvalid</module>
         <module>consensus-atomix</module>
+        <module>consensus-atomix2</module>
     </modules>
 
 </project>
