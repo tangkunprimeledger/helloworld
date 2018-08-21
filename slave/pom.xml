@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
-            <artifactId>consensus-copycat</artifactId>
+            <artifactId>consensus-atomix2</artifactId>
         </dependency>
      <!--   <dependency>
             <groupId>com.higgs.trust</groupId>
@@ -31,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
-            <artifactId>config-properties</artifactId>
+            <artifactId>config-super</artifactId>
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
