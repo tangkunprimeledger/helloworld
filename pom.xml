@@ -103,6 +103,11 @@
             </dependency>
             <dependency>
                 <groupId>com.higgs.trust</groupId>
+                <artifactId>consensus-atomix2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
                 <artifactId>consensus-p2pvalid</artifactId>
                 <version>${project.version}</version>
             </dependency>
