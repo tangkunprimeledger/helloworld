@@ -4,7 +4,6 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.MonitorLogUtils;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
@@ -107,12 +106,9 @@ import java.util.concurrent.*;
             int num = 0;
             do {
                 try {
-                    Profiler.enter("execute validCommit");
                     validConsensus.getValidExecutor().execute(validCommit);
                 } catch (Throwable t) {
                     log.error("execute validCommit:{} has error:{}", validCommit, t);
-                } finally {
-                    Profiler.release();
                 }
                 if (validCommit.isClosed()) {
                     log.info("execute validCommit:{} is success", validCommit);

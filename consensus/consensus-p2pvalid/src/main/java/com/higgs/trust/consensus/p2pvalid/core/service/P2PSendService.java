@@ -78,6 +78,7 @@ import java.util.concurrent.TimeUnit;
         int i = 0;
         do {
             try {
+                Profiler.start("start send p2p command");
                 Profiler.enter("send p2p command");
                 ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
                     p2pConsensusClient.send(toNodeName, validCommandWrap);
