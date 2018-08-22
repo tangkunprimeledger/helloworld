@@ -32,7 +32,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 //@Component
-@Deprecated
+@Deprecated//use P2PSendService
 @Slf4j public class SendService {
 
     private static final Integer COMMAND_QUEUED_SEND = 0;
