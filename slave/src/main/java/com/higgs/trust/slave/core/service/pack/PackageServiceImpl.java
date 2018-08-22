@@ -211,7 +211,7 @@ import java.util.stream.Collectors;
             log.error("[package.process]the transactions in the package is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
-        log.info("process package start, height:{},tx size:{}", pack.getHeight(), txs.size());
+        Profiler.start("[PackageService.process.monitor]size:" + txs.size());
         try {
             //snapshot transactions should be init
             snapshotService.clear();
@@ -270,7 +270,6 @@ import java.util.stream.Collectors;
                 Profiler.logDump();
             }
         }
-
         log.info("process package finish");
     }
 

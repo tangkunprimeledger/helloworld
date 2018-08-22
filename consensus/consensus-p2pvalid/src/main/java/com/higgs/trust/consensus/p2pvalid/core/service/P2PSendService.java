@@ -1,6 +1,5 @@
 package com.higgs.trust.consensus.p2pvalid.core.service;
 
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.SignUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
@@ -60,20 +59,16 @@ import org.springframework.stereotype.Component;
         int i = 0;
         do {
             try {
-                Profiler.start("start send p2p command");
-                Profiler.enter("send p2p command");
                 ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
                     p2pConsensusClient.send(toNodeName, validCommandWrap);
                 if (sendValidResponse.isSucess()) {
-                    log.info("send command to node:{} success,digestHash:{}", toNodeName,validCommandWrap.getValidCommand().getMessageDigestHash());
+                    log.info("p2p.send command to node:{} success,digestHash:{}", toNodeName,validCommandWrap.getValidCommand().getMessageDigestHash());
                     break;
                 } else {
-                    log.error("send command to node:{} failed,response:{} ", toNodeName, sendValidResponse);
+                    log.error("p2p.send command to node:{} failed,response:{} ", toNodeName, sendValidResponse);
                 }
             } catch (Throwable t) {
-                log.error("send to node:{},command:{},error:{}", toNodeName, validCommandWrap.getValidCommand(), t);
-            } finally {
-                Profiler.release();
+                log.error("p2p.send to node:{},command:{},error:{}", toNodeName, validCommandWrap.getValidCommand(), t);
             }
         } while (++i < retryNum);
     }

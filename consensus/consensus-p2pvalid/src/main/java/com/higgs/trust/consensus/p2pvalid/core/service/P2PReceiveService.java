@@ -61,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
      * @param validCommandWrap
      */
     public void receive(ValidCommandWrap validCommandWrap) {
-        log.info("fromNode:{},messageDigest:{}", validCommandWrap.getFromNode(),
+        log.info("p2p.receive fromNode:{},messageDigest:{}", validCommandWrap.getFromNode(),
             validCommandWrap.getValidCommand().getMessageDigestHash());
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new RuntimeException(String.format("the node state is not running, please try again latter"));
@@ -86,7 +86,7 @@ import java.util.concurrent.ConcurrentHashMap;
         //check threshold
         int applyThreshold = Math.min(clusterInfo.faultNodeNum() * 2 + 1, clusterInfo.clusterNodeNames().size());
         if (_old.size() < applyThreshold) {
-            log.info("command.size is less than applyThreshold:{}", applyThreshold);
+            log.debug("command.size is less than applyThreshold:{}", applyThreshold);
             return;
         }
         Integer v = executedCommand.putIfAbsent(messageDigest, 0);
