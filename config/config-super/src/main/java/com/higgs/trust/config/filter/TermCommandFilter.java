@@ -61,7 +61,7 @@ import org.springframework.stereotype.Component;
                 return;
             }
             if (term == nodeState.getCurrentTerm()) {
-                termManager.resetEndHeight(height[height.length - 1]);
+                termManager.resetEndHeight(height);
                 changeMasterService.renewHeartbeatTimeout();
                 if (nodeState.isMaster()) {
                     masterHeartbeatService.resetMasterHeartbeat();

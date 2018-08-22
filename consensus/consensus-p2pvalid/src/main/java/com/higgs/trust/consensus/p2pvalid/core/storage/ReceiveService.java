@@ -1,7 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -57,6 +57,8 @@ import java.util.concurrent.locks.ReentrantLock;
     @Autowired private ClusterInfo clusterInfo;
 
     @Autowired private NodeState nodeState;
+
+    @Autowired private Crypto crypto;
 
     @Value("${p2p.revceive.increase.delay.interval:3000}") private Long delayIncreaseInterval;
 
@@ -116,7 +118,7 @@ import java.util.concurrent.locks.ReentrantLock;
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
 
         String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNode());
-        if (!SignUtils.verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
+        if (!crypto.verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
             throw new RuntimeException(String
                 .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
                     validCommandWrap, pubKey));

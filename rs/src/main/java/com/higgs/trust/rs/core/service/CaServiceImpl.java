@@ -1,10 +1,10 @@
 package com.higgs.trust.rs.core.service;
 
+import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.crypto.KeyPair;
 import com.higgs.trust.common.utils.HashUtil;
-import com.higgs.trust.common.utils.KeyGeneratorUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.common.enums.RespCodeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -27,18 +27,21 @@ import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
+ * @desc ca service
  * @date 2018/6/5 15:48
  */
 @Service @Slf4j public class CaServiceImpl implements CaService {
@@ -55,17 +58,17 @@ import java.util.*;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private RsNodeRepository rsNodeRepository;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
+    @Autowired private Crypto crypto;
 
     /**
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc generate pubKey and PriKey ,send CA auth request to other TRUST node,then insert into db
      */
     @Override public String authKeyPair(String user) {
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[authKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[authKeyPair] invalid node name");
         }
 
@@ -97,8 +100,10 @@ import java.util.*;
                 log.error("send tx error");
                 return FAIL;
             }
-        } catch (Throwable e) {
-            log.error("send ca auth error", e);
+        } catch (HystrixRuntimeException e1) {
+            log.error("wait timeOut", e1);
+        } catch (Throwable e2) {
+            log.error("send ca auth error", e2);
             return FAIL;
         }
 
@@ -142,7 +147,7 @@ import java.util.*;
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[updateKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[updateKeyPair] invalid node name");
         }
 
@@ -187,7 +192,7 @@ import java.util.*;
         //check nodeName
         if (!nodeState.getNodeName().equals(user)) {
             log.error("[cancelKeyPair] invalid node name");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_EXIST_ERROR,
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_INVALID_NODE_NAME_ERROR,
                 "[cancelKeyPair] invalid node name");
         }
 
@@ -346,17 +351,10 @@ import java.util.*;
     private CaVO generateTmpKeyPair(Ca ca) {
 
         // generate temp pubKey and priKey and insert into db
-        Map<String, String> map = null;
-        try {
-            map = KeyGeneratorUtils.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            log.error("[generateTmpKeyPair] generate pubKey/priKey has error, no such algorithm");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
-                "[generateTmpKeyPair] generate pubKey/priKey has error, no such algorithm");
-        }
         log.info("[generateTmpKeyPair] start to generate tempKeyPairs");
-        String pubKey = map.get(PUB_KEY);
-        String priKey = map.get(PRI_KEY);
+        KeyPair keyPair = crypto.generateKeyPair();
+        String pubKey = keyPair.getPubKey();
+        String priKey = keyPair.getPriKey();
         //store temp pubKey and priKey
         Config config = new Config();
         config.setNodeName(ca.getUser());
@@ -406,16 +404,9 @@ import java.util.*;
     private CaVO generateKeyPair() {
 
         // generate pubKey and priKey
-        Map<String, String> map = null;
-        try {
-            map = KeyGeneratorUtils.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            log.error("[generateKeyPair] generate pubKey/priKey has error, no such algorithm");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GENERATE_KEY_ERROR,
-                "[generateKeyPair] generate pubKey/priKey has error, no such algorithm");
-        }
-        String pubKey = map.get(PUB_KEY);
-        String priKey = map.get(PRI_KEY);
+        KeyPair keyPair = crypto.generateKeyPair();
+        String pubKey = keyPair.getPubKey();
+        String priKey = keyPair.getPriKey();
         //store pubKey and priKey
         Config config = new Config();
         config.setNodeName(nodeState.getNodeName());

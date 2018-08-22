@@ -117,7 +117,7 @@
 								`usage` as `usage`,
 								create_time as createTime,
 								update_time as updateTime
-		      FROM ca WHERE `user`=#{user} and valid=1
+		      FROM ca WHERE `user`=#{user}
 	</select>
 
 
