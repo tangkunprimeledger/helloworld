@@ -208,6 +208,7 @@ import java.util.stream.Collectors;
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (txs == null) {
             pack.setSignedTxList(Collections.emptyList());
+            txs = pack.getSignedTxList();
         }
         if (CollectionUtils.isEmpty(txs) && !isFailover) {
             log.error("[package.process]the transactions in the package is empty");
