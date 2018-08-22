@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
      * store max received command number
      */
     @Value("${p2p.receive.maxCommandNum:5000}") int maxCommandNum;
-    @Value("${p2p.receive.retryNum:10}") int retryNum;
+    @Value("${p2p.receive.retryNum:100}") int retryNum;
 
     /**
      * store received command
@@ -49,10 +49,10 @@ import java.util.concurrent.ConcurrentHashMap;
     @Override public void afterPropertiesSet() throws Exception {
         receivedCommand = new ConcurrentLinkedHashMap.Builder<String, ConcurrentHashMap<String, ValidCommandWrap>>()
             .maximumWeightedCapacity(maxCommandNum)
-            .listener((key, value) -> log.info("[receivedCommand]Evicted key:{},value:{}", key, value)).build();
+            .listener((key, value) -> log.debug("[receivedCommand]Evicted key:{},value:{}", key, value)).build();
 
         executedCommand = new ConcurrentLinkedHashMap.Builder<String, Integer>().maximumWeightedCapacity(maxCommandNum)
-            .listener((key, value) -> log.info("[executedCommand]Evicted key:{},value:{}", key, value)).build();
+            .listener((key, value) -> log.debug("[executedCommand]Evicted key:{},value:{}", key, value)).build();
     }
 
     /**
@@ -61,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
      * @param validCommandWrap
      */
     public void receive(ValidCommandWrap validCommandWrap) {
-        log.info("p2p.receive fromNode:{},messageDigest:{}", validCommandWrap.getFromNode(),
+        log.debug("p2p.receive fromNode:{},messageDigest:{}", validCommandWrap.getFromNode(),
             validCommandWrap.getValidCommand().getMessageDigestHash());
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new RuntimeException(String.format("the node state is not running, please try again latter"));
@@ -105,11 +105,11 @@ import java.util.concurrent.ConcurrentHashMap;
                     log.error("execute validCommit:{} has error:{}", validCommit, t);
                 }
                 if (validCommit.isClosed()) {
-                    log.info("execute validCommit:{} is success", validCommit);
+                    log.debug("execute validCommit:{} is success", validCommit);
                     break;
                 }
                 try {
-                    Thread.sleep(100L + 100 * num);
+                    Thread.sleep(100L + 500 * num);
                 } catch (InterruptedException e) {
                     log.error("has InterruptedException", e);
                 }

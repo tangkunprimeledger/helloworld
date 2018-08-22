@@ -65,7 +65,7 @@ import java.util.List;
             if (!CollectionUtils.isEmpty(blockHeaders)) {
                 break;
             }
-            sleep(100L + 100 * i);
+            sleep(100L + 500 * i);
         } while (++i < p2pRetryNum);
 
         if (CollectionUtils.isEmpty(blockHeaders)) {
