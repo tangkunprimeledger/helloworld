@@ -246,11 +246,15 @@ import java.util.stream.Collectors;
 
             if (!isBatchSync) {
                 PackageStatusEnum from = PackageStatusEnum.RECEIVED;
+                PackageStatusEnum to = PackageStatusEnum.WAIT_PERSIST_CONSENSUS;
                 if (pack.getStatus() == PackageStatusEnum.FAILOVER) {
                     from = PackageStatusEnum.FAILOVER;
+                    to = PackageStatusEnum.PERSISTED;
                 }
-                packageRepository.updateStatus(pack.getHeight(), from, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                p2pHandler.sendPersisting(dbHeader);
+                packageRepository.updateStatus(pack.getHeight(), from, to);
+                if(!isFailover){
+                    p2pHandler.sendPersisting(dbHeader);
+                }
             }
 
             //TODO:fashuang for test
