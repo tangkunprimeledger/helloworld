@@ -7,6 +7,7 @@ import com.google.common.hash.Hashing;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.SlaveBatchCallbackHandler;
@@ -17,7 +18,6 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
@@ -105,7 +105,6 @@ import java.util.stream.Collectors;
         for (Package pack : packs) {
             voList.add(PackageConvert.convertPackToPackVO(pack));
         }
-
 
         logReplicateHandler.replicatePackage(voList);
     }
@@ -207,7 +206,7 @@ import java.util.stream.Collectors;
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
-        if (CollectionUtils.isEmpty(txs)) {
+        if (CollectionUtils.isEmpty(txs) && !isFailover) {
             log.error("[package.process]the transactions in the package is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
