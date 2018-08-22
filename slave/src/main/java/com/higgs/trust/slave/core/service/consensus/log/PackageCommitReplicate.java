@@ -68,39 +68,38 @@ public class PackageCommitReplicate implements ApplicationContextAware, Initiali
         log.info("package reached consensus, log startHeight: {}, endHeight: {}, size: {}", starHeight, endHeight, size);
         if (log.isDebugEnabled()) {
             log.debug("package info:{}", voList);
-
-            // validate param
-            if (CollectionUtils.isEmpty(voList)) {
-                log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause packageList is null ");
-                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-            }
-
-            for (PackageVO vo : voList) {
-                Span span = TraceUtils.createSpan();
-                try {
-                    BeanValidateResult result = BeanValidator.validate(vo);
-                    if (!result.isSuccess()) {
-                        log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
-                        throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-                    }
-
-                    // receive package
-                    Package pack = PackageConvert.convertPackVOToPack(vo);
-                    try {
-                        packageService.receive(pack);
-                        listeners.forEach(listener -> listener.received(pack));
-                    } catch (SlaveException e) {
-                        //idempotent as success, other exceptions make the consensus layer retry
-                        if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {
-                            throw e;
-                        }
-                    }
-                } finally {
-                    TraceUtils.closeSpan(span);
-                }
-            }
-            commit.close();
         }
+        // validate param
+        if (CollectionUtils.isEmpty(voList)) {
+            log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause packageList is null ");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        for (PackageVO vo : voList) {
+            Span span = TraceUtils.createSpan();
+            try {
+                BeanValidateResult result = BeanValidator.validate(vo);
+                if (!result.isSuccess()) {
+                    log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+                }
+
+                // receive package
+                Package pack = PackageConvert.convertPackVOToPack(vo);
+                try {
+                    packageService.receive(pack);
+                    listeners.forEach(listener -> listener.received(pack));
+                } catch (SlaveException e) {
+                    //idempotent as success, other exceptions make the consensus layer retry
+                    if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {
+                        throw e;
+                    }
+                }
+            } finally {
+                TraceUtils.closeSpan(span);
+            }
+        }
+        commit.close();
     }
 
     @Override

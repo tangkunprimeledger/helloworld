@@ -158,7 +158,8 @@ IF NOT EXISTS `package` (
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	`update_time` datetime (3) DEFAULT NULL COMMENT 'update time',
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_package` (`height`)
+	UNIQUE KEY `uniq_package` (`height`),
+	KEY `idx_status` (`status`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'package';
 
 -- contract init

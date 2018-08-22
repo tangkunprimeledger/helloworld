@@ -70,7 +70,7 @@ import java.util.List;
      * @param transactions
      * @return submit failed transaction list
      */
-    @RequestMapping(value = "/transaction/master/submit", method = RequestMethod.POST) RespData submitToMaster(
+    @RequestMapping(value = "/transaction/master/submit", method = RequestMethod.POST) RespData<List<TransactionVO>> submitToMaster(
         @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName,
         @RequestBody List<SignedTransaction> transactions);
 

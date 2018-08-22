@@ -24,14 +24,14 @@ public interface BlockChainService {
      */
     RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions);
 
-    RespData submitTransaction(SignedTransaction transaction);
+    RespData<List<TransactionVO>> submitTransaction(SignedTransaction transaction);
 
     /**
      * submit transactions to master node
      * @param transactions
      * @return
      */
-    RespData submitToMaster(List<SignedTransaction> transactions);
+    RespData<List<TransactionVO>> submitToMaster(List<SignedTransaction> transactions);
 
     List<BlockHeader> listBlockHeaders(long startHeight, int size);
 

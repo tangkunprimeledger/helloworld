@@ -32,7 +32,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-@Component @Slf4j public class SendService {
+//@Component
+@Slf4j public class SendService {
 
     private static final Integer COMMAND_QUEUED_SEND = 0;
     private static final Integer COMMAND_QUEUED_GC = 1;
