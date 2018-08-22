@@ -62,7 +62,9 @@ import org.springframework.stereotype.Component;
                 ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
                     p2pConsensusClient.send(toNodeName, validCommandWrap);
                 if (sendValidResponse.isSucess()) {
-                    log.debug("p2p.send command to node:{} success,digestHash:{}", toNodeName,validCommandWrap.getValidCommand().getMessageDigestHash());
+                    if(log.isDebugEnabled()){
+                        log.debug("p2p.send command to node:{} success,digestHash:{}", toNodeName,validCommandWrap.getValidCommand().getMessageDigestHash());
+                    }
                     break;
                 } else {
                     log.error("p2p.send command to node:{} failed,response:{} ", toNodeName, sendValidResponse);

@@ -48,11 +48,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
     @Override public void afterPropertiesSet() throws Exception {
         receivedCommand = new ConcurrentLinkedHashMap.Builder<String, ConcurrentHashMap<String, ValidCommandWrap>>()
-            .maximumWeightedCapacity(maxCommandNum)
-            .listener((key, value) -> log.debug("[receivedCommand]Evicted key:{},value:{}", key, value)).build();
+            .maximumWeightedCapacity(maxCommandNum).listener((key, value) -> {
+                if (log.isDebugEnabled()) {
+                    log.debug("[receivedCommand]Evicted key:{},value:{}", key, value);
+                }
+            }).build();
 
-        executedCommand = new ConcurrentLinkedHashMap.Builder<String, Integer>().maximumWeightedCapacity(maxCommandNum)
-            .listener((key, value) -> log.debug("[executedCommand]Evicted key:{},value:{}", key, value)).build();
+        executedCommand = new ConcurrentLinkedHashMap.Builder<String, Integer>().
+            maximumWeightedCapacity(maxCommandNum).listener((key, value) -> {
+            if (log.isDebugEnabled()) {
+                log.debug("[executedCommand]Evicted key:{},value:{}", key, value);
+            }
+        }).build();
+
     }
 
     /**
@@ -61,8 +69,10 @@ import java.util.concurrent.ConcurrentHashMap;
      * @param validCommandWrap
      */
     public void receive(ValidCommandWrap validCommandWrap) {
-        log.debug("p2p.receive fromNode:{},messageDigest:{}", validCommandWrap.getFromNode(),
-            validCommandWrap.getValidCommand().getMessageDigestHash());
+        if (log.isDebugEnabled()) {
+            log.debug("p2p.receive fromNode:{},messageDigest:{}", validCommandWrap.getFromNode(),
+                validCommandWrap.getValidCommand().getMessageDigestHash());
+        }
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new RuntimeException(String.format("the node state is not running, please try again latter"));
         }
@@ -86,7 +96,9 @@ import java.util.concurrent.ConcurrentHashMap;
         //check threshold
         int applyThreshold = Math.min(clusterInfo.faultNodeNum() * 2 + 1, clusterInfo.clusterNodeNames().size());
         if (_old.size() < applyThreshold) {
-            log.debug("command.size is less than applyThreshold:{}", applyThreshold);
+            if (log.isDebugEnabled()) {
+                log.debug("command.size is less than applyThreshold:{}", applyThreshold);
+            }
             return;
         }
         Integer v = executedCommand.putIfAbsent(messageDigest, 0);
@@ -105,7 +117,9 @@ import java.util.concurrent.ConcurrentHashMap;
                     log.error("execute validCommit:{} has error:{}", validCommit, t);
                 }
                 if (validCommit.isClosed()) {
-                    log.debug("execute validCommit:{} is success", validCommit);
+                    if (log.isDebugEnabled()) {
+                        log.debug("execute validCommit:{} is success", validCommit);
+                    }
                     break;
                 }
                 try {
