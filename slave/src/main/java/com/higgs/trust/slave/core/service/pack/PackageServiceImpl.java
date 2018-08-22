@@ -206,6 +206,9 @@ import java.util.stream.Collectors;
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
+        if (txs == null) {
+            pack.setSignedTxList(Collections.emptyList());
+        }
         if (CollectionUtils.isEmpty(txs) && !isFailover) {
             log.error("[package.process]the transactions in the package is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
