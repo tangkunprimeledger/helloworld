@@ -271,7 +271,7 @@ import java.util.Set;
             log.warn("[isPackageStatus] package is null height:{}",height);
             return false;
         }
-        log.info("package of DB status:{},blockHeight:{}",packagePO.getStatus(),height);
+        log.debug("package of DB status:{},blockHeight:{}",packagePO.getStatus(),height);
         return PackageStatusEnum.getByCode(packagePO.getStatus()) == packageStatusEnum;
     }
 }

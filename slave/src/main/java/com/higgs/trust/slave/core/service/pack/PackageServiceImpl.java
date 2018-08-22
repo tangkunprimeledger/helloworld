@@ -211,7 +211,7 @@ import java.util.stream.Collectors;
             log.error("[package.process]the transactions in the package is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
-        log.info("process package start, height:{},tx size:{}", pack.getHeight(), txs.size());
+        Profiler.start("[PackageService.process.monitor]size:" + txs.size());
         try {
             //snapshot transactions should be init
             snapshotService.clear();
@@ -246,11 +246,15 @@ import java.util.stream.Collectors;
 
             if (!isBatchSync) {
                 PackageStatusEnum from = PackageStatusEnum.RECEIVED;
+                PackageStatusEnum to = PackageStatusEnum.WAIT_PERSIST_CONSENSUS;
                 if (pack.getStatus() == PackageStatusEnum.FAILOVER) {
                     from = PackageStatusEnum.FAILOVER;
+                    to = PackageStatusEnum.PERSISTED;
                 }
-                packageRepository.updateStatus(pack.getHeight(), from, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                p2pHandler.sendPersisting(dbHeader);
+                packageRepository.updateStatus(pack.getHeight(), from, to);
+                if(!isFailover){
+                    p2pHandler.sendPersisting(dbHeader);
+                }
             }
 
             //TODO:fashuang for test
@@ -270,7 +274,6 @@ import java.util.stream.Collectors;
                 Profiler.logDump();
             }
         }
-
         log.info("process package finish");
     }
 
