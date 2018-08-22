@@ -32,6 +32,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 //@Component
+@Deprecated
 @Slf4j public class ReceiveService {
 
     public static final Integer COMMAND_NORMAL = 0;
