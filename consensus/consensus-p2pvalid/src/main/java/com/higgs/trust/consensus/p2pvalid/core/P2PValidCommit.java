@@ -1,8 +1,11 @@
 package com.higgs.trust.consensus.p2pvalid.core;
 
+import lombok.ToString;
+
 /**
  * @author liuyu
  */
+@ToString
 public class P2PValidCommit<T extends ValidCommand<?>> extends ValidBaseCommit<T> {
 
     public static final int COMMAND_NORMAL = 0;

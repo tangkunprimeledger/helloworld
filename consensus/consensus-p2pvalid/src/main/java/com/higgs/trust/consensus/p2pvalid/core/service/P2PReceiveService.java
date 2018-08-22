@@ -12,22 +12,24 @@ import com.higgs.trust.consensus.p2pvalid.core.P2PValidCommit;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author liuyu
  * @description
  * @date 2018-08-20
  */
-@Component @Slf4j public class P2PReceiveService {
+@Component @Slf4j public class P2PReceiveService implements InitializingBean {
     @Autowired private NodeState nodeState;
     @Autowired private ClusterInfo clusterInfo;
     @Autowired private ValidConsensus validConsensus;
+    @Autowired private ThreadPoolTaskExecutor p2pReceiveExecutor;
     /**
      * store max received command number
      */
@@ -37,28 +39,20 @@ import java.util.concurrent.*;
     /**
      * store received command
      */
-    private ConcurrentLinkedHashMap<String, ConcurrentHashMap<String, ValidCommandWrap>> receivedCommand =
-        new ConcurrentLinkedHashMap.Builder<String, ConcurrentHashMap<String, ValidCommandWrap>>()
-            .maximumWeightedCapacity(maxCommandNum)
-            .listener((key, value) -> log.info("Evicted key:{},value:{}", key, value)).build();
+    private ConcurrentLinkedHashMap<String, ConcurrentHashMap<String, ValidCommandWrap>> receivedCommand = null;
 
     /**
      * store executed commands
      */
-    private ConcurrentLinkedHashMap<String, Integer> executedCommand =
-        new ConcurrentLinkedHashMap.Builder<String, Integer>().maximumWeightedCapacity(maxCommandNum)
-            .listener((key, value) -> log.info("Evicted key:{},value:{}", key, value)).build();
+    private ConcurrentLinkedHashMap<String, Integer> executedCommand = null;
 
-    private ExecutorService receivedExecutorService;
+    @Override public void afterPropertiesSet() throws Exception {
+        receivedCommand = new ConcurrentLinkedHashMap.Builder<String, ConcurrentHashMap<String, ValidCommandWrap>>()
+            .maximumWeightedCapacity(maxCommandNum)
+            .listener((key, value) -> log.info("[receivedCommand]Evicted key:{},value:{}", key, value)).build();
 
-    @PostConstruct public void initThreadPool() {
-        receivedExecutorService =
-            new ThreadPoolExecutor(5, 10, 3600, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1024), (r) -> {
-                Thread thread = new Thread(r);
-                thread.setName("command receive thread executor");
-                thread.setDaemon(true);
-                return thread;
-            });
+        executedCommand = new ConcurrentLinkedHashMap.Builder<String, Integer>().maximumWeightedCapacity(maxCommandNum)
+            .listener((key, value) -> log.info("[executedCommand]Evicted key:{},value:{}", key, value)).build();
     }
 
     /**
@@ -67,7 +61,8 @@ import java.util.concurrent.*;
      * @param validCommandWrap
      */
     public void receive(ValidCommandWrap validCommandWrap) {
-        log.debug("command receive : {}", validCommandWrap);
+        log.info("fromNode:{},messageDigest:{}", validCommandWrap.getFromNode(),
+            validCommandWrap.getValidCommand().getMessageDigestHash());
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new RuntimeException(String.format("the node state is not running, please try again latter"));
         }
@@ -78,7 +73,6 @@ import java.util.concurrent.*;
                 .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
                     validCommandWrap, pubKey));
         }
-        log.debug("command message digest:{}", validCommandWrap.getValidCommand().getMessageDigestHash());
         String fromNode = validCommandWrap.getFromNode();
         ConcurrentHashMap<String, ValidCommandWrap> _new = new ConcurrentHashMap<>();
         ConcurrentHashMap<String, ValidCommandWrap> _old = receivedCommand.putIfAbsent(messageDigest, _new);
@@ -92,16 +86,16 @@ import java.util.concurrent.*;
         //check threshold
         int applyThreshold = Math.min(clusterInfo.faultNodeNum() * 2 + 1, clusterInfo.clusterNodeNames().size());
         if (_old.size() < applyThreshold) {
-            log.debug("command.size is less than applyThreshold:{}", applyThreshold);
+            log.info("command.size is less than applyThreshold:{}", applyThreshold);
             return;
         }
-        Integer v = executedCommand.putIfAbsent(messageDigest,0);
+        Integer v = executedCommand.putIfAbsent(messageDigest, 0);
         if (v != null) {
-            log.debug("command is already executed");
+            log.warn("command is already executed");
             return;
         }
         ValidCommandWrap o = BeanConvertor.convertBean(validCommandWrap, ValidCommandWrap.class);
-        receivedExecutorService.execute(() -> {
+        p2pReceiveExecutor.execute(() -> {
             P2PValidCommit validCommit = new P2PValidCommit(o.getValidCommand());
             int num = 0;
             do {

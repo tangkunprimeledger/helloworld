@@ -125,4 +125,26 @@ import java.util.concurrent.*;
         ExecutorService service = Executors.newSingleThreadExecutor(namedDaemonThreadFactory);
         return new LazyTraceExecutor(beanFactory, service);
     }
+
+    @Bean (name = "p2pSendExecutor")  public ThreadPoolTaskExecutor p2pSendExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(10);
+        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.setQueueCapacity(5000);
+        threadPoolTaskExecutor.setKeepAliveSeconds(3600);
+        threadPoolTaskExecutor.setThreadNamePrefix("p2pSendExecutor-");
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
+
+    @Bean (name = "p2pReceiveExecutor")  public ThreadPoolTaskExecutor p2pReceiveExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(5);
+        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.setQueueCapacity(1024);
+        threadPoolTaskExecutor.setKeepAliveSeconds(3600);
+        threadPoolTaskExecutor.setThreadNamePrefix("p2pReceivedExecutor-");
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
 }
