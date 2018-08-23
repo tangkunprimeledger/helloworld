@@ -42,12 +42,31 @@ import java.util.Map;
         return new ArrayList<>(clusters.keySet());
     }
 
-    @Override public String pubKey(String nodeName) {
+    @Override public String pubKeyForConsensus(String nodeName) {
         return clusters.get(nodeName);
     }
 
-    @Override public String privateKey() {
+    /**
+     * get public key create the given nodeName
+     *
+     * @param nodeName
+     * @return
+     */
+    @Override public String pubKeyForBiz(String nodeName) {
+        return null;
+    }
+
+    @Override public String priKeyForConsensus() {
         return nodeState.getPrivateKey();
+    }
+
+    /**
+     * get the self private key
+     *
+     * @return
+     */
+    @Override public String priKeyForBiz() {
+        return null;
     }
 
     @Override public void init(ClusterInfoVo vo) {
@@ -57,6 +76,10 @@ import java.util.Map;
     }
 
     @Override public void refresh() {
+
+    }
+
+    @Override public void refreshConsensus() {
 
     }
 }

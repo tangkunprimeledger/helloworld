@@ -2,12 +2,14 @@ package com.higgs.trust.slave.api.controller;
 
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.service.ca.CaInitService;
+import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author WangQuanzhou
@@ -23,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
      *
      * @return
      */
-    @RequestMapping(value = "/ca/init", method = RequestMethod.GET) RespData<String> caInit() {
+    @RequestMapping(value = "/ca/init", method = RequestMethod.GET) RespData<List<Config>> caInit() {
         return caInitService.initCaTx();
     }
 

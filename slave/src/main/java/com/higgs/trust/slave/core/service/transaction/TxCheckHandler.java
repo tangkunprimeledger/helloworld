@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.service.transaction;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -29,8 +29,6 @@ import java.util.*;
 @Slf4j @Component public class TxCheckHandler {
 
     @Autowired private PolicyRepository policyRepository;
-
-    @Autowired private Crypto crypto;
 
     public boolean verifySignatures(SignedTransaction signedTransaction, Map<String, String> rsPubKeys) {
         try {
@@ -111,7 +109,7 @@ import java.util.*;
 
                 //verify signature
                 for (RsPubKey rsPubKey : rsPubKeyList) {
-                    if (null != rsPubKey && !crypto
+                    if (null != rsPubKey && !CryptoUtil.getBizCrypto()
                         .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
                         return false;
                     }
@@ -119,7 +117,7 @@ import java.util.*;
                 flag = true;
             } else if (DecisionTypeEnum.ONE_VOTE == decisionType) {
                 for (RsPubKey rsPubKey : rsPubKeyList) {
-                    if (null != rsPubKey && crypto
+                    if (null != rsPubKey && CryptoUtil.getBizCrypto()
                         .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
                         return true;
                     }

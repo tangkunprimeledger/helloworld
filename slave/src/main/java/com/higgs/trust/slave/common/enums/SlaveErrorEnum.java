@@ -126,6 +126,7 @@ public enum SlaveErrorEnum implements ErrorInfo {
     SLAVE_LEAVE_CONSENSUS_ERROR("905", "slave leave consensus error", false),
     SLAVE_JOIN_CONSENSUS_ERROR("906", "join leave consensus error", false),
     SLAVE_CA_BATCH_UPDATE_ERROR("907", "slave ca batch update error", false),
+    SLAVE_CA_UPDATE_ERROR("908", "slave ca update error", false),
     ;
     //@formatter:on
 

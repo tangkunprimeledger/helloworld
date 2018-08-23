@@ -35,8 +35,8 @@ import org.springframework.stereotype.Component;
         // convert action and validate it
         CaAction caAction = (CaAction)actionData.getCurrentAction();
 
-        log.info("[CaUpdateHandler.process] start to process ca update action, user={}, pubKey={}", caAction.getUser(),
-            caAction.getPubKey());
+        log.info("[CaUpdateHandler.process] start to process ca update action, user={}, pubKey={}, usage={}", caAction.getUser(),
+            caAction.getPubKey(),caAction.getUsage());
 
         if (!caHelper.validate(caAction, ActionTypeEnum.CA_UPDATE)) {
             log.error("[CaUpdateHandler.process] actionData validate error, user={}, pubKey={}", caAction.getUser(),

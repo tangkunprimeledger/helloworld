@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.consensus.p2pvalid.config;
 
-import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.consensus.config.NodeProperties;
@@ -38,8 +38,6 @@ import org.springframework.stereotype.Service;
     @Autowired private P2pConsensusClient client;
 
     @Autowired private NodeState nodeState;
-
-    @Autowired private Crypto crypto;
 
     @StateChangeListener(value = NodeStateEnum.Running, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
     public void refreshClusterInfo() {
@@ -81,7 +79,8 @@ import org.springframework.stereotype.Service;
             commandWrap.setCommandClass(command.getClass());
             log.info("clusterInfo.nodeName={}", clusterInfo.nodeName());
             commandWrap.setFromNode(clusterInfo.nodeName());
-            commandWrap.setSign(crypto.sign(command.getMessageDigestHash(), clusterInfo.privateKey()));
+            commandWrap
+                .setSign(CryptoUtil.getProtocolCrypto().sign(command.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
             commandWrap.setValidCommand(command);
             try {
                 response = client.syncSendFeign(nodeState.notMeNodeNameReg(), commandWrap);

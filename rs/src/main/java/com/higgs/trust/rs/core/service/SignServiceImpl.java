@@ -2,6 +2,7 @@ package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -23,19 +24,18 @@ import org.springframework.stereotype.Service;
     @Autowired private RsConfig rsConfig;
     @Autowired private ConfigRepository configRepository;
 
-    @Autowired private Crypto crypto;
 
     @Override public SignInfo signTx(CoreTransaction coreTx) {
         String coreTxJSON = JSON.toJSONString(coreTx);
         log.info("[signTx]txId:{},coreTxJSON:{}", coreTx.getTxId(), coreTxJSON);
-        Config config = configRepository.getConfig(rsConfig.getRsName());
+        Config config = configRepository.getBizConfig(rsConfig.getRsName());
         if (config == null) {
             log.error("[signTx]get config is null rsName:{}", rsConfig.getRsName());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_RS_CONFIG_NULL_ERROR);
         }
         String privateKey = config.getPriKey();
-        log.info("[signTx]privateKey:{}", privateKey);
-        String sign = crypto.sign(coreTxJSON, privateKey);
+        log.info("[signTx]priKeyForBiz:{}", privateKey);
+        String sign = CryptoUtil.getBizCrypto().sign(coreTxJSON, privateKey);
         log.info("[signTx]sign:{}", sign);
         SignInfo signInfo = new SignInfo();
         signInfo.setOwner(rsConfig.getRsName());

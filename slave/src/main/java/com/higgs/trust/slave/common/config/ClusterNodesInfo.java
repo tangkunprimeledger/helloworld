@@ -11,6 +11,7 @@ import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.config.Config;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
     @Getter private Map<String, String> clusters = new ConcurrentHashMap<>();
 
+    @Getter private Map<String, String> clustersForConsensus = new ConcurrentHashMap<>();
+
     @Getter @Setter private List<String> clusterNodeNames = new ArrayList<>();
 
     @Autowired private ClusterConfigRepository clusterConfigRepository;
@@ -60,11 +63,30 @@ import java.util.concurrent.ConcurrentHashMap;
         return clusterNodeNames;
     }
 
-    @Override public String pubKey(String nodeName) {
+    @Override public String pubKeyForConsensus(String nodeName) {
+        return clustersForConsensus.get(nodeName);
+    }
+
+    /**
+     * get public key create the given nodeName
+     *
+     * @param nodeName
+     * @return
+     */
+    @Override public String pubKeyForBiz(String nodeName) {
         return clusters.get(nodeName);
     }
 
-    @Override public String privateKey() {
+    @Override public String priKeyForConsensus() {
+        return nodeState.getConsensusPrivateKey();
+    }
+
+    /**
+     * get the self private key
+     *
+     * @return
+     */
+    @Override public String priKeyForBiz() {
         return nodeState.getPrivateKey();
     }
 
@@ -74,16 +96,39 @@ import java.util.concurrent.ConcurrentHashMap;
         clusters.putAll(vo.getClusters());
         clusterNodeNames.clear();
         clusterNodeNames.addAll(clusters.keySet());
+        log.info("[init] refresh keypair for consensus layer");
+        refreshConsensus();
     }
 
-    public void refresh() {
+    @Override public void refreshConsensus() {
+        List<Ca> list = caRepository.getAllCa();
+        clustersForConsensus.clear();
+        for (Ca ca : list) {
+            if (ca.getUsage().equals(UsageEnum.CONSENSUS.getCode())) {
+                log.info("add pubKey for user={},pubKey={}", ca.getUser(), ca.getPubKey());
+                clustersForConsensus.put(ca.getUser(), ca.getPubKey());
+            }
+        }
+        List<Config> configList =
+            configRepository.getConfig(new Config(nodeState.getNodeName(), UsageEnum.CONSENSUS.getCode()));
+        if (log.isDebugEnabled()) {
+            log.debug("configList={}", configList);
+        }
+        nodeState.setConsensusPrivateKey(configList.get(0).getPriKey());
+    }
+
+    @Override public void refresh() {
         log.info("refresh cluster info");
         log.info("[refresh] before refresh, cluster nodes = {}", clusterNodeNames);
         ClusterConfig clusterConfig = clusterConfigRepository.getClusterConfig(nodeState.getClusterName());
         faultNodeNum = clusterConfig == null ? 0 : clusterConfig.getFaultNum();
-        Config config = configRepository.getConfig(nodeState.getNodeName());
+        Config config = configRepository.getBizConfig(nodeState.getNodeName());
         nodeState.setPrivateKey(null != config ? config.getPriKey() : null);
         refreshPubkeys();
+
+        log.info("refresh keypair for consensus layer");
+        refreshConsensus();
+
         log.info("[refresh] end refresh, cluster nodes = {}", clusterNodeNames);
     }
 
@@ -98,7 +143,7 @@ import java.util.concurrent.ConcurrentHashMap;
         if (list != null) {
             list.forEach(clusterNode -> {
                 if (clusterNode.isP2pStatus()) {
-                    Ca ca = caRepository.getCa(clusterNode.getNodeName());
+                    Ca ca = caRepository.getCaForBiz(clusterNode.getNodeName());
                     if (ca != null) {
                         clusterPubkeys.put(clusterNode.getNodeName(), ca.getPubKey());
                     }

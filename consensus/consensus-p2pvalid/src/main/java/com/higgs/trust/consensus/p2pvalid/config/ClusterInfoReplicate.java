@@ -31,7 +31,7 @@ import java.util.Map;
         ClusterInfoVo clusterInfoVo = new ClusterInfoVo();
         clusterInfoVo.setFaultNodeNum(clusterInfo.faultNodeNum());
         Map<String, String> clusters = new HashMap<>();
-        clusterInfo.clusterNodeNames().forEach(nodeName -> clusters.put(nodeName, clusterInfo.pubKey(nodeName)));
+        clusterInfo.clusterNodeNames().forEach(nodeName -> clusters.put(nodeName, clusterInfo.pubKeyForConsensus(nodeName)));
         clusterInfoVo.setClusters(clusters);
         return new ValidClusterInfoCmd(commit.operation().get(), clusterInfoVo);
     }

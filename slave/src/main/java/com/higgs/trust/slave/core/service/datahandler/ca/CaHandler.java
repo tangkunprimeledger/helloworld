@@ -36,5 +36,5 @@ public interface CaHandler {
      * @return Ca
      * @desc get CA information by nodeName
      */
-    CaPO getCa(String nodeName);
+    CaPO getCa(String nodeName, String usage);
 }

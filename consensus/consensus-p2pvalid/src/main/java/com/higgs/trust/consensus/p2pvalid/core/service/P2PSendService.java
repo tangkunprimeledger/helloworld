@@ -1,6 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.service;
 
-import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -26,8 +26,8 @@ import org.springframework.stereotype.Component;
     @Autowired private ClusterInfo clusterInfo;
     @Autowired private P2pConsensusClient p2pConsensusClient;
     @Autowired private ThreadPoolTaskExecutor p2pSendExecutor;
-    @Autowired private Crypto crypto;
     @Value("${p2p.send.retryNum:3}") int retryNum;
+
     /**
      * submit command to p2p layer
      *
@@ -40,7 +40,8 @@ import org.springframework.stereotype.Component;
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(validCommand.getClass());
         validCommandWrap.setFromNode(nodeState.getNodeName());
-        validCommandWrap.setSign(crypto.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
+        validCommandWrap.setSign(
+            CryptoUtil.getProtocolCrypto().sign(validCommand.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
         validCommandWrap.setValidCommand(validCommand);
 
         clusterInfo.clusterNodeNames().forEach((toNodeName) -> {
@@ -63,8 +64,9 @@ import org.springframework.stereotype.Component;
                 ValidResponseWrap<? extends ResponseCommand> sendValidResponse =
                     p2pConsensusClient.send(toNodeName, validCommandWrap);
                 if (sendValidResponse.isSucess()) {
-                    if(log.isDebugEnabled()){
-                        log.debug("p2p.send command to node:{} success,digestHash:{}", toNodeName,validCommandWrap.getValidCommand().getMessageDigestHash());
+                    if (log.isDebugEnabled()) {
+                        log.debug("p2p.send command to node:{} success,digestHash:{}", toNodeName,
+                            validCommandWrap.getValidCommand().getMessageDigestHash());
                     }
                     break;
                 } else {

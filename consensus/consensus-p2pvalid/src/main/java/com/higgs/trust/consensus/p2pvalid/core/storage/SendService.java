@@ -1,7 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
@@ -60,8 +60,6 @@ import java.util.concurrent.locks.ReentrantLock;
     @Autowired private P2pConsensusClient p2pConsensusClient;
 
     @Autowired private NodeState nodeState;
-
-    @Autowired private Crypto crypto;
 
     @Value("${p2p.send.gc.interval:6000}") private Long gcInterval;
 
@@ -147,8 +145,8 @@ import java.util.concurrent.locks.ReentrantLock;
                 sendCommand.setAckNodeNum(0);
                 sendCommand.setGcThreshold(clusterInfo.clusterNodeNames().size());
                 sendCommand.setNodeName(clusterInfo.nodeName());
-                sendCommand
-                    .setCommandSign(crypto.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
+                sendCommand.setCommandSign(
+                    CryptoUtil.getProtocolCrypto().sign(validCommand.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
                 sendCommand.setMessageDigest(validCommand.getMessageDigestHash());
                 sendCommand.setStatus(COMMAND_QUEUED_SEND);
                 sendCommand.setRetrySendNum(0);

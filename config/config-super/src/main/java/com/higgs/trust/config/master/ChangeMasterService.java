@@ -3,8 +3,8 @@
  */
 package com.higgs.trust.config.master;
 
-import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.master.command.*;
 import com.higgs.trust.config.p2p.ClusterInfo;
@@ -50,8 +50,6 @@ import java.util.concurrent.*;
     @Autowired private TermManager termManager;
 
     @Autowired private INodeInfoService nodeInfoService;
-
-    @Autowired Crypto crypto;
 
     private ScheduledFuture heartbeatTimer;
 
@@ -117,7 +115,8 @@ import java.util.concurrent.*;
     public void artificialChangeMaster(int term, long startHeight) {
         ArtificialChangeMasterCommand command =
             new ArtificialChangeMasterCommand(term, nodeState.getNodeName(), startHeight);
-        command.setSign(crypto.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        command
+            .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));
         CompletableFuture<?> future = consensusClient.submit(command);
         try {
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
@@ -139,7 +138,8 @@ import java.util.concurrent.*;
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
         validCommandWrap.setFromNode(clusterInfo.nodeName());
-        validCommandWrap.setSign(crypto.sign(cmd.getMessageDigestHash(), clusterInfo.privateKey()));
+        validCommandWrap
+            .setSign(CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
         validCommandWrap.setValidCommand(cmd);
         nodeNames.forEach((nodeName) -> {
             try {
@@ -165,14 +165,15 @@ import java.util.concurrent.*;
 
     private boolean verifyResponse(ChangeMasterVerifyResponseCmd cmd) {
         ChangeMasterVerifyResponse response = cmd.get();
-        String pubKey = clusterInfo.pubKey(response.getVoter());
-        return crypto.verify(response.getSignValue(), response.getSign(), pubKey);
+        String pubKey = clusterInfo.pubKeyForConsensus(response.getVoter());
+        return CryptoUtil.getProtocolCrypto().verify(response.getSignValue(), response.getSign(), pubKey);
     }
 
     private void consensusChangeMaster(long term, Map<String, ChangeMasterVerifyResponse> verifies) {
         log.info("change master, term:{}", term);
         ChangeMasterCommand command = new ChangeMasterCommand(term, nodeState.getNodeName(), verifies);
-        command.setSign(crypto.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        command
+            .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));
         try {
             CompletableFuture<?> future = consensusClient.submit(command);
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);

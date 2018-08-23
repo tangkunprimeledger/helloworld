@@ -26,15 +26,15 @@ import java.util.List;
     }
 
     @Test public void testPubKey() throws Exception {
-        String pubKey = p2pClusterInfo.pubKey("TRUST-node97");
+        String pubKey = p2pClusterInfo.pubKeyForConsensus("TRUST-node97");
         log.info("get node pub key : {}", pubKey);
         Assert.assertNotNull(pubKey);
     }
 
     @Test public void testPrivateKey() throws Exception {
-        String priKey = p2pClusterInfo.privateKey();
+        String priKey = p2pClusterInfo.priKeyForConsensus();
         log.info("get node pri key : {}", priKey);
-        Assert.assertNotNull(p2pClusterInfo.privateKey());
+        Assert.assertNotNull(p2pClusterInfo.priKeyForConsensus());
     }
 
 }
