@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
  * @create 2018-08-01
  */
 
-@Slf4j @Component @Replicator public class ExampleCommandReplicator {
+@Slf4j
+//@Component @Replicator
+public class ExampleCommandReplicator {
 
     @Autowired ExampleSnapshot exampleSnapshot;
 

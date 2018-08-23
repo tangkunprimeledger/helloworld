@@ -112,26 +112,6 @@ import java.util.concurrent.atomic.AtomicReference;
     @Override public void onApplicationEvent(ApplicationReadyEvent event) {
 
         start();
-
-        AtomicLong atomicLong = new AtomicLong(1);
-        if ("127.0.0.1:8800".equals(properties.getAddress().trim())) {
-            Executors.newSingleThreadExecutor().submit(() -> {
-                while (true) {
-                    try {
-                        long i = atomicLong.get();
-                        ExampleCommand command = new ExampleCommand("id:" + i, i);
-                        if (log.isDebugEnabled()) {
-                            log.debug("submit command:{}", command.getMsg());
-                        }
-                        this.submit(command).get(20000, TimeUnit.MILLISECONDS);
-                        Thread.sleep(1000);
-                        atomicLong.incrementAndGet();
-                    } catch (Exception e) {
-                        log.error("error", e);
-                    }
-                }
-            });
-        }
     }
 }
 

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/8/15
  */
-@Component
 @Slf4j public class ExampleSnapshot implements ConsensusSnapshot {
     long currentIndex = 0;
 

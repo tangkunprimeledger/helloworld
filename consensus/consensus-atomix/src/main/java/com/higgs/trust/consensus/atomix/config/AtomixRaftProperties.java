@@ -29,5 +29,5 @@ import java.util.Map;
     /**
      * the maximum segment size in bytes
      */
-    private int segmentSize = 1024 * 1024 * 32;
+    private int segmentSize = 1024 * 1024 * 10;
 }
