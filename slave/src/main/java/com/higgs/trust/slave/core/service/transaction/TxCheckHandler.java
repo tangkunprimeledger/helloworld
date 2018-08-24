@@ -82,7 +82,7 @@ import java.util.*;
             rsIdList.forEach(rsId -> {
                 RsPubKey rsPubKey = new RsPubKey();
                 String pubKey = rsPubKeyMap.get(rsId);
-                if (!StringUtils.isBlank(pubKey)) {
+                if (!StringUtils.isEmpty(pubKey)) {
                     rsPubKey.setRsId(rsId);
                     rsPubKey.setPubKey(rsPubKeyMap.get(rsId));
                     rsPubKeyList.add(rsPubKey);
