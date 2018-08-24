@@ -5,6 +5,7 @@ import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -28,6 +29,8 @@ import java.util.List;
 
     @Autowired private PackageRepository packageRepository;
 
+    @Autowired private PendingTxRepository pendingTxRepository;
+
     @Autowired private PackageService packageService;
 
     @Autowired private NodeState nodeState;
@@ -45,10 +48,8 @@ import java.util.List;
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
-        int r = packageRepository.deleteByStatus(PackageStatusEnum.PERSISTED);
-        if(r != 0){
-            log.info("deleted package for status:{},size:{}",PackageStatusEnum.PERSISTED,r);
-        }
+        //remove already blocked packages and pending-transactions
+        removeAlreadyBlocked();
         //get max height by 'WAIT_PERSIST_CONSENSUS' status
         Long maxHeight = packageRepository.getMaxHeightByStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
         if (maxHeight == null || maxHeight.equals(0L)) {
@@ -119,6 +120,22 @@ import java.util.List;
         }
     }
 
+    /**
+     * remove already blocked packages and pending-transactions
+     *
+     */
+    private void removeAlreadyBlocked(){
+        //get max persisted height
+        Long maxPersistedHeight = packageRepository.getMaxHeightByStatus(PackageStatusEnum.PERSISTED);
+        int r = packageRepository.deleteLessThanHeight(maxPersistedHeight);
+        if(r != 0){
+            log.info("deleted package less than height:{},size:{}",maxPersistedHeight,r);
+        }
+        r = pendingTxRepository.deleteLessThanHeight(maxPersistedHeight);
+        if(r != 0){
+            log.info("deleted pendingTx less than height:{},size:{}",maxPersistedHeight,r);
+        }
+    }
     /**
      * thread sleep
      *

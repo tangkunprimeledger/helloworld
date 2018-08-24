@@ -151,8 +151,10 @@
         where status = #{status}
     </select>
 
-    <delete id="deleteByStatus" parameterType="object">
+    <delete id="deleteLessThanHeight" parameterType="object">
         delete from package where
-        status=#{status}
+        <![CDATA[
+          height <= #{height}
+        ]]>
     </delete>
 </mapper>

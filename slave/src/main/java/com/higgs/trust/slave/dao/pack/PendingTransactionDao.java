@@ -59,4 +59,11 @@ import java.util.List;
      * @return
      */
     List<PendingTransactionPO> queryByTxIds(@Param("txIds") List<String> txIds);
+    /**
+     * delete by less than height
+     *
+     * @param height
+     * @return
+     */
+    int deleteLessThanHeight(@Param("height")Long height);
 }

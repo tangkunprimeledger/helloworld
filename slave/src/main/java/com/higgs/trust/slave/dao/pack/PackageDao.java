@@ -121,10 +121,10 @@ import java.util.Set;
     Long getMinHeightByStatus(@Param("status")String status);
 
     /**
-     * delete by status
+     * delete by less than height
      *
-     * @param status
+     * @param height
      * @return
      */
-    int deleteByStatus(@Param("status")String status);
+    int deleteLessThanHeight(@Param("height")Long height);
 }

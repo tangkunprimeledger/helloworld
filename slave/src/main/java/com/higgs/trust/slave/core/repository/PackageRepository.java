@@ -295,12 +295,12 @@ import java.util.Set;
     }
 
     /**
-     * delete by status
+     * delete by less than height
      *
-     * @param status
+     * @param height
      * @return
      */
-    public int deleteByStatus(PackageStatusEnum status) {
-        return packageDao.deleteByStatus(status.getCode());
+    public int deleteLessThanHeight(Long height) {
+        return packageDao.deleteLessThanHeight(height);
     }
 }
