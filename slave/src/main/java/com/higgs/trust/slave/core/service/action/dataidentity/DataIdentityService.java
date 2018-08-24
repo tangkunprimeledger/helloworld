@@ -40,8 +40,9 @@ public class DataIdentityService {
     public void process(ActionData actionData) {
         // convert action and validate it
         DataIdentityAction dataIdentityAction = (DataIdentityAction) actionData.getCurrentAction();
-        log.info("[ DataIdentityAction.validate] is start,params:{}", dataIdentityAction);
-
+        if(log.isDebugEnabled()) {
+            log.debug("[ DataIdentityAction.validate] is start,params:{}", dataIdentityAction);
+        }
         //data operate type
         DataIdentityHandler dataIdentityHandler = dataIdentitySnapshotHandler;
 

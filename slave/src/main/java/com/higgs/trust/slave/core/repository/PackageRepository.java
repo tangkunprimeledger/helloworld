@@ -9,7 +9,6 @@ import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.TransactionStatus;
@@ -62,13 +61,7 @@ import java.util.Set;
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                 int r = packageDao.updateStatus(height, from.getCode(), to.getCode());
                 if (r != 1) {
-                    //check package status
-                    PackagePO po = packageDao.queryByHeight(height);
-                    if (null != po
-                        && StringUtils.equals(to.getCode(), po.getStatus())) {
-                        return;
-                    }
-                    log.error("[package.updateStatus] has error");
+                    log.error("package.updateStatus is fail from:{} to:{}",from,to);
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_UPDATE_STATUS_ERROR);
                 }
             }
@@ -265,13 +258,43 @@ import java.util.Set;
      * @param packageStatusEnum
      * @return
      */
-    public boolean isPackageStatus(Long height,PackageStatusEnum packageStatusEnum){
-        PackagePO packagePO= queryByHeight(height);
-        if(packagePO == null){
-            log.warn("[isPackageStatus] package is null height:{}",height);
+    public boolean isPackageStatus(Long height, PackageStatusEnum packageStatusEnum) {
+        PackagePO packagePO = queryByHeight(height);
+        if (packagePO == null) {
+            log.warn("[isPackageStatus] package is null height:{}", height);
             return false;
         }
-        log.debug("package of DB status:{},blockHeight:{}",packagePO.getStatus(),height);
+        log.debug("package of DB status:{},blockHeight:{}", packagePO.getStatus(), height);
         return PackageStatusEnum.getByCode(packagePO.getStatus()) == packageStatusEnum;
+    }
+
+    /**
+     * get max height by status
+     *
+     * @param status
+     * @return
+     */
+    public Long getMaxHeightByStatus(PackageStatusEnum status) {
+        return packageDao.getMaxHeightByStatus(status.getCode());
+    }
+
+    /**
+     * get min height by status
+     *
+     * @param status
+     * @return
+     */
+    public Long getMinHeightByStatus(PackageStatusEnum status) {
+        return packageDao.getMinHeightByStatus(status.getCode());
+    }
+
+    /**
+     * delete by less than height
+     *
+     * @param height
+     * @return
+     */
+    public int deleteLessThanHeightAndStatus(Long height,PackageStatusEnum status) {
+        return packageDao.deleteLessThanHeightAndStatus(height,status.getCode());
     }
 }

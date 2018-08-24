@@ -73,6 +73,8 @@ import java.util.List;
             } catch (Throwable e) {
                 log.error("transaction insert into memory exception. txId={}, ", txId, e);
             }
+            //TODO check args
+
         });
 
         Profiler.release();
