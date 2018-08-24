@@ -103,4 +103,28 @@ import java.util.Set;
      * @return
      */
     Long countWithStatus(@Param("statusSet") Set<String> statusSet, @Param("maxBlockHeight") Long maxBlockHeight);
+
+    /**
+     * query max height by status
+     *
+     * @param status
+     * @return
+     */
+    Long getMaxHeightByStatus(@Param("status")String status);
+    /**
+     * query min height by status
+     *
+     * @param status
+     * @return
+     */
+
+    Long getMinHeightByStatus(@Param("status")String status);
+
+    /**
+     * delete by status
+     *
+     * @param status
+     * @return
+     */
+    int deleteByStatus(@Param("status")String status);
 }

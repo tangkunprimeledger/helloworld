@@ -140,4 +140,19 @@
         update package set status=#{to}, update_time=now(3)
         where height=#{height} and status=#{from}
     </update>
+
+    <select id="getMaxHeightByStatus" resultType="java.lang.Long" parameterType="object">
+        select max(height) from package
+        where status = #{status}
+    </select>
+
+    <select id="getMinHeightByStatus" resultType="java.lang.Long" parameterType="object">
+        select min(height) from package
+        where status = #{status}
+    </select>
+
+    <delete id="deleteByStatus" parameterType="object">
+        delete from package where
+        status=#{status}
+    </delete>
 </mapper>

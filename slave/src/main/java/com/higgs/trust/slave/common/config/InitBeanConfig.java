@@ -133,6 +133,7 @@ import java.util.concurrent.*;
         threadPoolTaskExecutor.setQueueCapacity(5000);
         threadPoolTaskExecutor.setKeepAliveSeconds(3600);
         threadPoolTaskExecutor.setThreadNamePrefix("p2pSendExecutor-");
+        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         threadPoolTaskExecutor.initialize();
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
@@ -144,6 +145,7 @@ import java.util.concurrent.*;
         threadPoolTaskExecutor.setQueueCapacity(1024);
         threadPoolTaskExecutor.setKeepAliveSeconds(3600);
         threadPoolTaskExecutor.setThreadNamePrefix("p2pReceivedExecutor-");
+        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         threadPoolTaskExecutor.initialize();
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }

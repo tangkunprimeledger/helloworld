@@ -2,9 +2,7 @@ package com.higgs.trust.consensus.p2pvalid.core.service;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.common.crypto.Crypto;
-import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
-import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -114,14 +112,14 @@ import java.util.concurrent.ConcurrentHashMap;
             do {
                 try {
                     validConsensus.getValidExecutor().execute(validCommit);
+                    if (validCommit.isClosed()) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("execute validCommit:{} is success", validCommit);
+                        }
+                        break;
+                    }
                 } catch (Throwable t) {
                     log.error("execute validCommit:{} has error:{}", validCommit, t);
-                }
-                if (validCommit.isClosed()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("execute validCommit:{} is success", validCommit);
-                    }
-                    break;
                 }
                 try {
                     Thread.sleep(100L + 500 * num);
@@ -129,12 +127,6 @@ import java.util.concurrent.ConcurrentHashMap;
                     log.error("has InterruptedException", e);
                 }
             } while (++num < retryNum);
-            //make offline
-            if (!validCommit.isClosed()) {
-                log.warn("execute validCommit:{} is fail,so change state to offline", validCommit);
-                nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
-                MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
-            }
         });
     }
 }

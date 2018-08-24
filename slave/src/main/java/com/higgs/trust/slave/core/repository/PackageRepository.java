@@ -64,8 +64,7 @@ import java.util.Set;
                 if (r != 1) {
                     //check package status
                     PackagePO po = packageDao.queryByHeight(height);
-                    if (null != po
-                        && StringUtils.equals(to.getCode(), po.getStatus())) {
+                    if (null != po && StringUtils.equals(to.getCode(), po.getStatus())) {
                         return;
                     }
                     log.error("[package.updateStatus] has error");
@@ -265,13 +264,43 @@ import java.util.Set;
      * @param packageStatusEnum
      * @return
      */
-    public boolean isPackageStatus(Long height,PackageStatusEnum packageStatusEnum){
-        PackagePO packagePO= queryByHeight(height);
-        if(packagePO == null){
-            log.warn("[isPackageStatus] package is null height:{}",height);
+    public boolean isPackageStatus(Long height, PackageStatusEnum packageStatusEnum) {
+        PackagePO packagePO = queryByHeight(height);
+        if (packagePO == null) {
+            log.warn("[isPackageStatus] package is null height:{}", height);
             return false;
         }
-        log.debug("package of DB status:{},blockHeight:{}",packagePO.getStatus(),height);
+        log.debug("package of DB status:{},blockHeight:{}", packagePO.getStatus(), height);
         return PackageStatusEnum.getByCode(packagePO.getStatus()) == packageStatusEnum;
+    }
+
+    /**
+     * get max height by status
+     *
+     * @param status
+     * @return
+     */
+    public Long getMaxHeightByStatus(PackageStatusEnum status) {
+        return packageDao.getMaxHeightByStatus(status.getCode());
+    }
+
+    /**
+     * get min height by status
+     *
+     * @param status
+     * @return
+     */
+    public Long getMinHeightByStatus(PackageStatusEnum status) {
+        return packageDao.getMinHeightByStatus(status.getCode());
+    }
+
+    /**
+     * delete by status
+     *
+     * @param status
+     * @return
+     */
+    public int deleteByStatus(PackageStatusEnum status) {
+        return packageDao.deleteByStatus(status.getCode());
     }
 }

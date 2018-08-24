@@ -337,76 +337,75 @@ import java.util.stream.Collectors;
      * receive persist final result from consensus layer
      *
      * @param header
+     * @param isCompare
      */
-    @Override public void persisted(BlockHeader header) {
-        /**
-         * TODO
-         * 1.开启事务
-         * 2.通过packageRepository更新package的状态为persisted
-         * 3.通过pendingState触发业务RS的callback操作
-         * 4.提交事务
-         */
-        Profiler.start("[PackageService.persisted] is start");
-        Profiler.enter("[start query temp header of CONSENSUS_VALIDATE_TYPE]");
-        //gets the block header from db
-        BlockHeader blockHeader = blockService.getHeader(header.getHeight());
-        Profiler.release();
-        //check hash
-        if (blockHeader == null) {
-            log.warn("[package.persisted] consensus header of db is null blockHeight:{}", header.getHeight());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
-        }
-
-        //compare
-        boolean r = blockService.compareBlockHeader(blockHeader, header);
-        if (!r) {
-            log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", header.getHeight());
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_BLOCK_HEADER_NOT_EQUAL.getMonitorTarget(), 1);
-            //change state to offline
-            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
+    @Override public void persisted(BlockHeader header,boolean isCompare) {
+        //check status for package
+        boolean isPackageStatus = packageRepository
+            .isPackageStatus(header.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+        if (!isPackageStatus) {
+            log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",
+                header.getHeight());
+            return;
         }
         try {
-            Profiler.enter("[queryTransactions]");
-            List<SignedTransaction> txs = transactionRepository.queryTransactions(header.getHeight());
-            if (!CollectionUtils.isEmpty(txs)) {
-                // sort signedTransactions by txId asc
-                Collections.sort(txs, new Comparator<SignedTransaction>() {
-                    @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
-                        return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
+            Profiler.start("[PackageService.persisted] is start");
+            Profiler.enter("[start query temp header of CONSENSUS_VALIDATE_TYPE]");
+            //gets the block header from db
+            BlockHeader blockHeader = blockService.getHeader(header.getHeight());
+            Profiler.release();
+            //check hash
+            if (blockHeader == null) {
+                log.warn("[package.persisted] consensus header of db is null blockHeight:{}", header.getHeight());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR);
+            }
+            if (isCompare) {
+                //compare
+                boolean r = blockService.compareBlockHeader(blockHeader, header);
+                if (!r) {
+                    log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", header.getHeight());
+                    MonitorLogUtils
+                        .logIntMonitorInfo(MonitorTargetEnum.SLAVE_BLOCK_HEADER_NOT_EQUAL.getMonitorTarget(), 1);
+                    //change state to offline
+                    nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
+                }
+            }
+            try {
+                Profiler.enter("[queryTransactions]");
+                List<SignedTransaction> txs = transactionRepository.queryTransactions(header.getHeight());
+                if (!CollectionUtils.isEmpty(txs)) {
+                    // sort signedTransactions by txId asc
+                    Collections.sort(txs, new Comparator<SignedTransaction>() {
+                        @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+                            return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
+                        }
+                    });
+                }
+                List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
+                Profiler.release();
+
+                txRequired.execute(new TransactionCallbackWithoutResult() {
+                    @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        //call back business
+                        Profiler.enter("[callbackRSForClusterPersisted]");
+                        callbackRS(txs, txReceipts, true, false, blockHeader);
+                        Profiler.release();
+
+                        //update package status ---- PERSISTED
+                        Profiler.enter("[updatePackStatus]");
+                        packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
+                            PackageStatusEnum.PERSISTED);
+                        Profiler.release();
                     }
                 });
+            } catch (SlaveException e) {
+                throw e;
+            } catch (Throwable e) {
+                log.error("[package.persisted]callback rs has error", e);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR, e);
             }
-            List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
-            Profiler.release();
-
-            txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    //call back business
-                    Profiler.enter("[callbackRSForClusterPersisted]");
-                    callbackRS(txs, txReceipts, true, false, blockHeader);
-                    Profiler.release();
-                    //check status for package
-                    boolean isPackageStatus = packageRepository
-                        .isPackageStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                    if (!isPackageStatus) {
-                        log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",
-                            blockHeader.getHeight());
-                        return;
-                    }
-                    //update package status ---- PERSISTED
-                    Profiler.enter("[updatePackStatus]");
-                    packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
-                        PackageStatusEnum.PERSISTED);
-                    Profiler.release();
-                }
-            });
-        } catch (SlaveException e) {
-            throw e;
-        } catch (Throwable e) {
-            log.error("[package.persisted]callback rs has error", e);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR, e);
-        } finally {
+        }finally {
             Profiler.release();
             if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
                 Profiler.logDump();
