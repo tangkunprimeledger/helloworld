@@ -99,7 +99,7 @@ import org.springframework.stereotype.Component;
             Profiler.enter("[rs.custom.callback.onPersisted]");
             TxCallbackHandler callbackHandler = getCallbackHandler();
             callbackHandler.onPersisted(respData, blockHeader);
-        }finally {
+        } finally {
             Profiler.release();
         }
     }
@@ -140,7 +140,7 @@ import org.springframework.stereotype.Component;
             Profiler.enter("[rs.custom.callback.onEnd]");
             TxCallbackHandler callbackHandler = getCallbackHandler();
             callbackHandler.onEnd(respData, blockHeader);
-        }finally {
+        } finally {
             Profiler.release();
         }
     }
@@ -236,7 +236,10 @@ import org.springframework.stereotype.Component;
 
         log.info("[processCaUpdate] start to update pubKey/priKey, nodeName={}", user);
         // update table config, set tmpKey to key
-        Config config = configRepository.getConfig(user);
+        Config config = configRepository.getBizConfig(user);
+        if (null == config) {
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_UPDATE_ERROR, "ca update error");
+        }
         config.setPubKey(config.getTmpPubKey());
         config.setPriKey(config.getTmpPriKey());
         config.setValid(true);
@@ -257,7 +260,8 @@ import org.springframework.stereotype.Component;
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
-            log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
+            log.info(
+                "[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKeyForConsensus/priKey",
                 nodeState.getNodeName(), user);
             return;
         }
@@ -266,14 +270,14 @@ import org.springframework.stereotype.Component;
             nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
         }*/
 
-        log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
-        //set pubKey and priKey to invalid
+        log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodeState.getNodeName());
+        //set pubKeyForConsensus and priKey to invalid
         Config config = new Config();
         config.setNodeName(user);
         config.setValid(false);
         configRepository.updateConfig(config);
 
-        log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
+        log.info("[processCaCancel] end invalid pubKeyForConsensus/priKey, nodeName={}", nodeState.getNodeName());
     }
 
     private void processCaAuth(RespData<CoreTransaction> respData) {

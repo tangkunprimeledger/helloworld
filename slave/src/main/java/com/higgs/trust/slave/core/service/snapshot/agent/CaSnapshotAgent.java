@@ -13,6 +13,7 @@ import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.security.acl.LastOwnerException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -71,13 +73,13 @@ import java.util.List;
     }
 
     /**
-     * query CA
-     *
      * @param user
+     * @param usage
      * @return
+     * @desc query CA
      */
-    public CaPO getCa(String user) {
-        return get(new CaCacheKey(user));
+    public CaPO getCa(String user, String usage) {
+        return get(new CaCacheKey(user, usage));
     }
 
     /**
@@ -108,7 +110,7 @@ import java.util.List;
     public void saveCa(Ca ca) {
         CaPO caPO = new CaPO();
         BeanUtils.copyProperties(ca, caPO);
-        insert(new CaCacheKey(ca.getUser()), caPO);
+        insert(new CaCacheKey(ca.getUser(), ca.getUsage()), caPO);
     }
 
     /**
@@ -119,7 +121,7 @@ import java.util.List;
     public void updateCa(Ca ca) {
         CaPO caPO = new CaPO();
         BeanUtils.copyProperties(ca, caPO);
-        update(new CaCacheKey(caPO.getUser()), caPO);
+        update(new CaCacheKey(caPO.getUser(), caPO.getUsage()), caPO);
     }
 
     /**
@@ -172,7 +174,13 @@ import java.util.List;
     @Override public Object query(Object object) {
         if (object instanceof CaSnapshotAgent.CaCacheKey) {
             CaCacheKey key = (CaCacheKey)object;
-            Ca ca = caRepository.getCa(key.getUser());
+            Ca ca = null;
+            if (UsageEnum.BIZ.getCode().equals(key.getUsage())) {
+                ca = caRepository.getCaForBiz(key.getUser());
+            }
+            if (UsageEnum.CONSENSUS.getCode().equals(key.getUsage())) {
+                ca = caRepository.getCaForConsensus(key.getUser());
+            }
             if (null == ca) {
                 return null;
             }
@@ -283,6 +291,7 @@ import java.util.List;
      */
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class CaCacheKey extends BaseBO {
         private String user;
+        private String usage;
     }
 
     /**

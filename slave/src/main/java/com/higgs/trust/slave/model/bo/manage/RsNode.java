@@ -10,7 +10,7 @@ import lombok.Setter;
 /**
  * @author tangfashuang
  * @date 2018/04/12 18:24
- * @desc rs pubKey BO
+ * @desc rs pubKeyForConsensus BO
  */
 @Getter
 @Setter

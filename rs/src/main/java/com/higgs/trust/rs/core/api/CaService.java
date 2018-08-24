@@ -4,6 +4,8 @@ import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 
+import java.util.List;
+
 /**
  * @author WangQuanzhou
  * @desc TODO
@@ -14,7 +16,7 @@ public interface CaService {
     /**
      * @param user
      * @return
-     * @desc generate pubKey and PriKey ,then insert into db
+     * @desc generate pubKeyForConsensus and PriKey ,then insert into db
      */
     String authKeyPair(String user);
 
@@ -23,12 +25,12 @@ public interface CaService {
      * @return
      * @desc construct ca auth tx and send to slave
      */
-    RespData authCaTx(CaVO caVO);
+    RespData authCaTx(List<CaVO> list);
 
     /**
      * @param user
      * @return
-     * @desc update pubKey and priKey ,then insert into db
+     * @desc update pubKeyForConsensus and priKey ,then insert into db
      */
     RespData updateKeyPair(String user);
 
@@ -42,7 +44,7 @@ public interface CaService {
     /**
      * @param
      * @return
-     * @desc cancel pubKey and PriKey ,then update db
+     * @desc cancel pubKeyForConsensus and PriKey ,then update db
      */
     RespData cancelKeyPair(String user);
 

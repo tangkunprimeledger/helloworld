@@ -53,7 +53,7 @@ import org.springframework.stereotype.Component;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        Ca ca = caRepository.getCa(rsId);
+        Ca ca = caRepository.getCaForBiz(rsId);
         if (null == ca || !ca.isValid()) {
             log.error("[RegisterRSHandler.process] ca not register or is not valid which rsId={}", rsId);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);

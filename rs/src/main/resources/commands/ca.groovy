@@ -28,7 +28,7 @@ class ca {
         def caService = beans.getBean(CaService.class)
         def ca = caService.getCa(user)
         if (ca) {
-            out.println("acquire CA successful, user= $ca.user, pubKey= $ca.pubKey")
+            out.println("acquire CA successful, user= $ca.user, pubKeyForConsensus= $ca.pubKey")
         } else {
             out.println("acquire CA error, user= $user")
         }

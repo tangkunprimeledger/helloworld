@@ -43,6 +43,11 @@ import java.util.Arrays;
     private static ECCurve.Fp curve;
     private static ECPoint G;
 
+    static {
+        curve = new ECCurve.Fp(p, a, b);
+        G = curve.createPoint(gx, gy);
+    }
+
     /**
      * 随机数生成器
      *
@@ -279,10 +284,6 @@ import java.util.Arrays;
      */
     public static SM2KeyPair generateKeyPair() {
 
-        curve = new ECCurve.Fp(p, // p
-            a, // a
-            b); // b
-        G = curve.createPoint(gx, gy);
         ecc_bc_spec = new ECDomainParameters(curve, G, n);
 
         BigInteger d = random(n.subtract(new BigInteger("1")));
@@ -772,4 +773,5 @@ import java.util.Arrays;
                 new BigInteger(str.substring(pos + 1), RADIX));
         }
     }
+
 }

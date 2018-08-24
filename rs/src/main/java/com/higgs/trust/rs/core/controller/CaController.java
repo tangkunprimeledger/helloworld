@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * @author WangQuanzhou
  * @desc TODO
@@ -23,11 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
     /**
      * auth ca transaction
      *
-     * @param caVO
+     * @param list
      * @return
      */
-    @RequestMapping(value = "/ca/auth") RespData<String> caAuth(@RequestBody CaVO caVO) {
-        return caService.authCaTx(caVO);
+    @RequestMapping(value = "/ca/auth") RespData<String> caAuth(@RequestBody List<CaVO> list) {
+        return caService.authCaTx(list);
     }
 
     /**

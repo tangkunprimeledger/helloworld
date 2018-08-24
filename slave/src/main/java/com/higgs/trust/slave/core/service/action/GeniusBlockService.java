@@ -26,10 +26,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j @Service public class GeniusBlockService {
 
@@ -75,24 +72,28 @@ import java.util.List;
 
     private void saveClusterNode(Block block) {
         List<Action> caList = acquireAction(block);
+        Set<String> set = new HashSet<>();
         caList.forEach((caAction) -> {
-            ClusterNode clusterNode = new ClusterNode();
-            clusterNode.setNodeName(((CaAction)caAction).getUser());
-            clusterNode.setRsStatus(false);
-            clusterNode.setP2pStatus(true);
-            clusterNodeRepository.insertClusterNode(clusterNode);
+            if (!set.contains(((CaAction)caAction).getUser())) {
+                ClusterNode clusterNode = new ClusterNode();
+                clusterNode.setNodeName(((CaAction)caAction).getUser());
+                clusterNode.setRsStatus(false);
+                clusterNode.setP2pStatus(true);
+                clusterNodeRepository.insertClusterNode(clusterNode);
+                set.add(((CaAction)caAction).getUser());
+            }
         });
     }
 
     private void saveClusterConfig(Block block) {
         List<Action> caList = acquireAction(block);
         ClusterConfig clusterConfig = new ClusterConfig();
-        clusterConfig.setNodeNum(caList.size());
+        clusterConfig.setNodeNum(caList.size() / 2);
 
         // TODO 应该从配置文件读取集群名字
         clusterConfig.setClusterName("TRUST");
 
-        clusterConfig.setFaultNum((caList.size() - 1) / 3);
+        clusterConfig.setFaultNum((caList.size() / 2 - 1) / 3);
         clusterConfigRepository.insertClusterConfig(clusterConfig);
     }
 
@@ -107,9 +108,9 @@ import java.util.List;
             ca.setValid(true);
             ca.setUser(((CaAction)caAction).getUser());
             ca.setVersion(VersionEnum.V1.getCode());
-            ca.setUsage("consensus");
-            log.info("[CaInitHandler.saveCa] nodeName={}, pubKey={}, period={}", ca.getUser(), ca.getPubKey(),
-                ca.getPeriod());
+            ca.setUsage(((CaAction)caAction).getUsage());
+            log.info("[CaInitHandler.saveCa] nodeName={}, usage={}, pubKeyForConsensus={}, period={}", ca.getUser(), ca.getUsage(),
+                ca.getPubKey(), ca.getPeriod());
             list.add(ca);
         });
 

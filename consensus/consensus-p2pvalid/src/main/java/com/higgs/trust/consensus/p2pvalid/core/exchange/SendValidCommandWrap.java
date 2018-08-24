@@ -3,12 +3,11 @@ package com.higgs.trust.consensus.p2pvalid.core.exchange;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -19,8 +18,6 @@ import java.util.Set;
  * @author cwy
  */
 @Getter @Setter @ToString public class SendValidCommandWrap implements Serializable {
-
-    @Autowired private Crypto crypto;
 
     private static final long serialVersionUID = -1L;
     private ValidCommand<?> validCommand;
@@ -53,7 +50,7 @@ import java.util.Set;
     }
 
     public SendValidCommandWrap sign(String privateKey) throws Exception {
-        this.sign = crypto.sign(messageDigest, privateKey);
+        this.sign = CryptoUtil.getProtocolCrypto().sign(messageDigest, privateKey);
         return this;
     }
 

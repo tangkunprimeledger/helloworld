@@ -1,7 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
@@ -57,8 +57,6 @@ import java.util.concurrent.locks.ReentrantLock;
     @Autowired private ClusterInfo clusterInfo;
 
     @Autowired private NodeState nodeState;
-
-    @Autowired private Crypto crypto;
 
     @Value("${p2p.revceive.increase.delay.interval:3000}") private Long delayIncreaseInterval;
 
@@ -117,10 +115,10 @@ import java.util.concurrent.locks.ReentrantLock;
         }
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
 
-        String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNode());
-        if (!crypto.verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
+        String pubKey = clusterInfo.pubKeyForConsensus(validCommandWrap.getFromNode());
+        if (!CryptoUtil.getProtocolCrypto().verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
             throw new RuntimeException(String
-                .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
+                .format("check sign failed for node %s, validCommandWrap %s, pubKeyForConsensus %s", validCommandWrap.getFromNode(),
                     validCommandWrap, pubKey));
         }
         log.debug("command message digest:{}", validCommandWrap.getValidCommand().getMessageDigestHash());
@@ -199,7 +197,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedApplyList.forEach((queuedApply) -> {
                     Span span = TraceUtils.createSpan();
                     try {
-                        log.debug("apply:{}",queuedApply);
+                        log.debug("apply:{}", queuedApply);
                         ReceiveCommandPO receiveCommand =
                             receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
                         if (null == receiveCommand) {
@@ -239,7 +237,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedApplyDelayList.forEach((queuedApplyDelay) -> {
                     Span span = TraceUtils.createSpan();
                     try {
-                        log.debug("apply delay :{}",queuedApplyDelay);
+                        log.debug("apply delay :{}", queuedApplyDelay);
                         ReceiveCommandPO receiveCommand =
                             receiveCommandDao.queryByMessageDigest(queuedApplyDelay.getMessageDigest());
                         if (null == receiveCommand) {

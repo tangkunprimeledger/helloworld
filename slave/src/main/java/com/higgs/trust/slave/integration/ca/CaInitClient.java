@@ -2,10 +2,13 @@ package com.higgs.trust.slave.integration.ca;
 
 import com.higgs.trust.common.feign.FeignRibbonConstants;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.config.Config;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.List;
 
 /**
  * @author WangQuanzhou
@@ -19,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
      * @return
      * @desc send ca init request
      */
-    @RequestMapping(value = "/ca/init", method = RequestMethod.GET) RespData<String> caInit(
+    @RequestMapping(value = "/ca/init", method = RequestMethod.GET) RespData<List<Config>> caInit(
         @RequestHeader(FeignRibbonConstants.NODE_NAME) String nodeName);
 
 }

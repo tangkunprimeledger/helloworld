@@ -50,6 +50,8 @@ public enum RsCoreErrorEnum {
     RS_CORE_CA_ALREADY_EXIST_ERROR("304", "rs core ca already exist error", false),
     RS_CORE_INVALID_NODE_NAME_ERROR("305", "rs core invalid node name error", false),
     RS_CORE_REQUEST_UPDATE_STATUS_FAILED("306", "update request status failed", false),
+    RS_CORE_CA_UPDATE_ERROR("307", "update ca error", false),
+    RS_CORE_CA_AUTH_ERROR("307", "auth ca error", false),
     ;
     //@formatter:on
 

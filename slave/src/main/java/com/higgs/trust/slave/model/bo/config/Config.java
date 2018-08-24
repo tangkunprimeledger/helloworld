@@ -10,6 +10,19 @@ import lombok.Setter;
  * @date 2018/6/5 10:27
  */
 @Getter @Setter public class Config extends BaseBO {
+
+    public Config() {
+    }
+
+    public Config(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public Config(String nodeName, String usage) {
+        this.nodeName = nodeName;
+        this.usage = usage;
+    }
+
     private String version;
 
     private boolean valid;
@@ -17,6 +30,8 @@ import lombok.Setter;
     private String pubKey;
 
     private String priKey;
+
+    private String usage;
 
     private String tmpPubKey;
 

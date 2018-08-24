@@ -3,14 +3,14 @@
  */
 package com.higgs.trust.slave.core.service.consensus.cluster;
 
-import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
-import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.consensus.BlockHeaderCmd;
 import com.higgs.trust.slave.model.bo.consensus.ClusterHeightCmd;
@@ -35,9 +35,6 @@ import java.util.Map;
     @Autowired private ClusterInfo clusterInfo;
 
     @Autowired private ValidConsensus validConsensus;
-
-    @Autowired private Crypto crypto;
-
 
     /**
      * get the cluster height through consensus, the default request id will be set. if timeout, null will be return
@@ -69,7 +66,8 @@ import java.util.Map;
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
         validCommandWrap.setFromNode(clusterInfo.nodeName());
-        validCommandWrap.setSign(crypto.sign(cmd.getMessageDigestHash(), clusterInfo.privateKey()));
+        validCommandWrap
+            .setSign(CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
         validCommandWrap.setValidCommand(cmd);
         nodeNames.forEach((nodeName) -> {
             Long height = null;

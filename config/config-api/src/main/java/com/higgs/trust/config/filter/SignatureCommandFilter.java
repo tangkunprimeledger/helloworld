@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.config.filter;
 
-import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
@@ -23,17 +23,18 @@ import org.springframework.stereotype.Component;
 
     @Autowired private AbstractClusterInfo clusterInfo;
 
-    @Autowired private Crypto crypto;
-
     @Override
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
         if (commit.operation() instanceof SignatureCommand) {
             clusterInfo.refreshIfNeed();
             SignatureCommand command = (SignatureCommand)commit.operation();
             String nodeName = command.getNodeName();
-            String publicKey = clusterInfo.pubKey(nodeName);
-            boolean verify = crypto.verify(command.getSignValue(), command.getSignature(), publicKey);
-            log.debug("command sign verify:{}", verify);
+            String publicKey = clusterInfo.pubKeyForConsensus(nodeName);
+            boolean verify =
+                CryptoUtil.getProtocolCrypto().verify(command.getSignValue(), command.getSignature(), publicKey);
+            if (log.isDebugEnabled()){
+                log.debug("command sign verify result:{}", verify);
+            }
             if (!verify) {
                 log.warn("command sign verify failed, node:{}, pubkey:{}", nodeName, publicKey);
                 commit.close();

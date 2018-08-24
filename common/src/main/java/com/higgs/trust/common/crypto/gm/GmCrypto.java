@@ -3,12 +3,29 @@ package com.higgs.trust.common.crypto.gm;
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
 import com.higgs.trust.common.utils.Base64Util;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-@ConditionalOnProperty(prefix = "higgs.trust", name = "crypto", havingValue = "SM", matchIfMissing = true)
+/**  
+ * @desc class for GM crypto and sign
+ * @author WangQuanzhou
+ * @date 2018/8/20 11:48
+ */  
 public class GmCrypto implements Crypto {
+
+    /**
+     * @param
+     * @return
+     * @desc default constructor
+     */
+    private GmCrypto() {
+    }
+
+    /**
+     * @desc inner class
+     */
+    private static class SingletonHolder {
+        // 私有的 静态的  final类型的
+        private static final GmCrypto INSTANCE = new GmCrypto();
+    }
 
     /**
      * @return
@@ -56,5 +73,13 @@ public class GmCrypto implements Crypto {
      */
     @Override public boolean verify(String message, String signature, String publicKey) {
         return SM2.verify(message, signature, publicKey);
+    }
+
+    /**
+     * @return
+     * @desc get singleton instance
+     */
+    public static final GmCrypto getSingletonInstance() {
+        return SingletonHolder.INSTANCE;
     }
 }

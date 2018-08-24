@@ -49,8 +49,8 @@ import java.util.List;
      * @return CaPO
      * @desc get CA information by nodeName
      */
-    public Ca getCa(String user) {
-        CaPO caPO = caDao.getCa(user);
+    public Ca getCaForBiz(String user) {
+        CaPO caPO = caDao.getCaForBiz(user);
         if (null == caPO) {
             return null;
         }

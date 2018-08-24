@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
         log.info("[CaHelper.process] is start,params:{}", caAction);
 
         //validate idempotent
-        CaPO caPO = caSnapshotHandler.getCa(caAction.getUser());
+        CaPO caPO = caSnapshotHandler.getCa(caAction.getUser(),caAction.getUsage());
         if (type == ActionTypeEnum.CA_AUTH) {
             if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey()) && caPO.isValid()) {
                 return false;
