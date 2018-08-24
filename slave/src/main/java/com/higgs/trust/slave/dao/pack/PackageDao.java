@@ -124,7 +124,8 @@ import java.util.Set;
      * delete by less than height
      *
      * @param height
+     * @param status
      * @return
      */
-    int deleteLessThanHeight(@Param("height")Long height);
+    int deleteLessThanHeightAndStatus(@Param("height")Long height,@Param("status")String status);
 }

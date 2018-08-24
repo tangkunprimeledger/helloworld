@@ -300,7 +300,7 @@ import java.util.Set;
      * @param height
      * @return
      */
-    public int deleteLessThanHeight(Long height) {
-        return packageDao.deleteLessThanHeight(height);
+    public int deleteLessThanHeightAndStatus(Long height,PackageStatusEnum status) {
+        return packageDao.deleteLessThanHeightAndStatus(height,status.getCode());
     }
 }

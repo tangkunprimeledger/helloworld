@@ -130,7 +130,7 @@ import java.util.List;
         if(maxPersistedHeight == null || maxPersistedHeight.equals(0L)){
             return;
         }
-        int r = packageRepository.deleteLessThanHeight(maxPersistedHeight);
+        int r = packageRepository.deleteLessThanHeightAndStatus(maxPersistedHeight,PackageStatusEnum.PERSISTED);
         if(r != 0){
             log.info("deleted package less than height:{},size:{}",maxPersistedHeight,r);
         }
