@@ -127,6 +127,9 @@ import java.util.List;
     private void removeAlreadyBlocked(){
         //get max persisted height
         Long maxPersistedHeight = packageRepository.getMaxHeightByStatus(PackageStatusEnum.PERSISTED);
+        if(maxPersistedHeight == null || maxPersistedHeight.equals(0L)){
+            return;
+        }
         int r = packageRepository.deleteLessThanHeight(maxPersistedHeight);
         if(r != 0){
             log.info("deleted package less than height:{},size:{}",maxPersistedHeight,r);
