@@ -21,12 +21,16 @@ import javax.validation.constraints.NotNull;
     private static String consensus;
 
     public static Crypto getBizCrypto() {
-        log.info("crypto type for biz layer is {}", biz);
+        if (log.isDebugEnabled()){
+            log.debug("crypto type for biz layer is {}", biz);
+        }
         return selector(biz);
     }
 
     public static Crypto getProtocolCrypto() {
-        log.info("crypto type for consensus layer is {}", consensus);
+        if (log.isDebugEnabled()){
+            log.debug("crypto type for consensus layer is {}", consensus);
+        }
         return selector(consensus);
     }
 
