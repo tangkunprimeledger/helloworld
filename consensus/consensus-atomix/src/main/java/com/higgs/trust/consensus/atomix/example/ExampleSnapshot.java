@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
  * @date 2018/8/15
  */
 @Slf4j public class ExampleSnapshot implements ConsensusSnapshot {
+
     long currentIndex = 0;
 
     @Override public String getSnapshot() {
@@ -37,5 +38,9 @@ import org.springframework.stereotype.Component;
         } else {
             currentIndex = index;
         }
+    }
+
+    public long getCurrentIndex() {
+        return currentIndex;
     }
 }
