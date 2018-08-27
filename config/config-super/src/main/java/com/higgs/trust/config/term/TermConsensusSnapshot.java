@@ -17,6 +17,7 @@ import java.util.List;
  * @date 2018/6/4
  */
 @Slf4j @Component public class TermConsensusSnapshot implements ConsensusSnapshot {
+
     @Autowired private TermManager termManager;
 
     @Override public String getSnapshot() {

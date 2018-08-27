@@ -55,6 +55,7 @@ import java.util.*;
         classes.stream().sorted(Comparator.comparing(Class::getSimpleName)).forEach(clazz->classList.add(clazz));
         return Namespace.builder()
             .setRegistrationRequired(false)
+            .setCompatible(true)
             .register(PrimitiveType.super.namespace())
             .register(AbstractConsensusCommand.class)
             .register(classList.toArray(new Class[classList.size()]))
