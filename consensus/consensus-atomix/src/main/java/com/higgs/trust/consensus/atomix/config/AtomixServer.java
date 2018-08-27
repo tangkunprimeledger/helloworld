@@ -5,6 +5,8 @@ package com.higgs.trust.consensus.atomix.config;
 
 import com.higgs.trust.consensus.atomix.core.primitive.CommandPrimitiveType;
 import com.higgs.trust.consensus.atomix.core.primitive.ICommandPrimitive;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
@@ -19,7 +21,7 @@ import io.atomix.storage.StorageLevel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -32,8 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author suimi
  * @date 2018/7/5
  */
-@Slf4j @Service public class AtomixServer
-    implements ConsensusStateMachine, ConsensusClient, ApplicationListener<ApplicationReadyEvent> {
+@Slf4j @Service public class AtomixServer implements ConsensusStateMachine, ConsensusClient {
 
     @Autowired private AtomixRaftProperties properties;
 
@@ -45,7 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
     private Atomix atomix;
 
-    @Override public void start() {
+    @StateChangeListener(NodeStateEnum.Running) @Order @Override public void start() {
         List<Node> nodes = new ArrayList<>();
         AtomicReference<String> currentMember = new AtomicReference<>();
         properties.getCluster().forEach((key, value) -> {
@@ -104,10 +105,6 @@ import java.util.concurrent.atomic.AtomicReference;
         ICommandPrimitive primitive = atomix.getPrimitive(primitiveType.name(), primitiveType);
         CompletableFuture<Void> submit = primitive.async().submit(command);
         return submit;
-    }
-
-    @Override public void onApplicationEvent(ApplicationReadyEvent event) {
-        start();
     }
 }
 
