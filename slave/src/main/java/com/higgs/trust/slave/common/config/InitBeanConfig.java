@@ -4,10 +4,19 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.redisson.config.SentinelServersConfig;
+import org.redisson.config.SingleServerConfig;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.sleuth.instrument.async.LazyTraceExecutor;
 import org.springframework.cloud.sleuth.instrument.async.LazyTraceThreadPoolTaskExecutor;
@@ -29,8 +38,18 @@ import java.util.concurrent.*;
  * @Description:
  * @author: pengdi
  **/
-@Configuration public class InitBeanConfig {
-    @Autowired BeanFactory beanFactory;
+@Slf4j
+@Configuration
+public class InitBeanConfig {
+    @Autowired
+    BeanFactory beanFactory;
+    @Value("${trust.redisson.address:redis://127.0.0.1:6379}")
+    private String redissonAddress;
+    @Value("${trust.redisson.sentinel.masterName}")
+    private String masterName;
+    @Value("${trust.redisson.password}")
+    private String password;
+
 
     @Bean(name = "txRequired")
     public TransactionTemplate txRequired(PlatformTransactionManager platformTransactionManager) {
@@ -50,20 +69,19 @@ import java.util.concurrent.*;
         tx.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return tx;
     }
+
     @Bean(name = "packageThreadPool")
     public ExecutorService packageThreadPool() {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("package-pool-%d").build();
-        ExecutorService packageExecutor =
-            new ThreadPoolExecutor(1, 1, 0L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1024), namedThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
+        ExecutorService packageExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1024), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
         return new TraceableExecutorService(beanFactory, packageExecutor);
     }
 
-    @Bean public HttpMessageConverters HttpMessageConverters() {
+    @Bean
+    public HttpMessageConverters HttpMessageConverters() {
         FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverter();
         FastJsonConfig fastJsonConfig = new FastJsonConfig();
-        fastJsonConfig.setSerializerFeatures(SerializerFeature.DisableCircularReferenceDetect,
-            SerializerFeature.WriteMapNullValue, SerializerFeature.SortField, SerializerFeature.MapSortField);
+        fastJsonConfig.setSerializerFeatures(SerializerFeature.DisableCircularReferenceDetect, SerializerFeature.WriteMapNullValue, SerializerFeature.SortField, SerializerFeature.MapSortField);
         fastConverter.setFastJsonConfig(fastJsonConfig);
         List<MediaType> supportedMediaTypes = new ArrayList<>();
         supportedMediaTypes.add(MediaType.APPLICATION_JSON);
@@ -72,15 +90,18 @@ import java.util.concurrent.*;
         return new HttpMessageConverters(fastConverter);
     }
 
-    @Bean public HashBlockingMap persistedResultMap() {
+    @Bean
+    public HashBlockingMap persistedResultMap() {
         return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
 
-    @Bean public HashBlockingMap clusterPersistedResultMap() {
+    @Bean
+    public HashBlockingMap clusterPersistedResultMap() {
         return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
 
-    @Bean (name = "txProcessExecutorPool") public ThreadPoolTaskExecutor txProcessExecutorPool() {
+    @Bean(name = "txProcessExecutorPool")
+    public ThreadPoolTaskExecutor txProcessExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
         threadPoolTaskExecutor.setMaxPoolSize(10);
@@ -90,7 +111,8 @@ import java.util.concurrent.*;
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
-    @Bean (name = "txSubmitExecutorPool")public ThreadPoolTaskExecutor txSubmitExecutorPool() {
+    @Bean(name = "txSubmitExecutorPool")
+    public ThreadPoolTaskExecutor txSubmitExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
         threadPoolTaskExecutor.setMaxPoolSize(10);
@@ -100,7 +122,8 @@ import java.util.concurrent.*;
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
-    @Bean (name = "syncVotingExecutorPool") public ThreadPoolTaskExecutor syncVotingExecutorPool() {
+    @Bean(name = "syncVotingExecutorPool")
+    public ThreadPoolTaskExecutor syncVotingExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(5);
         threadPoolTaskExecutor.setMaxPoolSize(20);
@@ -110,7 +133,8 @@ import java.util.concurrent.*;
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
-    @Bean (name = "asyncVotingExecutorPool")  public ThreadPoolTaskExecutor asyncVotingExecutorPool() {
+    @Bean(name = "asyncVotingExecutorPool")
+    public ThreadPoolTaskExecutor asyncVotingExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(5);
         threadPoolTaskExecutor.setMaxPoolSize(20);
@@ -120,9 +144,68 @@ import java.util.concurrent.*;
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
-    @Bean (name = "txConsumerExecutor")  public Executor txConsumerExecutor() {
+    @Bean(name = "txConsumerExecutor")
+    public Executor txConsumerExecutor() {
         NamedDaemonThreadFactory namedDaemonThreadFactory = new NamedDaemonThreadFactory("txConsumerExecutor-");
         ExecutorService service = Executors.newSingleThreadExecutor(namedDaemonThreadFactory);
         return new LazyTraceExecutor(beanFactory, service);
     }
+
+
+    /**
+     * redisson single server bean
+     *
+     * @return
+     */
+    @Bean
+    @ConditionalOnProperty(name = "trust.redisson.single", havingValue = "true", matchIfMissing = true)
+    RedissonClient redissonSingle() {
+        Config config = new Config();
+
+        //check address
+        if (StringUtils.isBlank(redissonAddress)) {
+            log.error("Redisson address  is blank error !");
+            throw new NullPointerException("Redisson address is null exception !");
+        }
+
+        //config single server
+        SingleServerConfig serverConfig = config.useSingleServer().setAddress(redissonAddress);
+        if (StringUtils.isNotBlank(password)) {
+            serverConfig.setPassword(password);
+        }
+
+        return Redisson.create(config);
+    }
+
+    /**
+     * redisson sentinel server bean
+     *
+     * @return
+     */
+    @Bean
+    @ConditionalOnProperty(name = "trust.redisson.single", havingValue = "false")
+    RedissonClient redissonSentinel() {
+        Config config = new Config();
+        //check address
+        if (StringUtils.isBlank(redissonAddress)) {
+            log.error("Redisson address  is blank error !");
+            throw new NullPointerException("Redisson address is null exception !");
+        }
+        //check masterName
+        if (StringUtils.isBlank(masterName)) {
+            log.error("Redisson masterName  is blank error !");
+            throw new NullPointerException("Redisson masterName is null exception !");
+        }
+        String[] allAddress = redissonAddress.split(",");
+
+        //config Sentinel server
+        SentinelServersConfig serverConfig = config.useSentinelServers().setMasterName(masterName).addSentinelAddress(allAddress);
+        if (StringUtils.isNotBlank(password)) {
+            serverConfig.setPassword(password);
+        }
+
+        return Redisson.create(config);
+    }
+
+
 }

@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_RS_CONFIG_NULL_ERROR);
         }
         String privateKey = config.getPriKey();
-        log.info("[signTx]privateKey:{}", privateKey);
         String sign = SignUtils.sign(coreTxJSON, privateKey);
         log.info("[signTx]sign:{}", sign);
         SignInfo signInfo = new SignInfo();

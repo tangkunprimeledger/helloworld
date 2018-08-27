@@ -43,6 +43,10 @@ public enum RsCoreErrorEnum {
     RS_CORE_GET_CHAIN_OWNER_NULL_ERROR("220", "get chain owner is null error", false),
     RS_CORE_CONTRACT_ACTION_TYPE_ILLEGAL_ERROR("221", "process contract action type  error", false),
     RS_CORE_CONTRACT_EXECUTE_ERROR("221", "contract process  error", false),
+    RS_CORE_TX_UPDATE_FAILED("222", "update transaction  failed", false),
+    RS_CORE_WAIT_ASYNC_TIMEOUT_EXCEPTION("223", "rs core wait async timeout exception", false),
+    RS_CORE_TX_NOT_EXISTS_FAILED("224", "the core transaction not exists failed", false),
+    RS_CORE_TX_EXISTS_FAILED("225", "the core transaction already exists failed", false),
 
     RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
     RS_CORE_CA_CANCEL_ERROR("302", "rs core ca cancel error", false),
