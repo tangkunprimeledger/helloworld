@@ -106,10 +106,10 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
     public void afterPropertiesSet() throws Exception {
         log.info("Init redis distribution topic listener to process tx.");
         //TODO lingchao open it ofter test
-/*        if (!Boolean.valueOf(joinConsensus)) {
+        if (!Boolean.valueOf(joinConsensus)) {
             log.info("this node not join consensus do not need to initAsyncProcessInitTxListener");
             return;
-        }*/
+        }
         //init Async process init tx listener
         initAsyncProcessInitTxListener();
     }
@@ -132,9 +132,10 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
             //ON_PERSISTED_CALLBACK
             if (!forEnd) {
                 respData = distributeCallbackNotifyService.syncWaitNotify(txId, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY, rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
+            } else {
+                //ON_CLUSTER_PERSISTED_CALLBACK
+                respData = distributeCallbackNotifyService.syncWaitNotify(txId, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY, rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
             }
-            //ON_CLUSTER_PERSISTED_CALLBACK
-            respData = distributeCallbackNotifyService.syncWaitNotify(txId, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY, rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
         } catch (Throwable e) {
             log.error("tx handle exception. ", e);
             respData = new RespData();
