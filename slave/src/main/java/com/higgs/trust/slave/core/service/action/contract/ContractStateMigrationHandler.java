@@ -1,8 +1,11 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.higgs.trust.contract.StateManager;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.ContractStateMigrationAction;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +36,15 @@ public class ContractStateMigrationHandler implements ActionHandler {
         }
     }
 
+    @Override public void verifyParams(Action action) throws SlaveException {
+        ContractStateMigrationAction bo = (ContractStateMigrationAction) action;
+        if(StringUtils.isEmpty(bo.getFormInstanceAddress())){
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(bo.getToInstanceAddress())){
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+    }
 
     @Override
     public void process(ActionData actionData) {

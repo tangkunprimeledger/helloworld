@@ -7,6 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.context.ActionData;
@@ -26,6 +27,10 @@ import org.springframework.stereotype.Component;
     @Autowired CaHelper caHelper;
     @Autowired private ClusterInfo clusterInfo;
 
+    @Override public void verifyParams(Action action) throws SlaveException {
+        CaAction caAction = (CaAction)action;
+        caHelper.verifyParams(caAction);
+    }
     /**
      * the storage for the action
      *

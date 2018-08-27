@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.version;
 
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.model.bo.context.TransactionData;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,5 +22,9 @@ import org.springframework.stereotype.Component;
     }
 
     @Override public void process(TransactionData transactionData) {
+    }
+
+    @Override public ActionHandler getHandlerByType(ActionTypeEnum typeEnum) {
+        return null;
     }
 }
