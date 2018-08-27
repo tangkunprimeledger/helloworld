@@ -260,8 +260,7 @@ import org.springframework.stereotype.Component;
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
-            log.info(
-                "[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKeyForConsensus/priKey",
+            log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
                 nodeState.getNodeName(), user);
             return;
         }
@@ -270,14 +269,14 @@ import org.springframework.stereotype.Component;
             nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
         }*/
 
-        log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodeState.getNodeName());
-        //set pubKeyForConsensus and priKey to invalid
+        log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
+        //set pubKey and priKey to invalid
         Config config = new Config();
         config.setNodeName(user);
         config.setValid(false);
         configRepository.updateConfig(config);
 
-        log.info("[processCaCancel] end invalid pubKeyForConsensus/priKey, nodeName={}", nodeState.getNodeName());
+        log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
     }
 
     private void processCaAuth(RespData<CoreTransaction> respData) {

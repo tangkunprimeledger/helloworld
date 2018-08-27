@@ -412,13 +412,14 @@ CREATE TABLE IF NOT EXISTS `config` (
   `valid` TINYINT (1) NOT NULL COMMENT 'valid flag TRUE/FALSE',
   `pub_key` varchar(255) NOT NULL COMMENT 'pub key',
   `pri_key` varchar(1024) NOT NULL COMMENT 'pri key',
+  `usage` varchar(30) NOT NULL COMMENT 'usage of pub/priKey',
   `tmp_pub_key` varchar(255) COMMENT 'temp pub key',
   `tmp_pri_key` varchar(1024) COMMENT 'temp pri key',
   `node_name` varchar(32) NOT NULL COMMENT 'node name',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_node` (`node_name`)
+  UNIQUE KEY `uniq_node_use` (`node_name`,`usage`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds nodeself configuration';
 
 
@@ -457,7 +458,3 @@ CREATE TABLE IF NOT EXISTS `system_property` (
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_key` (`key`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table for system property';
-
-alter table config add column `usage` varchar(30) not null default 'consensus' comment 'usage of pub/priKey value can be biz or consensus' after `pri_key`;
-alter table config drop index uniq_node;
-alter table config add UNIQUE KEY `uniq_node_use` (`node_name`,`usage`);

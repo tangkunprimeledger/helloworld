@@ -20,6 +20,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * @author WangQuanzhou
@@ -27,9 +30,6 @@ import org.springframework.stereotype.Service;
  * @date 2018/6/28 19:53
  */
 @Service @Slf4j public class ClusterInitService {
-
-    public static final String PUB_KEY = "pubKeyForConsensus";
-    public static final String PRI_KEY = "priKey";
 
     @Autowired private BlockRepository blockRepository;
 
@@ -40,6 +40,8 @@ import org.springframework.stereotype.Service;
     @Autowired private NodeState nodeState;
 
     @Autowired private ClusterInfo clusterInfo;
+
+    @Autowired private TransactionTemplate txRequired;
 
     @Value("${trust.start.mode:cluster}") private String startMode;
 
@@ -70,37 +72,41 @@ import org.springframework.stereotype.Service;
     private void generateKeyPair() {
 
         if (null != configRepository.getConfig(new Config(nodeState.getNodeName()))) {
-            log.info("[ClusterInitService.generateKeyPair] pubKeyForConsensus/priKey already exist in table config");
+            log.info("[ClusterInitService.generateKeyPair] pubKey/priKey already exist in table config");
             return;
         }
 
-        // generate keyPair for consensus layer
-        Crypto consensusCrypto = CryptoUtil.getProtocolCrypto();
-        KeyPair keyPair = consensusCrypto.generateKeyPair();
-        String pubKey = keyPair.getPubKey();
-        String priKey = keyPair.getPriKey();
-        Config config = new Config();
-        config.setValid(true);
-        config.setPubKey(pubKey);
-        config.setPriKey(priKey);
-        config.setVersion(VersionEnum.V1.getCode());
-        config.setNodeName(nodeState.getNodeName());
-        config.setUsage(UsageEnum.CONSENSUS.getCode());
-        configRepository.insertConfig(config);
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                // generate keyPair for consensus layer
+                Crypto consensusCrypto = CryptoUtil.getProtocolCrypto();
+                KeyPair keyPair = consensusCrypto.generateKeyPair();
+                String pubKey = keyPair.getPubKey();
+                String priKey = keyPair.getPriKey();
+                Config config = new Config();
+                config.setValid(true);
+                config.setPubKey(pubKey);
+                config.setPriKey(priKey);
+                config.setVersion(VersionEnum.V1.getCode());
+                config.setNodeName(nodeState.getNodeName());
+                config.setUsage(UsageEnum.CONSENSUS.getCode());
+                configRepository.insertConfig(config);
 
-        // generate keyPair for biz layer
-        Crypto bizCrypto = CryptoUtil.getBizCrypto();
-        keyPair = bizCrypto.generateKeyPair();
-        pubKey = keyPair.getPubKey();
-        priKey = keyPair.getPriKey();
-        config = new Config();
-        config.setValid(true);
-        config.setPubKey(pubKey);
-        config.setPriKey(priKey);
-        config.setVersion(VersionEnum.V1.getCode());
-        config.setNodeName(nodeState.getNodeName());
-        config.setUsage(UsageEnum.BIZ.getCode());
-        configRepository.insertConfig(config);
+                // generate keyPair for biz layer
+                Crypto bizCrypto = CryptoUtil.getBizCrypto();
+                keyPair = bizCrypto.generateKeyPair();
+                pubKey = keyPair.getPubKey();
+                priKey = keyPair.getPriKey();
+                config = new Config();
+                config.setValid(true);
+                config.setPubKey(pubKey);
+                config.setPriKey(priKey);
+                config.setVersion(VersionEnum.V1.getCode());
+                config.setNodeName(nodeState.getNodeName());
+                config.setUsage(UsageEnum.BIZ.getCode());
+                configRepository.insertConfig(config);
+            }
+        });
 
     }
 }

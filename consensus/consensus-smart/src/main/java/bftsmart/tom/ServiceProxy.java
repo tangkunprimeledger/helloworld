@@ -375,9 +375,6 @@ public class ServiceProxy extends TOMSender {
             } else {
                 Logger.println("Ignoring reply from " + reply.getSender() + " with reqId:" + reply.getSequence()
                     + ". Currently wait reqId= " + reqId);
-                Logger.println("Ignoring reply from " + reply.getSender() + " with reqId:" + reply.getSequence()
-                    + ". Currently wait reqId= " + reqId);
-
             }
             // Critical section ends here. The semaphore can be released
             canReceiveLock.unlock();

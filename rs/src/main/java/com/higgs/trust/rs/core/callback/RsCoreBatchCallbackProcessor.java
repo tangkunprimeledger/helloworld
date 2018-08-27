@@ -52,7 +52,7 @@ import java.util.*;
 
     public void onPersisted(List<RsCoreTxVO> txs, BlockHeader blockHeader) {
         Map<String, List<RsCoreTxVO>> map = parseTx(txs);
-        log.debug("[onPersisted]map:{}",map);
+        log.debug("[onPersisted]map:{}", map);
         for (String policyId : map.keySet()) {
             List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -94,7 +94,7 @@ import java.util.*;
             }
             //callback custom
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onPersisted(policyId,rsCoreTxVOS,blockHeader);
+            txBatchCallbackHandler.onPersisted(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -133,7 +133,7 @@ import java.util.*;
             List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             //callback custom
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onEnd(policyId,rsCoreTxVOS,blockHeader);
+            txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -164,7 +164,7 @@ import java.util.*;
             }
             //callback custom
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onFailover(policyId,rsCoreTxVOS,blockHeader);
+            txBatchCallbackHandler.onFailover(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -198,7 +198,7 @@ import java.util.*;
      * @param rsCoreTxVOS
      */
     private void processRegisterPolicy(List<RsCoreTxVO> rsCoreTxVOS) {
-        log.debug("[processRegisterPolicy]txs:{}",rsCoreTxVOS);
+        log.debug("[processRegisterPolicy]txs:{}", rsCoreTxVOS);
         List<VoteRule> voteRules = new ArrayList<>();
         for (RsCoreTxVO tx : rsCoreTxVOS) {
             if (tx.getExecuteResult() == CoreTxResultEnum.SUCCESS) {
@@ -212,7 +212,7 @@ import java.util.*;
             }
         }
         //batch inset
-        if(!CollectionUtils.isEmpty(voteRules)) {
+        if (!CollectionUtils.isEmpty(voteRules)) {
             voteRuleRepository.batchInsert(voteRules);
         }
         //update request status
@@ -272,13 +272,13 @@ import java.util.*;
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
         if (CollectionUtils.isEmpty(nodes)) {
-            log.info("[processCaUpdate] current node ={}, is not ca updated pubKeyForConsensus/priKey", nodeState.getNodeName());
+            log.info("[processCaUpdate] current node ={}, is not ca updated pubKey/priKey", nodeState.getNodeName());
             return;
         }
-        log.info("[processCaUpdate] start to update pubKeyForConsensus/priKey");
+        log.info("[processCaUpdate] start to update pubKey/priKey");
         // update table config, set tmpKey to key
         configJDBCDao.batchEnable(nodes);
-        log.info("[processCaUpdate] end update pubKeyForConsensus/priKey, nodeName={}", nodes);
+        log.info("[processCaUpdate] end update pubKey/priKey, nodeName={}", nodes);
     }
 
     private void processCaCancel(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -295,14 +295,14 @@ import java.util.*;
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
         if (CollectionUtils.isEmpty(nodes)) {
-            log.info("[processCaCancel] current node ={}, is not ca cancel, end cancel pubKeyForConsensus/priKey",
+            log.info("[processCaCancel] current node ={}, is not ca cancel, end cancel pubKey/priKey",
                 nodeState.getNodeName());
             return;
         }
-        log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
-        //set pubKeyForConsensus and priKey to invalid
+        log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodes);
+        //set pubKey and priKey to invalid
         configJDBCDao.batchCancel(nodes);
-        log.info("[processCaCancel] end invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
+        log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodes);
     }
 
     private void processCaAuth(List<RsCoreTxVO> rsCoreTxVOS) {
