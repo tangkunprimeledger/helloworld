@@ -1,5 +1,7 @@
 package com.higgs.trust.consensus.core.command;
 
-public interface ConsensusCommand<T> {
+import java.io.Serializable;
+
+public interface ConsensusCommand<T> extends Serializable {
     T get();
 }

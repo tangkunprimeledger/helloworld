@@ -4,14 +4,6 @@
       "NFLoadBalancerRuleClassName": "com.higgs.trust.common.feign.RequestHeaderRoundRobinRule"
     }
   },
-  "copycat": {
-    "server": {
-      "address": "127.0.0.1:8802",
-      "cluster": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803",
-      "client": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803",
-      "logDir": "/tmp/higgs/trust/copycat/log2"
-    }
-  },
   "eureka": {
     "client": {
       "enabled": true,
@@ -96,7 +88,7 @@
         "minIdle": 1,
         "password": "root",
         "time-between-eviction-runs-millis": 60000,
-        "url": "jdbc:mysql://localhost:3306/trust2?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
+        "url": "jdbc:mysql://192.168.99.100:3308/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
       },
       "type": "com.alibaba.druid.pool.DruidDataSource"
