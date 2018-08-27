@@ -90,7 +90,7 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
             String message = MessageFormatter.format("wait async finish timeout, timeout={} ,timeUnit={}", timeout, timeUnit).getMessage();
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_WAIT_ASYNC_TIMEOUT_EXCEPTION, message);
         }
-        return (RespData) finalLockObject.getResult();
+        return JSON.parseObject(finalLockObject.getResult().toString(), RespData.class);
 
     }
 

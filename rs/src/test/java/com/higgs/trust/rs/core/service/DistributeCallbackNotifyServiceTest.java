@@ -1,15 +1,20 @@
 package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.IntegrateBaseTest;
+import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.DistributeCallbackNotifyService;
 import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.api.enums.RedisTopicEnum;
+import com.higgs.trust.rs.core.callback.SlaveBatchCallbackProcessor;
+import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
+import org.testng.collections.Lists;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,6 +28,11 @@ public class DistributeCallbackNotifyServiceTest extends IntegrateBaseTest {
     private DistributeCallbackNotifyService distributeCallbackNotifyService;
     @Autowired
     private RedissonClient redissonClient;
+    @Autowired
+    private SlaveBatchCallbackProcessor slaveBatchCallbackProcessor;
+    @Autowired
+    private CoreTransactionService coreTransactionService;
+
 
     @Test
     public void test() throws Exception {
@@ -81,5 +91,6 @@ public class DistributeCallbackNotifyServiceTest extends IntegrateBaseTest {
         RTopic<String> topic = redissonClient.getTopic(RedisTopicEnum.ASYNC_TO_PROCESS_INIT_TX.getCode());
         topic.publish("lingchao");
     }
+
 
 }
