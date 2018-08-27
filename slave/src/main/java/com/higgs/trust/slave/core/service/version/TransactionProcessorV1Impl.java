@@ -115,7 +115,7 @@ import java.util.*;
      * @param typeEnum
      * @return
      */
-    private ActionHandler getHandlerByType(ActionTypeEnum typeEnum) {
+    @Override public ActionHandler getHandlerByType(ActionTypeEnum typeEnum) {
         if (null == typeEnum) {
             log.error("[getHandlerByType] action type is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACTION_NOT_EXISTS_EXCEPTION,

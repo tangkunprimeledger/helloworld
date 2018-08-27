@@ -8,6 +8,7 @@ import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
@@ -89,6 +90,19 @@ import java.util.Date;
         }
 
         return creationAction;
+    }
+
+    @Override public void verifyParams(Action action) throws SlaveException {
+        ContractCreationAction creationAction = (ContractCreationAction) action;
+        if(StringUtils.isEmpty(creationAction.getCode())){
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(creationAction.getLanguage())){
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(creationAction.getVersion())){
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
     }
 
     @Override public void process(ActionData actionData) {
