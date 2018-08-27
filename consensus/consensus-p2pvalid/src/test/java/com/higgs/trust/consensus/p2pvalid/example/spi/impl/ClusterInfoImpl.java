@@ -66,13 +66,32 @@ public class ClusterInfoImpl extends AbstractClusterInfo{
     }
 
     @Override
-    public String pubKey(String nodeName) {
+    public String pubKeyForConsensus(String nodeName) {
         return pubKey;
     }
 
+    /**
+     * get public key create the given nodeName
+     *
+     * @param nodeName
+     * @return
+     */
+    @Override public String pubKeyForBiz(String nodeName) {
+        return null;
+    }
+
     @Override
-    public String privateKey() {
+    public String priKeyForConsensus() {
         return privateKey;
+    }
+
+    /**
+     * get the self private key
+     *
+     * @return
+     */
+    @Override public String priKeyForBiz() {
+        return null;
     }
 
     @Override public void init(ClusterInfoVo vo) {
@@ -80,6 +99,10 @@ public class ClusterInfoImpl extends AbstractClusterInfo{
     }
 
     @Override public void refresh() {
+
+    }
+
+    @Override public void refreshConsensus() {
 
     }
 }

@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.consensus.p2pvalid.config;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.consensus.config.NodeProperties;
@@ -79,7 +79,8 @@ import org.springframework.stereotype.Service;
             commandWrap.setCommandClass(command.getClass());
             log.info("clusterInfo.nodeName={}", clusterInfo.nodeName());
             commandWrap.setFromNode(clusterInfo.nodeName());
-            commandWrap.setSign(SignUtils.sign(command.getMessageDigestHash(), clusterInfo.privateKey()));
+            commandWrap
+                .setSign(CryptoUtil.getProtocolCrypto().sign(command.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
             commandWrap.setValidCommand(command);
             try {
                 response = client.syncSendFeign(nodeState.notMeNodeNameReg(), commandWrap);

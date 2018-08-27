@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusClient;
@@ -44,7 +44,8 @@ import java.util.concurrent.TimeUnit;
     /**
      * retry time interval
      */
-    private static final String[] retryInterval = new String[]{ "50", "50", "50", "100", "100", "200", "400", "800", "1000"};
+    private static final String[] retryInterval =
+        new String[] {"50", "50", "50", "100", "100", "200", "400", "800", "1000"};
 
     /**
      * replicate sorted package to the cluster
@@ -63,11 +64,13 @@ import java.util.concurrent.TimeUnit;
         Long endHeight = packageVOList.get(size - 1).getHeight();
 
         // replicate package to all nodes
-        log.info("package starts to distribute to each node through consensus layer package startHeight={}, endHeight={}, size={}", startHeight, endHeight, size);
+        log.info(
+            "package starts to distribute to each node through consensus layer package startHeight={}, endHeight={}, size={}",
+            startHeight, endHeight, size);
         BatchPackageCommand packageCommand =
             new BatchPackageCommand(nodeState.getCurrentTerm(), nodeState.getMasterName(), packageVOList);
         String signValue = packageCommand.getSignValue();
-        packageCommand.setSign(SignUtils.sign(signValue, nodeState.getPrivateKey()));
+        packageCommand.setSign(CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey()));
 
         boolean flag = false;
 
@@ -86,7 +89,8 @@ import java.util.concurrent.TimeUnit;
                 future.get(properties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);
                 flag = true;
             } catch (Throwable e) {
-                log.error("replicate log failed! startHeight={}, endHeight={}, size={}", startHeight, endHeight, size, e);
+                log.error("replicate log failed! startHeight={}, endHeight={}, size={}", startHeight, endHeight, size,
+                    e);
                 //TODO 添加告警
 
                 // wait for a while
@@ -100,7 +104,8 @@ import java.util.concurrent.TimeUnit;
             }
         }
 
-        log.info("package has been sent to consensus layer package startHeight={}, endHeight={}, size={}", startHeight, endHeight, size);
+        log.info("package has been sent to consensus layer package startHeight={}, endHeight={}, size={}", startHeight,
+            endHeight, size);
     }
 
     /**

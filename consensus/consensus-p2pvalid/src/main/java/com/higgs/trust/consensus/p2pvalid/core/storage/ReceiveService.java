@@ -1,11 +1,11 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.common.utils.TraceUtils;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -32,7 +31,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-@Component @Slf4j public class ReceiveService {
+//@Component
+@Deprecated//use P2PReceiveService
+@Slf4j public class ReceiveService {
 
     public static final Integer COMMAND_NORMAL = 0;
     public static final Integer COMMAND_QUEUED_APPLY = 1;
@@ -114,10 +115,10 @@ import java.util.concurrent.locks.ReentrantLock;
         }
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
 
-        String pubKey = clusterInfo.pubKey(validCommandWrap.getFromNode());
-        if (!SignUtils.verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
+        String pubKey = clusterInfo.pubKeyForConsensus(validCommandWrap.getFromNode());
+        if (!CryptoUtil.getProtocolCrypto().verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
             throw new RuntimeException(String
-                .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
+                .format("check sign failed for node %s, validCommandWrap %s, pubKeyForConsensus %s", validCommandWrap.getFromNode(),
                     validCommandWrap, pubKey));
         }
         log.debug("command message digest:{}", validCommandWrap.getValidCommand().getMessageDigestHash());
@@ -196,7 +197,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedApplyList.forEach((queuedApply) -> {
                     Span span = TraceUtils.createSpan();
                     try {
-                        log.debug("apply:{}",queuedApply);
+                        log.debug("apply:{}", queuedApply);
                         ReceiveCommandPO receiveCommand =
                             receiveCommandDao.queryByMessageDigest(queuedApply.getMessageDigest());
                         if (null == receiveCommand) {
@@ -236,7 +237,7 @@ import java.util.concurrent.locks.ReentrantLock;
                 queuedApplyDelayList.forEach((queuedApplyDelay) -> {
                     Span span = TraceUtils.createSpan();
                     try {
-                        log.debug("apply delay :{}",queuedApplyDelay);
+                        log.debug("apply delay :{}", queuedApplyDelay);
                         ReceiveCommandPO receiveCommand =
                             receiveCommandDao.queryByMessageDigest(queuedApplyDelay.getMessageDigest());
                         if (null == receiveCommand) {

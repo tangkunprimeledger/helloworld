@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.dao.config;
 
-import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
 import com.higgs.trust.slave.dao.po.config.ConfigPO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -27,14 +26,12 @@ import java.util.List;
      */
     void updateConfig(ConfigPO configPO);
 
-
-
     /**
      * @param configPO
-     * @return ConfigPO
-     * @desc get config information by nodeName
+     * @return List
+     * @desc get config information by nodeName and usage(if needed)
      */
-    ConfigPO getConfig(ConfigPO configPO);
+    List<ConfigPO> getConfig(ConfigPO configPO);
 
     /**
      * batch insert

@@ -80,7 +80,7 @@ import java.util.concurrent.*;
         return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
 
-    @Bean public ThreadPoolTaskExecutor txProcessExecutorPool() {
+    @Bean (name = "txProcessExecutorPool") public ThreadPoolTaskExecutor txProcessExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
         threadPoolTaskExecutor.setMaxPoolSize(10);
@@ -90,7 +90,7 @@ import java.util.concurrent.*;
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
-    @Bean public ThreadPoolTaskExecutor txSubmitExecutorPool() {
+    @Bean (name = "txSubmitExecutorPool")public ThreadPoolTaskExecutor txSubmitExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
         threadPoolTaskExecutor.setMaxPoolSize(10);
@@ -100,29 +100,53 @@ import java.util.concurrent.*;
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
-    @Bean public ThreadPoolTaskExecutor syncVotingExecutorPool() {
+    @Bean (name = "syncVotingExecutorPool") public ThreadPoolTaskExecutor syncVotingExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(20);
-        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.setCorePoolSize(5);
+        threadPoolTaskExecutor.setMaxPoolSize(20);
         threadPoolTaskExecutor.setQueueCapacity(5000);
         threadPoolTaskExecutor.setThreadNamePrefix("syncVotingExecutor-");
         threadPoolTaskExecutor.initialize();
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
-    @Bean public ThreadPoolTaskExecutor asyncVotingExecutorPool() {
+    @Bean (name = "asyncVotingExecutorPool")  public ThreadPoolTaskExecutor asyncVotingExecutorPool() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(20);
-        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.setCorePoolSize(5);
+        threadPoolTaskExecutor.setMaxPoolSize(20);
         threadPoolTaskExecutor.setQueueCapacity(5000);
         threadPoolTaskExecutor.setThreadNamePrefix("asyncVotingExecutorPool-");
         threadPoolTaskExecutor.initialize();
         return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
-    @Bean public Executor txConsumerExecutor() {
+    @Bean (name = "txConsumerExecutor")  public Executor txConsumerExecutor() {
         NamedDaemonThreadFactory namedDaemonThreadFactory = new NamedDaemonThreadFactory("txConsumerExecutor-");
         ExecutorService service = Executors.newSingleThreadExecutor(namedDaemonThreadFactory);
         return new LazyTraceExecutor(beanFactory, service);
+    }
+
+    @Bean (name = "p2pSendExecutor")  public ThreadPoolTaskExecutor p2pSendExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(10);
+        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.setQueueCapacity(5000);
+        threadPoolTaskExecutor.setKeepAliveSeconds(3600);
+        threadPoolTaskExecutor.setThreadNamePrefix("p2pSendExecutor-");
+        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+    }
+
+    @Bean (name = "p2pReceiveExecutor")  public ThreadPoolTaskExecutor p2pReceiveExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(5);
+        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.setQueueCapacity(1024);
+        threadPoolTaskExecutor.setKeepAliveSeconds(3600);
+        threadPoolTaskExecutor.setThreadNamePrefix("p2pReceivedExecutor-");
+        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
+        threadPoolTaskExecutor.initialize();
+        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 }

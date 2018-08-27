@@ -1,27 +1,25 @@
 package com.higgs.trust.slave.core.managment;
 
-import com.higgs.trust.common.utils.KeyGeneratorUtils;
+import com.higgs.trust.common.crypto.Crypto;
+import com.higgs.trust.common.crypto.KeyPair;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.ca.CaInitService;
 import com.higgs.trust.slave.model.bo.config.Config;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
-
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 /**
  * @author WangQuanzhou
@@ -30,7 +28,7 @@ import java.util.Map;
  */
 @Service @Slf4j public class ClusterInitService {
 
-    public static final String PUB_KEY = "pubKey";
+    public static final String PUB_KEY = "pubKeyForConsensus";
     public static final String PRI_KEY = "priKey";
 
     @Autowired private BlockRepository blockRepository;
@@ -54,6 +52,7 @@ import java.util.Map;
             log.info("[ClusterInitService.init] end initKeyPair");
         }
         clusterInfo.refresh();
+        clusterInfo.refreshConsensus();
     }
 
     private boolean needInit() {
@@ -70,27 +69,38 @@ import java.util.Map;
 
     private void generateKeyPair() {
 
-        if (null != configRepository.getConfig(nodeState.getNodeName())) {
-            log.info("[ClusterInitService.generateKeyPair] pubKey/priKey already exist in table config");
+        if (null != configRepository.getConfig(new Config(nodeState.getNodeName()))) {
+            log.info("[ClusterInitService.generateKeyPair] pubKeyForConsensus/priKey already exist in table config");
             return;
         }
 
-        Map<String, String> map = null;
-        try {
-            map = KeyGeneratorUtils.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            log.error("[init] generate pubKey/priKey has error, no such algorithm");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_GENERATE_KEY_ERROR,
-                "[init] generate pubKey/priKey has error, no such algorithm");
-        }
-        String pubKey = map.get(PUB_KEY);
-        String priKey = map.get(PRI_KEY);
+        // generate keyPair for consensus layer
+        Crypto consensusCrypto = CryptoUtil.getProtocolCrypto();
+        KeyPair keyPair = consensusCrypto.generateKeyPair();
+        String pubKey = keyPair.getPubKey();
+        String priKey = keyPair.getPriKey();
         Config config = new Config();
         config.setValid(true);
         config.setPubKey(pubKey);
         config.setPriKey(priKey);
         config.setVersion(VersionEnum.V1.getCode());
         config.setNodeName(nodeState.getNodeName());
+        config.setUsage(UsageEnum.CONSENSUS.getCode());
         configRepository.insertConfig(config);
+
+        // generate keyPair for biz layer
+        Crypto bizCrypto = CryptoUtil.getBizCrypto();
+        keyPair = bizCrypto.generateKeyPair();
+        pubKey = keyPair.getPubKey();
+        priKey = keyPair.getPriKey();
+        config = new Config();
+        config.setValid(true);
+        config.setPubKey(pubKey);
+        config.setPriKey(priKey);
+        config.setVersion(VersionEnum.V1.getCode());
+        config.setNodeName(nodeState.getNodeName());
+        config.setUsage(UsageEnum.BIZ.getCode());
+        configRepository.insertConfig(config);
+
     }
 }

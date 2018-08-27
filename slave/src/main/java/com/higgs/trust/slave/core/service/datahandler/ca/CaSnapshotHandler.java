@@ -29,12 +29,12 @@ import org.springframework.stereotype.Service;
     @Override public void authCa(Ca ca) {
         // operate merkle tree
         check(ca);
-        log.info("start to auth ca,user={}", ca.getUser());
-        if (null != caSnapshotAgent.getCa(ca.getUser())) {
-            log.info("snapshot and db do not have ca");
+        log.info("start to auth ca,user={}, usage={}", ca.getUser(), ca.getUsage());
+        if (null != caSnapshotAgent.getCa(ca.getUser(), ca.getUsage())) {
+            log.info("snapshot or db have ca, update ca ...");
             caSnapshotAgent.updateCa(ca);
         } else {
-            log.info("insert ca ...");
+            log.info("snapshot and db do not have ca, insert ca ...");
             caSnapshotAgent.saveCa(ca);
         }
 
@@ -104,8 +104,8 @@ import org.springframework.stereotype.Service;
      * @return Ca
      * @desc get CA information by nodeName
      */
-    @Override public CaPO getCa(String nodeName) {
-        return caSnapshotAgent.getCa(nodeName);
+    @Override public CaPO getCa(String nodeName, String usage) {
+        return caSnapshotAgent.getCa(nodeName, usage);
     }
 
     private void check(Ca ca) {

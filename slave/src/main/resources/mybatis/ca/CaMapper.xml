@@ -59,7 +59,7 @@
                 pub_key=#{pubKey},
             </if>
 		</trim>
-		WHERE `user`=#{user} and valid=1
+		WHERE `user`=#{user} and `usage`='biz' and valid=1
 	</update>
 
 
@@ -69,7 +69,7 @@
 			<!-- set update_time -->
 			<trim prefix="`update_time` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user}
+					WHEN `user`=#{item.user} and `usage`=#{item.usage}
 					THEN now(3)
 				</foreach>
 				ELSE `update_time`
@@ -77,7 +77,7 @@
 			<!-- set period -->
 			<trim prefix="`period` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user}
+					WHEN `user`=#{item.user} and `usage`=#{item.usage}
 					THEN #{item.period}
 				</foreach>
 				ELSE `period`
@@ -85,7 +85,7 @@
 			<!-- set pub_key -->
 			<trim prefix="`pub_key` = CASE" suffix="END,">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user}
+					WHEN `user`=#{item.user} and `usage`=#{item.usage}
 					THEN #{item.pubKey}
 				</foreach>
 				ELSE `pub_key`
@@ -93,7 +93,7 @@
 			<!-- set valid -->
 			<trim prefix="`valid` = CASE" suffix="END">
 				<foreach collection="list" item="item">
-					WHEN `user`=#{item.user}
+					WHEN `user`=#{item.user} and `usage`=#{item.usage}
 					THEN #{item.valid}
 				</foreach>
 				ELSE `valid`
@@ -101,13 +101,13 @@
 		</trim>
 		<where>
 			<foreach collection="list" item="item" separator="or" open="(" close=")">
-				`user`=#{item.user}
+				`user`=#{item.user} and `usage`=#{item.usage}
 			</foreach>
 		</where>
 	</update>
 
 
-    <select id="getCa" parameterType="java.lang.String"
+    <select id="getCaForBiz" parameterType="java.lang.String"
             resultType="com.higgs.trust.slave.dao.po.ca.CaPO">
 		SELECT    version as version,
 								period as period,
@@ -117,7 +117,7 @@
 								`usage` as `usage`,
 								create_time as createTime,
 								update_time as updateTime
-		      FROM ca WHERE `user`=#{user} and valid=1
+		      FROM ca WHERE `user`=#{user} and `usage`='biz'
 	</select>
 
 

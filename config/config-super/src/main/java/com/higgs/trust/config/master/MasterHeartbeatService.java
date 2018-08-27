@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.config.master;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
@@ -70,7 +70,8 @@ import java.util.concurrent.*;
     public void masterHeartbeat() {
         MasterHeartbeatCommand command =
             new MasterHeartbeatCommand(nodeState.getCurrentTerm(), nodeState.getNodeName());
-        command.setSign(SignUtils.sign(command.getSignValue(), nodeState.getPrivateKey()));
+        command
+            .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));
         CompletableFuture future = consensusClient.submit(command);
         try {
             future.get(nodeProperties.getConsensusWaitTime(), TimeUnit.MILLISECONDS);

@@ -2,6 +2,7 @@ package com.higgs.trust.slave.api.controller;
 
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class TransactionController{
 
     @RequestMapping(value = "/master/submit", method = RequestMethod.POST)
     @ResponseBody
-    public RespData masterReceive(@RequestBody List<SignedTransaction> transactions) {
+    public RespData<List<TransactionVO>> masterReceive(@RequestBody List<SignedTransaction> transactions) {
         if (log.isDebugEnabled()) {
             log.debug("master receive transactions, parameter :{}", transactions);
         }

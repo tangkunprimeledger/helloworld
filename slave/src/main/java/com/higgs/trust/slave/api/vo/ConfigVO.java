@@ -19,6 +19,8 @@ import lombok.Setter;
 
     private String priKey;
 
+    private String usage;
+
     private String tmpPubKey;
 
     private String tmpPriKey;

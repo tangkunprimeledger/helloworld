@@ -227,4 +227,14 @@ import java.util.List;
         }
         return pTxIds;
     }
+
+    /**
+     * delete by less than height
+     *
+     * @param height
+     * @return
+     */
+    public int deleteLessThanHeight(Long height) {
+        return pendingTransactionDao.deleteLessThanHeight(height);
+    }
 }

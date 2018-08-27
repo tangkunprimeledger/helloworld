@@ -2,7 +2,7 @@ package com.higgs.trust.slave._interface.transaction;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.rsa.Rsa;
 import com.higgs.trust.slave._interface.InterfaceCommonTest;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.transaction.TransactionExecutor;
@@ -72,7 +72,7 @@ import static org.testng.Assert.assertEquals;
         log.info("[generateSign]param:{}", param);
 
         CoreTransaction coreTx = getBodyData(param, CoreTransaction.class);
-        String signature = SignUtils.sign(JSON.toJSONString(coreTx),
+        String signature = Rsa.sign(JSON.toJSONString(coreTx),
             "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAIsMM2JkqnQACN+RUqRF4UkW58XnjpjA+RP4mnA4uD9KCjlJeTxvY0yHDqsvIaiXr7Ge0QB1VAKq0xit2BWHfVU/XlO1tqK+ea7YxooeoglvOkddiJiYTZUNjKM5AhttG950PpzrmeUcl9YGEZ/DwKKee+8tqaDWdIEHBnplO6mVAgMBAAECgYBtrWwCmoDRCw30uv5C0VQIgObE9gdGekB9/kRjbHn4ggBae5gDkaDzxjxNztlv0GYnZqxY/jML/46PEuE06jBzGcOlBuobQJJ38pTg0pnNVHbkTckxfUIr1MYUDhtO18tJZUZuMbYMwwgZ9K9E0N8kjKXk+rRx+BDjlbxNPds6KQJBAMLS/HCXjAfJlzSEWqkBavAKoW+bBhZlkTH+DoNk/KidASgdFBqtPUf5w3U+j8dK4nvt8R9X7zGxRAYXpDGHUucCQQC2tZlmL858suIA/+XfQVGoKOEvLlI5tGNDLXlDaKldY8UZGqxcyKaOsqEWMQnJCUy/0zTariN7kNssptYm04wjAkB3qVlt2lcizVn24rhAh+NjzlO7le8WQIn+t7m4UIWzFsQIHFwlynQSSkEYOTXcRY14avwnsT30Opm6WDj8Rs7PAkBytzqFSmbfLIFyFzmBH0Xhyyj3sqG10WixeQ+2HzSXiljqFjE6YFETL1yszkVSkCA8IKQC2Ws13hF+y5GR9yj5AkBAeUJj/a8wpdxJCufDpoaVUsB/XGK9XCqlGZvSy2TrjWLLBjZ3jiyjTlqIssfqI/IiJ4H2peocDaHXjFT0m+Av");
         System.out.println(signature);
     }
@@ -91,7 +91,7 @@ import static org.testng.Assert.assertEquals;
 
         try {
 
-//            transactionExecutor.validate(packContext);
+            //            transactionExecutor.validate(packContext);
         } catch (Exception e) {
             assertEquals(e.getMessage(), param.get("assert"));
         }

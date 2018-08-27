@@ -3,9 +3,8 @@
  */
 package com.higgs.trust.config.filter;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.p2p.AbstractClusterInfo;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
@@ -30,9 +29,12 @@ import org.springframework.stereotype.Component;
             clusterInfo.refreshIfNeed();
             SignatureCommand command = (SignatureCommand)commit.operation();
             String nodeName = command.getNodeName();
-            String publicKey = clusterInfo.pubKey(nodeName);
-            boolean verify = SignUtils.verify(command.getSignValue(), command.getSignature(), publicKey);
-            log.debug("command sign verify:{}", verify);
+            String publicKey = clusterInfo.pubKeyForConsensus(nodeName);
+            boolean verify =
+                CryptoUtil.getProtocolCrypto().verify(command.getSignValue(), command.getSignature(), publicKey);
+            if (log.isDebugEnabled()){
+                log.debug("command sign verify result:{}", verify);
+            }
             if (!verify) {
                 log.warn("command sign verify failed, node:{}, pubkey:{}", nodeName, publicKey);
                 commit.close();

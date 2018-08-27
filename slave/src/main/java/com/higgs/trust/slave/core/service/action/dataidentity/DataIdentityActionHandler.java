@@ -21,9 +21,9 @@ public class DataIdentityActionHandler implements ActionHandler {
 
     @Override
     public void process(ActionData actionData) {
-        log.info("[ DataIdentityAction.process] is starting");
+        log.debug("[ DataIdentityAction.process] is starting");
         dataIdentityService.process(actionData);
-        log.info("[ DataIdentityAction.process] is end");
+        log.debug("[ DataIdentityAction.process] is end");
     }
 
 

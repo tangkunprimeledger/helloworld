@@ -7,6 +7,7 @@ import com.higgs.trust.slave.model.bo.ca.Ca;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,11 +21,11 @@ import java.util.Map;
      * send ca auth request
      *
      * @param nodeNameReg
-     * @param caVO
+     * @param list
      * @return
      */
     @RequestMapping(value = "/ca/auth", method = RequestMethod.POST) RespData<String> caAuth(
-        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody CaVO caVO);
+        @RequestHeader(FeignRibbonConstants.NODE_NAME_REG) String nodeNameReg, @RequestBody List<CaVO> list);
 
     /**
      * @param

@@ -56,9 +56,16 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
     @Getter private String masterName = MASTER_NA;
 
     /**
-     * private key
+     * private key for biz
      */
     @Getter @Setter private String privateKey;
+
+    /**
+     * private key for consensus
+     */
+    @Getter @Setter private String consensusPrivateKey;
+
+
 
     /**
      * cluster name, as the prefix of cluster nodes

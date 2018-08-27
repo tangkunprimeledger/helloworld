@@ -6,7 +6,7 @@ package com.higgs.trust.slave.core.service.consensus.p2p;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.p2pvalid.annotation.P2pvalidReplicator;
-import com.higgs.trust.consensus.p2pvalid.core.ValidCommit;
+import com.higgs.trust.consensus.p2pvalid.core.P2PValidCommit;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
      *
      * @param commit
      */
-    public void receivePersisted(ValidCommit<PersistCommand> commit) {
+    public void receivePersisted(P2PValidCommit<PersistCommand> commit) {
         // validate param
         BeanValidateResult result = BeanValidator.validate(commit);
         if (!result.isSuccess()) {
@@ -57,12 +57,12 @@ import org.springframework.stereotype.Component;
      * @param commit
      * @param header
      */
-    private void doReceive(ValidCommit commit, BlockHeader header) {
+    private void doReceive(P2PValidCommit commit, BlockHeader header) {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED);
         }
         try {
-            packageService.persisted(header);
+            packageService.persisted(header,true);
         } catch (SlaveException e) {
             if (e.getCode() == SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR) {
                 return;

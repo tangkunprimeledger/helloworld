@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.config.master;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.config.master.command.ArtificialChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;
@@ -42,11 +42,11 @@ import java.util.stream.Collectors;
             Map<String, ChangeMasterVerifyResponse> verifyResponseMap = operation.get();
             List<Map.Entry<String, ChangeMasterVerifyResponse>> collect =
                 verifyResponseMap.entrySet().stream().filter(e -> {
-                    String pubKey = clusterInfo.pubKey(e.getKey());
+                    String pubKey = clusterInfo.pubKeyForConsensus(e.getKey());
                     ChangeMasterVerifyResponse value = e.getValue();
                     boolean verify = false;
                     try {
-                        verify = SignUtils.verify(value.getSignValue(), value.getSign(), pubKey);
+                        verify = CryptoUtil.getProtocolCrypto().verify(value.getSignValue(), value.getSign(), pubKey);
                     } catch (Throwable throwable) {
                         log.warn("verify sign of {} failed", e.getKey());
                     }

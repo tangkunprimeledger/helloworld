@@ -17,25 +17,25 @@ import org.springframework.stereotype.Component;
         log.info("[CaHelper.process] is start,params:{}", caAction);
 
         //validate idempotent
-        CaPO caPO = caSnapshotHandler.getCa(caAction.getUser());
+        CaPO caPO = caSnapshotHandler.getCa(caAction.getUser(),caAction.getUsage());
         if (type == ActionTypeEnum.CA_AUTH) {
-            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
+            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey()) && caPO.isValid()) {
                 return false;
             } else {
                 return true;
-            }
-        }
-
-        if (type == ActionTypeEnum.CA_CANCEL) {
-            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
-                return true;
-            } else {
-                return false;
             }
         }
 
         if (type == ActionTypeEnum.CA_UPDATE) {
             if (null != caPO && !StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        if (type == ActionTypeEnum.CA_CANCEL) {
+            if (null != caPO && StringUtils.equals(caPO.getPubKey(), caAction.getPubKey())) {
                 return true;
             } else {
                 return false;

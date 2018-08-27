@@ -1,6 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
@@ -37,13 +37,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     private <T extends ResponseCommand> ConcurrentHashMap<String, CommandCounter<T>> sendAndHandle(
         ValidCommand<?> validCommand) {
-        if (log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             log.debug("sync send command {}", validCommand);
         }
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(validCommand.getClass());
         validCommandWrap.setFromNode(clusterInfo.nodeName());
-        validCommandWrap.setSign(SignUtils.sign(validCommand.getMessageDigestHash(), clusterInfo.privateKey()));
+        validCommandWrap.setSign(
+            CryptoUtil.getProtocolCrypto().sign(validCommand.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
         validCommandWrap.setValidCommand(validCommand);
         ConcurrentHashMap<String, CommandCounter<T>> resultMap = new ConcurrentHashMap<>();
         List<String> nodeNames = clusterInfo.clusterNodeNames();

@@ -124,9 +124,9 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         }
 
         Profiler.enter("submit to master");
-        RespData masterResp = submitToMaster(newSignedTxList);
+        RespData<List<TransactionVO>> masterResp = submitToMaster(newSignedTxList);
         if (null != masterResp.getData()) {
-            transactionVOList.addAll((List<TransactionVO>)masterResp.getData());
+            transactionVOList.addAll(masterResp.getData());
         }
         Profiler.release();
         Profiler.release();
@@ -205,11 +205,11 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param tx
      * @return
      */
-    @Override public RespData submitTransaction(SignedTransaction tx) {
+    @Override public RespData<List<TransactionVO>> submitTransaction(SignedTransaction tx) {
         //TODO for load test
         log.info("accept tx with thread: " + Thread.currentThread().getName());
 
-        RespData respData;
+        RespData<List<TransactionVO>> respData;
         //TODO 放到消费队列里面
         if (AppContext.PENDING_TO_SUBMIT_QUEUE.size() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
             log.warn("pending to submit queue is full, size={}", AppContext.PENDING_TO_SUBMIT_QUEUE.size());
@@ -234,10 +234,10 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         return respData;
     }
 
-    @Override public RespData submitToMaster(List<SignedTransaction> transactions) {
+    @Override public RespData<List<TransactionVO>> submitToMaster(List<SignedTransaction> transactions) {
 
         Profiler.start("submit to master");
-        RespData respData = new RespData();
+        RespData<List<TransactionVO>> respData = new RespData();
 
         if (CollectionUtils.isEmpty(transactions)) {
             log.warn("transactions is empty");
