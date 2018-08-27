@@ -6,7 +6,7 @@ import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfi
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.server.Server;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
-import com.higgs.trust.consensus.core.ConsensusSnapshot;
+import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired private SmartConfig smartConfig;
 
-    @Autowired private ConsensusSnapshot consensusSnapshot;
+    @Autowired private IConsensusSnapshot consensusSnapshot;
 
     @Autowired private SmartCommitReplicateComposite machine;
 

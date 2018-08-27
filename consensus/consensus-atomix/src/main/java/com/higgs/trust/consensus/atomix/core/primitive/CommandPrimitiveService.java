@@ -4,7 +4,7 @@
 package com.higgs.trust.consensus.atomix.core.primitive;
 
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
-import com.higgs.trust.consensus.core.ConsensusSnapshot;
+import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import io.atomix.primitive.service.AbstractPrimitiveService;
 import io.atomix.primitive.service.BackupInput;
@@ -21,10 +21,10 @@ import java.util.function.Function;
 
     private AbstractCommitReplicateComposite replicateComposite;
 
-    private ConsensusSnapshot snapshot;
+    private IConsensusSnapshot snapshot;
 
     public CommandPrimitiveService(CommandPrimitiveType type, AbstractCommitReplicateComposite replicateComposite,
-        ConsensusSnapshot snapshot) {
+        IConsensusSnapshot snapshot) {
         super(type, ICommandPrimitive.class);
         this.replicateComposite = replicateComposite;
         this.snapshot = snapshot;
@@ -40,7 +40,7 @@ import java.util.function.Function;
     }
 
     @Override public void restore(BackupInput input) {
-        String snapshotStr = input.readObject();
+        byte[] snapshotStr = input.readObject();
         snapshot.installSnapshot(snapshotStr);
     }
 }

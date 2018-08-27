@@ -6,7 +6,7 @@ package com.higgs.trust.consensus.atomix.config;
 import com.higgs.trust.consensus.atomix.core.AtomixCommitReplicateComposite;
 import com.higgs.trust.consensus.atomix.core.primitive.CommandPrimitiveType;
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
-import com.higgs.trust.consensus.core.ConsensusSnapshot;
+import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import com.higgs.trust.consensus.core.DefaultConsensusSnapshot;
 import io.atomix.cluster.discovery.NodeDiscoveryConfig;
 import io.atomix.cluster.discovery.NodeDiscoveryProvider;
@@ -22,7 +22,6 @@ import io.atomix.primitive.partition.PartitionGroup;
 import io.atomix.primitive.partition.PartitionGroupConfig;
 import io.atomix.primitive.protocol.PrimitiveProtocol;
 import io.atomix.primitive.protocol.PrimitiveProtocolConfig;
-import io.atomix.protocols.raft.partition.RaftPartitionGroup;
 import io.atomix.utils.config.ConfigMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -41,12 +40,12 @@ import java.util.Arrays;
         return new AtomixCommitReplicateComposite();
     }
 
-    @Bean @ConditionalOnMissingBean(ConsensusSnapshot.class) public ConsensusSnapshot snapshot() {
+    @Bean @ConditionalOnMissingBean(IConsensusSnapshot.class) public IConsensusSnapshot snapshot() {
         return new DefaultConsensusSnapshot();
     }
 
     @Bean public CommandPrimitiveType commandPrimitiveType(AbstractCommitReplicateComposite replicateComposite,
-        ConsensusSnapshot snapshot) {
+        IConsensusSnapshot snapshot) {
         return new CommandPrimitiveType(replicateComposite, snapshot);
     }
 

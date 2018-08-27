@@ -3,32 +3,30 @@
  */
 package com.higgs.trust.consensus.atomix.example;
 
-import com.higgs.trust.consensus.core.ConsensusSnapshot;
+import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * @author suimi
  * @date 2018/8/15
  */
-@Slf4j public class ExampleSnapshot implements ConsensusSnapshot {
+@Slf4j public class ExampleSnapshot implements IConsensusSnapshot {
 
     long currentIndex = 0;
 
-    @Override public String getSnapshot() {
+    @Override public byte[] getSnapshot() {
         if (log.isDebugEnabled()) {
             log.debug("get snapshot index:{}", currentIndex);
         }
-        return "" + currentIndex;
+        return ("" + currentIndex).getBytes();
     }
 
-    @Override public void installSnapshot(String snapshot) {
-        if (StringUtils.isNotBlank(snapshot) && StringUtils.isNumeric(snapshot)) {
+    @Override public void installSnapshot(byte[] snapshot) {
+        if (snapshot != null) {
             if (log.isDebugEnabled()) {
                 log.debug("install snapshot:{}", snapshot);
             }
-            currentIndex = Long.parseLong(snapshot);
+            currentIndex = Long.parseLong(new String(snapshot));
         }
     }
 

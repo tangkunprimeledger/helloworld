@@ -6,7 +6,7 @@ import bftsmart.tom.server.defaultservices.DefaultRecoverable;
 import com.google.common.base.Charsets;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.SmartCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusCommit;
-import com.higgs.trust.consensus.core.ConsensusSnapshot;
+import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import io.atomix.utils.serializer.Namespace;
 import io.atomix.utils.serializer.Serializer;
@@ -29,11 +29,11 @@ public class Server extends DefaultRecoverable {
 
     private ServiceReplica serviceReplica;
 
-    private ConsensusSnapshot snapshot;
+    private IConsensusSnapshot snapshot;
 
     private Serializer serializer;
 
-    public Server(int serverId, ConsensusSnapshot snapshot, SmartCommitReplicateComposite replicateComposite) {
+    public Server(int serverId, IConsensusSnapshot snapshot, SmartCommitReplicateComposite replicateComposite) {
         this.snapshot = snapshot;
         this.machine = replicateComposite;
         functionMap = machine.registerCommit();
