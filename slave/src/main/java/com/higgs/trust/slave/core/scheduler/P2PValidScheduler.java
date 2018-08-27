@@ -5,6 +5,7 @@ import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -28,6 +29,8 @@ import java.util.List;
 
     @Autowired private PackageRepository packageRepository;
 
+    @Autowired private PendingTxRepository pendingTxRepository;
+
     @Autowired private PackageService packageService;
 
     @Autowired private NodeState nodeState;
@@ -41,32 +44,33 @@ import java.util.List;
     /**
      * p2p valid handler
      */
-    @Scheduled(fixedDelayString = "${p2p.valid.delay:60000}") public void exe() {
+    @Scheduled(fixedDelayString = "${p2p.valid.delay:10000}") public void exe() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
-        //get height list by 'WAIT_PERSIST_CONSENSUS' status
-        List<Long> heightList = packageRepository
-            .getHeightsByStatusAndLimit(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode(), validLimit);
-        if (CollectionUtils.isEmpty(heightList)) {
+        //remove already blocked packages and pending-transactions
+        removeAlreadyBlocked();
+        //get max height by 'WAIT_PERSIST_CONSENSUS' status
+        Long maxHeight = packageRepository.getMaxHeightByStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+        if (maxHeight == null || maxHeight.equals(0L)) {
             return;
         }
-        int size = heightList.size();
-        Long startHeight = heightList.get(0);
+        Long startHeight = maxHeight;
+        int size = 1;
         List<BlockHeader> blockHeaders = null;
-        int i = 0;
+        int num = 0;
         do {
             try {
                 log.info("start get header from p2p layer,startHeight:{},size:{}", startHeight, size);
-                blockHeaders = blockChainClient.getBlockHeaders(nodeState.notMeNodeNameReg(), startHeight, size);
+                blockHeaders = blockChainClient.getBlockHeaders(nodeState.notMeNodeNameReg(), maxHeight, size);
             } catch (Throwable t) {
                 log.error("get header has error by p2p layer,startHeight:{},size:{}", startHeight, size, t);
             }
             if (!CollectionUtils.isEmpty(blockHeaders)) {
                 break;
             }
-            sleep(100L + 100 * i);
-        } while (++i < p2pRetryNum);
+            sleep(100L + 500 * num);
+        } while (++num < p2pRetryNum);
 
         if (CollectionUtils.isEmpty(blockHeaders)) {
             log.warn("get header is empty by p2p layer");
@@ -74,11 +78,18 @@ import java.util.List;
         }
         //process for each
         for (BlockHeader header : blockHeaders) {
-            boolean isStatus =
-                packageRepository.isPackageStatus(header.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-            if (isStatus) {
-                doPersisted(header);
-            }
+            doPersisted(header,true);
+        }
+        //get min height by 'WAIT_PERSIST_CONSENSUS' status
+        Long minHeight = packageRepository.getMinHeightByStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+        if (minHeight == null || minHeight.equals(0L)) {
+            return;
+        }
+        //process the remaining for each
+        for (Long i = minHeight; i < maxHeight; i++) {
+            BlockHeader header = new BlockHeader();
+            header.setHeight(i);
+            doPersisted(header,false);
         }
     }
 
@@ -87,12 +98,12 @@ import java.util.List;
      *
      * @param header
      */
-    private void doPersisted(BlockHeader header) {
+    private void doPersisted(BlockHeader header,boolean isCompare) {
         int i = 0;
         boolean isSuccess = false;
         do {
             try {
-                packageService.persisted(header);
+                packageService.persisted(header,isCompare);
                 isSuccess = true;
                 break;
             } catch (Throwable t) {
@@ -109,6 +120,25 @@ import java.util.List;
         }
     }
 
+    /**
+     * remove already blocked packages and pending-transactions
+     *
+     */
+    private void removeAlreadyBlocked(){
+        //get max persisted height
+        Long maxPersistedHeight = packageRepository.getMaxHeightByStatus(PackageStatusEnum.PERSISTED);
+        if(maxPersistedHeight == null || maxPersistedHeight.equals(0L)){
+            return;
+        }
+        int r = packageRepository.deleteLessThanHeightAndStatus(maxPersistedHeight,PackageStatusEnum.PERSISTED);
+        if(r != 0){
+            log.info("deleted package less than height:{},size:{}",maxPersistedHeight,r);
+        }
+        r = pendingTxRepository.deleteLessThanHeight(maxPersistedHeight);
+        if(r != 0){
+            log.info("deleted pendingTx less than height:{},size:{}",maxPersistedHeight,r);
+        }
+    }
     /**
      * thread sleep
      *

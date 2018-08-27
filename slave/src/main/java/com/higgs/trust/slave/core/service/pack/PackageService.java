@@ -71,6 +71,7 @@ public interface PackageService {
     /**
      * persisted
      * @param header
+     * @param isCompare
      */
-    void persisted(BlockHeader header);
+    void persisted(BlockHeader header,boolean isCompare);
 }

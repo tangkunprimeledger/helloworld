@@ -180,44 +180,48 @@
             <artifactId>shazamcrest</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
+            <artifactId>consensus-api</artifactId>
+        </dependency>
     </dependencies>
-
-   <!--<build>-->
-        <!--<finalName>rs</finalName>-->
-        <!--<plugins>-->
-            <!--<plugin>-->
-                <!--<groupId>org.springframework.boot</groupId>-->
-                <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
-            <!--</plugin>-->
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-dependency-plugin</artifactId>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>copy</id>-->
-                        <!--<phase>package</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>copy</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<artifactItems>-->
-                                <!--<artifactItem>-->
-                                    <!--<groupId>com.higgs.trust</groupId>-->
-                                    <!--<artifactId>rs</artifactId>-->
-                                    <!--<type>jar</type>-->
-                                    <!--<destFileName>trust.jar</destFileName>-->
-                                <!--</artifactItem>-->
-                            <!--</artifactItems>-->
-                            <!--<outputDirectory>../target/</outputDirectory>-->
-                            <!--<overWriteReleases>true</overWriteReleases>-->
-                            <!--<overWriteSnapshots>true</overWriteSnapshots>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-        <!--</plugins>-->
-    <!--</build>-->
-
+<!--
+    <build>
+         <finalName>rs</finalName>
+         <plugins>
+             <plugin>
+                 <groupId>org.springframework.boot</groupId>
+                 <artifactId>spring-boot-maven-plugin</artifactId>
+             </plugin>
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-dependency-plugin</artifactId>
+                 <executions>
+                     <execution>
+                         <id>copy</id>
+                         <phase>package</phase>
+                         <goals>
+                             <goal>copy</goal>
+                         </goals>
+                         <configuration>
+                             <artifactItems>
+                                 <artifactItem>
+                                     <groupId>com.higgs.trust</groupId>
+                                     <artifactId>rs</artifactId>
+                                     <type>jar</type>
+                                     <destFileName>trust.jar</destFileName>
+                                 </artifactItem>
+                             </artifactItems>
+                             <outputDirectory>../target/</outputDirectory>
+                             <overWriteReleases>true</overWriteReleases>
+                             <overWriteSnapshots>true</overWriteSnapshots>
+                         </configuration>
+                     </execution>
+                 </executions>
+             </plugin>
+         </plugins>
+     </build>
+-->
 
     <distributionManagement>
         <repository>

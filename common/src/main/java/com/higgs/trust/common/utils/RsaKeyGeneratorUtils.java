@@ -15,13 +15,18 @@ import java.util.Map;
  * @desc key generator util
  * @date 2018/6/4 17:27
  */
-public class KeyGeneratorUtils {
+public class RsaKeyGeneratorUtils {
     public static final String KEY_ALGORITHM = "RSA";
     public static final String PUB_KEY = "pubKey";
     public static final String PRI_KEY = "priKey";
 
-    public static Map generateKeyPair() throws NoSuchAlgorithmException {
-        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
+    public static Map generateKeyPair() {
+        KeyPairGenerator keyPairGen = null;
+        try {
+            keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("no such algorithm exeception", e);
+        }
         keyPairGen.initialize(1024);
         KeyPair keyPair = keyPairGen.generateKeyPair();
 
@@ -34,16 +39,12 @@ public class KeyGeneratorUtils {
         System.out.println(priKey.length());
 
         Map map = new HashMap();
-        map.put(PUB_KEY,pubKey);
-        map.put(PRI_KEY,priKey);
+        map.put(PUB_KEY, pubKey);
+        map.put(PRI_KEY, priKey);
         return map;
     }
 
     public static void main(String[] args) {
-        try {
-            generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+        generateKeyPair();
     }
 }

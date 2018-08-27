@@ -1,13 +1,13 @@
 package com.higgs.trust.common.crypto.gm;
 
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.KeyPair;
+import com.higgs.trust.common.utils.Base64Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 import org.springframework.stereotype.Component;
-import sun.misc.SignalHandler;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -43,6 +43,11 @@ import java.util.Arrays;
     private static ECCurve.Fp curve;
     private static ECPoint G;
 
+    static {
+        curve = new ECCurve.Fp(p, a, b);
+        G = curve.createPoint(gx, gy);
+    }
+
     /**
      * 随机数生成器
      *
@@ -66,7 +71,7 @@ import java.util.Arrays;
      * @param buffer
      * @return
      */
-    private boolean allZero(byte[] buffer) {
+    private static boolean allZero(byte[] buffer) {
         for (int i = 0; i < buffer.length; i++) {
             if (buffer[i] != 0)
                 return false;
@@ -81,13 +86,13 @@ import java.util.Arrays;
      * @param pubKey 公钥
      * @return
      */
-    public byte[] encrypt(String input, String pubKey) throws Exception {
+    public static byte[] encrypt(String input, String pubKey) throws Exception {
 
-        ECPoint publicKey = curve.decodePoint(SignUtils.decryptBASE64(pubKey));
+        ECPoint publicKey = curve.decodePoint(Base64Util.decryptBASE64(pubKey));
 
         byte[] inputBuffer = input.getBytes();
         if (log.isDebugEnabled()) {
-            log.debug("encrypt source data = {}", SignUtils.byteArrayToHexStr(inputBuffer));
+            log.debug("encrypt source data = {}", Base64Util.byteArrayToHexStr(inputBuffer));
         }
 
         byte[] C1Buffer;
@@ -97,7 +102,7 @@ import java.util.Arrays;
             /* 1 产生随机数k，k属于[1, n-1] */
             BigInteger k = random(n);
             if (log.isDebugEnabled()) {
-                log.debug("k: {}", SignUtils.byteArrayToHexStr(k.toByteArray()));
+                log.debug("k: {}", Base64Util.byteArrayToHexStr(k.toByteArray()));
             }
 
             /* 2 计算椭圆曲线点C1 = [k]G = (x1, y1) */
@@ -141,7 +146,7 @@ import java.util.Arrays;
         System.arraycopy(C3, 0, encryptResult, C1Buffer.length + C2.length, C3.length);
 
         if (log.isDebugEnabled()) {
-            log.debug("data after encrypt = {}", SignUtils.byteArrayToHexStr(encryptResult));
+            log.debug("data after encrypt = {}", Base64Util.byteArrayToHexStr(encryptResult));
         }
 
         return encryptResult;
@@ -154,10 +159,10 @@ import java.util.Arrays;
      * @param priKey 解密私钥
      * @return
      */
-    public String decrypt(String input, String priKey) throws Exception {
+    public static String decrypt(String input, String priKey) throws Exception {
 
-        byte[] encryptData = SignUtils.hexStrToByteArray(input);
-        BigInteger privateKey = new BigInteger(SignUtils.decryptBASE64(priKey));
+        byte[] encryptData = Base64Util.hexStrToByteArray(input);
+        BigInteger privateKey = new BigInteger(Base64Util.decryptBASE64(priKey));
 
         if (log.isDebugEnabled()) {
             log.debug("encryptData = {}", input);
@@ -212,8 +217,8 @@ import java.util.Arrays;
             return null;
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("u = {}", SignUtils.byteArrayToHexStr(u));
-                log.debug("C3 = {}", SignUtils.byteArrayToHexStr(C3));
+                log.debug("u = {}", Base64Util.byteArrayToHexStr(u));
+                log.debug("C3 = {}", Base64Util.byteArrayToHexStr(C3));
             }
             log.info("decrypt failed");
             return null;
@@ -229,7 +234,7 @@ import java.util.Arrays;
      * @param max
      * @return
      */
-    private boolean between(BigInteger param, BigInteger min, BigInteger max) {
+    private static boolean between(BigInteger param, BigInteger min, BigInteger max) {
         if (param.compareTo(min) >= 0 && param.compareTo(max) < 0) {
             return true;
         } else {
@@ -243,7 +248,7 @@ import java.util.Arrays;
      * @param publicKey
      * @return
      */
-    private boolean checkPublicKey(ECPoint publicKey) {
+    private static boolean checkPublicKey(ECPoint publicKey) {
 
         if (!publicKey.isInfinity()) {
 
@@ -277,7 +282,9 @@ import java.util.Arrays;
      *
      * @return
      */
-    public SM2KeyPair generateKeyPair() {
+    public static SM2KeyPair generateKeyPair() {
+
+        ecc_bc_spec = new ECDomainParameters(curve, G, n);
 
         BigInteger d = random(n.subtract(new BigInteger("1")));
 
@@ -296,13 +303,22 @@ import java.util.Arrays;
         }
     }
 
-    public SM2() {
+    public static KeyPair generateEncodedKeyPair() {
+        SM2KeyPair sm2KeyPair = generateKeyPair();
+        ECPoint publicKey = sm2KeyPair.getPublicKey();
+        BigInteger privateKey = sm2KeyPair.getPrivateKey();
+
+        return new KeyPair(Base64Util.encryptBASE64(publicKey.getEncoded(false)),
+            Base64Util.encryptBASE64(privateKey.toByteArray()));
+    }
+
+/*    public SM2() {
         curve = new ECCurve.Fp(p, // q
             a, // a
             b); // b
         G = curve.createPoint(gx, gy);
         ecc_bc_spec = new ECDomainParameters(curve, G, n);
-    }
+    }*/
 
     /**
      * 导出公钥到本地
@@ -452,8 +468,13 @@ import java.util.Arrays;
      * @param priKey 签名方密钥对
      * @return 签名
      */
-    public Signature sign(String M, String priKey) throws Exception {
-        BigInteger privateKey = new BigInteger(SignUtils.decryptBASE64(priKey));
+    public static Signature sign(String M, String priKey) {
+        BigInteger privateKey = null;
+        try {
+            privateKey = new BigInteger(Base64Util.decryptBASE64(priKey));
+        } catch (Exception e) {
+            throw new RuntimeException("SM2 sign, decode privateKey error", e);
+        }
         BigInteger e = new BigInteger(1, sm3hash(M.getBytes()));
         BigInteger k;
         BigInteger r;
@@ -480,10 +501,10 @@ import java.util.Arrays;
      * @param pubKey 签名方公钥
      * @return true or false
      */
-    public boolean verify(String M, String sign, String pubKey) throws Exception {
+    public static boolean verify(String M, String sign, String pubKey) {
         Signature signature = Signature.StringToSignature(sign);
 
-        ECPoint publicKey = curve.decodePoint(SignUtils.decryptBASE64(pubKey));
+        ECPoint publicKey = curve.decodePoint(Base64Util.decryptBASE64(pubKey));
         if (!between(signature.r, BigInteger.ONE, n))
             return false;
         if (!between(signature.s, BigInteger.ONE, n))
@@ -619,7 +640,7 @@ import java.util.Arrays;
             byte[] KB = KDF(join(xV, yV, entity.Z, this.Z), 16);
             key = KB;
             System.out.print("协商得B密钥:");
-            SignUtils.byteArrayToHexStr(KB);
+            Base64Util.byteArrayToHexStr(KB);
             byte[] sB = sm3hash(new byte[] {0x02}, yV,
                 sm3hash(xV, entity.Z, this.Z, RA.getXCoord().toBigInteger().toByteArray(),
                     RA.getYCoord().toBigInteger().toByteArray(), RB.getXCoord().toBigInteger().toByteArray(),
@@ -654,7 +675,7 @@ import java.util.Arrays;
             byte[] KA = KDF(join(xU, yU, this.Z, entity.Z), 16);
             key = KA;
             System.out.print("协商得A密钥:");
-            SignUtils.byteArrayToHexStr(KA);
+            Base64Util.byteArrayToHexStr(KA);
             byte[] s1 = sm3hash(new byte[] {0x02}, yU,
                 sm3hash(xU, this.Z, entity.Z, RA.getXCoord().toBigInteger().toByteArray(),
                     RA.getYCoord().toBigInteger().toByteArray(), RB.getXCoord().toBigInteger().toByteArray(),
@@ -693,28 +714,25 @@ import java.util.Arrays;
 
     public static void main(String[] args) throws Exception {
 
-        SM2 sm02 = new SM2();
-        SM2KeyPair keyPair = sm02.generateKeyPair();
+        SM2KeyPair keyPair = SM2.generateKeyPair();
         ECPoint publicKey = keyPair.getPublicKey();
         BigInteger privateKey = keyPair.getPrivateKey();
 
         //公私钥转BASE64字符串
-        String pubKey = SignUtils.encryptBASE64(publicKey.getEncoded(true));
+        String pubKey = Base64Util.encryptBASE64(publicKey.getEncoded(false));
         log.info("pubKey:" + pubKey);
-        log.info("publicKey:" + SignUtils.byteArrayToHexStr(publicKey.getEncoded(true)));
-        String priKey = SignUtils.encryptBASE64(privateKey.toByteArray());
+        String priKey = Base64Util.encryptBASE64(privateKey.toByteArray());
         log.info("priKey:" + priKey);
-        log.info("privateKey:{}",SignUtils.byteArrayToHexStr(privateKey.toByteArray()));
 
-        byte[] data = sm02.encrypt("测试加密aaaaaaaaaaa123aabb", pubKey);
-        log.info("密文:{}",SignUtils.byteArrayToHexStr(data));
-        log.info("解密结果：{}",sm02.decrypt(SignUtils.byteArrayToHexStr(data), priKey));
+        byte[] data = SM2.encrypt("测试加密aaaaaaaaaaa123aabb", pubKey);
+        log.info("密文:{}", Base64Util.byteArrayToHexStr(data));
+        log.info("解密结果：{}", SM2.decrypt(Base64Util.byteArrayToHexStr(data), priKey));
 
         String M = "要签名的信息";
-        Signature signature = sm02.sign(M, priKey);
+        Signature signature = SM2.sign(M, priKey);
         System.out.println("签名信息:" + M);
         System.out.println("数字签名:" + signature);
-        System.out.println("验证签名:" + sm02.verify(M, signature.toString(), (pubKey)));
+        System.out.println("验证签名:" + SM2.verify(M, signature.toString(), (pubKey)));
         //
         //        System.out.println("-----------------密钥协商-----------------");
         //        String aID = "AAAAAAAAAAAAA";
@@ -755,4 +773,5 @@ import java.util.Arrays;
                 new BigInteger(str.substring(pos + 1), RADIX));
         }
     }
+
 }

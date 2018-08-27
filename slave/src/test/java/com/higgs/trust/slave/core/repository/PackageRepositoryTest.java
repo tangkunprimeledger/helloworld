@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.rsa.Rsa;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.Package;
@@ -28,8 +28,7 @@ import java.util.Set;
  */
 public class PackageRepositoryTest extends BaseTest {
 
-    @Autowired
-    private PackageRepository packageRepository;
+    @Autowired private PackageRepository packageRepository;
 
     private static final String priKey1 =
         "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBALhZZQEKaaZOsD4z+m1AoBlVnSZFD9mafaRAt9PVHtgkFJViV8a3s+2bFEkxVIxLSqdyWVCqZCOm1+6jbWmk4pN5yY4AaZBCPM6kHkzl/o5ctGXqkIf9s8WxFAmKpMEi7qP6SCitaoMy1sC+IS/vcOphzJZ3NbP3kG0FyCR5EvGdAgMBAAECgYAf7HMeRARZpWTF0NB8HOXcnUPSfcEp6KP7Tq3GxDBMM6tQ1y/mHKfO7L0Nk7pVdTBfYODwpCElP15DWA+5bLFDl2GzCY3gBoMrgrpIaaD672Qf12ikcVf6q/FSNJAvvDPSpLQKYJKG4Aa8/0mFZB9JU1KM2+wDl4Fgf/Lf+vM/zQJBAN1X5nvjy4nwTXlHWvtB+PG9ptAsGo9baEtGW2UrDhPYObghJpk4Slxo+r7l4fWNnwEP6kMGBlFMH41oxNezYLcCQQDVNqiBJBVUgIVGaLSb3ksyXerOf9w1g7JTpSoZmf6SOMAZQ3kqky9Ik4LGwnlFaolUEA/fcTev2rC8iBFt00RLAkB09I5H5jzVXRFCxQ5w9xIYghKTqso5952rMLj4QwDEQZt2DKY9jb3VCG990TBNNJDQ2dz5n0RVTrjZWoOwSgsPAkBvFcArMIKQeTl22pymzOV+w2HP3tv7YbcqT1Yk6o+w3TJwty/M18x90qUDK1WFriEIlCnA77rku1rzjy0NfFILAkBnbOFY4ECXdFysok3n5AgrdHBr8bRSRvzBpdjUL9eH0Cs/37aqwZynwCg6DX5/I2gIwX78ysnujB4mY6lFOG5f";
@@ -41,7 +40,6 @@ public class PackageRepositoryTest extends BaseTest {
 
     private Package pack;
 
-
     @BeforeMethod public void setUp() throws Exception {
 
         SignedTransaction signedTx1 = initTx();
@@ -51,10 +49,10 @@ public class PackageRepositoryTest extends BaseTest {
         signedTx2.getCoreTx().setTxId("pending-tx-test-4");
 
         signedTransactions.add(signedTx1);
-//        signedTransactions.add(signedTx2);
+        //        signedTransactions.add(signedTx2);
     }
 
-    private SignedTransaction initTx() throws Exception{
+    private SignedTransaction initTx() throws Exception {
         SignedTransaction signedTransaction = new SignedTransaction();
 
         RegisterPolicy registerPolicy = new RegisterPolicy();
@@ -76,13 +74,13 @@ public class PackageRepositoryTest extends BaseTest {
         coreTx1.setVersion("2.0.0");
         coreTx1.setPolicyId("000000");
 
-        String sign1 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey1);
-        String sign2 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey2);
+        String sign1 = Rsa.sign(JSON.toJSONString(coreTx1), priKey1);
+        String sign2 = Rsa.sign(JSON.toJSONString(coreTx1), priKey2);
         List<String> signList = new ArrayList<>();
         signList.add(sign1);
         signList.add(sign2);
         signedTransaction.setCoreTx(coreTx1);
-//        signedTransaction.setSignatureList(signList);
+        //        signedTransaction.setSignatureList(signList);
 
         return signedTransaction;
     }
@@ -150,16 +148,13 @@ public class PackageRepositoryTest extends BaseTest {
         Assert.assertEquals(1, count);
     }
 
-    @Test
-    public void getHeightListForProcess() {
-      // List<Long> heightList = packageRepository.getHeightListForProcess(4L);
-       // System.out.println(heightList);
+    @Test public void getHeightListForProcess() {
+        // List<Long> heightList = packageRepository.getHeightListForProcess(4L);
+        // System.out.println(heightList);
     }
 
-
-    @Test
-    public void getHeightsByStatusAndLimit() {
-         List<Long> heightList = packageRepository.getHeightsByStatusAndLimit("1", 20);
+    @Test public void getHeightsByStatusAndLimit() {
+        List<Long> heightList = packageRepository.getHeightsByStatusAndLimit("1", 20);
         System.out.println(heightList);
     }
 }

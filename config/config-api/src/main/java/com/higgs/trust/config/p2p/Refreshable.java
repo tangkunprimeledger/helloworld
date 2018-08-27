@@ -24,4 +24,6 @@ public interface Refreshable {
      * refresh
      */
     void refresh();
+
+    void refreshConsensus();
 }

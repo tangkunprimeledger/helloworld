@@ -1,7 +1,8 @@
 package com.higgs.trust.slave.core.service.transaction;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -57,11 +58,13 @@ import java.util.*;
                 log.warn("rsPubKeyList is empty. default verify pass");
                 return true;
             }
-
+            Profiler.enter("[doVerifySign]");
             return verifyRsSign(ctx, signedTransaction.getSignatureList(), rsPubKeyList, decisionType);
         } catch (Throwable e) {
             log.error("verify signatures exception. ", e);
             return false;
+        }finally {
+            Profiler.release();
         }
     }
 
@@ -82,7 +85,7 @@ import java.util.*;
             rsIdList.forEach(rsId -> {
                 RsPubKey rsPubKey = new RsPubKey();
                 String pubKey = rsPubKeyMap.get(rsId);
-                if (!StringUtils.isBlank(pubKey)) {
+                if (!StringUtils.isEmpty(pubKey)) {
                     rsPubKey.setRsId(rsId);
                     rsPubKey.setPubKey(rsPubKeyMap.get(rsId));
                     rsPubKeyList.add(rsPubKey);
@@ -109,15 +112,15 @@ import java.util.*;
 
                 //verify signature
                 for (RsPubKey rsPubKey : rsPubKeyList) {
-                    if (null != rsPubKey && !SignUtils
+                    if (null != rsPubKey && !CryptoUtil.getBizCrypto()
                         .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
                         return false;
                     }
                 }
                 flag = true;
-            } else if(DecisionTypeEnum.ONE_VOTE == decisionType) {
+            } else if (DecisionTypeEnum.ONE_VOTE == decisionType) {
                 for (RsPubKey rsPubKey : rsPubKeyList) {
-                    if (null != rsPubKey && SignUtils
+                    if (null != rsPubKey && CryptoUtil.getBizCrypto()
                         .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
                         return true;
                     }
@@ -136,9 +139,9 @@ import java.util.*;
             return true;
         }
         if (coreTx.getActionList().size() > 1) {
-            if (InitPolicyEnum.REGISTER_POLICY.getPolicyId().equals(coreTx.getPolicyId())
-                || InitPolicyEnum.REGISTER_RS.getPolicyId().equals(coreTx.getPolicyId())
-                || InitPolicyEnum.CANCEL_RS.getPolicyId().equals(coreTx.getPolicyId())) {
+            if (InitPolicyEnum.REGISTER_POLICY.getPolicyId().equals(coreTx.getPolicyId()) || InitPolicyEnum.REGISTER_RS
+                .getPolicyId().equals(coreTx.getPolicyId()) || InitPolicyEnum.CANCEL_RS.getPolicyId()
+                .equals(coreTx.getPolicyId())) {
                 return false;
             }
         }

@@ -134,21 +134,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
     }
 
-    public void resetEndHeight(long packageHeight) {
+    public void resetEndHeight(Long[] packageHeights) {
         Optional<TermInfo> optional = getTermInfo(nodeState.getCurrentTerm());
         TermInfo termInfo = optional.get();
+        int len = packageHeights.length;
         boolean verify =
-            termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :
-                packageHeight >= termInfo.getStartHeight() && packageHeight <= termInfo.getEndHeight() + 1;
+            termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeights[0] == termInfo.getStartHeight() :
+                packageHeights[0] >= termInfo.getStartHeight() && packageHeights[len-1] <= termInfo.getEndHeight() + len;
         if (!verify) {
             throw new ConfigException(ConfigError.CONFIG_NODE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT);
         }
-        if ((packageHeight == termInfo.getStartHeight() && termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT)
-            || packageHeight == termInfo.getEndHeight() + 1) {
-            log.debug("reset term end height:{}", packageHeight);
-            termInfo.setEndHeight(packageHeight);
+        if ((packageHeights[0] == termInfo.getStartHeight() && termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT)
+            || packageHeights[len-1] == termInfo.getEndHeight() + len) {
+            log.debug("reset term end height:{}", packageHeights[len-1]);
+            termInfo.setEndHeight(packageHeights[len-1]);
         } else {
-            log.warn("set incorrect end height:{}, termInfo:{}", packageHeight, termInfo);
+            log.warn("set incorrect end height:{}, termInfo:{}", packageHeights[len-1], termInfo);
         }
     }
 

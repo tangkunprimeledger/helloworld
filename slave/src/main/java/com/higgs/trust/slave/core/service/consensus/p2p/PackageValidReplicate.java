@@ -62,7 +62,7 @@ import org.springframework.stereotype.Component;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_REPLICATE_FAILED);
         }
         try {
-            packageService.persisted(header);
+            packageService.persisted(header,true);
         } catch (SlaveException e) {
             if (e.getCode() == SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR) {
                 return;

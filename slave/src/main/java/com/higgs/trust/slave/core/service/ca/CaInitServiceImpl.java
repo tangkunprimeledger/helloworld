@@ -20,12 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.*;
 
 /**
  * @author WangQuanzhou
@@ -91,32 +86,37 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
     private List<Action> acquirePubKeys(int retryCount) {
         List<String> nodeList = clusterInfo.clusterNodeNames();
-        Set<String> nodeSet = new CopyOnWriteArraySet<>();
-        List<Action> caActionList = new CopyOnWriteArrayList<>();
+        Set<String> nodeSet = new HashSet<>();
+        List<Action> caActionList = new LinkedList<>();
         log.info(
-            "[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKey, nodeList size = {}, nodeList = {}",
+            "[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKeyForConsensus, nodeList size = {}, nodeList = {}",
             nodeList.size(), nodeList.toString());
 
         int i = 0;
         do {
             if (nodeSet.size() == nodeList.size()) {
-                log.info("[CaInitServiceImpl.acquirePubKeys]  acquired all nodes' pubKey, nodeSet size = {}",
+                log.info(
+                    "[CaInitServiceImpl.acquirePubKeys]  acquired all nodes' pubKeyForConsensus, nodeSet size = {}",
                     nodeSet.size());
                 return caActionList;
             }
-            // acquire all nodes' pubKey
+            // acquire all nodes' pubKeyForConsensus
             nodeList.forEach((nodeName) -> {
                 try {
                     synchronized (CaInitServiceImpl.class) {
                         if (!nodeSet.contains(nodeName)) {
-                            RespData<String> resp = caClient.caInit(nodeName);
+                            RespData<List<Config>> resp = caClient.caInit(nodeName);
                             if (resp.isSuccess()) {
-                                CaAction caAction = new CaAction();
-                                caAction.setType(ActionTypeEnum.CA_INIT);
-                                caAction.setUser(nodeName);
-                                caAction.setPubKey(resp.getData());
-                                log.info("user={}, pubKey={}", nodeName, resp.getData());
-                                caActionList.add(caAction);
+                                for (Config config : resp.getData()) {
+                                    CaAction caAction = new CaAction();
+                                    caAction.setType(ActionTypeEnum.CA_INIT);
+                                    caAction.setUser(nodeName);
+                                    caAction.setPubKey(config.getPubKey());
+                                    caAction.setUsage(config.getUsage());
+                                    log.info("user={}, pubKey={},usage={}", nodeName, config.getPubKey(),
+                                        config.getUsage());
+                                    caActionList.add(caAction);
+                                }
                                 nodeSet.add(nodeName);
                             }
                         }
@@ -125,17 +125,17 @@ import java.util.concurrent.CopyOnWriteArraySet;
                     log.warn("[CaInitServiceImpl.acquirePubKeys] acquire pubKey error, node={}", nodeName);
                 }
             });
-            if (caActionList.size() < nodeList.size()) {
+            if (caActionList.size() < (nodeList.size() * 2)) {
                 try {
                     Thread.sleep(3 * 1000);
                 } catch (InterruptedException e) {
                     log.warn("acquire pubKey error.", e);
                 }
             }
-        } while (caActionList.size() < nodeList.size() && ++i < retryCount);
+        } while (caActionList.size() < (nodeList.size() * 2) && ++i < retryCount);
 
-        if (caActionList.size() < nodeList.size()) {
-            log.info(
+        if (caActionList.size() < nodeList.size() * 2) {
+            log.error(
                 "[CaInitServiceImpl.acquirePubKeys]  error acquire all nodes' pubKey, caActionList size = {},caActionList={}, nodeList.size={},nodeList={}",
                 caActionList.size(), caActionList.toString(), nodeList.size(), nodeList.toString());
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_ACQUIRE_PUBKEY_ERROR, 1);
@@ -144,22 +144,30 @@ import java.util.concurrent.CopyOnWriteArraySet;
         }
 
         log.info(
-            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}, nodeSet size={}, nodeList.size()={}, caActionList = {}",
+            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKeyForConsensus, caActionList size = {}, nodeSet size={}, nodeList.size()={}, caActionList = {}",
             caActionList.size(), nodeSet.size(), nodeList.size(), caActionList);
         return caActionList;
     }
 
-    @Override public RespData<String> initCaTx() {
-        // acquire pubKey from DB
-        Config config = configRepository.getConfig(nodeState.getNodeName());
-        if (null == config) {
-            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pubKey not exist", nodeState.getNodeName());
+    @Override public RespData<List<Config>> initCaTx() {
+        // acquire pubKeyForConsensus from DB
+        List<Config> list = configRepository.getConfig(new Config(nodeState.getNodeName()));
+        if (null == list) {
+            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pubKeyForConsensus not exist", nodeState.getNodeName());
             return new RespData<>(RespCodeEnum.DATA_NOT_EXIST);
         }
-        String pubKey = config.getPubKey();
-        log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pubKey={}", nodeState.getNodeName(), pubKey);
-        RespData<String> resp = new RespData<>();
-        resp.setData(pubKey);
+        if (list.size() != 2) {
+            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, more than one pair of pub/priKey, list size={}",
+                nodeState.getNodeName(), list.size());
+            return new RespData<>(RespCodeEnum.SYS_FAIL);
+        }
+        log.info("[CaInitServiceImpl.initCaTx] nodeName={}, KeyPair list={}", nodeState.getNodeName(), list);
+        // erase priKey
+        for (Config config : list) {
+            config.setPriKey("");
+        }
+        RespData<List<Config>> resp = new RespData<>();
+        resp.setData(list);
         return resp;
     }
 

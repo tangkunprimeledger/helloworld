@@ -36,7 +36,7 @@ public class ConfigRepositoryTest extends BaseTest {
     }
 
     @Test public void testGetConfig() throws Exception {
-        System.out.println(configRepository.getConfig("node-1"));
+        System.out.println(configRepository.getBizConfig("node-1"));
     }
 
     @Test public void testBatchInsert() throws Exception {

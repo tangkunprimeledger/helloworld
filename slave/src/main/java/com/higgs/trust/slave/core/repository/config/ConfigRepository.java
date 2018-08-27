@@ -5,12 +5,14 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.config.ConfigDao;
 import com.higgs.trust.slave.dao.po.config.ConfigPO;
 import com.higgs.trust.slave.model.bo.config.Config;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -45,19 +47,39 @@ import java.util.List;
     }
 
     /**
-     * @param nodeName
-     * @return Config
-     * @desc get config information by nodeName
+     * @param config
+     * @return List<ConfigPO>
+     * @desc get config information by nodeName and usage(if needed)
      */
-    public Config getConfig(String nodeName) {
+    public List<Config> getConfig(Config config) {
         ConfigPO configPO = new ConfigPO();
-        configPO.setNodeName(nodeName);
-        configPO = configDao.getConfig(configPO);
-        if (null == configPO) {
+        BeanUtils.copyProperties(config, configPO);
+        List<ConfigPO> list = configDao.getConfig(configPO);
+        if (null == list || list.size() == 0) {
             return null;
         }
+        List<Config> configList = new LinkedList<>();
+        for (ConfigPO configPO1 : list) {
+            Config config1 = new Config();
+            BeanUtils.copyProperties(configPO1, config1);
+            configList.add(config1);
+        }
+        return configList;
+    }
+
+    public Config getBizConfig(String user) {
+        ConfigPO configPO = new ConfigPO();
+        configPO.setNodeName(user);
+        configPO.setUsage(UsageEnum.BIZ.getCode());
+        List<ConfigPO> list = configDao.getConfig(configPO);
+        if (null == list || list.size() == 0) {
+            return null;
+        }
+        if (list.size() > 1) {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_UPDATE_ERROR, "more than one pair of pub/priKey");
+        }
         Config config = new Config();
-        BeanUtils.copyProperties(configPO, config);
+        BeanUtils.copyProperties(list.get(0), config);
         return config;
     }
 

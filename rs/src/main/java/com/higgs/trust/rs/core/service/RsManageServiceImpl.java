@@ -117,7 +117,7 @@ import java.util.List;
         }
 
         //校验CA是否存在且有效
-        Ca ca = caRepository.getCa(rsId);
+        Ca ca = caRepository.getCaForBiz(rsId);
         if (null == ca || !ca.isValid()) {
             log.error("Ca is null or ca is not valid, rsId={}", rsId);
             return new RespData(RespCodeEnum.CA_IS_NOT_EXIST_OR_IS_NOT_VALID.getRespCode(),
@@ -247,7 +247,7 @@ import java.util.List;
         }
 
         //校验CA是否存在且有效
-        Ca ca = caRepository.getCa(rsId);
+        Ca ca = caRepository.getCaForBiz(rsId);
         if (null == ca || !ca.isValid()) {
             log.error("Ca is null or ca is not valid, rsId={}", rsId);
             return new RespData(RespCodeEnum.CA_IS_NOT_EXIST_OR_IS_NOT_VALID.getRespCode(),

@@ -34,14 +34,29 @@ public interface ClusterInfo extends Refreshable {
      * @param nodeName
      * @return
      */
-    String pubKey(String nodeName);
+    String pubKeyForConsensus(String nodeName);
+
+    /**
+     * get public key create the given nodeName
+     *
+     * @param nodeName
+     * @return
+     */
+    String pubKeyForBiz(String nodeName);
 
     /**
      * get the self private key
      *
      * @return
      */
-    String privateKey();
+    String priKeyForConsensus();
+
+    /**
+     * get the self private key
+     *
+     * @return
+     */
+    String priKeyForBiz();
 
     /**
      * init the cluster info

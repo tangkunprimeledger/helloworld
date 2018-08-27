@@ -3,7 +3,7 @@ package com.higgs.trust.consensus.p2pvalid.core.exchange;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.utils.CryptoUtil;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,10 +17,7 @@ import java.util.Set;
 /**
  * @author cwy
  */
-@Getter
-@Setter
-@ToString
-public class SendValidCommandWrap implements Serializable {
+@Getter @Setter @ToString public class SendValidCommandWrap implements Serializable {
 
     private static final long serialVersionUID = -1L;
     private ValidCommand<?> validCommand;
@@ -53,7 +50,7 @@ public class SendValidCommandWrap implements Serializable {
     }
 
     public SendValidCommandWrap sign(String privateKey) throws Exception {
-        this.sign = SignUtils.sign(messageDigest, privateKey);
+        this.sign = CryptoUtil.getProtocolCrypto().sign(messageDigest, privateKey);
         return this;
     }
 

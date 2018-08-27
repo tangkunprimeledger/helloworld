@@ -32,7 +32,7 @@ import java.util.List;
      * @return CaPO
      * @desc get CA information by nodeName
      */
-    CaPO getCa(String user);
+    CaPO getCaForBiz(String user);
 
     /**
      * @param

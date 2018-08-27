@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.transaction;
 
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.contract.SmartContractException;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -74,23 +75,27 @@ import java.util.Map;
 
     private void execute(TransactionData transactionData, Map<String, String> rsPubKeyMap) {
         SignedTransaction signedTransaction = transactionData.getCurrentTransaction();
+        CoreTransaction coreTx = null;
+        try {
+            Profiler.enter("[tx.verifySignatures]");
+            //verify signatures
+            if (!txCheckHandler.verifySignatures(signedTransaction, rsPubKeyMap)) {
+                log.error("SignedTransaction verify signature failed, signedTransaction={}, rsPubKeyMap={}",
+                    signedTransaction.toString(), rsPubKeyMap.toString());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_TX_VERIFY_SIGNATURE_FAILED);
+            }
 
-        //verify signatures
-        if (!txCheckHandler.verifySignatures(signedTransaction, rsPubKeyMap)) {
-            log.error("SignedTransaction verify signature failed, signedTransaction={}, rsPubKeyMap={}",
-                signedTransaction.toString(), rsPubKeyMap.toString());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_TX_VERIFY_SIGNATURE_FAILED);
+            //  start to handle CoreTransaction, first step, get CoreTransaction from SignedTransaction
+            coreTx = signedTransaction.getCoreTx();
+
+            // check action, if action type equals REGISTER_POLICY or REGISTER_RS, current transaction can have only one action.
+            if (!txCheckHandler.checkActions(coreTx)) {
+                log.error("core transaction is invalid, txId={}", coreTx.getTxId());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
+        }finally {
+            Profiler.release();
         }
-
-        //  start to handle CoreTransaction, first step, get CoreTransaction from SignedTransaction
-        CoreTransaction coreTx = signedTransaction.getCoreTx();
-
-        // check action, if action type equals REGISTER_POLICY or REGISTER_RS, current transaction can have only one action.
-        if (!txCheckHandler.checkActions(coreTx)) {
-            log.error("core transaction is invalid, txId={}", coreTx.getTxId());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
         // acquire version information
         String version = coreTx.getVersion();
         // get exact handler based on version

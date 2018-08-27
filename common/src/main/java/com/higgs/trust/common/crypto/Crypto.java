@@ -7,7 +7,7 @@ public interface Crypto {
      * @return
      * @desc generate pub/pri key pair
      */
-    Object generateKeyPair();
+    KeyPair generateKeyPair();
 
     /**
      * @param input     source to be encrypted
@@ -31,7 +31,7 @@ public interface Crypto {
      * @return
      * @desc sign message
      */
-    String sign(String message, String privateKey) throws Exception;
+    String sign(String message, String privateKey);
 
     /**
      * @param message
@@ -39,8 +39,6 @@ public interface Crypto {
      * @return
      * @desc verify signature
      */
-    boolean verify(String message, String signature, String publicKey) throws Exception ;
-
-
+    boolean verify(String message, String signature, String publicKey);
 
 }

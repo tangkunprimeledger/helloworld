@@ -21,7 +21,7 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-copycat</artifactId>
         </dependency>
-     <!--   <dependency>
+        <!--<dependency>
             <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-smart</artifactId>
         </dependency>-->
@@ -72,7 +72,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-eureka</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-feign</artifactId>
@@ -81,6 +80,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-sleuth</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-hystrix</artifactId>
         </dependency>
 
         <dependency>

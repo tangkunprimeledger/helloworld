@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.action.manage;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.RsSnapshotHandler;
@@ -55,7 +54,7 @@ public class CancelRsHandler implements ActionHandler {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        Ca ca = caRepository.getCa(rsId);
+        Ca ca = caRepository.getCaForBiz(rsId);
         if (null == ca || !ca.isValid()) {
             log.error("[CancelRSHandler.process] ca not register or is not valid which rsId={}", rsId);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);

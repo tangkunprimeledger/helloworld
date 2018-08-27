@@ -272,13 +272,13 @@ import java.util.*;
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
         if (CollectionUtils.isEmpty(nodes)) {
-            log.info("[processCaUpdate] current node ={}, is not ca updated pubKey/priKey", nodeState.getNodeName());
+            log.info("[processCaUpdate] current node ={}, is not ca updated pubKeyForConsensus/priKey", nodeState.getNodeName());
             return;
         }
-        log.info("[processCaUpdate] start to update pubKey/priKey");
+        log.info("[processCaUpdate] start to update pubKeyForConsensus/priKey");
         // update table config, set tmpKey to key
         configJDBCDao.batchEnable(nodes);
-        log.info("[processCaUpdate] end update pubKey/priKey, nodeName={}", nodes);
+        log.info("[processCaUpdate] end update pubKeyForConsensus/priKey, nodeName={}", nodes);
     }
 
     private void processCaCancel(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -295,14 +295,14 @@ import java.util.*;
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
         if (CollectionUtils.isEmpty(nodes)) {
-            log.info("[processCaCancel] current node ={}, is not ca cancel, end cancel pubKey/priKey",
+            log.info("[processCaCancel] current node ={}, is not ca cancel, end cancel pubKeyForConsensus/priKey",
                 nodeState.getNodeName());
             return;
         }
-        log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodes);
-        //set pubKey and priKey to invalid
+        log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
+        //set pubKeyForConsensus and priKey to invalid
         configJDBCDao.batchCancel(nodes);
-        log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodes);
+        log.info("[processCaCancel] end invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
     }
 
     private void processCaAuth(List<RsCoreTxVO> rsCoreTxVOS) {

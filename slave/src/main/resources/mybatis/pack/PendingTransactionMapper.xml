@@ -117,5 +117,10 @@
         </foreach>
     </insert>
 
-
+    <delete id="deleteLessThanHeight" parameterType="object">
+        delete from pending_transaction where
+        <![CDATA[
+          height <= #{height}
+        ]]>
+    </delete>
 </mapper>

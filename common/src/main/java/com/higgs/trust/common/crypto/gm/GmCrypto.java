@@ -1,23 +1,38 @@
 package com.higgs.trust.common.crypto.gm;
 
 import com.higgs.trust.common.crypto.Crypto;
-import com.higgs.trust.common.utils.SignUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Configuration;
+import com.higgs.trust.common.crypto.KeyPair;
+import com.higgs.trust.common.utils.Base64Util;
 
-@Configuration
-@ConditionalOnProperty(prefix = "higgs.trust", name = "crypto", havingValue = "SM", matchIfMissing = true)
+/**  
+ * @desc class for GM crypto and sign
+ * @author WangQuanzhou
+ * @date 2018/8/20 11:48
+ */  
 public class GmCrypto implements Crypto {
 
-    @Autowired SM2 sm2;
+    /**
+     * @param
+     * @return
+     * @desc default constructor
+     */
+    private GmCrypto() {
+    }
+
+    /**
+     * @desc inner class
+     */
+    private static class SingletonHolder {
+        // 私有的 静态的  final类型的
+        private static final GmCrypto INSTANCE = new GmCrypto();
+    }
 
     /**
      * @return
      * @desc generate pub/pri key pair
      */
-    @Override public Object generateKeyPair() {
-        return sm2.generateKeyPair();
+    @Override public KeyPair generateKeyPair() {
+        return SM2.generateEncodedKeyPair();
     }
 
     /**
@@ -27,7 +42,7 @@ public class GmCrypto implements Crypto {
      * @desc encrypt, suport ECC, SM2, RSA encrypt
      */
     @Override public String encrypt(String input, String publicKey) throws Exception {
-        return SignUtils.byteArrayToHexStr(sm2.encrypt(input, publicKey));
+        return Base64Util.byteArrayToHexStr(SM2.encrypt(input, publicKey));
     }
 
     /**
@@ -37,7 +52,7 @@ public class GmCrypto implements Crypto {
      * @desc decrypt,  suport ECC, SM2, RSA decrypt
      */
     @Override public String decrypt(String input, String privateKey) throws Exception {
-        return sm2.decrypt(input, privateKey);
+        return SM2.decrypt(input, privateKey);
     }
 
     /**
@@ -46,8 +61,8 @@ public class GmCrypto implements Crypto {
      * @return
      * @desc sign message
      */
-    @Override public String sign(String message, String privateKey) throws Exception {
-        return sm2.sign(message, privateKey).toString();
+    @Override public String sign(String message, String privateKey) {
+        return SM2.sign(message, privateKey).toString();
     }
 
     /**
@@ -56,7 +71,15 @@ public class GmCrypto implements Crypto {
      * @return
      * @desc verify signature
      */
-    @Override public boolean verify(String message, String signature, String publicKey) throws Exception {
-        return sm2.verify(message, signature, publicKey);
+    @Override public boolean verify(String message, String signature, String publicKey) {
+        return SM2.verify(message, signature, publicKey);
+    }
+
+    /**
+     * @return
+     * @desc get singleton instance
+     */
+    public static final GmCrypto getSingletonInstance() {
+        return SingletonHolder.INSTANCE;
     }
 }

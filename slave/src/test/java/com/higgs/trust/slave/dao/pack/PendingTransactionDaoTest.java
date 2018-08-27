@@ -2,7 +2,7 @@ package com.higgs.trust.slave.dao.pack;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.higgs.trust.common.utils.SignUtils;
+import com.higgs.trust.common.crypto.rsa.Rsa;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -30,8 +30,7 @@ import java.util.List;
  */
 public class PendingTransactionDaoTest extends BaseTest {
 
-    @Autowired
-    private PendingTransactionDao pendingTransactionDao;
+    @Autowired private PendingTransactionDao pendingTransactionDao;
 
     private PendingTransactionPO pendingTransactionPO;
 
@@ -50,10 +49,10 @@ public class PendingTransactionDaoTest extends BaseTest {
 
         signedTransaction = initTx();
         pendingTransactionPO.setTxData(JSON.toJSONString(signedTransaction));
-//        pendingTransactionPO.setTxData(null);
+        //        pendingTransactionPO.setTxData(null);
     }
 
-    private SignedTransaction initTx() throws Exception{
+    private SignedTransaction initTx() throws Exception {
         SignedTransaction signedTx1 = new SignedTransaction();
 
         RegisterPolicy registerPolicy = new RegisterPolicy();
@@ -77,21 +76,20 @@ public class PendingTransactionDaoTest extends BaseTest {
         coreTx1.setVersion(VersionEnum.V1.getCode());
         coreTx1.setPolicyId("000000");
 
-        String sign1 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey1);
-        String sign2 = SignUtils.sign(JSON.toJSONString(coreTx1), priKey2);
+        String sign1 = Rsa.sign(JSON.toJSONString(coreTx1), priKey1);
+        String sign2 = Rsa.sign(JSON.toJSONString(coreTx1), priKey2);
         List<String> signList = new ArrayList<>();
         signList.add(sign1);
         signList.add(sign2);
         signedTx1.setCoreTx(coreTx1);
-//        signedTx1.setSignatureList(signList);
+        //        signedTx1.setSignatureList(signList);
 
         return signedTx1;
 
-//        signedTxList.add(signedTx1);
+        //        signedTxList.add(signedTx1);
     }
 
-    @Test
-    public void save() {
+    @Test public void save() {
         pendingTransactionDao.add(pendingTransactionPO);
     }
 
@@ -115,7 +113,8 @@ public class PendingTransactionDaoTest extends BaseTest {
     }
 
     @Test public void updateStatus() {
-        pendingTransactionDao.updateStatus("pending-tx-test-2", PendingTxStatusEnum.INIT.getCode(), PendingTxStatusEnum.PACKAGED.getCode(), 2L);
+        pendingTransactionDao.updateStatus("pending-tx-test-2", PendingTxStatusEnum.INIT.getCode(),
+            PendingTxStatusEnum.PACKAGED.getCode(), 2L);
 
         PendingTransactionPO po = pendingTransactionDao.queryByTxId("pending-tx-test-0");
 

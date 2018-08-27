@@ -1,8 +1,8 @@
 package com.higgs.trust.rs.core.service;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.integration.NodeClient;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -35,6 +35,8 @@ import java.util.UUID;
     @Autowired private NodeClient nodeClient;
     @Autowired private ClusterNodeRepository clusterNodeRepository;
 
+    @Autowired private ConsensusStateMachine consensusStateMachine;
+
     private static final String SUCCESS = "sucess";
     private static final String FAIL = "fail";
 
@@ -48,25 +50,43 @@ import java.util.UUID;
         log.info("[joinConsensus] start to join consensus layer");
 
         ClusterNode clusterNode = clusterNodeRepository.getClusterNode(nodeState.getNodeName());
-        log.info("clusterNode={}", JSON.toJSONString(clusterNode));
+        if (log.isDebugEnabled()) {
+            log.debug("clusterNode={}", clusterNode);
+        }
 
         if (null != clusterNode && clusterNode.isP2pStatus() == false) {
+            log.info("[joinConsensus] join consensus layer again");
             RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), nodeState.getNodeName());
             if (!respData.isSuccess()) {
                 return FAIL;
             }
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                log.error("[joinConsensus] error occured while thread sleep", e);
-                return FAIL;
-            }
         }
 
-        log.info("[joinConsensus] start to transform node status from offline to running");
-        nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
-        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-        nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+        new Thread(new Runnable() {
+            @Override public void run() {
+                log.info("[joinConsensus] start to transform node status from offline to running");
+                nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
+                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
+                nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+                log.info("[joinConsensus] end transform node status from offline to running");
+            }
+        }).start();
+
+        /*try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            log.error("[joinConsensus] error occured while thread sleep", e);
+            return FAIL;
+        }*/
+
+        try {
+            consensusStateMachine.joinConsensus();
+        } catch (Throwable e) {
+            log.error("join consensus error, ", e);
+            return FAIL;
+        }
+        log.info("[joinConsensus] end join consensus layer");
+
         return SUCCESS;
     }
 
