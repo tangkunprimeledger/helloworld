@@ -402,7 +402,7 @@ CREATE TABLE IF NOT EXISTS `ca` (
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_pub_key` (`pub_key`)
+  UNIQUE KEY `uniq_node_use` (`user`,`usage`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table which holds CA info';
 
 
