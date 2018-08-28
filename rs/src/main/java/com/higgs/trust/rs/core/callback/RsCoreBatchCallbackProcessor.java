@@ -12,12 +12,12 @@ import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.dao.RequestJDBCDao;
+import com.higgs.trust.rs.core.repository.RequestRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
-import com.higgs.trust.slave.dao.config.ConfigJDBCDao;
+import com.higgs.trust.slave.dao.mysql.config.ConfigJDBCDao;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ import java.util.*;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private ConfigJDBCDao configJDBCDao;
     @Autowired private NodeState nodeState;
-    @Autowired private RequestJDBCDao requestJDBCDao;
+    @Autowired private RequestRepository requestRepository;
     @Autowired AbstractClusterInfo clusterInfo;
 
     private TxBatchCallbackHandler getCallbackHandler() {
@@ -216,15 +216,15 @@ import java.util.*;
             voteRuleRepository.batchInsert(voteRules);
         }
         //update request status
-        requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
+        requestRepository.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
     }
 
     private void processRegisterRS(List<RsCoreTxVO> rsCoreTxVOS) {
-        requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
+        requestRepository.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
     }
 
     private void processCancelRS(List<RsCoreTxVO> rsCoreTxVOS) {
-        requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
+        requestRepository.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
     }
 
     /**

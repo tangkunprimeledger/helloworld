@@ -74,7 +74,7 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
         contract.setVersion("0.1");
         contract.setCreateTime(new Date());
 
-        contractRepository.deploy(contract);
+//        contractRepository.deploy(contract);
         return contract.getAddress();
     }
 

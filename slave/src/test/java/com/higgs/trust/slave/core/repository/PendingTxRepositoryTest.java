@@ -91,26 +91,6 @@ public class PendingTxRepositoryTest extends BaseTest {
         Assert.assertEquals(true, pendingTxRepository.isExist("pending-tx-test-4"));
     }
 
-    @Test public void batchUpdateStatus() {
-        pendingTxRepository
-            .batchUpdateStatus(signedTransactions, PendingTxStatusEnum.INIT, PendingTxStatusEnum.PACKAGED, 3L);
-
-    }
-
-    @Test public void saveWithStatus() {
-        pendingTxRepository.saveWithStatus(signedTx, PendingTxStatusEnum.INIT, null);
-    }
-
-    @Test public void getTransactionsByStatus() {
-        List<SignedTransaction> signedTransactionList =
-            pendingTxRepository.getTransactionsByStatus(PendingTxStatusEnum.PACKAGED.getCode(), 4);
-
-        Assert.assertEquals(4, signedTransactionList.size());
-
-        //        Assert.assertEquals("pending-tx-test-3", signedTransactionList.get(0).getCoreTx().getTxId());
-        //        Assert.assertEquals("pending-tx-test-4", signedTransactionList.get(1).getCoreTx().getTxId());
-    }
-
     @Test public void getTransactionsByHeight() {
         List<SignedTransaction> signedTransactionList = pendingTxRepository.getTransactionsByHeight(2L);
         Assert.assertEquals(3, signedTransactionList.size());

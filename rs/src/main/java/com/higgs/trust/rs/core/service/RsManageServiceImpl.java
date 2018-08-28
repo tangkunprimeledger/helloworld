@@ -7,9 +7,9 @@ import com.higgs.trust.rs.common.enums.RespCodeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.common.utils.CoreTransactionConvertor;
-import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.RsManageService;
+import com.higgs.trust.rs.core.repository.RequestRepository;
 import com.higgs.trust.rs.core.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.core.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.core.vo.manage.RegisterRsVO;
@@ -52,11 +52,9 @@ import java.util.List;
 
     @Autowired private CoreTransactionConvertor coreTransactionConvertor;
 
-    @Autowired private RequestHelper requestHelper;
+    @Autowired private RequestRepository requestRepository;
 
     @Autowired private NodeState nodeState;
-
-    @Autowired private CaService caService;
 
     @Autowired private RsNodeRepository rsNodeRepository;
 
@@ -71,13 +69,13 @@ import java.util.List;
             respData = txRequired.execute(new TransactionCallback<RespData>() {
                 @Override public RespData doInTransaction(TransactionStatus txStatus) {
                     //请求幂等校验
-                    RespData respData = requestHelper.requestIdempotent(registerRsVO.getRequestId());
+                    RespData respData = requestRepository.requestIdempotent(registerRsVO.getRequestId());
                     if (null != respData) {
                         return respData;
                     }
 
                     //请求入库
-                    respData = requestHelper.insertRequest(registerRsVO.getRequestId(), registerRsVO);
+                    respData = requestRepository.insertRequest(registerRsVO.getRequestId(), registerRsVO);
                     if (null != respData) {
                         return respData;
                     }
@@ -86,7 +84,7 @@ import java.util.List;
                     respData = checkRsForRegister(registerRsVO.getRsId());
                     if (null != respData) {
                         //更新请求状态
-                        requestHelper.updateRequest(registerRsVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
+                        requestRepository.updateRequest(registerRsVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
                             respData.getRespCode(), respData.getMsg());
                         return respData;
                     }
@@ -152,13 +150,13 @@ import java.util.List;
             respData = txRequired.execute(new TransactionCallback<RespData>() {
                 @Override public RespData doInTransaction(TransactionStatus txStatus) {
                     //初步幂等校验
-                    RespData respData = requestHelper.requestIdempotent(registerPolicyVO.getRequestId());
+                    RespData respData = requestRepository.requestIdempotent(registerPolicyVO.getRequestId());
                     if (null != respData) {
                         return respData;
                     }
 
                     //请求入库
-                    respData = requestHelper.insertRequest(registerPolicyVO.getRequestId(), registerPolicyVO);
+                    respData = requestRepository.insertRequest(registerPolicyVO.getRequestId(), registerPolicyVO);
                     if (null != respData) {
                         return respData;
                     }
@@ -166,7 +164,7 @@ import java.util.List;
                     //校验是否可注册policy
                     respData = checkPolicy(registerPolicyVO);
                     if (null != respData) {
-                        requestHelper
+                        requestRepository
                             .updateRequest(registerPolicyVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
                                 respData.getRespCode(), respData.getMsg());
                         return respData;
@@ -200,13 +198,13 @@ import java.util.List;
             respData = txRequired.execute(new TransactionCallback<RespData>() {
                 @Override public RespData doInTransaction(TransactionStatus txStatus) {
                     //请求幂等校验
-                    RespData respData = requestHelper.requestIdempotent(cancelRsVO.getRequestId());
+                    RespData respData = requestRepository.requestIdempotent(cancelRsVO.getRequestId());
                     if (null != respData) {
                         return respData;
                     }
 
                     //请求入库
-                    respData = requestHelper.insertRequest(cancelRsVO.getRequestId(), cancelRsVO);
+                    respData = requestRepository.insertRequest(cancelRsVO.getRequestId(), cancelRsVO);
                     if (null != respData) {
                         return respData;
                     }
@@ -215,7 +213,7 @@ import java.util.List;
                     respData = checkRsForCancel(cancelRsVO.getRsId());
                     if (null != respData) {
                         //更新请求状态
-                        requestHelper.updateRequest(cancelRsVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
+                        requestRepository.updateRequest(cancelRsVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
                             respData.getRespCode(), respData.getMsg());
                         return respData;
                     }
@@ -313,7 +311,7 @@ import java.util.List;
             coreTransactionService.submitTx(coreTransaction);
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                return requestHelper.requestIdempotent(coreTransaction.getTxId());
+                return requestRepository.requestIdempotent(coreTransaction.getTxId());
             }
         }
         return new RespData<>();

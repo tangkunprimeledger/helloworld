@@ -23,15 +23,6 @@ public interface PackageService {
     Package create(List<SignedTransaction> signedTransactions, Long currentPackageHeight);
 
     /**
-     * package status change function
-     *
-     * @param pack
-     * @param from
-     * @param to
-     */
-    void statusChange(Package pack, PackageStatusEnum from, PackageStatusEnum to);
-
-    /**
      * receive new package from somewhere, almost from consensus
      *
      * @param pack

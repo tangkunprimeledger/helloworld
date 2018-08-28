@@ -122,23 +122,6 @@ public class PackageRepositoryTest extends BaseTest {
         Assert.assertEquals(3L, height.longValue());
     }
 
-    @Test public void getHeightListByStatus() {
-        List<Long> heightList = packageRepository.getHeightListByStatus(PackageStatusEnum.INIT.getCode());
-        Assert.assertEquals(null, heightList);
-
-        List<Long> heights = packageRepository.getHeightListByStatus(PackageStatusEnum.RECEIVED.getCode());
-        Assert.assertEquals(1, heights.size());
-    }
-
-    @Test public void getMinHeight() {
-        Set<String> statusSet = new HashSet<>();
-        statusSet.add(PackageStatusEnum.INIT.getCode());
-        statusSet.add(PackageStatusEnum.RECEIVED.getCode());
-        Long height = packageRepository.getMinHeight(statusSet, 9L);
-
-        Assert.assertEquals(9L, height.longValue());
-    }
-
     @Test public void count() {
         Set<String> statusSet = new HashSet<>();
         statusSet.add(PackageStatusEnum.INIT.getCode());
@@ -151,10 +134,5 @@ public class PackageRepositoryTest extends BaseTest {
     @Test public void getHeightListForProcess() {
         // List<Long> heightList = packageRepository.getHeightListForProcess(4L);
         // System.out.println(heightList);
-    }
-
-    @Test public void getHeightsByStatusAndLimit() {
-        List<Long> heightList = packageRepository.getHeightsByStatusAndLimit("1", 20);
-        System.out.println(heightList);
     }
 }

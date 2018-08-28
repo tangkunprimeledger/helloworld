@@ -1,20 +1,25 @@
 package com.higgs.trust.slave.core.repository;
 
-import com.google.common.collect.Lists;
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.dao.pack.PackageDao;
+import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
+import com.higgs.trust.slave.dao.mysql.pack.PackageDao;
 import com.higgs.trust.slave.dao.po.pack.PackagePO;
+import com.higgs.trust.slave.dao.rocks.pack.PackRocksDao;
 import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.config.SystemProperty;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +32,15 @@ import java.util.Set;
 
     @Autowired PackageDao packageDao;
 
+    @Autowired PackRocksDao packRocksDao;
+
+    @Autowired SystemPropertyRepository systemPropertyRepository;
+
     @Autowired PendingTxRepository pendingTxRepository;
+
+    private static final int LOAD_LIMIT = 30;
+
+    @Autowired InitConfig initConfig;
 
     /**
      * new package from repository
@@ -40,13 +53,20 @@ import java.util.Set;
             return;
         }
 
-        //TODO rocks db
         PackagePO packagePO = convertPackToPackagePO(pack);
-        packageDao.add(packagePO);
+        if (initConfig.isUseMySQL()) {
+            packageDao.add(packagePO);
+        } else {
+            packRocksDao.save(packagePO);
+        }
     }
 
     public PackagePO queryByHeight(Long height) {
-        return packageDao.queryByHeight(height);
+        if (initConfig.isUseMySQL()) {
+            return packageDao.queryByHeight(height);
+        } else {
+            return packRocksDao.get(height);
+        }
     }
 
     /**
@@ -57,15 +77,24 @@ import java.util.Set;
      * @param to
      */
     public void updateStatus(Long height, PackageStatusEnum from, PackageStatusEnum to) {
-        txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                int r = packageDao.updateStatus(height, from.getCode(), to.getCode());
-                if (r != 1) {
-                    log.error("package.updateStatus is fail from:{} to:{}",from,to);
-                    throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_UPDATE_STATUS_ERROR);
+        if (initConfig.isUseMySQL()) {
+            txRequired.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    int r = packageDao.updateStatus(height, from.getCode(), to.getCode());
+                    if (r != 1) {
+                        //check package status
+                        PackagePO po = packageDao.queryByHeight(height);
+                        if (null != po && StringUtils.equals(to.getCode(), po.getStatus())) {
+                            return;
+                        }
+                        log.error("[package.updateStatus] has error");
+                        throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_UPDATE_STATUS_ERROR);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            packRocksDao.updateStatus(height, from.getCode(), to.getCode());
+        }
     }
 
     /**
@@ -90,12 +119,16 @@ import java.util.Set;
      * @return
      */
     public Package load(Long height) {
-        PackagePO packagePO = packageDao.queryByHeight(height);
+        PackagePO packagePO;
 
-        if (null == packagePO) {
-            return null;
+        if (initConfig.isUseMySQL()) {
+            packagePO = packageDao.queryByHeight(height);
+            if (null != packagePO) {
+                packagePO.setSignedTxList(pendingTxRepository.getTransactionsByHeight(packagePO.getHeight()));
+            }
+        } else {
+            packagePO = packRocksDao.get(height);
         }
-
         return convertPackagePOToPackage(packagePO);
     }
 
@@ -106,12 +139,16 @@ import java.util.Set;
      * @return
      */
     public List<Long> loadHeightList(Long height) {
-        List<Long> heights = packageDao.queryHeightListByHeight(height);
-
-        if (CollectionUtils.isEmpty(heights)) {
-            return null;
+        List<Long> heights;
+        if (initConfig.isUseMySQL()) {
+            heights = packageDao.queryHeightListByHeight(height);
+        } else {
+            List<Long> packHeights = new ArrayList<>();
+            for (int i = 0; i < LOAD_LIMIT; i++) {
+                packHeights.add(height + i);
+            }
+            heights = packRocksDao.queryHeightListByHeight(packHeights);
         }
-
         return heights;
     }
 
@@ -122,13 +159,16 @@ import java.util.Set;
      * @return
      */
     public Package loadAndLock(Long height) {
+        PackagePO packagePO;
 
-        PackagePO packagePO = packageDao.queryByHeightForUpdate(height);
-
-        if (null == packagePO) {
-            return null;
+        if (initConfig.isUseMySQL()) {
+            packagePO = packageDao.queryByHeightForUpdate(height);
+            if (null != packagePO) {
+                packagePO.setSignedTxList(pendingTxRepository.getTransactionsByHeight(packagePO.getHeight()));
+            }
+        } else {
+            packagePO = packRocksDao.get(height);
         }
-
         return convertPackagePOToPackage(packagePO);
     }
 
@@ -138,47 +178,12 @@ import java.util.Set;
      * @return
      */
     public Long getMaxHeight() {
-        return packageDao.getMaxHeight();
-    }
-
-    /**
-     * get package list
-     *
-     * @return
-     */
-    public List<Long> getHeightListByStatus(String status) {
-        List<Long> heightList = packageDao.queryHeightListByStatus(status);
-
-        if (CollectionUtils.isEmpty(heightList)) {
-            return null;
+        if (initConfig.isUseMySQL()) {
+            return packageDao.getMaxHeight();
+        } else {
+            SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_PACK_HEIGHT);
+            return bo != null && !StringUtils.isEmpty(bo.getValue()) ? Long.parseLong(bo.getValue()) : null;
         }
-
-        return heightList;
-    }
-
-    /**
-     * get package list
-     *
-     * @return
-     */
-    public List<Long> getHeightsByStatusAndLimit(String status, int limit) {
-        List<Long> heightList = packageDao.queryHeightsByStatusAndLimit(status, limit);
-
-        if (CollectionUtils.isEmpty(heightList)) {
-            return null;
-        }
-
-        return heightList;
-    }
-
-    /**
-     * get min height with package status
-     *
-     * @param statusSet
-     * @return
-     */
-    public Long getMinHeight(Set<String> statusSet, Long maxBlockHeight) {
-        return packageDao.getMinHeightWithStatus(statusSet, maxBlockHeight);
     }
 
     /**
@@ -189,7 +194,20 @@ import java.util.Set;
      * @return
      */
     public Long getMinHeight(long startHeight, Set<String> statusSet) {
-        return packageDao.getMinHeightWithHeightAndStatus(startHeight, statusSet);
+        if (initConfig.isUseMySQL()) {
+            return packageDao.getMinHeightWithHeightAndStatus(startHeight, statusSet);
+        } else {
+            if (statusSet.contains(PackageStatusEnum.RECEIVED.getCode())) {
+                SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_BLOCK_HEIGHT);
+                if (null != bo && !StringUtils.isEmpty(bo.getValue())) {
+                    Long height = Long.parseLong(bo.getValue()) + 1;
+                    return packRocksDao.get(height) == null ? null : height;
+                }
+            } else {
+                throw new UnsupportedOperationException("package status is not received");
+            }
+        }
+        return null;
     }
 
     /**
@@ -199,7 +217,12 @@ import java.util.Set;
      * @return
      */
     public long count(Set<String> statusSet, Long maxBlockHeight) {
-        return packageDao.countWithStatus(statusSet, maxBlockHeight);
+        if (initConfig.isUseMySQL()) {
+            return packageDao.countWithStatus(statusSet, maxBlockHeight);
+        } else {
+            SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_PACK_HEIGHT);
+            return bo != null && !StringUtils.isEmpty(bo.getValue()) ? Long.parseLong(bo.getValue()) - maxBlockHeight : 0;
+        }
     }
 
     /**
@@ -213,6 +236,7 @@ import java.util.Set;
         packagePO.setHeight(pack.getHeight());
         packagePO.setPackageTime(pack.getPackageTime());
         packagePO.setStatus(pack.getStatus().getCode());
+        packagePO.setSignedTxList(pack.getSignedTxList());
         return packagePO;
     }
 
@@ -223,32 +247,16 @@ import java.util.Set;
      * @return
      */
     private Package convertPackagePOToPackage(PackagePO packagePO) {
+        if (null == packagePO) {
+            return null;
+        }
         Package packageBO = new Package();
         packageBO.setHeight(packagePO.getHeight());
         packageBO.setPackageTime(packagePO.getPackageTime());
         packageBO.setStatus(PackageStatusEnum.getByCode(packagePO.getStatus()));
 
-        packageBO.setSignedTxList(pendingTxRepository.getTransactionsByHeight(packagePO.getHeight()));
+        packageBO.setSignedTxList(packagePO.getSignedTxList());
         return packageBO;
-    }
-
-    /**
-     * convert packagePO to package
-     *
-     * @param packagePOs
-     * @return
-     */
-    private List<Package> convertPackagePOsToPackages(List<PackagePO> packagePOs) {
-        List<Package> packages = Lists.newLinkedList();
-        for (PackagePO packagePO : packagePOs) {
-            Package pack = new Package();
-            pack.setHeight(packagePO.getHeight());
-            pack.setPackageTime(packagePO.getPackageTime());
-            pack.setStatus(PackageStatusEnum.getByCode(packagePO.getStatus()));
-            pack.setSignedTxList(pendingTxRepository.getTransactionsByHeight(packagePO.getHeight()));
-            packages.add(pack);
-        }
-        return packages;
     }
 
     /**

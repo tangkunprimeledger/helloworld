@@ -1,0 +1,45 @@
+package com.higgs.trust.slave.dao.rocks.account;
+
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.dao.RocksBaseDao;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.dao.po.account.AccountDetailPO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.rocksdb.WriteBatch;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
+
+/**
+ *
+ * @author tangfashuang
+ */
+@Service
+@Slf4j
+public class AccountDetailRocksDao extends RocksBaseDao<String, AccountDetailPO> {
+
+    @Override protected String getColumnFamilyName() {
+        return "accountDetail";
+    }
+
+    public void batchInsert(List<AccountDetailPO> pos) {
+        if (CollectionUtils.isEmpty(pos)) {
+            return;
+        }
+
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        if (null == batch) {
+            log.error("[AccountDetailRocksDao.batchInsert] write batch is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        }
+        for (AccountDetailPO po : pos) {
+            String key = po.getBizFlowNo() + Constant.SPLIT_SLASH + po.getAccountNo();
+            po.setCreateTime(new Date());
+            batchPut(batch, key, po);
+        }
+    }
+}

@@ -3,6 +3,7 @@ package com.higgs.trust.rs.core.repository;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.core.dao.BizTypeDao;
 import com.higgs.trust.rs.core.dao.po.BizTypePO;
+import com.higgs.trust.rs.core.dao.rocks.BizTypeRocksDao;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -21,15 +22,18 @@ import java.util.Map;
 @Slf4j @Repository public class BizTypeRepository implements InitializingBean {
     @Autowired private RsConfig rsConfig;
     @Autowired BizTypeDao bizTypeDao;
+    @Autowired BizTypeRocksDao bizTypeRocksDao;
 
     private Map<String, String> bizTypeMap = new HashMap<>();
 
     @Override public void afterPropertiesSet() throws Exception {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return;
+        List<BizTypePO> bizTypePOList;
+        if (rsConfig.isUseMySQL()) {
+            bizTypePOList = bizTypeDao.queryAll();
+        } else {
+            bizTypePOList = bizTypeRocksDao.queryAll();
         }
-        List<BizTypePO> bizTypePOList = bizTypeDao.queryAll();
+
         if (!CollectionUtils.isEmpty(bizTypePOList)) {
             for (BizTypePO bizTypePO : bizTypePOList) {
                 bizTypeMap.put(bizTypePO.getPolicyId(), bizTypePO.getBizType());
@@ -44,14 +48,15 @@ import java.util.Map;
      * @return
      */
     public String getByPolicyId(String policyId) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return null;
-        }
         if (bizTypeMap.containsKey(policyId)) {
             return bizTypeMap.get(policyId);
         }
-        BizTypePO bizTypePO = bizTypeDao.queryByPolicyId(policyId);
+        BizTypePO bizTypePO;
+        if (!rsConfig.isUseMySQL()) {
+            bizTypePO = bizTypeRocksDao.get(policyId);
+        } else {
+            bizTypePO = bizTypeDao.queryByPolicyId(policyId);
+        }
         if (bizTypePO == null) {
             log.info("[getByPolicyId]bizTypePO is empty policyId:{}", policyId);
             return null;

@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.scheduler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
@@ -18,6 +19,7 @@ import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.rocksdb.WriteBatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.sleuth.Span;

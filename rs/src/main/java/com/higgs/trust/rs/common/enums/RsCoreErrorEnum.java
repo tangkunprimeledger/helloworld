@@ -43,6 +43,10 @@ public enum RsCoreErrorEnum {
     RS_CORE_GET_CHAIN_OWNER_NULL_ERROR("220", "get chain owner is null error", false),
     RS_CORE_CONTRACT_ACTION_TYPE_ILLEGAL_ERROR("221", "process contract action type  error", false),
     RS_CORE_CONTRACT_EXECUTE_ERROR("221", "contract process  error", false),
+    RS_CORE_TX_UPDATE_FAILED("222", "update transaction  failed", false),
+    RS_CORE_WAIT_ASYNC_TIMEOUT_EXCEPTION("223", "rs core wait async timeout exception", false),
+    RS_CORE_TX_NOT_EXISTS_FAILED("224", "the core transaction not exists failed", false),
+    RS_CORE_TX_EXISTS_FAILED("225", "the core transaction already exists failed", false),
 
     RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
     RS_CORE_CA_CANCEL_ERROR("302", "rs core ca cancel error", false),
@@ -52,6 +56,9 @@ public enum RsCoreErrorEnum {
     RS_CORE_REQUEST_UPDATE_STATUS_FAILED("306", "update request status failed", false),
     RS_CORE_CA_UPDATE_ERROR("307", "update ca error", false),
     RS_CORE_CA_AUTH_ERROR("307", "auth ca error", false),
+    RS_CORE_ROCKS_KEY_ALREADY_EXIST("841", "rocks key is exist", false),
+    RS_CORE_ROCKS_KEY_IS_NOT_EXIST("842", "rocks key is not exist", false),
+    RS_CORE_ROCKS_WRITE_BATCH_IS_NULL("843", "rocks write batch is null", false),
     ;
     //@formatter:on
 

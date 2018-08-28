@@ -1,7 +1,9 @@
 package com.higgs.trust.slave.core.repository;
 
-import com.higgs.trust.slave.dao.manage.RsNodeDao;
+import com.higgs.trust.slave.common.config.InitConfig;
+import com.higgs.trust.slave.dao.mysql.manage.RsNodeDao;
 import com.higgs.trust.slave.dao.po.manage.RsNodePO;
+import com.higgs.trust.slave.dao.rocks.manage.RsNodeRocksDao;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
@@ -10,9 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -24,13 +28,22 @@ import java.util.List;
 
     @Autowired private RsNodeDao rsNodeDao;
 
+    @Autowired private RsNodeRocksDao rsNodeRocksDao;
+
+    @Autowired private InitConfig initConfig;
     /**
      * query all rs and public key
      *
      * @return
      */
     public List<RsNode> queryAll() {
-        List<RsNodePO> rsNodePOList = rsNodeDao.queryAll();
+        List<RsNodePO> rsNodePOList;
+        if (initConfig.isUseMySQL()) {
+            rsNodePOList = rsNodeDao.queryAll();
+        } else {
+            rsNodePOList = rsNodeRocksDao.queryAll();
+        }
+
         if (CollectionUtils.isEmpty(rsNodePOList)) {
             log.info("rs public key list is empty");
             return null;
@@ -71,30 +84,20 @@ import java.util.List;
      * @return
      */
     public RsNode queryByRsId(String rsId) {
-        RsNodePO rsNodePO = rsNodeDao.queryByRsId(rsId);
 
-        if (null == rsNodePO) {
-            return null;
+        RsNodePO rsNodePO;
+        if (initConfig.isUseMySQL()) {
+            rsNodePO = rsNodeDao.queryByRsId(rsId);
+        } else {
+            rsNodePO = rsNodeRocksDao.get(rsId);
         }
 
-        return convertRsNodePOtoRsNode(rsNodePO);
+        return null == rsNodePO ? null : convertRsNodePOtoRsNode(rsNodePO);
     }
 
     public List<RsPubKey> queryRsAndPubKey() {
+        //TODO rocks db
         return rsNodeDao.queryRsAndPubKey();
-    }
-
-    /**
-     * save rs node
-     *
-     * @param rsNode
-     */
-    public void save(RsNode rsNode) {
-        if (null == rsNode) {
-            log.error("rs node is null");
-            return;
-        }
-        rsNodeDao.add(convertRsNodeToRsNodePO(rsNode));
     }
 
     public RsNode convertActionToRsNode(RegisterRS registerRS) {
@@ -123,10 +126,16 @@ import java.util.List;
     }
 
     public int batchUpdate(List<RsNodePO> rsNodePOList) {
-        return rsNodeDao.batchUpdate(rsNodePOList);
+        if (initConfig.isUseMySQL()) {
+            return rsNodeDao.batchUpdate(rsNodePOList);
+        }
+        return rsNodeRocksDao.batchInsert(rsNodePOList);
     }
 
     public int batchInsert(List<RsNodePO> rsNodePOList) {
-        return rsNodeDao.batchInsert(rsNodePOList);
+        if (initConfig.isUseMySQL()) {
+            return rsNodeDao.batchInsert(rsNodePOList);
+        }
+        return rsNodeRocksDao.batchInsert(rsNodePOList);
     }
 }

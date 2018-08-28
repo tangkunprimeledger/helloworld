@@ -4,10 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.dao.manage.PolicyDao;
+import com.higgs.trust.slave.dao.mysql.manage.PolicyDao;
 import com.higgs.trust.slave.dao.po.manage.PolicyPO;
+import com.higgs.trust.slave.dao.rocks.manage.PolicyRocksDao;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
@@ -15,9 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -30,7 +34,13 @@ import java.util.List;
     @Autowired private PolicyDao policyDao;
 
     @Autowired
+    private PolicyRocksDao policyRocksDao;
+
+    @Autowired
     private RsNodeRepository rsNodeRepository;
+
+    @Autowired
+    private InitConfig initConfig;
 
     public Policy getPolicyById(String policyId) {
 
@@ -58,22 +68,14 @@ import java.util.List;
                 policy.setRsIds(null);
             }
         } else {
-            policy = policyDao.queryByPolicyId(policyId);
+            if (initConfig.isUseMySQL()) {
+                policy = policyDao.queryByPolicyId(policyId);
+            } else {
+                policy = policyRocksDao.get(policyId);
+            }
         }
 
-        if (null == policy) {
-            return null;
-        }
-        return convertPolicyPOToPolicy(policy);
-    }
-
-    public void save(Policy policy) {
-        if (null == policy) {
-            log.error("policy is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
-        policyDao.add(convertPolicyToPolicyPO(policy));
+        return policy == null ? null : convertPolicyPOToPolicy(policy);
     }
 
     public PolicyPO convertPolicyToPolicyPO(Policy policy) {
@@ -127,6 +129,10 @@ import java.util.List;
     }
 
     public int batchInsert(List<PolicyPO> policyPOList) {
-        return policyDao.batchInsert(policyPOList);
+        if (initConfig.isUseMySQL()) {
+            return policyDao.batchInsert(policyPOList);
+        } else {
+            return policyRocksDao.batchInsert(policyPOList);
+        }
     }
 }

@@ -110,6 +110,10 @@
     },
     "start": {
       "mode": "cluster"
+    },
+    "useMySQL": false,
+    "rocks": {
+      "dbFileRoot" : "/Volumes/work/log/rocks/db1"
     }
   },
   "logging": {

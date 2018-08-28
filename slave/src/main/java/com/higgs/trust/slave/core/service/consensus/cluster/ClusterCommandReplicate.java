@@ -40,7 +40,7 @@ import java.util.List;
      */
     public List<ValidClusterHeightCmd> handleClusterHeight(ValidSyncCommit<ClusterHeightCmd> commit) {
         ClusterHeightCmd operation = commit.operation();
-        List<Long> maxHeights = blockRepository.getMaxHeight(operation.get());
+        List<Long> maxHeights = blockRepository.getLimitHeight(operation.get());
         log.info("node={}, maxHeights={}", nodeState.getNodeName(), maxHeights);
         List<ValidClusterHeightCmd> cmds = new ArrayList<>();
         maxHeights.forEach(height -> cmds.add(new ValidClusterHeightCmd(operation.getRequestId(), height)));

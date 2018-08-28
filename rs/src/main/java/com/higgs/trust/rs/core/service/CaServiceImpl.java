@@ -370,12 +370,10 @@ import java.util.*;
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();
         //store temp pubKeyForConsensus and priKey
-        Config config = new Config();
-        config.setNodeName(ca.getUser());
+        Config config = configRepository.getBizConfig(ca.getUser());
         config.setTmpPubKey(pubKey);
         config.setTmpPriKey(priKey);
         config.setValid(true);
-        config.setUsage(UsageEnum.BIZ.getCode());
         configRepository.updateConfig(config);
 
         //construct caVO

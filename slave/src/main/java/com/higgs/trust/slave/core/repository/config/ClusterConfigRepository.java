@@ -1,9 +1,11 @@
 package com.higgs.trust.slave.core.repository.config;
 
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.dao.config.ClusterConfigDao;
+import com.higgs.trust.slave.dao.mysql.config.ClusterConfigDao;
 import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
+import com.higgs.trust.slave.dao.rocks.config.ClusterConfigRocksDao;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +23,8 @@ import java.util.List;
 @Repository @Slf4j public class ClusterConfigRepository {
 
     @Autowired private ClusterConfigDao clusterConfigDao;
+    @Autowired private ClusterConfigRocksDao clusterConfigRocksDao;
+    @Autowired private InitConfig initConfig;
 
     /**
      * @param clusterConfig
@@ -30,18 +34,11 @@ import java.util.List;
     public void insertClusterConfig(ClusterConfig clusterConfig) {
         ClusterConfigPO clusterConfigPO = new ClusterConfigPO();
         BeanUtils.copyProperties(clusterConfig, clusterConfigPO);
-        clusterConfigDao.insertClusterConfig(clusterConfigPO);
-    }
-
-    /**
-     * @param clusterConfig
-     * @return
-     * @desc update ClusterConfig
-     */
-    public void updateClusterConfig(ClusterConfig clusterConfig) {
-        ClusterConfigPO clusterConfigPO = new ClusterConfigPO();
-        BeanUtils.copyProperties(clusterConfig, clusterConfigPO);
-        clusterConfigDao.updateClusterConfig(clusterConfigPO);
+        if (initConfig.isUseMySQL()) {
+            clusterConfigDao.insertClusterConfig(clusterConfigPO);
+        } else {
+            clusterConfigRocksDao.save(clusterConfigPO);
+        }
     }
 
     /**
@@ -50,7 +47,13 @@ import java.util.List;
      * @desc get ClusterConfig by cluster name
      */
     public ClusterConfig getClusterConfig(String clusterName) {
-        ClusterConfigPO clusterConfigPO = clusterConfigDao.getClusterConfig(clusterName);
+        ClusterConfigPO clusterConfigPO;
+        if (initConfig.isUseMySQL()) {
+            clusterConfigPO = clusterConfigDao.getClusterConfig(clusterName);
+        } else {
+            clusterConfigPO = clusterConfigRocksDao.get(clusterName);
+        }
+
         if (null == clusterConfigPO) {
             return null;
         }
@@ -66,14 +69,18 @@ import java.util.List;
      * @return
      */
     public boolean batchInsert(List<ClusterConfigPO> clusterConfigPOList) {
-        int affectRows = 0;
-        try {
-            affectRows = clusterConfigDao.batchInsert(clusterConfigPOList);
-        } catch (DuplicateKeyException e) {
-            log.error(
-                "batch insert clusterconfig fail, because there is DuplicateKeyException for clusterConfigPOList:",
-                clusterConfigPOList);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        int affectRows;
+        if (initConfig.isUseMySQL()) {
+            try {
+                affectRows = clusterConfigDao.batchInsert(clusterConfigPOList);
+            } catch (DuplicateKeyException e) {
+                log.error(
+                    "batch insert clusterConfig fail, because there is DuplicateKeyException for clusterConfigPOList:",
+                    clusterConfigPOList);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+            }
+        } else {
+            affectRows = clusterConfigRocksDao.batchInsert(clusterConfigPOList);
         }
         return affectRows == clusterConfigPOList.size();
     }
@@ -85,6 +92,9 @@ import java.util.List;
      * @return
      */
     public boolean batchUpdate(List<ClusterConfigPO> clusterConfigPOList) {
-        return clusterConfigPOList.size() == clusterConfigDao.batchUpdate(clusterConfigPOList);
+        if (initConfig.isUseMySQL()) {
+            return clusterConfigPOList.size() == clusterConfigDao.batchUpdate(clusterConfigPOList);
+        }
+        return clusterConfigPOList.size() == clusterConfigRocksDao.batchInsert(clusterConfigPOList);
     }
 }

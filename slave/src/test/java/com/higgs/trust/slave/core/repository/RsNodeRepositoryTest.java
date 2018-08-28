@@ -52,12 +52,6 @@ public class RsNodeRepositoryTest extends BaseTest {
         System.out.println(rsNode);
     }
 
-    @Test public void save() {
-        rsNodeRepository.save(rsNode);
-        RsNode rsNode1 = rsNodeRepository.queryByRsId(rsNode.getRsId());
-        assertEquals(rsNode1.getStatus(), rsNode.getStatus());
-    }
-
     @Test public void convertActionToRsNode() {
         RegisterRS registerRS = new RegisterRS();
         registerRS.setRsId("rs-test4");

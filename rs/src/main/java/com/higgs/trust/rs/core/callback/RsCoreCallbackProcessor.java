@@ -13,6 +13,7 @@ import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.dao.RequestDao;
+import com.higgs.trust.rs.core.repository.RequestRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -38,7 +39,7 @@ import org.springframework.stereotype.Component;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
-    @Autowired private RequestDao requestDao;
+    @Autowired private RequestRepository requestRepository;
     @Autowired AbstractClusterInfo clusterInfo;
 
     private TxCallbackHandler getCallbackHandler() {
@@ -202,18 +203,18 @@ import org.springframework.stereotype.Component;
         voteRuleRepository.add(voteRule);
 
         //update request status
-        requestDao.updateStatusByRequestId(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(),
-            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
+        requestRepository.updateRequest(coreTransaction.getTxId(), RequestEnum.PROCESS,
+            RequestEnum.DONE, respData.getRespCode(), respData.getMsg());
     }
 
     private void processRegisterRS(RespData<CoreTransaction> respData) {
-        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(),
-            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
+        requestRepository.updateRequest(respData.getData().getTxId(), RequestEnum.PROCESS,
+            RequestEnum.DONE, respData.getRespCode(), respData.getMsg());
     }
 
     private void processCancelRS(RespData<CoreTransaction> respData) {
-        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(),
-            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
+        requestRepository.updateRequest(respData.getData().getTxId(), RequestEnum.PROCESS,
+            RequestEnum.DONE, respData.getRespCode(), respData.getMsg());
     }
 
     private void processCaUpdate(RespData<CoreTransaction> respData) {
@@ -272,8 +273,10 @@ import org.springframework.stereotype.Component;
 
         log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodeState.getNodeName());
         //set pubKeyForConsensus and priKey to invalid
-        Config config = new Config();
-        config.setNodeName(user);
+        Config config = configRepository.getBizConfig(user);
+        if (null == config) {
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_UPDATE_ERROR, "ca update error");
+        }
         config.setValid(false);
         configRepository.updateConfig(config);
 

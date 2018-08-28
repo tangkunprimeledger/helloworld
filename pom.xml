@@ -273,6 +273,11 @@
                 <artifactId>concurrentlinkedhashmap-lru</artifactId>
                 <version>1.4.2</version>
             </dependency>
+            <dependency>
+                <groupId>org.rocksdb</groupId>
+                <artifactId>rocksdbjni</artifactId>
+                <version>5.9.2</version>
+            </dependency>
 
             <!--seg-->
             <dependency>
@@ -292,7 +297,7 @@
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson</artifactId>
-                <version>3.5.3</version>
+                <version>3.5.4</version>
             </dependency>
 
             <!--test-->

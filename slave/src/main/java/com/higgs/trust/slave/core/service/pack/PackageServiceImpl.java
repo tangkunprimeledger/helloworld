@@ -8,6 +8,8 @@ import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.Profiler;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.SlaveBatchCallbackHandler;
@@ -15,9 +17,14 @@ import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.core.repository.PendingTxRepository;
+import com.higgs.trust.slave.core.repository.RsNodeRepository;
+import com.higgs.trust.slave.core.repository.TransactionRepository;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
@@ -35,6 +42,7 @@ import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.rocksdb.WriteBatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -61,6 +69,7 @@ import java.util.stream.Collectors;
     @Autowired private RsNodeRepository rsNodeRepository;
     @Autowired private PendingTxRepository pendingTxRepository;
     @Autowired private NodeState nodeState;
+    @Autowired private InitConfig initConfig;
 
     /**
      * create new package from pending transactions
@@ -105,6 +114,7 @@ import java.util.stream.Collectors;
             voList.add(PackageConvert.convertPackToPackVO(pack));
         }
 
+
         logReplicateHandler.replicatePackage(voList);
     }
 
@@ -139,14 +149,23 @@ import java.util.stream.Collectors;
                 return;
             }
         }
-        txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                pack.setStatus(PackageStatusEnum.RECEIVED);
-                packageRepository.save(pack);
-                //save pendingTx to db
-                pendingTxRepository.batchInsert(pack.getSignedTxList(), PendingTxStatusEnum.PACKAGED, pack.getHeight());
-            }
-        });
+        pack.setStatus(PackageStatusEnum.RECEIVED);
+        if (initConfig.isUseMySQL()) {
+            txRequired.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    packageRepository.save(pack);
+                    //save pendingTx to db
+                    pendingTxRepository.batchInsert(pack.getSignedTxList(), PendingTxStatusEnum.PACKAGED, pack.getHeight());
+                }
+            });
+        } else {
+            ThreadLocalUtils.putWriteBatch(new WriteBatch());
+            packageRepository.save(pack);
+            pendingTxRepository.batchInsertToRocks(pack.getSignedTxList(), pack.getHeight());
+            //TODO rocks db commit
+
+            ThreadLocalUtils.clearWriteBatch();
+        }
     }
 
     /**
@@ -536,16 +555,5 @@ import java.util.stream.Collectors;
             return "";
         }
         return data;
-    }
-
-    /**
-     * package status change function
-     *
-     * @param pack
-     * @param from
-     * @param to
-     */
-    @Override public void statusChange(Package pack, PackageStatusEnum from, PackageStatusEnum to) {
-        packageRepository.updateStatus(pack.getHeight(), from, to);
     }
 }

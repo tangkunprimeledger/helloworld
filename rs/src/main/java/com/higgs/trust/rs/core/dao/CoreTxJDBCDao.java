@@ -2,9 +2,7 @@ package com.higgs.trust.rs.core.dao;
 
 import com.google.common.collect.Lists;
 import com.higgs.trust.common.utils.CollectionBean;
-import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
-import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,10 +12,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component @Slf4j public class CoreTxJDBCDao {
+@Component
+@Slf4j
+public class CoreTxJDBCDao {
 
-    @Autowired private NamedParameterJdbcTemplate jdbc;
-    @Autowired private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private NamedParameterJdbcTemplate jdbc;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     /**
      * batch insert
@@ -25,13 +27,9 @@ import java.util.List;
      * @param list
      * @return
      */
-    public int batchInsertTx(List<CoreTransactionPO> list) {
-        StringBuilder sql = new StringBuilder("INSERT INTO core_transaction "
-            + " (id,tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,status,execute_result,error_code,error_msg,send_time,block_height,create_time)"
-            + "  VALUES");
-        String template =
-            "(:c[${i}].id,:c[${i}].txId,:c[${i}].policyId,:c[${i}].lockTime,:c[${i}].sender,:c[${i}].version,:c[${i}].bizModel,:c[${i}].actionDatas,"
-                + ":c[${i}].signDatas,:c[${i}].status,:c[${i}].executeResult,:c[${i}].errorCode,:c[${i}].errorMsg,:c[${i}].sendTime,:c[${i}].blockHeight,NOW(3)),";
+    public int batchInsert(List<CoreTransactionPO> list) {
+        StringBuilder sql = new StringBuilder("INSERT INTO core_transaction " + " (tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,execute_result,error_code,error_msg,send_time,block_height,create_time)" + "  VALUES");
+        String template = "(:c[${i}].txId,:c[${i}].policyId,:c[${i}].lockTime,:c[${i}].sender,:c[${i}].version,:c[${i}].bizModel,:c[${i}].actionDatas," + ":c[${i}].signDatas,:c[${i}].executeResult,:c[${i}].errorCode,:c[${i}].errorMsg,:c[${i}].sendTime,:c[${i}].blockHeight,NOW(3)),";
         int size = list.size();
         for (int i = 0; i < size; i++) {
             sql.append(template.replaceAll("\\$\\{i\\}", String.valueOf(i)));
@@ -46,17 +44,15 @@ import java.util.List;
      * @param list
      * @return
      */
-    public int batchUpdateStatus(List<CoreTransactionPO> list, CoreTxStatusEnum from, CoreTxStatusEnum to,
-        Long blockHeight) {
-        String sql = "UPDATE core_transaction SET ";
-        String exeResultConditionSql = " `execute_result`= CASE `tx_id`";
-        String errorCodeConditionSql = ",`error_code`= CASE `tx_id`";
-        String errorMsgConditionSql = ",`error_msg`= CASE `tx_id`";
-        String updateStatusSql = ", `status`='" + to.getCode() + "'";
+    public int batchUpdate(List<CoreTransactionPO> list, Long blockHeight) {
+        StringBuilder sql = new StringBuilder("UPDATE core_transaction SET ");
+        StringBuilder exeResultConditionSql = new StringBuilder(" `execute_result`= CASE `tx_id`");
+        StringBuilder errorCodeConditionSql = new StringBuilder(",`error_code`= CASE `tx_id`");
+        StringBuilder errorMsgConditionSql = new StringBuilder(",`error_msg`= CASE `tx_id`");
         String updateBlockHeightSql = ", `block_height`= " + blockHeight;
         String updateTimeSql = ", `update_time`=NOW(3)";
         String conditionSql = " WHEN ? THEN ? ";
-        String whereSql = "";
+        StringBuilder whereSql = new StringBuilder("");
         List<Object> txIdList = Lists.newLinkedList();
         List<Object> exeResultList = Lists.newLinkedList();
         List<Object> errorCodeList = Lists.newLinkedList();
@@ -65,32 +61,30 @@ import java.util.List;
         for (CoreTransactionPO po : list) {
             String txId = po.getTxId();
             txIdList.add(txId);
-            whereSql += ",?";
+            whereSql.append(",?");
 
-            exeResultConditionSql += conditionSql;
+            exeResultConditionSql.append(conditionSql);
             exeResultList.add(txId);
             exeResultList.add(po.getExecuteResult());
 
-            errorCodeConditionSql += conditionSql;
+            errorCodeConditionSql.append(conditionSql);
             errorCodeList.add(txId);
             errorCodeList.add(po.getErrorCode());
 
-            errorMsgConditionSql += conditionSql;
+            errorMsgConditionSql.append(conditionSql);
             errorMsgList.add(txId);
             errorMsgList.add(po.getErrorMsg());
         }
-        exeResultConditionSql += " ELSE `execute_result` END";
-        errorCodeConditionSql += " ELSE `error_code` END";
-        errorMsgConditionSql += " ELSE `error_msg` END";
-        whereSql = " WHERE `tx_id` in (" + whereSql.substring(1) + ")  AND `status`='" + from.getCode() + "'";
-        sql += exeResultConditionSql + errorCodeConditionSql + errorMsgConditionSql + updateStatusSql
-            + updateBlockHeightSql + updateTimeSql + whereSql;
+        exeResultConditionSql.append(" ELSE `execute_result` END");
+        errorCodeConditionSql.append(" ELSE `error_code` END");
+        errorMsgConditionSql.append(" ELSE `error_msg` END");
+        sql.append(exeResultConditionSql).append(errorCodeConditionSql).append(errorMsgConditionSql).append(updateBlockHeightSql).append(updateTimeSql).append(" WHERE `tx_id` in (" + whereSql.substring(1) + ")");
         List<Object> params = Lists.newLinkedList();
         params.addAll(exeResultList);
         params.addAll(errorCodeList);
         params.addAll(errorMsgList);
         params.addAll(txIdList);
-        return jdbcTemplate.update(sql, params.toArray());
+        return jdbcTemplate.update(sql.toString(), params.toArray());
     }
 
 }

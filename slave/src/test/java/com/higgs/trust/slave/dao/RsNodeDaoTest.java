@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.dao;
 
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.dao.manage.RsNodeDao;
+import com.higgs.trust.slave.dao.mysql.manage.RsNodeDao;
 import com.higgs.trust.slave.dao.po.manage.RsNodePO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;

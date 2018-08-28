@@ -38,7 +38,7 @@
 	<insert id="add" parameterType="Object">
 		insert into
 		vote_rule(id,policy_id,vote_pattern,callback_type,create_time)
-		values(#{id},#{policyId},#{votePattern},#{callbackType},now())
+		values(#{id},#{policyId},#{votePattern},#{callbackType},now(3))
 	</insert>
 	<!-- 删除记录 -->
 	<delete id="delete" parameterType="Object">
