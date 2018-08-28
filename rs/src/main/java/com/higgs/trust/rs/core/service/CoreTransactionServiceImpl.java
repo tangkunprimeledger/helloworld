@@ -189,13 +189,16 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
             log.error("[submitTx] self sign data is empty");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
-
-        //save coreTxProcess to db
-        coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
-        //save coreTx to db
-        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
-        //send redis msg for slave
-        asyncProcessInitTx(coreTx.getTxId());
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                //save coreTxProcess to db
+                coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
+                //save coreTx to db
+                coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+                //send redis msg for slave
+                asyncProcessInitTx(coreTx.getTxId());
+            }
+        });
     }
 
     /**
@@ -220,7 +223,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
         if (StringUtils.isBlank(txId)) {
             return;
         }
-        log.info("[processInitTx]txId:{}", txId);
+        log.debug("[processInitTx]txId:{}", txId);
         final CoreTxBO[] finalTx = {null};
         final VotePatternEnum[] finalVotePattern = {null};
         txRequired.execute(new TransactionCallbackWithoutResult() {
@@ -228,19 +231,19 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
             protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 CoreTransactionProcessPO coreTransactionProcessPO = coreTxProcessRepository.queryByTxId(txId, true);
                 if (null == coreTransactionProcessPO || !StringUtils.equals(coreTransactionProcessPO.getStatus(), CoreTxStatusEnum.INIT.getCode())) {
-                    log.info("[processInitTx]the coreTx is null or status is not INIT txId:{}", txId);
+                    log.debug("[processInitTx]the coreTx is null or status is not INIT txId:{}", txId);
                     return;
                 }
                 CoreTransactionPO po = coreTxRepository.queryByTxId(txId, false);
                 Date lockTime = po.getLockTime();
                 if (lockTime != null && lockTime.after(new Date())) {
-                    log.info("[processInitTx]should skip this tx by lock time:{}", lockTime);
+                    log.debug("[processInitTx]should skip this tx by lock time:{}", lockTime);
                     return;
                 }
                 //convert bo
                 CoreTxBO bo = coreTxRepository.convertTxBO(po);
                 String policyId = bo.getPolicyId();
-                log.info("[processInitTx]policyId:{}", policyId);
+                log.debug("[processInitTx]policyId:{}", policyId);
                 Policy policy = policyRepository.getPolicyById(policyId);
                 if (policy == null) {
                     log.error("[processInitTx]get policy is null by policyId:{}", policyId);
@@ -515,8 +518,13 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
 
     @Override
     public RsCoreTxVO queryCoreTx(String txId) {
+        if(StringUtils.isEmpty(txId)){
+            log.error("[queryCoreTx]txId is null");
+            return null;
+        }
         CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(txId, false);
         if (coreTransactionPO == null) {
+            log.error("[queryCoreTx]result is null txId:{}",txId);
             return null;
         }
         CoreTransactionProcessPO coreTransactionProcessPO = coreTxProcessRepository.queryByTxId(txId, false);
