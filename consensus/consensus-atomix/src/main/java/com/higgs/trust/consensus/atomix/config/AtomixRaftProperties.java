@@ -12,7 +12,7 @@ import java.util.Map;
 
     private String address;
 
-    private Map<String,String> cluster;
+    private Map<String, String> cluster;
 
     private String systemGroup = "sys-group";
 
@@ -20,7 +20,14 @@ import java.util.Map;
 
     private String dataPath = "/tmp/raft";
 
-    private int partitionSize = 4;
+    private int partitionSize = 6;
 
     private int numPartitions = 1;
+
+    private int maxEntrySize = 1024 * 1024;
+
+    /**
+     * the maximum segment size in bytes
+     */
+    private int segmentSize = 1024 * 1024 * 10;
 }

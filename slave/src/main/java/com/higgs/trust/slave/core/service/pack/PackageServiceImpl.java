@@ -18,10 +18,7 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.repository.PackageRepository;
-import com.higgs.trust.slave.core.repository.PendingTxRepository;
-import com.higgs.trust.slave.core.repository.RsNodeRepository;
-import com.higgs.trust.slave.core.repository.TransactionRepository;
+import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandler;
@@ -107,7 +104,6 @@ import java.util.stream.Collectors;
         for (Package pack : packs) {
             voList.add(PackageConvert.convertPackToPackVO(pack));
         }
-
 
         logReplicateHandler.replicatePackage(voList);
     }
@@ -209,10 +205,15 @@ import java.util.stream.Collectors;
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
-        if (CollectionUtils.isEmpty(txs)) {
+        if (txs == null) {
+            pack.setSignedTxList(Collections.emptyList());
+            txs = pack.getSignedTxList();
+        }
+        if (CollectionUtils.isEmpty(txs) && !isFailover) {
             log.error("[package.process]the transactions in the package is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
+        log.info("process package start, height:{},tx size:{}", pack.getHeight(), txs.size());
         Profiler.start("[PackageService.process.monitor]size:" + txs.size());
         try {
             //snapshot transactions should be init

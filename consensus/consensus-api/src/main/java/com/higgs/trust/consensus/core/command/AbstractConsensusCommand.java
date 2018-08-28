@@ -1,12 +1,11 @@
 package com.higgs.trust.consensus.core.command;
 
-import io.atomix.copycat.Command;
 import lombok.ToString;
 
 /**
  * @author cwy
  */
-@ToString public abstract class AbstractConsensusCommand<T> implements ConsensusCommand<T>, Command<T> {
+@ToString public abstract class AbstractConsensusCommand<T> implements ConsensusCommand<T> {
     private static final long serialVersionUID = 1L;
     private T value;
     private Long traceId;
@@ -25,10 +24,6 @@ import lombok.ToString;
 
     public void setTraceId(Long traceId) {
         this.traceId = traceId;
-    }
-
-    @Override public CompactionMode compaction() {
-        return CompactionMode.SNAPSHOT;
     }
 
 }

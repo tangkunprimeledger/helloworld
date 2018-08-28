@@ -45,10 +45,7 @@ import java.util.*;
  */
 @Service @Slf4j public class CaServiceImpl implements CaService {
 
-    public static final String PUB_KEY = "pubKeyForConsensus";
-    public static final String PRI_KEY = "priKey";
-
-    private static final String SUCCESS = "sucess";
+    private static final String SUCCESS = "success";
     private static final String FAIL = "fail";
 
     @Autowired private ConfigRepository configRepository;
@@ -60,7 +57,7 @@ import java.util.*;
 
     /**
      * @return
-     * @desc generate pubKeyForConsensus and PriKey ,send CA auth request to other TRUST node,then insert into db
+     * @desc generate pubKey and PriKey ,send CA auth request to other TRUST node,then insert into db
      */
     @Override public String authKeyPair(String user) {
         //check nodeName
@@ -163,7 +160,7 @@ import java.util.*;
         }
 
         log.info("[updateKeyPair] start to update CA pubKey/priKey, nodeName={}", user);
-        // generate temp pubKeyForConsensus and priKey, insert into db
+        // generate temp pubKey and priKey, insert into db
         CaVO caVO = generateTmpKeyPair(ca);
 
         // send CA update request
@@ -363,13 +360,13 @@ import java.util.*;
 
     private CaVO generateTmpKeyPair(Ca ca) {
 
-        // generate temp pubKeyForConsensus and priKey and insert into db
+        // generate temp pubKey and priKey and insert into db
         log.info("[generateTmpKeyPair] start to generate tempKeyPairs");
         Crypto crypto = CryptoUtil.getBizCrypto();
         KeyPair keyPair = crypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();
-        //store temp pubKeyForConsensus and priKey
+        //store temp pubKey and priKey
         Config config = new Config();
         config.setNodeName(ca.getUser());
         config.setTmpPubKey(pubKey);
@@ -426,7 +423,7 @@ import java.util.*;
         KeyPair keyPair = consensusCrypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();
-        //store pubKeyForConsensus and priKey
+        //store pubKey and priKey
         Config config = new Config();
         config.setNodeName(nodeState.getNodeName());
         config.setPubKey(pubKey);
@@ -450,7 +447,7 @@ import java.util.*;
         keyPair = bizCrypto.generateKeyPair();
         pubKey = keyPair.getPubKey();
         priKey = keyPair.getPriKey();
-        //store pubKeyForConsensus and priKey
+        //store pubKey and priKey
         config = new Config();
         config.setNodeName(nodeState.getNodeName());
         config.setPubKey(pubKey);

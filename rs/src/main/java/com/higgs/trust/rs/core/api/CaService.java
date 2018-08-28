@@ -16,7 +16,7 @@ public interface CaService {
     /**
      * @param user
      * @return
-     * @desc generate pubKeyForConsensus and PriKey ,then insert into db
+     * @desc generate pubKey and PriKey ,then insert into db
      */
     String authKeyPair(String user);
 
@@ -30,7 +30,7 @@ public interface CaService {
     /**
      * @param user
      * @return
-     * @desc update pubKeyForConsensus and priKey ,then insert into db
+     * @desc update pubKey and priKey ,then insert into db
      */
     RespData updateKeyPair(String user);
 
@@ -44,7 +44,7 @@ public interface CaService {
     /**
      * @param
      * @return
-     * @desc cancel pubKeyForConsensus and PriKey ,then update db
+     * @desc cancel pubKey and PriKey ,then update db
      */
     RespData cancelKeyPair(String user);
 

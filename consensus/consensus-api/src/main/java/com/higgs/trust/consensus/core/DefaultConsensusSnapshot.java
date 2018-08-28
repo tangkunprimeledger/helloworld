@@ -3,15 +3,13 @@
  */
 package com.higgs.trust.consensus.core;
 
-public class DefaultConsensusSnapshot implements ConsensusSnapshot {
+public class DefaultConsensusSnapshot implements IConsensusSnapshot {
 
-    @Override
-    public String getSnapshot() {
-        return "N/A";
+    @Override public byte[] getSnapshot() {
+        return "N/A".getBytes();
     }
 
-    @Override
-    public void installSnapshot(String snapshot) {
+    @Override public void installSnapshot(byte[] snapshot) {
         return;
     }
 }

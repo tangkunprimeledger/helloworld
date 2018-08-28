@@ -37,7 +37,7 @@ import java.util.List;
             txIdList.add(node);
             whereSql += ",?";
         }
-        whereSql = " WHERE `node_name` in (" + whereSql.substring(1) + ")";
+        whereSql = " WHERE `node_name` in (" + whereSql.substring(1) + ") and `usage` = 'biz'";
         sql += errorCodeConditionSql + errorMsgConditionSql + updateStatusSql + updateTimeSql + whereSql;
         List<Object> params = Lists.newLinkedList();
         params.addAll(txIdList);
@@ -63,7 +63,7 @@ import java.util.List;
             txIdList.add(node);
             whereSql += ",?";
         }
-        whereSql = " WHERE `node_name` in (" + whereSql.substring(1) + ")";
+        whereSql = " WHERE `node_name` in (" + whereSql.substring(1) + ") and `usage` = 'biz'";
         sql += updateStatusSql + updateTimeSql + whereSql;
         List<Object> params = Lists.newLinkedList();
         params.addAll(txIdList);

@@ -442,7 +442,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
                     Thread.sleep(SLEEP_FOR_SUBMIT_TO_MASTER);
 
                     if (null == AppContext.PENDING_TO_SUBMIT_QUEUE.peek()) {
-//                        log.debug("queue is empty");
+                        log.trace("queue is empty");
                         continue;
                     } else {
                         submit();

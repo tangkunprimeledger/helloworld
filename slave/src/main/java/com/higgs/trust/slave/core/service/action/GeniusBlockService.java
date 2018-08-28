@@ -109,7 +109,7 @@ import java.util.*;
             ca.setUser(((CaAction)caAction).getUser());
             ca.setVersion(VersionEnum.V1.getCode());
             ca.setUsage(((CaAction)caAction).getUsage());
-            log.info("[CaInitHandler.saveCa] nodeName={}, usage={}, pubKeyForConsensus={}, period={}", ca.getUser(), ca.getUsage(),
+            log.info("[CaInitHandler.saveCa] nodeName={}, usage={}, pubKey={}, period={}", ca.getUser(), ca.getUsage(),
                 ca.getPubKey(), ca.getPeriod());
             list.add(ca);
         });
