@@ -64,7 +64,6 @@ public class Server extends DefaultRecoverable {
 
     @Override public byte[] getSnapshot() {
         return this.snapshot.getSnapshot();
-
     }
 
     @Override public byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs, boolean fromConsensus) {
