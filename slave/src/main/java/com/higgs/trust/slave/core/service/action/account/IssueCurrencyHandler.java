@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
     @Override public void verifyParams(Action action) throws SlaveException {
         IssueCurrency bo = (IssueCurrency)action;
         if(StringUtils.isEmpty(bo.getCurrencyName()) || bo.getCurrencyName().length() > 24){
+            log.error("[verifyParams] currencyName is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }

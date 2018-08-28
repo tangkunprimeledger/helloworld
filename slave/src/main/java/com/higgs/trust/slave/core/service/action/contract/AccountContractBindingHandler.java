@@ -96,9 +96,11 @@ import java.util.Date;
     @Override public void verifyParams(Action action) throws SlaveException {
         AccountContractBindingAction bo = (AccountContractBindingAction) action;
         if(StringUtils.isEmpty(bo.getAccountNo()) || bo.getAccountNo().length() > 64){
+            log.error("[verifyParams] accountNo is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getContractAddress()) || bo.getContractAddress().length() != 64){
+            log.error("[verifyParams] ContractAddress is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }

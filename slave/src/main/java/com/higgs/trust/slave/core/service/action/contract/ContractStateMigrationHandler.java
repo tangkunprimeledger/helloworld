@@ -26,24 +26,22 @@ public class ContractStateMigrationHandler implements ActionHandler {
 
     private void checkAction(ContractStateMigrationAction action) {
         if (StringUtils.isEmpty(action.getFormInstanceAddress())) {
-            throw new RuntimeException("formInstanceAddress is null.");
+            log.error("[verifyParams] formInstanceAddress is null or illegal param:{}",action);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (StringUtils.isEmpty(action.getToInstanceAddress())) {
-            throw new RuntimeException("toInstanceAddress is null.");
+            log.error("[verifyParams] toInstanceAddress is null or illegal param:{}",action);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (action.getFormInstanceAddress().equals(action.getToInstanceAddress())) {
-            throw new RuntimeException("can't  migration state to self.");
+            log.error("[verifyParams] can't  migration state to self. param:{}",action);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }
 
     @Override public void verifyParams(Action action) throws SlaveException {
         ContractStateMigrationAction bo = (ContractStateMigrationAction) action;
-        if(StringUtils.isEmpty(bo.getFormInstanceAddress())){
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-        if(StringUtils.isEmpty(bo.getToInstanceAddress())){
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
+        checkAction(bo);
     }
 
     @Override

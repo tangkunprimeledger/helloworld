@@ -29,12 +29,15 @@ import java.math.BigDecimal;
     @Override public void verifyParams(Action action) throws SlaveException {
         AccountUnFreeze bo = (AccountUnFreeze)action;
         if(StringUtils.isEmpty(bo.getAccountNo())){
+            log.error("[verifyParams] accountNo is null param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getBizFlowNo()) || bo.getBizFlowNo().length() > 64){
+            log.error("[verifyParams] bizFlowNo is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(bo.getAmount() == null){
+            log.error("[verifyParams] amount is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_FREEZE_AMOUNT_ERROR);
         }
     }
