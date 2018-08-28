@@ -26,18 +26,23 @@ import org.springframework.stereotype.Component;
     @Override public void verifyParams(Action action) throws SlaveException {
         OpenAccount bo = (OpenAccount)action;
         if(StringUtils.isEmpty(bo.getAccountNo()) || bo.getAccountNo().length() > 64){
+            log.error("[verifyParams] accountNo is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getChainOwner()) || bo.getChainOwner().length() > 24){
+            log.error("[verifyParams] chainOwner is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getCurrency()) || bo.getCurrency().length() > 24){
+            log.error("[verifyParams] currency is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getDataOwner()) || bo.getDataOwner().length() > 24){
+            log.error("[verifyParams] dataOwner is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(bo.getFundDirection() == null){
+            log.error("[verifyParams] Funddirection is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }

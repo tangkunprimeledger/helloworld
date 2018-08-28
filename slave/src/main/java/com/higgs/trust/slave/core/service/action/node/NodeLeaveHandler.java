@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
     @Override public void verifyParams(Action action) throws SlaveException {
         NodeAction bo = (NodeAction)action;
         if(StringUtils.isEmpty(bo.getNodeName())){
+            log.error("[verifyParams] nodeName is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }

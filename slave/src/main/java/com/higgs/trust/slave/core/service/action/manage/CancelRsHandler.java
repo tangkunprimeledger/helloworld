@@ -34,6 +34,7 @@ public class CancelRsHandler implements ActionHandler {
     @Override public void verifyParams(Action action) throws SlaveException {
         CancelRS bo = (CancelRS)action;
         if(StringUtils.isEmpty(bo.getRsId())){
+            log.error("[verifyParams] rsId is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }

@@ -47,9 +47,7 @@ import org.springframework.util.StringUtils;
 
     @Override public void verifyParams(Action action) throws SlaveException {
         ContractInvokeAction invokeAction = (ContractInvokeAction) action;
-        if(StringUtils.isEmpty(invokeAction.getAddress())){
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
+        check(invokeAction);
     }
 
     @Override

@@ -32,9 +32,11 @@ import org.springframework.stereotype.Component;
     @Override public void verifyParams(Action action) throws SlaveException {
         RegisterRS bo = (RegisterRS)action;
         if(StringUtils.isEmpty(bo.getRsId()) || bo.getRsId().length() > 32){
+            log.error("[verifyParams] rsId is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getDesc()) || bo.getDesc().length() > 128){
+            log.error("[verifyParams] desc is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }

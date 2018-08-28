@@ -30,36 +30,46 @@ import java.util.List;
     @Override public void verifyParams(Action action) throws SlaveException {
         UTXOAction bo = (UTXOAction)action;
         if (StringUtils.isEmpty(bo.getStateClass()) || bo.getStateClass().length() > 255) {
+            log.error("[verifyParams] StateClass is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (StringUtils.isEmpty(bo.getContractAddress()) || bo.getContractAddress().length() > 64) {
+            log.error("[verifyParams] ContractAddress is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (bo.getUtxoActionType() == null) {
+            log.error("[verifyParams] UtxoActionType is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (CollectionUtils.isEmpty(bo.getInputList())) {
+            log.error("[verifyParams] InputList is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (CollectionUtils.isEmpty(bo.getOutputList())) {
+            log.error("[verifyParams] OutputList is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         for (TxIn in : bo.getInputList()) {
             if (StringUtils.isEmpty(in.getTxId()) || in.getTxId().length() > 64) {
+                log.error("[verifyParams] in.TxId is null or illegal param:{}",bo);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
             if (in.getActionIndex() == null || in.getIndex() == null) {
+                log.error("[verifyParams] in.Index|ActionIndex is null or illegal param:{}",action);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
         }
         for (TxOut out : bo.getOutputList()) {
             if (StringUtils.isEmpty(out.getIdentity()) || out.getIdentity().length() > 64) {
+                log.error("[verifyParams] out.Identity is null or illegal param:{}",bo);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
             if (out.getActionIndex() == null || out.getIndex() == null) {
+                log.error("[verifyParams] out.Index|ActionIndex is null or illegal param:{}",action);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
             if (out.getState() == null) {
+                log.error("[verifyParams] out.State is null or illegal param:{}",action);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
         }
