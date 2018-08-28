@@ -154,7 +154,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
 
     @Override
     public void submitTx(CoreTransaction coreTx) {
-        log.info("[submitTx]{}", coreTx);
+        log.debug("[submitTx]{}", coreTx);
         if (coreTx == null) {
             log.error("[submitTx] the tx is null");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
@@ -178,7 +178,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
         //check idempotent by txId
         CoreTransactionPO po = coreTxRepository.queryByTxId(coreTx.getTxId(), false);
         if (po != null) {
-            log.info("[submitTx]is idempotent txId:{}", coreTx.getTxId());
+            log.warn("[submitTx]is idempotent txId:{}", coreTx.getTxId());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
         //reset sendTime
@@ -195,10 +195,10 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                 coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
                 //save coreTx to db
                 coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
-                //send redis msg for slave
-                asyncProcessInitTx(coreTx.getTxId());
             }
         });
+        //send redis msg for slave
+        asyncProcessInitTx(coreTx.getTxId());
     }
 
     /**
