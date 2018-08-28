@@ -126,6 +126,12 @@ import java.util.stream.Collectors;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
+        //check block height
+        Long maxBlockHeight = blockService.getMaxHeight();
+        if(maxBlockHeight!=null && maxBlockHeight.compareTo(pack.getHeight()) >= 0){
+            log.warn("package.height:{} is already done",pack.getHeight());
+            return;
+        }
         Package packageBO = packageRepository.load(pack.getHeight());
         // check package hash
         if (null != packageBO) {
