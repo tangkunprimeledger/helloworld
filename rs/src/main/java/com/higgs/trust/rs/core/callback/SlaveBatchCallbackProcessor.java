@@ -150,8 +150,10 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
         for (RsCoreTxVO tx : allTxs) {
             try {
                 RespData respData = new RespData();
-                respData.setCode(tx.getErrorCode());
-                respData.setMsg(tx.getErrorMsg());
+                if (CoreTxResultEnum.SUCCESS != tx.getExecuteResult()) {
+                    respData.setCode(tx.getErrorCode());
+                    respData.setMsg(tx.getErrorMsg());
+                }
                 distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, redisMegGroupEnum);
             } catch (Throwable e) {
                 log.warn("[callbackCustom]sync notify rs resp data failed", e);

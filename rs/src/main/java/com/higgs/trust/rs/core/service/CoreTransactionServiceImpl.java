@@ -149,7 +149,6 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
             respData.setMsg("tx handle timeout");
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_WAIT_TIME_OUT_ERROR.getMonitorTarget(), 1);
         }
-
         return respData;
     }
 
