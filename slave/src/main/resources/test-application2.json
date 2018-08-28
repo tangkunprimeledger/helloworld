@@ -21,6 +21,11 @@
       "3": "127.0.0.1:8803"
     }
   },
+  "config": {
+    "term": {
+      "maxTermsSize": 8
+    }
+  },
   "higgs": {
     "trust": {
       "electionMaster": true,
