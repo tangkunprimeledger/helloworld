@@ -8,6 +8,7 @@ import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.dao.CoreTransactionProcessDao;
 import com.higgs.trust.rs.core.dao.CoreTxProcessJDBCDao;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
+import com.higgs.trust.rs.core.dao.rocks.CoreTxProcessRocksDao;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ public class CoreTxProcessRepository {
     @Autowired
     private CoreTransactionProcessDao coreTransactionProcessDao;
     @Autowired
+    private CoreTxProcessRocksDao coreTxProcessRocksDao;
+    @Autowired
     private CoreTxProcessJDBCDao coreTxProcessJDBCDao;
 
     /**
@@ -39,20 +42,20 @@ public class CoreTxProcessRepository {
      * @param statusEnum
      */
     public void add(String txId, CoreTxStatusEnum statusEnum) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return;
-        }
         try {
             Profiler.enter("[rs.core.addCoreTxProcess]");
             CoreTransactionProcessPO po = new CoreTransactionProcessPO();
             po.setTxId(txId);
             po.setStatus(statusEnum.getCode());
-            try {
-                coreTransactionProcessDao.add(po);
-            } catch (DuplicateKeyException e) {
-                log.error("[add.core_transaction_process]has idempotent error");
-                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
+            if (rsConfig.isUseMySQL()) {
+                try {
+                    coreTransactionProcessDao.add(po);
+                } catch (DuplicateKeyException e) {
+                    log.error("[add.core_transaction_process]has idempotent error");
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
+                }
+            } else {
+                coreTxProcessRocksDao.save(po);
             }
         } finally {
             Profiler.release();
@@ -67,11 +70,11 @@ public class CoreTxProcessRepository {
      * @return
      */
     public CoreTransactionProcessPO queryByTxId(String txId, boolean forUpdate) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return null;
+        if (rsConfig.isUseMySQL()) {
+            return coreTransactionProcessDao.queryByTxId(txId, forUpdate);
         }
-        return coreTransactionProcessDao.queryByTxId(txId, forUpdate);
+        //TODO for update
+        return coreTxProcessRocksDao.get(txId);
     }
 
     /**
@@ -83,11 +86,10 @@ public class CoreTxProcessRepository {
      * @return
      */
     public List<CoreTransactionProcessPO> queryByStatus(CoreTxStatusEnum coreTxStatusEnum, int row, int count) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return null;
+        if (rsConfig.isUseMySQL()) {
+            return coreTransactionProcessDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
         }
-        return coreTransactionProcessDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
+        return coreTxProcessRocksDao.queryByPrev(coreTxStatusEnum.getCode(), count);
     }
 
     /**
@@ -98,16 +100,16 @@ public class CoreTxProcessRepository {
      * @param to
      */
     public void updateStatus(String txId, CoreTxStatusEnum from, CoreTxStatusEnum to) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return;
-        }
         try {
             Profiler.enter("[rs.core.updateStatus]");
-            int r = coreTransactionProcessDao.updateStatus(txId, from.getCode(), to.getCode());
-            if (r != 1) {
-                log.error("[updateStatus]from {} to {} is fail txId:{}", from, to, txId);
-                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
+            if (rsConfig.isUseMySQL()) {
+                int r = coreTransactionProcessDao.updateStatus(txId, from.getCode(), to.getCode());
+                if (r != 1) {
+                    log.error("[updateStatus]from {} to {} is fail txId:{}", from, to, txId);
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
+                }
+            } else {
+                coreTxProcessRocksDao.updateStatus(txId, from.getCode(), to.getCode());
             }
         } finally {
             Profiler.release();
@@ -120,13 +122,10 @@ public class CoreTxProcessRepository {
      * @param txs
      */
     public void batchInsert(List<RsCoreTxVO> txs, CoreTxStatusEnum statusEnum) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return;
-        }
         try {
             Profiler.enter("[rs.core.batchInsert.coreTxProcess]");
             List<CoreTransactionProcessPO> coreTransactionProcessPOList = convert(txs, statusEnum);
+
             try {
                 coreTxProcessJDBCDao.batchInsert(coreTransactionProcessPOList);
             } catch (DuplicateKeyException e) {

@@ -108,14 +108,24 @@ public abstract class RocksBaseDao<K, V> {
         return list;
     }
 
-    public List<V> queryByPrev(String prev) {
+    public List<V> queryByPrev(String prev, int limit) {
         RocksIterator iterator = iterator();
         List<V> list = new ArrayList<>();
         byte[] prevByte = JSON.toJSONBytes(prev);
-        for (iterator.seekForPrev(prevByte); iterator.isValid(); iterator.next()){
-            list.add((V)JSON.parse(iterator.value()));
+        if (limit < 0) {
+            for (iterator.seekForPrev(prevByte); iterator.isValid(); iterator.next()) {
+                list.add((V)JSON.parse(iterator.value()));
+            }
+        } else {
+            for (iterator.seekForPrev(prevByte); iterator.isValid() && limit-- > 0; iterator.next()) {
+                list.add((V)JSON.parse(iterator.value()));
+            }
         }
         return list;
+    }
+
+    public List<V> queryByPrev(String prev) {
+        return queryByPrev(prev, -1);
     }
 
     public List<byte[]> keys() {
