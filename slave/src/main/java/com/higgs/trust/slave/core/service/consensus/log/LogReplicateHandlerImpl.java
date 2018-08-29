@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusClient;
