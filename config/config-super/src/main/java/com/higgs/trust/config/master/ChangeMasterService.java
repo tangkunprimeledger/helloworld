@@ -4,7 +4,7 @@
 package com.higgs.trust.config.master;
 
 import com.higgs.trust.common.enums.MonitorTargetEnum;
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.master.command.*;
 import com.higgs.trust.config.p2p.ClusterInfo;

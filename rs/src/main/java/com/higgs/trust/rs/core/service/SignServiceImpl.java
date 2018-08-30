@@ -1,8 +1,7 @@
 package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.crypto.Crypto;
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;

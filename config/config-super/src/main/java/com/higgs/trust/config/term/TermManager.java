@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -92,6 +93,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         log.info("start new term:{}", newTerm);
         terms.add(newTerm);
         nodeState.changeMaster(masterName);
+        partiallyTermsClean(8);
     }
 
     /**
@@ -107,6 +109,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
         log.info("start new term:{}", newTerm);
         terms.add(newTerm);
         nodeState.changeMaster(masterName);
+        partiallyTermsClean(8);
+    }
+
+    private void partiallyTermsClean(long limit){
+        if(terms.size()>= limit){
+            terms.stream().sorted(Comparator.comparingLong(TermInfo::getTerm));
+            for(int i = 0; i<limit/2; i++ ){
+                terms.remove(0);
+            }
+        }
     }
 
     /**

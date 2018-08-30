@@ -2,7 +2,7 @@ package com.higgs.trust.slave.core.managment;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
