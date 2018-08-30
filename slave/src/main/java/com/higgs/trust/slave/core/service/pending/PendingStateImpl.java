@@ -3,6 +3,8 @@ package com.higgs.trust.slave.core.service.pending;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
@@ -28,6 +30,8 @@ import java.util.List;
 
     @Autowired private MasterPackageCache packageCache;
 
+    @Autowired private TransactionValidator transactionValidator;
+
     /**
      * add pending transaction to db
      *
@@ -47,7 +51,19 @@ import java.util.List;
             TransactionVO transactionVO = new TransactionVO();
             String txId = signedTransaction.getCoreTx().getTxId();
             transactionVO.setTxId(txId);
-
+            //verify params for transaction
+            try {
+                Profiler.enter("[tx.verify]");
+                transactionValidator.verify(signedTransaction);
+            }catch (SlaveException e){
+                transactionVO.setErrCode(e.getCode().getCode());
+                transactionVO.setErrMsg(e.getCode().getDescription());
+                transactionVO.setRetry(false);
+                transactionVOList.add(transactionVO);
+                return;
+            }finally {
+                Profiler.release();
+            }
             //limit queue size
             if (packageCache.getPendingTxQueueSize() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
                 log.warn("pending transaction queue size is too large , txId={}", txId);
@@ -73,8 +89,6 @@ import java.util.List;
             } catch (Throwable e) {
                 log.error("transaction insert into memory exception. txId={}, ", txId, e);
             }
-            //TODO check args
-
         });
 
         Profiler.release();

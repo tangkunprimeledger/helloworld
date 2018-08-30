@@ -1,10 +1,10 @@
 package com.higgs.trust.slave.core.service.action.account;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
@@ -12,6 +12,7 @@ import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHan
 import com.higgs.trust.slave.model.bo.account.AccountFreeze;
 import com.higgs.trust.slave.model.bo.account.AccountFreezeRecord;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBindingAction;
@@ -32,6 +33,23 @@ import java.math.BigDecimal;
     @Autowired AccountSnapshotHandler accountSnapshotHandler;
     @Autowired AccountContractBindingHandler accountContractBindingHandler;
     @Autowired ContractRepository contractRepository;
+
+    @Override public void verifyParams(Action action) throws SlaveException {
+        AccountFreeze bo = (AccountFreeze)action;
+
+        if(StringUtils.isEmpty(bo.getAccountNo())){
+            log.error("[verifyParams] accountNo is null param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(bo.getBizFlowNo()) || bo.getBizFlowNo().length() > 64){
+            log.error("[verifyParams] bizFlowNo is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(bo.getAmount() == null){
+            log.error("[verifyParams] amount is null param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ACCOUNT_FREEZE_AMOUNT_ERROR);
+        }
+    }
 
     @Override public void process(ActionData actionData) {
         AccountFreeze bo = (AccountFreeze)actionData.getCurrentAction();

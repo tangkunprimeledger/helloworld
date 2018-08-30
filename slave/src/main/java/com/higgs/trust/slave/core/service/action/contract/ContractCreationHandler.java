@@ -1,15 +1,16 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
-import com.higgs.trust.slave.model.bo.contract.Contract;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
+import com.higgs.trust.slave.model.bo.contract.Contract;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
@@ -68,7 +69,12 @@ import java.util.Date;
 
     private ContractCreationAction getAndCheckAction(ActionData actionData) {
         checkPolicy(actionData);
-        ContractCreationAction creationAction = (ContractCreationAction) actionData.getCurrentAction();
+        verifyParams(actionData.getCurrentAction());
+        return (ContractCreationAction) actionData.getCurrentAction();
+    }
+
+    @Override public void verifyParams(Action action) throws SlaveException {
+        ContractCreationAction creationAction = (ContractCreationAction) action;
         if (creationAction == null) {
             log.error("[ContractCreation] convert action to ContractCreationAction is error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
@@ -87,8 +93,6 @@ import java.util.Date;
             log.error("[ContractCreation] language is error: {}", creationAction.getLanguage());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("language is error: %s", creationAction.getLanguage()));
         }
-
-        return creationAction;
     }
 
     @Override public void process(ActionData actionData) {

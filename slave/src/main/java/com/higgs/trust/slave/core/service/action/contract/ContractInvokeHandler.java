@@ -7,6 +7,7 @@ import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.contract.StandardExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,11 @@ import org.springframework.util.StringUtils;
         this.check(invokeAction);
         ExecuteContextData data = new StandardExecuteContextData().put("ActionData", actionData);
         smartContract.execute(invokeAction.getAddress(), data, invokeAction.getArgs());
+    }
+
+    @Override public void verifyParams(Action action) throws SlaveException {
+        ContractInvokeAction invokeAction = (ContractInvokeAction) action;
+        check(invokeAction);
     }
 
     @Override

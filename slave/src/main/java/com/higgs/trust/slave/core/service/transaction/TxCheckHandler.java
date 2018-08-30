@@ -1,7 +1,8 @@
 package com.higgs.trust.slave.core.service.transaction;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.config.crypto.CryptoUtil;
+import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -57,11 +58,13 @@ import java.util.*;
                 log.warn("rsPubKeyList is empty. default verify pass");
                 return true;
             }
-
+            Profiler.enter("[doVerifySign]");
             return verifyRsSign(ctx, signedTransaction.getSignatureList(), rsPubKeyList, decisionType);
         } catch (Throwable e) {
             log.error("verify signatures exception. ", e);
             return false;
+        }finally {
+            Profiler.release();
         }
     }
 
@@ -82,7 +85,7 @@ import java.util.*;
             rsIdList.forEach(rsId -> {
                 RsPubKey rsPubKey = new RsPubKey();
                 String pubKey = rsPubKeyMap.get(rsId);
-                if (!StringUtils.isBlank(pubKey)) {
+                if (!StringUtils.isEmpty(pubKey)) {
                     rsPubKey.setRsId(rsId);
                     rsPubKey.setPubKey(rsPubKeyMap.get(rsId));
                     rsPubKeyList.add(rsPubKey);

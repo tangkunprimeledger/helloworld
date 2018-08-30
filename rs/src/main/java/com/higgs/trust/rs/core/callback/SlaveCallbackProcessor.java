@@ -3,18 +3,19 @@ package com.higgs.trust.rs.core.callback;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
+import com.higgs.trust.rs.core.api.DistributeCallbackNotifyService;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
+import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
+import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
@@ -31,121 +32,108 @@ import java.util.List;
  * @description
  * @date 2018-05-13
  */
-@Component @Slf4j public class SlaveCallbackProcessor implements SlaveCallbackHandler, InitializingBean {
-    @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
-    @Autowired private CoreTxRepository coreTxRepository;
-    @Autowired private RsCoreCallbackProcessor rsCoreCallbackProcessor;
-    @Autowired private VoteRuleRepository voteRuleRepository;
-    @Autowired private HashBlockingMap<RespData> persistedResultMap;
-    @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
-    @Autowired private RsConfig rsConfig;
+@Component
+@Slf4j
+public class SlaveCallbackProcessor implements SlaveCallbackHandler, InitializingBean {
+    @Autowired
+    private SlaveCallbackRegistor slaveCallbackRegistor;
+    @Autowired
+    private CoreTxRepository coreTxRepository;
+    @Autowired
+    private CoreTxProcessRepository coreTxProcessRepository;
+    @Autowired
+    private RsCoreCallbackProcessor rsCoreCallbackProcessor;
+    @Autowired
+    private VoteRuleRepository voteRuleRepository;
+    @Autowired
+    private RsConfig rsConfig;
+    @Autowired
+    private DistributeCallbackNotifyService distributeCallbackNotifyService;
 
-    @Override public void afterPropertiesSet() throws Exception {
-        if(!rsConfig.isBatchCallback()) {
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (!rsConfig.isBatchCallback()) {
             slaveCallbackRegistor.registCallbackHandler(this);
         }
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
+    @Override
+    public void onPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos, BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
             log.debug("[onPersisted]only call self");
             return;
         }
+
         //not send by myself
         if (!sendBySelf(tx.getSender())) {
             //add tx,status=PERSISTED
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED,blockHeader.getHeight());
-            //save process result
-            coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
+            createCoreTx(tx, signInfos, respData, blockHeader.getHeight(), CoreTxStatusEnum.PERSISTED);
             //callback custom rs
-            rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
+            rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
             return;
         }
+
         //check core_tx record
-        if(!coreTxRepository.isExist(tx.getTxId())){
-            log.warn("onPersisted]call back self but core_tx is not exist txId:{}",tx.getTxId());
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.PERSISTED,blockHeader.getHeight());
-            //save process result
-            coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
+        if (!coreTxRepository.isExist(tx.getTxId())) {
+            log.warn("onPersisted]call back self but core_tx is not exist txId:{}", tx.getTxId());
+            createCoreTx(tx, signInfos, respData, blockHeader.getHeight(), CoreTxStatusEnum.PERSISTED);
             //callback custom rs
-            rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
+            rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
+            //同步通知
+            distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
             return;
         }
+
         //for self
-        //update status
-        coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
         //save process result
-        coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
+        coreTxRepository.saveExecuteResultAndHeight(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), blockHeader.getHeight());
+        //update status
+        coreTxProcessRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
         //callback custom rs
-        rsCoreCallbackProcessor.onPersisted(respData,blockHeader);
+        rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
         //同步通知
-        try {
-            persistedResultMap.put(tx.getTxId(), respData);
-        } catch (Throwable e) {
-            log.warn("sync notify rs resp data failed", e);
-        }
+        distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
     }
 
-    @Override public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
+    @Override
+    public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos, BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
             log.debug("[onClusterPersisted]only call self");
             return;
         }
-        CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(tx.getTxId(),false);
-        if(coreTransactionPO == null){
-            log.info("[onClusterPersisted]coreTransactionPO is null so add id,txId:{}",tx.getTxId());
-            //add tx,status=END
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END,blockHeader.getHeight());
-            //save process result
-            coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
-            //callback custom rs
-            rsCoreCallbackProcessor.onEnd(respData,blockHeader);
-            return;
-        }else {
-            //check status
-            if (CoreTxStatusEnum.formCode(coreTransactionPO.getStatus()) == CoreTxStatusEnum.END) {
-                log.error("[onClusterPersisted]tx status already END txId:{}", tx.getTxId());
-                return;
+
+        //update status to END
+        try {
+            coreTxProcessRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
+        } catch (RsCoreException e) {
+            //status is END no need to deal
+            if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
+                throw e;
             }
         }
-        //update status
-        coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
+
         //callback custom rs
-        rsCoreCallbackProcessor.onEnd(respData,blockHeader);
+        rsCoreCallbackProcessor.onEnd(respData, blockHeader);
         //同步通知
-        try {
-            clusterPersistedResultMap.put(tx.getTxId(), respData);
-        } catch (Throwable e) {
-            log.warn("sync notify rs resp data failed", e);
-        }
+        distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData, List<SignInfo> signInfos,BlockHeader blockHeader) {
+    @Override
+    public void onFailover(RespData<CoreTransaction> respData, List<SignInfo> signInfos, BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
             log.debug("[onFailover]only call self");
             return;
         }
-        //check exists
-        CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(tx.getTxId(),false);
-        if(coreTransactionPO == null){
-            //add tx,status=END
-            coreTxRepository.add(tx, signInfos, CoreTxStatusEnum.END,blockHeader.getHeight());
-        }else{
-            //update tx,status=END
-            CoreTxStatusEnum from = CoreTxStatusEnum.formCode(coreTransactionPO.getStatus());
-            coreTxRepository.updateStatus(tx.getTxId(), from, CoreTxStatusEnum.END);
-            log.info("[onFailover]updateStatus txId:{},from:{},to:{}",tx.getTxId(),from,CoreTxStatusEnum.END);
-        }
-        //save process result
-        coreTxRepository.saveExecuteResult(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL,respData.getRespCode(),respData.getMsg());
+        //create core_transaction
+        createCoreTx(tx, signInfos, respData, blockHeader.getHeight(), CoreTxStatusEnum.END);
         //callback custom rs
-        rsCoreCallbackProcessor.onFailover(respData,blockHeader);
+        rsCoreCallbackProcessor.onFailover(respData, blockHeader);
     }
 
     /**
@@ -182,5 +170,21 @@ import java.util.List;
             return true;
         }
         return false;
+    }
+
+    /**
+     * create coreTx and coreTxProcess
+     *
+     * @param tx
+     * @param signInfos
+     * @param respData
+     * @param blockHeight
+     */
+    private void createCoreTx(CoreTransaction tx, List<SignInfo> signInfos, RespData respData, Long blockHeight, CoreTxStatusEnum coreTxStatusEnum) {
+        coreTxRepository.add(tx, signInfos, respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), blockHeight);
+        // END coreTxProcess  will be delete by task, so no need to insert it.
+        if (coreTxStatusEnum != CoreTxStatusEnum.END) {
+            coreTxProcessRepository.add(tx.getTxId(), coreTxStatusEnum);
+        }
     }
 }

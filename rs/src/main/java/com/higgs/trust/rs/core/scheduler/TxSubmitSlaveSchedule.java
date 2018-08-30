@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 @ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
 @Service @Slf4j public class TxSubmitSlaveSchedule {
     @Autowired private CoreTransactionService coreTransactionService;
-    @Autowired private CoreTransactionDao coreTransactionDao;
 
     @Scheduled(fixedDelayString = "${rs.core.schedule.submitSlave:500}") public void exe() {
         coreTransactionService.submitToSlave();

@@ -28,11 +28,10 @@ public class CoreTxJDBCDaoTest extends IntegrateBaseTest {
             po.setBizModel("{}");
             po.setSendTime(new Date());
             po.setLockTime(new Date());
-//            po.setExecuteResult("SUCCESS");
-//            po.setErrorMsg("aa");
-//            po.setErrorCode("000");
+         //   po.setExecuteResult("SUCCESS");
+       //     po.setErrorMsg("aa");
+         //   po.setErrorCode("000");
             po.setActionDatas("[]");
-            po.setStatus("END");
             po.setBlockHeight(1L + i);
             po.setCreateTime(new Date());
             po.setSender("sender-" + i);
@@ -40,7 +39,7 @@ public class CoreTxJDBCDaoTest extends IntegrateBaseTest {
             po.setSignDatas("[]");
             list.add(po);
         }
-        coreTxJDBCDao.batchInsertTx(list);
+        coreTxJDBCDao.batchInsert(list);
     }
 
     @Test
@@ -57,7 +56,6 @@ public class CoreTxJDBCDaoTest extends IntegrateBaseTest {
             po.setErrorMsg(i % 2 == 0 ? "bb" : "cc");
             po.setErrorCode(i % 2 == 0 ? "111" : "xxx");
             po.setActionDatas("[]");
-            po.setStatus("END");
             po.setBlockHeight(1L + i);
             po.setCreateTime(new Date());
             po.setSender("sender-" + i);
@@ -65,6 +63,6 @@ public class CoreTxJDBCDaoTest extends IntegrateBaseTest {
             po.setSignDatas("[]");
             list.add(po);
         }
-        coreTxJDBCDao.batchUpdateStatus(list, CoreTxStatusEnum.END,CoreTxStatusEnum.NEED_VOTE,5L);
+        coreTxJDBCDao.batchUpdate(list,5L);
     }
 }
