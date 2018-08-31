@@ -9,7 +9,7 @@ import com.higgs.trust.config.master.command.ChangeMasterCommand;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
 import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.config.term.TermManager;
+import com.higgs.trust.config.snapshot.TermManager;
 import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusCommit;

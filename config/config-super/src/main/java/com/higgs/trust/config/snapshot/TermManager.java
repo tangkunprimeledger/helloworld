@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.config.term;
+package com.higgs.trust.config.snapshot;
 
 import com.higgs.trust.config.exception.ConfigError;
 import com.higgs.trust.config.exception.ConfigException;
@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -24,10 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j @Component public class TermManager {
 
-    /**
-     * has the master heartbeat
-     */
-    @Getter private AtomicBoolean masterHeartbeat = new AtomicBoolean(false);
+
 
     @Getter private List<TermInfo> terms = new CopyOnWriteArrayList<>();
 
@@ -174,9 +170,5 @@ import java.util.concurrent.atomic.AtomicBoolean;
         } else {
             throw new ConfigException(ConfigError.CONFIG_NODE_MASTER_NODE_INCORRECT);
         }
-    }
-
-    public void setMasterHeartbeat(boolean hasHeartbeat) {
-        masterHeartbeat.getAndSet(hasHeartbeat);
     }
 }

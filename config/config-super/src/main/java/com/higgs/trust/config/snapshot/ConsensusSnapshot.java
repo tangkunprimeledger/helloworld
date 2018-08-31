@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.config.term;
+package com.higgs.trust.config.snapshot;
 
 import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import io.atomix.utils.serializer.Namespace;

@@ -1,4 +1,4 @@
-package com.higgs.trust.config.term;
+package com.higgs.trust.config.snapshot;
 
 import lombok.Getter;
 import lombok.Setter;

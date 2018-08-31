@@ -9,7 +9,7 @@ import com.higgs.trust.config.master.ChangeMasterService;
 import com.higgs.trust.config.master.MasterHeartbeatService;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.config.node.command.TermCommand;
-import com.higgs.trust.config.term.TermManager;
+import com.higgs.trust.config.snapshot.TermManager;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CommandFilter;
