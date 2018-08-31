@@ -359,7 +359,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                 }
             });
         }
-        log.info("[processInitTx]is success");
+        log.debug("[processInitTx]is success");
     }
 
     @Override
