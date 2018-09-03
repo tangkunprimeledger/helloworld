@@ -54,8 +54,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
     @Autowired private NodeState nodeState;
 
-    @Autowired private TermManager termManager;
-
     @Autowired private INodeInfoService nodeInfoService;
 
     private ScheduledFuture heartbeatTimer;

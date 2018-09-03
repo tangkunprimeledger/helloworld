@@ -27,6 +27,8 @@ import org.springframework.stereotype.Component;
 
     @Autowired INodeInfoService nodeInfoService;
 
+    @Autowired ChangeMasterService changeMasterService;
+
     /**
      * handle the consensus result of validating block header
      *
@@ -36,7 +38,7 @@ import org.springframework.stereotype.Component;
         ChangeMasterVerifyCmd operation = commit.operation();
         ChangeMasterVerify verify = operation.get();
         boolean changeMaster = false;
-        if (!termManager.getMasterHeartbeat().get() && verify.getTerm() == nodeState.getCurrentTerm() + 1) {
+        if (!changeMasterService.getMasterHeartbeat().get() && verify.getTerm() == nodeState.getCurrentTerm() + 1) {
             Long maxHeight = nodeInfoService.packageHeight();
             maxHeight = maxHeight == null ? 0 : maxHeight;
             if (verify.getPackageHeight() >= maxHeight) {
