@@ -147,11 +147,14 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
      */
     private void callbackCustom(List<RsCoreTxVO> allTxs, BlockHeader blockHeader, RedisMegGroupEnum redisMegGroupEnum, boolean isOnPersisted) {
         if (isOnPersisted) {
+            Profiler.enter("[rc.core.onPersisted]");
             rsCoreBatchCallbackProcessor.onPersisted(allTxs, blockHeader);
+            Profiler.release();
         } else {
             rsCoreBatchCallbackProcessor.onEnd(allTxs, blockHeader);
         }
         //sync notify
+        Profiler.enter("[rc.core.foreach.notify]");
         for (RsCoreTxVO tx : allTxs) {
             try {
                 RespData respData = new RespData();
@@ -159,11 +162,15 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
                     respData.setCode(tx.getErrorCode());
                     respData.setMsg(tx.getErrorMsg());
                 }
+                Profiler.enter("[rc.core.notifySyncResult]");
                 distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, redisMegGroupEnum);
             } catch (Throwable e) {
                 log.warn("[callbackCustom]sync notify rs resp data failed", e);
+            }finally {
+                Profiler.release();
             }
         }
+        Profiler.release();
     }
 
     @Override
