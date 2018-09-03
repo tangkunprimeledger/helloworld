@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.callback;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -70,7 +71,9 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
 
     @Override
     public void onPersisted(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts, BlockHeader blockHeader) {
+        Profiler.enter("[rc.core.parseTxs]");
         Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
+        Profiler.release();
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         List<RsCoreTxVO> selfTxs = map.get(KEY_SELF);
         List<RsCoreTxVO> otherTxs = map.get(KEY_OTHER);
@@ -104,7 +107,9 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
         }
         //callback custom rs
         if (needCallbackCustom) {
+            Profiler.enter("[rc.core.callbackCustom]");
             callbackCustom(allTxs, blockHeader, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY, true);
+            Profiler.release();
         }
     }
 
