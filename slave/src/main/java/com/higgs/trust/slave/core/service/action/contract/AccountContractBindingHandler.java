@@ -10,6 +10,7 @@ import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.snapshot.agent.AccountContractBindingSnapshotAgent;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBindingAction;
@@ -90,6 +91,18 @@ import java.util.Date;
 
         binding.setHash(hash);
         return binding;
+    }
+
+    @Override public void verifyParams(Action action) throws SlaveException {
+        AccountContractBindingAction bo = (AccountContractBindingAction) action;
+        if(StringUtils.isEmpty(bo.getAccountNo()) || bo.getAccountNo().length() > 64){
+            log.error("[verifyParams] accountNo is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(bo.getContractAddress()) || bo.getContractAddress().length() != 64){
+            log.error("[verifyParams] ContractAddress is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
     }
 
     @Override public void process(ActionData actionData) {

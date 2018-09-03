@@ -16,26 +16,12 @@ public interface CoreTransactionDao extends BaseDao<CoreTransactionPO> {
      * @return
      */
     CoreTransactionPO queryByTxId(@Param("txId")String txId,@Param("forUpdate")boolean forUpdate);
-
     /**
-     * query by status rowNum and count
-     *
-     * @param status
-     * @param rowNum
-     * @param count
+     * query by txs
+     * @param txIdList
      * @return
      */
-    List<CoreTransactionPO> queryByStatus(@Param("status")String status,@Param("rowNum")int rowNum,@Param("count")int count);
-
-    /**
-     * update status by form->to
-     * @param txId
-     * @param from
-     * @param to
-     * @return
-     */
-    int updateStatus(@Param("txId")String txId,@Param("from")String from,@Param("to")String to);
-
+    List<CoreTransactionPO> queryByTxIds(List<String> txIdList);
     /**
      * save tx execute reslult
      *
@@ -45,7 +31,7 @@ public interface CoreTransactionDao extends BaseDao<CoreTransactionPO> {
      * @param errorMsg
      * @return
      */
-    int saveExecuteResult(@Param("txId")String txId,@Param("executResult")String executResult,@Param("errorCode")String errorCode,@Param("errorMsg")String errorMsg);
+    int saveExecuteResultAndHeight(@Param("txId")String txId,@Param("executResult")String executResult,@Param("errorCode")String errorCode, @Param("errorMsg")String errorMsg, @Param("blockHeight")Long blockHeight);
 
     /**
      * update sign datas

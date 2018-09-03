@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -28,9 +29,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
      */
     @Getter private AtomicBoolean masterHeartbeat = new AtomicBoolean(false);
 
-    @Getter private List<TermInfo> terms = new ArrayList<>();
+    @Getter private List<TermInfo> terms = new CopyOnWriteArrayList<>();
 
     @Autowired private NodeState nodeState;
+
+    @Autowired private TermProperties properties;
 
     /**
      * reset the terms of node, it's called by consensus level, will change the master name and current term
@@ -93,7 +96,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         log.info("start new term:{}", newTerm);
         terms.add(newTerm);
         nodeState.changeMaster(masterName);
-        partiallyTermsClean(8);
+        partiallyTermsClean();
     }
 
     /**
@@ -109,15 +112,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
         log.info("start new term:{}", newTerm);
         terms.add(newTerm);
         nodeState.changeMaster(masterName);
-        partiallyTermsClean(8);
+        partiallyTermsClean();
     }
 
-    private void partiallyTermsClean(long limit){
-        if(terms.size()>= limit){
+    private synchronized void partiallyTermsClean(){
+        int maxSize = properties.getMaxTermsSize();
+        if(terms.size()>= maxSize){
+            log.info("term list size reach max size:{}, do clean",maxSize);
             terms.stream().sorted(Comparator.comparingLong(TermInfo::getTerm));
-            for(int i = 0; i<limit/2; i++ ){
-                terms.remove(0);
-            }
+            terms.removeAll(terms.subList(0,maxSize/2));
         }
     }
 

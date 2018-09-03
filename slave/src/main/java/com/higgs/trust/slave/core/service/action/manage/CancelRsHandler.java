@@ -7,6 +7,7 @@ import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.RsSnapshotHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.manage.CancelRS;
@@ -29,6 +30,14 @@ public class CancelRsHandler implements ActionHandler {
     @Autowired private RsSnapshotHandler rsSnapshotHandler;
 
     @Autowired private CaRepository caRepository;
+
+    @Override public void verifyParams(Action action) throws SlaveException {
+        CancelRS bo = (CancelRS)action;
+        if(StringUtils.isEmpty(bo.getRsId())){
+            log.error("[verifyParams] rsId is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+    }
 
     @Override public void process(ActionData actionData) {
         CancelRS bo = (CancelRS)actionData.getCurrentAction();

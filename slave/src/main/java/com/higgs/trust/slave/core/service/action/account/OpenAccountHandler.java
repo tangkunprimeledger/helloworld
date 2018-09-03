@@ -8,8 +8,10 @@ import com.higgs.trust.slave.core.service.datahandler.account.AccountSnapshotHan
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
 import com.higgs.trust.slave.model.bo.account.OpenAccount;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,30 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j @Component public class OpenAccountHandler implements ActionHandler {
     @Autowired AccountSnapshotHandler accountSnapshotHandler;
+
+    @Override public void verifyParams(Action action) throws SlaveException {
+        OpenAccount bo = (OpenAccount)action;
+        if(StringUtils.isEmpty(bo.getAccountNo()) || bo.getAccountNo().length() > 64){
+            log.error("[verifyParams] accountNo is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(bo.getChainOwner()) || bo.getChainOwner().length() > 24){
+            log.error("[verifyParams] chainOwner is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(bo.getCurrency()) || bo.getCurrency().length() > 24){
+            log.error("[verifyParams] currency is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(bo.getDataOwner()) || bo.getDataOwner().length() > 24){
+            log.error("[verifyParams] dataOwner is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(bo.getFundDirection() == null){
+            log.error("[verifyParams] Funddirection is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+    }
 
     @Override public void process(ActionData actionData){
         log.debug("[openAccount.process] is start ");

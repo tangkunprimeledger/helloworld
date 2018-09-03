@@ -87,7 +87,7 @@
          from rs_node rs
         INNER JOIN
         ca c ON rs.rs_id = c.user
-        where rs.status='COMMON'
+        where rs.status='COMMON' AND c.usage='biz'
     </select>
 
     <insert id="batchInsert" parameterType="java.util.List">
