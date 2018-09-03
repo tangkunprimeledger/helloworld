@@ -12,6 +12,8 @@ public class Constant {
 
     public static final String SPLIT_SLASH = "_";
 
+    public static final String PACK_STATUS_HEIGHT_FORMAT="0000000000000000";
+
     /**
      * 监控后缀
      */

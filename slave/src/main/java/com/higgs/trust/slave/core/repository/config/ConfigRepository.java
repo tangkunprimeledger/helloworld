@@ -4,6 +4,7 @@ import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.mysql.config.ConfigDao;
+import com.higgs.trust.slave.dao.mysql.config.ConfigJDBCDao;
 import com.higgs.trust.slave.dao.po.config.ConfigPO;
 import com.higgs.trust.slave.dao.rocks.config.ConfigRocksDao;
 import com.higgs.trust.slave.model.bo.config.Config;
@@ -28,6 +29,7 @@ import java.util.List;
     @Autowired private ConfigDao configDao;
     @Autowired private ConfigRocksDao configRocksDao;
     @Autowired private InitConfig initConfig;
+    @Autowired private ConfigJDBCDao configJDBCDao;
 
     /**
      * @param config
@@ -140,5 +142,21 @@ import java.util.List;
             return configPOList.size() == configDao.batchUpdate(configPOList);
         }
         return configPOList.size() == configRocksDao.batchInsert(configPOList);
+    }
+
+    public void batchCancel(List<String> nodes) {
+        if (initConfig.isUseMySQL()) {
+            configJDBCDao.batchCancel(nodes);
+        } else {
+            configRocksDao.batchCancel(nodes);
+        }
+    }
+
+    public void batchEnable(List<String> nodes) {
+        if (initConfig.isUseMySQL()) {
+            configJDBCDao.batchEnable(nodes);
+        } else {
+            configRocksDao.batchEnable(nodes);
+        }
     }
 }

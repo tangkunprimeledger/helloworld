@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.core.repository.ca;
 
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -8,11 +10,13 @@ import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.dao.rocks.ca.CaRocksDao;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -66,7 +70,7 @@ import java.util.List;
         if (initConfig.isUseMySQL()) {
             caPO = caDao.getCaForBiz(user);
         } else {
-            caPO = caRocksDao.get(user + "_" + "biz");
+            caPO = caRocksDao.get(user + Constant.SPLIT_SLASH + "biz");
         }
 
         if (null == caPO) {
@@ -75,6 +79,21 @@ import java.util.List;
         Ca newCa = new Ca();
         BeanUtils.copyProperties(caPO, newCa);
         return newCa;
+    }
+
+    public List<Ca> getCaListByUsers(List<String> users, String usage) {
+        if (CollectionUtils.isEmpty(users)) {
+            return null;
+        }
+
+        List<String> key = new ArrayList<>(users.size());
+        for (String user : users) {
+            key.add(user + Constant.SPLIT_SLASH + usage);
+        }
+
+        List<CaPO> list = caRocksDao.getCaListByUsers(users);
+        return BeanConvertor.convertList(list, Ca.class);
+
     }
 
     public List<Ca> getAllCa() {
@@ -133,7 +152,7 @@ import java.util.List;
         if (initConfig.isUseMySQL()) {
             caPO = caDao.getCaForConsensus(user);
         } else {
-            caPO = caRocksDao.get(user + "_" + "consensus");
+            caPO = caRocksDao.get(user + Constant.SPLIT_SLASH + "consensus");
         }
 
         if (caPO == null){

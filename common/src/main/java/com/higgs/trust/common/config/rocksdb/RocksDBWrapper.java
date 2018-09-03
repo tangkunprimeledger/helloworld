@@ -3,7 +3,7 @@ package com.higgs.trust.common.config.rocksdb;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.RocksDB;
+import org.rocksdb.TransactionDB;
 
 import java.util.Map;
 
@@ -13,6 +13,6 @@ import java.util.Map;
  */
 
 @Data @AllArgsConstructor public class RocksDBWrapper {
-    private RocksDB rocksDB;
+    private TransactionDB rocksDB;
     private Map<String, ColumnFamilyHandle> columnFamilyHandleMap;
 }

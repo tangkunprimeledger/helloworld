@@ -18,7 +18,7 @@ import java.util.Date;
  */
 @Service
 @Slf4j
-public class ContractStateRocksDao extends RocksBaseDao<String, ContractStatePO> {
+public class ContractStateRocksDao extends RocksBaseDao<ContractStatePO> {
     @Override protected String getColumnFamilyName() {
         return "contractState";
     }

@@ -5,11 +5,11 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.SlaveBatchCallbackHandler;
@@ -25,7 +25,6 @@ import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
-import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandler;
@@ -43,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -103,7 +103,7 @@ import java.util.stream.Collectors;
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
         //set status = INIT
-        pack.setStatus(PackageStatusEnum.INIT);
+        pack.setStatus(PackageStatusEnum.RECEIVED);
         return pack;
     }
 
@@ -159,12 +159,16 @@ import java.util.stream.Collectors;
                 }
             });
         } else {
-            ThreadLocalUtils.putWriteBatch(new WriteBatch());
-            packageRepository.save(pack);
-            pendingTxRepository.batchInsertToRocks(pack.getSignedTxList(), pack.getHeight());
-            //TODO rocks db commit
+            try {
+                ThreadLocalUtils.putWriteBatch(new WriteBatch());
 
-            ThreadLocalUtils.clearWriteBatch();
+                packageRepository.save(pack);
+                pendingTxRepository.batchInsertToRocks(pack.getSignedTxList(), pack.getHeight());
+
+                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+            } finally {
+                ThreadLocalUtils.clearWriteBatch();
+            }
         }
     }
 
@@ -407,9 +411,25 @@ import java.util.stream.Collectors;
                 List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
                 Profiler.release();
 
-                txRequired.execute(new TransactionCallbackWithoutResult() {
-                    @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                        //call back business
+                if (initConfig.isUseMySQL()) {
+                    txRequired.execute(new TransactionCallbackWithoutResult() {
+                        @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                            //call back business
+                            Profiler.enter("[callbackRSForClusterPersisted]");
+                            callbackRS(txs, txReceipts, true, false, blockHeader);
+                            Profiler.release();
+
+                            //update package status ---- PERSISTED
+                            Profiler.enter("[updatePackStatus]");
+                            packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
+                                PackageStatusEnum.PERSISTED);
+                            Profiler.release();
+                        }
+                    });
+                } else {
+                    try {
+                        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+
                         Profiler.enter("[callbackRSForClusterPersisted]");
                         callbackRS(txs, txReceipts, true, false, blockHeader);
                         Profiler.release();
@@ -419,8 +439,12 @@ import java.util.stream.Collectors;
                         packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
                             PackageStatusEnum.PERSISTED);
                         Profiler.release();
+
+                        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                    } finally {
+                        ThreadLocalUtils.clearWriteBatch();
                     }
-                });
+                }
             } catch (SlaveException e) {
                 throw e;
             } catch (Throwable e) {

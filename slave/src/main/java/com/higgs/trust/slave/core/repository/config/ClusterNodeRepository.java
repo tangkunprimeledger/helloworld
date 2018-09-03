@@ -40,7 +40,7 @@ import java.util.List;
         if (initConfig.isUseMySQL()) {
             clusterNodeDao.insertClusterNode(clusterNodePO);
         } else {
-            clusterNodeRocksDao.save(clusterNodePO);
+            clusterNodeRocksDao.saveWithTransaction(clusterNodePO);
         }
     }
 

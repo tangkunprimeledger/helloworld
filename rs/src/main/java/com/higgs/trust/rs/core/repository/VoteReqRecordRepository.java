@@ -46,7 +46,7 @@ import java.util.Date;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
             }
         } else {
-            voteRequestRecordRocksDao.save(voteRequestRecordPO);
+            voteRequestRecordRocksDao.saveWithTransaction(voteRequestRecordPO);
         }
     }
 

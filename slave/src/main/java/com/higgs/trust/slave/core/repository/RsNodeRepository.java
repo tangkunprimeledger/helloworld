@@ -1,15 +1,19 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.higgs.trust.slave.common.config.InitConfig;
+import com.higgs.trust.slave.core.repository.ca.CaRepository;
+import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.dao.mysql.manage.RsNodeDao;
 import com.higgs.trust.slave.dao.po.manage.RsNodePO;
 import com.higgs.trust.slave.dao.rocks.manage.RsNodeRocksDao;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +33,8 @@ import java.util.List;
     @Autowired private RsNodeDao rsNodeDao;
 
     @Autowired private RsNodeRocksDao rsNodeRocksDao;
+
+    @Autowired private CaRepository caRepository;
 
     @Autowired private InitConfig initConfig;
     /**
@@ -96,8 +102,38 @@ import java.util.List;
     }
 
     public List<RsPubKey> queryRsAndPubKey() {
-        //TODO rocks db
-        return rsNodeDao.queryRsAndPubKey();
+        if (initConfig.isUseMySQL()) {
+            return rsNodeDao.queryRsAndPubKey();
+        }
+        return queryRsAndPubKeyFromRocks();
+    }
+
+    private List<RsPubKey> queryRsAndPubKeyFromRocks() {
+        List<RsNodePO> rsNodePOList = rsNodeRocksDao.queryAll();
+        if (CollectionUtils.isEmpty(rsNodePOList)) {
+            return null;
+        }
+
+        List<String> rsIds = new ArrayList<>();
+        for (RsNodePO po : rsNodePOList) {
+            if (StringUtils.equals(RsNodeStatusEnum.COMMON.getCode(), po.getStatus())) {
+                rsIds.add(po.getRsId());
+            }
+        }
+
+        List<Ca> list = caRepository.getCaListByUsers(rsIds, "biz");
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+
+        List<RsPubKey> rsPubKeys = new ArrayList<>();
+        for (Ca ca : list) {
+            RsPubKey rsPubKey = new RsPubKey();
+            rsPubKey.setPubKey(ca.getPubKey());
+            rsPubKey.setRsId(ca.getUser());
+            rsPubKeys.add(rsPubKey);
+        }
+        return rsPubKeys;
     }
 
     public RsNode convertActionToRsNode(RegisterRS registerRS) {

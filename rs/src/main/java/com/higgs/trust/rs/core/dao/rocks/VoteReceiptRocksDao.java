@@ -6,8 +6,6 @@ import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.dao.po.VoteReceiptPO;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.rocksdb.WriteBatch;
@@ -21,7 +19,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class VoteReceiptRocksDao extends RocksBaseDao<String, VoteReceiptPO> {
+public class VoteReceiptRocksDao extends RocksBaseDao<VoteReceiptPO> {
     @Override protected String getColumnFamilyName() {
         return "voteReceipt";
     }
@@ -55,6 +53,6 @@ public class VoteReceiptRocksDao extends RocksBaseDao<String, VoteReceiptPO> {
     }
 
     public List<VoteReceiptPO> queryByTxId(String txId) {
-        return queryByPrev(txId);
+        return queryByPrefix(txId);
     }
 }

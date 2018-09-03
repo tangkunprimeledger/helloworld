@@ -40,15 +40,15 @@ import java.util.List;
         voteRulePO.setPolicyId(voteRule.getPolicyId());
         voteRulePO.setVotePattern(voteRule.getVotePattern().getCode());
         voteRulePO.setCallbackType(voteRule.getCallbackType().getCode());
-        try {
-            if (rsConfig.isUseMySQL()) {
+        if (rsConfig.isUseMySQL()) {
+            try {
                 voteRuleDao.add(voteRulePO);
-            } else {
-                voteRuleRocksDao.add(voteRulePO);
+            } catch (DuplicateKeyException e) {
+                log.error("[add.vote-rule] is idempotent by policyId:{}", voteRule.getPolicyId());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
             }
-        } catch (DuplicateKeyException e) {
-            log.error("[add.vote-rule] is idempotent by policyId:{}", voteRule.getPolicyId());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        } else {
+            voteRuleRocksDao.saveWithTransaction(voteRulePO);
         }
     }
 

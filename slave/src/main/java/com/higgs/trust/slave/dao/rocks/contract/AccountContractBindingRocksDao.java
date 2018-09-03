@@ -17,7 +17,7 @@ import java.util.Collection;
  */
 @Service
 @Slf4j
-public class AccountContractBindingRocksDao extends RocksBaseDao<String, AccountContractBindingPO>{
+public class AccountContractBindingRocksDao extends RocksBaseDao<AccountContractBindingPO>{
     @Override protected String getColumnFamilyName() {
         return "accountContractBinding";
     }

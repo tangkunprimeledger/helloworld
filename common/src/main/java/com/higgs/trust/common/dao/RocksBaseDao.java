@@ -6,7 +6,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.rocksdb.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.SerializationUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -22,17 +21,18 @@ import java.util.Map;
  * @author zhao xiaogang
  * @create 2018-05-21
  */
-public abstract class RocksBaseDao<K, V> {
+public abstract class RocksBaseDao<V> {
 
     @Autowired private RocksDBWrapper rocksDBWrapper;
 
     /**
      * get column family name
+     *
      * @return
      */
     protected abstract String getColumnFamilyName();
 
-    public V get(K k) {
+    public V get(String k) {
         try {
             ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
 
@@ -47,7 +47,13 @@ public abstract class RocksBaseDao<K, V> {
         return null;
     }
 
-    public void put(K k, V v) {
+    public boolean keyMayExist(String k) {
+        ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
+        byte[] key = JSON.toJSONBytes(k);
+        return rocksDBWrapper.getRocksDB().keyMayExist(columnFamilyHandle, key, new StringBuilder());
+    }
+
+    public void put(String k, V v) {
         try {
             ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
 
@@ -59,16 +65,20 @@ public abstract class RocksBaseDao<K, V> {
         }
     }
 
-    public void batchPut(WriteBatch batch, K k, V v) {
+    public void batchPut(AbstractWriteBatch batch, String k, V v) {
         ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
 
         byte[] key = JSON.toJSONBytes(k);
         byte[] value = JSON.toJSONBytes(v);
 
-        batch.put(columnFamilyHandle, key, value);
+        try {
+            batch.put(columnFamilyHandle, key, value);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void delete(K k){
+    public void delete(String k) {
         try {
             ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
 
@@ -79,11 +89,15 @@ public abstract class RocksBaseDao<K, V> {
         }
     }
 
-    public void batchDelete(WriteBatch batch, K k) {
+    public void batchDelete(WriteBatch batch, String k) {
         ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
 
         byte[] key = JSON.toJSONBytes(k);
-        batch.remove(columnFamilyHandle, key);
+        try {
+            batch.remove(columnFamilyHandle, key);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void batchCommit(WriteOptions options, WriteBatch writeBatch) {
@@ -99,6 +113,11 @@ public abstract class RocksBaseDao<K, V> {
         return rocksDBWrapper.getRocksDB().newIterator(columnFamilyHandle);
     }
 
+    public RocksIterator iterator(ReadOptions ro) {
+        ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
+        return rocksDBWrapper.getRocksDB().newIterator(columnFamilyHandle, ro);
+    }
+
     public List<V> queryAll() {
         RocksIterator iterator = iterator();
         List<V> list = new ArrayList<>();
@@ -108,33 +127,118 @@ public abstract class RocksBaseDao<K, V> {
         return list;
     }
 
-    public List<V> queryByPrev(String prev, int limit) {
-        RocksIterator iterator = iterator();
+    public List<V> queryByPrefix(String prefix, int limit) {
+        ReadOptions readOptions = new ReadOptions();
+        readOptions.setPrefixSameAsStart(true);
+        RocksIterator iterator = iterator(readOptions);
         List<V> list = new ArrayList<>();
-        byte[] prevByte = JSON.toJSONBytes(prev);
+        byte[] prefixByte = JSON.toJSONBytes(prefix);
         if (limit < 0) {
-            for (iterator.seekForPrev(prevByte); iterator.isValid(); iterator.next()) {
+            for (iterator.seekForPrev(prefixByte); iterator.isValid() && isPrefix(prefix, iterator.key()); iterator.next()) {
                 list.add((V)JSON.parse(iterator.value()));
             }
         } else {
-            for (iterator.seekForPrev(prevByte); iterator.isValid() && limit-- > 0; iterator.next()) {
+            for (iterator.seekForPrev(prefixByte); iterator.isValid() && limit-- > 0 && isPrefix(prefix, iterator.key()); iterator.next()) {
                 list.add((V)JSON.parse(iterator.value()));
             }
         }
         return list;
     }
 
-    public List<V> queryByPrev(String prev) {
-        return queryByPrev(prev, -1);
+    private boolean isPrefix(String prefix, byte[] key) {
+        if (StringUtils.isEmpty(prefix) || ArrayUtils.isEmpty(key)) {
+            return false;
+        }
+
+        String keyStr = (String)JSON.parse(key);
+        if (StringUtils.isEmpty(keyStr)) {
+            return false;
+        }
+
+        return keyStr.startsWith(prefix);
     }
 
-    public List<byte[]> keys() {
+    public List<String> queryKeysByPrefix(String prefix) {
+        RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true).setTotalOrderSeek(true));
+        List<String> list = new ArrayList<>();
+        byte[] prefixByte = JSON.toJSONBytes(prefix);
+        for (iterator.seek(prefixByte); iterator.isValid() && isPrefix(prefix, iterator.key()); iterator.next()) {
+            list.add((String)JSON.parse(iterator.key()));
+        }
+        return list;
+    }
+
+    public V queryForPrev(String prefix) {
+        if (StringUtils.isEmpty(prefix)) {
+            return null;
+        }
+
+        RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
+        byte[] prefixByte = JSON.toJSONBytes(prefix);
+        for (iterator.seekForPrev(prefixByte); iterator.isValid();) {
+            return (V)JSON.parse(iterator.key());
+        }
+
+        return null;
+    }
+
+    public String queryLastKey() {
+        RocksIterator iterator = iterator();
+        for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
+            return (String)JSON.parse(iterator.key());
+        }
+        return null;
+    }
+
+    public V queryLastValue() {
+        RocksIterator iterator = iterator();
+        for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
+            return (V)JSON.parse(iterator.value());
+        }
+        return null;
+    }
+
+    public String queryFirstKey(String prefix) {
+        RocksIterator iterator = iterator();
+        if (StringUtils.isEmpty(prefix)) {
+            for (iterator.seekToFirst(); iterator.isValid(); iterator.next()) {
+                return (String)JSON.parse(iterator.key());
+            }
+        } else {
+            byte[] prefixByte = JSON.toJSONBytes(prefix);
+            for (iterator.seek(prefixByte); iterator.isValid();) {
+                if (isPrefix(prefix, iterator.key())) {
+                    return (String)JSON.parse(iterator.key());
+                }
+            }
+        }
+        return null;
+    }
+
+    public V queryFirstValueByPrefix(String prefix) {
+        if (StringUtils.isEmpty(prefix)) {
+            return null;
+        }
+
+        byte[] prefixByte = JSON.toJSONBytes(prefix);
+        RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
+        for (iterator.seek(prefixByte); iterator.isValid(); iterator.next()) {
+            return (V)JSON.parse(iterator.value());
+        }
+        return null;
+    }
+
+    public List<V> queryByPrefix(String prefix) {
+        return queryByPrefix(prefix, -1);
+    }
+
+    public List<String> keys() {
         ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
 
-        final List<byte[]> keys = new ArrayList<>();
+        final List<String> keys = new ArrayList<>();
         final RocksIterator iterator = rocksDBWrapper.getRocksDB().newIterator(columnFamilyHandle);
-        for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
-            keys.add(iterator.key());
+        for (iterator.seekToFirst(); iterator.isValid(); iterator.next()) {
+            keys.add((String)JSON.parse(iterator.key()));
         }
 
         return keys;
@@ -142,17 +246,18 @@ public abstract class RocksBaseDao<K, V> {
 
     /**
      * Returns a map of keys for which values were found in DB
+     *
      * @param keys
      * @return
      * @throws RocksDBException
      */
-    public Map<K, V> multiGet(List<K> keys) {
+    public Map<String, V> multiGet(List<String> keys) {
         if (CollectionUtils.isEmpty(keys)) {
             return null;
         }
         List<byte[]> keysBytes = new ArrayList<>();
-        for (K k : keys) {
-            keysBytes.add(SerializationUtils.serialize(k));
+        for (String k : keys) {
+            keysBytes.add(JSON.toJSONBytes(k));
         }
         try {
             List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>(keysBytes.size());
@@ -163,11 +268,11 @@ public abstract class RocksBaseDao<K, V> {
             Map<byte[], byte[]> map = rocksDBWrapper.getRocksDB().multiGet(columnFamilyHandles, keysBytes);
 
             if (!CollectionUtils.isEmpty(map)) {
-                Map<K, V> resultMap = new HashMap<>(map.size());
+                Map<String, V> resultMap = new HashMap<>(map.size());
                 for (byte[] key : map.keySet()) {
                     byte[] value = map.get(key);
                     if (!ArrayUtils.isEmpty(value)) {
-                        resultMap.put((K)JSON.parse(key), (V)JSON.parse(value));
+                        resultMap.put((String)JSON.parse(key), (V)JSON.parse(value));
                     }
                 }
                 return resultMap;
@@ -176,6 +281,18 @@ public abstract class RocksBaseDao<K, V> {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    public void deleteRange(String beginKey, String endKey) {
+        ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
+
+        byte[] beginBytes = JSON.toJSONBytes(beginKey);
+        byte[] endBytes = JSON.toJSONBytes(endKey);
+        try {
+            rocksDBWrapper.getRocksDB().deleteRange(columnFamilyHandle, beginBytes, endBytes);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ColumnFamilyHandle getColumnFamilyHandle() {

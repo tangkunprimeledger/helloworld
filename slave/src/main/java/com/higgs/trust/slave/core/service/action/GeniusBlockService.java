@@ -1,8 +1,11 @@
 package com.higgs.trust.slave.core.service.action;
 
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
@@ -20,6 +23,8 @@ import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -36,33 +41,48 @@ import java.util.*;
     @Autowired TransactionTemplate txRequired;
     @Autowired CaRepository caRepository;
     @Autowired CaInitHandler caInitHandler;
+    @Autowired InitConfig initConfig;
 
     public void generateGeniusBlock(Block block) {
         try {
+            List<TransactionReceipt> txReceipts = new LinkedList();
+            TransactionReceipt transactionReceipt = new TransactionReceipt();
+            transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
+            transactionReceipt.setResult(true);
+            txReceipts.add(transactionReceipt);
 
-            txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            if (initConfig.isUseMySQL()) {
+                txRequired.execute(new TransactionCallbackWithoutResult() {
+                    @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+
+                        log.info("[process] transaction start, insert genius block into db");
+                        blockRepository.saveBlock(block, txReceipts);
+                        log.info("[process]insert clusterNode information into db");
+                        saveClusterNode(block);
+                        log.info("[process]insert clusterConfig information into db");
+                        saveClusterConfig(block);
+                        log.info("[process]insert ca information into db");
+                        saveCa(block);
+                    }
+                });
+            } else {
+                try {
+                    ThreadLocalUtils.putWriteBatch(new WriteBatch());
 
                     log.info("[process] transaction start, insert genius block into db");
-
-                    List<TransactionReceipt> txReceipts = new LinkedList();
-                    TransactionReceipt transactionReceipt = new TransactionReceipt();
-                    transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
-                    transactionReceipt.setResult(true);
-                    txReceipts.add(transactionReceipt);
-
                     blockRepository.saveBlock(block, txReceipts);
-
                     log.info("[process]insert clusterNode information into db");
                     saveClusterNode(block);
-
                     log.info("[process]insert clusterConfig information into db");
                     saveClusterConfig(block);
-
                     log.info("[process]insert ca information into db");
                     saveCa(block);
+
+                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                } finally {
+                    ThreadLocalUtils.clearWriteBatch();
                 }
-            });
+            }
         } catch (Throwable e) {
             log.error("[process] store ca init data error", e);
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_GENERATE_GENIUS_BLOCK_ERROR, 1);

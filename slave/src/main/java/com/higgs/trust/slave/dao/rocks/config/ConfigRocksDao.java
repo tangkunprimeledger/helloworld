@@ -10,6 +10,7 @@ import com.higgs.trust.slave.dao.po.config.ConfigPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.rocksdb.AbstractWriteBatch;
 import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +19,11 @@ import java.util.List;
 
 /**
  * @author tangfashuang
+ * @desc key: nodeName_usage, value: ConfigPO
  */
 @Service
 @Slf4j
-public class ConfigRocksDao extends RocksBaseDao<String, ConfigPO>{
+public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
     @Override protected String getColumnFamilyName() {
         return "config";
     }
@@ -39,11 +41,17 @@ public class ConfigRocksDao extends RocksBaseDao<String, ConfigPO>{
     public void update(ConfigPO configPO) {
         String key = configPO.getNodeName() + Constant.SPLIT_SLASH + configPO.getUsage();
         if (null == get(key)) {
-            log.error("[ConfigRocksDao.save] config is not exist. key={}", key);
+            log.error("[ConfigRocksDao.update] config is not exist. key={}", key);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_IS_NOT_EXIST);
         }
         configPO.setUpdateTime(new Date());
-        put(key, configPO);
+
+        AbstractWriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        if (null == batch) {
+            put(key, configPO);
+        } else {
+            batchPut(batch, key, configPO);
+        }
     }
 
     public int batchInsert(List<ConfigPO> configPOList) {
@@ -51,7 +59,7 @@ public class ConfigRocksDao extends RocksBaseDao<String, ConfigPO>{
             return 0;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        AbstractWriteBatch batch = ThreadLocalUtils.getWriteBatch();
         if (null == batch) {
             log.error("[ConfigRocksDao.batchInsert] write batch is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
@@ -70,7 +78,7 @@ public class ConfigRocksDao extends RocksBaseDao<String, ConfigPO>{
 
     public List<ConfigPO> getConfig(String nodeName, String usage) {
         if (StringUtils.isEmpty(usage)) {
-            return queryByPrev(nodeName);
+            return queryByPrefix(nodeName);
         }
 
         ConfigPO po = get(nodeName + Constant.SPLIT_SLASH + usage);
@@ -78,5 +86,57 @@ public class ConfigRocksDao extends RocksBaseDao<String, ConfigPO>{
             return null;
         }
         return Lists.newArrayList(po);
+    }
+
+    public void batchCancel(List<String> nodes) {
+        if (CollectionUtils.isEmpty(nodes)) {
+            return;
+        }
+
+        AbstractWriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        if (null == batch) {
+            log.error("[ConfigRocksDao.batchCancel] write batch is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        }
+
+        String usage = "biz";
+        for (String node : nodes) {
+            String key = node + Constant.SPLIT_SLASH + usage;
+            ConfigPO po = get(key);
+            if (null == po) {
+                log.error("[ConfigRocksDao.batchCancel] config is not exist, key={}", key);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_IS_NOT_EXIST);
+            }
+            po.setUpdateTime(new Date());
+            po.setValid(false);
+            batchPut(batch, key, po);
+        }
+    }
+
+    public void batchEnable(List<String> nodes) {
+        if (CollectionUtils.isEmpty(nodes)) {
+            return;
+        }
+
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        if (null == batch) {
+            log.error("[ConfigRocksDao.batchEnable] write batch is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        }
+
+        String usage = "biz";
+        for (String node : nodes) {
+            String key = node + Constant.SPLIT_SLASH + usage;
+            ConfigPO po = get(key);
+            if (null == po) {
+                log.error("[ConfigRocksDao.batchEnable] config is not exist, key={}", key);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_IS_NOT_EXIST);
+            }
+            po.setUpdateTime(new Date());
+            po.setPriKey(po.getTmpPriKey());
+            po.setPubKey(po.getTmpPubKey());
+            po.setValid(true);
+            batchPut(batch, key, po);
+        }
     }
 }

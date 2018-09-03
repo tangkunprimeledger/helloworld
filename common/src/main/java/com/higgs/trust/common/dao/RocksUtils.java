@@ -1,13 +1,16 @@
 package com.higgs.trust.common.dao;
 
 import com.higgs.trust.common.config.rocksdb.RocksDBWrapper;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
+import org.rocksdb.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+/**
+ * @author tangfashuang
+ */
+@Component
 public class RocksUtils {
-    @Autowired
+
     private static RocksDBWrapper rocksDBWrapper;
 
     public static void batchCommit(WriteOptions writeOptions, WriteBatch writeBatch) {
@@ -16,5 +19,18 @@ public class RocksUtils {
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Transaction beginTransaction(WriteOptions writeOptions) {
+        return rocksDBWrapper.getRocksDB().beginTransaction(writeOptions);
+    }
+
+    public static ColumnFamilyHandle getColumnFamilyHandleByName(String columnFamilyName) {
+        return rocksDBWrapper.getColumnFamilyHandleMap().get(columnFamilyName);
+    }
+
+    @Autowired
+    public void setRocksDBWrapper(RocksDBWrapper rocksDBWrapper) {
+        RocksUtils.rocksDBWrapper = rocksDBWrapper;
     }
 }

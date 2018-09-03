@@ -8,6 +8,7 @@ import com.higgs.trust.slave.dao.po.block.BlockPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
@@ -20,13 +21,14 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class BlockRocksDao extends RocksBaseDao <Long, BlockPO> {
+public class BlockRocksDao extends RocksBaseDao <BlockPO> {
     @Override protected String getColumnFamilyName() {
         return "block";
     }
 
     public void save(BlockPO blockPO) {
-        if (null != get(blockPO.getHeight())) {
+        String height = String.valueOf(blockPO.getHeight());
+        if (null != get(height)) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }
 
@@ -35,23 +37,25 @@ public class BlockRocksDao extends RocksBaseDao <Long, BlockPO> {
             log.error("[BlockRocksDao.save] write batch is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
         }
-        batchPut(batch, blockPO.getHeight(), blockPO);
+        batchPut(batch, height, blockPO);
     }
 
-    public List<Long> getLimitHeight(List<Long> blockHeights) {
+    public List<Long> getLimitHeight(List<String> blockHeights) {
         if (CollectionUtils.isEmpty(blockHeights)) {
             log.error("[BlockRocksDao.getLimitHeight] blockHeights is empty");
             return null;
         }
 
-        Map<Long, BlockPO> resultMap = multiGet(blockHeights);
+        Map<String, BlockPO> resultMap = multiGet(blockHeights);
         if (MapUtils.isEmpty(resultMap)) {
             return null;
         }
 
         List<Long> heights = new ArrayList<>(resultMap.size());
-        for (Long key : resultMap.keySet()) {
-            heights.add(key);
+        for (String key : resultMap.keySet()) {
+            if (!StringUtils.isEmpty(key)) {
+                heights.add(Long.parseLong(key));
+            }
         }
         return heights;
     }
@@ -61,19 +65,19 @@ public class BlockRocksDao extends RocksBaseDao <Long, BlockPO> {
             log.error("[BlockRocksDao.queryBlocks] startHeight or size is invalid, startHeight={}, size={}", startHeight, size);
             return null;
         }
-        List<Long> blockHeights = new ArrayList<>(size);
+        List<String> blockHeights = new ArrayList<>(size);
         while (size-- > 0) {
-            blockHeights.add(startHeight++);
+            blockHeights.add(String.valueOf(startHeight++));
         }
 
-        Map<Long, BlockPO> resultMap = multiGet(blockHeights);
+        Map<String, BlockPO> resultMap = multiGet(blockHeights);
 
         if (MapUtils.isEmpty(resultMap)) {
             return null;
         }
 
         List<BlockPO> blockPOS = new ArrayList<>(resultMap.size());
-        for (Long key : resultMap.keySet()) {
+        for (String key : resultMap.keySet()) {
             blockPOS.add(resultMap.get(key));
         }
         return blockPOS;

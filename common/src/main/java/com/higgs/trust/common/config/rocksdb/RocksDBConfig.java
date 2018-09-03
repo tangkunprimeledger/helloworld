@@ -24,15 +24,20 @@ import java.util.stream.Collectors;
 
 
     /**
-     * 区块链数据文件
+     * rocks db config properties
      */
-    @NotNull
-    @Value("trust.rocks.dbFileRoot:/Volumes/work/log/rocks/")
+    @Value("${trust.rocksdb.file.Root:/Volumes/work/log/rocks/db/}")
     private String dbFileRoot;
-    private static final String DB_FILE_FLASH = "trust.db";
-    private static final String DB_FILE_EXTRA = "trust-extra.db";
-    private static final long DB_FILE_FLASH_SIZE = 10000000000L;
-    private static final long DB_FILE_EXTEND_SIZE = 99999999999L;
+    @Value("${trust.rocksdb.file.flash:trust.db}")
+    private String DB_FILE_FLASH;
+    @Value("${trust.rocksdb.file.extra:trust-extra.db}")
+    private String DB_FILE_EXTRA;
+    @Value("${trust.rocksdb.file.flash.size:10000000000}")
+    private long DB_FILE_FLASH_SIZE;
+    @Value("${trust.rocksdb.file.extend.size: 99999999999}")
+    private long DB_FILE_EXTEND_SIZE;
+    @Value("${trust.rocksdb.transaction.lock.timeout: 1000}")
+    private long LOCK_TIMEOUT;
 
     private static List<String> columnFamily;
 
@@ -40,6 +45,7 @@ import java.util.stream.Collectors;
         columnFamily = new ArrayList<>();
         columnFamily.add("pendingTransaction");
         columnFamily.add("package");
+        columnFamily.add("packageStatus");
         columnFamily.add("block");
         columnFamily.add("transaction");
         columnFamily.add("systemProperty");
@@ -69,7 +75,7 @@ import java.util.stream.Collectors;
         columnFamily.add("voteRequestRecord");
         columnFamily.add("voteRule");
         columnFamily.add("request");
-        columnFamily.add("");
+        columnFamily.add("coreTransactionProcess");
 
     }
 
@@ -99,12 +105,14 @@ import java.util.stream.Collectors;
         final DBOptions dbOptions =
             new DBOptions().setDbPaths(dbPaths).setCreateIfMissing(true).setCreateMissingColumnFamilies(true);
 
-        List<ColumnFamilyHandle> columnFamilyHandleList = new ArrayList<>();
-        RocksDB rocksDB =
-            RocksDB.open(dbOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
+        final TransactionDBOptions transactionDBOptions = new TransactionDBOptions().setTransactionLockTimeout(LOCK_TIMEOUT);
 
-        Map<String, ColumnFamilyHandle> columnFamilyHandleMap = new HashMap<>();
+        List<ColumnFamilyHandle> columnFamilyHandleList = new ArrayList<>();
+        TransactionDB rocksDB =
+            TransactionDB.open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
+
         int size = columnFamily.size();
+        Map<String, ColumnFamilyHandle> columnFamilyHandleMap = new HashMap<>(size);
         for (int i = 0; i < size; i++) {
             columnFamilyHandleMap.put(columnFamily.get(i), columnFamilyHandleList.get(i + 1));
         }

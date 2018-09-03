@@ -1,21 +1,14 @@
 package com.higgs.trust.slave.dao.rocks.account;
 
-import com.google.common.collect.Lists;
 import com.higgs.trust.common.dao.RocksBaseDao;
-import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.account.AccountInfoPO;
-import com.higgs.trust.slave.dao.po.account.AccountInfoWithOwnerPO;
-import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,7 +22,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class AccountInfoRocksDao extends RocksBaseDao<String, AccountInfoPO> {
+public class AccountInfoRocksDao extends RocksBaseDao<AccountInfoPO> {
 
     @Override protected String getColumnFamilyName() {
         return "accountInfo";

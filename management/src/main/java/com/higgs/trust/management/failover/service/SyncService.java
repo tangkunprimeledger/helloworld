@@ -1,5 +1,7 @@
 package com.higgs.trust.management.failover.service;
 
+import com.higgs.trust.common.dao.RocksUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
@@ -10,6 +12,7 @@ import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
@@ -24,6 +27,8 @@ import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
@@ -48,6 +53,7 @@ import java.util.concurrent.Executors;
     @Autowired private ClusterInfoService clusterInfoService;
     @Autowired private TransactionTemplate txNested;
     @Autowired private GeniusBlockService geniusBlockService;
+    @Autowired private InitConfig initConfig;
 
     public void asyncAutoSync() {
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -389,11 +395,22 @@ import java.util.concurrent.Executors;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+
+        if (initConfig.isUseMySQL()) {
+            txNested.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    packageService.process(packContext, true, true);
+                }
+            });
+        } else {
+            try {
+                ThreadLocalUtils.putWriteBatch(new WriteBatch());
                 packageService.process(packContext, true, true);
+                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+            } finally {
+                ThreadLocalUtils.clearWriteBatch();
             }
-        });
+        }
         boolean persistValid =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
         if (!persistValid) {

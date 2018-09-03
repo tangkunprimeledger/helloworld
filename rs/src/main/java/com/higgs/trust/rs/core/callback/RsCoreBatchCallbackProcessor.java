@@ -17,6 +17,7 @@ import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
+import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.dao.mysql.config.ConfigJDBCDao;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
@@ -36,7 +37,7 @@ import java.util.*;
 @Component @Slf4j public class RsCoreBatchCallbackProcessor {
     @Autowired private TxCallbackRegistor txCallbackRegistor;
     @Autowired private VoteRuleRepository voteRuleRepository;
-    @Autowired private ConfigJDBCDao configJDBCDao;
+    @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
     @Autowired private RequestRepository requestRepository;
     @Autowired AbstractClusterInfo clusterInfo;
@@ -277,7 +278,7 @@ import java.util.*;
         }
         log.info("[processCaUpdate] start to update pubKeyForConsensus/priKey");
         // update table config, set tmpKey to key
-        configJDBCDao.batchEnable(nodes);
+        configRepository.batchEnable(nodes);
         log.info("[processCaUpdate] end update pubKeyForConsensus/priKey, nodeName={}", nodes);
     }
 
@@ -301,7 +302,7 @@ import java.util.*;
         }
         log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
         //set pubKeyForConsensus and priKey to invalid
-        configJDBCDao.batchCancel(nodes);
+        configRepository.batchCancel(nodes);
         log.info("[processCaCancel] end invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
     }
 

@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class ContractRocksDao extends RocksBaseDao<String, ContractPO>{
+public class ContractRocksDao extends RocksBaseDao<ContractPO>{
     @Override protected String getColumnFamilyName() {
         return "contract";
     }

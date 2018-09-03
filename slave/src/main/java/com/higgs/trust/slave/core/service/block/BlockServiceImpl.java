@@ -111,7 +111,6 @@ import java.util.List;
 
      @Override
     public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
-        //TODO rocks db
         blockRepository.saveBlock(block, txReceipts);
     }
 

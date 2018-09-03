@@ -39,7 +39,6 @@ import org.springframework.stereotype.Component;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
-    @Autowired private RequestRepository requestRepository;
     @Autowired AbstractClusterInfo clusterInfo;
 
     private TxCallbackHandler getCallbackHandler() {
@@ -68,7 +67,6 @@ import org.springframework.stereotype.Component;
                     processRegisterPolicy(respData);
                     return;
                 case REGISTER_RS:
-                    processRegisterRS(respData);
                     return;
                 case CONTRACT_ISSUE:
                     return;
@@ -84,7 +82,6 @@ import org.springframework.stereotype.Component;
                     processCaAuth(respData);
                     return;
                 case CANCEL_RS:
-                    processCancelRS(respData);
                     return;
                 case NODE_JOIN:
                     processNodeJoin(respData);
@@ -201,21 +198,8 @@ import org.springframework.stereotype.Component;
         voteRule.setVotePattern(VotePatternEnum.fromCode(jsonObject.getString("votePattern")));
         voteRule.setCallbackType(CallbackTypeEnum.fromCode(jsonObject.getString("callbackType")));
         voteRuleRepository.add(voteRule);
-
-        //update request status
-        requestRepository.updateRequest(coreTransaction.getTxId(), RequestEnum.PROCESS,
-            RequestEnum.DONE, respData.getRespCode(), respData.getMsg());
     }
 
-    private void processRegisterRS(RespData<CoreTransaction> respData) {
-        requestRepository.updateRequest(respData.getData().getTxId(), RequestEnum.PROCESS,
-            RequestEnum.DONE, respData.getRespCode(), respData.getMsg());
-    }
-
-    private void processCancelRS(RespData<CoreTransaction> respData) {
-        requestRepository.updateRequest(respData.getData().getTxId(), RequestEnum.PROCESS,
-            RequestEnum.DONE, respData.getRespCode(), respData.getMsg());
-    }
 
     private void processCaUpdate(RespData<CoreTransaction> respData) {
         if (!respData.isSuccess()) {

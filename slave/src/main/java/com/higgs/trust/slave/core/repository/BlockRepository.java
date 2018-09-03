@@ -67,9 +67,9 @@ import java.util.List;
                 return null;
             }
 
-            List<Long> blockHeights = new ArrayList<>();
+            List<String> blockHeights = new ArrayList<>();
             while (size-- > 0 && maxBlockHeight > 0) {
-                blockHeights.add(maxBlockHeight--);
+                blockHeights.add(String.valueOf(maxBlockHeight--));
             }
             return blockRocksDao.getLimitHeight(blockHeights);
         }
@@ -86,7 +86,7 @@ import java.util.List;
         if (initConfig.isUseMySQL()) {
             blockPO = blockDao.queryByHeight(height);
         } else {
-            blockPO = blockRocksDao.get(height);
+            blockPO = blockRocksDao.get(String.valueOf(height));
         }
         return convertPOToBO(blockPO);
     }
@@ -206,7 +206,7 @@ import java.util.List;
         if (initConfig.isUseMySQL()) {
             blockPO = blockDao.queryByHeight(height);
         } else {
-            blockPO = blockRocksDao.get(height);
+            blockPO = blockRocksDao.get(String.valueOf(height));
         }
 
         return blockPO == null ? null : BlockConvert.convertBlockPOToBlockHeader(blockPO);

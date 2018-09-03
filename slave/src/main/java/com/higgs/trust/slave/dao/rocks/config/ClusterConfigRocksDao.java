@@ -18,12 +18,17 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class ClusterConfigRocksDao extends RocksBaseDao<String, ClusterConfigPO>{
+public class ClusterConfigRocksDao extends RocksBaseDao<ClusterConfigPO>{
     @Override protected String getColumnFamilyName() {
         return "clusterConfig";
     }
 
-    public void save(ClusterConfigPO clusterConfigPO) {
+    public void saveWithTransaction(ClusterConfigPO clusterConfigPO) {
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        if (null == batch) {
+            log.error("[ClusterConfigRocksDao.saveWithTransaction] write batch is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        }
         String key = clusterConfigPO.getClusterName();
         if (null != get(key)) {
             log.error("[ClusterConfigRocksDao.save] cluster config is exist, clusterName={}", key);
@@ -31,7 +36,7 @@ public class ClusterConfigRocksDao extends RocksBaseDao<String, ClusterConfigPO>
         }
 
         clusterConfigPO.setCreateTime(new Date());
-        put(key, clusterConfigPO);
+        batchPut(batch, key, clusterConfigPO);
     }
 
     public int batchInsert(List<ClusterConfigPO> clusterConfigPOList) {

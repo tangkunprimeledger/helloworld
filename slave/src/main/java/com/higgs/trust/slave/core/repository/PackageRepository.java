@@ -8,6 +8,7 @@ import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.dao.mysql.pack.PackageDao;
 import com.higgs.trust.slave.dao.po.pack.PackagePO;
 import com.higgs.trust.slave.dao.rocks.pack.PackRocksDao;
+import com.higgs.trust.slave.dao.rocks.pack.PackStatusRocksDao;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.config.SystemProperty;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
@@ -15,10 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,11 +27,12 @@ import java.util.Set;
  * @author: pengdi
  **/
 @Repository @Slf4j public class PackageRepository {
-    @Autowired private TransactionTemplate txRequired;
 
     @Autowired PackageDao packageDao;
 
     @Autowired PackRocksDao packRocksDao;
+
+    @Autowired PackStatusRocksDao packStatusRocksDao;
 
     @Autowired SystemPropertyRepository systemPropertyRepository;
 
@@ -65,7 +65,7 @@ import java.util.Set;
         if (initConfig.isUseMySQL()) {
             return packageDao.queryByHeight(height);
         } else {
-            return packRocksDao.get(height);
+            return packRocksDao.get(String.valueOf(height));
         }
     }
 
@@ -78,22 +78,18 @@ import java.util.Set;
      */
     public void updateStatus(Long height, PackageStatusEnum from, PackageStatusEnum to) {
         if (initConfig.isUseMySQL()) {
-            txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                    int r = packageDao.updateStatus(height, from.getCode(), to.getCode());
-                    if (r != 1) {
-                        //check package status
-                        PackagePO po = packageDao.queryByHeight(height);
-                        if (null != po && StringUtils.equals(to.getCode(), po.getStatus())) {
-                            return;
-                        }
-                        log.error("[package.updateStatus] has error");
-                        throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_UPDATE_STATUS_ERROR);
-                    }
-                }
-            });
+            int r = packageDao.updateStatus(height, from.getCode(), to.getCode());
+            if (r != 1) {
+                log.error("[package.updateStatus] has error");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_UPDATE_STATUS_ERROR);
+            }
         } else {
             packRocksDao.updateStatus(height, from.getCode(), to.getCode());
+            if (PackageStatusEnum.RECEIVED == from) {
+                packStatusRocksDao.save(height, to.getIndex());
+            } else if (PackageStatusEnum.WAIT_PERSIST_CONSENSUS == from) {
+                packStatusRocksDao.update(height, from.getIndex(), to.getIndex());
+            }
         }
     }
 
@@ -127,7 +123,7 @@ import java.util.Set;
                 packagePO.setSignedTxList(pendingTxRepository.getTransactionsByHeight(packagePO.getHeight()));
             }
         } else {
-            packagePO = packRocksDao.get(height);
+            packagePO = packRocksDao.get(String.valueOf(height));
         }
         return convertPackagePOToPackage(packagePO);
     }
@@ -143,9 +139,9 @@ import java.util.Set;
         if (initConfig.isUseMySQL()) {
             heights = packageDao.queryHeightListByHeight(height);
         } else {
-            List<Long> packHeights = new ArrayList<>();
-            for (int i = 0; i < LOAD_LIMIT; i++) {
-                packHeights.add(height + i);
+            List<String> packHeights = new ArrayList<>();
+            for (int i = 1; i <= LOAD_LIMIT; i++) {
+                packHeights.add(String.valueOf(height + i));
             }
             heights = packRocksDao.queryHeightListByHeight(packHeights);
         }
@@ -167,7 +163,7 @@ import java.util.Set;
                 packagePO.setSignedTxList(pendingTxRepository.getTransactionsByHeight(packagePO.getHeight()));
             }
         } else {
-            packagePO = packRocksDao.get(height);
+            packagePO = packRocksDao.get(String.valueOf(height));
         }
         return convertPackagePOToPackage(packagePO);
     }
@@ -201,7 +197,7 @@ import java.util.Set;
                 SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_BLOCK_HEIGHT);
                 if (null != bo && !StringUtils.isEmpty(bo.getValue())) {
                     Long height = Long.parseLong(bo.getValue()) + 1;
-                    return packRocksDao.get(height) == null ? null : height;
+                    return packRocksDao.get(String.valueOf(height)) == null ? null : height;
                 }
             } else {
                 throw new UnsupportedOperationException("package status is not received");
@@ -283,7 +279,10 @@ import java.util.Set;
      * @return
      */
     public Long getMaxHeightByStatus(PackageStatusEnum status) {
-        return packageDao.getMaxHeightByStatus(status.getCode());
+        if (initConfig.isUseMySQL()) {
+            return packageDao.getMaxHeightByStatus(status.getCode());
+        }
+        return packStatusRocksDao.getMaxHeightByStatus(status.getIndex());
     }
 
     /**
@@ -293,7 +292,10 @@ import java.util.Set;
      * @return
      */
     public Long getMinHeightByStatus(PackageStatusEnum status) {
-        return packageDao.getMinHeightByStatus(status.getCode());
+        if (initConfig.isUseMySQL()) {
+            return packageDao.getMinHeightByStatus(status.getCode());
+        }
+        return packStatusRocksDao.getMinHeightByStatus(status.getIndex());
     }
 
     /**
@@ -303,6 +305,14 @@ import java.util.Set;
      * @return
      */
     public int deleteLessThanHeightAndStatus(Long height,PackageStatusEnum status) {
-        return packageDao.deleteLessThanHeightAndStatus(height,status.getCode());
+        if (initConfig.isUseMySQL()) {
+            return packageDao.deleteLessThanHeightAndStatus(height, status.getCode());
+        }
+        //TODO rocks db delete
+        return 1;
+    }
+
+    public String getPackStatusColumnFamilyName() {
+        return packStatusRocksDao.getColumnName();
     }
 }

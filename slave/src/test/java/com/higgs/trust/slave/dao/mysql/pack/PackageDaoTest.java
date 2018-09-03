@@ -27,7 +27,7 @@ public class PackageDaoTest extends BaseTest {
     private PackagePO packagePO = new PackagePO();
 
     @BeforeMethod public void setUp() throws Exception {
-        packagePO.setStatus(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS.getCode());
+        packagePO.setStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
         packagePO.setPackageTime(System.currentTimeMillis());
         packagePO.setHeight(4L);
     }
@@ -55,11 +55,11 @@ public class PackageDaoTest extends BaseTest {
     }
 
     @Test public void updateStatus() {
-        packageDao.updateStatus(2L, PackageStatusEnum.INIT.getCode(), PackageStatusEnum.RECEIVED.getCode());
+        packageDao.updateStatus(2L, PackageStatusEnum.RECEIVED.getCode(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
 
         PackagePO po = packageDao.queryByHeightForUpdate(2L);
 
-        Assert.assertEquals(po.getStatus(), PackageStatusEnum.VALIDATED.getCode());
+        Assert.assertEquals(po.getStatus(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
 
     }
 
@@ -69,7 +69,7 @@ public class PackageDaoTest extends BaseTest {
     }
 
     @Test public void queryByStatus() {
-        List<PackagePO> packagePOList = packageDao.queryByStatus(PackageStatusEnum.INIT.getCode());
+        List<PackagePO> packagePOList = packageDao.queryByStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
         packagePOList.forEach(packagePO1 ->  {
             System.out.println(packagePO1);
         });
@@ -80,7 +80,7 @@ public class PackageDaoTest extends BaseTest {
     @Test public void countWithStatus() {
         Set<String> statusSet = new HashSet<>();
 //        statusSet.add(PackageStatusEnum.SUBMIT_CONSENSUS_SUCCESS.getCode());
-        statusSet.add(PackageStatusEnum.WAIT_VALIDATE_CONSENSUS.getCode());
+        statusSet.add(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
 
         long count = packageDao.countWithStatus(statusSet, 2L);
         Assert.assertEquals(1, count);

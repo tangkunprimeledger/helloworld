@@ -7,9 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,7 +17,7 @@ import java.util.Map;
 /**
  * @author tangfashuang
  */
-@Slf4j @Service public class PendingTxRocksDao extends RocksBaseDao<String, Long> {
+@Slf4j @Service public class PendingTxRocksDao extends RocksBaseDao<Long> {
     @Override protected String getColumnFamilyName() {
         return "pendingTransaction";
     }

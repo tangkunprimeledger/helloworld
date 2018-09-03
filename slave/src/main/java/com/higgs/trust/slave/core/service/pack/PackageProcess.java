@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.pack;
 
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -11,6 +12,7 @@ import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.stereotype.Service;
@@ -90,8 +92,12 @@ import org.springframework.transaction.support.TransactionTemplate;
                 if (pack.getStatus() == PackageStatusEnum.RECEIVED) {
                     doProcess(pack);
                 }
+
+                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
             } catch (Throwable e) {
                 log.error("package process exception. ", e);
+            } finally {
+                ThreadLocalUtils.clearWriteBatch();
             }
 
         }

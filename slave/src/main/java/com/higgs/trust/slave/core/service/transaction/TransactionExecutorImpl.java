@@ -85,7 +85,7 @@ import java.util.Map;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_TX_VERIFY_SIGNATURE_FAILED);
             }
 
-            //  start to handle CoreTransaction, first step, get CoreTransaction from SignedTransaction
+            //start to handle CoreTransaction, first step, get CoreTransaction from SignedTransaction
             coreTx = signedTransaction.getCoreTx();
 
             // check action, if action type equals REGISTER_POLICY or REGISTER_RS, current transaction can have only one action.

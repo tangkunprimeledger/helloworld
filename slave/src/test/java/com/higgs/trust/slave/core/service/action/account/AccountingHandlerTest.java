@@ -115,7 +115,7 @@ public class AccountingHandlerTest extends IntegrateBaseTest {
         signedTransactions.add(transaction);
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
-        pack.setStatus(PackageStatusEnum.INIT);
+        pack.setStatus(PackageStatusEnum.RECEIVED);
 
         Block block = blockService.buildDummyBlock(1L, new Date().getTime());
         block.setSignedTxList(signedTransactions);

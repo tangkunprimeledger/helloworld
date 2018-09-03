@@ -20,14 +20,14 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class RequestRocksDao extends RocksBaseDao<String, RequestPO> {
+public class RequestRocksDao extends RocksBaseDao<RequestPO> {
     @Override protected String getColumnFamilyName() {
         return "request";
     }
 
     public void save(RequestPO requestPO) {
         String key = requestPO.getRequestId();
-        if (null != get(key)) {
+        if (keyMayExist(key)) {
             log.error("[RequestRocksDao.save] request is exist, requestId={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
         }

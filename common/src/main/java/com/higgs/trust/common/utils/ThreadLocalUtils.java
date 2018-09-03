@@ -4,6 +4,7 @@ import org.rocksdb.WriteBatch;
 
 /**
  * ThreadLocal utils
+ * @author tangfashuang
  */
 public class ThreadLocalUtils {
     private static final ThreadLocal<WriteBatch> writeBatch = new ThreadLocal<>();
@@ -22,5 +23,4 @@ public class ThreadLocalUtils {
     public static WriteBatch getWriteBatch() {
         return writeBatch.get();
     }
-
 }

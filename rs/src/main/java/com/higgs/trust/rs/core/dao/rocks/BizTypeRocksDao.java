@@ -6,7 +6,7 @@ import com.higgs.trust.rs.core.dao.po.BizTypePO;
 /**
  * @author tangfashuang
  */
-public class BizTypeRocksDao extends RocksBaseDao<String, BizTypePO>{
+public class BizTypeRocksDao extends RocksBaseDao<BizTypePO>{
     @Override protected String getColumnFamilyName() {
         return "bizType";
     }

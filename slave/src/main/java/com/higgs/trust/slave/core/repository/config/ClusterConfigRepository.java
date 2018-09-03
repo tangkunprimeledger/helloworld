@@ -37,7 +37,7 @@ import java.util.List;
         if (initConfig.isUseMySQL()) {
             clusterConfigDao.insertClusterConfig(clusterConfigPO);
         } else {
-            clusterConfigRocksDao.save(clusterConfigPO);
+            clusterConfigRocksDao.saveWithTransaction(clusterConfigPO);
         }
     }
 

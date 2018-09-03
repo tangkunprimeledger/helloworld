@@ -8,18 +8,21 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author tangfashuang
  */
 @Service
 @Slf4j
-public class CaRocksDao extends RocksBaseDao<String, CaPO>{
+public class CaRocksDao extends RocksBaseDao<CaPO>{
     @Override protected String getColumnFamilyName() {
         return "ca";
     }
@@ -66,5 +69,23 @@ public class CaRocksDao extends RocksBaseDao<String, CaPO>{
         }
 
         return caPOList.size();
+    }
+
+    public List<CaPO> getCaListByUsers(List<String> keys) {
+        if (CollectionUtils.isEmpty(keys)) {
+            return null;
+        }
+
+        Map<String, CaPO> resultMap = multiGet(keys);
+        if (MapUtils.isEmpty(resultMap)) {
+            return null;
+        }
+
+        List<CaPO> caPOS = new ArrayList<>(resultMap.size());
+        for (String key : resultMap.keySet()) {
+            caPOS.add(resultMap.get(key));
+        }
+
+        return caPOS;
     }
 }

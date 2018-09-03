@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class AccountDetailRocksDao extends RocksBaseDao<String, AccountDetailPO> {
+public class AccountDetailRocksDao extends RocksBaseDao<AccountDetailPO> {
 
     @Override protected String getColumnFamilyName() {
         return "accountDetail";
