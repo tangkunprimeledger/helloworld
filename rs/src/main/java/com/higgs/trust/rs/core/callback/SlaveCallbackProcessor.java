@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.testng.collections.Lists;
 
 import java.util.List;
 
@@ -82,7 +83,11 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
             //callback custom rs
             rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
             //同步通知
-            distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+            RespData<String> mRes = new RespData<>();
+            mRes.setData(tx.getTxId());
+            mRes.setCode(respData.getRespCode());
+            mRes.setMsg(respData.getMsg());
+            distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(mRes), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
             return;
         }
 
@@ -94,7 +99,11 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
         //callback custom rs
         rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
         //同步通知
-        distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+        RespData<String> mRes = new RespData<>();
+        mRes.setData(tx.getTxId());
+        mRes.setCode(respData.getRespCode());
+        mRes.setMsg(respData.getMsg());
+        distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(mRes), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
     }
 
     @Override
@@ -115,11 +124,14 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
                 throw e;
             }
         }
-
         //callback custom rs
         rsCoreCallbackProcessor.onEnd(respData, blockHeader);
         //同步通知
-        distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+        RespData<String> mRes = new RespData<>();
+        mRes.setData(tx.getTxId());
+        mRes.setCode(respData.getRespCode());
+        mRes.setMsg(respData.getMsg());
+        distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(mRes),RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
     }
 
     @Override
