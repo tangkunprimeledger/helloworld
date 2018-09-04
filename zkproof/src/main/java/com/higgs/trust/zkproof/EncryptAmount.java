@@ -1,4 +1,4 @@
-package com.higgs.trust.common.zkproof;
+package com.higgs.trust.zkproof;
 
 import com.alibaba.fastjson.JSONObject;
 
