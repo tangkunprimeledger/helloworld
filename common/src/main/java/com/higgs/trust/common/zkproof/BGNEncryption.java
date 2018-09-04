@@ -102,36 +102,6 @@ public class BGNEncryption implements HomomorphicEncryption {
 		return m.toString();
 	}
 
-	public static void main(String[] args) {
-		
-		BGNEncryption b = new BGNEncryption(512);
-		BigInteger f = b.pk.getN();
-		Element P = b.pk.getP();
-		Element Q = b.pk.getQ();
-		BigInteger order = b.pk.getN();
-
-		String msg1 = b.Encryption(new BigInteger("9777777999"), new BigInteger("3"));
-		String msg2 = b.Encryption( new BigInteger("222222000"), new BigInteger("4"));
-        b.exportPubKey();
-		String add = b.cipherAdd(msg1, msg2);
-
-		String sp = b.Encryption(new BigInteger("1"),new BigInteger("2"));
-
-		System.out.println("Addition: " +  add);
-		System.out.println("dec = " + b.Decryption(sp));
-
-		String add1 = b.Encryption(new BigInteger("9999999999"), new BigInteger("7"));
-		System.out.println("Addition: " +  add1);
-
-        System.out.println("PubKey is " + b.exportPubKey());
-
-        BGNEncryption b1 = new BGNEncryption(b.exportPubKey());
-
-        String add2 = b1.Encryption(new BigInteger("9999999999"), new BigInteger("7"));
-		System.out.println("Addition: " +  add2);
-
-	}
-
 	public String exportFullKey() {
 		return pk.exportFullKey();
 	}
@@ -156,7 +126,7 @@ public class BGNEncryption implements HomomorphicEncryption {
 	}
 
 	public String cipherAdd(String em1, String em2) {
-        if (hasPubKey() == true) {
+        if (hasPubKey()) {
             Field f = pk.getField();
             Element output = f.newElement();
             Element A = f.newElement();
@@ -174,7 +144,7 @@ public class BGNEncryption implements HomomorphicEncryption {
 
 	public BigInteger Decryption(String em) {
 
-		if (this.hasFullKey() == true) {
+		if (this.hasFullKey()) {
 			Field f = pk.getField();
 			Element T = f.newElement();
 			Element K = f.newElement();
@@ -200,7 +170,7 @@ public class BGNEncryption implements HomomorphicEncryption {
 	}
 
     public String Encryption(BigInteger b, BigInteger r) {
-	    if (hasPubKey() == true){
+	    if (hasPubKey()){
             Field f = pk.getField();
             Element A = f.newElement();
             Element B = f.newElement();
