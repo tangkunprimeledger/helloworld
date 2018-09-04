@@ -111,6 +111,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
         partiallyTermsClean();
     }
 
+    /**
+     * clean term list
+     */
     private synchronized void partiallyTermsClean(){
         int maxSize = properties.getMaxTermsSize();
         if(terms.size()>= maxSize){

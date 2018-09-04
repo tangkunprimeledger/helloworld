@@ -27,6 +27,11 @@ import java.util.Map;
         return blockRepository.getMaxHeight();
     }
 
+    @Override
+    public Long getSafeHeight() {
+        return blockRepository.getMaxHeight();
+    }
+
     @Override public Long getClusterHeight(String requestId, int size) {
         return blockRepository.getMaxHeight();
     }

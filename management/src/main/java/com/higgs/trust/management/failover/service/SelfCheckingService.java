@@ -43,7 +43,11 @@ import org.springframework.stereotype.Service;
         if (maxHeight == null) {
             return true;
         }
-        Block block = blockRepository.getBlock(maxHeight);
+        Long safeHeight = blockSyncService.getSafeHeight();
+        if (safeHeight == null){
+            return false;
+        }
+        Block block = maxHeight <= safeHeight?blockRepository.getBlock(maxHeight):blockRepository.getBlock(safeHeight);
         int i = 0;
         if (blockSyncService.validating(block)) {
             do {

@@ -18,9 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author suimi
@@ -44,6 +42,42 @@ import java.util.Map;
      */
     @Override public Long getClusterHeight(int size) {
         return getClusterHeight(DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis(), size);
+    }
+
+    /**
+     * get the cluster height through consensus, the default request id will be set. if timeout, null will be return
+     *
+     * @return
+    */
+    @Override
+    public Long getSafeHeight() {
+        int trytimes = 20 ;
+        for(int i = 0;i< trytimes;i++){
+            Map<String,Long> heightMap = getAllClusterHeight();
+            int treshold = 2*clusterInfo.faultNodeNum()+1;
+            int size=0;
+            List<Long> heightList = new ArrayList<>();
+            for(Long height:heightMap.values()){
+                if(height!=null){
+                    size++;
+                    heightList.add(height);
+                }
+            }
+            if(size>=treshold){
+                log.debug("get more than (2f+1) nodes' height,size:{},treshold:{}",size,treshold);
+                heightList.stream().sorted(Comparator.comparingLong(Long::longValue));
+                log.debug("sorted heightList:{}",heightList);
+                return heightList.get(treshold-1);
+            }else{
+                log.debug("get no more than (2f+1) nodes' height");
+            }
+            try {
+                Thread.sleep(3 * 1000);
+            } catch (InterruptedException e) {
+                log.warn("self check error.", e);
+            }
+        }
+        return null;
     }
 
     /**

@@ -75,7 +75,7 @@ import java.util.concurrent.Executors;
                 currentHeight = 1L;
             }
             Long clusterHeight = null;
-            clusterHeight = getClusterHeight();
+            clusterHeight = blockSyncService.getSafeHeight();
             if (clusterHeight == null) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
             }

@@ -90,6 +90,18 @@ import java.util.List;
         log.info("get the cluster height:{}", clusterHeight);
         return clusterHeight;
     }
+    
+    /**
+     * 获取集群安全高度
+     *
+     * @return 高度
+    */
+    public Long getSafeHeight() {
+        log.info("start to acquire the safe height");
+        Long safeHeight = clusterService.getSafeHeight();
+        log.info("get the safe height:{}", safeHeight);
+        return safeHeight;
+    }
 
     /**
      * 本地验证block transactions hash
