@@ -16,7 +16,6 @@ import java.util.Random;
 @Slf4j
 public class P2pConsensusControllerTest extends p2pBaseTest {
 
-    @Autowired
     private StringValidConsensus stringValidConsensus;
 
     @Test()
