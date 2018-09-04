@@ -3,6 +3,9 @@
  */
 package com.higgs.trust.config.view;
 
+import com.higgs.trust.config.node.command.ViewCommand;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public interface IClusterViewManager {
@@ -40,7 +43,7 @@ public interface IClusterViewManager {
     /**
      * change cluster view
      */
-    void changeView(ClusterOptTx optTx);
+    void changeView(ViewCommand command);
 
     /**
      * reset the end height of current view

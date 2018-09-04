@@ -58,9 +58,6 @@ import java.util.Arrays;
                 if (heights[0] == currentView.getEndHeight() + 1 || (heights[0] == currentView.getStartHeight()
                     && currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT)) {
                     viewManager.resetEndHeight(heights);
-                    if (command.getClusterOptTx() != null) {
-                        viewManager.changeView(command.getClusterOptTx());
-                    }
                 } else {
                     long[] unMatchedHeights = Arrays.stream(heights).filter(
                         height -> height >= currentView.getStartHeight() && height <= currentView.getEndHeight())
@@ -71,6 +68,9 @@ import java.util.Arrays;
                         commit.close();
                         return;
                     }
+                }
+                if (command.getClusterOptTx() != null) {
+                    viewManager.changeView(command);
                 }
             }
         }

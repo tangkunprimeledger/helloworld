@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import java.util.Map;
  * @author suimi
  * @date 2018/8/31
  */
-@Data @Builder @NoArgsConstructor @AllArgsConstructor public class ClusterView {
+@Slf4j @Data @Builder @NoArgsConstructor @AllArgsConstructor public class ClusterView implements Cloneable {
 
     public static final long INIT_END_HEIGHT = -1;
 
@@ -37,6 +38,16 @@ import java.util.Map;
         return nodeNames;
     }
 
+    public String getPubKey(String nodeName) {
+        return nodes.get(nodeName);
+    }
 
-
+    @Override public ClusterView clone() {
+        try {
+            return (ClusterView)super.clone();
+        } catch (CloneNotSupportedException e) {
+            log.error("clone cluster view error", e);
+        }
+        return null;
+    }
 }
