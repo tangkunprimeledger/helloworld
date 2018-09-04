@@ -7,6 +7,7 @@ import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.contract.Contract;
+import com.higgs.trust.slave.model.bo.utxo.Sign;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
@@ -40,6 +41,7 @@ public class RsUTXOSmartContract {
                 .allow(UTXOAction.class)
                 .allow(TxIn.class)
                 .allow(TxOut.class)
+                .allow(Sign.class)
                 .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
         manager.setExecuteConfig(executeConfig);
 
