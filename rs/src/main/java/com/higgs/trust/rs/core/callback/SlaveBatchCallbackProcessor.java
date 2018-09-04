@@ -154,22 +154,22 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
             rsCoreBatchCallbackProcessor.onEnd(allTxs, blockHeader);
         }
         //sync notify
-        Profiler.enter("[rc.core.foreach.notify]");
+        List<RespData<String>> respDatas = new ArrayList<>(allTxs.size());
         for (RsCoreTxVO tx : allTxs) {
             try {
-                RespData respData = new RespData();
+                RespData<String> respData = new RespData<>();
                 if (CoreTxResultEnum.SUCCESS != tx.getExecuteResult()) {
                     respData.setCode(tx.getErrorCode());
                     respData.setMsg(tx.getErrorMsg());
                 }
-                Profiler.enter("[rc.core.notifySyncResult]");
-                distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, redisMegGroupEnum);
+                respData.setData(tx.getTxId());
+                respDatas.add(respData);
             } catch (Throwable e) {
                 log.warn("[callbackCustom]sync notify rs resp data failed", e);
-            }finally {
-                Profiler.release();
             }
         }
+        Profiler.enter("[rc.core.notifySyncResult]");
+        distributeCallbackNotifyService.notifySyncResult(respDatas, redisMegGroupEnum);
         Profiler.release();
     }
 
