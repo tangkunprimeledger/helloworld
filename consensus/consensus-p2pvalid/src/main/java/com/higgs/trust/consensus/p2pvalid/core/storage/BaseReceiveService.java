@@ -1,6 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.p2pvalid.core.*;
 import lombok.extern.slf4j.Slf4j;

@@ -359,7 +359,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                 }
             });
         }
-        log.info("[processInitTx]is success");
+        log.debug("[processInitTx]is success");
     }
 
     @Override
@@ -466,7 +466,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                 coreTxRepository.saveExecuteResultAndHeight(txId, CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), 0L);
                 //update status from 'from' to END
                 coreTxProcessRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
-                respData.setData(coreTxRepository.convertTxVO(bo));
+                respData.setData(txId);
                 //callback custom rs
                 if (isCallback) {
                     if (!rsConfig.isBatchCallback()) {
@@ -485,8 +485,8 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
         });
         //同步通知
         try {
-            distributeCallbackNotifyService.notifySyncResult(bo.getTxId(), respData, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
-            distributeCallbackNotifyService.notifySyncResult(bo.getTxId(), respData, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+            distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(respData), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+            distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(respData), RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
         } catch (Throwable e) {
             log.warn("sync notify rs resp data failed", e);
         }

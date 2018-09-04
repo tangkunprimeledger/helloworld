@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.config.master;
 
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;

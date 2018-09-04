@@ -1,4 +1,4 @@
-package com.higgs.trust.common.utils;
+package com.higgs.trust.config.crypto;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.ecc.EccCrypto;
@@ -16,10 +16,10 @@ import javax.validation.constraints.NotNull;
  * @desc crypto selector class
  * @date 2018/8/15 15:25
  */
-@Component @Slf4j public class CryptoUtil {
+@Order(1) @Component @Slf4j public class CryptoUtil {
 
-    private static String biz;
-    private static String consensus;
+    public static String biz;
+    public static String consensus;
 
     public static Crypto getBizCrypto() {
         if (log.isDebugEnabled()) {
@@ -48,18 +48,14 @@ import javax.validation.constraints.NotNull;
         return null;
     }
 
-    @NotNull @Order(1) @Value("${higgs.trust.crypto.biz:SM}") private void setBiz(String newBiz) {
+    @NotNull @Value("${higgs.trust.crypto.biz:RSA}") public void setBiz(String newBiz) {
+        log.info("set biz,newBiz={}", newBiz);
         biz = newBiz;
     }
 
-    @NotNull @Order(1) @Value("${higgs.trust.crypto.consensus:RSA}") private void setConsensus(String newConsensus) {
+    @NotNull @Value("${higgs.trust.crypto.consensus:RSA}") public void setConsensus(String newConsensus) {
+        log.info("set biz,newConsensus={}", newConsensus);
         consensus = newConsensus;
     }
 
-    @NotNull @Order(2) @Value("${trust.key.mode:auto}") private void setType(String keyMode) {
-        if ("manual".equals(keyMode)) {
-            setBiz("RSA");
-            setConsensus("RSA");
-        }
-    }
 }

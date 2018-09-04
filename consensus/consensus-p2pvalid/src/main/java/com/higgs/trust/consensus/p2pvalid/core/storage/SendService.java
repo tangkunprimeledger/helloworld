@@ -1,7 +1,7 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.config.p2p.ClusterInfo;

@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.config.master;
 
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.master.command.ChangeMasterVerify;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyCmd;
 import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;

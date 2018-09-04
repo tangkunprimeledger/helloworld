@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
     @NotNull @Value("${higgs.trust.nodeName}") private String rsName;
     @NotNull @Value("${rs.core.useHttpChannel:false}") private boolean useHttpChannel;
     @NotNull @Value("${rs.core.syncRequestTimeout:200}") private long syncRequestTimeout;
-    @NotNull @Value("${rs.core.batchCallback:false}") private boolean batchCallback;
+    @NotNull @Value("${rs.core.batchCallback:true}") private boolean batchCallback;
     @NotNull @Value("${server.port}") private int serverPort;
     @NotNull @Value("${trust.useMySQL:true}") private boolean useMySQL;
 

@@ -59,12 +59,11 @@ public class Server extends DefaultRecoverable {
     }
 
     @Override public void installSnapshot(byte[] state) {
-        this.snapshot.installSnapshot(new String(state, Charsets.UTF_8));
+        this.snapshot.installSnapshot(state);
     }
 
     @Override public byte[] getSnapshot() {
-        String snapshot = this.snapshot.getSnapshot();
-        return snapshot.getBytes(Charsets.UTF_8);
+        return this.snapshot.getSnapshot();
     }
 
     @Override public byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs, boolean fromConsensus) {
