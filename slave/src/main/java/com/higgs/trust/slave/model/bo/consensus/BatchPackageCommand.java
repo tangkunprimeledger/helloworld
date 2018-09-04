@@ -31,6 +31,11 @@ import java.util.List;
     private Long term;
 
     /**
+     * view
+     */
+    private long view;
+
+    /**
      * master name
      */
     private String masterName;
@@ -40,9 +45,10 @@ import java.util.List;
      */
     @NotEmpty @JSONField(label = "sign") private String sign;
 
-    public BatchPackageCommand(Long term, String masterName, List<PackageVO> value) {
+    public BatchPackageCommand(Long term, long view,String masterName, List<PackageVO> value) {
         super(value);
         this.term = term;
+        this.view = view;
         this.masterName = masterName;
     }
 

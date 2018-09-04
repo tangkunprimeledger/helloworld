@@ -11,9 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Comparator;
-import java.util.Map;
-
 /**
  * @author suimi
  * @date 2018/6/5
@@ -26,6 +23,8 @@ import java.util.Map;
      * the term number
      */
     private long term;
+
+    private long view;
 
     /**
      * start height
@@ -42,9 +41,10 @@ import java.util.Map;
      */
     @Setter private String sign;
 
-    public ArtificialChangeMasterCommand(long term, String masterName, long startHeight) {
+    public ArtificialChangeMasterCommand(long term, long view, String masterName, long startHeight) {
         super(term);
         this.term = term;
+        this.view = view;
         this.masterName = masterName;
         this.startHeight = startHeight;
     }

@@ -7,7 +7,9 @@ package com.higgs.trust.consensus.core.command;
  * @author suimi
  * @date 2018/6/1
  */
-public interface SignatureCommand{
+public interface SignatureCommand {
+
+    long getView();
 
     String getNodeName();
 

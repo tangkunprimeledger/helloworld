@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
 import com.higgs.trust.config.crypto.CryptoUtil;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusClient;
@@ -41,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired NodeProperties properties;
 
+    @Autowired IClusterViewManager viewManager;
+
     /**
      * retry time interval
      */
@@ -68,7 +71,8 @@ import java.util.concurrent.TimeUnit;
             "package starts to distribute to each node through consensus layer package startHeight={}, endHeight={}, size={}",
             startHeight, endHeight, size);
         BatchPackageCommand packageCommand =
-            new BatchPackageCommand(nodeState.getCurrentTerm(), nodeState.getMasterName(), packageVOList);
+            new BatchPackageCommand(nodeState.getCurrentTerm(), viewManager.getCurrentView().getId(),
+                nodeState.getMasterName(), packageVOList);
         String signValue = packageCommand.getSignValue();
         packageCommand.setSign(CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey()));
 

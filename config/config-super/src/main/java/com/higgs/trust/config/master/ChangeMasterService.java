@@ -121,7 +121,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
     public void artificialChangeMaster(int term, long startHeight) {
         ArtificialChangeMasterCommand command =
-            new ArtificialChangeMasterCommand(term, nodeState.getNodeName(), startHeight);
+            new ArtificialChangeMasterCommand(term, viewManager.getCurrentView().getId(), nodeState.getNodeName(),
+                startHeight);
         command
             .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));
         CompletableFuture<?> future = consensusClient.submit(command);

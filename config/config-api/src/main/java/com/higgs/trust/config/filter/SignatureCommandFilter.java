@@ -4,7 +4,8 @@
 package com.higgs.trust.config.filter;
 
 import com.higgs.trust.config.crypto.CryptoUtil;
-import com.higgs.trust.config.p2p.AbstractClusterInfo;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
@@ -21,18 +22,18 @@ import org.springframework.stereotype.Component;
  */
 @Order(1) @Component @Slf4j public class SignatureCommandFilter implements CommandFilter {
 
-    @Autowired private AbstractClusterInfo clusterInfo;
+    @Autowired private IClusterViewManager viewManager;
 
     @Override
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
         if (commit.operation() instanceof SignatureCommand) {
-            clusterInfo.refreshIfNeed();
             SignatureCommand command = (SignatureCommand)commit.operation();
             String nodeName = command.getNodeName();
-            String publicKey = clusterInfo.pubKeyForConsensus(nodeName);
+            ClusterView view = viewManager.getView(command.getView());
+            String publicKey = view.getPubKey(nodeName);
             boolean verify =
                 CryptoUtil.getProtocolCrypto().verify(command.getSignValue(), command.getSignature(), publicKey);
-            if (log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("command sign verify result:{}", verify);
             }
             if (!verify) {
