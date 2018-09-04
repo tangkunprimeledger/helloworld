@@ -9,14 +9,13 @@ import java.util.Random;
 public class EncryptAmount {
     private BigInteger b;
     private String eb;
-    private BigDecimal bd;
+
 
     private static String keyType;
 
     private BigInteger r;
 
     private static HomomorphicEncryption he;
-    private static HomomorphicEncryption heCheck;
 
     private String statues;
 
@@ -72,7 +71,7 @@ public class EncryptAmount {
 
     public EncryptAmount(String value,BigInteger orgRandom) {
 
-        bd = new BigDecimal(value);
+        BigDecimal bd = new BigDecimal(value);
         b = new BigInteger(bd.multiply(BigDecimal.TEN.pow(FIX_SCALE)).setScale(0).toString());
         if (orgRandom.bitLength() <= SAFE_RANDOM_BIT ){
            statues = STATUES.unSafeRandom.getCode();
@@ -105,6 +104,7 @@ public class EncryptAmount {
 
     public static void initHomomorphicEncryption(String type, int bits){
         keyType = type;
+        HomomorphicEncryption heCheck;
         do {
 
             if (keyType.compareTo("Paillier") == 0){

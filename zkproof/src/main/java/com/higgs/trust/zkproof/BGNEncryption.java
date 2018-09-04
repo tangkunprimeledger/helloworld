@@ -5,23 +5,20 @@ import it.unisa.dia.gas.jpbc.Field;
 import it.unisa.dia.gas.plaf.jpbc.util.math.BigIntegerUtils;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
+
 
 public class BGNEncryption implements HomomorphicEncryption {
 
 	public static final String start = "start";
 	public static final String end = "end";
 	private BGNKey pk;
-	private BigInteger r;
-	private BigInteger q; // This is the private key.
-	private BigInteger order;
-	private SecureRandom rng;
 
-	protected BGNEncryption(int bits){
+
+	BGNEncryption(int bits){
 		pk = new BGNKey(bits);
 	}
 
-	protected BGNEncryption(String key){
+	BGNEncryption(String key){
 		pk = new BGNKey(key);
 	}
 
@@ -100,36 +97,6 @@ public class BGNEncryption implements HomomorphicEncryption {
 			m = m.add(BigInteger.valueOf(1));
 		}
 		return m.toString();
-	}
-
-	public static void main(String[] args) {
-		
-		BGNEncryption b = new BGNEncryption(512);
-		BigInteger f = b.pk.getN();
-		Element P = b.pk.getP();
-		Element Q = b.pk.getQ();
-		BigInteger order = b.pk.getN();
-
-		String msg1 = b.Encryption(new BigInteger("9777777999"), new BigInteger("3"));
-		String msg2 = b.Encryption( new BigInteger("222222000"), new BigInteger("4"));
-        b.exportPubKey();
-		String add = b.cipherAdd(msg1, msg2);
-
-		String sp = b.Encryption(new BigInteger("1"),new BigInteger("2"));
-
-		System.out.println("Addition: " +  add);
-		System.out.println("dec = " + b.Decryption(sp));
-
-		String add1 = b.Encryption(new BigInteger("9999999999"), new BigInteger("7"));
-		System.out.println("Addition: " +  add1);
-
-        System.out.println("PubKey is " + b.exportPubKey());
-
-        BGNEncryption b1 = new BGNEncryption(b.exportPubKey());
-
-        String add2 = b1.Encryption(new BigInteger("9999999999"), new BigInteger("7"));
-		System.out.println("Addition: " +  add2);
-
 	}
 
 	public String exportFullKey() {
@@ -219,11 +186,8 @@ public class BGNEncryption implements HomomorphicEncryption {
     }
 
 	public boolean tooBig(BigInteger b) {
-		if (b.bitLength() >= pk.getN().bitLength()/2) {
-			return true;
-		}
-		return false;
-	}
+        return b.bitLength() >= pk.getN().bitLength() / 2;
+    }
 
 	public boolean tooBigRandom(BigInteger r) {
 		return tooBig(r);

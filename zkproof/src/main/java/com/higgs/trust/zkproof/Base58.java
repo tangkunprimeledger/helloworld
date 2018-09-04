@@ -21,7 +21,7 @@ class Base58 {
     /**
      * Encodes the given bytes in base58. No checksum is appended.
      */
-    protected static String encode(byte[] input) {
+    static String encode(byte[] input) {
         if (input.length == 0) {
             return "";
         }
@@ -61,7 +61,7 @@ class Base58 {
         }
     }
 
-    protected static byte[] decode(String input) throws IllegalArgumentException {
+    static byte[] decode(String input) throws IllegalArgumentException {
         if (input.length() == 0) {
             return new byte[0];
         }
@@ -106,7 +106,7 @@ class Base58 {
         return copyOfRange(temp, j - zeroCount, temp.length);
     }
 
-    protected static BigInteger decodeToBigInteger(String input) throws IllegalArgumentException {
+    static BigInteger decodeToBigInteger(String input) throws IllegalArgumentException {
         return new BigInteger(1, decode(input));
     }
 

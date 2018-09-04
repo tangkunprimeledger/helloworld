@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.higgs.trust.zkproof.EncryptAmount;
 
 @Slf4j
 @Service
@@ -68,6 +69,10 @@ public class UTXOContextService extends ContractApiService {
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_CONTRACT_PROCESS_FAIL_ERROR);
         }
         return a.add(b);
+    }
+
+    public static String cipherAdd (String em1, String em2){
+        return EncryptAmount.cipherAdd(em1, em2);
     }
 
     /**

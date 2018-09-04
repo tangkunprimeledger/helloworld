@@ -29,7 +29,7 @@ public class BGNKey {
 		f = pairing.getG1();
 	}
 
-	protected BGNKey(int bits){
+	BGNKey(int bits){
 		SecureRandom rng = new SecureRandom();
 		TypeA1CurveGenerator a1 = new TypeA1CurveGenerator(rng, 2, bits); // Requires
 		// 2
@@ -51,7 +51,7 @@ public class BGNKey {
 		Q = Q.mul(param.getBigInteger("n0"));//random r
 	}
 
-	protected BGNKey(String key){
+	BGNKey(String key){
 		JSONObject pubKey = JSONObject.parseObject(key);
 
 		String p1 = pubKey.getString("param");
@@ -71,31 +71,31 @@ public class BGNKey {
 		}
 	}
 
-	protected Element doPairing(Element A, Element B) {
+	Element doPairing(Element A, Element B) {
 		return map.pairing(A, B);
 	}
 
-	protected Element getP() {
+	Element getP() {
 		return this.P;
 	}
 
-	protected Element getQ() {
+	Element getQ() {
 		return this.Q;
 	}
 
-	protected BigInteger getN() {
+	BigInteger getN() {
 		return this.n;
 	}
 
-	protected Field getField() {
+	Field getField() {
 		return this.f;
 	}
 
-	protected PropertiesParameters getParam(){
+	PropertiesParameters getParam(){
 		return  this.param;
 	}
 
-	protected String exportPubKey(){
+	String exportPubKey(){
 
 		try {
 			PairingParameters param1 = (PairingParameters) SerializerUtil.deserialize(SerializerUtil.serialize(param));
@@ -116,7 +116,7 @@ public class BGNKey {
 
 	}
 
-	protected String exportFullKey(){
+	String exportFullKey(){
 		try {
 			String p1 = SerializerUtil.serialize(param);
 			JSONObject fullKey = new JSONObject();
@@ -132,30 +132,20 @@ public class BGNKey {
 
 	}
 
-	public boolean hasFullKey(){
+	boolean hasFullKey(){
 		if (param != null){
-			if (param.getBigInteger("n1") != null
-					&& param.getBigInteger("n0") != null) {
-
-				return  true;
-			}
+			return (param.getBigInteger("n1") != null
+					&& param.getBigInteger("n0") != null);
 
 		}
 		return false;
 
 	}
 
-	public boolean hasPubKey(){
+	boolean hasPubKey(){
 
-		if (P != null && Q != null && n != null){
-			if (P.isEqual(f.newZeroElement()) != true
-					&& Q.isEqual(f.newZeroElement()) != true
-					&& n != BigInteger.ZERO) {
-				return true;
-			}
-		}
+		return (P != null && Q != null && n != null && param != null);
 
-		return  false;
 	}
 
 }
