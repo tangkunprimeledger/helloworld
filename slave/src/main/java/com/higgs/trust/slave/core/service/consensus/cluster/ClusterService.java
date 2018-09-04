@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author suimi
@@ -64,9 +65,10 @@ import java.util.*;
                 }
             }
             if(size>=treshold){
-                log.debug("get more than (2f+1) nodes' height,size:{},treshold:{}",size,treshold);
-                heightList.stream().sorted(Comparator.comparingLong(Long::longValue));
-                log.debug("sorted heightList:{}",heightList);
+                log.info("get more than (2f+1) nodes' height,size:{},treshold:{}",size,treshold);
+                //TODO 排序异常
+                heightList = heightList.stream().sorted(Comparator.comparingLong(Long::longValue).reversed()).collect(Collectors.toList());
+                log.info("sorted heightList:{}",heightList);
                 return heightList.get(treshold-1);
             }else{
                 log.debug("get no more than (2f+1) nodes' height");

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * @author suimi
@@ -118,7 +119,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         int maxSize = properties.getMaxTermsSize();
         if(terms.size()>= maxSize){
             log.info("term list size reach max size:{}, do clean",maxSize);
-            terms.stream().sorted(Comparator.comparingLong(TermInfo::getTerm));
+            terms=terms.stream().sorted(Comparator.comparingLong(TermInfo::getTerm)).collect(Collectors.toList());
             terms.removeAll(terms.subList(0,maxSize/2));
         }
     }
