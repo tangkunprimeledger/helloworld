@@ -10,6 +10,7 @@ import com.higgs.trust.config.master.command.ChangeMasterVerifyResponse;
 import com.higgs.trust.config.master.command.MasterHeartbeatCommand;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.snapshot.TermManager;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusCommit;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 
     @Autowired TermManager termManager;
 
+    @Autowired IClusterViewManager viewManager;
+
     @Autowired ChangeMasterService changeMasterService;
 
     @Autowired ClusterInfo clusterInfo;
@@ -50,9 +53,9 @@ import java.util.stream.Collectors;
                     } catch (Throwable throwable) {
                         log.warn("verify sign of {} failed", e.getKey());
                     }
-                    return value.isChangeMaster() && verify && operation.getTerm() == value.getTerm() && operation
-                        .getMasterName().equalsIgnoreCase(value.getProposer()) && value.getVoter()
-                        .equalsIgnoreCase(e.getKey());
+                    return value.isChangeMaster() && verify && operation.getTerm() == value.getTerm()
+                        && operation.getView() == viewManager.getCurrentView().getId() && operation.getMasterName()
+                        .equalsIgnoreCase(value.getProposer()) && value.getVoter().equalsIgnoreCase(e.getKey());
                 }).collect(Collectors.toList());
             if (collect.size() >= (2 * clusterInfo.faultNodeNum() + 1)) {
                 if (log.isDebugEnabled()) {
@@ -74,8 +77,8 @@ import java.util.stream.Collectors;
 
     public void masterHeartbeat(ConsensusCommit<MasterHeartbeatCommand> commit) {
         MasterHeartbeatCommand operation = commit.operation();
-        if (nodeState.getCurrentTerm() == operation.get() && nodeState.getMasterName()
-            .equalsIgnoreCase(operation.getNodeName())) {
+        if (nodeState.getCurrentTerm() == operation.get() && viewManager.getCurrentView().getId() == operation.getView()
+            && nodeState.getMasterName().equalsIgnoreCase(operation.getNodeName())) {
             changeMasterService.renewHeartbeatTimeout();
         }
         commit.close();

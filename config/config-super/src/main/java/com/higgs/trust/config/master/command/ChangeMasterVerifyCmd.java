@@ -21,8 +21,8 @@ import lombok.Setter;
 
     public ChangeMasterVerifyCmd(ChangeMasterVerify value) {
         super(value);
-        this.requestId = String
-            .join("_", CHANGE_MASTER_VERIFY, "" + value.getTerm(), "" + System.currentTimeMillis());
+        this.requestId = String.join("_", CHANGE_MASTER_VERIFY, "" + value.getTerm(), "" + value.getView(),
+            "" + System.currentTimeMillis());
     }
 
     @Override public String messageDigest() {

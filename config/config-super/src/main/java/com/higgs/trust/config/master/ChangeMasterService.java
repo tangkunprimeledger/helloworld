@@ -4,11 +4,11 @@
 package com.higgs.trust.config.master;
 
 import com.higgs.trust.common.enums.MonitorTargetEnum;
-import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.master.command.*;
 import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.config.snapshot.TermManager;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -55,6 +55,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
     @Autowired private NodeState nodeState;
 
     @Autowired private INodeInfoService nodeInfoService;
+
+    @Autowired private IClusterViewManager viewManager;
 
     private ScheduledFuture heartbeatTimer;
 
@@ -113,7 +115,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             resetHeartbeatTimeout();
             return;
         }
-        consensusChangeMaster(nodeState.getCurrentTerm() + 1, responseMap);
+        consensusChangeMaster(nodeState.getCurrentTerm() + 1, viewManager.getCurrentView().getId(), responseMap);
         resetHeartbeatTimeout();
     }
 
@@ -138,7 +140,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         Long maxHeight = nodeInfoService.blockHeight();
         long packageHeight = maxHeight == null ? 0 : maxHeight;
         ChangeMasterVerify verify =
-            new ChangeMasterVerify(nodeState.getCurrentTerm() + 1, nodeState.getNodeName(), packageHeight);
+            new ChangeMasterVerify(nodeState.getCurrentTerm() + 1, viewManager.getCurrentView().getId(),
+                nodeState.getNodeName(), packageHeight);
         ChangeMasterVerifyCmd cmd = new ChangeMasterVerifyCmd(verify);
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
@@ -174,9 +177,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
         return CryptoUtil.getProtocolCrypto().verify(response.getSignValue(), response.getSign(), pubKey);
     }
 
-    private void consensusChangeMaster(long term, Map<String, ChangeMasterVerifyResponse> verifies) {
+    private void consensusChangeMaster(long term, long view, Map<String, ChangeMasterVerifyResponse> verifies) {
         log.info("change master, term:{}", term);
-        ChangeMasterCommand command = new ChangeMasterCommand(term, nodeState.getNodeName(), verifies);
+        ChangeMasterCommand command = new ChangeMasterCommand(term, view, nodeState.getNodeName(), verifies);
         command
             .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));
         try {
