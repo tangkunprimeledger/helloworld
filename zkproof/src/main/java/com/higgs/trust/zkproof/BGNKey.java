@@ -29,7 +29,7 @@ public class BGNKey {
 		f = pairing.getG1();
 	}
 
-	public BGNKey(int bits){
+	protected BGNKey(int bits){
 		SecureRandom rng = new SecureRandom();
 		TypeA1CurveGenerator a1 = new TypeA1CurveGenerator(rng, 2, bits); // Requires
 		// 2
@@ -51,7 +51,7 @@ public class BGNKey {
 		Q = Q.mul(param.getBigInteger("n0"));//random r
 	}
 
-	public BGNKey(String key){
+	protected BGNKey(String key){
 		JSONObject pubKey = JSONObject.parseObject(key);
 
 		String p1 = pubKey.getString("param");
@@ -71,31 +71,31 @@ public class BGNKey {
 		}
 	}
 
-	public Element doPairing(Element A, Element B) {
+	protected Element doPairing(Element A, Element B) {
 		return map.pairing(A, B);
 	}
 
-	public Element getP() {
+	protected Element getP() {
 		return this.P;
 	}
 
-	public Element getQ() {
+	protected Element getQ() {
 		return this.Q;
 	}
 
-	public BigInteger getN() {
+	protected BigInteger getN() {
 		return this.n;
 	}
 
-	public Field getField() {
+	protected Field getField() {
 		return this.f;
 	}
 
-	public PropertiesParameters getParam(){
+	protected PropertiesParameters getParam(){
 		return  this.param;
 	}
 
-	public String exportPubKey(){
+	protected String exportPubKey(){
 
 		try {
 			PairingParameters param1 = (PairingParameters) SerializerUtil.deserialize(SerializerUtil.serialize(param));
@@ -116,7 +116,7 @@ public class BGNKey {
 
 	}
 
-	public String exportFullKey(){
+	protected String exportFullKey(){
 		try {
 			String p1 = SerializerUtil.serialize(param);
 			JSONObject fullKey = new JSONObject();

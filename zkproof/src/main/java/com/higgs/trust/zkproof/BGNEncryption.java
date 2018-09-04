@@ -17,11 +17,11 @@ public class BGNEncryption implements HomomorphicEncryption {
 	private BigInteger order;
 	private SecureRandom rng;
 
-	public BGNEncryption(int bits){
+	protected BGNEncryption(int bits){
 		pk = new BGNKey(bits);
 	}
 
-	public BGNEncryption(String key){
+	protected BGNEncryption(String key){
 		pk = new BGNKey(key);
 	}
 
@@ -156,7 +156,7 @@ public class BGNEncryption implements HomomorphicEncryption {
 	}
 
 	public String cipherAdd(String em1, String em2) {
-        if (hasPubKey() == true) {
+        if (hasPubKey()) {
             Field f = pk.getField();
             Element output = f.newElement();
             Element A = f.newElement();
@@ -174,7 +174,7 @@ public class BGNEncryption implements HomomorphicEncryption {
 
 	public BigInteger Decryption(String em) {
 
-		if (this.hasFullKey() == true) {
+		if (this.hasFullKey()) {
 			Field f = pk.getField();
 			Element T = f.newElement();
 			Element K = f.newElement();
@@ -200,7 +200,7 @@ public class BGNEncryption implements HomomorphicEncryption {
 	}
 
     public String Encryption(BigInteger b, BigInteger r) {
-	    if (hasPubKey() == true){
+	    if (hasPubKey()){
             Field f = pk.getField();
             Element A = f.newElement();
             Element B = f.newElement();

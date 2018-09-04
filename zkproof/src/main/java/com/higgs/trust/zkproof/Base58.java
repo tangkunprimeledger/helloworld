@@ -4,7 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 
 
-public class Base58 {
+class Base58 {
 
     private static final char[] ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".toCharArray();
     private static final int[] INDEXES = new int[128];
@@ -21,7 +21,7 @@ public class Base58 {
     /**
      * Encodes the given bytes in base58. No checksum is appended.
      */
-    public static String encode(byte[] input) {
+    protected static String encode(byte[] input) {
         if (input.length == 0) {
             return "";
         }
@@ -61,7 +61,7 @@ public class Base58 {
         }
     }
 
-    public static byte[] decode(String input) throws IllegalArgumentException {
+    protected static byte[] decode(String input) throws IllegalArgumentException {
         if (input.length() == 0) {
             return new byte[0];
         }
@@ -106,7 +106,7 @@ public class Base58 {
         return copyOfRange(temp, j - zeroCount, temp.length);
     }
 
-    public static BigInteger decodeToBigInteger(String input) throws IllegalArgumentException {
+    protected static BigInteger decodeToBigInteger(String input) throws IllegalArgumentException {
         return new BigInteger(1, decode(input));
     }
 

@@ -2,9 +2,9 @@ package com.higgs.trust.zkproof;
 
 import java.io.*;
 
-public class SerializerUtil {
+class SerializerUtil {
 
-    public static String serialize(Object o) throws Exception {
+    protected static String serialize(Object o) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(o);
@@ -13,11 +13,10 @@ public class SerializerUtil {
         return Base58.encode(buf);
     }
 
-    public static Object deserialize(String bytes) throws IOException, ClassNotFoundException {
+    protected static Object deserialize(String bytes) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais = new ByteArrayInputStream(Base58.decode(bytes));
         ObjectInputStream ois = new ObjectInputStream(bais);
-        Object obj = ois.readObject();
-        return obj;
+        return ois.readObject();
     }
 
 

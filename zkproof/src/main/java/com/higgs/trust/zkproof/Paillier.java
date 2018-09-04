@@ -1,4 +1,5 @@
-package com.higgs.trust.zkproof; /**
+package com.higgs.trust.zkproof;
+/**
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
@@ -47,11 +48,11 @@ public class Paillier  implements HomomorphicEncryption {
     /**
      * n = p*q, where p and q are two large primes.
      */
-    public BigInteger n;
+    private BigInteger n;
     /**
      * nsquare = n*n
      */
-    public BigInteger nsquare;
+    private BigInteger nsquare;
     /**
      * a random integer in Z*_{n^2} where gcd (L(g^lambda mod n^2), n) = 1.
      */
@@ -82,11 +83,11 @@ public class Paillier  implements HomomorphicEncryption {
      * Constructs an instance of the com.higgs.trust.zkproof.Paillier cryptosystem with 512 bits of
      * modulus and at least 1-2^(-64) certainty of primes generation.
      */
-    public Paillier(int bits) {
+    protected Paillier(int bits) {
           KeyGeneration(bits, 512);
     }
 
-    public Paillier(String key){
+    protected Paillier(String key){
         JSONObject key_value = JSONObject.parseObject(key);
 
         if (key_value.getString("n") == null || key_value.getString("g") == null || key_value.getString("bitLength") == null){
@@ -127,7 +128,7 @@ public class Paillier  implements HomomorphicEncryption {
      *                     this constructor is proportional to the value of this
      *                     parameter.
      */
-    public void KeyGeneration(int bitLengthVal, int certainty) {
+    private void KeyGeneration(int bitLengthVal, int certainty) {
         bitLength = bitLengthVal;
         /*
          * Constructs two randomly generated positive BigIntegers that are
@@ -140,8 +141,8 @@ public class Paillier  implements HomomorphicEncryption {
         nsquare = n.multiply(n);
 
         g = new BigInteger(bitLength / 2, certainty, new Random());
-        while (g.subtract(p) == BigInteger.ZERO
-                ||g.subtract(q) == BigInteger.ZERO)
+        while (g.subtract(p).equals(BigInteger.ZERO)
+                ||g.subtract(q).equals(BigInteger.ZERO))
         {
             g = new BigInteger(bitLength / 2, certainty, new Random());
         }
@@ -158,7 +159,7 @@ public class Paillier  implements HomomorphicEncryption {
         }
 
         keyStat = KEYSTAT.hasFullKey.getCode();
-        return;
+
     }
 
     public String exportFullKey()
@@ -202,7 +203,7 @@ public class Paillier  implements HomomorphicEncryption {
      */
     public BigInteger Encryption(BigInteger m) {
         BigInteger r = BigInteger.ONE;
-        if (hasPubKey() == true){
+        if (hasPubKey()){
             return g.modPow(m, nsquare).multiply(r.modPow(n, nsquare)).mod(nsquare);
         }
 
@@ -217,7 +218,7 @@ public class Paillier  implements HomomorphicEncryption {
      * @return plaintext as a BigInteger
      */
     public BigInteger Decryption(BigInteger c) {
-        if (hasFullKey() == true) {
+        if (hasFullKey()) {
             BigInteger u = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
             //return c.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
             return c.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
@@ -229,12 +230,12 @@ public class Paillier  implements HomomorphicEncryption {
     /**
      * sum of (cipher) em1 and em2
      *
-     * @param em1
-     * @param em2
-     * @return
+     * @param em1 add1
+     * @param em2 add2
+     * @return sum
      */
     public BigInteger cipherAdd(BigInteger em1, BigInteger em2) {
-        if (hasPubKey() == true){
+        if (hasPubKey()){
             return em1.multiply(em2).mod(nsquare);
         }
 
@@ -242,7 +243,7 @@ public class Paillier  implements HomomorphicEncryption {
     }
 
     public String cipherAdd(String em1, String em2) {
-        if (hasPubKey() == true){
+        if (hasPubKey()){
             return Base58.encode(Base58.decodeToBigInteger(em1).multiply(Base58.decodeToBigInteger(em2)).mod(nsquare).toByteArray());
         }
 
@@ -252,7 +253,7 @@ public class Paillier  implements HomomorphicEncryption {
 
 
     public BigInteger Decryption(String str) {
-        if(hasFullKey() == true)
+        if(hasFullKey())
         {
             BigInteger c = Base58.decodeToBigInteger(str);
             BigInteger u = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
@@ -265,7 +266,7 @@ public class Paillier  implements HomomorphicEncryption {
     public String Encryption(String str_value) {
         BigInteger m = new BigInteger(str_value);
         BigInteger r = BigInteger.ONE;
-        if (hasPubKey() == true){
+        if (hasPubKey()){
             return Base58.encode(g.modPow(m, nsquare).multiply(r.modPow(n, nsquare)).mod(nsquare).toByteArray());
         }
         return Base58.encode(BigInteger.ZERO.toByteArray());
@@ -274,11 +275,11 @@ public class Paillier  implements HomomorphicEncryption {
 
     public boolean Compare(String em1, String em2)
     {
-        if(hasFullKey() == true)
+        if(hasFullKey())
         {
             BigInteger m1 = Decryption(em1);
             BigInteger m2 = Decryption(em2);
-            if (m1.subtract(m2) == BigInteger.ZERO)
+            if (m1.subtract(m2).equals(BigInteger.ZERO))
             {
                 return true;
             }
@@ -298,7 +299,7 @@ public class Paillier  implements HomomorphicEncryption {
     }
 
     public boolean hasPubKey() {
-        if (keyStat == KEYSTAT.hasPubKey.getCode() || keyStat == KEYSTAT.hasFullKey.getCode()) {
+        if (keyStat.equals(KEYSTAT.hasPubKey.getCode()) || keyStat.equals(KEYSTAT.hasFullKey.getCode())) {
             return true;
         }
         else{
@@ -307,7 +308,7 @@ public class Paillier  implements HomomorphicEncryption {
     }
 
     public boolean hasFullKey() {
-        if (keyStat == KEYSTAT.hasFullKey.getCode()) {
+        if (keyStat.equals(KEYSTAT.hasFullKey.getCode())) {
             return true;
         }
         else{

@@ -60,11 +60,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.higgs.trust</groupId>
-                <artifactId>consensus</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.higgs.trust</groupId>

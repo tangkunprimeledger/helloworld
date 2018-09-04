@@ -50,7 +50,7 @@ public class EncryptAmount {
         }
     }
 
-    public EncryptAmount(BigInteger b, String eb, BigInteger r) {
+    private EncryptAmount(BigInteger b, String eb, BigInteger r) {
 
         this.b = b;
         this.eb = eb;
@@ -58,10 +58,10 @@ public class EncryptAmount {
         if (r.bitLength() <= SAFE_RANDOM_BIT ){
             statues = STATUES.unSafeRandom.getCode();
         }
-        else if (he.tooBig(b) == true){
+        else if (he.tooBig(b)){
             statues = STATUES.tooBig.getCode();
         }
-        else if (he.tooBigRandom(r) == true) {
+        else if (he.tooBigRandom(r)) {
             statues = STATUES.tooBigRandom.getCode();
         }
         else{
@@ -115,7 +115,7 @@ public class EncryptAmount {
                 he = new BGNEncryption(bits);
                 heCheck = new BGNEncryption(he.exportFullKey());
             }
-         }  while (heCheck.hasFullKey() == false);
+         }  while (!heCheck.hasFullKey());
     }
 
     public static boolean setHomomorphicEncryptionKey(String key) {
@@ -129,13 +129,13 @@ public class EncryptAmount {
             he = new BGNEncryption(key);
         }
 
-        return (he.hasPubKey() == true || he.hasFullKey() == true);
+        return (he.hasPubKey()|| he.hasFullKey());
 
     }
 
     public  static String exportPubKey(){
 
-        if (he.hasFullKey() == true || he.hasPubKey() == true){
+        if (he.hasFullKey() || he.hasPubKey()){
             return he.exportPubKey();
         }
 
@@ -144,14 +144,14 @@ public class EncryptAmount {
 
     public  static String exportFullKey(){
 
-        if (he.hasFullKey() == true || he.hasPubKey() == true){
+        if (he.hasFullKey() || he.hasPubKey()){
             return he.exportFullKey();
         }
         return  null;
     }
 
     public static String cipherAdd(String em1, String em2){
-        if (he != null && (he.hasPubKey() == true || he.hasFullKey() == true)){
+        if (he != null && (he.hasPubKey() || he.hasFullKey())){
 
             return  he.cipherAdd(em1, em2);
         }
@@ -162,7 +162,7 @@ public class EncryptAmount {
 
     public EncryptAmount add(EncryptAmount amount){
 
-        if(he.hasPubKey() == true || he.hasFullKey() == true) {
+        if(he.hasPubKey() || he.hasFullKey()) {
             return new EncryptAmount(b.add(amount.b),he.cipherAdd(eb, amount.eb),r.add(amount.r));
         }
         return  new EncryptAmount(BigInteger.ZERO,Base58.encode(BigInteger.ZERO.toByteArray()),BigInteger.ZERO);
@@ -170,8 +170,8 @@ public class EncryptAmount {
 
     public EncryptAmount subtract(EncryptAmount amount){
 
-        if((he.hasPubKey() == true || he.hasFullKey() == true) && b.compareTo(amount.b) >= 0 && r.compareTo(amount.r) > 0
-                && this.isAvailable() == true && amount.isAvailable() == true) {
+        if((he.hasPubKey() || he.hasFullKey()) && b.compareTo(amount.b) >= 0 && r.compareTo(amount.r) > 0
+                && this.isAvailable() && amount.isAvailable()) {
 
             return  new EncryptAmount(b.subtract(amount.b) , he.Encryption(b.subtract(amount.b),r.subtract(amount.r)),r.subtract(amount.r));
         }
@@ -181,16 +181,15 @@ public class EncryptAmount {
 
     public String toString(){
 
-       if (isAvailable() == true){
+       if (isAvailable()){
            return eb;
-
        }
 
        return Base58.encode(BigInteger.ZERO.toByteArray());
     }
 
     public static BigInteger Decryption(String str){
-        if (he.hasFullKey() == true){
+        if (he.hasFullKey()){
             return he.Decryption(str);
         }
 
@@ -208,15 +207,15 @@ public class EncryptAmount {
     }
 
     public boolean hasUnSafeRondom(){
-        return statues == STATUES.unSafeRandom.getCode();
+        return statues.equals(STATUES.unSafeRandom.getCode());
     }
 
     public boolean isAvailable(){
-        return statues == STATUES.success.getCode();
+        return statues.equals(STATUES.success.getCode());
     }
 
-    public HomomorphicEncryption getHe(){
-        return this.he;
+    public static HomomorphicEncryption getHe(){
+        return he;
     }
 
 }

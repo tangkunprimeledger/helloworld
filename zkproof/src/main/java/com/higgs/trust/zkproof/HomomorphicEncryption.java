@@ -5,7 +5,7 @@ import java.math.BigInteger;
 public interface HomomorphicEncryption {
 
 
-    public enum  KEYSTAT{
+    enum  KEYSTAT{
         hasNoKey("0","不具有合法的公私钥"),
         hasPubKey("1","具有一个可能合法的公钥"),
         hasFullKey("2","具有一套合法的公私钥");
