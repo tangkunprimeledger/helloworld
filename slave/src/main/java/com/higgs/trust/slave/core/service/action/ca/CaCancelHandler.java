@@ -27,9 +27,6 @@ import org.springframework.stereotype.Component;
 
     @Autowired CaSnapshotHandler caSnapshotHandler;
     @Autowired CaHelper caHelper;
-    @Autowired private ClusterInfo clusterInfo;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
-    @Autowired private NodeState nodeState;
 
     @Override public void verifyParams(Action action) throws SlaveException {
         CaAction caAction = (CaAction)action;

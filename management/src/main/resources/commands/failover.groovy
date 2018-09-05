@@ -1,6 +1,7 @@
 package commands
 
 import com.higgs.trust.config.p2p.ClusterInfo
+import com.higgs.trust.config.view.IClusterViewManager
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
 import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService
@@ -64,8 +65,9 @@ class failover {
             def height = blockService.getMaxHeight().toString()
             out.println("sync blocks successful, current height:$height")
         } else {
-            def clusterInfo = beans.getBean(ClusterInfo.class)
-            if (!clusterInfo.clusterNodeNames().contains(fromNode)) {
+            def viewManager = beans.getBean(IClusterViewManager.class)
+            def currentView = viewManager.getCurrentView();
+            if (!currentView.nodeNames.contains(fromNode)) {
                 out.println("The from node: $fromNode not exist")
                 return
             }
@@ -131,8 +133,9 @@ class failover {
             def height = blockService.getMaxHeight().toString()
             out.println("sync blocks successful, current height:$height")
         } else {
-            def clusterInfo = beans.getBean(ClusterInfo.class)
-            if (!clusterInfo.clusterNodeNames().contains(fromNode)) {
+            def viewManager = beans.getBean(IClusterViewManager.class)
+            def currentView = viewManager.getCurrentView()
+            if (!currentView.nodeNames.contains(fromNode)) {
                 out.println("The from node: $fromNode not exist")
                 return
             }

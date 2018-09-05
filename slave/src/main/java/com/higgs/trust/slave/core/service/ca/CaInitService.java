@@ -15,13 +15,6 @@ public interface CaInitService {
     /**
      * @param
      * @return
-     * @desc TODO
-     */
-    RespData<String> initStart();
-
-    /**
-     * @param
-     * @return
      * @desc construct ca init tx and send to slave
      */
     RespData<List<Config>> initCaTx();

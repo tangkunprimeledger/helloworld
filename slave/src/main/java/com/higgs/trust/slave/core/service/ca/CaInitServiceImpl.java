@@ -37,18 +37,6 @@ import java.util.*;
     @Autowired private NodeProperties nodeProperties;
 
     /**
-     * @return
-     * @desc execute command initStart on one node, it will call each node in the cluster to execute command initKeyPair
-     */
-    @Override public RespData<String> initStart() {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        nodeList.forEach((nodeName) -> {
-            initKeyPair();
-        });
-        return new RespData<>();
-    }
-
-    /**
      * @param
      * @return
      * @desc

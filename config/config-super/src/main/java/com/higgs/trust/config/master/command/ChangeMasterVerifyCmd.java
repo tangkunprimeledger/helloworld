@@ -20,7 +20,7 @@ import lombok.Setter;
     private String requestId;
 
     public ChangeMasterVerifyCmd(ChangeMasterVerify value) {
-        super(value, -1);
+        super(value, value.getView());
         this.requestId = String.join("_", CHANGE_MASTER_VERIFY, "" + value.getTerm(), "" + value.getView(),
             "" + System.currentTimeMillis());
     }
