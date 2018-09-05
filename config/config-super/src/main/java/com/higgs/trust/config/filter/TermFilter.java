@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
         if (commit.operation() instanceof TermCommand) {
             TermCommand command = (TermCommand)commit.operation();
             Long term = command.getTerm();
-            Long[] height = command.getPackageHeight();
+            long[] height = command.getPackageHeight();
 
             //check height array
             if (ArrayUtils.isEmpty(height)) {
@@ -71,7 +71,7 @@ import org.springframework.stereotype.Component;
         chain.doFilter(commit);
     }
 
-    private boolean checkHeight(Long[] height) {
+    private boolean checkHeight(long[] height) {
         for (int i = 0; i < height.length - 1; i++) {
             if ((height[i] + 1) != height[i + 1]) {
                 return false;

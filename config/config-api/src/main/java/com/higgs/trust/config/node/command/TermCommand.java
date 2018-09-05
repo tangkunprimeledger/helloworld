@@ -5,9 +5,9 @@ package com.higgs.trust.config.node.command;
 
 public interface TermCommand {
 
-    Long getTerm();
+    long getTerm();
 
-    Long[] getPackageHeight();
+    long[] getPackageHeight();
 
     String getNodeName();
 

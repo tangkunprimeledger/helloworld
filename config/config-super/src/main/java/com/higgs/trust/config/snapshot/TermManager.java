@@ -149,7 +149,7 @@ import java.util.stream.Collectors;
         }
     }
 
-    public void resetEndHeight(Long[] packageHeights) {
+    public void resetEndHeight(long[] packageHeights) {
         Optional<TermInfo> optional = getTermInfo(nodeState.getCurrentTerm());
         TermInfo termInfo = optional.get();
         int len = packageHeights.length;

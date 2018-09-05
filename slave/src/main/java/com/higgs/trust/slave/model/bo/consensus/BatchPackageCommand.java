@@ -5,6 +5,8 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.higgs.trust.config.node.command.TermCommand;
+import com.higgs.trust.config.node.command.ViewCommand;
+import com.higgs.trust.config.view.ClusterOptTx;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
 import com.higgs.trust.slave.api.vo.PackageVO;
@@ -23,12 +25,12 @@ import java.util.List;
  * @desc batch package command
  */
 @ToString(callSuper = true, exclude = {"sign"}) @Getter @Setter public class BatchPackageCommand
-    extends AbstractConsensusCommand<List<PackageVO>> implements SignatureCommand, TermCommand {
+    extends AbstractConsensusCommand<List<PackageVO>> implements SignatureCommand, TermCommand, ViewCommand {
 
     /**
      * term
      */
-    private Long term;
+    private long term;
 
     /**
      * view
@@ -41,18 +43,23 @@ import java.util.List;
     private String masterName;
 
     /**
+     * the cluster operation tx
+     */
+    private ClusterOptTx clusterOptTx;
+
+    /**
      * signature
      */
     @NotEmpty @JSONField(label = "sign") private String sign;
 
-    public BatchPackageCommand(Long term, long view,String masterName, List<PackageVO> value) {
+    public BatchPackageCommand(Long term, long view, String masterName, List<PackageVO> value) {
         super(value);
         this.term = term;
         this.view = view;
         this.masterName = masterName;
     }
 
-    @Override public Long[] getPackageHeight() {
+    @Override public long[] getPackageHeight() {
         List<PackageVO> voList = get();
         int size = voList.size();
 
@@ -63,8 +70,8 @@ import java.util.List;
             }
         });
 
-        Long[] heightArr = new Long[size];
-        for (int i = 0; i < size; i ++) {
+        long[] heightArr = new long[size];
+        for (int i = 0; i < size; i++) {
             heightArr[i] = voList.get(i).getHeight();
         }
         return heightArr;
@@ -75,7 +82,8 @@ import java.util.List;
     }
 
     @Override public String getSignValue() {
-        String join = String.join(",", JSON.toJSONString(get()), "" + term, masterName);
+        String join = String
+            .join(",", JSON.toJSONString(get()), "" + term, "" + view, masterName, JSON.toJSONString(clusterOptTx));
         return Hashing.sha256().hashString(join, Charsets.UTF_8).toString();
     }
 

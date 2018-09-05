@@ -5,6 +5,8 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.higgs.trust.config.node.command.TermCommand;
+import com.higgs.trust.config.node.command.ViewCommand;
+import com.higgs.trust.config.view.ClusterOptTx;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
 import com.higgs.trust.slave.api.vo.PackageVO;
@@ -18,19 +20,27 @@ import org.hibernate.validator.constraints.NotEmpty;
  * @author: pengdi
  **/
 @ToString(callSuper = true, exclude = {"sign"}) @Getter @Setter public class PackageCommand
-    extends AbstractConsensusCommand<PackageVO> implements SignatureCommand, TermCommand {
+    extends AbstractConsensusCommand<PackageVO> implements SignatureCommand, TermCommand, ViewCommand {
 
     /**
      * term
      */
-    private Long term;
+    private long term;
 
+    /**
+     * the cluster view
+     */
     private long view;
 
     /**
      * master name
      */
     private String masterName;
+
+    /**
+     * the cluster operation tx
+     */
+    private ClusterOptTx clusterOptTx;
 
     /**
      * signature
@@ -44,8 +54,8 @@ import org.hibernate.validator.constraints.NotEmpty;
         this.masterName = masterName;
     }
 
-    @Override public Long[] getPackageHeight() {
-        return new Long[] {get().getHeight()};
+    @Override public long[] getPackageHeight() {
+        return new long[] {get().getHeight()};
     }
 
     @Override public String getNodeName() {
@@ -53,7 +63,8 @@ import org.hibernate.validator.constraints.NotEmpty;
     }
 
     @Override public String getSignValue() {
-        String join = String.join(",", JSON.toJSONString(get()), "" + term, "" + view, masterName);
+        String join = String
+            .join(",", JSON.toJSONString(get()), "" + term, "" + view, masterName, JSON.toJSONString(clusterOptTx));
         return Hashing.sha256().hashString(join, Charsets.UTF_8).toString();
     }
 
