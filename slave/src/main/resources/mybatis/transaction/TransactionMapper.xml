@@ -16,10 +16,12 @@
         <result column="action_datas" property="actionDatas"/>
         <result column="execute_result" property="executeResult"/>
         <result column="error_code" property="errorCode"/>
+        <result column="tx_type" property="txType"/>
     </resultMap>
+
     <!-- transaction table all fields -->
     <sql id="baseColumnList">
-        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,execute_result,error_code,sign_datas,action_datas
+        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,execute_result,error_code,sign_datas,action_datas,tx_type
     </sql>
     <!-- query  conditions -->
     <sql id="baseWhereClause">
@@ -60,8 +62,8 @@
     <!-- insert row -->
     <insert id="add" parameterType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
         insert into
-        transaction(tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,sign_datas,action_datas,execute_result,error_code)
-        values(#{txId},#{bizModel},#{policyId},#{lockTime},#{version},#{blockHeight},#{blockTime},#{sendTime},#{sender},#{signDatas},#{actionDatas},#{executeResult},#{errorCode})
+        transaction(tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,sign_datas,action_datas,execute_result,error_code,tx_type)
+        values(#{txId},#{bizModel},#{policyId},#{lockTime},#{version},#{blockHeight},#{blockTime},#{sendTime},#{sender},#{signDatas},#{actionDatas},#{executeResult},#{errorCode},#{txType})
     </insert>
     <!-- 列表总数 -->
     <select id="queryByCount" resultType="java.lang.Integer"

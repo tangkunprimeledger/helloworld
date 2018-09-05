@@ -7,3 +7,5 @@ alter table config add UNIQUE KEY `uniq_node_use` (`node_name`,`usage`);
 
 alter table ca drop index uniq_pub_key;
 alter table ca add UNIQUE KEY `uniq_node_use` (`user`,`usage`);
+
+alter table `transaction` add column `tx_type` varchar(16) NOT NULL DEFAULT 'DEFAULT' COMMENT 'the type of transaction' after `error_code`;

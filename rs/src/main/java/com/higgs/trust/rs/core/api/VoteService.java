@@ -54,9 +54,10 @@ public interface VoteService {
      * get signInfo from voteReceipts
      *
      * @param receipts
+     * @param signType
      * @return
      */
-    List<SignInfo> getSignInfos(List<VoteReceipt> receipts);
+    List<SignInfo> getSignInfos(List<VoteReceipt> receipts,SignInfo.SignTypeEnum signType);
 
     /**
      * get voters from sign info

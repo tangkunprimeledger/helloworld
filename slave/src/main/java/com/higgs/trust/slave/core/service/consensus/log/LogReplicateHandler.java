@@ -1,8 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
-import com.higgs.trust.slave.api.vo.PackageVO;
-
-import java.util.List;
+import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 
 /**
  * @Description: log replicate handler, mostly deal with sorted package
@@ -13,7 +11,7 @@ public interface LogReplicateHandler {
     /**
      * replicate sorted package to the cluster
      *
-     * @param packageVOList
+     * @param command
      */
-    void replicatePackage(List<PackageVO> packageVOList);
+    void replicatePackage(PackageCommand command);
 }

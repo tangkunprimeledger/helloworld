@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -26,6 +27,7 @@ import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -96,6 +98,8 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
     private RedissonClient redissonClient;
     @Autowired
     private DistributeCallbackNotifyService distributeCallbackNotifyService;
+    @Autowired
+    private ClusterInfo clusterInfo;
 
     /**
      * init redis distribution topic listener
@@ -183,18 +187,21 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
         }
         //reset sendTime
         coreTx.setSendTime(new Date());
-        //sign tx for self
-        SignInfo signInfo = signService.signTx(coreTx);
-        if (signInfo == null) {
-            log.error("[submitTx] self sign data is empty");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
+        List<SignInfo> signs = Lists.newArrayList();
+        if(!TxTypeEnum.isTargetType(coreTx.getTxType(),TxTypeEnum.NODE)) {
+            //sign tx for self
+            SignInfo signInfo = signService.signTx(coreTx);
+            if (signInfo == null) {
+                log.error("[submitTx] self sign data is empty");
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
+            }
         }
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 //save coreTxProcess to db
                 coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
                 //save coreTx to db
-                coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+                coreTxRepository.add(coreTx, signs, 0L);
             }
         });
         //send redis msg for slave
@@ -249,6 +256,15 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                     log.error("[processInitTx]get policy is null by policyId:{}", policyId);
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED, true);
                     return;
+                }
+                //define default sign type
+                SignInfo.SignTypeEnum signType = SignInfo.SignTypeEnum.BIZ;
+                //check txType for NODE type
+                if(TxTypeEnum.isTargetType(bo.getTxType(),TxTypeEnum.NODE)) {
+                    //reset rsIds,require all consensus layer nodes
+                    policy.setRsIds(clusterInfo.clusterNodeNames());
+                    //reset sign type
+                    signType = SignInfo.SignTypeEnum.CONSENSUS;
                 }
                 // vote rule
                 VoteRule voteRule = null;
@@ -308,7 +324,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                     return;
                 }
                 //get sign info from receipts
-                List<SignInfo> signInfos = voteService.getSignInfos(receipts);
+                List<SignInfo> signInfos = voteService.getSignInfos(receipts,signType);
                 signInfos.addAll(bo.getSignDatas());
                 //update signDatas
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
@@ -401,11 +417,16 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                     log.warn("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
                     return;
                 }
-                //filter self
-                List<String> lastRsIds = new ArrayList<>();
-                for (String rsName : rsIds) {
-                    if (!StringUtils.equals(rsName, rsConfig.getRsName())) {
-                        lastRsIds.add(rsName);
+                //check tx type
+                boolean isNodeType = TxTypeEnum.isTargetType(bo.getTxType(),TxTypeEnum.NODE);
+                List<String> lastRsIds = rsIds;
+                if(!isNodeType) {
+                    lastRsIds = new ArrayList<>();
+                    //filter self
+                    for (String rsName : rsIds) {
+                        if (!StringUtils.equals(rsName, rsConfig.getRsName())) {
+                            lastRsIds.add(rsName);
+                        }
                     }
                 }
                 if (receipts.size() != lastRsIds.size()) {
@@ -419,12 +440,16 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL, true);
                     return;
                 }
-                List<SignInfo> signInfos = voteService.getSignInfos(receipts);
-                List<SignInfo> lastSigns = bo.getSignDatas();
-                for (SignInfo signInfo : lastSigns) {
-                    if (StringUtils.equals(rsConfig.getRsName(), signInfo.getOwner())) {
-                        signInfos.add(signInfo);
-                        break;
+                //get signType
+                SignInfo.SignTypeEnum signType = isNodeType ? SignInfo.SignTypeEnum.CONSENSUS : SignInfo.SignTypeEnum.BIZ;
+                List<SignInfo> signInfos = voteService.getSignInfos(receipts,signType);
+                if(!isNodeType) {
+                    List<SignInfo> lastSigns = bo.getSignDatas();
+                    for (SignInfo signInfo : lastSigns) {
+                        if (StringUtils.equals(rsConfig.getRsName(), signInfo.getOwner())) {
+                            signInfos.add(signInfo);
+                            break;
+                        }
                     }
                 }
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);

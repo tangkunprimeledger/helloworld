@@ -25,7 +25,7 @@ public interface PendingState {
      * @param count
      * @return
      */
-    List<SignedTransaction> getPendingTransactions(int count);
+    Object[] getPendingTransactions(int count);
 
     /**
      * Mark the transactions as packaged

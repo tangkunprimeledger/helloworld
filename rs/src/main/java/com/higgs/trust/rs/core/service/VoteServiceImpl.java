@@ -248,12 +248,13 @@ import java.util.concurrent.Future;
         return respData;
     }
 
-    @Override public List<SignInfo> getSignInfos(List<VoteReceipt> receipts) {
+    @Override public List<SignInfo> getSignInfos(List<VoteReceipt> receipts,SignInfo.SignTypeEnum signType) {
         List<SignInfo> signInfos = new ArrayList<>(receipts.size());
         for (VoteReceipt receipt : receipts) {
             SignInfo signInfo = new SignInfo();
             signInfo.setOwner(receipt.getVoter());
             signInfo.setSign(receipt.getSign());
+            signInfo.setSignType(signType);
             signInfos.add(signInfo);
         }
         return signInfos;
@@ -285,6 +286,9 @@ import java.util.concurrent.Future;
     @Override public List<String> getVoters(List<SignInfo> signInfos, List<String> rsIds) {
         if (CollectionUtils.isEmpty(rsIds)) {
             return null;
+        }
+        if(CollectionUtils.isEmpty(signInfos)){
+            return rsIds;
         }
         //make sign map,key:rsId,value:sign
         Map<String, String> signInfoMap = SignInfo.makeSignMap(signInfos);

@@ -246,6 +246,7 @@ IF NOT EXISTS `transaction` (
 	`sign_datas` varchar(4096) DEFAULT NULL COMMENT 'the signatures by json',
 	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
+	`tx_type` varchar(16) NOT NULL DEFAULT 'DEFAULT' COMMENT 'the type of transaction',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_tx_id` (`tx_id`),
 	INDEX `idx_block_height` (`block_height`)

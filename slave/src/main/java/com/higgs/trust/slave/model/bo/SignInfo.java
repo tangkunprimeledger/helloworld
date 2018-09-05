@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
      * the sign data
      */
     private String sign;
+    /**
+     * sign type
+     */
+    private SignTypeEnum signType = SignTypeEnum.BIZ;
 
     /**
      * make map of sign data
@@ -37,5 +41,34 @@ import java.util.stream.Collectors;
             return new HashMap<>();
         }
         return signInfos.stream().collect(Collectors.toMap(SignInfo::getOwner, SignInfo::getSign));
+    }
+
+    public enum SignTypeEnum{
+        BIZ("BIZ","for business"),
+        CONSENSUS("CONSENSUS","for consensus"),
+        ;
+        String code;
+        String msg;
+        SignTypeEnum(String code,String msg){
+            this.code = code;
+            this.msg = msg;
+        }
+
+        public static SignTypeEnum getBycode(String code) {
+            for (SignTypeEnum signType : SignTypeEnum.values()) {
+                if (signType.getCode().equals(code)) {
+                    return signType;
+                }
+            }
+            return null;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getMsg() {
+            return msg;
+        }
     }
 }

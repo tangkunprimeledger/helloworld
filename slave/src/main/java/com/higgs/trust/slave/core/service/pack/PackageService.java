@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.pack;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 
@@ -66,7 +67,7 @@ public interface PackageService {
      * submit package to consensus
      * @param packs
      */
-    void submitConsensus(List<Package> packs);
+    void submitConsensus(PackageCommand packs);
 
     /**
      * persisted
