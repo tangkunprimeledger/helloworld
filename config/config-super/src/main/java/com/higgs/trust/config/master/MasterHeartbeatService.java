@@ -72,7 +72,7 @@ import java.util.concurrent.*;
 
     public void masterHeartbeat() {
         MasterHeartbeatCommand command =
-            new MasterHeartbeatCommand(nodeState.getCurrentTerm(), viewManager.getCurrentView().getId(),
+            new MasterHeartbeatCommand(nodeState.getCurrentTerm(), viewManager.getCurrentViewId(),
                 nodeState.getNodeName());
         command
             .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));

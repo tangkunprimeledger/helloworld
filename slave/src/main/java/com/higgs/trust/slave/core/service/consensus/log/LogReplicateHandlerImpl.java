@@ -71,7 +71,7 @@ import java.util.concurrent.TimeUnit;
             "package starts to distribute to each node through consensus layer package startHeight={}, endHeight={}, size={}",
             startHeight, endHeight, size);
         BatchPackageCommand packageCommand =
-            new BatchPackageCommand(nodeState.getCurrentTerm(), viewManager.getCurrentView().getId(),
+            new BatchPackageCommand(nodeState.getCurrentTerm(), viewManager.getCurrentViewId(),
                 nodeState.getMasterName(), packageVOList);
         String signValue = packageCommand.getSignValue();
         packageCommand.setSign(CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey()));

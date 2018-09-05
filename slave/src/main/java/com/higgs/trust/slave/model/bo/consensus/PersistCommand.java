@@ -13,8 +13,8 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor public class PersistCommand extends ValidCommand<BlockHeader> {
     private static final long serialVersionUID = -1L;
 
-    public PersistCommand(Long seqNum, BlockHeader header) {
-        super(header);
+    public PersistCommand(Long seqNum, BlockHeader header, long view) {
+        super(header, view);
     }
 
     @Override public String messageDigest() {

@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
         ChangeMasterVerify verify = operation.get();
         boolean changeMaster = false;
         if (!changeMasterService.getMasterHeartbeat().get() && verify.getTerm() == nodeState.getCurrentTerm() + 1
-            && verify.getView() == viewManager.getCurrentView().getId()) {
+            && verify.getView() == viewManager.getCurrentViewId()) {
             Long maxHeight = nodeInfoService.packageHeight();
             maxHeight = maxHeight == null ? 0 : maxHeight;
             if (verify.getPackageHeight() >= maxHeight) {

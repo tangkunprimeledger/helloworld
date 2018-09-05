@@ -5,7 +5,9 @@ package com.higgs.trust.slave.core.service.consensus.cluster;
 
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.config.crypto.CryptoUtil;
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
@@ -31,9 +33,11 @@ import java.util.stream.Collectors;
 
     @Autowired private P2pConsensusClient p2pConsensusClient;
 
-    @Autowired private ClusterInfo clusterInfo;
-
     @Autowired private ValidConsensus validConsensus;
+
+    @Autowired private IClusterViewManager viewManager;
+
+    @Autowired private NodeState nodeState;
 
     /**
      * get the cluster height through consensus, the default request id will be set. if timeout, null will be return
@@ -49,28 +53,29 @@ import java.util.stream.Collectors;
      * get the cluster height through consensus, the default request id will be set. if timeout, null will be return
      *
      * @return
-    */
-    @Override
-    public Long getSafeHeight() {
-        int trytimes = 20 ;
-        for(int i = 0;i< trytimes;i++){
-            Map<String,Long> heightMap = getAllClusterHeight();
-            int treshold = 2*clusterInfo.faultNodeNum()+1;
-            int size=0;
+     */
+    @Override public Long getSafeHeight() {
+        int trytimes = 20;
+        ClusterView currentView = viewManager.getCurrentView();
+        int treshold = 2 * currentView.getFaultNum() + 1;
+        for (int i = 0; i < trytimes; i++) {
+            Map<String, Long> heightMap = getAllClusterHeight();
+            int size = 0;
             List<Long> heightList = new ArrayList<>();
-            for(Long height:heightMap.values()){
-                if(height!=null){
+            for (Long height : heightMap.values()) {
+                if (height != null) {
                     size++;
                     heightList.add(height);
                 }
             }
-            if(size>=treshold){
-                log.info("get more than (2f+1) nodes' height,size:{},treshold:{}",size,treshold);
+            if (size >= treshold) {
+                log.info("get more than (2f+1) nodes' height,size:{},treshold:{}", size, treshold);
                 //TODO 排序异常
-                heightList = heightList.stream().sorted(Comparator.comparingLong(Long::longValue).reversed()).collect(Collectors.toList());
-                log.info("sorted heightList:{}",heightList);
-                return heightList.get(treshold-1);
-            }else{
+                heightList = heightList.stream().sorted(Comparator.comparingLong(Long::longValue).reversed())
+                    .collect(Collectors.toList());
+                log.info("sorted heightList:{}", heightList);
+                return heightList.get(treshold - 1);
+            } else {
                 log.debug("get no more than (2f+1) nodes' height");
             }
             try {
@@ -90,20 +95,21 @@ import java.util.stream.Collectors;
      * @return
      */
     @Override public Long getClusterHeight(String requestId, int size) {
-        ResponseCommand<?> responseCommand = validConsensus.submitSync(new ClusterHeightCmd(requestId, size));
+        ResponseCommand<?> responseCommand = validConsensus.submitSync(new ClusterHeightCmd(requestId, size, -1));
         return responseCommand == null ? null : (Long)responseCommand.get();
     }
 
     @Override public Map<String, Long> getAllClusterHeight() {
-        List<String> nodeNames = clusterInfo.clusterNodeNames();
+        ClusterView currentView = viewManager.getCurrentView();
+        List<String> nodeNames = currentView.getNodeNames();
         Map<String, Long> heightMap = new HashMap<>();
         String requestId = DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis();
-        ClusterHeightCmd cmd = new ClusterHeightCmd(requestId, 1);
+        ClusterHeightCmd cmd = new ClusterHeightCmd(requestId, 1, viewManager.getCurrentViewId());
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
-        validCommandWrap.setFromNode(clusterInfo.nodeName());
-        validCommandWrap
-            .setSign(CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
+        validCommandWrap.setFromNode(nodeState.getNodeName());
+        validCommandWrap.setSign(
+            CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), nodeState.getConsensusPrivateKey()));
         validCommandWrap.setValidCommand(cmd);
         nodeNames.forEach((nodeName) -> {
             Long height = null;
@@ -135,7 +141,7 @@ import java.util.stream.Collectors;
      * @return
      */
     @Override public Boolean validatingHeader(BlockHeader header) {
-        BlockHeaderCmd command = new BlockHeaderCmd(header);
+        BlockHeaderCmd command = new BlockHeaderCmd(header, viewManager.getCurrentViewId());
         ResponseCommand<?> responseCommand = validConsensus.submitSync(command);
         return responseCommand == null ? null : (Boolean)responseCommand.get();
     }

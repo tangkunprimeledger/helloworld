@@ -54,7 +54,7 @@ import org.springframework.stereotype.Service;
         int i = 0;
         do {
             responseCommand = validConsensus
-                .submitSync(new ClusterInfoCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis()));
+                .submitSync(new ClusterInfoCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis(), -1));
             if (responseCommand == null) {
                 try {
                     Thread.sleep(3 * 1000);
@@ -74,7 +74,7 @@ import org.springframework.stereotype.Service;
         ValidResponseWrap<? extends ResponseCommand> response = null;
         int i = 0;
         do {
-            ClusterInfoCmd command = new ClusterInfoCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis());
+            ClusterInfoCmd command = new ClusterInfoCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis(), -1);
             ValidCommandWrap commandWrap = new ValidCommandWrap();
             commandWrap.setCommandClass(command.getClass());
             log.info("clusterInfo.nodeName={}", clusterInfo.nodeName());

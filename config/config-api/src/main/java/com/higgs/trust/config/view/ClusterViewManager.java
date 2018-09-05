@@ -37,6 +37,10 @@ import java.util.*;
         return currentView.clone();
     }
 
+    @Override public long getCurrentViewId() {
+        return currentView.getId();
+    }
+
     @Override public ClusterView getViewWithHeight(long height) {
         for (ClusterView view : views) {
             if (view.getEndHeight() == ClusterView.INIT_END_HEIGHT) {
@@ -51,6 +55,9 @@ import java.util.*;
     }
 
     @Override public ClusterView getView(long viewId) {
+        if (viewId < 0) {
+            return currentView;
+        }
         for (ClusterView view : views) {
             if (viewId == view.getId()) {
                 return view.clone();

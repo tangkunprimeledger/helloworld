@@ -5,7 +5,6 @@ package com.higgs.trust.config.view;
 
 import com.higgs.trust.config.node.command.ViewCommand;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface IClusterViewManager {
@@ -26,12 +25,17 @@ public interface IClusterViewManager {
     ClusterView getCurrentView();
 
     /**
+     * get current view id
+     */
+    long getCurrentViewId();
+
+    /**
      * get the {@link ClusterView} at height
      */
     ClusterView getViewWithHeight(long height);
 
     /**
-     * get the cluster view by view id
+     * get the cluster view by view id, if viewId less then 0, return the currentView
      */
     ClusterView getView(long viewId);
 

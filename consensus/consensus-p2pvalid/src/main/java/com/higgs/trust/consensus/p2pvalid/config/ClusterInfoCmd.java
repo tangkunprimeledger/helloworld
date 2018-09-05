@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 
     private static final long serialVersionUID = -7729848938347712491L;
 
-    public ClusterInfoCmd(String requestId) {
-        super(requestId);
+    public ClusterInfoCmd(String requestId, long view) {
+        super(requestId, view);
     }
 
     @Override public String messageDigest() {

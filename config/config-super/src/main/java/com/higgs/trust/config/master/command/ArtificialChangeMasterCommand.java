@@ -24,6 +24,9 @@ import lombok.ToString;
      */
     private long term;
 
+    /**
+     * the cluster view id
+     */
     private long view;
 
     /**

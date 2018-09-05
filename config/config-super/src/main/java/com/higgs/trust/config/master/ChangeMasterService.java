@@ -7,7 +7,7 @@ import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.master.command.*;
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
@@ -21,6 +21,7 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,8 +46,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     @Autowired private NodeProperties nodeProperties;
 
     @Autowired private ChangeMasterProperties properties;
-
-    @Autowired private ClusterInfo clusterInfo;
 
     @Autowired private P2pConsensusClient p2pConsensusClient;
 
@@ -110,18 +109,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
             resetHeartbeatTimeout();
             return;
         }
+        ClusterView currentView = viewManager.getCurrentView();
         Map<String, ChangeMasterVerifyResponse> responseMap = changeMasterVerify();
-        if (responseMap == null || responseMap.size() < (2 * clusterInfo.faultNodeNum() + 1)) {
+        if (responseMap == null || responseMap.size() < (2 * currentView.getFaultNum() + 1)) {
             resetHeartbeatTimeout();
             return;
         }
-        consensusChangeMaster(nodeState.getCurrentTerm() + 1, viewManager.getCurrentView().getId(), responseMap);
+        consensusChangeMaster(nodeState.getCurrentTerm() + 1, viewManager.getCurrentViewId(), responseMap);
         resetHeartbeatTimeout();
     }
 
     public void artificialChangeMaster(int term, long startHeight) {
         ArtificialChangeMasterCommand command =
-            new ArtificialChangeMasterCommand(term, viewManager.getCurrentView().getId(), nodeState.getNodeName(),
+            new ArtificialChangeMasterCommand(term, viewManager.getCurrentViewId(), nodeState.getNodeName(),
                 startHeight);
         command
             .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));
@@ -136,19 +136,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
         log.info("change master verify");
-        List<String> nodeNames = clusterInfo.clusterNodeNames();
+        ClusterView currentView = viewManager.getCurrentView();
+        List<String> nodeNames = currentView.getNodeNames();
         Map<String, ChangeMasterVerifyResponse> heightMap = new HashMap<>();
         Long maxHeight = nodeInfoService.blockHeight();
         long packageHeight = maxHeight == null ? 0 : maxHeight;
         ChangeMasterVerify verify =
-            new ChangeMasterVerify(nodeState.getCurrentTerm() + 1, viewManager.getCurrentView().getId(),
+            new ChangeMasterVerify(nodeState.getCurrentTerm() + 1, viewManager.getCurrentViewId(),
                 nodeState.getNodeName(), packageHeight);
         ChangeMasterVerifyCmd cmd = new ChangeMasterVerifyCmd(verify);
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
-        validCommandWrap.setFromNode(clusterInfo.nodeName());
+        validCommandWrap.setFromNode(nodeState.getNodeName());
         validCommandWrap
-            .setSign(CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
+            .setSign(CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), nodeState.getConsensusPrivateKey()));
         validCommandWrap.setValidCommand(cmd);
         nodeNames.forEach((nodeName) -> {
             try {
@@ -174,7 +175,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
     private boolean verifyResponse(ChangeMasterVerifyResponseCmd cmd) {
         ChangeMasterVerifyResponse response = cmd.get();
-        String pubKey = clusterInfo.pubKeyForConsensus(response.getVoter());
+        ClusterView currentView = viewManager.getCurrentView();
+        String pubKey = currentView.getPubKey(response.getVoter());
+        if(StringUtils.isBlank(pubKey)){
+            return false;
+        }
         return CryptoUtil.getProtocolCrypto().verify(response.getSignValue(), response.getSign(), pubKey);
     }
 

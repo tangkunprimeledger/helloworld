@@ -1,12 +1,16 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.higgs.trust.config.crypto.CryptoUtil;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,10 +29,12 @@ import java.util.concurrent.atomic.AtomicInteger;
         });
 
     @Override public <T extends ResponseCommand> T send(ValidCommand<?> validCommand) {
-        ConcurrentHashMap<String, CommandCounter<T>> resultMap = sendAndHandle(validCommand);
+        long viewId = validCommand.getView();
+        ClusterView view = viewId < 0 ? viewManager.getCurrentView() : viewManager.getView(viewId);
+        ConcurrentHashMap<String, CommandCounter<T>> resultMap = sendAndHandle(validCommand, view);
         for (Map.Entry<String, CommandCounter<T>> entry : resultMap.entrySet()) {
             CommandCounter<T> value = entry.getValue();
-            if (value.getCounter().get() >= (2 * clusterInfo.faultNodeNum() + 1)) {
+            if (value.getCounter().get() >= (2 * view.getFaultNum() + 1)) {
                 return value.getCommand();
             }
         }
@@ -36,18 +42,18 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
 
     private <T extends ResponseCommand> ConcurrentHashMap<String, CommandCounter<T>> sendAndHandle(
-        ValidCommand<?> validCommand) {
+        ValidCommand<?> validCommand, ClusterView view) {
         if (log.isDebugEnabled()) {
             log.debug("sync send command {}", validCommand);
         }
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(validCommand.getClass());
-        validCommandWrap.setFromNode(clusterInfo.nodeName());
-        validCommandWrap.setSign(
-            CryptoUtil.getProtocolCrypto().sign(validCommand.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
+        validCommandWrap.setFromNode(nodeState.getNodeName());
+        validCommandWrap.setSign(CryptoUtil.getProtocolCrypto()
+            .sign(validCommand.getMessageDigestHash(), nodeState.getConsensusPrivateKey()));
         validCommandWrap.setValidCommand(validCommand);
         ConcurrentHashMap<String, CommandCounter<T>> resultMap = new ConcurrentHashMap<>();
-        List<String> nodeNames = clusterInfo.clusterNodeNames();
+        List<String> nodeNames = view.getNodeNames();
         CountDownLatch countDownLatch = new CountDownLatch(nodeNames.size());
         nodeNames.forEach((nodeName) -> {
             sendExecutorService.submit(() -> {

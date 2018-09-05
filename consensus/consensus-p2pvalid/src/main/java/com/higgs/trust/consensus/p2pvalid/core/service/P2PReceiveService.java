@@ -3,13 +3,15 @@ package com.higgs.trust.consensus.p2pvalid.core.service;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.config.crypto.CryptoUtil;
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.p2pvalid.core.P2PValidCommit;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component @Slf4j public class P2PReceiveService implements InitializingBean {
     @Autowired private NodeState nodeState;
-    @Autowired private ClusterInfo clusterInfo;
+    @Autowired private IClusterViewManager viewManager;
     @Autowired private ValidConsensus validConsensus;
     @Autowired private ThreadPoolTaskExecutor p2pReceiveExecutor;
     /**
@@ -75,7 +77,11 @@ import java.util.concurrent.ConcurrentHashMap;
             throw new RuntimeException(String.format("the node state is not running, please try again latter"));
         }
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
-        String pubKey = clusterInfo.pubKeyForConsensus(validCommandWrap.getFromNode());
+        ClusterView view = viewManager.getView(validCommandWrap.getValidCommand().getView());
+        if (view == null || StringUtils.isBlank(view.getPubKey(validCommandWrap.getFromNode()))) {
+            throw new RuntimeException(String.format("the view not exist or not have pubkey"));
+        }
+        String pubKey = view.getPubKey(validCommandWrap.getFromNode());
         if (!CryptoUtil.getProtocolCrypto().verify(messageDigest, validCommandWrap.getSign(), pubKey)) {
             throw new RuntimeException(String
                 .format("check sign failed for node %s, validCommandWrap %s, pubKey %s", validCommandWrap.getFromNode(),
@@ -92,7 +98,7 @@ import java.util.concurrent.ConcurrentHashMap;
         //add command to memory
         _old.put(fromNode, validCommandWrap);
         //check threshold
-        int applyThreshold = Math.min(clusterInfo.faultNodeNum() * 2 + 1, clusterInfo.clusterNodeNames().size());
+        int applyThreshold = Math.min(view.getFaultNum() * 2 + 1, view.getNodeNames().size());
         if (_old.size() < applyThreshold) {
             if (log.isDebugEnabled()) {
                 log.debug("command.size is less than applyThreshold:{}", applyThreshold);
