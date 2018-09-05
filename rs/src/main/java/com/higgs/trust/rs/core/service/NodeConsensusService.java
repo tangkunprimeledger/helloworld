@@ -9,6 +9,7 @@ import com.higgs.trust.rs.core.integration.NodeClient;
 import com.higgs.trust.rs.core.vo.NodeOptVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -60,6 +61,7 @@ import java.util.UUID;
             String nodeName = nodeState.getNodeName();
             NodeOptVO vo = new NodeOptVO();
             vo.setNodeName(nodeName);
+            //TODO:add pubKey
             String pubKey = "";
             String signValue = nodeName + "-" + pubKey;
             String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
@@ -130,6 +132,8 @@ import java.util.UUID;
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.NODE_JOIN.getPolicyId());
         coreTx.setActionList(buildJoinActionList(vo));
+        //set transaction type
+        coreTx.setTxType(TxTypeEnum.NODE.getCode());
         return coreTx;
     }
 
@@ -195,6 +199,8 @@ import java.util.UUID;
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.NODE_LEAVE.getPolicyId());
         coreTx.setActionList(buildLeaveActionList(nodeName));
+        //set transaction type
+        coreTx.setTxType(TxTypeEnum.NODE.getCode());
         return coreTx;
     }
     /**
@@ -209,6 +215,7 @@ import java.util.UUID;
         nodeAction.setType(ActionTypeEnum.NODE_LEAVE);
         nodeAction.setIndex(0);
         nodeAction.setNodeName(nodeName);
+        //TODO:add pubKey
         String pubKey = "";
         String signValue = nodeName + "-" + pubKey;
         String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
