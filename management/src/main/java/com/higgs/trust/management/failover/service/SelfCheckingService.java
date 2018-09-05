@@ -7,6 +7,7 @@ import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
+import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
     @Autowired private BlockService blockService;
     @Autowired private BlockRepository blockRepository;
     @Autowired private NodeProperties properties;
+    @Autowired private FailoverProperties failoverProperties;
 
     @StateChangeListener(NodeStateEnum.SelfChecking) public void autoCheck() {
         boolean selfChecked = selfCheck(properties.getStartupRetryTime());
@@ -43,7 +45,7 @@ import org.springframework.stereotype.Service;
         if (maxHeight == null) {
             return true;
         }
-        Long safeHeight = blockSyncService.getSafeHeight();
+        Long safeHeight = getSaferHeight();
         if (safeHeight == null){
             return false;
         }
@@ -65,5 +67,25 @@ import org.springframework.stereotype.Service;
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
         }
         return false;
+    }
+
+    /**
+     * get the safe height
+     */
+    private Long getSaferHeight() {
+        Long clusterHeight;
+        int tryTimes = 0;
+        do {
+            clusterHeight = blockSyncService.getSafeHeight();
+            if (clusterHeight != null) {
+                break;
+            }
+            try {
+                Thread.sleep(3 * 1000);
+            } catch (InterruptedException e) {
+                log.warn("self check error.", e);
+            }
+        } while (++tryTimes < failoverProperties.getTryTimes());
+        return clusterHeight;
     }
 }

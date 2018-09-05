@@ -75,7 +75,7 @@ import java.util.concurrent.Executors;
                 currentHeight = 1L;
             }
             Long clusterHeight = null;
-            clusterHeight = blockSyncService.getSafeHeight();
+            clusterHeight = getSafeHeight();
             if (clusterHeight == null) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
             }
@@ -114,6 +114,26 @@ import java.util.concurrent.Executors;
         int tryTimes = 0;
         do {
             clusterHeight = blockSyncService.getClusterHeight(3);
+            if (clusterHeight != null) {
+                break;
+            }
+            try {
+                Thread.sleep(3 * 1000);
+            } catch (InterruptedException e) {
+                log.warn("self check error.", e);
+            }
+        } while (++tryTimes < properties.getTryTimes());
+        return clusterHeight;
+    }
+
+    /**
+     * get the safe height
+     */
+    private Long getSafeHeight() {
+        Long clusterHeight;
+        int tryTimes = 0;
+        do {
+            clusterHeight = blockSyncService.getSafeHeight();
             if (clusterHeight != null) {
                 break;
             }

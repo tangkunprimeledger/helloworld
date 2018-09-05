@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author suimi
@@ -55,10 +54,8 @@ import java.util.stream.Collectors;
      * @return
      */
     @Override public Long getSafeHeight() {
-        int trytimes = 20;
         ClusterView currentView = viewManager.getCurrentView();
         int treshold = 2 * currentView.getFaultNum() + 1;
-        for (int i = 0; i < trytimes; i++) {
             Map<String, Long> heightMap = getAllClusterHeight();
             int size = 0;
             List<Long> heightList = new ArrayList<>();
@@ -69,21 +66,14 @@ import java.util.stream.Collectors;
                 }
             }
             if (size >= treshold) {
-                log.info("get more than (2f+1) nodes' height,size:{},treshold:{}", size, treshold);
-                //TODO 排序异常
-                heightList = heightList.stream().sorted(Comparator.comparingLong(Long::longValue).reversed())
-                    .collect(Collectors.toList());
-                log.info("sorted heightList:{}", heightList);
-                return heightList.get(treshold - 1);
+                log.debug("get more than (2f+1) nodes' height,size:{},treshold:{}", size, treshold);
+                List<Long> sortedHeights = new ArrayList<>();
+                heightList.stream().sorted(Comparator.comparingLong(Long::longValue).reversed()).forEach(height->sortedHeights.add(height));
+                log.debug("sorted heightList:{}", sortedHeights);
+                return sortedHeights.get(treshold - 1);
             } else {
                 log.debug("get no more than (2f+1) nodes' height");
             }
-            try {
-                Thread.sleep(3 * 1000);
-            } catch (InterruptedException e) {
-                log.warn("self check error.", e);
-            }
-        }
         return null;
     }
 
