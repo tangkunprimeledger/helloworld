@@ -33,7 +33,7 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
      */
     public void save(CoreTransactionPO po) {
         String key = po.getTxId();
-        if (keyMayExist(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[CoreTxRocksDao.save] core transaction is already exist, txId={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
         }
@@ -59,7 +59,7 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
         }
 
         String key = po.getTxId();
-        if (keyMayExist(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[CoreTxRocksDao.saveWithTransaction] core transaction is already exist, key={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
         }

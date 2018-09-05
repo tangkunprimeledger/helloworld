@@ -91,12 +91,20 @@ public class PendingTxRepositoryTest extends BaseTest {
         Assert.assertEquals(true, pendingTxRepository.isExist("pending-tx-test-4"));
     }
 
-    @Test public void getTransactionsByHeight() {
-        List<SignedTransaction> signedTransactionList = pendingTxRepository.getTransactionsByHeight(2L);
-        Assert.assertEquals(3, signedTransactionList.size());
+    @Test public void testBatchInsertToRocks() throws Exception {
 
-        Assert.assertEquals("pending-tx-test-0", signedTransactionList.get(0).getCoreTx().getTxId());
-        Assert.assertEquals("pending-tx-test-1", signedTransactionList.get(1).getCoreTx().getTxId());
-        Assert.assertEquals("pending-tx-test-2", signedTransactionList.get(2).getCoreTx().getTxId());
+    }
+
+    @Test public void testBatchInsert() throws Exception {
+
+    }
+
+    @Test public void testGetTransactionsByHeight1() throws Exception {
+    }
+
+    @Test public void testQueryTxIds() throws Exception {
+    }
+
+    @Test public void testDeleteLessThanHeight() throws Exception {
     }
 }

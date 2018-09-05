@@ -39,6 +39,7 @@ import org.springframework.stereotype.Component;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
+    @Autowired private RequestDao requestDao;
     @Autowired AbstractClusterInfo clusterInfo;
 
     private TxCallbackHandler getCallbackHandler() {
@@ -245,8 +246,7 @@ import org.springframework.stereotype.Component;
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
-            log.info(
-                "[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKeyForConsensus/priKey",
+            log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
                 nodeState.getNodeName(), user);
             return;
         }

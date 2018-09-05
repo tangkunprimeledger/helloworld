@@ -105,30 +105,30 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="MonitorLog" level="TRACE" additivity="false">
+    <logger name="MonitorLog" level="INFO" additivity="false">
         <appender-ref ref="MONITOR-APPENDER"/>
     </logger>
 
-    <logger name="ManageLog" level="TRACE" additivity="false">
+    <logger name="ManageLog" level="INFO" additivity="false">
         <appender-ref ref="MANAGE-APPENDER"/>
     </logger>
 
-    <Logger name="SERVICE-DIGEST" level="TRACE" additivity="false">
+    <Logger name="SERVICE-DIGEST" level="INFO" additivity="false">
         <appender-ref ref="SERVICE-DIGEST-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <Logger name="PERF" level="TRACE" additivity="false">
+    <Logger name="PERF" level="INFO" additivity="false">
         <appender-ref ref="PERF-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <logger name="com.higgs.trust" level="TRACE" additivity="false">
+    <logger name="com.higgs.trust" level="INFO" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </logger>
 
-    <root level="TRACE">
+    <root level="INFO">
         <appender-ref ref="DEFAULT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </root>

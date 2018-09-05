@@ -27,7 +27,7 @@ public class AccountDetailFreezeRocksDao extends RocksBaseDao<AccountDetailFreez
 
     public void add(AccountDetailFreezePO po) {
         String key = po.getBizFlowNo() + Constant.SPLIT_SLASH + po.getAccountNo();
-        if (null != get(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }
         po.setCreateTime(new Date());

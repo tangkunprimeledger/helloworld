@@ -1,4 +1,4 @@
-package com.higgs.trust.common.utils;
+package com.higgs.trust.config.crypto;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.ecc.EccCrypto;
@@ -6,6 +6,7 @@ import com.higgs.trust.common.crypto.gm.GmCrypto;
 import com.higgs.trust.common.crypto.rsa.RsaCrypto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
@@ -15,20 +16,20 @@ import javax.validation.constraints.NotNull;
  * @desc crypto selector class
  * @date 2018/8/15 15:25
  */
-@Component @Slf4j public class CryptoUtil {
+@Order(1) @Component @Slf4j public class CryptoUtil {
 
-    private static String biz;
-    private static String consensus;
+    public static String biz;
+    public static String consensus;
 
     public static Crypto getBizCrypto() {
-        if (log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             log.debug("crypto type for biz layer is {}", biz);
         }
         return selector(biz);
     }
 
     public static Crypto getProtocolCrypto() {
-        if (log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             log.debug("crypto type for consensus layer is {}", consensus);
         }
         return selector(consensus);
@@ -47,13 +48,14 @@ import javax.validation.constraints.NotNull;
         return null;
     }
 
-    @NotNull @Value("${higgs.trust.crypto.biz:SM}")
-    private void setBiz(String newBiz){
+    @NotNull @Value("${higgs.trust.crypto.biz:RSA}") public void setBiz(String newBiz) {
+        log.info("set biz,newBiz={}", newBiz);
         biz = newBiz;
     }
 
-    @NotNull @Value("${higgs.trust.crypto.consensus:RSA}")
-    private void setConsensus(String newConsensus){
+    @NotNull @Value("${higgs.trust.crypto.consensus:RSA}") public void setConsensus(String newConsensus) {
+        log.info("set biz,newConsensus={}", newConsensus);
         consensus = newConsensus;
     }
+
 }

@@ -15,7 +15,7 @@
     <property name="APP_NAME" value="slave"/>​
     <!-- 归档文件保留的时间，即只保留几天前的归档文件，单位与fileNamePattern中配置的最小时间单位相同 -->
     <property name="MAX_HISTORY" value="7"/>
-    <property name="LOG_PATH" value="${LOG_PATH:-/data/home/admin/trust/log}" />
+    <property name="LOG_PATH" value="${LOG_PATH:-/Volumes/work/log/log}" />
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <!--        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -150,18 +150,18 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="SmartLog" level="debug" additivity="false">
+    <logger name="SmartLog" level="INFO" additivity="false">
         <appender-ref ref="BFTSMART-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </logger>
 
-    <logger name="io.atomix" level="debug" additivity="false">
+    <logger name="io.atomix" level="INFO" additivity="false">
         <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
 
-    <logger name="io.atomix.protocols.raft" level="trace" additivity="false">
+    <logger name="io.atomix.protocols.raft" level="INFO" additivity="false">
         <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
         <appender-ref ref="CONSOLE"/>
@@ -191,7 +191,7 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
-    <logger name="com.higgs.trust" level="debug" additivity="false">
+    <logger name="com.higgs.trust" level="info" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
         <appender-ref ref="CONSOLE"/>

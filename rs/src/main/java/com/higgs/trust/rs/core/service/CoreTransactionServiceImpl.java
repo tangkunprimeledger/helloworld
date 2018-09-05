@@ -33,6 +33,7 @@ import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
@@ -79,6 +80,8 @@ import java.util.concurrent.TimeUnit;
     @Autowired private SignServiceImpl signService;
     @Autowired private ThreadPoolTaskExecutor txSubmitExecutorPool;
     @Autowired private RedissonClient redissonClient;
+    @Autowired private HashBlockingMap<RespData> persistedResultMap;
+    @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
     @Autowired private DistributeCallbackNotifyService distributeCallbackNotifyService;
 
     /**
@@ -86,7 +89,8 @@ import java.util.concurrent.TimeUnit;
      *
      * @throws Exception
      */
-    @Override public void afterPropertiesSet() throws Exception {
+    @Override
+    public void afterPropertiesSet() throws Exception {
         log.info("Init redis distribution topic listener to process tx.");
         //TODO lingchao open it ofter test
         if (!Boolean.valueOf(joinConsensus)) {
@@ -107,19 +111,17 @@ import java.util.concurrent.TimeUnit;
         });
     }
 
-    @Override public RespData syncWait(String txId, boolean forEnd) {
+
+    @Override
+    public RespData syncWait(String txId, boolean forEnd) {
         RespData respData = null;
         try {
             //ON_PERSISTED_CALLBACK
             if (!forEnd) {
-                respData = distributeCallbackNotifyService
-                    .syncWaitNotify(txId, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY,
-                        rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
+                respData = distributeCallbackNotifyService.syncWaitNotify(txId, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY, rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
             } else {
                 //ON_CLUSTER_PERSISTED_CALLBACK
-                respData = distributeCallbackNotifyService
-                    .syncWaitNotify(txId, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY,
-                        rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
+                respData = distributeCallbackNotifyService.syncWaitNotify(txId, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY, rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
             }
         } catch (Throwable e) {
             log.error("tx handle exception. ", e);
@@ -138,7 +140,8 @@ import java.util.concurrent.TimeUnit;
         return respData;
     }
 
-    @Override public void submitTx(CoreTransaction coreTx) {
+    @Override
+    public void submitTx(CoreTransaction coreTx) {
         log.info("[submitTx]{}", coreTx);
         if (coreTx == null) {
             log.error("[submitTx] the tx is null");
@@ -174,11 +177,14 @@ import java.util.concurrent.TimeUnit;
             log.error("[submitTx] self sign data is empty");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
-
-        //save coreTxProcess to db
-        coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
-        //save coreTx to db
-        coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                //save coreTxProcess to db
+                coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
+                //save coreTx to db
+                coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+            }
+        });
         //send redis msg for slave
         asyncProcessInitTx(coreTx.getTxId());
     }
@@ -199,7 +205,8 @@ import java.util.concurrent.TimeUnit;
 
     }
 
-    @Override public void processInitTx(String txId) {
+    @Override
+    public void processInitTx(String txId) {
         //check txId,the redis msg may be null
         if (StringUtils.isBlank(txId)) {
             return;
@@ -467,8 +474,7 @@ import java.util.concurrent.TimeUnit;
      * @param from
      * @param rsCoreErrorEnum
      */
-    private void toEndOrCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RsCoreErrorEnum rsCoreErrorEnum,
-        boolean isCallback) {
+    private void toEndOrCallBackByError(CoreTxBO bo, CoreTxStatusEnum from, RsCoreErrorEnum rsCoreErrorEnum, boolean isCallback) {
         RespData respData = new RespData();
         respData.setCode(rsCoreErrorEnum.getCode());
         respData.setMsg(rsCoreErrorEnum.getDescription());
@@ -507,10 +513,8 @@ import java.util.concurrent.TimeUnit;
         }
         //同步通知
         try {
-            distributeCallbackNotifyService
-                .notifySyncResult(bo.getTxId(), respData, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
-            distributeCallbackNotifyService.notifySyncResult(bo.getTxId(), respData,
-                RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+            persistedResultMap.put(bo.getTxId(), respData);
+            clusterPersistedResultMap.put(bo.getTxId(), respData);
         } catch (Throwable e) {
             log.warn("sync notify rs resp data failed", e);
         }

@@ -89,18 +89,17 @@ import java.util.*;
         Set<String> nodeSet = new HashSet<>();
         List<Action> caActionList = new LinkedList<>();
         log.info(
-            "[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKeyForConsensus, nodeList size = {}, nodeList = {}",
+            "[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKey, nodeList size = {}, nodeList = {}",
             nodeList.size(), nodeList.toString());
 
         int i = 0;
         do {
             if (nodeSet.size() == nodeList.size()) {
-                log.info(
-                    "[CaInitServiceImpl.acquirePubKeys]  acquired all nodes' pubKeyForConsensus, nodeSet size = {}",
+                log.info("[CaInitServiceImpl.acquirePubKeys]  acquired all nodes' pubKey, nodeSet size = {}",
                     nodeSet.size());
                 return caActionList;
             }
-            // acquire all nodes' pubKeyForConsensus
+            // acquire all nodes' pubKey
             nodeList.forEach((nodeName) -> {
                 try {
                     synchronized (CaInitServiceImpl.class) {
@@ -144,20 +143,20 @@ import java.util.*;
         }
 
         log.info(
-            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKeyForConsensus, caActionList size = {}, nodeSet size={}, nodeList.size()={}, caActionList = {}",
+            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}, nodeSet size={}, nodeList.size()={}, caActionList = {}",
             caActionList.size(), nodeSet.size(), nodeList.size(), caActionList);
         return caActionList;
     }
 
     @Override public RespData<List<Config>> initCaTx() {
-        // acquire pubKeyForConsensus from DB
+        // acquire pubKey from DB
         List<Config> list = configRepository.getConfig(new Config(nodeState.getNodeName()));
         if (null == list) {
-            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pubKeyForConsensus not exist", nodeState.getNodeName());
+            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, key pair not exist", nodeState.getNodeName());
             return new RespData<>(RespCodeEnum.DATA_NOT_EXIST);
         }
         if (list.size() != 2) {
-            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, more than one pair of pub/priKey, list size={}",
+            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pub/priKey pairs not equal 2, list size={}",
                 nodeState.getNodeName(), list.size());
             return new RespData<>(RespCodeEnum.SYS_FAIL);
         }

@@ -28,27 +28,34 @@ import java.util.Collection;
     @Override public void verifyParams(Action action) throws SlaveException {
         AccountOperation bo = (AccountOperation)action;
         if(StringUtils.isEmpty(bo.getBizFlowNo()) || bo.getBizFlowNo().length() > 64){
+            log.error("[verifyParams] bizFlowNo is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(bo.getAccountDate() == null){
+            log.error("[verifyParams] accountDate is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(CollectionUtils.isEmpty(bo.getCreditTradeInfo()) || CollectionUtils.isEmpty(bo.getDebitTradeInfo())){
+            log.error("[verifyParams] CreditTradeInfo is empty or DebitTradeInfo is empty param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         for(AccountTradeInfo tradeInfo : bo.getCreditTradeInfo()){
             if(tradeInfo == null || StringUtils.isEmpty(tradeInfo.getAccountNo())){
+                log.error("[verifyParams] tradeInfo is empty or tradeInfo.accountNo is null param:{}",bo);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
             if(tradeInfo.getAmount() == null){
+                log.error("[verifyParams] tradeInfo.amount is null param:{}",bo);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
         }
         for(AccountTradeInfo tradeInfo : bo.getDebitTradeInfo()){
             if(tradeInfo == null || StringUtils.isEmpty(tradeInfo.getAccountNo())){
+                log.error("[verifyParams] tradeInfo is empty or tradeInfo.accountNo is null param:{}",bo);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
             if(tradeInfo.getAmount() == null){
+                log.error("[verifyParams] tradeInfo.amount is null param:{}",bo);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
         }

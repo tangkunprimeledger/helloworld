@@ -27,7 +27,7 @@ import java.util.List;
  * @date 2018-04-12
  */
 @Slf4j @Component public class BlockServiceImpl implements BlockService {
-    @Autowired BlockRepository blockRepository;
+    @Autowired private BlockRepository blockRepository;
     @Autowired SnapshotRootHashBuilder snapshotRootHashBuilder;
 
     @Override public Long getMaxHeight() {

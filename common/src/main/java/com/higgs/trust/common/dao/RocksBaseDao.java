@@ -65,7 +65,7 @@ public abstract class RocksBaseDao<V> {
         }
     }
 
-    public void batchPut(AbstractWriteBatch batch, String k, V v) {
+    public void batchPut(WriteBatch batch, String k, V v) {
         ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
 
         byte[] key = JSON.toJSONBytes(k);
@@ -134,11 +134,11 @@ public abstract class RocksBaseDao<V> {
         List<V> list = new ArrayList<>();
         byte[] prefixByte = JSON.toJSONBytes(prefix);
         if (limit < 0) {
-            for (iterator.seekForPrev(prefixByte); iterator.isValid() && isPrefix(prefix, iterator.key()); iterator.next()) {
+            for (iterator.seek(prefixByte); iterator.isValid() && isPrefix(prefix, iterator.key()); iterator.next()) {
                 list.add((V)JSON.parse(iterator.value()));
             }
         } else {
-            for (iterator.seekForPrev(prefixByte); iterator.isValid() && limit-- > 0 && isPrefix(prefix, iterator.key()); iterator.next()) {
+            for (iterator.seek(prefixByte); iterator.isValid() && limit-- > 0 && isPrefix(prefix, iterator.key()); iterator.next()) {
                 list.add((V)JSON.parse(iterator.value()));
             }
         }
@@ -176,7 +176,21 @@ public abstract class RocksBaseDao<V> {
         RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
         byte[] prefixByte = JSON.toJSONBytes(prefix);
         for (iterator.seekForPrev(prefixByte); iterator.isValid();) {
-            return (V)JSON.parse(iterator.key());
+            return (V)JSON.parse(iterator.value());
+        }
+
+        return null;
+    }
+
+    public String queryKeyForPrev(String prefix) {
+        if (StringUtils.isEmpty(prefix)) {
+            return null;
+        }
+
+        RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
+        byte[] prefixByte = JSON.toJSONBytes(prefix);
+        for (iterator.seekForPrev(prefixByte); iterator.isValid();) {
+            return (String)JSON.parse(iterator.key());
         }
 
         return null;
@@ -201,7 +215,7 @@ public abstract class RocksBaseDao<V> {
     public String queryFirstKey(String prefix) {
         RocksIterator iterator = iterator();
         if (StringUtils.isEmpty(prefix)) {
-            for (iterator.seekToFirst(); iterator.isValid(); iterator.next()) {
+            for (iterator.seekToFirst(); iterator.isValid();) {
                 return (String)JSON.parse(iterator.key());
             }
         } else {

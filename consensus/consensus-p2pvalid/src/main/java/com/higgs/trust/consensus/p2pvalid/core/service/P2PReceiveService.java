@@ -1,10 +1,8 @@
 package com.higgs.trust.consensus.p2pvalid.core.service;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
-import com.higgs.trust.common.utils.CryptoUtil;
-import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;

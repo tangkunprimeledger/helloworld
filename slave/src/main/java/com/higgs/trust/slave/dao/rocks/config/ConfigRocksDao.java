@@ -10,7 +10,6 @@ import com.higgs.trust.slave.dao.po.config.ConfigPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.AbstractWriteBatch;
 import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +29,7 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
 
     public void save(ConfigPO configPO) {
         String key = configPO.getNodeName() + Constant.SPLIT_SLASH + configPO.getUsage();
-        if (null != get(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[ConfigRocksDao.save] config is exist. key={}", key);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }
@@ -46,7 +45,7 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
         }
         configPO.setUpdateTime(new Date());
 
-        AbstractWriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
         if (null == batch) {
             put(key, configPO);
         } else {
@@ -59,7 +58,7 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
             return 0;
         }
 
-        AbstractWriteBatch batch = ThreadLocalUtils.getWriteBatch();
+       WriteBatch batch = ThreadLocalUtils.getWriteBatch();
         if (null == batch) {
             log.error("[ConfigRocksDao.batchInsert] write batch is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
@@ -93,7 +92,7 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
             return;
         }
 
-        AbstractWriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
         if (null == batch) {
             log.error("[ConfigRocksDao.batchCancel] write batch is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);

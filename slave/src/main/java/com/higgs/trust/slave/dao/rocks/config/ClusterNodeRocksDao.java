@@ -7,7 +7,6 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.AbstractWriteBatch;
 import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
@@ -25,14 +24,14 @@ public class ClusterNodeRocksDao extends RocksBaseDao<ClusterNodePO>{
     }
 
     public void saveWithTransaction(ClusterNodePO clusterNodePO) {
-        AbstractWriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
         if (null == batch) {
             log.error("[ClusterNodeRocksDao.saveWithTransaction] write batch is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
         }
 
         String key = clusterNodePO.getNodeName();
-        if (null != get(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[ClusterNodeRocksDao.save] cluster node is exist, nodeName={}", key);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }
@@ -46,7 +45,7 @@ public class ClusterNodeRocksDao extends RocksBaseDao<ClusterNodePO>{
             return 0;
         }
 
-        AbstractWriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
         if (null == batch) {
             log.error("[ClusterNodeRocksDao.batchInsert] write batch is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);

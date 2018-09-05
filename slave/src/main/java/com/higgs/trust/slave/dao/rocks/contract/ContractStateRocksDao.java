@@ -43,7 +43,7 @@ public class ContractStateRocksDao extends RocksBaseDao<ContractStatePO> {
 
     public void save(ContractStatePO po) {
         String address = po.getAddress();
-        if (null != get(address)) {
+        if (keyMayExist(address) && null != get(address)) {
             log.error("[ContractStateRocksDao.save] contract state is already exist, address={}", address);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }

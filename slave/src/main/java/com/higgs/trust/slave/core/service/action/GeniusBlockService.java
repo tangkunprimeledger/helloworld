@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.action;
 
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
@@ -12,7 +13,9 @@ import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
+import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
+import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -41,6 +44,7 @@ import java.util.*;
     @Autowired TransactionTemplate txRequired;
     @Autowired CaRepository caRepository;
     @Autowired CaInitHandler caInitHandler;
+    @Autowired SystemPropertyRepository systemPropertyRepository;
     @Autowired InitConfig initConfig;
 
     public void generateGeniusBlock(Block block) {
@@ -77,6 +81,9 @@ import java.util.*;
                     saveClusterConfig(block);
                     log.info("[process]insert ca information into db");
                     saveCa(block);
+
+                    //save block height in system_property
+                    systemPropertyRepository.saveWithTransaction(Constant.MAX_BLOCK_HEIGHT, String.valueOf(block.getBlockHeader().getHeight()), "max block height");
 
                     RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
                 } finally {
@@ -122,14 +129,14 @@ import java.util.*;
         List list = new LinkedList();
         List<Action> caList = acquireAction(block);
         caList.forEach((caAction) -> {
-            Ca ca = new Ca();
+            CaPO ca = new CaPO();
             ca.setPeriod(calculatePeriod());
             ca.setPubKey(((CaAction)caAction).getPubKey());
             ca.setValid(true);
             ca.setUser(((CaAction)caAction).getUser());
             ca.setVersion(VersionEnum.V1.getCode());
             ca.setUsage(((CaAction)caAction).getUsage());
-            log.info("[CaInitHandler.saveCa] nodeName={}, usage={}, pubKeyForConsensus={}, period={}", ca.getUser(), ca.getUsage(),
+            log.info("[CaInitHandler.saveCa] nodeName={}, usage={}, pubKey={}, period={}", ca.getUser(), ca.getUsage(),
                 ca.getPubKey(), ca.getPeriod());
             list.add(ca);
         });

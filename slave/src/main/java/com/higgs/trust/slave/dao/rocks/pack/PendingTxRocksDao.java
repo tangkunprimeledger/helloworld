@@ -16,6 +16,7 @@ import java.util.Map;
 
 /**
  * @author tangfashuang
+ * @desc key: txId, value: height
  */
 @Slf4j @Service public class PendingTxRocksDao extends RocksBaseDao<Long> {
     @Override protected String getColumnFamilyName() {
@@ -54,4 +55,13 @@ import java.util.Map;
         }
     }
 
+    public void batchDelete(String txId) {
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        if (null == batch) {
+            log.error("[PackStatusRocksDao.batchDelete] write batch is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        }
+
+        batchDelete(batch, txId);
+    }
 }

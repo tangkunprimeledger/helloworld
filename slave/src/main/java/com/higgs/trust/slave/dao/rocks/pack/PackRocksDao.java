@@ -1,20 +1,20 @@
 package com.higgs.trust.slave.dao.rocks.pack;
 
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.dao.RocksBaseDao;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.pack.PackagePO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.util.*;
 
 /**
  * @author tangfashuang
@@ -35,7 +35,7 @@ public class PackRocksDao extends RocksBaseDao<PackagePO> {
         }
 
         String height = String.valueOf(po.getHeight());
-        if (null != get(height)) {
+        if (keyMayExist(height) && null != get(height)) {
             log.error("[PackRocksDao.save] package is already exist. height={}", height);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }
@@ -79,6 +79,18 @@ public class PackRocksDao extends RocksBaseDao<PackagePO> {
             }
         }
 
+        //sort height asc
+        Collections.sort(heights);
         return heights;
+    }
+
+    public void batchDelete(Long h) {
+        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
+        if (null == batch) {
+            log.error("[PackStatusRocksDao.batchDelete] write batch is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        }
+
+        batchDelete(batch, String.valueOf(h));
     }
 }

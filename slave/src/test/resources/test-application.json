@@ -74,26 +74,11 @@
     }
   },
   "server": {
-    "port": 7070
+    "port": 7074
   },
   "spring": {
     "application": {
       "name": "TRUST-TEST0"
-    },
-    "datasource": {
-      "druid": {
-        "driver-class-name": "com.mysql.jdbc.Driver",
-        "initialSize": 1,
-        "maxActive": 20,
-        "maxWait": 60000,
-        "min-evictable-idle-time-millis": 300000,
-        "minIdle": 1,
-        "password": "root",
-        "time-between-eviction-runs-millis": 60000,
-        "url": "jdbc:mysql://192.168.99.100:3306/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
-        "username": "root"
-      },
-      "type": "com.alibaba.druid.pool.DruidDataSource"
     }
   },
   "trust": {
@@ -113,8 +98,21 @@
       "mode": "cluster"
     },
     "useMySQL": false,
-    "rocks": {
-      "dbFileRoot": "/Volumes/work/log/rocks/db/"
+    "rocksdb": {
+      "file": {
+        "root": "/Volumes/work/log/rocks/db/",
+        "flash": {
+          "name": "trust.db",
+          "size": 10000000000
+        },
+        "extra": {
+          "name": "trust-extra.db",
+          "size": 99999999999
+        },
+        "transaction": {
+          "lockTimeout": 1000
+        }
+      }
     },
     "redisson": {
       "single": true,
@@ -127,7 +125,7 @@
   },
   "logging": {
     "config": "classpath:logback.xml",
-    "path": "/Volumes/work/log/log"
+    "path": "/Volumes/work/log/log4"
   },
   "hystrix": {
     "command": {

@@ -27,7 +27,7 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
 
     public void save(RequestPO requestPO) {
         String key = requestPO.getRequestId();
-        if (keyMayExist(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[RequestRocksDao.save] request is exist, requestId={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
         }

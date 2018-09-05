@@ -5,6 +5,7 @@ import com.higgs.trust.common.dao.RocksBaseDao;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
+import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -33,7 +34,7 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
         }
 
         String key = po.getStatus() + Constant.SPLIT_SLASH + po.getTxId();
-        if (keyMayExist(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[CoreTxProcessRocksDao.save] core transaction process is exist, key={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
         }
@@ -118,13 +119,32 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
 
     public void deleteEND(String status) {
        String beginKey = queryFirstKey(status);
-       String endKey = queryLastKey(status);
+       List<String> indexList = CoreTxStatusEnum.getIndexs(status);
+
+       String endKey = null;
+       boolean isEnd = false;
+       for (String index : indexList) {
+           String key = queryFirstKey(index);
+           if (!StringUtils.isEmpty(key)) {
+               endKey = key;
+               isEnd = true;
+               break;
+           }
+       }
+
+       if (StringUtils.isEmpty(endKey)) {
+           isEnd = false;
+           endKey = queryLastKey();
+       }
 
        if (StringUtils.isEmpty(beginKey) || StringUtils.isEmpty(endKey)) {
            return;
        }
 
        deleteRange(beginKey, endKey);
+       if (!isEnd) {
+           delete(endKey);
+       }
     }
 
 }

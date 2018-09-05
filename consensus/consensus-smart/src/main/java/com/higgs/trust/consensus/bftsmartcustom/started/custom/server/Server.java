@@ -6,17 +6,14 @@ import bftsmart.tom.server.defaultservices.DefaultRecoverable;
 import com.google.common.base.Charsets;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.SmartCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusCommit;
-import com.higgs.trust.consensus.core.ConsensusSnapshot;
+import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
+import io.atomix.utils.serializer.Namespace;
+import io.atomix.utils.serializer.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -32,13 +29,21 @@ public class Server extends DefaultRecoverable {
 
     private ServiceReplica serviceReplica;
 
-    private ConsensusSnapshot snapshot;
+    private IConsensusSnapshot snapshot;
 
-    public Server(int serverId, ConsensusSnapshot snapshot, SmartCommitReplicateComposite machine) {
+    private Serializer serializer;
+
+    public Server(int serverId, IConsensusSnapshot snapshot, SmartCommitReplicateComposite replicateComposite) {
         this.snapshot = snapshot;
-        this.machine = machine;
+        this.machine = replicateComposite;
         functionMap = machine.registerCommit();
         serviceReplica = new ServiceReplica(serverId, this, this);
+        Namespace namespace = Namespace.builder()
+            .setRegistrationRequired(false)
+            .setCompatible(true)
+            .register(AbstractConsensusCommand.class)
+            .build();
+        serializer = Serializer.using(namespace);
         //先从spring容器中获取对应的bean，如果不存在则反射实例化一个
         //        try {
         //            try {
@@ -54,12 +59,11 @@ public class Server extends DefaultRecoverable {
     }
 
     @Override public void installSnapshot(byte[] state) {
-        this.snapshot.installSnapshot(new String(state, Charsets.UTF_8));
+        this.snapshot.installSnapshot(state);
     }
 
     @Override public byte[] getSnapshot() {
-        String snapshot = this.snapshot.getSnapshot();
-        return snapshot.getBytes(Charsets.UTF_8);
+        return this.snapshot.getSnapshot();
     }
 
     @Override public byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs, boolean fromConsensus) {
@@ -71,11 +75,8 @@ public class Server extends DefaultRecoverable {
     }
 
     private byte[] executeSingle(byte[] command, MessageContext msgCtx) {
-        ByteArrayInputStream in = new ByteArrayInputStream(command);
-        ObjectInput objectInput = null;
         try {
-            objectInput = new ObjectInputStream(in);
-            AbstractConsensusCommand abstractConsensusCommand = (AbstractConsensusCommand)objectInput.readObject();
+            AbstractConsensusCommand abstractConsensusCommand = serializer.decode(command);
             //共识结束，回调客户端
             if (Objects.nonNull(abstractConsensusCommand)) {
                 if (functionMap.containsKey(abstractConsensusCommand.getClass())) {
@@ -104,11 +105,8 @@ public class Server extends DefaultRecoverable {
                 }
             }
             return null;
-        } catch (IOException e) {
-            log.error("Exception reading data in the replica: " + e.getMessage(), e);
-            return null;
-        } catch (ClassNotFoundException e) {
-            log.error("Coudn't find List: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("execute command error: " + e.getMessage(), e);
             return null;
         }
     }

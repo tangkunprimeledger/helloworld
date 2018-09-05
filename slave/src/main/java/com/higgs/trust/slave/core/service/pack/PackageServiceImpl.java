@@ -25,6 +25,7 @@ import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.core.repository.TransactionRepository;
+import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandler;
@@ -59,6 +60,7 @@ import java.util.stream.Collectors;
 @Service @Slf4j public class PackageServiceImpl implements PackageService {
     @Autowired private TransactionTemplate txRequired;
     @Autowired private PackageRepository packageRepository;
+    @Autowired private SystemPropertyRepository systemPropertyRepository;
     @Autowired private BlockService blockService;
     @Autowired private LogReplicateHandler logReplicateHandler;
     @Autowired private TransactionExecutor transactionExecutor;
@@ -136,6 +138,12 @@ import java.util.stream.Collectors;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
+        //check block height
+        Long maxBlockHeight = blockService.getMaxHeight();
+        if(maxBlockHeight!=null && maxBlockHeight.compareTo(pack.getHeight()) >= 0){
+            log.warn("package.height:{} is already done",pack.getHeight());
+            return;
+        }
         Package packageBO = packageRepository.load(pack.getHeight());
         // check package hash
         if (null != packageBO) {
@@ -165,6 +173,7 @@ import java.util.stream.Collectors;
                 packageRepository.save(pack);
                 pendingTxRepository.batchInsertToRocks(pack.getSignedTxList(), pack.getHeight());
 
+                systemPropertyRepository.saveWithTransaction(Constant.MAX_PACK_HEIGHT, String.valueOf(pack.getHeight()), "max package height");
                 RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
             } finally {
                 ThreadLocalUtils.clearWriteBatch();

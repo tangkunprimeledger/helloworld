@@ -7,8 +7,11 @@ import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.mysql.pack.PendingTransactionDao;
+import com.higgs.trust.slave.dao.po.pack.PackagePO;
 import com.higgs.trust.slave.dao.po.pack.PendingTransactionPO;
+import com.higgs.trust.slave.dao.rocks.pack.PackRocksDao;
 import com.higgs.trust.slave.dao.rocks.pack.PendingTxRocksDao;
+import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
@@ -188,6 +191,19 @@ import java.util.List;
      * @return
      */
     public int deleteLessThanHeight(Long height) {
-        return pendingTransactionDao.deleteLessThanHeight(height);
+        if (initConfig.isUseMySQL()) {
+            return pendingTransactionDao.deleteLessThanHeight(height);
+        }
+        //rocks db delete with package
+        return 1;
+    }
+
+    public void batchDelete(List<SignedTransaction> signedTxList) {
+        if (CollectionUtils.isEmpty(signedTxList)) {
+            return;
+        }
+        for (SignedTransaction signedTx : signedTxList) {
+            pendingTxRocksDao.batchDelete(signedTx.getCoreTx().getTxId());
+        }
     }
 }

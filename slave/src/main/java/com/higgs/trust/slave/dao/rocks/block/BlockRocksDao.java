@@ -27,16 +27,17 @@ public class BlockRocksDao extends RocksBaseDao <BlockPO> {
     }
 
     public void save(BlockPO blockPO) {
-        String height = String.valueOf(blockPO.getHeight());
-        if (null != get(height)) {
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
-        }
-
         WriteBatch batch = ThreadLocalUtils.getWriteBatch();
         if (null == batch) {
             log.error("[BlockRocksDao.save] write batch is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
         }
+
+        String height = String.valueOf(blockPO.getHeight());
+        if (keyMayExist(height) && null != get(height)) {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
+        }
+
         batchPut(batch, height, blockPO);
     }
 

@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.callback;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -70,7 +71,9 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
 
     @Override
     public void onPersisted(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts, BlockHeader blockHeader) {
+        Profiler.enter("[rc.core.parseTxs]");
         Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
+        Profiler.release();
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         List<RsCoreTxVO> selfTxs = map.get(KEY_SELF);
         List<RsCoreTxVO> otherTxs = map.get(KEY_OTHER);
@@ -104,7 +107,9 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
         }
         //callback custom rs
         if (needCallbackCustom) {
+            Profiler.enter("[rc.core.callbackCustom]");
             callbackCustom(allTxs, blockHeader, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY, true);
+            Profiler.release();
         }
     }
 
@@ -142,21 +147,30 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
      */
     private void callbackCustom(List<RsCoreTxVO> allTxs, BlockHeader blockHeader, RedisMegGroupEnum redisMegGroupEnum, boolean isOnPersisted) {
         if (isOnPersisted) {
+            Profiler.enter("[rc.core.onPersisted]");
             rsCoreBatchCallbackProcessor.onPersisted(allTxs, blockHeader);
+            Profiler.release();
         } else {
             rsCoreBatchCallbackProcessor.onEnd(allTxs, blockHeader);
         }
         //sync notify
+        List<RespData<String>> respDatas = new ArrayList<>(allTxs.size());
         for (RsCoreTxVO tx : allTxs) {
             try {
-                RespData respData = new RespData();
-                respData.setCode(tx.getErrorCode());
-                respData.setMsg(tx.getErrorMsg());
-                distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, redisMegGroupEnum);
+                RespData<String> respData = new RespData<>();
+                if (CoreTxResultEnum.SUCCESS != tx.getExecuteResult()) {
+                    respData.setCode(tx.getErrorCode());
+                    respData.setMsg(tx.getErrorMsg());
+                }
+                respData.setData(tx.getTxId());
+                respDatas.add(respData);
             } catch (Throwable e) {
                 log.warn("[callbackCustom]sync notify rs resp data failed", e);
             }
         }
+        Profiler.enter("[rc.core.notifySyncResult]");
+        distributeCallbackNotifyService.notifySyncResult(respDatas, redisMegGroupEnum);
+        Profiler.release();
     }
 
     @Override

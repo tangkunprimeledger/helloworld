@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.repository;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.vo.BlockVO;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -267,12 +268,22 @@ import java.util.List;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
             }
         } else {
+            Profiler.enter("build tx POS");
             blockPO.setTxPOs(transactionRepository.buildTransactionPOs(blockHeight, blockTime, txs, txReceipts));
+            Profiler.release();
+            Profiler.enter("save block");
             blockRocksDao.save(blockPO);
+            Profiler.release();
+            Profiler.enter("save max block height");
+            systemPropertyRepository.saveWithTransaction(Constant.MAX_BLOCK_HEIGHT, String.valueOf(blockHeight), "max block height");
+            Profiler.release();
         }
 
+        Profiler.enter("batch insert transaction");
         //save transactions
         transactionRepository.batchSaveTransaction(blockHeight, blockTime, txs, txReceipts);
+        Profiler.release();
+
 
         if (log.isDebugEnabled()) {
             log.debug("[BlockRepository.saveBlock] is end");

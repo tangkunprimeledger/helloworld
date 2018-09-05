@@ -93,7 +93,7 @@ import org.springframework.transaction.support.TransactionTemplate;
                     doProcess(pack);
                 }
 
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                RocksUtils.batchCommit(new WriteOptions().setSync(true), ThreadLocalUtils.getWriteBatch());
             } catch (Throwable e) {
                 log.error("package process exception. ", e);
             } finally {

@@ -29,7 +29,7 @@ public class VoteRequestRecordRocksDao extends RocksBaseDao<VoteRequestRecordPO>
         }
 
         String key = voteRequestRecordPO.getTxId();
-        if (null != get(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[VoteRequestRecordRocksDao.save] vote request record is exist, txId={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
         }

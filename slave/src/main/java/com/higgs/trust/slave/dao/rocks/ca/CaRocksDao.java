@@ -29,7 +29,7 @@ public class CaRocksDao extends RocksBaseDao<CaPO>{
 
     public void save(CaPO caPO) {
         String key = caPO.getUser() + Constant.SPLIT_SLASH + caPO.getUsage();
-        if (null != get(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[CaRocksDao.save] ca is exist. key={}", key);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }

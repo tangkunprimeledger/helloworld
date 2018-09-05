@@ -8,6 +8,7 @@ import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.contract.Contract;
+import com.higgs.trust.slave.model.bo.utxo.Sign;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
                 .allow(UTXOAction.class)
                 .allow(TxIn.class)
                 .allow(TxOut.class)
+                .allow(Sign.class)
                 .allow("com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum");
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", contextService);

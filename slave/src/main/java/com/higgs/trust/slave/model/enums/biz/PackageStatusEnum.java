@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.model.enums.biz;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,9 +66,15 @@ public enum PackageStatusEnum {
 
     public static List<String> getIndexs(String index) {
         List<String> indexList = new ArrayList<>();
-        for (PackageStatusEnum enumeration : values()) {
-            if (enumeration.getIndex().compareTo(index) > 0) {
+        if (StringUtils.isEmpty(index)) {
+            for (PackageStatusEnum enumeration : values()) {
                 indexList.add(enumeration.getIndex());
+            }
+        } else {
+            for (PackageStatusEnum enumeration : values()) {
+                if (enumeration.getIndex().compareTo(index) > 0) {
+                    indexList.add(enumeration.getIndex());
+                }
             }
         }
         return indexList;

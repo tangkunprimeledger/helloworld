@@ -8,13 +8,12 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.mysql.transaction.TransactionDao;
 import com.higgs.trust.slave.dao.mysql.transaction.TransactionJDBCDao;
+import com.higgs.trust.slave.dao.po.block.BlockPO;
 import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
 import com.higgs.trust.slave.dao.po.transaction.TransactionReceiptPO;
+import com.higgs.trust.slave.dao.rocks.block.BlockRocksDao;
 import com.higgs.trust.slave.dao.rocks.transaction.TransactionRocksDao;
-import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.SignInfo;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.bo.TransactionReceipt;
+import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -37,6 +36,7 @@ import java.util.List;
     @Autowired TransactionDao transactionDao;
     @Autowired TransactionJDBCDao transactionJDBCDao;
     @Autowired TransactionRocksDao transactionRocksDao;
+    @Autowired BlockRocksDao blockRocksDao;
     @Autowired InitConfig initConfig;
 
     public boolean isExist(String txId) {
@@ -103,7 +103,14 @@ import java.util.List;
      * @return
      */
     public List<SignedTransaction> queryTransactions(Long blockHeight) {
-        List<TransactionPO> txPOs = transactionDao.queryByBlockHeight(blockHeight);
+        List<TransactionPO> txPOs;
+        if (!initConfig.isUseMySQL()) {
+            BlockPO blockPO = blockRocksDao.get(String.valueOf(blockHeight));
+            txPOs = blockPO == null ? null : blockPO.getTxPOs();
+        } else {
+            txPOs = transactionDao.queryByBlockHeight(blockHeight);
+        }
+
         if (CollectionUtils.isEmpty(txPOs)) {
             return null;
         }

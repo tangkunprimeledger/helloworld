@@ -17,6 +17,7 @@ import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
+import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
@@ -103,28 +104,17 @@ public class PackageRepositoryTest extends BaseTest {
         pack.setPackageTime(System.currentTimeMillis());
 
         try {
-            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
             ThreadLocalUtils.putWriteBatch(new WriteBatch());
             for (int i = 0; i < 100; i++) {
                 pack.setHeight(2L + i);
                 packageRepository.save(pack);
             }
 
-            packStatusRocksDao.save(20L, PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
-            System.out.println("before commit. load package height=20L,  " + packageRepository.load(20L));
-            System.out.println("before commit. " + packStatusRocksDao.get(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode() + Constant.SPLIT_SLASH + "0000000000000020"));
             RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-            tx.commit();
             System.out.println("after commit. load package height=20L, " + packageRepository.load(20L));
-            System.out.println("after commit. " + packStatusRocksDao.get(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode() + Constant.SPLIT_SLASH + "0000000000000020"));
         } finally {
             ThreadLocalUtils.clearWriteBatch();
         }
-    }
-
-    @Test public void testQueryByHeight() throws Exception {
-        PackagePO packagePO = packageRepository.queryByHeight(2L);
-        Assert.assertEquals(packagePO.getHeight().longValue(), 2L);
     }
 
     @Test public void testUpdateStatus() throws Exception {
@@ -134,16 +124,26 @@ public class PackageRepositoryTest extends BaseTest {
             try {
                 //Long height = packStatusRocksDao.get(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode() + Constant.SPLIT_SLASH + 2);
                 ThreadLocalUtils.putWriteBatch(new WriteBatch());
-                //                packageRepository.updateStatus(5L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(10L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(20L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(30L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(40L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(50L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(60L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(70L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(80L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-                //                packageRepository.updateStatus(90L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(5L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(10L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(20L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(30L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(40L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(50L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(60L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(70L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(80L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+//                packageRepository
+//                    .updateStatus(90L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
                 packageRepository
                     .updateStatus(80L, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
                 packageRepository
@@ -171,7 +171,7 @@ public class PackageRepositoryTest extends BaseTest {
     }
 
     @Test public void testLoadHeightList() throws Exception {
-        packageRepository.loadHeightList(2L);
+        List<Long> heights = packageRepository.loadHeightList(25L);
     }
 
     @Test public void testLoadAndLock() throws Exception {
@@ -183,11 +183,11 @@ public class PackageRepositoryTest extends BaseTest {
 
     @Test public void testGetMaxHeight() throws Exception {
         if (!initConfig.isUseMySQL()) {
-            systemPropertyRepository.add(Constant.MAX_PACK_HEIGHT, "2", "max package height");
+            systemPropertyRepository.add(Constant.MAX_PACK_HEIGHT, String.valueOf(101L), "max package height");
         }
         Long height = packageRepository.getMaxHeight();
 
-        Assert.assertEquals(3L, height.longValue());
+        Assert.assertEquals(101L, height.longValue());
     }
 
     @Test public void testGetMinHeight() throws Exception {
@@ -203,32 +203,49 @@ public class PackageRepositoryTest extends BaseTest {
     }
 
     @Test public void testGetMaxHeightByStatus() throws Exception {
-        //        Long height = packageRepository.getMaxHeightByStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
-        Long height = packageRepository.getMaxHeightByStatus(null);
+        List<String> keys = packStatusRocksDao.keys();
+        Long height = packageRepository.getMaxHeightByStatus(PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
         Package pack = packageRepository.load(height);
     }
 
     @Test public void testGetMinHeightByStatus() throws Exception {
-
+        List<String> keys = packStatusRocksDao.keys();
+        Long height = packageRepository.getMinHeightByStatus(PackageStatusEnum.PERSISTED);
     }
 
     @Test public void testDeleteLessThanHeightAndStatus() throws Exception {
+        List<String> keys = packStatusRocksDao.keys();
+        packageRepository.deleteLessThanHeightAndStatus(193L, PackageStatusEnum.RECEIVED);
+        List<String> newKeys = packStatusRocksDao.keys();
+        List<String> newPackKeys = packRocksDao.keys();
     }
 
     @Test public void testDeleteRange() throws Exception {
-//        String beginKey = packStatusRocksDao.queryFirstKey(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
-//        String endKey = packStatusRocksDao.queryLastKey(PackageStatusEnum.FAILOVER.getCode());
-        //        packStatusRocksDao.deleteRange(beginKey, endKey);
-        //        packStatusRocksDao.delete(endKey);
         List<String> keys = packStatusRocksDao.keys();
+        System.out.println(keys);
+        String beginKey = packStatusRocksDao.queryFirstKey(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getIndex());
+        String endKey = null;
+        List<String> indexList = PackageStatusEnum.getIndexs(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getIndex());
+        for (String index : indexList) {
+            String key = packStatusRocksDao.queryFirstKey(index);
+            if (!StringUtils.isEmpty(key)) {
+                endKey = key;
+                break;
+            }
+        }
+        if (StringUtils.isEmpty(endKey)) {
+            endKey = packStatusRocksDao.queryLastKey();
+        }
+//        packStatusRocksDao.deleteRange(beginKey, endKey);
+//        packStatusRocksDao.delete(endKey);
+
         //        List<String> heights1 = packStatusRocksDao.queryKeysByPrefix(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode());
         //        List<String> heights2 = packStatusRocksDao.queryKeysByPrefix(PackageStatusEnum.PERSISTED.getCode());
         //        String beginKey = packRocksDao.queryFirstKey(null);
         //        String endKey = packRocksDao.queryLastKey(null);
         //        packRocksDao.deleteRange(beginKey, endKey);
         //        packRocksDao.delete(endKey);
-//                List<String> keys = packRocksDao.keys();
-        System.out.println(keys);
+        //                List<String> keys = packRocksDao.keys();
 
     }
 

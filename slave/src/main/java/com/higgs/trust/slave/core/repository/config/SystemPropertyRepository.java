@@ -1,12 +1,17 @@
 package com.higgs.trust.slave.core.repository.config;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.common.config.InitConfig;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.mysql.config.SystemPropertyDao;
 import com.higgs.trust.slave.dao.po.config.SystemPropertyPO;
 import com.higgs.trust.slave.dao.rocks.config.SystemPropertyRocksDao;
 import com.higgs.trust.slave.model.bo.config.SystemProperty;
+import lombok.extern.slf4j.Slf4j;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.WriteBatch;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +26,7 @@ import java.util.Date;
  * @create 2018年06月27日15:58
  */
 @Service
+@Slf4j
 public class SystemPropertyRepository {
     @Autowired
     private SystemPropertyDao systemPropertyDao;
@@ -63,6 +69,7 @@ public class SystemPropertyRepository {
         if (initConfig.isUseMySQL()) {
             systemPropertyDao.add(systemPropertyPO);
         } else {
+            systemPropertyPO.setCreateTime(new Date());
             systemPropertyRocksDao.put(key, systemPropertyPO);
         }
     }
@@ -86,5 +93,9 @@ public class SystemPropertyRepository {
             }
             return 0;
         }
+    }
+
+    public void saveWithTransaction(String key, String value, String desc) {
+        systemPropertyRocksDao.saveWithTransaction(key, value, desc);
     }
 }

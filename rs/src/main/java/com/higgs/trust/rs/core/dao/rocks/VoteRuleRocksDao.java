@@ -32,7 +32,7 @@ public class VoteRuleRocksDao extends RocksBaseDao<VoteRulePO>{
         }
 
         String policyId = voteRulePO.getPolicyId();
-        if (null != get(policyId)) {
+        if (keyMayExist(policyId) && null != get(policyId)) {
             log.error("[VoteRuleRocksDao.saveWithTransaction] vote rule  is already exist, policyId={}", policyId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
         }

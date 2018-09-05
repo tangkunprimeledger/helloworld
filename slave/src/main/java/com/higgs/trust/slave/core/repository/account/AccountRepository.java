@@ -102,7 +102,6 @@ import java.util.List;
         accountInfo.setDetailNo(0L);
         accountInfo.setDetailFreezeNo(0L);
         accountInfo.setStatus(AccountStateEnum.NORMAL.getCode());
-        accountInfo.setCreateTime(new Date());
         return accountInfo;
     }
 

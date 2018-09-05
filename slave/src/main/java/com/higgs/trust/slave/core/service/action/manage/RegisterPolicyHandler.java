@@ -33,15 +33,19 @@ import java.util.Set;
     @Override public void verifyParams(Action action) throws SlaveException {
         RegisterPolicy bo = (RegisterPolicy)action;
         if(StringUtils.isEmpty(bo.getPolicyId()) || bo.getPolicyId().length() > 32){
+            log.error("[verifyParams] policyId is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getPolicyName()) || bo.getPolicyName().length() > 64){
+            log.error("[verifyParams] policyName is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(bo.getDecisionType() == null){
+            log.error("[verifyParams] DecisionType is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(CollectionUtils.isEmpty(bo.getRsIds())){
+            log.error("[verifyParams] rsIds is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }

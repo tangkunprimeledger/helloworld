@@ -3,7 +3,7 @@
  */
 package com.higgs.trust.consensus.p2pvalid.config;
 
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.consensus.config.NodeProperties;

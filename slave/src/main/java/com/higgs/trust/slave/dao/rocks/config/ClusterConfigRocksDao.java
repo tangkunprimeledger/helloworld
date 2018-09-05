@@ -30,7 +30,7 @@ public class ClusterConfigRocksDao extends RocksBaseDao<ClusterConfigPO>{
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
         }
         String key = clusterConfigPO.getClusterName();
-        if (null != get(key)) {
+        if (keyMayExist(key) && null != get(key)) {
             log.error("[ClusterConfigRocksDao.save] cluster config is exist, clusterName={}", key);
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }

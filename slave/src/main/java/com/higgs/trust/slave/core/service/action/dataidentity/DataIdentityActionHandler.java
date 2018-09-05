@@ -26,12 +26,15 @@ public class DataIdentityActionHandler implements ActionHandler {
     @Override public void verifyParams(Action action) throws SlaveException {
         DataIdentityAction bo = (DataIdentityAction) action;
         if(StringUtils.isEmpty(bo.getIdentity()) || bo.getIdentity().length() > 64){
+            log.error("[verifyParams] identity is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getDataOwner()) || bo.getDataOwner().length() > 24){
+            log.error("[verifyParams] dataOwner is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if(StringUtils.isEmpty(bo.getChainOwner()) || bo.getChainOwner().length() > 24){
+            log.error("[verifyParams] chainOwner is null or illegal param:{}",bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }

@@ -26,17 +26,17 @@ import java.util.stream.Collectors;
     /**
      * rocks db config properties
      */
-    @Value("${trust.rocksdb.file.Root:/Volumes/work/log/rocks/db/}")
+    @Value("${trust.rocksdb.file.root:/Volumes/work/log/rocks/db/}")
     private String dbFileRoot;
-    @Value("${trust.rocksdb.file.flash:trust.db}")
+    @Value("${trust.rocksdb.file.flash.name:trust.db}")
     private String DB_FILE_FLASH;
-    @Value("${trust.rocksdb.file.extra:trust-extra.db}")
+    @Value("${trust.rocksdb.file.extra.name:trust-extra.db}")
     private String DB_FILE_EXTRA;
     @Value("${trust.rocksdb.file.flash.size:10000000000}")
     private long DB_FILE_FLASH_SIZE;
-    @Value("${trust.rocksdb.file.extend.size: 99999999999}")
+    @Value("${trust.rocksdb.file.extra.size: 99999999999}")
     private long DB_FILE_EXTEND_SIZE;
-    @Value("${trust.rocksdb.transaction.lock.timeout: 1000}")
+    @Value("${trust.rocksdb.transaction.lockTimeout: 1000}")
     private long LOCK_TIMEOUT;
 
     private static List<String> columnFamily;

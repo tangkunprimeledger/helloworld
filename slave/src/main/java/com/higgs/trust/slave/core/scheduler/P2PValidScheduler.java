@@ -4,6 +4,8 @@ import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -106,16 +108,19 @@ import java.util.List;
                 packageService.persisted(header,isCompare);
                 isSuccess = true;
                 break;
+            } catch (SlaveException e) {
+                if(e.getCode() == SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR){
+                    nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
+                    log.warn("doPersisted height:{} is fail so change status to offline", header.getHeight());
+                    MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
+                    throw new RuntimeException("doPersisted is fail retry:" + exeRetryNum);
+                }
             } catch (Throwable t) {
                 log.error("doPersisted has error", t);
             }
             sleep(100L + 100 * i);
         } while (++i < exeRetryNum);
-
         if (!isSuccess) {
-            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
-            log.warn("doPersisted height:{} is fail so change status to offline", header.getHeight());
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
             throw new RuntimeException("doPersisted is fail retry:" + exeRetryNum);
         }
     }
