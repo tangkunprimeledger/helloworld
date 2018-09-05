@@ -972,8 +972,7 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private Object transferValue(Object object) {
         //TODO find a way make the object const
-        String valueTemp = serializeJsonString(object);
-        return JSON.parseObject(valueTemp, object.getClass());
+        return object;
     }
 
     /**
