@@ -291,7 +291,7 @@ import java.util.concurrent.Future;
             return rsIds;
         }
         //make sign map,key:rsId,value:sign
-        Map<String, String> signInfoMap = SignInfo.makeSignMap(signInfos);
+        Map<String, SignInfo> signInfoMap = SignInfo.makeSignMap(signInfos);
         List<String> voters = new ArrayList<>(rsIds.size());
         for (String rs : rsIds) {
             //filter already voting

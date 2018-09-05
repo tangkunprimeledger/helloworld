@@ -36,13 +36,16 @@ import java.util.stream.Collectors;
      * @param signInfos
      * @return
      */
-    public static Map<String, String> makeSignMap(List<SignInfo> signInfos) {
+    public static Map<String, SignInfo> makeSignMap(List<SignInfo> signInfos) {
         if (CollectionUtils.isEmpty(signInfos)) {
             return new HashMap<>();
         }
-        return signInfos.stream().collect(Collectors.toMap(SignInfo::getOwner, SignInfo::getSign));
+        return signInfos.stream().collect(Collectors.toMap(SignInfo::getOwner, SignInfo::getSelf));
     }
 
+    public SignInfo getSelf(){
+        return this;
+    }
     public enum SignTypeEnum{
         BIZ("BIZ","for business"),
         CONSENSUS("CONSENSUS","for consensus"),

@@ -5,12 +5,16 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.ca.CaDao;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.ca.Ca;
+import com.higgs.trust.slave.model.bo.manage.RsPubKey;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -105,5 +109,26 @@ import java.util.List;
         Ca ca = new Ca();
         BeanUtils.copyProperties(caPO,ca);
         return ca;
+    }
+
+    /**
+     * get all pubkeys
+     *
+     * @param usage
+     * @return
+     */
+    public List<RsPubKey> getAllPubkeyByUsage(UsageEnum usage){
+        List<CaPO> caPOs = caDao.getAllPubkeyByUsage(usage.getCode());
+        if (CollectionUtils.isEmpty(caPOs)){
+            return null;
+        }
+        List<RsPubKey> rsPubKeys = new ArrayList<>();
+        for(CaPO caPO : caPOs){
+            RsPubKey rsPubKey = new RsPubKey();
+            rsPubKey.setPubKey(caPO.getPubKey());
+            rsPubKey.setRsId(caPO.getUser());
+            rsPubKeys.add(rsPubKey);
+        }
+        return rsPubKeys;
     }
 }

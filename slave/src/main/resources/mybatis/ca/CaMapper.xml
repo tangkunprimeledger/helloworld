@@ -146,5 +146,12 @@
 		FROM ca WHERE valid=1
 	</select>
 
+	<select id="getAllPubkeyByUsage"  resultType="com.higgs.trust.slave.dao.po.ca.CaPO">
+		SELECT
+		pub_key as pubKey,
+		`user` as `user`,
+		`usage` as `usage`
+		FROM ca WHERE valid=1 AND `usage` = #{usage}
+	</select>
 
 </mapper>

@@ -21,24 +21,28 @@ import org.springframework.stereotype.Service;
     @Autowired private RsConfig rsConfig;
     @Autowired private NodeState nodeState;
 
-
     @Override public SignInfo signTx(CoreTransaction coreTx) {
         String coreTxJSON = JSON.toJSONString(coreTx);
-        if(log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             log.debug("[signTx]txId:{},coreTxJSON:{}", coreTx.getTxId(), coreTxJSON);
         }
         SignInfo signInfo = new SignInfo();
         signInfo.setOwner(rsConfig.getRsName());
         //check tx type for consensus
-        if(TxTypeEnum.isTargetType(coreTx.getTxType(),TxTypeEnum.NODE)){
+        if (TxTypeEnum.isTargetType(coreTx.getTxType(), TxTypeEnum.NODE)) {
             signInfo.setSignType(SignInfo.SignTypeEnum.CONSENSUS);
-            String sign = CryptoUtil.getProtocolCrypto().sign(coreTxJSON, nodeState.getConsensusPrivateKey());
-            signInfo.setSign(sign);
-        }else {
+        } else {
             signInfo.setSignType(SignInfo.SignTypeEnum.BIZ);
-            String sign = CryptoUtil.getBizCrypto().sign(coreTxJSON, nodeState.getPrivateKey());
-            signInfo.setSign(sign);
         }
+        signInfo.setSign(sign(coreTxJSON,signInfo.getSignType()));
         return signInfo;
+    }
+
+    @Override public String sign(String signValue, SignInfo.SignTypeEnum signTypeEnum) {
+        if (signTypeEnum == SignInfo.SignTypeEnum.CONSENSUS) {
+            return CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey());
+        } else {
+            return CryptoUtil.getBizCrypto().sign(signValue, nodeState.getPrivateKey());
+        }
     }
 }

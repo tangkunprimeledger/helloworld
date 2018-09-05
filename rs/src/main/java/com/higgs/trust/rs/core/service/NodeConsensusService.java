@@ -4,7 +4,9 @@ import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.core.integration.NodeClient;
+import com.higgs.trust.rs.core.vo.NodeOptVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -12,6 +14,7 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
@@ -36,6 +39,7 @@ import java.util.UUID;
     @Autowired private ClusterNodeRepository clusterNodeRepository;
 
     @Autowired private ConsensusStateMachine consensusStateMachine;
+    @Autowired private SignService signService;
 
     private static final String SUCCESS = "sucess";
     private static final String FAIL = "fail";
@@ -46,22 +50,27 @@ import java.util.UUID;
      * @desc join consensus layer
      */
     public String joinConsensus() {
-
         log.info("[joinConsensus] start to join consensus layer");
-
         ClusterNode clusterNode = clusterNodeRepository.getClusterNode(nodeState.getNodeName());
         if (log.isDebugEnabled()) {
             log.debug("clusterNode={}", clusterNode);
         }
-
         if (null != clusterNode && clusterNode.isP2pStatus() == false) {
             log.info("[joinConsensus] join consensus layer again");
-            RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), nodeState.getNodeName());
+            String nodeName = nodeState.getNodeName();
+            NodeOptVO vo = new NodeOptVO();
+            vo.setNodeName(nodeName);
+            String pubKey = "";
+            String signValue = nodeName + "-" + pubKey;
+            String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
+            vo.setPubKey(pubKey);
+            vo.setSign(sign);
+            vo.setSignValue(signValue);
+            RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), vo);
             if (!respData.isSuccess()) {
                 return FAIL;
             }
         }
-
         new Thread(new Runnable() {
             @Override public void run() {
                 log.info("[joinConsensus] start to transform node status from offline to running");
@@ -90,11 +99,16 @@ import java.util.UUID;
         return SUCCESS;
     }
 
-    public RespData joinConsensusTx(String user) {
-
+    /**
+     * process join request
+     *
+     * @param vo
+     * @return
+     */
+    public RespData joinConsensusTx(NodeOptVO vo) {
         //send and get callback result
         try {
-            coreTransactionService.submitTx(constructJoinCoreTx(user));
+            coreTransactionService.submitTx(constructJoinCoreTx(vo));
         } catch (Throwable e) {
             log.error("send node join transaction error", e);
             return new RespData(RespCodeEnum.SYS_FAIL.getRespCode());
@@ -103,22 +117,37 @@ import java.util.UUID;
         return new RespData();
     }
 
-    private CoreTransaction constructJoinCoreTx(String user) {
+    /**
+     * make core transaction
+     *
+     * @param vo
+     * @return
+     */
+    private CoreTransaction constructJoinCoreTx(NodeOptVO vo) {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId(UUID.randomUUID().toString());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.NODE_JOIN.getPolicyId());
-        coreTx.setActionList(buildJoinActionList(user));
+        coreTx.setActionList(buildJoinActionList(vo));
         return coreTx;
     }
 
-    private List<Action> buildJoinActionList(String user) {
+    /**
+     * make action
+     *
+     * @param vo
+     * @return
+     */
+    private List<Action> buildJoinActionList(NodeOptVO vo) {
         List<Action> actions = new ArrayList<>();
         NodeAction nodeAction = new NodeAction();
-        nodeAction.setNodeName(user);
         nodeAction.setType(ActionTypeEnum.NODE_JOIN);
         nodeAction.setIndex(0);
+        nodeAction.setNodeName(vo.getNodeName());
+        nodeAction.setSelfSign(vo.getSign());
+        nodeAction.setSignValue(vo.getSignValue());
+        nodeAction.setPubKey(vo.getPubKey());
         actions.add(nodeAction);
         return actions;
     }
@@ -126,7 +155,7 @@ import java.util.UUID;
     /**
      * @param
      * @return
-     * @desc leave consensus layer
+     * @desc process leave consensus layer
      */
     public String leaveConsensus() {
 
@@ -153,23 +182,39 @@ import java.util.UUID;
         return SUCCESS;
 
     }
-
-    private CoreTransaction constructLeaveCoreTx(String user) {
+    /**
+     * make core transaction
+     *
+     * @param nodeName
+     * @return
+     */
+    private CoreTransaction constructLeaveCoreTx(String nodeName) {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId(UUID.randomUUID().toString());
-        coreTx.setSender(user);
+        coreTx.setSender(nodeName);
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.NODE_LEAVE.getPolicyId());
-        coreTx.setActionList(buildLeaveActionList(user));
+        coreTx.setActionList(buildLeaveActionList(nodeName));
         return coreTx;
     }
-
-    private List<Action> buildLeaveActionList(String user) {
+    /**
+     * make action
+     *
+     * @param nodeName
+     * @return
+     */
+    private List<Action> buildLeaveActionList(String nodeName) {
         List<Action> actions = new ArrayList<>();
         NodeAction nodeAction = new NodeAction();
-        nodeAction.setNodeName(user);
         nodeAction.setType(ActionTypeEnum.NODE_LEAVE);
         nodeAction.setIndex(0);
+        nodeAction.setNodeName(nodeName);
+        String pubKey = "";
+        String signValue = nodeName + "-" + pubKey;
+        String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
+        nodeAction.setPubKey(pubKey);
+        nodeAction.setSelfSign(sign);
+        nodeAction.setSignValue(signValue);
         actions.add(nodeAction);
         return actions;
     }
