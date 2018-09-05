@@ -69,11 +69,11 @@ public class EncryptAmount {
 
     }
 
-    public EncryptAmount(String value,BigInteger orgRandom) {
+    public EncryptAmount(BigDecimal bd,BigInteger orgRandom) {
 
-        BigDecimal bd = new BigDecimal(value);
-        b = new BigInteger(bd.multiply(BigDecimal.TEN.pow(FIX_SCALE)).setScale(0).toString());
-        if (orgRandom.bitLength() <= SAFE_RANDOM_BIT ){
+        b = new BigInteger(bd.multiply(BigDecimal.TEN.pow(FIX_SCALE)).setScale(0).toString()).abs();
+        r = orgRandom.abs();
+        if (r.bitLength() <= SAFE_RANDOM_BIT ){
            statues = STATUES.unSafeRandom.getCode();
            r = BigInteger.ZERO;
            b = BigInteger.ZERO;
@@ -85,14 +85,13 @@ public class EncryptAmount {
             b = BigInteger.ZERO;
             eb = Base58.encode(BigInteger.ZERO.toByteArray());
         }
-        else if (he.tooBigRandom(orgRandom)){
+        else if (he.tooBigRandom(r)){
             statues = STATUES.tooBigRandom.getCode();
             r = BigInteger.ZERO;
             b = BigInteger.ZERO;
             eb = Base58.encode(BigInteger.ZERO.toByteArray());
         }
         else{
-            r = orgRandom;
             if (keyType.compareTo("Paillier") == 0) {
                 b = b.multiply(SAFE_MASK).add(r);
             }
@@ -213,6 +212,8 @@ public class EncryptAmount {
     public boolean isAvailable(){
         return statues.equals(STATUES.success.getCode());
     }
+
+    public String getStatues(){  return this.statues; }
 
     public static HomomorphicEncryption getHe(){
         return he;
