@@ -73,13 +73,13 @@ import java.util.*;
                 try {
                     ThreadLocalUtils.putWriteBatch(new WriteBatch());
 
-                    log.info("[process] transaction start, insert genius block into db");
+                    log.info("[process] transaction start, insert genius block into rocks db");
                     blockRepository.saveBlock(block, txReceipts);
-                    log.info("[process]insert clusterNode information into db");
+                    log.info("[process]insert clusterNode information into rocks db");
                     saveClusterNode(block);
-                    log.info("[process]insert clusterConfig information into db");
+                    log.info("[process]insert clusterConfig information into rocks db");
                     saveClusterConfig(block);
-                    log.info("[process]insert ca information into db");
+                    log.info("[process]insert ca information into rocks db");
                     saveCa(block);
 
                     //save block height in system_property

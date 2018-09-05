@@ -255,10 +255,12 @@ import java.util.List;
         //total=lastNum + currentNum
         blockPO.setTotalTxNum(totalTxNum + txNum);
         //total block size use txs.length,unit:KB
+        Profiler.enter("calculate block size");
         String blockData = JSON.toJSONString(txs);
         BigDecimal size = new BigDecimal(blockData.length());
         size = size.divide(new BigDecimal(1024), 2, BigDecimal.ROUND_HALF_DOWN);
         blockPO.setTotalBlockSize(size);
+        Profiler.release();
         //save block
         if (initConfig.isUseMySQL()) {
             try {

@@ -42,7 +42,7 @@ public class RocksUtils {
         } else {
             try {
                 byte[] keyBytes = JSON.toJSONBytes(key);
-                return rocksDBWrapper.getRocksDB().get(columnFamilyHandle, keyBytes);
+                return JSON.parse(rocksDBWrapper.getRocksDB().get(columnFamilyHandle, keyBytes));
             } catch (RocksDBException e) {
                 throw new RuntimeException(e);
             }

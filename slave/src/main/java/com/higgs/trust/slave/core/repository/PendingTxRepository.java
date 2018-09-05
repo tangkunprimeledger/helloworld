@@ -198,6 +198,10 @@ import java.util.List;
         return 1;
     }
 
+    /**
+     * when delete package invoke
+     * @param signedTxList
+     */
     public void batchDelete(List<SignedTransaction> signedTxList) {
         if (CollectionUtils.isEmpty(signedTxList)) {
             return;
