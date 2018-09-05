@@ -13,8 +13,7 @@ import java.util.List;
  * @author suimi
  * @date 2018/9/4
  */
-@Data @NoArgsConstructor
-public class ClusterOptTx {
+@Data @NoArgsConstructor public class ClusterOptTx {
 
     /**
      * the node name
@@ -31,20 +30,22 @@ public class ClusterOptTx {
      */
     private String selfSign;
 
+    /**
+     * self sign value
+     */
+    private String selfSignValue;
+
+    /**
+     * operation tx signature value
+     */
+    private String signatureValue;
+
     private Operation operation;
 
     /**
      * the signature of current cluster
      */
     private List<SignatureInfo> signatureList;
-
-    public String getSelfSignValue() {
-        return "";
-    }
-
-    public String getSignatureValue() {
-        return "";
-    }
 
     public enum Operation {
         JOIN, LEAVE
