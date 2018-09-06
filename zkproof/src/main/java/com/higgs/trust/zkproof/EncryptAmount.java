@@ -204,8 +204,7 @@ public class EncryptAmount {
         if (em1 == null || em2 == null){
             return false;
         }
-
-        if (Base58.decodeToBigInteger(em1).equals(BigInteger.ZERO) || Base58.decodeToBigInteger(em2).equals(BigInteger.ZERO)){
+        if (em1.length() == 1 || em2.length() == 1){
             return false;
         }
 
