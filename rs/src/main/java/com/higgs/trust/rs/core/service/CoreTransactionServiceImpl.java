@@ -94,8 +94,6 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
     @Autowired
     private ThreadPoolTaskExecutor txSubmitExecutorPool;
     @Autowired
-    private ThreadPoolTaskExecutor txProcessExecutorPool;
-    @Autowired
     private RedissonClient redissonClient;
     @Autowired
     private DistributeCallbackNotifyService distributeCallbackNotifyService;
@@ -267,6 +265,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                     policy.setRsIds(currentView.getNodeNames());
                     //reset sign type
                     signType = SignInfo.SignTypeEnum.CONSENSUS;
+                    log.info("[processInitTx]reset rsIds:{}",policy.getRsIds());
                 }
                 // vote rule
                 VoteRule voteRule = null;
@@ -327,7 +326,9 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                 }
                 //get sign info from receipts
                 List<SignInfo> signInfos = voteService.getSignInfos(receipts,signType);
-                signInfos.addAll(bo.getSignDatas());
+                if(!CollectionUtils.isEmpty(bo.getSignDatas())){
+                    signInfos.addAll(bo.getSignDatas());
+                }
                 //update signDatas
                 coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
                 //save already voting result for SYNC pattern
@@ -407,6 +408,13 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                     toEndOrCallBackByError(bo, CoreTxStatusEnum.NEED_VOTE, RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED, true);
                     return;
                 }
+                //check tx type
+                boolean isNodeType = TxTypeEnum.isTargetType(bo.getTxType(),TxTypeEnum.NODE);
+                if(isNodeType) {
+                    //reset rsIds,require all consensus layer nodes
+                    ClusterView currentView = viewManager.getCurrentView();
+                    policy.setRsIds(currentView.getNodeNames());
+                }
                 List<String> rsIds = policy.getRsIds();
                 if (CollectionUtils.isEmpty(rsIds)) {
                     log.error("[processNeedVoteTx]rsIds is empty by txId:{}", bo.getTxId());
@@ -419,9 +427,8 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                     log.warn("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
                     return;
                 }
-                //check tx type
-                boolean isNodeType = TxTypeEnum.isTargetType(bo.getTxType(),TxTypeEnum.NODE);
                 List<String> lastRsIds = rsIds;
+                //normal business
                 if(!isNodeType) {
                     lastRsIds = new ArrayList<>();
                     //filter self
