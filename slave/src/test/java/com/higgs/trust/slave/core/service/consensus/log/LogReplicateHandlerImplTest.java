@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.consensus.log;
 import com.google.common.collect.Lists;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -19,7 +20,7 @@ public class LogReplicateHandlerImplTest extends BaseTest {
         packageVO.setSignedTxList(Lists.newArrayList());
 
         packageVOList.add(packageVO);
-        logReplicateHandler.replicatePackage(packageVOList);
+        logReplicateHandler.replicatePackage(new PackageCommand(1L,1L,null,packageVO));
     }
 
 }
