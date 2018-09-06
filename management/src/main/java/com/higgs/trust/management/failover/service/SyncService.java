@@ -66,7 +66,7 @@ import java.util.concurrent.Executors;
         }
         log.info("auto sync starting ...");
         try {
-            clusterViewService.initClusterStartView();
+            clusterViewService.initClusterViewFromCluster();
             Long currentHeight = blockRepository.getMaxHeight();
             if (currentHeight == null || currentHeight == 0) {
                 syncGenesis();
@@ -100,7 +100,7 @@ import java.util.concurrent.Executors;
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SYNC_BLOCKS_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
         } finally {
-            clusterViewService.loadClusterView();
+            clusterViewService.initClusterViewFromDB();
         }
     }
 

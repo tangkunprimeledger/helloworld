@@ -51,7 +51,7 @@ import java.util.Map;
 
     @Autowired private PackageRepository packageRepository;
 
-    public void loadClusterView() {
+    public void initClusterViewFromDB() {
         List<Ca> list = caRepository.getAllCa();
         Map<String, String> consensusNodeMap = new HashMap<>();
         list.stream().filter(ca -> ca.getUsage().equals(UsageEnum.CONSENSUS.getCode()))
@@ -66,9 +66,9 @@ import java.util.Map;
     /**
      * get the cluster info through consensus, if timeout, null will be return
      */
-    public void initClusterStartView() {
+    public void initClusterViewFromCluster() {
         log.info("init clusterInfo by cluster");
-        initStartViewFromAnyNode();
+        initClusterViewFromAnyNode();
         ResponseCommand<?> responseCommand = null;
         int i = 0;
         do {
@@ -89,7 +89,7 @@ import java.util.Map;
         viewManager.resetViews(Collections.singletonList((ClusterView)responseCommand.get()));
     }
 
-    private void initStartViewFromAnyNode() {
+    private void initClusterViewFromAnyNode() {
         log.info("init cluster info from any node");
         ValidResponseWrap<? extends ResponseCommand> response = null;
         int i = 0;

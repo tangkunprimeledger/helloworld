@@ -126,9 +126,9 @@ class node {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def clusterInfoService = beans.getBean(ClusterViewService.class)
         if (isCluster) {
-            clusterInfoService.initClusterStartView()
+            clusterInfoService.initClusterViewFromCluster()
         } else {
-            clusterInfoService.loadClusterView()
+            clusterInfoService.initClusterViewFromDB()
         }
         out.println("refresh cluster view successful")
     }
