@@ -54,8 +54,8 @@ import java.util.*;
      * @return
      */
     @Override public Long getSafeHeight() {
-        ClusterView currentView = viewManager.getCurrentView();
-        int treshold = 2 * currentView.getFaultNum() + 1;
+        ClusterView startView = viewManager.getStartView();
+        int treshold = 2 * startView.getFaultNum() + 1;
             Map<String, Long> heightMap = getAllClusterHeight();
             int size = 0;
             List<Long> heightList = new ArrayList<>();
