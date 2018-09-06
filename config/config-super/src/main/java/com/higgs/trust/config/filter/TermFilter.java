@@ -38,23 +38,10 @@ import org.springframework.stereotype.Component;
         if (commit.operation() instanceof TermCommand) {
             TermCommand command = (TermCommand)commit.operation();
             Long term = command.getTerm();
-            long[] height = command.getPackageHeight();
-
-            //check height array
-            if (ArrayUtils.isEmpty(height)) {
-                log.warn("package height array is empty");
-                commit.close();
-                return;
-            }
-
-            if (!checkHeight(height)) {
-                log.warn("package command height list is not continuous, height={}", height);
-                commit.close();
-                return;
-            }
+            long height = command.getPackageHeight();
 
             String nodeName = command.getNodeName();
-            if (!termManager.isTermHeight(term, nodeName, height[0])) {
+            if (!termManager.isTermHeight(term, nodeName, height)) {
                 log.warn("package command rejected,current termInfo:{}", termManager.getTermInfo(term));
                 MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.REJECTED_PACKAGE_COMMAND, 1);
                 commit.close();
@@ -69,14 +56,5 @@ import org.springframework.stereotype.Component;
             }
         }
         chain.doFilter(commit);
-    }
-
-    private boolean checkHeight(long[] height) {
-        for (int i = 0; i < height.length - 1; i++) {
-            if ((height[i] + 1) != height[i + 1]) {
-                return false;
-            }
-        }
-        return true;
     }
 }

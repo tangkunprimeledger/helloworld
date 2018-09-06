@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -23,8 +22,6 @@ import java.util.stream.Collectors;
  * @date 2018/6/12
  */
 @Slf4j @Component public class TermManager {
-
-
 
     @Getter private List<TermInfo> terms = new CopyOnWriteArrayList<>();
 
@@ -115,12 +112,12 @@ import java.util.stream.Collectors;
     /**
      * clean term list
      */
-    private synchronized void partiallyTermsClean(){
+    private synchronized void partiallyTermsClean() {
         int maxSize = properties.getMaxTermsSize();
-        if(terms.size()>= maxSize){
-            log.info("term list size reach max size:{}, do clean",maxSize);
-            terms=terms.stream().sorted(Comparator.comparingLong(TermInfo::getTerm)).collect(Collectors.toList());
-            terms.removeAll(terms.subList(0,maxSize/2));
+        if (terms.size() >= maxSize) {
+            log.info("term list size reach max size:{}, do clean", maxSize);
+            terms = terms.stream().sorted(Comparator.comparingLong(TermInfo::getTerm)).collect(Collectors.toList());
+            terms.removeAll(terms.subList(0, maxSize / 2));
         }
     }
 
@@ -149,22 +146,21 @@ import java.util.stream.Collectors;
         }
     }
 
-    public void resetEndHeight(long[] packageHeights) {
+    public void resetEndHeight(long packageHeight) {
         Optional<TermInfo> optional = getTermInfo(nodeState.getCurrentTerm());
         TermInfo termInfo = optional.get();
-        int len = packageHeights.length;
         boolean verify =
-            termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeights[0] == termInfo.getStartHeight() :
-                packageHeights[0] >= termInfo.getStartHeight() && packageHeights[len-1] <= termInfo.getEndHeight() + len;
+            termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT ? packageHeight == termInfo.getStartHeight() :
+                packageHeight >= termInfo.getStartHeight() && packageHeight <= termInfo.getEndHeight() + 1;
         if (!verify) {
             throw new ConfigException(ConfigError.CONFIG_NODE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT);
         }
-        if ((packageHeights[0] == termInfo.getStartHeight() && termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT)
-            || packageHeights[len-1] == termInfo.getEndHeight() + len) {
-            log.debug("reset term end height:{}", packageHeights[len-1]);
-            termInfo.setEndHeight(packageHeights[len-1]);
+        if ((packageHeight == termInfo.getStartHeight() && termInfo.getEndHeight() == TermInfo.INIT_END_HEIGHT)
+            || packageHeight == termInfo.getEndHeight() + 1) {
+            log.debug("reset term end height:{}", packageHeight);
+            termInfo.setEndHeight(packageHeight);
         } else {
-            log.warn("set incorrect end height:{}, termInfo:{}", packageHeights[len-1], termInfo);
+            log.warn("set incorrect end height:{}, termInfo:{}", packageHeight, termInfo);
         }
     }
 

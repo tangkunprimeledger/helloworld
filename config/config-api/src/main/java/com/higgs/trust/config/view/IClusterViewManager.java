@@ -50,6 +50,7 @@ public interface IClusterViewManager {
 
     /**
      * reset the end height of current view
+     * @param height
      */
-    void resetEndHeight(long[] height);
+    void resetEndHeight(long height);
 }

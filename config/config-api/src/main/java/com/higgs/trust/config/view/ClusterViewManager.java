@@ -34,7 +34,7 @@ import java.util.*;
     }
 
     @Override public ClusterView getCurrentView() {
-        return currentView != null ? currentView.clone() :  null;
+        return currentView != null ? currentView.clone() : null;
     }
 
     @Override public ClusterView getViewWithHeight(long height) {
@@ -108,29 +108,26 @@ import java.util.*;
             } else {
                 throw new ConfigException(ConfigError.CONFIG_VIEW_UNSUPPORTED_OPERATION);
             }
-            long[] heights = command.getPackageHeight();
-            ClusterView newView = new ClusterView(currentView.getId() + 1, heights[heights.length - 1] + 1, newNodes);
+            long height = command.getPackageHeight();
+            ClusterView newView = new ClusterView(currentView.getId() + 1, height + 1, newNodes);
             views.add(newView);
             currentView = newView;
         }
     }
 
-    @Override public void resetEndHeight(long[] packageHeights) {
-        int len = packageHeights.length;
-        boolean verify = currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT ?
-            packageHeights[0] == currentView.getStartHeight() : packageHeights[0] == currentView.getEndHeight() + 1
-            && packageHeights[len - 1] <= currentView.getEndHeight() + len;
+    @Override public void resetEndHeight(long packageHeight) {
+        boolean verify =
+            currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT ? packageHeight == currentView.getStartHeight() :
+                packageHeight == currentView.getEndHeight() + 1;
         if (!verify) {
             throw new ConfigException(ConfigError.CONFIG_VIEW_PACKAGE_HEIGHT_INCORRECT);
         }
-        if ((packageHeights[0] == currentView.getStartHeight()
-            && currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT) || (
-            packageHeights[0] == currentView.getEndHeight() + 1
-                && packageHeights[len - 1] == currentView.getEndHeight() + len)) {
-            log.debug("reset currentView end height:{}", packageHeights[len - 1]);
-            currentView.setEndHeight(packageHeights[len - 1]);
+        if ((packageHeight == currentView.getStartHeight() && currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT)
+            || (packageHeight == currentView.getEndHeight() + 1)) {
+            log.debug("reset currentView end height:{}", packageHeight);
+            currentView.setEndHeight(packageHeight);
         } else {
-            log.warn("set incorrect end height:{}, currentView:{}", packageHeights[len - 1], currentView);
+            log.warn("set incorrect end height:{}, currentView:{}", packageHeight, currentView);
         }
     }
 }

@@ -11,12 +11,9 @@ import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CommandFilter;
 import com.higgs.trust.consensus.core.filter.CommandFilterChain;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
 
 /**
  * @author suimi
@@ -30,12 +27,7 @@ import java.util.Arrays;
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
         if (commit.operation() instanceof ViewCommand) {
             ViewCommand command = (ViewCommand)commit.operation();
-            long[] heights = command.getPackageHeight();
-            if (ArrayUtils.isEmpty(heights) || !checkHeightContinuous(heights)) {
-                log.warn("package command heights is not continuous or empty, heights={}", heights);
-                commit.close();
-                return;
-            }
+            long height = command.getPackageHeight();
 
             ClusterView currentView = viewManager.getCurrentView();
             //not current view
@@ -46,25 +38,20 @@ import java.util.Arrays;
                     commit.close();
                     return;
                 }
-                long[] unMatchedHeights = Arrays.stream(heights)
-                    .filter(height -> height >= view.getStartHeight() && height <= view.getEndHeight()).toArray();
-                if (unMatchedHeights.length > 0) {
-                    log.warn("the heights:{} not allowed at view:{}", unMatchedHeights, view);
+                if (!(height >= view.getStartHeight() && height <= view.getEndHeight())) {
+                    log.warn("the height:{} not allowed at view:{}", height, view);
                     commit.close();
                     return;
                 }
             } else {
-                //the heights continuous with current view
-                if (heights[0] == currentView.getEndHeight() + 1 || (heights[0] == currentView.getStartHeight()
+                //the height continuous with current view
+                if (height == currentView.getEndHeight() + 1 || (height == currentView.getStartHeight()
                     && currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT)) {
-                    viewManager.resetEndHeight(heights);
+                    viewManager.resetEndHeight(height);
                 } else {
-                    long[] unMatchedHeights = Arrays.stream(heights).filter(
-                        height -> height >= currentView.getStartHeight() && height <= currentView.getEndHeight())
-                        .toArray();
-                    //the heights not all in current view
-                    if (unMatchedHeights.length > 0) {
-                        log.warn("the heights:{} out of current view:{}", unMatchedHeights, currentView);
+                    //the height not all in current view
+                    if (height >= currentView.getStartHeight() && height <= currentView.getEndHeight()) {
+                        log.warn("the height:{} out of current view:{}", height, currentView);
                         commit.close();
                         return;
                     }
@@ -75,14 +62,5 @@ import java.util.Arrays;
             }
         }
         chain.doFilter(commit);
-    }
-
-    private boolean checkHeightContinuous(long[] height) {
-        for (int i = 0; i < height.length - 1; i++) {
-            if ((height[i] + 1) != height[i + 1]) {
-                return false;
-            }
-        }
-        return true;
     }
 }

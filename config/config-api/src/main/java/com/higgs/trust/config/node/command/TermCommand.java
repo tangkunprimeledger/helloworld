@@ -7,7 +7,7 @@ public interface TermCommand {
 
     long getTerm();
 
-    long[] getPackageHeight();
+    long getPackageHeight();
 
     String getNodeName();
 

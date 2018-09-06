@@ -54,8 +54,8 @@ import org.hibernate.validator.constraints.NotEmpty;
         this.masterName = masterName;
     }
 
-    @Override public long[] getPackageHeight() {
-        return new long[] {get().getHeight()};
+    @Override public long getPackageHeight() {
+        return get().getHeight();
     }
 
     @Override public String getNodeName() {
