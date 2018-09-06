@@ -45,11 +45,14 @@ import java.util.List;
 
     @Value("${trust.start.mode:cluster}") private String startMode;
 
-    // public key for manual mode
-    @Value("${higgs.trust.publicKey}") String publicKey;
+    @Value("${higgs.trust.keys.bizPublicKey}") String pubKeyForBiz;
 
-    // private key for manual mode
-    @Value("${higgs.trust.privateKey}") String privateKey;
+    @Value("${higgs.trust.keys.bizPrivateKey}") String priKeyForBiz;
+
+    @Value("${higgs.trust.keys.consensusPublicKey}") String pubKeyForConsensus;
+
+    @Value("${higgs.trust.keys.consensusPrivateKey}") String priKeyForConsensus;
+
 
     @StateChangeListener(value = NodeStateEnum.SelfChecking, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
     public void init() throws FileNotFoundException {
@@ -92,8 +95,8 @@ import java.util.List;
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 // load keyPair for cluster from json file
-                saveConfig(publicKey, privateKey, UsageEnum.CONSENSUS);
-                saveConfig(publicKey, privateKey, UsageEnum.BIZ);
+                saveConfig(pubKeyForConsensus, priKeyForConsensus, UsageEnum.CONSENSUS);
+                saveConfig(pubKeyForBiz, priKeyForBiz, UsageEnum.BIZ);
             }
         });
     }

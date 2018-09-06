@@ -1,9 +1,6 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -32,6 +29,7 @@ import org.springframework.stereotype.Component;
         CaAction caAction = (CaAction)action;
         caHelper.verifyParams(caAction);
     }
+
     /**
      * @param
      * @return
@@ -41,8 +39,8 @@ import org.springframework.stereotype.Component;
 
         // convert action and validate it
         CaAction caAction = (CaAction)actionData.getCurrentAction();
-        log.info("[CaCancelHandler.process] start to process ca cancel action, user={}, pubKey={}, usage={}", caAction.getUser(),
-            caAction.getPubKey(),caAction.getUsage());
+        log.info("[CaCancelHandler.process] start to process ca cancel action, user={}, pubKey={}, usage={}",
+            caAction.getUser(), caAction.getPubKey(), caAction.getUsage());
 
         if (!caHelper.validate(caAction, ActionTypeEnum.CA_CANCEL)) {
             log.error("[CaCancelHandler.process] actionData validate error, user={}, pubKey={}", caAction.getUser(),

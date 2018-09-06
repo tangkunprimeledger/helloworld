@@ -1,7 +1,6 @@
 package com.higgs.trust.consensus.p2pvalid.core.storage;
 
 import com.higgs.trust.config.crypto.CryptoUtil;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.p2pvalid.core.*;

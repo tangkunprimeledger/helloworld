@@ -3,7 +3,6 @@
  */
 package com.higgs.trust.slave.core.service.consensus.view;
 
-import com.higgs.trust.config.p2p.ClusterInfoVo;
 import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.consensus.p2pvalid.core.IdValidCommand;
 import lombok.Getter;

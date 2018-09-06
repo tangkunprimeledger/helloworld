@@ -60,7 +60,7 @@ import java.util.Map;
         Long maxPackageHeight = packageRepository.getMaxHeight();
         long height =
             Math.max(maxBlockHeight == null ? 0 : maxBlockHeight, maxPackageHeight == null ? 0 : maxPackageHeight);
-        viewManager.resetViews(Collections.singletonList(new ClusterView(0, height, consensusNodeMap)));
+        viewManager.resetViews(Collections.singletonList(new ClusterView(0, height+1, consensusNodeMap)));
     }
 
     /**

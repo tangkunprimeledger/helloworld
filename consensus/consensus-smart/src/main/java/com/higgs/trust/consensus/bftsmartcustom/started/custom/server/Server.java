@@ -3,7 +3,6 @@ package com.higgs.trust.consensus.bftsmartcustom.started.custom.server;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultRecoverable;
-import com.google.common.base.Charsets;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.SmartCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.IConsensusSnapshot;
@@ -13,7 +12,8 @@ import io.atomix.utils.serializer.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -38,11 +38,8 @@ public class Server extends DefaultRecoverable {
         this.machine = replicateComposite;
         functionMap = machine.registerCommit();
         serviceReplica = new ServiceReplica(serverId, this, this);
-        Namespace namespace = Namespace.builder()
-            .setRegistrationRequired(false)
-            .setCompatible(true)
-            .register(AbstractConsensusCommand.class)
-            .build();
+        Namespace namespace = Namespace.builder().setRegistrationRequired(false).setCompatible(true)
+            .register(AbstractConsensusCommand.class).build();
         serializer = Serializer.using(namespace);
         //先从spring容器中获取对应的bean，如果不存在则反射实例化一个
         //        try {
