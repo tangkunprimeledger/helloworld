@@ -1,17 +1,11 @@
 package com.higgs.trust.slave.core.managment;
 
-import com.higgs.trust.common.crypto.Crypto;
-import com.higgs.trust.common.crypto.KeyPair;
-import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.slave.api.enums.VersionEnum;
-import com.higgs.trust.slave.common.enums.KeyModeEnum;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.ca.CaInitService;
@@ -23,8 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.FileNotFoundException;
@@ -49,8 +41,6 @@ import java.io.FileNotFoundException;
     @Autowired private TransactionTemplate txRequired;
 
     @Value("${trust.start.mode:cluster}") private String startMode;
-
-    @Value("${trust.key.mode:auto}") private String keyMode;
 
     // public key for manual mode
     @Value("${higgs.trust.publicKey}") String publicKey;
@@ -90,28 +80,10 @@ import java.io.FileNotFoundException;
             return;
         }
 
-        // auto generate keyPair for cluster
-        if (keyMode.equals(KeyModeEnum.AUTO.getCode())) {
-            txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    // generate keyPair for consensus layer
-                    Crypto consensusCrypto = CryptoUtil.getProtocolCrypto();
-                    KeyPair keyPair = consensusCrypto.generateKeyPair();
-                    saveConfig(keyPair.getPubKey(), keyPair.getPriKey(), UsageEnum.CONSENSUS);
+        // load keyPair for cluster from json file
+        saveConfig(publicKey, privateKey, UsageEnum.CONSENSUS);
+        saveConfig(publicKey, privateKey, UsageEnum.BIZ);
 
-                    // generate keyPair for biz layer
-                    Crypto bizCrypto = CryptoUtil.getBizCrypto();
-                    keyPair = bizCrypto.generateKeyPair();
-                    saveConfig(keyPair.getPubKey(), keyPair.getPriKey(), UsageEnum.BIZ);
-                }
-            });
-        } else if (keyMode.equals(KeyModeEnum.MANUAL.getCode())) {
-            // load keyPair for cluster from json file
-            saveConfig(publicKey, privateKey, UsageEnum.CONSENSUS);
-            saveConfig(publicKey, privateKey, UsageEnum.BIZ);
-        } else {
-            throw new SlaveException(SlaveErrorEnum.SLAVE_CONFIGURATION_ERROR, "keyMode is invalid");
-        }
     }
 
     private void saveConfig(String pubKey, String priKey, UsageEnum usage) {

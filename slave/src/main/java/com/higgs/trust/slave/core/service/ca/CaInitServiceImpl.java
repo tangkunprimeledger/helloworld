@@ -69,9 +69,7 @@ import java.util.List;
 
     private List<Action> acquirePubKeys() throws FileNotFoundException {
         JsonParser parser = new JsonParser();
-        // TODO  修改成相对路径
-        JsonObject object = (JsonObject)parser
-            .parse(new FileReader("D:/workspace_idea/DL/trust/slave/src/main/resources/geniusBlock.json"));
+        JsonObject object = (JsonObject)parser.parse(new FileReader("/geniusBlock.json"));
 
         JsonArray array = object.get("transactions").getAsJsonArray();
 

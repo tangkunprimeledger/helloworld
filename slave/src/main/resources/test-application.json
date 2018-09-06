@@ -117,8 +117,13 @@
     "start": {
       "mode": "cluster"
     },
-    "key": {
-      "mode": "manual"
+    "redisson": {
+      "sentinel": {
+        "masterName": ""
+      },
+      "password": "",
+      "address": "redis://127.0.0.1:6379",
+      "single": true
     }
   },
   "logging": {
