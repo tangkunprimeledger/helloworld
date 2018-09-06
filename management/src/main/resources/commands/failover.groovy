@@ -1,10 +1,9 @@
 package commands
 
-import com.higgs.trust.config.p2p.ClusterInfo
+
 import com.higgs.trust.config.view.IClusterViewManager
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
-import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService
 import com.higgs.trust.management.failover.scheduler.FailoverSchedule
 import com.higgs.trust.management.failover.service.SelfCheckingService
 import com.higgs.trust.management.failover.service.SyncService
@@ -98,23 +97,6 @@ class failover {
         def result = selfCheckService.selfCheck(1)
         out.println("Self check result: $result")
     }
-
-
-    @Usage('refresh the cluster info')
-    @Command
-    def refreshClusterInfo(InvocationContext context,
-                           @Usage("init from cluster") @Option(names = ["c"]) Boolean isCluster) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def clusterInfoService = beans.getBean(ClusterInfoService.class)
-        def clusterInfo = beans.getBean(ClusterInfo.class)
-        if (isCluster) {
-            clusterInfoService.initWithCluster()
-        } else {
-            clusterInfo.refresh()
-        }
-        out.println("refresh successful")
-    }
-
 
     @Usage('sync the genesis block')
     @Command

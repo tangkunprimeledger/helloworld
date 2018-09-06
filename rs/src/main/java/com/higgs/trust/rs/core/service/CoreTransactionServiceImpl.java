@@ -4,7 +4,8 @@ import com.google.common.collect.Lists;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.MonitorLogUtils;
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -99,7 +100,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
     @Autowired
     private DistributeCallbackNotifyService distributeCallbackNotifyService;
     @Autowired
-    private ClusterInfo clusterInfo;
+    private IClusterViewManager viewManager;
 
     /**
      * init redis distribution topic listener
@@ -262,7 +263,8 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                 //check txType for NODE type
                 if(TxTypeEnum.isTargetType(bo.getTxType(),TxTypeEnum.NODE)) {
                     //reset rsIds,require all consensus layer nodes
-                    policy.setRsIds(clusterInfo.clusterNodeNames());
+                    ClusterView currentView = viewManager.getCurrentView();
+                    policy.setRsIds(currentView.getNodeNames());
                     //reset sign type
                     signType = SignInfo.SignTypeEnum.CONSENSUS;
                 }

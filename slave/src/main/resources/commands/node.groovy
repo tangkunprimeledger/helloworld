@@ -6,6 +6,7 @@ import com.higgs.trust.consensus.core.ConsensusStateMachine
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
+import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*
@@ -106,6 +107,20 @@ class node {
         def consensusStateMachine = beans.getBean(ConsensusStateMachine.class)
         consensusStateMachine.start()
         out.println("start consensus successful")
+    }
+
+    @Usage('refresh the cluster view')
+    @Command
+    def refreshView(InvocationContext context,
+                    @Usage("init from cluster") @Option(names = ["c"]) Boolean isCluster) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def clusterInfoService = beans.getBean(ClusterViewService.class)
+        if (isCluster) {
+            clusterInfoService.initWithCluster()
+        } else {
+            clusterInfoService.loadClusterView()
+        }
+        out.println("refresh cluster view successful")
     }
 
 }

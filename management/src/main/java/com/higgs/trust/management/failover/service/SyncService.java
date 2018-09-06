@@ -1,12 +1,10 @@
 package com.higgs.trust.management.failover.service;
 
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
-import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
@@ -16,6 +14,7 @@ import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.action.GeniusBlockService;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.PackageListener;
+import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -44,8 +43,7 @@ import java.util.concurrent.Executors;
     @Autowired private BlockSyncService blockSyncService;
     @Autowired private PackageService packageService;
     @Autowired private NodeState nodeState;
-    @Autowired private ClusterInfo clusterInfo;
-    @Autowired private ClusterInfoService clusterInfoService;
+    @Autowired private ClusterViewService clusterViewService;
     @Autowired private TransactionTemplate txNested;
     @Autowired private GeniusBlockService geniusBlockService;
 
@@ -68,7 +66,7 @@ import java.util.concurrent.Executors;
         }
         log.info("auto sync starting ...");
         try {
-            clusterInfoService.initWithCluster();
+            clusterViewService.initWithCluster();
             Long currentHeight = blockRepository.getMaxHeight();
             if (currentHeight == null || currentHeight == 0) {
                 syncGenesis();
@@ -102,7 +100,7 @@ import java.util.concurrent.Executors;
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SYNC_BLOCKS_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
         } finally {
-            clusterInfo.refresh();
+            clusterViewService.loadClusterView();
         }
     }
 

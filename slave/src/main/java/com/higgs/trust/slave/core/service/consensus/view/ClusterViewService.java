@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.consensus.p2pvalid.config;
+package com.higgs.trust.slave.core.service.consensus.view;
 
 import com.higgs.trust.config.crypto.CryptoUtil;
-import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.config.p2p.ClusterInfoVo;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -15,21 +15,29 @@ import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidConsensus;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
+import com.higgs.trust.slave.core.repository.BlockRepository;
+import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.core.repository.ca.CaRepository;
+import com.higgs.trust.slave.model.bo.ca.Ca;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author suimi
  * @date 2018/6/19
  */
-@Slf4j @Service public class ClusterInfoService {
+@Slf4j @Service public class ClusterViewService {
 
     private static final String DEFAULT_CLUSTER_INFO_ID = "cluster_info_id";
-
-    @Autowired ClusterInfo clusterInfo;
 
     @Autowired private ValidConsensus validConsensus;
 
@@ -39,9 +47,25 @@ import org.springframework.stereotype.Service;
 
     @Autowired private NodeState nodeState;
 
-    @StateChangeListener(value = NodeStateEnum.Running, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
-    public void refreshClusterInfo() {
-        clusterInfo.refresh();
+    @Autowired private IClusterViewManager viewManager;
+
+    @Autowired private CaRepository caRepository;
+
+    @Autowired private BlockRepository blockRepository;
+
+    @Autowired private PackageRepository packageRepository;
+
+    @StateChangeListener(value = NodeStateEnum.SelfChecking, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
+    public void loadClusterView() {
+        List<Ca> list = caRepository.getAllCa();
+        Map<String, String> consensusNodeMap = new HashMap<>();
+        list.stream().filter(ca -> ca.getUsage().equals(UsageEnum.CONSENSUS.getCode()))
+            .forEach(ca -> consensusNodeMap.put(ca.getUser(), ca.getPubKey()));
+        Long maxBlockHeight = blockRepository.getMaxHeight();
+        Long maxPackageHeight = packageRepository.getMaxHeight();
+        long height =
+            Math.max(maxBlockHeight == null ? 0 : maxBlockHeight, maxPackageHeight == null ? 0 : maxPackageHeight);
+        viewManager.resetViews(Collections.singletonList(new ClusterView(0, height, consensusNodeMap)));
     }
 
     /**
@@ -53,8 +77,9 @@ import org.springframework.stereotype.Service;
         ResponseCommand<?> responseCommand = null;
         int i = 0;
         do {
-            responseCommand = validConsensus
-                .submitSync(new ClusterInfoCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis(), -1));
+            responseCommand = validConsensus.submitSync(
+                new ClusterViewCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis(),
+                    IClusterViewManager.START_CLUSTER_VIEW_ID));
             if (responseCommand == null) {
                 try {
                     Thread.sleep(3 * 1000);
@@ -66,7 +91,7 @@ import org.springframework.stereotype.Service;
         if (responseCommand == null) {
             throw new RuntimeException("init clusterInfo from cluster failed");
         }
-        clusterInfo.init((ClusterInfoVo)responseCommand.get());
+        viewManager.setStartView((ClusterView)responseCommand.get());
     }
 
     private void initFromAnyNode() {
@@ -74,13 +99,13 @@ import org.springframework.stereotype.Service;
         ValidResponseWrap<? extends ResponseCommand> response = null;
         int i = 0;
         do {
-            ClusterInfoCmd command = new ClusterInfoCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis(), -1);
+            ClusterViewCmd command = new ClusterViewCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis(),
+                IClusterViewManager.CURRENT_VIEW_ID);
             ValidCommandWrap commandWrap = new ValidCommandWrap();
             commandWrap.setCommandClass(command.getClass());
-            log.info("clusterInfo.nodeName={}", clusterInfo.nodeName());
-            commandWrap.setFromNode(clusterInfo.nodeName());
-            commandWrap
-                .setSign(CryptoUtil.getProtocolCrypto().sign(command.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
+            commandWrap.setFromNode(nodeState.getNodeName());
+            commandWrap.setSign(CryptoUtil.getProtocolCrypto()
+                .sign(command.getMessageDigestHash(), nodeState.getConsensusPrivateKey()));
             commandWrap.setValidCommand(command);
             try {
                 response = client.syncSendFeign(nodeState.notMeNodeNameReg(), commandWrap);
@@ -89,8 +114,8 @@ import org.springframework.stereotype.Service;
             }
         } while ((response == null || !response.isSucess()) && ++i <= 10);
         if (response != null && response.isSucess()) {
-            ValidClusterInfoCmd infoCmd = (ValidClusterInfoCmd)response.result();
-            clusterInfo.init(infoCmd.get());
+            ValidClusterViewCmd viewCmd = (ValidClusterViewCmd)response.result();
+            viewManager.setStartView(viewCmd.get());
             log.info("init cluster info from any node successful");
         } else {
             throw new RuntimeException("init clusterInfo from any node failed");

@@ -85,7 +85,7 @@ import java.util.*;
      * @return
      */
     @Override public Long getClusterHeight(String requestId, int size) {
-        ResponseCommand<?> responseCommand = validConsensus.submitSync(new ClusterHeightCmd(requestId, size, -1));
+        ResponseCommand<?> responseCommand = validConsensus.submitSync(new ClusterHeightCmd(requestId, size, IClusterViewManager.CURRENT_VIEW_ID));
         return responseCommand == null ? null : (Long)responseCommand.get();
     }
 
@@ -94,7 +94,7 @@ import java.util.*;
         List<String> nodeNames = currentView.getNodeNames();
         Map<String, Long> heightMap = new HashMap<>();
         String requestId = DEFAULT_CLUSTER_HEIGHT_ID + Constant.SPLIT_SLASH + System.currentTimeMillis();
-        ClusterHeightCmd cmd = new ClusterHeightCmd(requestId, 1, viewManager.getCurrentViewId());
+        ClusterHeightCmd cmd = new ClusterHeightCmd(requestId, 1, IClusterViewManager.CURRENT_VIEW_ID);
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
         validCommandWrap.setFromNode(nodeState.getNodeName());

@@ -22,9 +22,6 @@ import java.util.List;
 @Configuration
 public class P2pValidConfig {
 
-    @Autowired
-    private P2pConsensusClient p2pConsensusClient;
-
     @Value("${consensus.p2p.data.dir}")
     private String p2pBaseDir;
 

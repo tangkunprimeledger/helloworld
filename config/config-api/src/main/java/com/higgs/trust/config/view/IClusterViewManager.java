@@ -9,6 +9,10 @@ import java.util.List;
 
 public interface IClusterViewManager {
 
+    long CURRENT_VIEW_ID = -1;
+
+    long START_CLUSTER_VIEW_ID = -2;
+
     /**
      * reset the cluster views
      */
@@ -25,6 +29,16 @@ public interface IClusterViewManager {
     ClusterView getCurrentView();
 
     /**
+     * get the cluster current view, it's init at starting
+     */
+    ClusterView getStartView();
+
+    /**
+     * set the start view
+     */
+    void setStartView(ClusterView clusterView);
+
+    /**
      * get current view id
      */
     long getCurrentViewId();
@@ -35,7 +49,8 @@ public interface IClusterViewManager {
     ClusterView getViewWithHeight(long height);
 
     /**
-     * get the cluster view by view id, if viewId less then 0, return the currentView
+     * get the cluster view by view id, if viewId is {@link IClusterViewManager#CURRENT_VIEW_ID}, return the currentView.
+     * if viewId is {@link IClusterViewManager#START_CLUSTER_VIEW_ID}, return the cluster current view
      */
     ClusterView getView(long viewId);
 

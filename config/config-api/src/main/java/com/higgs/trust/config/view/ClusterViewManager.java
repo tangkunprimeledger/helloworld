@@ -21,6 +21,8 @@ import java.util.*;
 
     private ClusterView currentView;
 
+    private ClusterView startView;
+
     private ArrayList<ClusterView> views = new ArrayList<>();
 
     @Override public synchronized void resetViews(List<ClusterView> views) {
@@ -35,6 +37,14 @@ import java.util.*;
 
     @Override public ClusterView getCurrentView() {
         return currentView.clone();
+    }
+
+    @Override public ClusterView getStartView() {
+        return startView;
+    }
+
+    @Override public void setStartView(ClusterView clusterView) {
+        this.startView = clusterView;
     }
 
     @Override public long getCurrentViewId() {
@@ -55,8 +65,11 @@ import java.util.*;
     }
 
     @Override public ClusterView getView(long viewId) {
-        if (viewId < 0) {
-            return currentView;
+        if (viewId == IClusterViewManager.START_CLUSTER_VIEW_ID) {
+            return startView.clone();
+        }
+        if (viewId <= IClusterViewManager.CURRENT_VIEW_ID) {
+            return currentView.clone();
         }
         for (ClusterView view : views) {
             if (viewId == view.getId()) {
@@ -118,10 +131,8 @@ import java.util.*;
             } else {
                 throw new ConfigException(ConfigError.CONFIG_VIEW_UNSUPPORTED_OPERATION);
             }
-            int faultNum = (newNodes.size() - 1) / 3;
             long[] heights = command.getPackageHeight();
-            ClusterView newView = new ClusterView(currentView.getId() + 1, faultNum, heights[heights.length - 1] + 1,
-                ClusterView.INIT_END_HEIGHT, newNodes);
+            ClusterView newView = new ClusterView(currentView.getId() + 1, heights[heights.length - 1] + 1, newNodes);
             views.add(newView);
             currentView = newView;
         }
