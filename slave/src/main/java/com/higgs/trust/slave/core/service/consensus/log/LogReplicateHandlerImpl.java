@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.consensus.log;
 
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
@@ -57,6 +58,8 @@ import java.util.concurrent.TimeUnit;
             log.error("[LogReplicateHandler.replicatePackage]param validate failed, cause package is null ");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
+        String signValue = command.getSignValue();
+        command.setSign(CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey()));
         boolean flag = false;
         /**
          * retry times

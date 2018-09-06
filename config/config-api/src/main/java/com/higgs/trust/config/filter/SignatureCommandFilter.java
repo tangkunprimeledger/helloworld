@@ -37,7 +37,8 @@ import org.springframework.stereotype.Component;
                 log.debug("command sign verify result:{}", verify);
             }
             if (!verify) {
-                log.warn("command sign verify failed, node:{}, pubkey:{}", nodeName, publicKey);
+                log.warn("command sign verify failed, node:{}", nodeName);
+                log.debug("command sign info: node:{}, pubkey:{}, signValue:{}", nodeName, publicKey, command.getSignValue());
                 commit.close();
                 return;
             }

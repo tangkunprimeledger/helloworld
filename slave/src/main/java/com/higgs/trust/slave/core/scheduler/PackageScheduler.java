@@ -180,10 +180,8 @@ import java.util.Set;
      * @return
      */
     private PackageCommand createPackCommand(Package pack,SignedTransaction nodeOptTx){
-        PackageCommand command = new PackageCommand(nodeState.getCurrentTerm(),viewManager.getCurrentViewId(),nodeState.getMasterName(),
+        PackageCommand command = new PackageCommand(nodeState.getCurrentTerm(),viewManager.getCurrentViewId(),nodeState.getNodeName(),
             PackageConvert.convertPackToPackVO(pack));
-        String signValue = command.getSignValue();
-        command.setSign(CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey()));
         if(nodeOptTx!=null) {
             //convert sign info
             List<ClusterOptTx.SignatureInfo> signs = new ArrayList<>(nodeOptTx.getSignatureList().size());

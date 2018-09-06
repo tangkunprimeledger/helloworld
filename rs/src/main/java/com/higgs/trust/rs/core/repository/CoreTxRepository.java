@@ -283,7 +283,6 @@ public class CoreTxRepository {
         }
     }
 
-
     /**
      * convert bean
      *
@@ -299,6 +298,7 @@ public class CoreTxRepository {
             if (vo.getBizModel() != null) {
                 po.setBizModel(vo.getBizModel().toJSONString());
             }
+            po.setTxType(vo.getTxType());
             po.setVersion(vo.getVersion().getCode());
             po.setLockTime(vo.getLockTime());
             po.setSendTime(vo.getSendTime());

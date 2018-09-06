@@ -47,7 +47,8 @@ import java.util.*;
                 return view.clone();
             }
         }
-        return null;
+        log.warn("the view for height:{} is not exist, will use current view", height);
+        return currentView.clone();
     }
 
     @Override public ClusterView getView(long viewId) {
