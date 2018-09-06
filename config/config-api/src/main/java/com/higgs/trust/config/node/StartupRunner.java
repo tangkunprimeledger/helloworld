@@ -28,7 +28,8 @@ import org.springframework.stereotype.Component;
         try {
             nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-            nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+            nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.StartingConsensus);
+            nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.Running);
         } catch (Exception e) {
             log.error("startup error:", e);
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.STARTUP_FAILED, 1);

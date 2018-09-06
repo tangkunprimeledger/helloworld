@@ -83,7 +83,8 @@ import java.util.UUID;
                 log.info("[joinConsensus] start to transform node status from offline to running");
                 nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
                 nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-                nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
+                nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.StartingConsensus);
+                nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.Running);
                 log.info("[joinConsensus] end transform node status from offline to running");
             }
         }).start();

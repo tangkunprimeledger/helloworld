@@ -176,6 +176,9 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
                 break;
             case AutoSync:
             case ArtificialSync:
+                result = SelfChecking == to || StartingConsensus == to || Running == to || Offline == to;
+                break;
+            case StartingConsensus:
                 result = Running == to || SelfChecking == to || Offline == to;
                 break;
             case Running:
