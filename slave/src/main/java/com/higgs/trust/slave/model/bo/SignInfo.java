@@ -40,19 +40,16 @@ import java.util.stream.Collectors;
         if (CollectionUtils.isEmpty(signInfos)) {
             return new HashMap<>();
         }
-        return signInfos.stream().collect(Collectors.toMap(SignInfo::getOwner, SignInfo::getSelf));
+        return signInfos.stream().collect(Collectors.toMap(SignInfo::getOwner, v -> v));
     }
 
-    public SignInfo getSelf(){
-        return this;
-    }
-    public enum SignTypeEnum{
-        BIZ("BIZ","for business"),
-        CONSENSUS("CONSENSUS","for consensus"),
+    public enum SignTypeEnum {
+        BIZ("BIZ", "for business"), CONSENSUS("CONSENSUS", "for consensus"),
         ;
         String code;
         String msg;
-        SignTypeEnum(String code,String msg){
+
+        SignTypeEnum(String code, String msg) {
             this.code = code;
             this.msg = msg;
         }

@@ -22,7 +22,8 @@ class term {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def termManager = beans.getBean(TermManager.class)
         def nodeInfoService = beans.getBean(INodeInfoService.class)
-        context.provide([Name: "Master Heartbeat", Value: termManager.getMasterHeartbeat().get()])
+        def changeMasterService = beans.getBean(ChangeMasterService.class)
+        context.provide([Name: "Master Heartbeat", Value: changeMasterService.getMasterHeartbeat().get()])
         context.provide([Name: "Master Election", Value: nodeInfoService.isElectionMaster()])
         out.println("")
         termManager.getTerms().forEach({ t -> context.provide(Term: t.term, StartHeight: t.startHeight, EndHeight: t.endHeight, MasterName: t.masterName) })

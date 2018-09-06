@@ -13,7 +13,6 @@ import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRequestRecord;
-import com.higgs.trust.rs.core.callback.RsCoreBatchCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.integration.ServiceProviderClient;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
@@ -21,6 +20,7 @@ import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
 import com.higgs.trust.rs.core.repository.VoteReqRecordRepository;
 import com.higgs.trust.rs.core.vo.ReceiptRequest;
 import com.higgs.trust.rs.core.vo.VotingRequest;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -174,11 +174,14 @@ import java.util.concurrent.Future;
             log.info("[receiptVote]voteRequestRecord is already has result txId:{}", txId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_ALREADY_HAS_RESULT_ERROR);
         }
+        CoreTransaction coreTx = JSON.parseObject(voteRequestRecord.getTxData(), CoreTransaction.class);
         //check self node status
-        boolean r = checkSelfNodeStatus();
-        if(!r){
-            log.info("[receiptVote]self.rs status is not COMMON txId:{}", txId);
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_RS_STATUS_NOT_COMMON_ERROR);
+        if(!TxTypeEnum.isTargetType(coreTx.getTxType(), TxTypeEnum.NODE)) {
+            boolean r = checkSelfNodeStatus();
+            if (!r) {
+                log.info("[receiptVote]self.rs status is not COMMON txId:{}", txId);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_RS_STATUS_NOT_COMMON_ERROR);
+            }
         }
         VoteResultEnum voteResult = agree ? VoteResultEnum.AGREE : VoteResultEnum.DISAGREE;
         txRequired.execute(new TransactionCallbackWithoutResult() {
