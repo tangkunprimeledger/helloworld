@@ -158,13 +158,11 @@
     <logger name="io.atomix" level="debug" additivity="false">
         <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
-        <appender-ref ref="CONSOLE"/>
     </logger>
 
     <logger name="io.atomix.protocols.raft" level="trace" additivity="false">
         <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
-        <appender-ref ref="CONSOLE"/>
     </logger>
 
 

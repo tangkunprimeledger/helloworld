@@ -194,6 +194,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                 log.error("[submitTx] self sign data is empty");
                 throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
             }
+            signs.add(signInfo);
         }
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
