@@ -67,10 +67,26 @@ import java.util.List;
         return configList;
     }
 
+    /**
+     * get biz config
+     * @param user
+     * @return
+     */
     public Config getBizConfig(String user) {
+        return getConfig(user,UsageEnum.BIZ);
+    }
+
+    /**
+     * get config by nodeName and usage
+     *
+     * @param user
+     * @param usageEnum
+     * @return
+     */
+    public Config getConfig(String user,UsageEnum usageEnum) {
         ConfigPO configPO = new ConfigPO();
         configPO.setNodeName(user);
-        configPO.setUsage(UsageEnum.BIZ.getCode());
+        configPO.setUsage(usageEnum.getCode());
         List<ConfigPO> list = configDao.getConfig(configPO);
         if (null == list || list.size() == 0) {
             return null;

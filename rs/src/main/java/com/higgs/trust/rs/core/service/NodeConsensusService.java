@@ -14,11 +14,14 @@ import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
+import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
+import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +44,7 @@ import java.util.UUID;
 
     @Autowired private ConsensusStateMachine consensusStateMachine;
     @Autowired private SignService signService;
+    @Autowired private ConfigRepository configRepository;
 
     private static final String SUCCESS = "sucess";
     private static final String FAIL = "fail";
@@ -61,8 +65,9 @@ import java.util.UUID;
             String nodeName = nodeState.getNodeName();
             NodeOptVO vo = new NodeOptVO();
             vo.setNodeName(nodeName);
-            //TODO:add pubKey
-            String pubKey = "";
+            //add pubKey
+            Config config = configRepository.getConfig(nodeName, UsageEnum.CONSENSUS);
+            String pubKey = config.getPubKey();
             String signValue = nodeName + "-" + pubKey;
             String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
             vo.setPubKey(pubKey);
@@ -215,8 +220,9 @@ import java.util.UUID;
         nodeAction.setType(ActionTypeEnum.NODE_LEAVE);
         nodeAction.setIndex(0);
         nodeAction.setNodeName(nodeName);
-        //TODO:add pubKey
-        String pubKey = "";
+        //add pubKey
+        Config config = configRepository.getConfig(nodeName, UsageEnum.CONSENSUS);
+        String pubKey = config.getPubKey();
         String signValue = nodeName + "-" + pubKey;
         String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
         nodeAction.setPubKey(pubKey);
