@@ -78,7 +78,6 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
 
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
-        this.privateKey = properties.getPrivateKey();
         this.clusterName = properties.getPrefix();
 
         registerStateListener();

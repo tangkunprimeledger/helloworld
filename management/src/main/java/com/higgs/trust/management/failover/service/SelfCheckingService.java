@@ -45,7 +45,7 @@ import org.springframework.stereotype.Service;
         if (maxHeight == null) {
             return true;
         }
-        Long safeHeight = getSaferHeight();
+        Long safeHeight = blockSyncService.getSafeHeight(properties.getStartupRetryTime());
         if (safeHeight == null){
             return false;
         }
@@ -67,25 +67,5 @@ import org.springframework.stereotype.Service;
             throw new FailoverExecption(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
         }
         return false;
-    }
-
-    /**
-     * get the safe height
-     */
-    private Long getSaferHeight() {
-        Long clusterHeight;
-        int tryTimes = 0;
-        do {
-            clusterHeight = blockSyncService.getSafeHeight();
-            if (clusterHeight != null) {
-                break;
-            }
-            try {
-                Thread.sleep(3 * 1000);
-            } catch (InterruptedException e) {
-                log.warn("self check error.", e);
-            }
-        } while (++tryTimes < failoverProperties.getTryTimes());
-        return clusterHeight;
     }
 }

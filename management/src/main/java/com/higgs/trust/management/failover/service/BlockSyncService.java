@@ -94,9 +94,22 @@ import java.util.List;
      * 获取集群安全高度
      *
      * @return 高度
+     * @param tryTimes
     */
-    public Long getSafeHeight() {
-        Long safeHeight = clusterService.getSafeHeight();
+    public Long getSafeHeight(int tryTimes) {
+        Long safeHeight;
+        int times = 0;
+        do {
+            safeHeight = clusterService.getSafeHeight();
+            if (safeHeight != null) {
+                break;
+            }
+            try {
+                Thread.sleep(3 * 1000);
+            } catch (InterruptedException e) {
+                log.warn("get safe height thread interrupted.", e);
+            }
+        } while (++times < tryTimes);
         log.info("get the safe height:{}", safeHeight);
         return safeHeight;
     }
