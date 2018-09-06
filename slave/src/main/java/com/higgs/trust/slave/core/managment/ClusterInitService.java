@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.FileNotFoundException;
@@ -80,10 +82,13 @@ import java.io.FileNotFoundException;
             return;
         }
 
-        // load keyPair for cluster from json file
-        saveConfig(publicKey, privateKey, UsageEnum.CONSENSUS);
-        saveConfig(publicKey, privateKey, UsageEnum.BIZ);
-
+        txRequired.execute(new TransactionCallbackWithoutResult() {
+            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                // load keyPair for cluster from json file
+                saveConfig(publicKey, privateKey, UsageEnum.CONSENSUS);
+                saveConfig(publicKey, privateKey, UsageEnum.BIZ);
+            }
+        });
     }
 
     private void saveConfig(String pubKey, String priKey, UsageEnum usage) {
