@@ -27,6 +27,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.io.FileNotFoundException;
+
 /**
  * @author WangQuanzhou
  * @desc cluster init service
@@ -56,7 +58,8 @@ import org.springframework.transaction.support.TransactionTemplate;
     // private key for manual mode
     @Value("${higgs.trust.privateKey}") String privateKey;
 
-    @StateChangeListener(NodeStateEnum.SelfChecking) @Order(Ordered.HIGHEST_PRECEDENCE) public void init() {
+    @StateChangeListener(NodeStateEnum.SelfChecking) @Order(Ordered.HIGHEST_PRECEDENCE) public void init()
+        throws FileNotFoundException {
         if (needInit()) {
             // 1、生成公私钥,存入db
             // 2、获取其他节点的公钥,公钥写入配置文件给共识层使用
