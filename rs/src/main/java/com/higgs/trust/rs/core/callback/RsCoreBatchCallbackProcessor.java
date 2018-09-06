@@ -3,7 +3,6 @@ package com.higgs.trust.rs.core.callback;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
-import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -39,7 +38,6 @@ import java.util.*;
     @Autowired private ConfigJDBCDao configJDBCDao;
     @Autowired private NodeState nodeState;
     @Autowired private RequestJDBCDao requestJDBCDao;
-    @Autowired AbstractClusterInfo clusterInfo;
 
     private TxBatchCallbackHandler getCallbackHandler() {
         TxBatchCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxBatchCallback();
@@ -266,8 +264,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_UPDATE_ERROR, 1);
             return;
         }
-        clusterInfo.setRefresh();
-        log.info("[processCaUpdate] set cluster info refresh");
 
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
@@ -289,9 +285,6 @@ import java.util.*;
             return;
         }
 
-        clusterInfo.setRefresh();
-        log.info("[processCaCancel] set cluster info refresh");
-
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
         if (CollectionUtils.isEmpty(nodes)) {
@@ -312,9 +305,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_AUTH_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processCaAuth] set cluster info refresh");
     }
 
     private void processNodeJoin(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -324,9 +314,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_JOIN_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeJoin] set cluster info refresh");
     }
 
     private void processNodeLeave(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -336,8 +323,5 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_LEAVE_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeLeave] set cluster info refresh");
     }
 }

@@ -9,7 +9,6 @@ import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
-import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -35,7 +34,6 @@ import java.util.*;
     @Autowired BlockRepository blockRepository;
     @Autowired TransactionTemplate txRequired;
     @Autowired CaRepository caRepository;
-    @Autowired CaInitHandler caInitHandler;
 
     public void generateGeniusBlock(Block block) {
         try {

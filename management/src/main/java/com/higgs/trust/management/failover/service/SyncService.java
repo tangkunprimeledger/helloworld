@@ -66,7 +66,7 @@ import java.util.concurrent.Executors;
         }
         log.info("auto sync starting ...");
         try {
-            clusterViewService.initWithCluster();
+            clusterViewService.initClusterStartView();
             Long currentHeight = blockRepository.getMaxHeight();
             if (currentHeight == null || currentHeight == 0) {
                 syncGenesis();

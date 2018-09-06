@@ -1,4 +1,4 @@
-package com.higgs.trust.slave.core.service.action.ca;
+package com.higgs.trust.slave.core.managment;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.HashUtil;
@@ -29,7 +29,7 @@ import java.util.List;
  * @desc init ca handler
  * @date 2018/6/6 10:25
  */
-@Slf4j @Component public class CaInitHandler {
+@Slf4j @Component public class ClusterInitHandler {
 
     /**
      * the default hash value

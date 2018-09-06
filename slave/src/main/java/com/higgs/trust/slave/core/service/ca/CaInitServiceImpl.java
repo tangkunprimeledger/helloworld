@@ -7,7 +7,7 @@ import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
+import com.higgs.trust.slave.core.managment.ClusterInitHandler;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.List;
 @Service @Slf4j public class CaInitServiceImpl implements CaInitService {
 
     @Autowired private NodeState nodeState;
-    @Autowired private CaInitHandler caInitHandler;
+    @Autowired private ClusterInitHandler clusterInitHandler;
 
     /**
      * @param
@@ -56,7 +56,7 @@ import java.util.List;
                     caActionList.toString());
             }
 
-            caInitHandler.process(caActionList);
+            clusterInitHandler.process(caActionList);
             log.info("[CaInitServiceImpl.initKeyPair] end generate genius block");
 
         } catch (Throwable e) {

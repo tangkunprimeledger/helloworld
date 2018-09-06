@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.managment;
 
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
@@ -9,6 +8,7 @@ import com.higgs.trust.slave.common.enums.RunModeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.ca.CaInitService;
+import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.FileNotFoundException;
+import java.util.List;
 
 /**
  * @author WangQuanzhou
@@ -38,9 +39,9 @@ import java.io.FileNotFoundException;
 
     @Autowired private NodeState nodeState;
 
-    @Autowired private ClusterInfo clusterInfo;
-
     @Autowired private TransactionTemplate txRequired;
+
+    @Autowired private ClusterViewService clusterViewService;
 
     @Value("${trust.start.mode:cluster}") private String startMode;
 
@@ -50,8 +51,8 @@ import java.io.FileNotFoundException;
     // private key for manual mode
     @Value("${higgs.trust.privateKey}") String privateKey;
 
-    @StateChangeListener(NodeStateEnum.SelfChecking) @Order(Ordered.HIGHEST_PRECEDENCE) public void init()
-        throws FileNotFoundException {
+    @StateChangeListener(value = NodeStateEnum.SelfChecking, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
+    public void init() throws FileNotFoundException {
         if (needInit()) {
             // 1、生成公私钥,存入db
             // 2、获取其他节点的公钥,公钥写入配置文件给共识层使用
@@ -59,8 +60,14 @@ import java.io.FileNotFoundException;
             caInitService.initKeyPair();
             log.info("[ClusterInitService.init] end initKeyPair");
         }
-        clusterInfo.refresh();
-        clusterInfo.refreshConsensus();
+
+        Config config = configRepository.getBizConfig(nodeState.getNodeName());
+        nodeState.setPrivateKey(null != config ? config.getPriKey() : null);
+
+        List<Config> configList =
+            configRepository.getConfig(new Config(nodeState.getNodeName(), UsageEnum.CONSENSUS.getCode()));
+        nodeState.setConsensusPrivateKey(configList.get(0).getPriKey());
+        clusterViewService.loadClusterView();
     }
 
     private boolean needInit() {

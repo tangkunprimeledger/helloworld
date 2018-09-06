@@ -65,8 +65,6 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
      */
     @Getter @Setter private String consensusPrivateKey;
 
-
-
     /**
      * cluster name, as the prefix of cluster nodes
      */

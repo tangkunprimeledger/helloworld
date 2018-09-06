@@ -1,5 +1,6 @@
 package commands
 
+import com.higgs.trust.config.view.ClusterViewManager
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
 import com.higgs.trust.consensus.core.ConsensusStateMachine
@@ -109,6 +110,15 @@ class node {
         out.println("start consensus successful")
     }
 
+    @Usage('show the views of cluster')
+    @Command
+    def views(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def viewManager = beans.getBean(ClusterViewManager.class)
+        viewManager.getViews().forEach({ v -> context.provide(View: v.id, FaultNum: v.faultNum, StartHeight: v.startHeight, EndHeight: v.endHeight, NodeNames: v.nodeNames) })
+        out.println("")
+    }
+
     @Usage('refresh the cluster view')
     @Command
     def refreshView(InvocationContext context,
@@ -116,7 +126,7 @@ class node {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def clusterInfoService = beans.getBean(ClusterViewService.class)
         if (isCluster) {
-            clusterInfoService.initWithCluster()
+            clusterInfoService.initClusterStartView()
         } else {
             clusterInfoService.loadClusterView()
         }

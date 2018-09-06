@@ -85,7 +85,6 @@ import java.util.List;
      * @return
      */
     public Long getClusterHeight(int size) {
-        log.info("start to acquire the cluster height");
         Long clusterHeight = clusterService.getClusterHeight(size);
         log.info("get the cluster height:{}", clusterHeight);
         return clusterHeight;
@@ -97,7 +96,6 @@ import java.util.List;
      * @return 高度
     */
     public Long getSafeHeight() {
-        log.info("start to acquire the safe height");
         Long safeHeight = clusterService.getSafeHeight();
         log.info("get the safe height:{}", safeHeight);
         return safeHeight;

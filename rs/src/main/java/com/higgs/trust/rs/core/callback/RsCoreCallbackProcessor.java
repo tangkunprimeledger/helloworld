@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -39,7 +38,6 @@ import org.springframework.stereotype.Component;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
     @Autowired private RequestDao requestDao;
-    @Autowired AbstractClusterInfo clusterInfo;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -223,9 +221,6 @@ import org.springframework.stereotype.Component;
             return;
         }
 
-        clusterInfo.setRefresh();
-        log.info("[processCaUpdate] set cluster info refresh");
-
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
@@ -253,9 +248,6 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_CANCEL_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processCaCancel] set cluster info refresh");
 
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
@@ -285,9 +277,6 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_AUTH_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processCaAuth] set cluster info refresh");
     }
 
     private void processNodeJoin(RespData<CoreTransaction> respData) {
@@ -296,9 +285,6 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_JOIN_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeJoin] set cluster info refresh");
     }
 
     private void processNodeLeave(RespData<CoreTransaction> respData) {
@@ -307,8 +293,5 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_LEAVE_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeLeave] set cluster info refresh");
     }
 }

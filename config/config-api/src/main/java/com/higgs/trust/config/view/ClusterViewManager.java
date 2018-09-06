@@ -21,14 +21,12 @@ import java.util.*;
 
     private ClusterView currentView;
 
-    private ClusterView startView;
-
     private ArrayList<ClusterView> views = new ArrayList<>();
 
     @Override public synchronized void resetViews(List<ClusterView> views) {
         this.views.clear();
         this.views.addAll(views);
-        currentView = this.views.get(views.size() - 1);
+        currentView = views.size() > 0 ? views.get(views.size() - 1) : null;
     }
 
     @Override public List<ClusterView> getViews() {
@@ -36,19 +34,7 @@ import java.util.*;
     }
 
     @Override public ClusterView getCurrentView() {
-        return currentView.clone();
-    }
-
-    @Override public ClusterView getStartView() {
-        return startView;
-    }
-
-    @Override public void setStartView(ClusterView clusterView) {
-        this.startView = clusterView;
-    }
-
-    @Override public long getCurrentViewId() {
-        return currentView.getId();
+        return currentView != null ? currentView.clone() :  null;
     }
 
     @Override public ClusterView getViewWithHeight(long height) {
@@ -65,11 +51,8 @@ import java.util.*;
     }
 
     @Override public ClusterView getView(long viewId) {
-        if (viewId == IClusterViewManager.START_CLUSTER_VIEW_ID) {
-            return startView.clone();
-        }
         if (viewId <= IClusterViewManager.CURRENT_VIEW_ID) {
-            return currentView.clone();
+            return getCurrentView();
         }
         for (ClusterView view : views) {
             if (viewId == view.getId()) {
@@ -77,12 +60,6 @@ import java.util.*;
             }
         }
         return null;
-    }
-
-    @Override public void initViews(ClusterView clusterView) {
-        views.clear();
-        views.add(clusterView);
-        currentView = clusterView;
     }
 
     @Override public void changeView(ViewCommand command) {

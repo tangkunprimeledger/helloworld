@@ -8,8 +8,6 @@ import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
@@ -22,8 +20,6 @@ import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -55,7 +51,6 @@ import java.util.Map;
 
     @Autowired private PackageRepository packageRepository;
 
-    @StateChangeListener(value = NodeStateEnum.SelfChecking, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
     public void loadClusterView() {
         List<Ca> list = caRepository.getAllCa();
         Map<String, String> consensusNodeMap = new HashMap<>();
@@ -71,15 +66,15 @@ import java.util.Map;
     /**
      * get the cluster info through consensus, if timeout, null will be return
      */
-    public void initWithCluster() {
+    public void initClusterStartView() {
         log.info("init clusterInfo by cluster");
-        initFromAnyNode();
+        initStartViewFromAnyNode();
         ResponseCommand<?> responseCommand = null;
         int i = 0;
         do {
             responseCommand = validConsensus.submitSync(
                 new ClusterViewCmd(DEFAULT_CLUSTER_INFO_ID + "," + System.currentTimeMillis(),
-                    IClusterViewManager.START_CLUSTER_VIEW_ID));
+                    IClusterViewManager.CURRENT_VIEW_ID));
             if (responseCommand == null) {
                 try {
                     Thread.sleep(3 * 1000);
@@ -91,10 +86,10 @@ import java.util.Map;
         if (responseCommand == null) {
             throw new RuntimeException("init clusterInfo from cluster failed");
         }
-        viewManager.setStartView((ClusterView)responseCommand.get());
+        viewManager.resetViews(Collections.singletonList((ClusterView)responseCommand.get()));
     }
 
-    private void initFromAnyNode() {
+    private void initStartViewFromAnyNode() {
         log.info("init cluster info from any node");
         ValidResponseWrap<? extends ResponseCommand> response = null;
         int i = 0;
@@ -115,7 +110,7 @@ import java.util.Map;
         } while ((response == null || !response.isSucess()) && ++i <= 10);
         if (response != null && response.isSucess()) {
             ValidClusterViewCmd viewCmd = (ValidClusterViewCmd)response.result();
-            viewManager.setStartView(viewCmd.get());
+            viewManager.resetViews(Collections.singletonList(viewCmd.get()));
             log.info("init cluster info from any node successful");
         } else {
             throw new RuntimeException("init clusterInfo from any node failed");

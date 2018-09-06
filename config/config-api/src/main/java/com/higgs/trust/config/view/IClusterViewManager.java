@@ -11,8 +11,6 @@ public interface IClusterViewManager {
 
     long CURRENT_VIEW_ID = -1;
 
-    long START_CLUSTER_VIEW_ID = -2;
-
     /**
      * reset the cluster views
      */
@@ -24,24 +22,16 @@ public interface IClusterViewManager {
     List<ClusterView> getViews();
 
     /**
-     * get current view
+     * get current view, if null will be return start view
      */
     ClusterView getCurrentView();
 
     /**
-     * get the cluster current view, it's init at starting
-     */
-    ClusterView getStartView();
-
-    /**
-     * set the start view
-     */
-    void setStartView(ClusterView clusterView);
-
-    /**
      * get current view id
      */
-    long getCurrentViewId();
+    default long getCurrentViewId() {
+        return getCurrentView().getId();
+    }
 
     /**
      * get the {@link ClusterView} at height
@@ -50,14 +40,8 @@ public interface IClusterViewManager {
 
     /**
      * get the cluster view by view id, if viewId is {@link IClusterViewManager#CURRENT_VIEW_ID}, return the currentView.
-     * if viewId is {@link IClusterViewManager#START_CLUSTER_VIEW_ID}, return the cluster current view
      */
     ClusterView getView(long viewId);
-
-    /**
-     * init the cluster view
-     */
-    void initViews(ClusterView clusterView);
 
     /**
      * change cluster view
