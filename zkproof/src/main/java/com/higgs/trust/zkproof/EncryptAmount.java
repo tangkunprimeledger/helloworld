@@ -200,6 +200,17 @@ public class EncryptAmount {
         return new BigDecimal(r.divide(new BigInteger("2")).toString()).multiply(new BigDecimal(String.valueOf(rnd.nextDouble()))).toBigInteger();
     }
 
+    public static boolean cipherCompare(String em1, String em2){
+        if (em1 == null || em2 == null){
+            return false;
+        }
+
+        if (Base58.decodeToBigInteger(em1).equals(BigInteger.ZERO) || Base58.decodeToBigInteger(em2).equals(BigInteger.ZERO)){
+            return false;
+        }
+
+        return em1.equals(em2);
+    }
 
     public BigInteger getRandom(){
         return  r;

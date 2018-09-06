@@ -119,4 +119,8 @@ public class UTXOContextService extends ContractApiService {
         }
         return a0.compareTo(b0);
     }
+
+    public int cipherCompare (String a, String b){
+
+    }
 }
