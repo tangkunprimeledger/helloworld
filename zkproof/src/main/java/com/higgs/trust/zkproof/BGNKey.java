@@ -12,6 +12,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 
+
 public class BGNKey {
 	private TypeA1Pairing map;
 	private Element P, Q;

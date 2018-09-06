@@ -186,7 +186,7 @@ public class BGNEncryption implements HomomorphicEncryption {
     }
 
 	public boolean tooBig(BigInteger b) {
-        return b.bitLength() >= pk.getN().bitLength() / 2;
+        return b.bitLength() >= pk.getN().bitLength() / 4;
     }
 
 	public boolean tooBigRandom(BigInteger r) {

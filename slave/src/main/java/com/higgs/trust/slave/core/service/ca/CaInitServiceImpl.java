@@ -41,10 +41,10 @@ import java.util.*;
      * @desc execute command initStart on one node, it will call each node in the cluster to execute command initKeyPair
      */
     @Override public RespData<String> initStart() {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        nodeList.forEach((nodeName) -> {
-            initKeyPair();
-        });
+       // List<String> nodeList = clusterInfo.clusterNodeNames();
+       // nodeList.forEach((nodeName) -> {
+       //     initKeyPair();
+        //});
         return new RespData<>();
     }
 
@@ -55,32 +55,33 @@ import java.util.*;
      */
     @Override public void initKeyPair() {
 
-        List<Action> caActionList = acquirePubKeys(nodeProperties.getStartupRetryTime());
 
-        // construct genius block and insert into db
-        try {
-            log.info("[CaInitServiceImpl.initKeyPair] start to generate genius block");
-
-            // sort caActionList by user
-            Collections.sort(caActionList, new Comparator<Action>() {
-                @Override public int compare(Action caAction1, Action caAction2) {
-                    return ((CaAction)caAction1).getUser().compareTo(((CaAction)caAction2).getUser());
-                }
-            });
-
-            if (log.isDebugEnabled()) {
-                log.debug("[CaInitServiceImpl.initKeyPair] user ={}, caActionList={}", nodeState.getNodeName(),
-                    caActionList.toString());
-            }
-
-            caInitHandler.process(caActionList);
-            log.info("[CaInitServiceImpl.initKeyPair] end generate genius block");
-
-        } catch (Throwable e) {
-            log.error("[CaInitServiceImpl.initKeyPair] cluster init CA error", e);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR,
-                "[CaInitServiceImpl.initKeyPair] cluster init CA error", e);
-        }
+//        List<Action> caActionList = acquirePubKeys(nodeProperties.getStartupRetryTime());
+//
+//        // construct genius block and insert into db
+//        try {
+//            log.info("[CaInitServiceImpl.initKeyPair] start to generate genius block");
+//
+//            // sort caActionList by user
+//            Collections.sort(caActionList, new Comparator<Action>() {
+//                @Override public int compare(Action caAction1, Action caAction2) {
+//                    return ((CaAction)caAction1).getUser().compareTo(((CaAction)caAction2).getUser());
+//                }
+//            });
+//
+//            if (log.isDebugEnabled()) {
+//                log.debug("[CaInitServiceImpl.initKeyPair] user ={}, caActionList={}", nodeState.getNodeName(),
+//                    caActionList.toString());
+//            }
+//
+//            caInitHandler.process(caActionList);
+//            log.info("[CaInitServiceImpl.initKeyPair] end generate genius block");
+//
+//        } catch (Throwable e) {
+//            log.error("[CaInitServiceImpl.initKeyPair] cluster init CA error", e);
+//            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR,
+//                "[CaInitServiceImpl.initKeyPair] cluster init CA error", e);
+//        }
 
     }
 
