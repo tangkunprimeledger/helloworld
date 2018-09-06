@@ -191,6 +191,11 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </Logger>
 
+    <Logger name="com.higgs.trust.slave.common.util.TrustDaoDigestLogInterceptor" level="INFO" additivity="false">
+        <appender-ref ref="PERF-APPENDER"/>
+        <appender-ref ref="ERROR-APPENDER"/>
+    </Logger>
+
     <logger name="com.higgs.trust" level="debug" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
@@ -200,22 +205,18 @@
     <logger name="com.higgs.trust.slave.dao" level="info" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
-        <appender-ref ref="CONSOLE"/>
     </logger>
     <logger name="com.higgs.trust.consensus.p2pvalid.dao" level="info" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
-        <appender-ref ref="CONSOLE"/>
     </logger>
     <logger name="com.higgs.trust.rs.core.dao" level="info" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
-        <appender-ref ref="CONSOLE"/>
     </logger>
     <logger name="com.higgs.trust.rs.custom.dao" level="info" additivity="false">
         <appender-ref ref="BIZ-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
-        <appender-ref ref="CONSOLE"/>
     </logger>
 
 
