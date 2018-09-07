@@ -19,7 +19,7 @@ public interface ViewCommand {
     /**
      * get the package height
      */
-    long[] getPackageHeight();
+    long getPackageHeight();
 
     /**
      * get the cluster operation transaction {@link ClusterOptTx}
