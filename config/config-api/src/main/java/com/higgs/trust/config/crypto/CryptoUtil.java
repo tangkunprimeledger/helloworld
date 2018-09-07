@@ -23,14 +23,14 @@ import javax.validation.constraints.NotNull;
 
     public static Crypto getBizCrypto() {
         if (log.isDebugEnabled()) {
-            log.debug("crypto type for biz layer is {}", biz);
+            log.trace("crypto type for biz layer is {}", biz);
         }
         return selector(biz);
     }
 
     public static Crypto getProtocolCrypto() {
         if (log.isDebugEnabled()) {
-            log.debug("crypto type for consensus layer is {}", consensus);
+            log.trace("crypto type for consensus layer is {}", consensus);
         }
         return selector(consensus);
     }
