@@ -210,7 +210,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
         try {
             // send topic
             RTopic<String> topic = redissonClient.getTopic(RedisTopicEnum.ASYNC_TO_PROCESS_INIT_TX.getCode());
-            topic.publish(txId);
+            topic.publishAsync(txId);
         } catch (Throwable e) {
             log.error("Publish msg to process initTx msg failed！");
         }

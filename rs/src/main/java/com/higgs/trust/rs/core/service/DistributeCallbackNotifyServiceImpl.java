@@ -19,8 +19,6 @@ import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.sleuth.instrument.async.LazyTraceThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -45,8 +43,6 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
 
     @Autowired BeanFactory beanFactory;
 
-    private ThreadPoolTaskExecutor transactionInfoThreadPool;
-
     @Override
     public void afterPropertiesSet() throws Exception {
         //add callback message notify
@@ -57,14 +53,6 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
                 processNotify(redisTopicMsg);
             }
         }));
-        //thread pool
-        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(1);
-        threadPoolTaskExecutor.setMaxPoolSize(5);
-        threadPoolTaskExecutor.setQueueCapacity(1024);
-        threadPoolTaskExecutor.setThreadNamePrefix("redisNotifyExecutor-");
-        threadPoolTaskExecutor.initialize();
-        transactionInfoThreadPool = new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
     }
 
     /**
@@ -75,7 +63,7 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
      */
     @Override
     public void notifySyncResult(List<RespData<String>> respDatas, RedisMegGroupEnum redisMegGroupEnum) {
-        transactionInfoThreadPool.execute(() -> publishTopic(respDatas, redisMegGroupEnum));
+        publishTopic(respDatas, redisMegGroupEnum);
     }
 
 
@@ -177,7 +165,7 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
             msgList.add(redisTopicMsg);
         }
         String message = JSON.toJSONString(msgList);
-        topic.publish(message);
+        topic.publishAsync(message);
     }
 
     /**
