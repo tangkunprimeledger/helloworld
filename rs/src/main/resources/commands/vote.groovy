@@ -36,6 +36,10 @@ class vote {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def voteService = beans.getBean(VoteService.class)
         def list = voteService.queryAllInitRequest(row,count)
+        if(list == null){
+            out.println("vote request is empty")
+            return;
+        }
         list.forEach({item->context.provide(name:item.txId,value:sender)})
     }
 }
