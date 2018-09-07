@@ -22,7 +22,7 @@ class vote {
     @Usage('receipt for vote')
     @Command
     def receipt(InvocationContext context,
-                @Usage("txId") @Required @Argument String txId, @Usage("agree") @Required @Argument Boolean agree) {
+                @Usage("txId,the transaction id") @Required @Argument String txId, @Usage("is agree,true or false") @Required @Argument Boolean agree) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def voteService = beans.getBean(VoteService.class)
         voteService.receiptVote(txId, agree)
@@ -32,7 +32,7 @@ class vote {
     @Usage('show INIT vote request by page')
     @Command
     def show(InvocationContext context,
-             @Usage("row") @Argument int row, @Usage("count") @Argument int count) {
+             @Usage("start row number") @Argument int row, @Usage("select count number") @Argument int count) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def voteService = beans.getBean(VoteService.class)
         def list = voteService.queryAllInitRequest(row,count)
