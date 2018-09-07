@@ -43,9 +43,9 @@ public class UTXOActionHandlerTest extends BaseTest {
         utxoActionHandler.process(buildActionData());
         snapshotService.commit();
 
-        snapshotService.startTransaction();
-        utxoActionHandler.process(buildActionData1());
-        snapshotService.commit();
+   //     snapshotService.startTransaction();
+   //     utxoActionHandler.process(buildActionData1());
+   //     snapshotService.commit();
 
         snapshotService.flush();
     }
@@ -53,7 +53,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
     private ActionData buildDestroyActionData() {
         UTXOAction utxoAction = new UTXOAction();
-        utxoAction.setContractAddress("1234567");
+        utxoAction.setContractAddress("123456780");
 
         TxIn txIn = new TxIn();
         txIn.setIndex(0);
@@ -67,6 +67,7 @@ public class UTXOActionHandlerTest extends BaseTest {
         TxOut txOut = new TxOut();
         JSONObject state = new JSONObject();
         state.put("amount", new BigDecimal("2000"));
+        state.put("currency", "BUC");
         txOut.setIndex(0);
         txOut.setActionIndex(0);
         txOut.setIdentity("12312312321");
@@ -93,7 +94,7 @@ public class UTXOActionHandlerTest extends BaseTest {
         SignedTransaction signedTransaction = new SignedTransaction();
 
         CoreTransaction coreTx = new CoreTransaction();
-        coreTx.setPolicyId("000004");
+        coreTx.setPolicyId("TRANSFER_UTXO");
         coreTx.setTxId("UTXOlingchao"+System.currentTimeMillis());
         signedTransaction.setCoreTx(coreTx);
         ActionData ActionData1 = new ActionData() {
@@ -123,7 +124,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
     private ActionData buildActionData() {
         UTXOAction utxoAction = new UTXOAction();
-        utxoAction.setContractAddress("1234567");
+        utxoAction.setContractAddress("123456780");
 
         TxIn txIn = new TxIn();
         txIn.setIndex(1);
@@ -136,7 +137,8 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut = new TxOut();
         JSONObject state = new JSONObject();
-        state.put("amount", new BigDecimal("100"));
+        state.put("amount", "1GAJDrKnqVhPweoN8Dggg7TxYjnAxnoLTVp1jWozYDUf1MdiqX9DLTNPDWieQJP6jNhd2XZyr45Z1f4gGNg8mPq5mtBEAVPgsrBv6mqysJJNmudcuSbsmMxAf7mf2FjFAM3SLcTrHWryM3rEMPJrAdmqHsyKaNDb7PGqqsZMiCztZxmfMmmWY9CwKEFVeq9WUBaypU1i1U3XzWqb2DQo8ty4ax6RP66d432hRhTZaJwotzRp2XEA9Hqc5misj1xjazdCVXHR542Ck2nJ7DmSjYnEHe7VKxuA78zHt6yZDGY4bVGFDH2x74KEgtH9DQKh6fVMyGPWFu2QikTedLq5xvuYAbqbm12SWU");
+        state.put("currency", "BUC");
         txOut.setIndex(0);
         txOut.setActionIndex(0);
         txOut.setIdentity("12312312321");
@@ -144,7 +146,8 @@ public class UTXOActionHandlerTest extends BaseTest {
 
         TxOut txOut1 = new TxOut();
         JSONObject state1 = new JSONObject();
-        state1.put("amount", new BigDecimal("400"));
+        state1.put("amount", "253evJ5U5ebNgD4zUGWJPJtJUn2hu3jfqF3W2XTfo1kmqY1GvLgR27Z5xkbRMA19pTgzennvPvNKgUNUkv69BhMEdkjSif4PDeAWRbXjBDtHG92AgB3Yv6QwPCpSQJ9stTjC6WzRLMM5jWoq6D6WRvLdVkwuxEzr8QFboThKznLtGpLv4axC8UNWU8SePRyPU9f9FGWvhXWryHZQd415rvCFJtFGm4ReFTktnDCmDvQy8N6ZhyTqVNSWYd8oHTvZ6GDE66nNLAKhB8K4izUxZRDoGRRukk5V2mWRuUxPp1H6sZD8dX6iMgEPRdNx8Jay2CtShKyodfxhbJvcFdPFYrn2seCYpCpVF2a");
+        state1.put("currency", "BUC");
         txOut1.setIndex(1);
         txOut1.setActionIndex(0);
         txOut1.setIdentity("12312312321");
@@ -193,7 +196,7 @@ public class UTXOActionHandlerTest extends BaseTest {
 
     private ActionData buildActionData1() {
         UTXOAction utxoAction = new UTXOAction();
-        utxoAction.setContractAddress("1234567");
+        utxoAction.setContractAddress("123456780");
 
         TxIn txIn = new TxIn();
         txIn.setIndex(0);

@@ -18,6 +18,7 @@
         <module>registry</module>
         <module>config</module>
         <module>management</module>
+        <module>zkproof</module>
     </modules>
 
     <parent>
@@ -59,11 +60,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.higgs.trust</groupId>
-                <artifactId>consensus</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.higgs.trust</groupId>
@@ -136,6 +132,12 @@
             <dependency>
                 <groupId>com.higgs.trust</groupId>
                 <artifactId>registry</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>zkproof</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- internal end -->

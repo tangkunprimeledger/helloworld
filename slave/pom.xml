@@ -23,6 +23,11 @@
         </dependency>-->
         <dependency>
             <groupId>com.higgs.trust</groupId>
+            <artifactId>zkproof</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-smart</artifactId>
         </dependency>
         <dependency>
