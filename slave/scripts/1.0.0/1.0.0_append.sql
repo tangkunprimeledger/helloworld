@@ -14,3 +14,6 @@ alter table config modify column pub_key varchar(1024);
 alter table config modify column pri_key varchar(2048);
 
 alter table ca modify column pub_key varchar(1024);
+
+alter table config modify column tmp_pub_key varchar(1024);
+alter table config modify column tmp_pri_key varchar(2048);
