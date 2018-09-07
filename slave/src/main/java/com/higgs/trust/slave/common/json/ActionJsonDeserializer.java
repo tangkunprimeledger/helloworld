@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.common.json;
 
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
@@ -10,10 +9,7 @@ import com.higgs.trust.common.lambda.Mapper;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.model.bo.account.AccountOperation;
-import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
-import com.higgs.trust.slave.model.bo.account.IssueCurrency;
-import com.higgs.trust.slave.model.bo.account.OpenAccount;
+import com.higgs.trust.slave.model.bo.account.*;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.DataIdentityAction;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
@@ -36,14 +32,14 @@ import java.util.Map;
  * @author duhongming
  * @date 2018/8/2
  */
-@Slf4j
-public class ActionJsonDeserializer implements ObjectDeserializer {
+@Slf4j public class ActionJsonDeserializer implements ObjectDeserializer {
 
     static Map<String, Mapper<JSONObject, Action>> convertMap = new HashMap<>(20);
     static Map<ActionTypeEnum, Type> actionMap = new HashMap<>(20);
+
     static {
         actionMap.put(ActionTypeEnum.OPEN_ACCOUNT, OpenAccount.class);
-        actionMap.put(ActionTypeEnum.UNFREEZE, AccountUnFreeze.class);
+        actionMap.put(ActionTypeEnum.FREEZE, AccountFreeze.class);
         actionMap.put(ActionTypeEnum.UNFREEZE, AccountUnFreeze.class);
         actionMap.put(ActionTypeEnum.UTXO, UTXOAction.class);
         actionMap.put(ActionTypeEnum.ACCOUNTING, AccountOperation.class);
@@ -68,21 +64,20 @@ public class ActionJsonDeserializer implements ObjectDeserializer {
         //convertMap.put(ActionTypeEnum.REGISTER_CONTRACT.name(), obj -> CreateContractAction.fromMap(obj));
     }
 
-    @Override
-    public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+    @Override public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
         Object obj = parser.parse();
         if (obj == null) {
             return null;
         }
-        if(obj instanceof Action) {
-            return (T) obj;
+        if (obj instanceof Action) {
+            return (T)obj;
         }
 
         // parser.parseObject()
-        JSONObject jsonObject = (JSONObject) obj;
+        JSONObject jsonObject = (JSONObject)obj;
         String actionTypeName = jsonObject.getString("type");
         if (StringUtils.isEmpty(actionTypeName)) {
-            log.error("action type is empty, {}", ((JSONObject) obj).toJSONString());
+            log.error("action type is empty, {}", ((JSONObject)obj).toJSONString());
             return null;
         }
         ActionTypeEnum actionType = ActionTypeEnum.valueOf(actionTypeName);
@@ -92,15 +87,14 @@ public class ActionJsonDeserializer implements ObjectDeserializer {
         }
         Mapper mapper = convertMap.get(actionType);
         if (mapper != null) {
-            return (T) convertMap.get(actionType).mapping(jsonObject);
+            return (T)convertMap.get(actionType).mapping(jsonObject);
         }
         jsonObject.remove("@type");
         Type realType = actionMap.get(actionType);
-        return (T) JSON.parseObject(jsonObject.toJSONString(), realType);
+        return (T)JSON.parseObject(jsonObject.toJSONString(), realType);
     }
 
-    @Override
-    public int getFastMatchToken() {
+    @Override public int getFastMatchToken() {
         return 0;
     }
 }

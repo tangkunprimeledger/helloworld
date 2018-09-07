@@ -48,7 +48,7 @@ import javax.validation.constraints.NotNull;
         return null;
     }
 
-    @NotNull @Value("${higgs.trust.crypto.biz:SM}") public void setBiz(String newBiz) {
+    @NotNull @Value("${higgs.trust.crypto.biz:RSA}") public void setBiz(String newBiz) {
         log.info("set biz,newBiz={}", newBiz);
         biz = newBiz;
     }
