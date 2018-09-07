@@ -14,6 +14,7 @@ import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRequestRecord;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
+import com.higgs.trust.rs.core.dao.po.VoteRequestRecordPO;
 import com.higgs.trust.rs.core.integration.ServiceProviderClient;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
@@ -284,6 +285,16 @@ import java.util.concurrent.Future;
         }
         //default
         return false;
+    }
+
+    @Override public List<VoteRequestRecord> queryAllInitRequest(int row, int count) {
+        if(row < 0){
+            row = 0;
+        }
+        if(count <= 0){
+            count = 10;
+        }
+        return voteReqRecordRepository.queryAllInitRequest(row,count);
     }
 
     @Override public List<String> getVoters(List<SignInfo> signInfos, List<String> rsIds) {

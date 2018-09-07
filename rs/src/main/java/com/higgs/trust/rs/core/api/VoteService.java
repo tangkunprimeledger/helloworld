@@ -1,11 +1,12 @@
 package com.higgs.trust.rs.core.api;
 
-import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
+import com.higgs.trust.rs.core.bo.VoteRequestRecord;
 import com.higgs.trust.rs.core.vo.ReceiptRequest;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
+import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.SignInfo;
 
@@ -76,4 +77,12 @@ public interface VoteService {
      * @return
      */
     boolean getDecision(List<VoteReceipt> receipts, DecisionTypeEnum decisionType);
+    /**
+     * query all request for init result
+     *
+     * @param row
+     * @param count
+     * @return
+     */
+    List<VoteRequestRecord> queryAllInitRequest(int row,int count);
 }

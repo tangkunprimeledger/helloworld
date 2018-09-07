@@ -93,4 +93,12 @@
 		where tx_id=#{txId} and vote_result='INIT'
 	</update>
 
+	<!-- queryAllInitRequest -->
+	<select id="queryAllInitRequest" resultMap="baseResultMap"
+			parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from vote_request_record
+		where vote_result='INIT' limit #{row},#{count}
+	</select>
 </mapper>
