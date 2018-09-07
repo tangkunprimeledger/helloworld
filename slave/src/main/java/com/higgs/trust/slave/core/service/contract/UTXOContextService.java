@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.core.service.contract;
 
-import com.higgs.trust.common.utils.CryptoUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.contract.ContractApiService;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
