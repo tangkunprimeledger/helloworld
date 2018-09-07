@@ -1,16 +1,10 @@
 import com.higgs.trust.zkproof.EncryptAmount;
 import org.junit.Test;
-import sun.applet.resources.MsgAppletViewer;
 
-import javax.swing.text.html.parser.Entity;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import static com.sun.org.apache.xml.internal.security.keys.keyresolver.KeyResolver.iterator;
 
 public class zkproofTest {
 
@@ -43,9 +37,7 @@ public class zkproofTest {
             pubKey.put(EncryptAmount.exportPubKey(),EncryptAmount.exportPubKey());
         }
 
-
         Set<Map.Entry<String,String>> set =  pubKey.entrySet();
-        //Iterator iterator = set.iterator();
 
         for (Map.Entry<String, String> en: set
              ) {

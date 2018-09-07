@@ -134,6 +134,12 @@
                 <artifactId>registry</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>zkproof</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- internal end -->
 
             <!-- spring boot start -->
