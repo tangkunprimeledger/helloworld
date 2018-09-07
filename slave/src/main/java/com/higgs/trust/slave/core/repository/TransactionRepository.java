@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.vo.CoreTransactionVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -116,7 +117,8 @@ import java.util.List;
             log.info("[batchSaveTransaction] txs is empty");
             return;
         }
-        List<TransactionPO> txPOs = new ArrayList<>();
+        Profiler.enter("[batch.insert.txs.foreach]");
+        List<TransactionPO> txPOs = new ArrayList<>(txs.size());
         for (SignedTransaction tx : txs) {
             CoreTransaction coreTx = tx.getCoreTx();
             TransactionPO po = BeanConvertor.convertBean(coreTx, TransactionPO.class);
@@ -135,6 +137,8 @@ import java.util.List;
             }
             txPOs.add(po);
         }
+        Profiler.release();
+        Profiler.enter("[batch.insert.txs]");
         try {
             int r = transactionJDBCDao.batchInsertTransaction(txPOs);
             if (r != txPOs.size()) {
@@ -144,6 +148,8 @@ import java.util.List;
         } catch (DuplicateKeyException e) {
             log.error("[batchSaveTransaction] is idempotent blockHeight:{}", blockHeight);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        }finally {
+            Profiler.release();
         }
         log.info("[TransactionRepository.batchSaveTransaction] is end");
     }
