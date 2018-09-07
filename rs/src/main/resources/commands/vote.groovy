@@ -40,6 +40,6 @@ class vote {
             out.println("vote request is empty")
             return;
         }
-        list.forEach({item->context.provide(name:item.txId,value:sender)})
+        list.forEach({item->context.provide(name:item.txId,value:item.sender)})
     }
 }
