@@ -16,9 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
     public ValidResponseWrap<? extends ResponseCommand> receive(ValidCommandWrap validCommandWrap) {
         String messageDigest = validCommandWrap.getValidCommand().getMessageDigestHash();
-        ClusterView view = viewManager.getView(validCommandWrap.getValidCommand().getView());
-        if (view == null || StringUtils.isBlank(view.getPubKey(validCommandWrap.getFromNode()))) {
-            throw new RuntimeException(String.format("the view not exist or not have pubkey"));
+        long viewId = validCommandWrap.getValidCommand().getView();
+        ClusterView view = viewManager.getView(viewId);
+        if (view == null) {
+            log.warn("the view:{} is not exist, current view will be used", viewId);
+            view = viewManager.getCurrentView();
+        }
+        if (StringUtils.isBlank(view.getPubKey(validCommandWrap.getFromNode()))) {
+            throw new RuntimeException(String
+                .format("the public key of node:%s not exist at view:%d", validCommandWrap.getFromNode(), viewId));
         }
 
         String pubKey = view.getPubKey(validCommandWrap.getFromNode());

@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
      * @param vo
      * @return
      */
-    @RequestMapping(value = "/node/join", method = RequestMethod.GET) RespData<String> nodeJoin(
+    @RequestMapping(value = "/node/join", method = RequestMethod.POST) RespData<String> nodeJoin(
         @RequestBody NodeOptVO vo) {
         return nodeConsensusService.joinConsensusTx(vo);
     }

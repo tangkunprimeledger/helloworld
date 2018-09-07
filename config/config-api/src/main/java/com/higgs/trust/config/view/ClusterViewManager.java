@@ -123,12 +123,7 @@ import java.util.*;
         if (!verify) {
             throw new ConfigException(ConfigError.CONFIG_VIEW_PACKAGE_HEIGHT_INCORRECT);
         }
-        if ((packageHeight == currentView.getStartHeight() && currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT)
-            || (packageHeight == currentView.getEndHeight() + 1)) {
-            log.debug("reset currentView end height:{}", packageHeight);
-            currentView.setEndHeight(packageHeight);
-        } else {
-            log.warn("set incorrect end height:{}, currentView:{}", packageHeight, currentView);
-        }
+        log.debug("reset currentView end height:{}", packageHeight);
+        currentView.setEndHeight(packageHeight);
     }
 }
