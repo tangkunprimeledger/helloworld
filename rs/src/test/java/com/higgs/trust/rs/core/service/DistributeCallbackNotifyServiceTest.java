@@ -82,7 +82,7 @@ public class DistributeCallbackNotifyServiceTest extends IntegrateBaseTest {
             txId = txId +  (redisMegGroupEnum == RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY ? " On persisted " : " On cluster ");
             RespData respData = new RespData();
             respData.setData(txId);
-            distributeCallbackNotifyService.notifySyncResult(txId, respData, redisMegGroupEnum);
+            distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(respData), redisMegGroupEnum);
         }
     }
 

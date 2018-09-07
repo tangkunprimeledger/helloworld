@@ -1,14 +1,18 @@
 package com.higgs.trust.slave.core.service.contract;
 
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.contract.ContractApiService;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
+import com.higgs.trust.slave.model.bo.utxo.Sign;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -58,13 +62,13 @@ public class UTXOContextService extends ContractApiService {
      * @param augend
      * @return
      */
-    public static BigDecimal add (String augend, String addend) {
+    public static BigDecimal add(String augend, String addend) {
         BigDecimal a = null;
         BigDecimal b = null;
         try {
             a = new BigDecimal(augend);
             b = new BigDecimal(addend);
-        }catch (Throwable e){
+        } catch (Throwable e) {
             log.error("UTXO context NumberFormatException in for method add, when execute contract");
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_CONTRACT_PROCESS_FAIL_ERROR);
         }
@@ -98,7 +102,7 @@ public class UTXOContextService extends ContractApiService {
         try {
             a = new BigDecimal(minuend);
             b = new BigDecimal(reduction);
-        }catch (Throwable e){
+        } catch (Throwable e) {
             log.error("UTXO context NumberFormatException in for method subtract, when execute contract");
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_CONTRACT_PROCESS_FAIL_ERROR);
         }
@@ -121,7 +125,7 @@ public class UTXOContextService extends ContractApiService {
         try {
             a0 = new BigDecimal(a);
             b0 = new BigDecimal(b);
-        }catch (Throwable e){
+        } catch (Throwable e) {
             log.error("UTXO context NumberFormatException in for method compare, when execute contract");
             throw new SlaveException(SlaveErrorEnum.SLAVE_UTXO_CONTRACT_PROCESS_FAIL_ERROR);
         }
@@ -135,4 +139,32 @@ public class UTXOContextService extends ContractApiService {
         }
         return 1;
     }
+
+
+    /**
+     * verify UTXO Signature list
+     * all the Signature is sign from the same message with different private key
+     *
+     * @param signList
+     * @param message
+     * @return
+     */
+    public boolean verifySignature(List<Sign> signList, String message) {
+        if (CollectionUtils.isEmpty(signList) || null == message) {
+            log.error("Verify UTXO Signature list for signList or message is null error!");
+            return false;
+        }
+        for (Sign sign : signList) {
+            if (StringUtils.isBlank(sign.getPubKey()) || StringUtils.isBlank(sign.getSignature())) {
+                log.error("UTXO sign info :{} for PubKey or Signature is null error!", sign);
+                return false;
+            }
+            if (!CryptoUtil.getBizCrypto().verify(message, sign.getSignature(), sign.getPubKey())) {
+                log.error("UTXO verify message :{} for Signature :{} with pubKey :{}  failed error!", message, sign.getSignature(), sign.getPubKey());
+                return false;
+            }
+        }
+        return true;
+    }
 }
+

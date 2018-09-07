@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.model.bo.action;
 
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
+import com.higgs.trust.slave.model.bo.utxo.Sign;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.Getter;
@@ -43,5 +44,9 @@ import java.util.List;
      * 3.DESTRUCTION(all  should sign the tx, the tx likes at least one input and no one out put)
      */
     @NotNull private UTXOActionTypeEnum utxoActionType;
+    /**
+     * Signature list for the UTXO action. It can be null, when you  don’t need to verify  signature for a UTXO
+     */
+    private List<Sign> signList;
 
 }

@@ -111,30 +111,17 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
                 newSignedTxList.add(signedTx);
             }
         }
-
-        Profiler.start("submit transactions");
-
-        Profiler.enter("check db idempotent start");
         newSignedTxList = checkDbIdempotent(newSignedTxList, transactionVOList);
-        Profiler.release();
         if (CollectionUtils.isEmpty(newSignedTxList)) {
             log.warn("all transactions idempotent");
             respData.setData(transactionVOList.size() > 0 ? transactionVOList : null);
             return respData;
         }
 
-        Profiler.enter("submit to master");
         RespData<List<TransactionVO>> masterResp = submitToMaster(newSignedTxList);
         if (null != masterResp.getData()) {
             transactionVOList.addAll(masterResp.getData());
         }
-        Profiler.release();
-        Profiler.release();
-
-        if (Profiler.getDuration() > 0) {
-            Profiler.logDump();
-        }
-
         respData.setData(transactionVOList);
         return respData;
     }
@@ -150,7 +137,6 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             signedTxIds.add(signedTx.getCoreTx().getTxId());
         }
 
-        Profiler.enter("transaction idempotent");
         //check transaction db
         List<String> txIds = transactionRepository.queryTxIdsByIds(signedTxIds);
         if (!CollectionUtils.isEmpty(txIds)) {
@@ -167,10 +153,6 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
                 signedTxIds.remove(txId);
             }
         }
-
-        Profiler.release();
-
-        Profiler.enter("pending transaction idempotent");
         //check pending_transaction db
         List<String> pTxIds = pendingTxRepository.queryTxIds(signedTxIds);
         if (!CollectionUtils.isEmpty(pTxIds)) {
@@ -187,16 +169,11 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
                 signedTxIds.remove(pTxIds);
             }
         }
-
-        Profiler.release();
-
-        Profiler.enter("build signedTx");
         for (SignedTransaction signedTx : transactions) {
             if (signedTxIds.contains(signedTx.getCoreTx().getTxId())) {
                 signedTransactions.add(signedTx);
             }
         }
-        Profiler.release();
         return signedTransactions;
     }
 
@@ -236,7 +213,6 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
 
     @Override public RespData<List<TransactionVO>> submitToMaster(List<SignedTransaction> transactions) {
 
-        Profiler.start("submit to master");
         RespData<List<TransactionVO>> respData = new RespData();
 
         if (CollectionUtils.isEmpty(transactions)) {
@@ -248,7 +224,6 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
 
                 // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
-            Profiler.enter("submit transactions to self");
             if (nodeState.isState(NodeStateEnum.Running)) {
                 log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);
                 transactionVOList = pendingState.addPendingTransactions(transactions);
@@ -257,16 +232,13 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
                 transactionVOList = buildTxVOList(transactions);
             }
             respData.setData(transactionVOList);
-            Profiler.release();
         } else {
             if (log.isDebugEnabled()) {
                 //when it is not master ,then send txs to master node
                 log.debug("this node is not  master, send txs:{} to master node={}", transactions,
                     nodeState.getMasterName());
             }
-            Profiler.enter("submit transactions to master node");
             respData = blockChainClient.submitToMaster(nodeState.getMasterName(), transactions);
-            Profiler.release();
         }
 
         return respData;

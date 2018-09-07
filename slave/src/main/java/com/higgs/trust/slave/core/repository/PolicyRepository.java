@@ -18,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author tangfashuang
@@ -31,9 +33,15 @@ import java.util.List;
 
     @Autowired
     private RsNodeRepository rsNodeRepository;
+    /**
+     * the policy cache
+     */
+    private Map<String,Policy> policyCache = new HashMap<>();
 
     public Policy getPolicyById(String policyId) {
-
+        if(policyCache.containsKey(policyId)){
+            return policyCache.get(policyId);
+        }
         if (StringUtils.isEmpty(policyId)) {
             log.error("policyId is null");
             return null;
@@ -64,7 +72,9 @@ import java.util.List;
         if (null == policy) {
             return null;
         }
-        return convertPolicyPOToPolicy(policy);
+        Policy p = convertPolicyPOToPolicy(policy);
+        policyCache.put(policyId,p);
+        return p;
     }
 
     public void save(Policy policy) {
@@ -72,8 +82,8 @@ import java.util.List;
             log.error("policy is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-
         policyDao.add(convertPolicyToPolicyPO(policy));
+        policyCache.clear();
     }
 
     public PolicyPO convertPolicyToPolicyPO(Policy policy) {
@@ -127,6 +137,8 @@ import java.util.List;
     }
 
     public int batchInsert(List<PolicyPO> policyPOList) {
-        return policyDao.batchInsert(policyPOList);
+        int i = policyDao.batchInsert(policyPOList);
+        policyCache.clear();
+        return i;
     }
 }
