@@ -119,6 +119,27 @@ public class BGNKey {
 
 	}
 
+	String exportPubKeyWithN(){
+
+		try {
+			PairingParameters param1 = (PairingParameters) SerializerUtil.deserialize(SerializerUtil.serialize(param));
+			//delete private key
+			param1.remove("n0");
+			param1.remove("n1");
+			String p1 = SerializerUtil.serialize(param1);
+			JSONObject pubKey = new JSONObject();
+			pubKey.put("key_type","BGN");
+			pubKey.put("param", p1);
+			pubKey.put("P",Base58.encode(P.toBytes()));
+			pubKey.put("Q",Base58.encode(Q.toBytes()));
+			pubKey.put("n",Base58.encode(n.toByteArray()));
+			return  pubKey.toJSONString();
+		} catch (Exception e){
+			return null;
+		}
+
+	}
+
 	String exportFullKey(){
 		try {
 			String p1 = SerializerUtil.serialize(param);
