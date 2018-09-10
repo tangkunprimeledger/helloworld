@@ -12,6 +12,7 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -32,6 +33,8 @@ import java.util.List;
 
     @Autowired private NodeState nodeState;
     @Autowired private ClusterInitHandler clusterInitHandler;
+
+    @Value("${higgs.trust.geniusPath}") String geniusPath;
 
     /**
      * @param
@@ -71,8 +74,13 @@ import java.util.List;
 
     private List<Action> acquirePubKeys() throws FileNotFoundException {
         JsonParser parser = new JsonParser();
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("geniusBlock.json");
-        JsonObject object = (JsonObject)parser.parse(new InputStreamReader(inputStream));
+        JsonObject object = null;
+        if (geniusPath == null) {
+            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("geniusBlock.json");
+            object = (JsonObject)parser.parse(new InputStreamReader(inputStream));
+        } else {
+            object = (JsonObject)parser.parse(new FileReader(geniusPath));
+        }
 
         JsonArray array = object.get("transactions").getAsJsonArray();
 
