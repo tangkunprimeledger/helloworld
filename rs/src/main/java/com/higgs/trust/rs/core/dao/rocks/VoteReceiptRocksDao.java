@@ -16,6 +16,7 @@ import java.util.List;
 
 /**
  * @author tangfashuang
+ * @desc key: txId_voter; value : voteReceiptPO
  */
 @Slf4j
 @Service
@@ -25,7 +26,7 @@ public class VoteReceiptRocksDao extends RocksBaseDao<VoteReceiptPO> {
     }
 
     public void save(VoteReceiptPO voteReceiptPO) {
-        String key = voteReceiptPO.getTxId() + Constant.SPLIT_SLASH + voteReceiptPO .getVoter();
+        String key = voteReceiptPO.getTxId() + Constant.SPLIT_SLASH + voteReceiptPO.getVoter();
         if (keyMayExist(key) && null != get(key)) {
             log.error("[VoteReceiptRocksDao.save] vote receipt is exist, key={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);

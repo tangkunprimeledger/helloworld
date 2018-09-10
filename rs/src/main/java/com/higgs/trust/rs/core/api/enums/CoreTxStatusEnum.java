@@ -1,6 +1,5 @@
 package com.higgs.trust.rs.core.api.enums;
 
-import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -37,10 +36,25 @@ public enum CoreTxStatusEnum {
         return null;
     }
 
-    public static List<String> getIndexs(String index) {
+    public static CoreTxStatusEnum formIndex(String index){
+        for(CoreTxStatusEnum coreTxStatusEnum : values()){
+            if(StringUtils.equals(index,coreTxStatusEnum.getIndex())){
+                return coreTxStatusEnum;
+            }
+        }
+        return null;
+    }
+
+    public static List<String> getIndexList(String index) {
         List<String> indexList = new ArrayList<>();
-        for (CoreTxStatusEnum enumeration : values()) {
-            if (enumeration.getIndex().compareTo(index) > 0) {
+        if (!StringUtils.isEmpty(index)) {
+            for (CoreTxStatusEnum enumeration : values()) {
+                if (enumeration.getIndex().compareTo(index) > 0) {
+                    indexList.add(enumeration.getIndex());
+                }
+            }
+        } else {
+            for (CoreTxStatusEnum enumeration : values()) {
                 indexList.add(enumeration.getIndex());
             }
         }

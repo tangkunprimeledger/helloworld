@@ -36,7 +36,10 @@
 		biz_type(id,policy_id,biz_type,create_time)
 		values(#{id},#{policyId},#{bizType},now())
 	</insert>
-	<!-- 删除记录 -->
+    <update id="update">
+		update `biz_type` set biz_type = #{bizType} where policyId=#{policyId}
+	</update>
+    <!-- 删除记录 -->
 	<delete id="delete" parameterType="Object">
 		delete from biz_type where
 		id=#{id}

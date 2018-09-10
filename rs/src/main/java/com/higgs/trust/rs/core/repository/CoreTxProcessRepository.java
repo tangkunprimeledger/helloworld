@@ -55,7 +55,7 @@ public class CoreTxProcessRepository {
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
                 }
             } else {
-                coreTxProcessRocksDao.saveWithTransaction(po);
+                coreTxProcessRocksDao.saveWithTransaction(po, statusEnum.getIndex());
             }
         } finally {
             Profiler.release();
@@ -66,15 +66,15 @@ public class CoreTxProcessRepository {
      * query by transaction id
      *
      * @param txId
-     * @param forUpdate
+     * @param statusEnum
      * @return
      */
-    public CoreTransactionProcessPO queryByTxId(String txId, boolean forUpdate) {
+    public CoreTransactionProcessPO queryByTxId(String txId, CoreTxStatusEnum statusEnum) {
         if (rsConfig.isUseMySQL()) {
-            return coreTransactionProcessDao.queryByTxId(txId, forUpdate);
+            return coreTransactionProcessDao.queryByTxId(txId, statusEnum.getCode());
         }
         //TODO for update
-        return coreTxProcessRocksDao.get(txId);
+        return coreTxProcessRocksDao.queryByTxIdAndStatus(txId, statusEnum == null ? null : statusEnum.getIndex());
     }
 
     /**
@@ -89,7 +89,7 @@ public class CoreTxProcessRepository {
         if (rsConfig.isUseMySQL()) {
             return coreTransactionProcessDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
         }
-        return coreTxProcessRocksDao.queryByPrefix(coreTxStatusEnum.getCode(), count);
+        return coreTxProcessRocksDao.queryByPrefix(coreTxStatusEnum.getIndex(), count);
     }
 
     /**
@@ -109,7 +109,7 @@ public class CoreTxProcessRepository {
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
             } else {
-                coreTxProcessRocksDao.updateStatus(txId, from.getCode(), to.getCode());
+                coreTxProcessRocksDao.updateStatus(txId, from, to);
             }
         } finally {
             Profiler.release();
@@ -134,7 +134,7 @@ public class CoreTxProcessRepository {
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
                 }
             } else {
-                coreTxProcessRocksDao.batchInsert(coreTransactionProcessPOList);
+                coreTxProcessRocksDao.batchInsert(coreTransactionProcessPOList, statusEnum.getIndex());
             }
         } finally {
             Profiler.release();
@@ -158,7 +158,7 @@ public class CoreTxProcessRepository {
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
                 }
             } else {
-                coreTxProcessRocksDao.batchUpdate(convert(txs, from), from.getCode(), to.getCode());
+                coreTxProcessRocksDao.batchUpdate(convert(txs, from), from, to);
             }
         } finally {
             Profiler.release();
@@ -189,7 +189,7 @@ public class CoreTxProcessRepository {
         if (rsConfig.isUseMySQL()) {
             coreTransactionProcessDao.deleteEnd();
         } else {
-            coreTxProcessRocksDao.deleteEND(CoreTxStatusEnum.END.getCode());
+            coreTxProcessRocksDao.deleteEND(CoreTxStatusEnum.END.getIndex());
         }
     }
 }

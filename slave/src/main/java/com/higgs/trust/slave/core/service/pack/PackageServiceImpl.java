@@ -253,12 +253,12 @@ import java.util.stream.Collectors;
 
             Profiler.enter("[execute txs]");
             //persist all transactions
-            List<TransactionReceipt> txReceipts = executeTransactions(packContext);
+            Map<String, TransactionReceipt> txReceiptMap = executeTransactions(packContext);
             Profiler.release();
 
             Profiler.enter("[build block header]");
             //build a new block hash from db datas
-            BlockHeader dbHeader = blockService.buildHeader(packContext, txReceipts);
+            BlockHeader dbHeader = blockService.buildHeader(packContext, txReceiptMap);
             Profiler.release();
 
             //build block and save to context
@@ -271,12 +271,12 @@ import java.util.stream.Collectors;
 
             //persist block
             Profiler.enter("[block flush]");
-            blockService.persistBlock(block, txReceipts);
+            blockService.persistBlock(block, txReceiptMap);
             Profiler.release();
 
             //call back business
             Profiler.enter("[callbackRS]");
-            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover, dbHeader);
+            callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
@@ -318,13 +318,13 @@ import java.util.stream.Collectors;
      * @param packageData
      * @return
      */
-    private List<TransactionReceipt> executeTransactions(PackageData packageData) {
+    private Map<String, TransactionReceipt> executeTransactions(PackageData packageData) {
         List<SignedTransaction> txs = packageData.getCurrentPackage().getSignedTxList();
         Profiler.enter("[queryTxIds]");
         List<String> dbTxs = transactionRepository.queryTxIds(txs);
         Profiler.release();
         List<SignedTransaction> persistedDatas = new ArrayList<>();
-        List<TransactionReceipt> txReceipts = new ArrayList<>(txs.size());
+        Map<String, TransactionReceipt> txReceipts = new HashMap<>(txs.size());
         //loop validate each transaction
         for (SignedTransaction tx : txs) {
             String title = new StringBuffer("[execute tx ").append(tx.getCoreTx().getTxId()).append("]").toString();
@@ -340,7 +340,7 @@ import java.util.stream.Collectors;
                 TransactionReceipt receipt =
                     transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
                 persistedDatas.add(tx);
-                txReceipts.add(receipt);
+                txReceipts.put(receipt.getTxId(), receipt);
             } finally {
                 Profiler.release();
             }
@@ -417,7 +417,7 @@ import java.util.stream.Collectors;
                         }
                     });
                 }
-                List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
+                Map<String, TransactionReceipt> txReceiptMap = transactionRepository.queryTxReceiptMap(txs);
                 Profiler.release();
 
                 if (initConfig.isUseMySQL()) {
@@ -425,7 +425,7 @@ import java.util.stream.Collectors;
                         @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                             //call back business
                             Profiler.enter("[callbackRSForClusterPersisted]");
-                            callbackRS(txs, txReceipts, true, false, blockHeader);
+                            callbackRS(txs, txReceiptMap, true, false, blockHeader);
                             Profiler.release();
 
                             //update package status ---- PERSISTED
@@ -440,7 +440,7 @@ import java.util.stream.Collectors;
                         ThreadLocalUtils.putWriteBatch(new WriteBatch());
 
                         Profiler.enter("[callbackRSForClusterPersisted]");
-                        callbackRS(txs, txReceipts, true, false, blockHeader);
+                        callbackRS(txs, txReceiptMap, true, false, blockHeader);
                         Profiler.release();
 
                         //update package status ---- PERSISTED
@@ -471,7 +471,7 @@ import java.util.stream.Collectors;
     /**
      * call back business
      */
-    private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
+    private void callbackRS(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap,
         boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
         if (log.isDebugEnabled()) {
             log.debug("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
@@ -497,7 +497,7 @@ import java.util.stream.Collectors;
                 if (log.isDebugEnabled()) {
                     log.debug("[callbackRS]start fail-over batch rs height:{}", blockHeader.getHeight());
                 }
-                batchCallbackHandler.onFailover(txs, txReceipts, blockHeader);
+                batchCallbackHandler.onFailover(txs, txReceiptMap, blockHeader);
                 return;
             }
             //callback business
@@ -505,9 +505,9 @@ import java.util.stream.Collectors;
                 log.info("[callbackRS]start batchCallback rs height:{}", blockHeader.getHeight());
             }
             if (isClusterPersisted) {
-                batchCallbackHandler.onClusterPersisted(txs, txReceipts, blockHeader);
+                batchCallbackHandler.onClusterPersisted(txs, txReceiptMap, blockHeader);
             } else {
-                batchCallbackHandler.onPersisted(txs, txReceipts, blockHeader);
+                batchCallbackHandler.onPersisted(txs, txReceiptMap, blockHeader);
             }
             if (log.isDebugEnabled()) {
                 log.info("[callbackRS]end batchCallback rs height:{}", blockHeader.getHeight());
@@ -520,16 +520,15 @@ import java.util.stream.Collectors;
             RespData<CoreTransaction> respData = new RespData<>();
             respData.setData(tx.getCoreTx());
             //make resp code and msg for fail tx
-            for (TransactionReceipt receipt : txReceipts) {
-                if (StringUtils.equals(receipt.getTxId(), txId) && !receipt.isResult()) {
-                    respData.setCode(receipt.getErrorCode());
-                    SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
-                    if (slaveErrorEnum != null) {
-                        respData.setMsg(slaveErrorEnum.getDescription());
-                    }
-                    break;
+            TransactionReceipt receipt = txReceiptMap.get(txId);
+            if (null != receipt && !receipt.isResult()) {
+                respData.setCode(receipt.getErrorCode());
+                SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
+                if (slaveErrorEnum != null) {
+                    respData.setMsg(slaveErrorEnum.getDescription());
                 }
             }
+
             if (isFailover) {
                 if (log.isDebugEnabled()) {
                     log.debug("[callbackRS]start fail over rs txId:{}", txId);

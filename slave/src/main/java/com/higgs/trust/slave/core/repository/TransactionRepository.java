@@ -13,7 +13,10 @@ import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
 import com.higgs.trust.slave.dao.po.transaction.TransactionReceiptPO;
 import com.higgs.trust.slave.dao.rocks.block.BlockRocksDao;
 import com.higgs.trust.slave.dao.rocks.transaction.TransactionRocksDao;
-import com.higgs.trust.slave.model.bo.*;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,9 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author tangfashuang
@@ -58,7 +59,7 @@ import java.util.List;
      * @param txs
      * @return
      */
-    public List<TransactionReceipt> queryTxReceipts(List<SignedTransaction> txs) {
+    public Map<String, TransactionReceipt> queryTxReceiptMap(List<SignedTransaction> txs) {
         if (CollectionUtils.isEmpty(txs)) {
             return null;
         }
@@ -67,33 +68,33 @@ import java.util.List;
             txIds.add(signedTransaction.getCoreTx().getTxId());
         }
 
-        List<TransactionReceipt> receipts;
+        Map<String, TransactionReceipt> receiptMap;
         if (initConfig.isUseMySQL()) {
             List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
             if (CollectionUtils.isEmpty(transactionPOS)) {
                 return null;
             }
-            receipts = new ArrayList<>(transactionPOS.size());
+            receiptMap = new HashMap<>(transactionPOS.size());
             for (TransactionPO transactionPO : transactionPOS) {
                 TransactionReceipt receipt = new TransactionReceipt();
                 receipt.setTxId(transactionPO.getTxId());
                 receipt.setResult(StringUtils.equals(transactionPO.getExecuteResult(), "1") ? true : false);
                 receipt.setErrorCode(transactionPO.getErrorCode());
-                receipts.add(receipt);
+                receiptMap.put(transactionPO.getTxId(), receipt);
             }
         } else {
             List<TransactionReceiptPO> pos = transactionRocksDao.queryTxReceipts(txIds);
-            receipts = new ArrayList<>(pos.size());
+            receiptMap = new HashMap<>(pos.size());
             for (TransactionReceiptPO po : pos) {
                 TransactionReceipt receipt = new TransactionReceipt();
                 receipt.setTxId(po.getTxId());
                 receipt.setResult(po.isResult());
                 receipt.setErrorCode(po.getErrorCode());
-                receipts.add(receipt);
+                receiptMap.put(po.getTxId(), receipt);
             }
         }
 
-        return receipts;
+        return receiptMap;
     }
 
     /**
@@ -106,7 +107,7 @@ import java.util.List;
         List<TransactionPO> txPOs;
         if (!initConfig.isUseMySQL()) {
             BlockPO blockPO = blockRocksDao.get(String.valueOf(blockHeight));
-            txPOs = blockPO == null ? null : blockPO.getTxPOs();
+            return blockPO == null ? null : blockPO.getSignedTxs();
         } else {
             txPOs = transactionDao.queryByBlockHeight(blockHeight);
         }
@@ -142,10 +143,10 @@ import java.util.List;
      *
      * @param blockHeight
      * @param txs
-     * @param txReceipts
+     * @param txReceiptMap
      */
     public void batchSaveTransaction(Long blockHeight, Date blockTime, List<SignedTransaction> txs,
-        List<TransactionReceipt> txReceipts) {
+        Map<String, TransactionReceipt> txReceiptMap) {
         if (log.isDebugEnabled()) {
             log.debug("[TransactionRepository.batchSaveTransaction] is start");
         }
@@ -155,7 +156,7 @@ import java.util.List;
         }
 
         if (initConfig.isUseMySQL()) {
-            List<TransactionPO> txPOs = buildTransactionPOs(blockHeight, blockTime, txs, txReceipts);
+            List<TransactionPO> txPOs = buildTransactionPOs(blockHeight, blockTime, txs, txReceiptMap);
             try {
                 int r = transactionJDBCDao.batchInsertTransaction(txPOs);
                 if (r != txPOs.size()) {
@@ -167,26 +168,29 @@ import java.util.List;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
             }
         } else {
-            transactionRocksDao.batchInsert(buildTxReceiptPO(blockHeight, txReceipts));
+            transactionRocksDao.batchInsert(buildTxReceiptPO(blockHeight, txReceiptMap));
         }
         log.info("[TransactionRepository.batchSaveTransaction] is end");
     }
 
-    private List<TransactionReceiptPO> buildTxReceiptPO(Long blockHeight, List<TransactionReceipt> txReceipts) {
+    private List<TransactionReceiptPO> buildTxReceiptPO(Long blockHeight, Map<String, TransactionReceipt> txReceiptMap) {
         List<TransactionReceiptPO> receiptPOS = new ArrayList<>();
-        for (TransactionReceipt receipt : txReceipts) {
-            TransactionReceiptPO po = new TransactionReceiptPO();
-            po.setBlockHeight(blockHeight);
-            po.setErrorCode(receipt.getErrorCode());
-            po.setResult(receipt.isResult());
-            po.setTxId(receipt.getTxId());
-            receiptPOS.add(po);
+        for (String txId : txReceiptMap.keySet()) {
+            TransactionReceipt receipt = txReceiptMap.get(txId);
+            if (null != receipt) {
+                TransactionReceiptPO po = new TransactionReceiptPO();
+                po.setBlockHeight(blockHeight);
+                po.setErrorCode(receipt.getErrorCode());
+                po.setResult(receipt.isResult());
+                po.setTxId(receipt.getTxId());
+                receiptPOS.add(po);
+            }
         }
         return receiptPOS;
     }
 
     public List<TransactionPO> buildTransactionPOs(Long blockHeight, Date blockTime, List<SignedTransaction> txs,
-        List<TransactionReceipt> txReceipts) {
+        Map<String, TransactionReceipt> txReceiptMap) {
         List<TransactionPO> txPOs = new ArrayList<>();
         for (SignedTransaction tx : txs) {
             CoreTransaction coreTx = tx.getCoreTx();
@@ -199,7 +203,7 @@ import java.util.List;
             po.setSignDatas(JSON.toJSONString(tx.getSignatureList()));
             po.setActionDatas(JSON.toJSONString(coreTx.getActionList()));
             po.setSendTime(coreTx.getSendTime());
-            TransactionReceipt receipt = getTxReceipt(txReceipts, coreTx.getTxId());
+            TransactionReceipt receipt = txReceiptMap.get(coreTx.getTxId());
             if (receipt != null) {
                 po.setExecuteResult(receipt.isResult() ? "1" : "0");
                 po.setErrorCode(receipt.getErrorCode());
@@ -208,25 +212,6 @@ import java.util.List;
         }
 
         return txPOs;
-    }
-
-    /**
-     * get tx receipt by txId
-     *
-     * @param txReceipts
-     * @param txId
-     * @return
-     */
-    private TransactionReceipt getTxReceipt(List<TransactionReceipt> txReceipts, String txId) {
-        if (CollectionUtils.isEmpty(txReceipts)) {
-            return null;
-        }
-        for (TransactionReceipt txReceipt : txReceipts) {
-            if (StringUtils.equals(txReceipt.getTxId(), txId)) {
-                return txReceipt;
-            }
-        }
-        return null;
     }
 
     /**

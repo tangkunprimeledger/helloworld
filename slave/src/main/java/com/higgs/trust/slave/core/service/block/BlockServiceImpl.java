@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuyu
@@ -35,7 +36,7 @@ import java.util.List;
     }
 
      @Override
-    public BlockHeader buildHeader(PackageData packageData, List<TransactionReceipt> txReceipts) {
+    public BlockHeader buildHeader(PackageData packageData, Map<String, TransactionReceipt> txReceiptMap) {
         Profiler.enter("[getMaxHeight and getBlockHeader]");
         //query max height from db
         Long maxHeight = getMaxHeight();
@@ -62,7 +63,7 @@ import java.util.List;
 
         //build all root hash for block header
         Profiler.enter("[buildRootHash]");
-        StateRootHash stateRootHash = snapshotRootHashBuilder.build(packageData, txReceipts);
+        StateRootHash stateRootHash = snapshotRootHashBuilder.build(packageData, txReceiptMap);
         Profiler.release();
 
         blockHeader.setStateRootHash(stateRootHash);
@@ -110,8 +111,8 @@ import java.util.List;
     }
 
      @Override
-    public void persistBlock(Block block, List<TransactionReceipt> txReceipts) {
-        blockRepository.saveBlock(block, txReceipts);
+    public void persistBlock(Block block, Map<String, TransactionReceipt> txReceiptMap) {
+        blockRepository.saveBlock(block, txReceiptMap);
     }
 
     @Override public boolean compareBlockHeader(BlockHeader header1, BlockHeader header2) {

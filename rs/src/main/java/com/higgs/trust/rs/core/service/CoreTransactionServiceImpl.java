@@ -252,13 +252,12 @@ import java.util.concurrent.TimeUnit;
     }
 
     private CoreTxBO processInitTxInTransaction(String txId) {
-        CoreTransactionProcessPO coreTransactionProcessPO = coreTxProcessRepository.queryByTxId(txId, true);
-        if (null == coreTransactionProcessPO || !StringUtils
-            .equals(coreTransactionProcessPO.getStatus(), CoreTxStatusEnum.INIT.getCode())) {
+        CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
+        if (null == coreTxProcessRepository.queryByTxId(txId, CoreTxStatusEnum.INIT)) {
             log.info("[processInitTx]the coreTx is null or status is not INIT txId:{}", txId);
             return null;
         }
-        CoreTransactionPO po = coreTxRepository.queryByTxId(txId, false);
+
         Date lockTime = po.getLockTime();
         if (lockTime != null && lockTime.after(new Date())) {
             log.info("[processInitTx]should skip this tx by lock time:{}", lockTime);
@@ -398,12 +397,12 @@ import java.util.concurrent.TimeUnit;
     }
 
     private void processNeedVoteTxInTransaction(String txId) {
-        CoreTransactionProcessPO coreTransactionProcessPO = coreTxProcessRepository.queryByTxId(txId, true);
-        if (!StringUtils.equals(coreTransactionProcessPO.getStatus(), CoreTxStatusEnum.NEED_VOTE.getCode())) {
+        CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
+        if (null == coreTxProcessRepository.queryByTxId(txId, CoreTxStatusEnum.NEED_VOTE)) {
             log.info("[processNeedVoteTx]the coreTx status is not NEED_VOTE txId:{}", txId);
             return;
         }
-        CoreTransactionPO po = coreTxRepository.queryByTxId(txId, false);
+
         Date lockTime = po.getLockTime();
         if (lockTime != null && lockTime.after(new Date())) {
             log.info("[processNeedVoteTx]should skip this tx by lock time:{}", lockTime);
@@ -548,7 +547,7 @@ import java.util.concurrent.TimeUnit;
         if (coreTransactionPO == null) {
             return null;
         }
-        CoreTransactionProcessPO coreTransactionProcessPO = coreTxProcessRepository.queryByTxId(txId, false);
+        CoreTransactionProcessPO coreTransactionProcessPO = coreTxProcessRepository.queryByTxId(txId, null);
         CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
         RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO, RsCoreTxVO.class);
         coreTxVO.setStatus(CoreTxStatusEnum.formCode(

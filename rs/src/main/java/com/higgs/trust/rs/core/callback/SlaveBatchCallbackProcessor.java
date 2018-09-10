@@ -70,9 +70,9 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
     }
 
     @Override
-    public void onPersisted(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts, BlockHeader blockHeader) {
+    public void onPersisted(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap, BlockHeader blockHeader) {
         Profiler.enter("[rc.core.parseTxs]");
-        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
+        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceiptMap);
         Profiler.release();
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         List<RsCoreTxVO> selfTxs = map.get(KEY_SELF);
@@ -115,8 +115,8 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
 
 
     @Override
-    public void onClusterPersisted(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts, BlockHeader blockHeader) {
-        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
+    public void onClusterPersisted(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap, BlockHeader blockHeader) {
+        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceiptMap);
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         if (CollectionUtils.isEmpty(allTxs)) {
             log.warn("[onClusterPersisted]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
@@ -174,8 +174,8 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
     }
 
     @Override
-    public void onFailover(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts, BlockHeader blockHeader) {
-        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
+    public void onFailover(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap, BlockHeader blockHeader) {
+        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceiptMap);
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         if (CollectionUtils.isEmpty(allTxs)) {
             log.warn("[onFailover]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
@@ -189,10 +189,10 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
      * parse txs
      *
      * @param txs
-     * @param txReceipts
+     * @param txReceiptMap
      * @return
      */
-    private Map<String, List<RsCoreTxVO>> parseTxs(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts) {
+    private Map<String, List<RsCoreTxVO>> parseTxs(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap) {
         Map<String, List<RsCoreTxVO>> map = new HashMap<>();
         List<RsCoreTxVO> allList = new ArrayList<>();
         List<RsCoreTxVO> selfList = new ArrayList<>();
@@ -208,17 +208,17 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
             RsCoreTxVO vo = BeanConvertor.convertBean(coreTx, RsCoreTxVO.class);
             vo.setSignDatas(tx.getSignatureList());
             vo.setVersion(VersionEnum.getBizTypeEnumBycode(coreTx.getVersion()));
-            for (TransactionReceipt receipt : txReceipts) {
-                if (StringUtils.equals(receipt.getTxId(), coreTx.getTxId())) {
-                    SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
-                    if (slaveErrorEnum != null) {
-                        vo.setErrorCode(receipt.getErrorCode());
-                        vo.setErrorMsg(slaveErrorEnum.getDescription());
-                    }
-                    vo.setExecuteResult(receipt.isResult() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL);
-                    break;
+            TransactionReceipt receipt = txReceiptMap.get(coreTx.getTxId());
+
+            if (null != receipt) {
+                SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
+                if (slaveErrorEnum != null) {
+                    vo.setErrorCode(receipt.getErrorCode());
+                    vo.setErrorMsg(slaveErrorEnum.getDescription());
                 }
+                vo.setExecuteResult(receipt.isResult() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL);
             }
+
             if (!sendBySelf(coreTx.getSender())) {
                 otherList.add(vo);
             } else {

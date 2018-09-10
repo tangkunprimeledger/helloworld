@@ -37,9 +37,9 @@ public class TxOutJDBCDao {
             return 0;
         }
 
-        StringBuilder sql = new StringBuilder("INSERT INTO `tx_out` " + "(`tx_id`, `index`, `action_index`, `identity`, `state_class`, `state`, `contract_address`, `status`, `create_time`, `update_time`) " + "VALUES ");
+        StringBuilder sql = new StringBuilder("INSERT INTO `tx_out` " + "(`tx_id`, `index`, `action_index`, `identity`, `state_class`, `state`, `contract_address`, `status`, `create_time`) " + "VALUES ");
 
-        String template = "(:c[${i}].txId, :c[${i}].index, :c[${i}].actionIndex, :c[${i}].identity, :c[${i}].stateClass, :c[${i}].state, " + ":c[${i}].contractAddress, :c[${i}].status, now(3), now(3)),";
+        String template = "(:c[${i}].txId, :c[${i}].index, :c[${i}].actionIndex, :c[${i}].identity, :c[${i}].stateClass, :c[${i}].state, " + ":c[${i}].contractAddress, :c[${i}].status, now(3)),";
         int size = txOutPOList.size();
         for (int i = 0; i < size; i++) {
             sql.append(template.replaceAll("\\$\\{i\\}", String.valueOf(i)));

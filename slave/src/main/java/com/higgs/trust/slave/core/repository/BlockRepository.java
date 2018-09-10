@@ -23,10 +23,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author tangfashuang
@@ -114,6 +111,7 @@ import java.util.List;
         rootHash.setCaRootHash(blockPO.getCaRootHash());
         blockHeader.setStateRootHash(rootHash);
         block.setBlockHeader(blockHeader);
+        block.setSignedTxList(blockPO.getSignedTxs());
         if (blockPO.getHeight() == 1) {
             block.setGenesis(true);
         }
@@ -121,8 +119,6 @@ import java.util.List;
         //txs
         if (initConfig.isUseMySQL()) {
             block.setSignedTxList(transactionRepository.queryTransactions(blockPO.getHeight()));
-        } else {
-            block.setSignedTxList(transactionRepository.convertPOsToBOs(blockPO.getTxPOs()));
         }
         return block;
     }
@@ -217,9 +213,9 @@ import java.util.List;
      * save to db
      *
      * @param block
-     * @param txReceipts
+     * @param txReceiptMap
      */
-    public void saveBlock(Block block, List<TransactionReceipt> txReceipts) {
+    public void saveBlock(Block block, Map<String, TransactionReceipt> txReceiptMap) {
         if (log.isDebugEnabled()) {
             log.debug("[BlockRepository.saveBlock] is start");
         }
@@ -270,12 +266,11 @@ import java.util.List;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
             }
         } else {
-            Profiler.enter("build tx POS");
-            blockPO.setTxPOs(transactionRepository.buildTransactionPOs(blockHeight, blockTime, txs, txReceipts));
-            Profiler.release();
+            blockPO.setSignedTxs(txs);
             Profiler.enter("save block");
             blockRocksDao.save(blockPO);
             Profiler.release();
+
             Profiler.enter("save max block height");
             systemPropertyRepository.saveWithTransaction(Constant.MAX_BLOCK_HEIGHT, String.valueOf(blockHeight), "max block height");
             Profiler.release();
@@ -283,7 +278,7 @@ import java.util.List;
 
         Profiler.enter("batch insert transaction");
         //save transactions
-        transactionRepository.batchSaveTransaction(blockHeight, blockTime, txs, txReceipts);
+        transactionRepository.batchSaveTransaction(blockHeight, blockTime, txs, txReceiptMap);
         Profiler.release();
 
 

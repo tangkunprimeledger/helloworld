@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,12 @@ public abstract class RocksBaseDao<V> {
 
     @Autowired private RocksDBWrapper rocksDBWrapper;
 
+    private Class<V> clazz;
+
+    public RocksBaseDao() {
+        clazz = getRealType();
+    }
+
     /**
      * get column family name
      *
@@ -39,7 +46,7 @@ public abstract class RocksBaseDao<V> {
             byte[] key = JSON.toJSONBytes(k);
             byte[] data = rocksDBWrapper.getRocksDB().get(columnFamilyHandle, key);
             if (data != null) {
-                return (V)JSON.parse(data);
+                return JSON.parseObject(data, clazz);
             }
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
@@ -122,7 +129,7 @@ public abstract class RocksBaseDao<V> {
         RocksIterator iterator = iterator();
         List<V> list = new ArrayList<>();
         for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
-            list.add((V)JSON.parse(iterator.value()));
+            list.add(JSON.parseObject(iterator.value(), clazz));
         }
         return list;
     }
@@ -135,11 +142,11 @@ public abstract class RocksBaseDao<V> {
         byte[] prefixByte = JSON.toJSONBytes(prefix);
         if (limit < 0) {
             for (iterator.seek(prefixByte); iterator.isValid() && isPrefix(prefix, iterator.key()); iterator.next()) {
-                list.add((V)JSON.parse(iterator.value()));
+                list.add(JSON.parseObject(iterator.value(), clazz));
             }
         } else {
             for (iterator.seek(prefixByte); iterator.isValid() && limit-- > 0 && isPrefix(prefix, iterator.key()); iterator.next()) {
-                list.add((V)JSON.parse(iterator.value()));
+                list.add(JSON.parseObject(iterator.value(), clazz));
             }
         }
         return list;
@@ -176,7 +183,7 @@ public abstract class RocksBaseDao<V> {
         RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
         byte[] prefixByte = JSON.toJSONBytes(prefix);
         for (iterator.seekForPrev(prefixByte); iterator.isValid();) {
-            return (V)JSON.parse(iterator.value());
+            return JSON.parseObject(iterator.value(), clazz);
         }
 
         return null;
@@ -207,7 +214,7 @@ public abstract class RocksBaseDao<V> {
     public V queryLastValue() {
         RocksIterator iterator = iterator();
         for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
-            return (V)JSON.parse(iterator.value());
+            return JSON.parseObject(iterator.value(), clazz);
         }
         return null;
     }
@@ -237,7 +244,7 @@ public abstract class RocksBaseDao<V> {
         byte[] prefixByte = JSON.toJSONBytes(prefix);
         RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
         for (iterator.seek(prefixByte); iterator.isValid(); iterator.next()) {
-            return (V)JSON.parse(iterator.value());
+            return JSON.parseObject(iterator.value(), clazz);
         }
         return null;
     }
@@ -286,7 +293,7 @@ public abstract class RocksBaseDao<V> {
                 for (byte[] key : map.keySet()) {
                     byte[] value = map.get(key);
                     if (!ArrayUtils.isEmpty(value)) {
-                        resultMap.put((String)JSON.parse(key), (V)JSON.parse(value));
+                        resultMap.put((String)JSON.parse(key), JSON.parseObject(value, clazz));
                     }
                 }
                 return resultMap;
@@ -322,6 +329,11 @@ public abstract class RocksBaseDao<V> {
         }
 
         return columnFamilyHandle;
+    }
+
+    private Class<V> getRealType() {
+        ParameterizedType pt = (ParameterizedType)this.getClass().getGenericSuperclass();
+        return (Class<V>)pt.getActualTypeArguments()[0];
     }
 
 }

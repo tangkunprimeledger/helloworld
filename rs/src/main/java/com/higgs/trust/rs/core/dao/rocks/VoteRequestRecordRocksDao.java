@@ -13,6 +13,7 @@ import java.util.Date;
 
 /**
  * @author tangfashuang
+ * @desc key: txId, value: voteRequestRecordPO
  */
 @Service
 @Slf4j

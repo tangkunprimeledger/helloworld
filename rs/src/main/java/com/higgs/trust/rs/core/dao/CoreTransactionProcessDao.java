@@ -16,7 +16,7 @@ public interface CoreTransactionProcessDao extends BaseDao<CoreTransactionProces
      * @param txId
      * @return
      */
-    CoreTransactionProcessPO queryByTxId(@Param("txId") String txId, @Param("forUpdate") boolean forUpdate);
+    CoreTransactionProcessPO queryByTxId(@Param("txId") String txId, @Param("status") String status);
 
     /**
      * query by status rowNum and count

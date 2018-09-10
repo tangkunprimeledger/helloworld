@@ -22,4 +22,11 @@ import java.util.List;
      * @return
      */
     List<BizTypePO> queryAll();
+
+    /**
+     * update bizType
+     * @param policyId
+     * @param bizType
+     */
+    void update(String policyId, String bizType);
 }

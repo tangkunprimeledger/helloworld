@@ -13,7 +13,6 @@ import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
 import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
-import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
@@ -60,8 +59,6 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
     @Autowired private DataIdentityRepository dataIdentityRepository;
 
     @Autowired private CurrencyRepository currencyRepository;
-
-    @Autowired private SystemPropertyRepository systemPropertyRepository;
 
     @Autowired private UTXOSnapshotHandler utxoSnapshotHandler;
 

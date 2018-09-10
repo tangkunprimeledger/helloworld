@@ -56,8 +56,8 @@
 		select
 		<include refid="baseColumnList" />
 		from core_transaction_process where tx_id=#{txId}
-		<if test="forUpdate == true">
-			for update
+		<if test="status != null and status != ''">
+			and `status`=#{status}
 		</if>
 	</select>
 	<!--query by status -->

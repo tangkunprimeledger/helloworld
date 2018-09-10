@@ -21,7 +21,6 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.action.Action;
-import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
@@ -49,18 +48,18 @@ import java.util.*;
 
     public void generateGeniusBlock(Block block) {
         try {
-            List<TransactionReceipt> txReceipts = new LinkedList();
+            Map<String, TransactionReceipt> txReceiptMap = new HashMap<>(1);
             TransactionReceipt transactionReceipt = new TransactionReceipt();
             transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
             transactionReceipt.setResult(true);
-            txReceipts.add(transactionReceipt);
+            txReceiptMap.put(transactionReceipt.getTxId(), transactionReceipt);
 
             if (initConfig.isUseMySQL()) {
                 txRequired.execute(new TransactionCallbackWithoutResult() {
                     @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
 
                         log.info("[process] transaction start, insert genius block into db");
-                        blockRepository.saveBlock(block, txReceipts);
+                        blockRepository.saveBlock(block, txReceiptMap);
                         log.info("[process]insert clusterNode information into db");
                         saveClusterNode(block);
                         log.info("[process]insert clusterConfig information into db");
@@ -74,7 +73,7 @@ import java.util.*;
                     ThreadLocalUtils.putWriteBatch(new WriteBatch());
 
                     log.info("[process] transaction start, insert genius block into rocks db");
-                    blockRepository.saveBlock(block, txReceipts);
+                    blockRepository.saveBlock(block, txReceiptMap);
                     log.info("[process]insert clusterNode information into rocks db");
                     saveClusterNode(block);
                     log.info("[process]insert clusterConfig information into rocks db");
