@@ -48,16 +48,16 @@ import org.springframework.stereotype.Component;
                 if (height == currentView.getEndHeight() + 1 || (height == currentView.getStartHeight()
                     && currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT)) {
                     viewManager.resetEndHeight(height);
+                    if (command.getClusterOptTx() != null) {
+                        viewManager.changeView(command);
+                    }
                 } else {
                     //the height not all in current view
-                    if (height >= currentView.getStartHeight() && height <= currentView.getEndHeight()) {
+                    if (!(height >= currentView.getStartHeight() && height <= currentView.getEndHeight())) {
                         log.warn("the height:{} out of current view:{}", height, currentView);
                         commit.close();
                         return;
                     }
-                }
-                if (command.getClusterOptTx() != null) {
-                    viewManager.changeView(command);
                 }
             }
         }
