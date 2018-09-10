@@ -190,9 +190,11 @@ import java.util.stream.Collectors;
     private void preparePackContext(PackContext packContext) {
         //set rsId and public key map
         List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
-        if (!CollectionUtils.isEmpty(rsPubKeyList)) {
+        if (CollectionUtils.isNotEmpty(rsPubKeyList)) {
             packContext.setRsPubKeyMap(
                 rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
+        }else{
+            packContext.setRsPubKeyMap(Collections.emptyMap());
         }
     }
 

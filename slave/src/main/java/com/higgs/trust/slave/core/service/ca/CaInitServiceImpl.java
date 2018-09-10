@@ -11,6 +11,7 @@ import com.higgs.trust.slave.core.managment.ClusterInitHandler;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ import java.util.List;
     @Autowired private NodeState nodeState;
     @Autowired private ClusterInitHandler clusterInitHandler;
 
-    @Value("${higgs.trust.geniusPath}") String geniusPath;
+    @Value("${higgs.trust.geniusPath:#{null}}") String geniusPath;
 
     /**
      * @param
@@ -75,7 +76,7 @@ import java.util.List;
     private List<Action> acquirePubKeys() throws FileNotFoundException {
         JsonParser parser = new JsonParser();
         JsonObject object = null;
-        if (geniusPath == null) {
+        if (StringUtils.isBlank(geniusPath)) {
             InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("geniusBlock.json");
             object = (JsonObject)parser.parse(new InputStreamReader(inputStream));
         } else {
