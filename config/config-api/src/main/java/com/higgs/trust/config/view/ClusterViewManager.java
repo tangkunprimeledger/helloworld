@@ -116,6 +116,7 @@ import java.util.*;
             ClusterView newView = new ClusterView(currentView.getId() + 1, height + 1, newNodes);
             views.add(newView);
             currentView = newView;
+            log.info("created new view:{}", newView);
         } else {
             log.warn("the view:{} of command not current view:{}, not allowed change view", command.getView(),
                 currentView.getId());

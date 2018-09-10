@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
     @Autowired private BlockService blockService;
     @Autowired private BlockRepository blockRepository;
     @Autowired private NodeProperties properties;
-    @Autowired private FailoverProperties failoverProperties;
 
     @StateChangeListener(NodeStateEnum.SelfChecking) public void autoCheck() {
         boolean selfChecked = selfCheck(properties.getStartupRetryTime());
