@@ -4,12 +4,10 @@ import com.higgs.trust.common.crypto.rsa.RsaCrypto;
 import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.exception.ConfigException;
 import com.higgs.trust.config.node.command.ViewCommand;
-import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.testng.PowerMockTestCase;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -25,8 +23,7 @@ import static org.mockito.Matchers.anyString;
 /*
  * Copyright (c) 2013-2017, suimi
  */
-@PrepareForTest({CryptoUtil.class}) @RunWith(PowerMockRunner.class) public class ClusterViewManagerTest
-    extends PowerMockTestCase {
+@PrepareForTest({CryptoUtil.class}) public class ClusterViewManagerTest extends PowerMockTestCase {
 
     private ClusterViewManager viewManager;
 
