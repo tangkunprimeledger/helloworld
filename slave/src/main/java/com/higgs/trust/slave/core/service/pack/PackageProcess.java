@@ -62,12 +62,12 @@ import java.util.concurrent.atomic.AtomicLong;
                 }
             } catch (SlaveException e) {
                 transactionStatus.setRollbackOnly();
-                if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR == e.getCode()
-                    || SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT == e.getCode()
-                    || SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH == e.getCode()) {
-                    return false;
+                if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR != e.getCode()
+                    && SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT != e.getCode()
+                    && SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH != e.getCode()) {
+                    log.error("slave exception.",e);
                 }
-                log.error("slave exception. ", e);
+                return false;
             } catch (Throwable e) {
                 transactionStatus.setRollbackOnly();
                 if (e instanceof CannotAcquireLockException) {

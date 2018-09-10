@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.vo.CoreTransactionVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -45,30 +46,26 @@ import java.util.List;
     /**
      * query more execute receipt for txs
      *
-     * @param txs
+     * @param blockHeight
      * @return
      */
-    public List<TransactionReceipt> queryTxReceipts(List<SignedTransaction> txs) {
-        if (CollectionUtils.isEmpty(txs)) {
+    public Object[] queryTxReceipts(Long blockHeight) {
+        List<TransactionPO> txPOs = transactionDao.queryByBlockHeight(blockHeight);
+        if (CollectionUtils.isEmpty(txPOs)) {
             return null;
         }
-        List<String> txIds = new ArrayList<>();
-        for (SignedTransaction signedTransaction : txs) {
-            txIds.add(signedTransaction.getCoreTx().getTxId());
-        }
-        List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
-        if (CollectionUtils.isEmpty(transactionPOS)) {
-            return null;
-        }
-        List<TransactionReceipt> receipts = new ArrayList<>(transactionPOS.size());
-        for (TransactionPO transactionPO : transactionPOS) {
+        Object[] objs = new Object[2];
+        objs[0] = makeSignedTxs(txPOs);
+        List<TransactionReceipt> receipts = new ArrayList<>(txPOs.size());
+        for (TransactionPO transactionPO : txPOs) {
             TransactionReceipt receipt = new TransactionReceipt();
             receipt.setTxId(transactionPO.getTxId());
             receipt.setResult(StringUtils.equals(transactionPO.getExecuteResult(), "1") ? true : false);
             receipt.setErrorCode(transactionPO.getErrorCode());
             receipts.add(receipt);
         }
-        return receipts;
+        objs[1] = receipts;
+        return objs;
     }
 
     /**
@@ -82,6 +79,16 @@ import java.util.List;
         if (CollectionUtils.isEmpty(txPOs)) {
             return null;
         }
+        return makeSignedTxs(txPOs);
+    }
+
+    /**
+     * make signed tx by tx po
+     *
+     * @param txPOs
+     * @return
+     */
+    private List<SignedTransaction> makeSignedTxs(List<TransactionPO> txPOs){
         List<SignedTransaction> txs = new ArrayList<>();
         for (TransactionPO tx : txPOs) {
             SignedTransaction signedTransaction = new SignedTransaction();
@@ -116,7 +123,8 @@ import java.util.List;
             log.info("[batchSaveTransaction] txs is empty");
             return;
         }
-        List<TransactionPO> txPOs = new ArrayList<>();
+        Profiler.enter("[batch.insert.txs.foreach]");
+        List<TransactionPO> txPOs = new ArrayList<>(txs.size());
         for (SignedTransaction tx : txs) {
             CoreTransaction coreTx = tx.getCoreTx();
             TransactionPO po = BeanConvertor.convertBean(coreTx, TransactionPO.class);
@@ -135,6 +143,8 @@ import java.util.List;
             }
             txPOs.add(po);
         }
+        Profiler.release();
+        Profiler.enter("[batch.insert.txs]");
         try {
             int r = transactionJDBCDao.batchInsertTransaction(txPOs);
             if (r != txPOs.size()) {
@@ -144,6 +154,8 @@ import java.util.List;
         } catch (DuplicateKeyException e) {
             log.error("[batchSaveTransaction] is idempotent blockHeight:{}", blockHeight);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        }finally {
+            Profiler.release();
         }
         log.info("[TransactionRepository.batchSaveTransaction] is end");
     }
