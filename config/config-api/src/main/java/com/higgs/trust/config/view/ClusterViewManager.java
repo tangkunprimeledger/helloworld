@@ -25,8 +25,11 @@ import java.util.*;
 
     @Override public synchronized void resetViews(List<ClusterView> views) {
         this.views.clear();
-        this.views.addAll(views);
-        currentView = views.size() > 0 ? views.get(views.size() - 1) : null;
+        currentView = null;
+        if (views != null) {
+            this.views.addAll(views);
+            currentView = views.size() > 0 ? views.get(views.size() - 1) : null;
+        }
     }
 
     @Override public List<ClusterView> getViews() {
@@ -113,6 +116,9 @@ import java.util.*;
             ClusterView newView = new ClusterView(currentView.getId() + 1, height + 1, newNodes);
             views.add(newView);
             currentView = newView;
+        } else {
+            log.warn("the view:{} of command not current view:{}, not allowed change view", command.getView(),
+                currentView.getId());
         }
     }
 
