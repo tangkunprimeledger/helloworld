@@ -381,8 +381,14 @@ import java.util.stream.Collectors;
                 }
             }
             try {
-                Profiler.enter("[queryTransactions]");
-                List<SignedTransaction> txs = transactionRepository.queryTransactions(header.getHeight());
+                Profiler.enter("[query txs and txReceipts]");
+                Object[] objs = transactionRepository.queryTxReceipts(header.getHeight());
+                List<SignedTransaction> txs = null;
+                List<TransactionReceipt> txReceipts = new ArrayList<>();
+                if(objs != null){
+                    txs = (List<SignedTransaction>)objs[0];
+                    txReceipts = (List<TransactionReceipt>)objs[1];
+                }
                 if (!CollectionUtils.isEmpty(txs)) {
                     // sort signedTransactions by txId asc
                     Collections.sort(txs, new Comparator<SignedTransaction>() {
@@ -391,14 +397,15 @@ import java.util.stream.Collectors;
                         }
                     });
                 }
-                List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
                 Profiler.release();
 
+                List<SignedTransaction> finalTxs = txs;
+                List<TransactionReceipt> finalTxReceipts = txReceipts;
                 txRequired.execute(new TransactionCallbackWithoutResult() {
                     @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                         //call back business
                         Profiler.enter("[callbackRSForClusterPersisted]");
-                        callbackRS(txs, txReceipts, true, false, blockHeader);
+                        callbackRS(finalTxs, finalTxReceipts, true, false, blockHeader);
                         Profiler.release();
 
                         //update package status ---- PERSISTED
