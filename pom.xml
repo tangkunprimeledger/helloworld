@@ -357,6 +357,18 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-testng</artifactId>
+                <version>1.7.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-testng-common</artifactId>
+                <version>1.7.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.shazam</groupId>
                 <artifactId>shazamcrest</artifactId>
                 <version>0.11</version>
