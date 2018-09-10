@@ -84,7 +84,9 @@ import java.util.*;
                     return false;
                 }
                 //reset pubkey by all 'CONSENSUS' from cluster
-                rsPubKeyList.clear();
+                if(rsPubKeyList!=null){
+                    rsPubKeyList.clear();
+                }
                 rsPubKeyList = caRepository.getAllPubkeyByUsage(UsageEnum.CONSENSUS);
             }
             if (CollectionUtils.isEmpty(rsPubKeyList)) {
