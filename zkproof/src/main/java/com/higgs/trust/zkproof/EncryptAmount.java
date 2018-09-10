@@ -134,7 +134,9 @@ public class EncryptAmount {
 
     public  static String exportPubKey(){
 
-        if (he.hasFullKey() || he.hasPubKey()){
+        if (he.hasPubKey() ){
+            return he.exportPubKey();
+        } else if (he.hasFullKey()) {
             return he.exportPubKey();
         }
 

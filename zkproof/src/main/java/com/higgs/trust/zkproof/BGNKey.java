@@ -10,7 +10,7 @@ import it.unisa.dia.gas.plaf.jpbc.pairing.parameters.PropertiesParameters;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-
+import java.util.Random;
 
 
 public class BGNKey {
@@ -41,7 +41,7 @@ public class BGNKey {
 
 		map = pairing;
 
-		n = param.getBigInteger("n"); // Must extract the prime numbers for
+		n = param.getBigInteger("n");// Must extract the prime numbers for
 		// both keys.
 
 		f = pairing.getG1();
@@ -103,13 +103,15 @@ public class BGNKey {
 			//delete private key
 			param1.remove("n0");
 			param1.remove("n1");
+			BigInteger n1 = new BigInteger(param1.getBigInteger("n").bitLength(),64,new Random()); // Must extract the prime numbers for
+			param1.put("n",n1.toString());
 			String p1 = SerializerUtil.serialize(param1);
 			JSONObject pubKey = new JSONObject();
 			pubKey.put("key_type","BGN");
 			pubKey.put("param", p1);
 			pubKey.put("P",Base58.encode(P.toBytes()));
 			pubKey.put("Q",Base58.encode(Q.toBytes()));
-			pubKey.put("n",Base58.encode(n.toByteArray()));
+			pubKey.put("n",Base58.encode(n1.toByteArray()));
 			return  pubKey.toJSONString();
 		} catch (Exception e){
 			return null;
