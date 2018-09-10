@@ -62,7 +62,11 @@ import java.util.concurrent.atomic.AtomicLong;
                 }
             } catch (SlaveException e) {
                 transactionStatus.setRollbackOnly();
-                log.error("slave exception.",e);
+                if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR != e.getCode()
+                    && SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT != e.getCode()
+                    && SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH != e.getCode()) {
+                    log.error("slave exception.",e);
+                }
                 return false;
             } catch (Throwable e) {
                 transactionStatus.setRollbackOnly();
@@ -91,7 +95,7 @@ import java.util.concurrent.atomic.AtomicLong;
     private void doProcess(Package pack) {
         // check next package height
         if (!pack.getHeight().equals(blockRepository.getMaxHeight() + 1)) {
-            log.error("package.height: {} is unequal db.height:{}", pack.getHeight(),
+            log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),
                 blockRepository.getMaxHeight() + 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
         }
