@@ -2,8 +2,8 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
-import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.common.utils.HashUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.rs.common.enums.RespCodeEnum;
@@ -11,6 +11,7 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.core.integration.CaClient;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -20,7 +21,9 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
+import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
@@ -54,6 +57,7 @@ import java.util.*;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private RsNodeRepository rsNodeRepository;
+    @Autowired private SignService signService;
 
     /**
      * @return
@@ -78,21 +82,23 @@ import java.util.*;
         }
 
         // build pubKey and priKey
-        List<CaVO> list = generateKeyPair();
+        List<CaVO> list =null;
 
         try {
             // send CA auth request
             RespData respData = null;
-            if (nodeState.isState(NodeStateEnum.Offline)) {
+            if (!nodeState.isState(NodeStateEnum.Running)) {
+                list = loadKeyPair(user);
                 log.info("current node is Offline, send tx by other node");
                 respData = caClient.caAuth(nodeState.notMeNodeNameReg(), list);
             }
             if (nodeState.isState(NodeStateEnum.Running)) {
+                list = generateKeyPair();
                 log.info("current node is Running, send tx by self");
                 respData = authCaTx(list);
             }
             if (!respData.isSuccess()) {
-                log.error("send tx error");
+                log.error("send tx error, resp = {}", respData);
                 return FAIL;
             }
         } catch (HystrixRuntimeException e1) {
@@ -115,7 +121,7 @@ import java.util.*;
                 BeanUtils.copyProperties(caVO, ca);
             }
         }
-        if (nodeState.isState(NodeStateEnum.Offline)) {
+        if (!nodeState.isState(NodeStateEnum.Running)) {
             //            ca.setValid(true);
             caRepository.insertCa(ca);
             log.info("insert ca end (for consensus layer)");
@@ -287,7 +293,9 @@ import java.util.*;
         }
         List<Action> actions = new ArrayList<>();
         int index = 0;
-        for (CaVO caVO : list) {
+        CaVO caVO = null;
+        for (int i = 0; i < list.size(); i++) {
+            caVO = list.get(i);
             CaAction caAction = new CaAction();
             caAction.setPeriod(caVO.getPeriod());
             caAction.setPubKey(caVO.getPubKey());
@@ -301,11 +309,15 @@ import java.util.*;
             index++;
         }
 
-        NodeAction nodeAction = new NodeAction();
-        nodeAction.setNodeName(list.get(0).getUser());
+/*        NodeAction nodeAction = new NodeAction();
+        nodeAction.setNodeName(caVO.getUser());
         nodeAction.setType(ActionTypeEnum.NODE_JOIN);
         nodeAction.setIndex(index);
-        actions.add(nodeAction);
+        nodeAction.setPubKey(caVO.getPubKey());
+        String signValue = caVO.getUser() + "-" + caVO.getPubKey();
+        nodeAction.setSelfSign(signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS));
+        nodeAction.setSignValue(signValue);
+        actions.add(nodeAction);*/
 
         return actions;
     }
@@ -430,16 +442,14 @@ import java.util.*;
         config.setPriKey(priKey);
         config.setValid(true);
         config.setVersion(VersionEnum.V1.getCode());
-        config.setUsage(UsageEnum.CONSENSUS.getCode());
-        if (nodeState.isState(NodeStateEnum.Offline)) {
-            configRepository.insertConfig(config);
-        }
+        config.setUsage(UsageEnum.BIZ.getCode());
+        configRepository.insertConfig(config);
         //construct caVO for consensus layer
         CaVO caVO1 = new CaVO();
         caVO1.setVersion(VersionEnum.V1.getCode());
         caVO1.setPeriod(calculatePeriod());
         caVO1.setPubKey(pubKey);
-        caVO1.setUsage(UsageEnum.CONSENSUS.getCode());
+        caVO1.setUsage(UsageEnum.BIZ.getCode());
         caVO1.setUser(nodeState.getNodeName());
 
         // generate KeyPair for biz layer
@@ -454,26 +464,44 @@ import java.util.*;
         config.setPriKey(priKey);
         config.setValid(true);
         config.setVersion(VersionEnum.V1.getCode());
-        config.setUsage(UsageEnum.BIZ.getCode());
-        configRepository.insertConfig(config);
+        config.setUsage(UsageEnum.CONSENSUS.getCode());
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            configRepository.insertConfig(config);
+        }
         //construct caVO for biz layer
         CaVO caVO2 = new CaVO();
         caVO2.setVersion(VersionEnum.V1.getCode());
         caVO2.setPeriod(calculatePeriod());
         caVO2.setPubKey(pubKey);
-        caVO2.setUsage(UsageEnum.BIZ.getCode());
+        caVO2.setUsage(UsageEnum.CONSENSUS.getCode());
         caVO2.setUser(nodeState.getNodeName());
 
-        if (nodeState.isState(NodeStateEnum.Offline)) {
-            reqNo = HashUtil.getSHA256S(caVO1.getPubKey() + caVO2.getPubKey() + caVO2.getUser());
-            list.add(caVO1);
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            reqNo = HashUtil.getSHA256S(caVO1.getPubKey() + caVO2.getPubKey() + caVO1.getUser());
+            list.add(caVO2);
         } else {
-            reqNo = HashUtil.getSHA256S(caVO2.getPubKey() + caVO2.getUser());
+            reqNo = HashUtil.getSHA256S(caVO1.getPubKey() + caVO1.getUser());
         }
         caVO1.setReqNo(reqNo);
         caVO2.setReqNo(reqNo);
 
-        list.add(caVO2);
+        list.add(caVO1);
+        return list;
+    }
+
+    private List<CaVO> loadKeyPair(String user) {
+        List<CaVO> list = new LinkedList<>();
+        List<Config> configList = configRepository.getConfig(new Config(user));
+        for (Config config:configList){
+            CaVO caVO = new CaVO();
+            caVO.setVersion(VersionEnum.V1.getCode());
+            caVO.setPeriod(calculatePeriod());
+            caVO.setPubKey(config.getPubKey());
+            caVO.setUsage(config.getUsage());
+            caVO.setUser(user);
+            caVO.setReqNo(HashUtil.getSHA256S(caVO.getPubKey()+caVO.getUser()));
+            list.add(caVO);
+        }
         return list;
     }
 

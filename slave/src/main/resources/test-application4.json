@@ -47,7 +47,7 @@
     }
   },
   "management": {
-    "port": 6063,
+    "port": 6064,
     "security": {
       "enabled": false
     },

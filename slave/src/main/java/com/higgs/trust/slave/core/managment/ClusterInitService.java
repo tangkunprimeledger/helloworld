@@ -4,7 +4,6 @@ import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.slave.api.enums.VersionEnum;
-import com.higgs.trust.slave.common.enums.RunModeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.ca.CaInitService;
@@ -43,8 +42,6 @@ import java.util.List;
 
     @Autowired private ClusterViewService clusterViewService;
 
-    @Value("${trust.start.mode:cluster}") private String startMode;
-
     @Value("${higgs.trust.keys.bizPublicKey}") String pubKeyForBiz;
 
     @Value("${higgs.trust.keys.bizPrivateKey}") String priKeyForBiz;
@@ -76,8 +73,8 @@ import java.util.List;
         // 1、 本地没有创世块，集群也没有创世块时（即集群初始启动），需要生成公私钥，以及创世块
         // 2、 本地没有创世块，集群有创世块时（即动态单节点加入），需要进行failover得到创世块
         Long maxHeight = blockRepository.getMaxHeight();
-        if (null == maxHeight && startMode.equals(RunModeEnum.CLUSTER.getCode())) {
-            log.info("[ClusterInitService.needInit] start generateKeyPair, cluster mode");
+        if (null == maxHeight) {
+            log.info("[ClusterInitService.needInit] start generateKeyPair");
             generateKeyPair();
             return true;
         }
@@ -94,8 +91,8 @@ import java.util.List;
         txRequired.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 // load keyPair for cluster from json file
-                saveConfig(pubKeyForConsensus, priKeyForConsensus, UsageEnum.CONSENSUS);
                 saveConfig(pubKeyForBiz, priKeyForBiz, UsageEnum.BIZ);
+                saveConfig(pubKeyForConsensus, priKeyForConsensus, UsageEnum.CONSENSUS);
             }
         });
     }

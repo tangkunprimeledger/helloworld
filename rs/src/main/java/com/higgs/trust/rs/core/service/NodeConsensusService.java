@@ -18,7 +18,6 @@ import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
-import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
 import com.higgs.trust.slave.model.enums.UsageEnum;
@@ -49,6 +48,27 @@ import java.util.UUID;
     private static final String SUCCESS = "sucess";
     private static final String FAIL = "fail";
 
+    public String joinRequest() {
+        log.info("[joinRequest] send join consensus request");
+        String nodeName = nodeState.getNodeName();
+        NodeOptVO vo = new NodeOptVO();
+        vo.setNodeName(nodeName);
+        //add pubKey
+        Config config = configRepository.getConfig(nodeName, UsageEnum.CONSENSUS);
+        String pubKey = config.getPubKey();
+        String signValue = nodeName + "-" + pubKey;
+        String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
+        vo.setPubKey(pubKey);
+        vo.setSign(sign);
+        vo.setSignValue(signValue);
+        RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), vo);
+        if (!respData.isSuccess()) {
+            return FAIL;
+        }
+        log.info("[joinRequest] end send join consensus request");
+        return SUCCESS;
+    }
+
     /**
      * @param
      * @return
@@ -56,28 +76,7 @@ import java.util.UUID;
      */
     public String joinConsensus() {
         log.info("[joinConsensus] start to join consensus layer");
-        ClusterNode clusterNode = clusterNodeRepository.getClusterNode(nodeState.getNodeName());
-        if (log.isDebugEnabled()) {
-            log.debug("clusterNode={}", clusterNode);
-        }
-        if (null != clusterNode && clusterNode.isP2pStatus() == false) {
-            log.info("[joinConsensus] join consensus layer again");
-            String nodeName = nodeState.getNodeName();
-            NodeOptVO vo = new NodeOptVO();
-            vo.setNodeName(nodeName);
-            //add pubKey
-            Config config = configRepository.getConfig(nodeName, UsageEnum.CONSENSUS);
-            String pubKey = config.getPubKey();
-            String signValue = nodeName + "-" + pubKey;
-            String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
-            vo.setPubKey(pubKey);
-            vo.setSign(sign);
-            vo.setSignValue(signValue);
-            RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), vo);
-            if (!respData.isSuccess()) {
-                return FAIL;
-            }
-        }
+
         new Thread(new Runnable() {
             @Override public void run() {
                 try {
@@ -87,28 +86,14 @@ import java.util.UUID;
                     nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.StartingConsensus);
                     nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.Running);
                     log.info("[joinConsensus] end transform node status from offline to running");
+                    consensusStateMachine.joinConsensus();
                 } catch (Exception e) {
-                    log.error("change node status error", e);
+                    log.error("[joinConsensus] change node status error", e);
                     nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
                 }
             }
         }).start();
-
-        /*try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            log.error("[joinConsensus] error occured while thread sleep", e);
-            return FAIL;
-        }*/
-
-        try {
-            consensusStateMachine.joinConsensus();
-        } catch (Throwable e) {
-            log.error("join consensus error, ", e);
-            return FAIL;
-        }
         log.info("[joinConsensus] end join consensus layer");
-
         return SUCCESS;
     }
 

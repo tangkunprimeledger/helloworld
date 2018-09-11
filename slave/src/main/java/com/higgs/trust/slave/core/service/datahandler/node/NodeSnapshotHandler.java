@@ -31,9 +31,7 @@ import org.springframework.stereotype.Service;
         if (log.isDebugEnabled()) {
             log.debug("[nodeJoin] start to update clusterNodeInfo, clusterNode={}", JSON.toJSONString(clusterNode));
         }
-
         ClusterNodePO clusterNodeCache = caSnapshotAgent.getClusterNode(clusterNode.getNodeName());
-
         if (null == clusterNodeCache) {
             caSnapshotAgent.saveClusterNode(clusterNode);
         } else {

@@ -131,7 +131,7 @@ import java.util.*;
      * @return
      */
     @Override public Boolean validatingHeader(BlockHeader header) {
-        BlockHeaderCmd command = new BlockHeaderCmd(header, viewManager.getCurrentViewId());
+        BlockHeaderCmd command = new BlockHeaderCmd(header, IClusterViewManager.CURRENT_VIEW_ID);
         ResponseCommand<?> responseCommand = validConsensus.submitSync(command);
         return responseCommand == null ? null : (Boolean)responseCommand.get();
     }
