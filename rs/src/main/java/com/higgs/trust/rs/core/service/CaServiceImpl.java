@@ -11,7 +11,6 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
-import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.core.integration.CaClient;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -21,15 +20,12 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.RsNodeRepository;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
-import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
-import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
-import com.higgs.trust.slave.model.bo.node.NodeAction;
 import com.higgs.trust.slave.model.enums.UsageEnum;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
@@ -57,7 +53,6 @@ import java.util.*;
     @Autowired private CaClient caClient;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private RsNodeRepository rsNodeRepository;
-    @Autowired private SignService signService;
 
     /**
      * @return
@@ -82,7 +77,7 @@ import java.util.*;
         }
 
         // build pubKey and priKey
-        List<CaVO> list =null;
+        List<CaVO> list = null;
 
         try {
             // send CA auth request
@@ -122,7 +117,6 @@ import java.util.*;
             }
         }
         if (!nodeState.isState(NodeStateEnum.Running)) {
-            //            ca.setValid(true);
             caRepository.insertCa(ca);
             log.info("insert ca end (for consensus layer)");
         }
@@ -293,31 +287,24 @@ import java.util.*;
         }
         List<Action> actions = new ArrayList<>();
         int index = 0;
-        CaVO caVO = null;
-        for (int i = 0; i < list.size(); i++) {
-            caVO = list.get(i);
+        for (CaVO caVO : list) {
             CaAction caAction = new CaAction();
             caAction.setPeriod(caVO.getPeriod());
             caAction.setPubKey(caVO.getPubKey());
             caAction.setUsage(caVO.getUsage());
             caAction.setVersion(VersionEnum.V1.getCode());
             caAction.setUser(caVO.getUser());
-            caAction.setValid(true);
+            if ((!caVO.getUser().equals(nodeState.getNodeName())) && caVO.getUsage()
+                .equals(UsageEnum.CONSENSUS.getCode())) {
+                caAction.setValid(false);
+            } else {
+                caAction.setValid(true);
+            }
             caAction.setType(ActionTypeEnum.CA_AUTH);
             caAction.setIndex(index);
             actions.add(caAction);
             index++;
         }
-
-/*        NodeAction nodeAction = new NodeAction();
-        nodeAction.setNodeName(caVO.getUser());
-        nodeAction.setType(ActionTypeEnum.NODE_JOIN);
-        nodeAction.setIndex(index);
-        nodeAction.setPubKey(caVO.getPubKey());
-        String signValue = caVO.getUser() + "-" + caVO.getPubKey();
-        nodeAction.setSelfSign(signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS));
-        nodeAction.setSignValue(signValue);
-        actions.add(nodeAction);*/
 
         return actions;
     }
@@ -489,17 +476,17 @@ import java.util.*;
         return list;
     }
 
-    private List<CaVO> loadKeyPair(String user) {
+    @Override public List<CaVO> loadKeyPair(String user) {
         List<CaVO> list = new LinkedList<>();
         List<Config> configList = configRepository.getConfig(new Config(user));
-        for (Config config:configList){
+        for (Config config : configList) {
             CaVO caVO = new CaVO();
             caVO.setVersion(VersionEnum.V1.getCode());
             caVO.setPeriod(calculatePeriod());
             caVO.setPubKey(config.getPubKey());
             caVO.setUsage(config.getUsage());
             caVO.setUser(user);
-            caVO.setReqNo(HashUtil.getSHA256S(caVO.getPubKey()+caVO.getUser()));
+            caVO.setReqNo(HashUtil.getSHA256S(caVO.getPubKey() + caVO.getUser()));
             list.add(caVO);
         }
         return list;

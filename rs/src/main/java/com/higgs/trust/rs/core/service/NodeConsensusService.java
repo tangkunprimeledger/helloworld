@@ -3,6 +3,7 @@ package com.higgs.trust.rs.core.service;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
+import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.core.integration.NodeClient;
@@ -44,11 +45,16 @@ import java.util.UUID;
     @Autowired private ConsensusStateMachine consensusStateMachine;
     @Autowired private SignService signService;
     @Autowired private ConfigRepository configRepository;
+    @Autowired private CaService caService;
 
     private static final String SUCCESS = "sucess";
     private static final String FAIL = "fail";
 
     public String joinRequest() {
+        log.info("[joinRequest] send ca auth request");
+        caService.authKeyPair(nodeState.getNodeName());
+        log.info("[joinRequest] end send ca auth request");
+
         log.info("[joinRequest] send join consensus request");
         String nodeName = nodeState.getNodeName();
         NodeOptVO vo = new NodeOptVO();
@@ -63,6 +69,7 @@ import java.util.UUID;
         vo.setSignValue(signValue);
         RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), vo);
         if (!respData.isSuccess()) {
+            log.error("resp = {}", respData);
             return FAIL;
         }
         log.info("[joinRequest] end send join consensus request");
@@ -132,6 +139,7 @@ import java.util.UUID;
      */
     private List<Action> buildJoinActionList(NodeOptVO vo) {
         List<Action> actions = new ArrayList<>();
+
         NodeAction nodeAction = new NodeAction();
         nodeAction.setType(ActionTypeEnum.NODE_JOIN);
         nodeAction.setIndex(0);
@@ -140,6 +148,7 @@ import java.util.UUID;
         nodeAction.setSignValue(vo.getSignValue());
         nodeAction.setPubKey(vo.getPubKey());
         actions.add(nodeAction);
+
         return actions;
     }
 

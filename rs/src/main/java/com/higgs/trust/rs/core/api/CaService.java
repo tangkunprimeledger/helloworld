@@ -76,4 +76,6 @@ public interface CaService {
      */
     Ca getCa(String user);
 
+    List<CaVO> loadKeyPair(String user);
+
 }
