@@ -96,10 +96,6 @@ public class PackStatusRocksDao extends RocksBaseDao<Long>{
         batchPut(batch, newKey, height);
     }
 
-    public String getColumnName() {
-        return getColumnFamilyName();
-    }
-
     public String getStatusByHeight(Long height) {
         List<String> indexList = PackageStatusEnum.getIndexs(null);
         DecimalFormat df = new DecimalFormat(Constant.PACK_STATUS_HEIGHT_FORMAT);

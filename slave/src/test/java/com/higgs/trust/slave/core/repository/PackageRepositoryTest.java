@@ -256,9 +256,7 @@ public class PackageRepositoryTest extends BaseTest {
                 Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
                 ThreadLocalUtils.putWriteBatch(new WriteBatch());
                 try {
-                    tx.getForUpdate(new ReadOptions(),
-                        RocksUtils.getColumnFamilyHandleByName(packageRepository.getPackStatusColumnFamilyName()),
-                        JSON.toJSONBytes(key), true);
+                    Long height = packageRepository.getForUpdate(tx, new ReadOptions(), key, false);
                     System.out.println(Thread.currentThread().getName() + " acquired lock");
                     packageRepository
                         .updateStatus(20L, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
@@ -281,9 +279,7 @@ public class PackageRepositoryTest extends BaseTest {
                 ThreadLocalUtils.putWriteBatch(new WriteBatch());
                 try {
                     System.out.println("acquired value = " + packStatusRocksDao.get(key));
-                    tx.getForUpdate(new ReadOptions(),
-                        RocksUtils.getColumnFamilyHandleByName(packageRepository.getPackStatusColumnFamilyName()),
-                        JSON.toJSONBytes(key), true);
+                    Long height = packageRepository.getForUpdate(tx, new ReadOptions(), key, true);
                     System.out.println(Thread.currentThread().getName() + "acquired lock");
                     packageRepository
                         .updateStatus(20L, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);

@@ -2,6 +2,7 @@ package com.higgs.trust.common.dao;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.config.rocksdb.RocksDBWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.List;
  * @author tangfashuang
  */
 @Component
+@Slf4j
 public class RocksUtils {
 
     private static RocksDBWrapper rocksDBWrapper;
@@ -51,6 +53,15 @@ public class RocksUtils {
 
     public static ColumnFamilyHandle getColumnFamilyHandleByName(String name) {
         return rocksDBWrapper.getColumnFamilyHandleMap().get(name);
+    }
+
+    public static void txCommit(Transaction tx) {
+        try {
+            tx.commit();
+        } catch (RocksDBException e){
+            log.error("transaction commit exception. ", e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Autowired

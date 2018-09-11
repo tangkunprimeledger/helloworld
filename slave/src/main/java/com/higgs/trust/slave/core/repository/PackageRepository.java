@@ -18,6 +18,8 @@ import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.rocksdb.ReadOptions;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -323,6 +325,10 @@ import java.util.Set;
         return count;
     }
 
+    public Long getForUpdate(Transaction tx, ReadOptions readOptions, String key, boolean exclusive) {
+        return packStatusRocksDao.getForUpdate(tx, readOptions, key, exclusive);
+    }
+
     private void deletePendingTx(Long height) {
         PackagePO po = packRocksDao.get(String.valueOf(height));
         if (po == null || CollectionUtils.isEmpty(po.getSignedTxList())) {
@@ -330,9 +336,5 @@ import java.util.Set;
         }
 
         pendingTxRepository.batchDelete(po.getSignedTxList());
-    }
-
-    public String getPackStatusColumnFamilyName() {
-        return packStatusRocksDao.getColumnName();
     }
 }

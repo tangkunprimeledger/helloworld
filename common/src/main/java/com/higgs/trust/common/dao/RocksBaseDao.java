@@ -54,6 +54,22 @@ public abstract class RocksBaseDao<V> {
         return null;
     }
 
+    public V getForUpdate(Transaction tx, ReadOptions readOptions, String key, boolean exclusive) {
+        try {
+            ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
+
+            byte[] keyBytes = JSON.toJSONBytes(key);
+            byte[] data = tx.getForUpdate(readOptions, columnFamilyHandle, keyBytes, exclusive);
+            if (data != null) {
+                return JSON.parseObject(data, clazz);
+            }
+        } catch (RocksDBException e) {
+            System.out.println(e);
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
     public boolean keyMayExist(String k) {
         ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
         byte[] key = JSON.toJSONBytes(k);

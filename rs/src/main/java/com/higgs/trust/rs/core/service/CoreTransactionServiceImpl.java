@@ -46,8 +46,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
-import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
+import org.rocksdb.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -177,14 +176,32 @@ import java.util.concurrent.TimeUnit;
             log.error("[submitTx] self sign data is empty");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
         }
-        txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                //save coreTxProcess to db
-                coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
-                //save coreTx to db
-                coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+
+        if (rsConfig.isUseMySQL()) {
+            txRequired.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    //save coreTxProcess to db
+                    coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
+                    //save coreTx to db
+                    coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+                }
+            });
+        } else {
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            try {
+                if (null == coreTxRepository.getForUpdate(tx, new ReadOptions(), coreTx.getTxId(), true)) {
+                    ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                    //save coreTxProcess to db
+                    coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
+                    //save coreTx to db
+                    coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                }
+            } finally {
+                ThreadLocalUtils.clearWriteBatch();
+                RocksUtils.txCommit(tx);
             }
-        });
+        }
         //send redis msg for slave
         asyncProcessInitTx(coreTx.getTxId());
     }
@@ -216,17 +233,32 @@ import java.util.concurrent.TimeUnit;
         if (rsConfig.isUseMySQL()) {
             bo = txRequired.execute(new TransactionCallback<CoreTxBO>() {
                 @Override public CoreTxBO doInTransaction(TransactionStatus transactionStatus) {
-                    return processInitTxInTransaction(txId);
+                    CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
+                    if (null == po) {
+                        log.warn("[processInitTx]cannot acquire lock, txId={}", txId);
+                        return null;
+                    }
+                    return processInitTxInTransaction(po);
                 }
             });
         } else {
+            Transaction tx = null;
             try {
+                tx = RocksUtils.beginTransaction(new WriteOptions());
+                CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);
+                if (null == po) {
+                    log.warn("[processInitTx]cannot acquire lock, txId={}", txId);
+                    return;
+                }
                 ThreadLocalUtils.putWriteBatch(new WriteBatch());
 
-                bo = processInitTxInTransaction(txId);
+                bo = processInitTxInTransaction(po);
 
                 RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
             } finally {
+                if (null != tx) {
+                    RocksUtils.txCommit(tx);
+                }
                 ThreadLocalUtils.clearWriteBatch();
             }
         }
@@ -251,13 +283,12 @@ import java.util.concurrent.TimeUnit;
         log.info("[processInitTx]is success");
     }
 
-    private CoreTxBO processInitTxInTransaction(String txId) {
-        CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
-        if (null == coreTxProcessRepository.queryByTxId(txId, CoreTxStatusEnum.INIT)) {
-            log.info("[processInitTx]the coreTx is null or status is not INIT txId:{}", txId);
+    private CoreTxBO processInitTxInTransaction(CoreTransactionPO po) {
+
+        if (null == coreTxProcessRepository.queryByTxId(po.getTxId(), CoreTxStatusEnum.INIT)) {
+            log.info("[processInitTx]the coreTx is null or status is not INIT txId:{}", po.getTxId());
             return null;
         }
-
         Date lockTime = po.getLockTime();
         if (lockTime != null && lockTime.after(new Date())) {
             log.info("[processInitTx]should skip this tx by lock time:{}", lockTime);
@@ -382,24 +413,39 @@ import java.util.concurrent.TimeUnit;
         if (rsConfig.isUseMySQL()) {
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    processNeedVoteTxInTransaction(txId);
+                    CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
+                    if (null == po) {
+                        log.warn("[processNeedVoteTx]the coreTx can not acquired lock txId:{}", txId);
+                        return;
                     }
+                    processNeedVoteTxInTransaction(po);
+                }
             });
         } else {
+            Transaction tx = null;
             try {
+                tx = RocksUtils.beginTransaction(new WriteOptions());
+                CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);
+                if (null == po) {
+                    log.warn("[processNeedVoteTx]the coreTx can not acquired lock txId:{}", txId);
+                    return;
+                }
                 ThreadLocalUtils.putWriteBatch(new WriteBatch());
-                processNeedVoteTxInTransaction(txId);
+                processNeedVoteTxInTransaction(po);
                 RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
             } finally {
+                if (tx != null) {
+                    RocksUtils.txCommit(tx);
+                }
                 ThreadLocalUtils.clearWriteBatch();
             }
         }
     }
 
-    private void processNeedVoteTxInTransaction(String txId) {
-        CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
-        if (null == coreTxProcessRepository.queryByTxId(txId, CoreTxStatusEnum.NEED_VOTE)) {
-            log.info("[processNeedVoteTx]the coreTx status is not NEED_VOTE txId:{}", txId);
+    private void processNeedVoteTxInTransaction(CoreTransactionPO po) {
+
+        if (null == coreTxProcessRepository.queryByTxId(po.getTxId(), CoreTxStatusEnum.NEED_VOTE)) {
+            log.info("[processNeedVoteTx]the coreTx status is not NEED_VOTE txId:{}", po.getTxId());
             return;
         }
 

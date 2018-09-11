@@ -68,6 +68,9 @@ import java.util.stream.Collectors;
         columnFamily.add("dataIdentity");
         columnFamily.add("txOut");
 
+        columnFamily.add("blockTest");
+        columnFamily.add("tx");
+
         //rs db
         columnFamily.add("bizType");
         columnFamily.add("coreTransaction");

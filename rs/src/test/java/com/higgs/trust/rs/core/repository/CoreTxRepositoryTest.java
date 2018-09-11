@@ -18,8 +18,7 @@ import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.CancelRS;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
-import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
+import org.rocksdb.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -31,11 +30,9 @@ import java.util.Random;
 
 public class CoreTxRepositoryTest extends IntegrateBaseTest {
 
-    @Autowired
-    private CoreTxRepository coreTxRepository;
+    @Autowired private CoreTxRepository coreTxRepository;
 
-    @Autowired
-    private CoreTxRocksDao coreTxRocksDao;
+    @Autowired private CoreTxRocksDao coreTxRocksDao;
 
     @Test public void testAdd() throws Exception {
         CoreTransaction coreTx = new CoreTransaction();
@@ -56,7 +53,7 @@ public class CoreTxRepositoryTest extends IntegrateBaseTest {
         action.setRsIds(rsIds);
         actionList.add(action);
 
-        coreTx.setTxId("test-tx-id-" + r.nextLong());
+        coreTx.setTxId("test-tx-id-0");
         coreTx.setPolicyId(InitPolicyEnum.REGISTER_POLICY.getPolicyId());
 
         JSONObject jsonObject = new JSONObject();
@@ -127,7 +124,9 @@ public class CoreTxRepositoryTest extends IntegrateBaseTest {
 
     @Test public void testSaveExecuteResultAndHeight() throws Exception {
         ThreadLocalUtils.putWriteBatch(new WriteBatch());
-        coreTxRepository.saveExecuteResultAndHeight("test-tx-id-113", CoreTxResultEnum.FAIL, "120009", "transaction is invalid", 20L);
+        coreTxRepository
+            .saveExecuteResultAndHeight("test-tx-id-113", CoreTxResultEnum.FAIL, "120009", "transaction is invalid",
+                20L);
         RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
         ThreadLocalUtils.clearWriteBatch();
         CoreTransactionPO po = coreTxRepository.queryByTxId("test-tx-id-113", false);
@@ -213,5 +212,38 @@ public class CoreTxRepositoryTest extends IntegrateBaseTest {
         coreTxRepository.batchUpdate(rsCoreTxVOS, 32L);
         RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
         ThreadLocalUtils.clearWriteBatch();
+    }
+
+    @Test public void testGetForUpdate() throws Exception {
+        new Thread(new Runnable() {
+            @Override public void run() {
+                try {
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    System.out.println("Thread1: run");
+                    CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), "test-tx-id-0", false);
+                    System.out.println("Thread1: " + po);
+
+                    Thread.sleep(10000);
+                    RocksUtils.txCommit(tx);
+                } catch (Throwable e) {
+                    System.out.println("Thread1: " + e);
+                }
+            }
+        }).start();
+
+        new Thread(new Runnable() {
+            @Override public void run() {
+                try {
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    System.out.println("Thread2: run");
+                    CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), "test-tx-id-0", false);
+                    System.out.println("Thread2: " + po);
+
+                    RocksUtils.txCommit(tx);
+                } catch (Throwable e) {
+                    System.out.println("Thread2: " + e);
+                }
+            }
+        }).start();
     }
 }

@@ -18,6 +18,8 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.ReadOptions;
+import org.rocksdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
@@ -321,5 +323,9 @@ public class CoreTxRepository {
             coreTransactionPOList.add(po);
         }
         return coreTransactionPOList;
+    }
+
+    public CoreTransactionPO getForUpdate(Transaction tx, ReadOptions readOptions, String txId, boolean exclusive) {
+        return coreTxRocksDao.getForUpdate(tx, readOptions, txId, exclusive);
     }
 }
