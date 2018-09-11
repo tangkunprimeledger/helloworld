@@ -154,7 +154,9 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
 
     @Override
     public void submitTx(CoreTransaction coreTx) {
-        log.debug("[submitTx]{}", coreTx);
+        if(log.isDebugEnabled()){
+            log.debug("[submitTx]{}", coreTx);
+        }
         if (coreTx == null) {
             log.error("[submitTx] the tx is null");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
