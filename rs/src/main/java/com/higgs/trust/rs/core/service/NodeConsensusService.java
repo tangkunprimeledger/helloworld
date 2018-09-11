@@ -80,12 +80,17 @@ import java.util.UUID;
         }
         new Thread(new Runnable() {
             @Override public void run() {
-                log.info("[joinConsensus] start to transform node status from offline to running");
-                nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
-                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-                nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.StartingConsensus);
-                nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.Running);
-                log.info("[joinConsensus] end transform node status from offline to running");
+                try {
+                    log.info("[joinConsensus] start to transform node status from offline to running");
+                    nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
+                    nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
+                    nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.StartingConsensus);
+                    nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.Running);
+                    log.info("[joinConsensus] end transform node status from offline to running");
+                } catch (Exception e) {
+                    log.error("change node status error", e);
+                    nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
+                }
             }
         }).start();
 
@@ -192,6 +197,7 @@ import java.util.UUID;
         return SUCCESS;
 
     }
+
     /**
      * make core transaction
      *
@@ -209,6 +215,7 @@ import java.util.UUID;
         coreTx.setTxType(TxTypeEnum.NODE.getCode());
         return coreTx;
     }
+
     /**
      * make action
      *
