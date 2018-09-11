@@ -30,15 +30,10 @@ import java.util.List;
  * @description
  * @date 2018-06-06
  */
-@Slf4j
-@Repository
-public class CoreTxRepository {
-    @Autowired
-    private RsConfig rsConfig;
-    @Autowired
-    private CoreTransactionDao coreTransactionDao;
-    @Autowired
-    private CoreTxJDBCDao coreTxJDBCDao;
+@Slf4j @Repository public class CoreTxRepository {
+    @Autowired private RsConfig rsConfig;
+    @Autowired private CoreTransactionDao coreTransactionDao;
+    @Autowired private CoreTxJDBCDao coreTxJDBCDao;
 
     /**
      * create new core_transaction
@@ -68,7 +63,7 @@ public class CoreTxRepository {
                 coreTransactionDao.add(po);
             } catch (DuplicateKeyException e) {
                 log.error("[add.core_transaction]has idempotent error");
-                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT, e);
             }
         } finally {
             Profiler.release();
@@ -81,7 +76,8 @@ public class CoreTxRepository {
      * @param coreTx
      * @param signInfos
      */
-    public void add(CoreTransaction coreTx, List<SignInfo> signInfos, CoreTxResultEnum executResult, String respCode, String respMsg, Long blockHeight) {
+    public void add(CoreTransaction coreTx, List<SignInfo> signInfos, CoreTxResultEnum executResult, String respCode,
+        String respMsg, Long blockHeight) {
         if (!rsConfig.isUseMySQL()) {
             //TODO: liuyu for rocksdb handler
             return;
@@ -106,7 +102,7 @@ public class CoreTxRepository {
                 coreTransactionDao.add(po);
             } catch (DuplicateKeyException e) {
                 log.error("[add.core_transaction]has idempotent error");
-                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT, e);
             }
         } finally {
             Profiler.release();
@@ -127,7 +123,6 @@ public class CoreTxRepository {
         }
         return coreTransactionDao.queryByTxId(txId, forUpdate);
     }
-
 
     /**
      * query by txIds
@@ -180,16 +175,19 @@ public class CoreTxRepository {
      * @param respCode
      * @param respMsg
      */
-    public void saveExecuteResultAndHeight(String txId, CoreTxResultEnum executResult, String respCode, String respMsg, Long blockHeight) {
+    public void saveExecuteResultAndHeight(String txId, CoreTxResultEnum executResult, String respCode, String respMsg,
+        Long blockHeight) {
         if (!rsConfig.isUseMySQL()) {
             //TODO: liuyu for rocksdb handler
             return;
         }
         try {
             Profiler.enter("[rs.core.saveExecuteResult]");
-            int r = coreTransactionDao.saveExecuteResultAndHeight(txId, executResult.getCode(), respCode, respMsg, blockHeight);
+            int r = coreTransactionDao
+                .saveExecuteResultAndHeight(txId, executResult.getCode(), respCode, respMsg, blockHeight);
             if (r != 1) {
-                log.error("[saveExecuteResult]executResult:{},respCode:{} is fail txId:{}", executResult, respCode, txId);
+                log.error("[saveExecuteResult]executResult:{},respCode:{} is fail txId:{}", executResult, respCode,
+                    txId);
                 throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
             }
         } finally {
@@ -252,8 +250,8 @@ public class CoreTxRepository {
             try {
                 coreTxJDBCDao.batchInsert(coreTransactionPOList);
             } catch (DuplicateKeyException e) {
-                log.error("[batchInsert.core_transaction]has idempotent error");
-                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
+                log.error("[batchInsert.core_transaction]has idempotent error", e);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT, e);
             }
         } finally {
             Profiler.release();
