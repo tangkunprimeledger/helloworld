@@ -77,22 +77,13 @@ import java.util.UUID;
     public String joinConsensus() {
         log.info("[joinConsensus] start to join consensus layer");
 
-        new Thread(new Runnable() {
-            @Override public void run() {
-                try {
-                    log.info("[joinConsensus] start to transform node status from offline to running");
-                    nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
-                    nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-                    nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.StartingConsensus);
-                    nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.Running);
-                    log.info("[joinConsensus] end transform node status from offline to running");
-                    consensusStateMachine.joinConsensus();
-                } catch (Exception e) {
-                    log.error("[joinConsensus] change node status error", e);
-                    nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
-                }
-            }
-        }).start();
+        try {
+            consensusStateMachine.joinConsensus();
+        } catch (Throwable e) {
+            log.error("[joinConsensus] join consensus error", e);
+            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
+            return FAIL;
+        }
         log.info("[joinConsensus] end join consensus layer");
         return SUCCESS;
     }
