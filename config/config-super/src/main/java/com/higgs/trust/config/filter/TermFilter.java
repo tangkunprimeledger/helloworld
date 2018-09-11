@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/6/1
  */
-@Order(2) @Component @Slf4j public class TermFilter implements CommandFilter {
+@Order(3) @Component @Slf4j public class TermFilter implements CommandFilter {
     @Autowired private NodeState nodeState;
 
     @Autowired private ChangeMasterService changeMasterService;

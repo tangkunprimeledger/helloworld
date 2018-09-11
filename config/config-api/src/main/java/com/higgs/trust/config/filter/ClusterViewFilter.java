@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/9/4
  */
-@Order @Component @Slf4j public class ClusterViewFilter implements CommandFilter {
+@Order(2) @Component @Slf4j public class ClusterViewFilter implements CommandFilter {
 
     @Autowired private IClusterViewManager viewManager;
 

@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author suimi
  * @date 2018/6/21
  */
-@Order(3) @Slf4j @Component public class FailoverPackageFilter implements CommandFilter {
+@Order(4) @Slf4j @Component public class FailoverPackageFilter implements CommandFilter {
 
     @Autowired private BlockRepository blockRepository;
 
