@@ -49,8 +49,6 @@ import org.springframework.stereotype.Component;
         Ca ca = new Ca();
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.authCa(ca);
-
-        //        clusterInfo.refresh();
         Profiler.release();
 
     }
