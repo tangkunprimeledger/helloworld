@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
     @Autowired TxProcessorHolder processorHolder;
 
     /**
-     * verify transaction
+     * verify SignedTransaction
      *
      * @param tx
      * @return
@@ -32,13 +32,21 @@ import org.springframework.stereotype.Component;
         if (tx == null) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-        if (tx.getCoreTx() == null) {
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
         if (CollectionUtils.isEmpty(tx.getSignatureList())) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-        CoreTransaction coreTx = tx.getCoreTx();
+        verify(tx.getCoreTx());
+    }
+    /**
+     * verify CoreTransaction
+     *
+     * @param coreTx
+     * @return
+     */
+    public void verify(CoreTransaction coreTx) throws SlaveException {
+        if (coreTx == null) {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
         if (StringUtils.isEmpty(coreTx.getTxId())) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
