@@ -53,7 +53,6 @@ import java.util.List;
 
     @Value("${higgs.trust.keys.consensusPrivateKey}") String priKeyForConsensus;
 
-
     @StateChangeListener(value = NodeStateEnum.SelfChecking, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
     public void init() throws FileNotFoundException {
         if (needInit()) {
@@ -69,7 +68,7 @@ import java.util.List;
 
         List<Config> configList =
             configRepository.getConfig(new Config(nodeState.getNodeName(), UsageEnum.CONSENSUS.getCode()));
-        nodeState.setConsensusPrivateKey(configList.get(0).getPriKey());
+        nodeState.setConsensusPrivateKey(null != configList ? configList.get(0).getPriKey() : null);
         clusterViewService.initClusterViewFromDB();
     }
 
