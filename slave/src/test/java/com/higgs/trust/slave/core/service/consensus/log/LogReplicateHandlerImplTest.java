@@ -20,7 +20,7 @@ public class LogReplicateHandlerImplTest extends BaseTest {
         packageVO.setSignedTxList(Lists.newArrayList());
 
         packageVOList.add(packageVO);
-        logReplicateHandler.replicatePackage(new PackageCommand(1L,1L,null,packageVO));
+        logReplicateHandler.replicatePackage(new PackageCommand(null,packageVO));
     }
 
 }
