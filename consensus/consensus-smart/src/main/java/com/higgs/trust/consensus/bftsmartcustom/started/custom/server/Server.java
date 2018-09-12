@@ -37,10 +37,10 @@ public class Server extends DefaultRecoverable {
         this.snapshot = snapshot;
         this.machine = replicateComposite;
         functionMap = machine.registerCommit();
-        serviceReplica = new ServiceReplica(serverId, this, this);
         Namespace namespace = Namespace.builder().setRegistrationRequired(false).setCompatible(true)
             .register(AbstractConsensusCommand.class).build();
         serializer = Serializer.using(namespace);
+        serviceReplica = new ServiceReplica(serverId, this, this);
         //先从spring容器中获取对应的bean，如果不存在则反射实例化一个
         //        try {
         //            try {
