@@ -261,7 +261,7 @@
         </dependency>
     </dependencies>
 
-    <build>
+    <!--<build>
         <finalName>slave</finalName>
         <plugins>
             <plugin>
@@ -295,5 +295,5 @@
                 </executions>
             </plugin>
         </plugins>
-    </build>
+    </build>-->
 </project>

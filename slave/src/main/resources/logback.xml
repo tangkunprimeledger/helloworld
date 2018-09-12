@@ -15,7 +15,7 @@
     <property name="APP_NAME" value="slave"/>​
     <!-- 归档文件保留的时间，即只保留几天前的归档文件，单位与fileNamePattern中配置的最小时间单位相同 -->
     <property name="MAX_HISTORY" value="7"/>
-    <property name="LOG_PATH" value="${LOG_PATH:-/Volumes/work/log/log}" />
+    <property name="LOG_PATH" value="${LOG_PATH:-/data/home/admin/trust/log}" />
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <!--        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">

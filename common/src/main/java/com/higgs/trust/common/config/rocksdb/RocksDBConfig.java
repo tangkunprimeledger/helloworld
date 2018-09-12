@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
     /**
      * rocks db config properties
      */
-    @Value("${trust.rocksdb.file.root:/Volumes/work/log/rocks/db/}")
+    @Value("${trust.rocksdb.file.root:/data/home/admin/trust/rocks/}")
     private String dbFileRoot;
     @Value("${trust.rocksdb.file.flash.name:trust.db}")
     private String DB_FILE_FLASH;

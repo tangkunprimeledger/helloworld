@@ -90,13 +90,13 @@ import org.springframework.stereotype.Component;
                     break;
             }
         }
-        try {
-            Profiler.enter("[rs.custom.callback.onPersisted]");
-            TxCallbackHandler callbackHandler = getCallbackHandler();
-            callbackHandler.onPersisted(respData, blockHeader);
-        } finally {
-            Profiler.release();
-        }
+//        try {
+//            Profiler.enter("[rs.custom.callback.onPersisted]");
+//            TxCallbackHandler callbackHandler = getCallbackHandler();
+//            callbackHandler.onPersisted(respData, blockHeader);
+//        } finally {
+//            Profiler.release();
+//        }
     }
 
     @Override public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
@@ -131,13 +131,13 @@ import org.springframework.stereotype.Component;
                     break;
             }
         }
-        try {
-            Profiler.enter("[rs.custom.callback.onEnd]");
-            TxCallbackHandler callbackHandler = getCallbackHandler();
-            callbackHandler.onEnd(respData, blockHeader);
-        } finally {
-            Profiler.release();
-        }
+//        try {
+//            Profiler.enter("[rs.custom.callback.onEnd]");
+//            TxCallbackHandler callbackHandler = getCallbackHandler();
+//            callbackHandler.onEnd(respData, blockHeader);
+//        } finally {
+//            Profiler.release();
+//        }
     }
 
     @Override public void onFailover(RespData<CoreTransaction> respData, BlockHeader blockHeader) {

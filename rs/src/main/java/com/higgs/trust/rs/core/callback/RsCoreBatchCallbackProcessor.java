@@ -91,8 +91,8 @@ import java.util.*;
                 }
             }
             //callback custom
-            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onPersisted(policyId,rsCoreTxVOS,blockHeader);
+//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+//            txBatchCallbackHandler.onPersisted(policyId,rsCoreTxVOS,blockHeader);
         }
     }
 
@@ -128,10 +128,10 @@ import java.util.*;
                         break;
                 }
             }
-            List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
-            //callback custom
-            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onEnd(policyId,rsCoreTxVOS,blockHeader);
+//            List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
+//            //callback custom
+//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+//            txBatchCallbackHandler.onEnd(policyId,rsCoreTxVOS,blockHeader);
         }
     }
 
