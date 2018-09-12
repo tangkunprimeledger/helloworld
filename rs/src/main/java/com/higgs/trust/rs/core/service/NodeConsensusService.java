@@ -40,8 +40,6 @@ import java.util.UUID;
     @Autowired private NodeState nodeState;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private NodeClient nodeClient;
-    @Autowired private ClusterNodeRepository clusterNodeRepository;
-
     @Autowired private ConsensusStateMachine consensusStateMachine;
     @Autowired private SignService signService;
     @Autowired private ConfigRepository configRepository;
@@ -139,7 +137,6 @@ import java.util.UUID;
      */
     private List<Action> buildJoinActionList(NodeOptVO vo) {
         List<Action> actions = new ArrayList<>();
-
         NodeAction nodeAction = new NodeAction();
         nodeAction.setType(ActionTypeEnum.NODE_JOIN);
         nodeAction.setIndex(0);
@@ -148,7 +145,6 @@ import java.util.UUID;
         nodeAction.setSignValue(vo.getSignValue());
         nodeAction.setPubKey(vo.getPubKey());
         actions.add(nodeAction);
-
         return actions;
     }
 

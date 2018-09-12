@@ -69,16 +69,14 @@ import java.util.*;
         log.info("[authKeyPair] start to auth CA pubKey/priKey, nodeName={}", user);
         // CA existence check
         Ca ca = caRepository.getCaForBiz(user);
-        if (null != ca && ca.isValid()) {
+        if (null != ca && ca.isValid()&&nodeState.isState(NodeStateEnum.Running)) {
             log.error("[authKeyPair] ca information for node={} already exist, pubKey={}", ca.getUser(),
                 ca.getPubKey());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_ALREADY_EXIST_ERROR,
                 "[authKeyPair] ca information already exist");
         }
 
-        // build pubKey and priKey
         List<CaVO> list = null;
-
         try {
             // send CA auth request
             RespData respData = null;
@@ -104,8 +102,7 @@ import java.util.*;
             return FAIL;
         }
 
-        // insert ca into db (for consensus layer)
-        //   协议层的公私钥不更新   即非首次加入时，判断公私钥是否已经存在，存在就不做任何操作
+        // insert ca into db (for consensus layer) if not exist
         if (null != caRepository.getCaForConsensus(nodeState.getNodeName())) {
             log.info("not the first time for ca auth, ca for consensus layer already exist");
             return SUCCESS;
@@ -415,10 +412,9 @@ import java.util.*;
     private List<CaVO> generateKeyPair() {
 
         List<CaVO> list = new LinkedList<>();
-        String reqNo;
 
-        // generate KeyPair for consensus layer
-        Crypto consensusCrypto = CryptoUtil.getProtocolCrypto();
+        // generate KeyPair for BIZ layer
+        Crypto consensusCrypto = CryptoUtil.getBizCrypto();
         KeyPair keyPair = consensusCrypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();
@@ -438,45 +434,13 @@ import java.util.*;
         caVO1.setPubKey(pubKey);
         caVO1.setUsage(UsageEnum.BIZ.getCode());
         caVO1.setUser(nodeState.getNodeName());
-
-        // generate KeyPair for biz layer
-        Crypto bizCrypto = CryptoUtil.getBizCrypto();
-        keyPair = bizCrypto.generateKeyPair();
-        pubKey = keyPair.getPubKey();
-        priKey = keyPair.getPriKey();
-        //store pubKey and priKey
-        config = new Config();
-        config.setNodeName(nodeState.getNodeName());
-        config.setPubKey(pubKey);
-        config.setPriKey(priKey);
-        config.setValid(true);
-        config.setVersion(VersionEnum.V1.getCode());
-        config.setUsage(UsageEnum.CONSENSUS.getCode());
-        if (!nodeState.isState(NodeStateEnum.Running)) {
-            configRepository.insertConfig(config);
-        }
-        //construct caVO for biz layer
-        CaVO caVO2 = new CaVO();
-        caVO2.setVersion(VersionEnum.V1.getCode());
-        caVO2.setPeriod(calculatePeriod());
-        caVO2.setPubKey(pubKey);
-        caVO2.setUsage(UsageEnum.CONSENSUS.getCode());
-        caVO2.setUser(nodeState.getNodeName());
-
-        if (!nodeState.isState(NodeStateEnum.Running)) {
-            reqNo = HashUtil.getSHA256S(caVO1.getPubKey() + caVO2.getPubKey() + caVO1.getUser());
-            list.add(caVO2);
-        } else {
-            reqNo = HashUtil.getSHA256S(caVO1.getPubKey() + caVO1.getUser());
-        }
-        caVO1.setReqNo(reqNo);
-        caVO2.setReqNo(reqNo);
+        caVO1.setReqNo(HashUtil.getSHA256S(caVO1.getPubKey() + caVO1.getUser()));
 
         list.add(caVO1);
         return list;
     }
 
-    @Override public List<CaVO> loadKeyPair(String user) {
+    private List<CaVO> loadKeyPair(String user) {
         List<CaVO> list = new LinkedList<>();
         List<Config> configList = configRepository.getConfig(new Config(user));
         for (Config config : configList) {
