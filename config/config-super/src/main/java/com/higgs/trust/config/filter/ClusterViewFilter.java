@@ -53,9 +53,6 @@ import org.springframework.stereotype.Component;
                     viewManager.resetEndHeight(height);
                     if (command.getClusterOptTx() != null) {
                         viewManager.changeView(command);
-                        if (nodeState.isMaster()) {
-                            nodeState.changeMaster(nodeState.MASTER_NA);
-                        }
                     }
                 } else {
                     //the height not all in current view

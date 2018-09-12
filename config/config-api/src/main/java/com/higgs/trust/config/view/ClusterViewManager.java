@@ -7,8 +7,10 @@ import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.exception.ConfigError;
 import com.higgs.trust.config.exception.ConfigException;
 import com.higgs.trust.config.node.command.ViewCommand;
+import com.higgs.trust.consensus.config.NodeState;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -22,6 +24,9 @@ import java.util.*;
     private ClusterView currentView;
 
     private ArrayList<ClusterView> views = new ArrayList<>();
+
+    @Autowired
+    private NodeState nodeState;
 
     @Override public synchronized void resetViews(List<ClusterView> views) {
         this.views.clear();
@@ -117,6 +122,9 @@ import java.util.*;
             views.add(newView);
             currentView = newView;
             log.info("created new view:{}", newView);
+            if (nodeState.isMaster()) {
+                nodeState.changeMaster(nodeState.MASTER_NA);
+            }
         } else {
             log.warn("the view:{} of command not current view:{}, not allowed change view", command.getView(),
                 currentView.getId());
