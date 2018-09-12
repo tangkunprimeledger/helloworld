@@ -26,8 +26,8 @@ import org.springframework.stereotype.Component;
 
     @Override public void verifyParams(Action action) throws SlaveException {
         NodeAction bo = (NodeAction)action;
-        if(StringUtils.isEmpty(bo.getNodeName())){
-            log.error("[verifyParams] nodeName is null or illegal param:{}",bo);
+        if (StringUtils.isEmpty(bo.getNodeName())) {
+            log.error("[verifyParams] nodeName is null or illegal param:{}", bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }
@@ -42,7 +42,8 @@ import org.springframework.stereotype.Component;
 
         log.info("[NodeLeaveHandler.process] start to process node leave action, user={}", nodeAction.getNodeName());
 
-        if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())) {
+        if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName()) && nodeState
+            .isState(NodeStateEnum.Running)) {
             log.info("leave consensus layer, user={}", nodeAction.getNodeName());
             consensusStateMachine.leaveConsensus();
             nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
