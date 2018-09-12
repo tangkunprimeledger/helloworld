@@ -7,7 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,13 +28,13 @@ public class TxRocksDao extends RocksBaseDao<TransactionPO> {
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[TxRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[TxRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
         for (TransactionPO po : pos) {
-            batchPut(batch, po.getTxId(), po);
+            txPut(tx, po.getTxId(), po);
         }
     }
 }

@@ -10,7 +10,7 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -28,12 +28,6 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
     }
 
     public void saveWithTransaction(CoreTransactionProcessPO po, String index) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxProcessRocksDao.saveWithTransaction] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
-        }
-
         String key = index + Constant.SPLIT_SLASH + po.getTxId();
         if (keyMayExist(key) && null != get(key)) {
             log.error("[CoreTxProcessRocksDao.save] core transaction process is exist, key={}", key);
@@ -41,15 +35,22 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
         }
 
         po.setCreateTime(new Date());
-        batchPut(batch, key, po);
+
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxProcessRocksDao.saveWithTransaction] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
+        }
+
+        txPut(tx, key, po);
     }
 
     public void updateStatus(String txId, CoreTxStatusEnum from, CoreTxStatusEnum to) {
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxProcessRocksDao.updateStatus] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxProcessRocksDao.updateStatus] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String key = from.getIndex() + Constant.SPLIT_SLASH + txId;
@@ -64,9 +65,9 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
         po.setStatus(to.getCode());
         String newKey = to.getIndex() + Constant.SPLIT_SLASH + txId;
         //second delete
-        batchDelete(batch, key);
+        txDelete(tx, key);
         //last update(put)
-        batchPut(batch, newKey, po);
+        txPut(tx, newKey, po);
     }
 
     public void batchInsert(List<CoreTransactionProcessPO> poList, String index) {
@@ -74,16 +75,16 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxProcessRocksDao.batchInsert] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxProcessRocksDao.batchInsert] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (CoreTransactionProcessPO po : poList) {
             String key = index + Constant.SPLIT_SLASH + po.getTxId();
             po.setCreateTime(new Date());
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
     }
 
@@ -92,10 +93,10 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxProcessRocksDao.batchUpdate] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxProcessRocksDao.batchUpdate] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (CoreTransactionProcessPO po : poList) {
@@ -114,7 +115,7 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
             oldPO.setStatus(to.getCode());
             oldPO.setUpdateTime(new Date());
             String newKey = to.getIndex() + Constant.SPLIT_SLASH + po.getTxId();
-            batchPut(batch, newKey, oldPO);
+            txPut(tx, newKey, oldPO);
         }
     }
 

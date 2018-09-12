@@ -10,7 +10,7 @@ import com.higgs.trust.slave.dao.po.config.ConfigPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -45,11 +45,11 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
         }
         configPO.setUpdateTime(new Date());
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
             put(key, configPO);
         } else {
-            batchPut(batch, key, configPO);
+            txPut(tx, key, configPO);
         }
     }
 
@@ -58,10 +58,10 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
             return 0;
         }
 
-       WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[ConfigRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+       Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[ConfigRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
         for (ConfigPO po : configPOList) {
             String key = po.getNodeName() + Constant.SPLIT_SLASH + po.getUsage();
@@ -70,7 +70,7 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
             } else {
                 po.setUpdateTime(new Date());
             }
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
         return configPOList.size();
     }
@@ -92,10 +92,10 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[ConfigRocksDao.batchCancel] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[ConfigRocksDao.batchCancel] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String usage = "biz";
@@ -108,7 +108,7 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
             }
             po.setUpdateTime(new Date());
             po.setValid(false);
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
     }
 
@@ -117,10 +117,10 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[ConfigRocksDao.batchEnable] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[ConfigRocksDao.batchEnable] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String usage = "biz";
@@ -135,7 +135,7 @@ public class ConfigRocksDao extends RocksBaseDao<ConfigPO>{
             po.setPriKey(po.getTmpPriKey());
             po.setPubKey(po.getTmpPubKey());
             po.setValid(true);
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
     }
 }

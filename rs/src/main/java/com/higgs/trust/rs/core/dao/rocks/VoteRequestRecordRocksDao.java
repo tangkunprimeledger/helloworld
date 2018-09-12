@@ -6,6 +6,7 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.dao.po.VoteRequestRecordPO;
 import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +24,10 @@ public class VoteRequestRecordRocksDao extends RocksBaseDao<VoteRequestRecordPO>
     }
 
     public void saveWithTransaction(VoteRequestRecordPO voteRequestRecordPO) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[VoteRequestRecordRocksDao.saveWithTransaction] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[VoteRequestRecordRocksDao.saveWithTransaction] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String key = voteRequestRecordPO.getTxId();
@@ -36,14 +37,14 @@ public class VoteRequestRecordRocksDao extends RocksBaseDao<VoteRequestRecordPO>
         }
 
         voteRequestRecordPO.setCreateTime(new Date());
-        batchPut(batch, key, voteRequestRecordPO);
+        txPut(tx, key, voteRequestRecordPO);
     }
 
     public void setVoteResult(String txId, String sign, String code) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[VoteRequestRecordRocksDao.setVoteResult] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[VoteRequestRecordRocksDao.setVoteResult] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         VoteRequestRecordPO po = get(txId);
@@ -56,6 +57,6 @@ public class VoteRequestRecordRocksDao extends RocksBaseDao<VoteRequestRecordPO>
         po.setVoteResult(code);
         po.setSign(sign);
 
-        batchPut(batch, txId, po);
+        txPut(tx, txId, po);
     }
 }

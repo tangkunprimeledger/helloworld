@@ -9,6 +9,7 @@ import com.higgs.trust.rs.core.dao.po.RequestPO;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
@@ -46,10 +47,10 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
      */
     public void updateStatus(String requestId, String fromStatus, String toStatus, String respCode, String respMsg) {
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[RequestRocksDao.updateStatus] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[RequestRocksDao.updateStatus] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         RequestPO requestPO = get(requestId);
@@ -68,14 +69,14 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
         requestPO.setRespMsg(respMsg);
         requestPO.setUpdateTime(new Date());
 
-        batchPut(batch, requestId, requestPO);
+        txPut(tx, requestId, requestPO);
     }
 
     public void batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[RequestRocksDao.batchUpdateStatus] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[RequestRocksDao.batchUpdateStatus] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (RsCoreTxVO vo : rsCoreTxVOS) {
@@ -96,7 +97,7 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
             po.setRespCode(vo.getErrorMsg());
             po.setUpdateTime(new Date());
 
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
     }
 }

@@ -5,12 +5,10 @@ import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.VoteRequestRecord;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.*;
 
 public class VoteReqRecordRepositoryTest extends IntegrateBaseTest{
     @Autowired
@@ -23,10 +21,11 @@ public class VoteReqRecordRepositoryTest extends IntegrateBaseTest{
         voteRequestRecord.setTxData("test-data");
         voteRequestRecord.setId(1L);
         voteRequestRecord.setSign("test-signature");
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         voteReqRecordRepository.add(voteRequestRecord);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testQueryByTxId() throws Exception {
@@ -35,10 +34,12 @@ public class VoteReqRecordRepositoryTest extends IntegrateBaseTest{
     }
 
     @Test public void testSetVoteResult() throws Exception {
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         voteReqRecordRepository.setVoteResult("test-tx-id-1", "new test signature", VoteResultEnum.AGREE);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
 
         VoteRequestRecord requestRecord = voteReqRecordRepository.queryByTxId("test-tx-id-1");
         System.out.println(requestRecord);

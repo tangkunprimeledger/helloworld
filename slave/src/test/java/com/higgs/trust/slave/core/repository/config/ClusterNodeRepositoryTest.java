@@ -6,16 +6,13 @@ import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
-import org.apache.catalina.LifecycleState;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import static org.testng.Assert.*;
 
 public class ClusterNodeRepositoryTest extends BaseTest{
     @Autowired private ClusterNodeRepository clusterNodeRepository;
@@ -27,10 +24,11 @@ public class ClusterNodeRepositoryTest extends BaseTest{
         clusterNode.setP2pStatus(true);
         clusterNode.setRsStatus(false);
 
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         clusterNodeRepository.insertClusterNode(clusterNode);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
 
         List<ClusterNode> clusterNodes = clusterNodeRepository.getAllClusterNodes();
         System.out.println(clusterNode);
@@ -53,11 +51,12 @@ public class ClusterNodeRepositoryTest extends BaseTest{
         }
         if (!initConfig.isUseMySQL()) {
             try {
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
                 clusterNodeRepository.batchInsert(list);
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                RocksUtils.txCommit(tx);
             } finally {
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();
             }
         } else {
             clusterNodeRepository.batchInsert(list);
@@ -80,11 +79,12 @@ public class ClusterNodeRepositoryTest extends BaseTest{
             clusterNodeRepository.batchUpdate(list);
         } else {
             try {
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
                 clusterNodeRepository.batchUpdate(list);
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                RocksUtils.txCommit(tx);
             } finally {
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();
             }
         }
 

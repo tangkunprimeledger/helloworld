@@ -8,7 +8,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.account.AccountDetailFreezePO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -39,14 +39,14 @@ public class AccountDetailFreezeRocksDao extends RocksBaseDao<AccountDetailFreez
             return;
         }
 
-        WriteBatch writeBatch = ThreadLocalUtils.getWriteBatch();
-        if (null == writeBatch) {
-            log.error("[AccountDetailFreezeRocksDao.batchInsert] writeBatch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[AccountDetailFreezeRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
         for (AccountDetailFreezePO po : pos) {
             String key = po.getBizFlowNo() + Constant.SPLIT_SLASH + po.getAccountNo();
-            batchPut(writeBatch, key, po);
+            txPut(tx, key, po);
         }
     }
 }

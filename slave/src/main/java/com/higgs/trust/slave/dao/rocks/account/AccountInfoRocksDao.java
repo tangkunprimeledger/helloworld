@@ -8,7 +8,7 @@ import com.higgs.trust.slave.dao.po.account.AccountInfoPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -79,10 +79,10 @@ public class AccountInfoRocksDao extends RocksBaseDao<AccountInfoPO> {
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[AccountInfoRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[AccountInfoRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (AccountInfoPO po : pos) {
@@ -91,7 +91,7 @@ public class AccountInfoRocksDao extends RocksBaseDao<AccountInfoPO> {
             } else {
                 po.setUpdateTime(new Date());
             }
-            batchPut(batch, po.getAccountNo(), po);
+            txPut(tx, po.getAccountNo(), po);
         }
 
     }

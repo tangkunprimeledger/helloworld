@@ -2,29 +2,24 @@ package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.constant.Constant;
-import com.higgs.trust.common.dao.RocksUtils;
-import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.dao.po.block.BlockPO;
-import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
 import com.higgs.trust.slave.dao.rocks.block.BlockRocksDao;
 import com.higgs.trust.slave.dao.rocks.block.BlockTestRocksDao;
 import com.higgs.trust.slave.dao.rocks.transaction.TxRocksDao;
-import com.higgs.trust.slave.model.bo.*;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
+import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
-import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -122,20 +117,20 @@ public class BlockRepositoryTest  extends BaseTest {
 //
 //            po.setHeight(Long.valueOf(i + 285));
 ////            po.setTxPOs(pos);
-//            ThreadLocalUtils.putWriteBatch(new WriteBatch());
+//            ThreadLocalUtils.putRocksTx(tx);
 //            long begin = System.currentTimeMillis();
 //            blockRocksDao.save(po);
-//            RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+//            RocksUtils.txCommit(tx);
 //            System.out.println("save block with transactionPOs: " + (System.currentTimeMillis() - begin) + "ms");
-//            ThreadLocalUtils.clearWriteBatch();
+//            ThreadLocalUtils.clearRocksTx();
 //
-//            ThreadLocalUtils.putWriteBatch(new WriteBatch());
+//            ThreadLocalUtils.putRocksTx(tx);
 //            long begin2 = System.currentTimeMillis();
 //            blockTestRocksDao.save(po);
 //            txRocksDao.batchInsert(pos);
-//            RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+//            RocksUtils.txCommit(tx);
 //            System.out.println("save block without transactionPOs: " + (System.currentTimeMillis() - begin2) + "ms");
-//            ThreadLocalUtils.clearWriteBatch();
+//            ThreadLocalUtils.clearRocksTx();
         }
 
 

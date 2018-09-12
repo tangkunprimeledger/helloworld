@@ -11,6 +11,7 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.dao.rocks.CoreTxProcessRocksDao;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;

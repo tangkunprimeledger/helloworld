@@ -6,7 +6,7 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.config.SystemPropertyPO;
 import lombok.extern.slf4j.Slf4j;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -22,10 +22,10 @@ public class SystemPropertyRocksDao extends RocksBaseDao<SystemPropertyPO> {
     }
 
     public void saveWithTransaction(String key, String value, String desc) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[SystemPropertyRocksDao.saveWithTransaction] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[SystemPropertyRocksDao.saveWithTransaction] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         SystemPropertyPO po = get(key);
@@ -35,11 +35,11 @@ public class SystemPropertyRocksDao extends RocksBaseDao<SystemPropertyPO> {
             systemPropertyPO.setValue(value);
             systemPropertyPO.setDesc(desc);
             systemPropertyPO.setCreateTime(new Date());
-            batchPut(batch, key, systemPropertyPO);
+            txPut(tx, key, systemPropertyPO);
         } else {
             po.setValue(value);
             po.setUpdateTime(new Date());
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
     }
 }

@@ -7,7 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -24,10 +24,10 @@ public class ClusterConfigRocksDao extends RocksBaseDao<ClusterConfigPO>{
     }
 
     public void saveWithTransaction(ClusterConfigPO clusterConfigPO) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[ClusterConfigRocksDao.saveWithTransaction] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[ClusterConfigRocksDao.saveWithTransaction] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
         String key = clusterConfigPO.getClusterName();
         if (keyMayExist(key) && null != get(key)) {
@@ -36,7 +36,7 @@ public class ClusterConfigRocksDao extends RocksBaseDao<ClusterConfigPO>{
         }
 
         clusterConfigPO.setCreateTime(new Date());
-        batchPut(batch, key, clusterConfigPO);
+        txPut(tx, key, clusterConfigPO);
     }
 
     public int batchInsert(List<ClusterConfigPO> clusterConfigPOList) {
@@ -44,10 +44,10 @@ public class ClusterConfigRocksDao extends RocksBaseDao<ClusterConfigPO>{
             return 0;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[ClusterConfigRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[ClusterConfigRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (ClusterConfigPO po : clusterConfigPOList) {
@@ -56,7 +56,7 @@ public class ClusterConfigRocksDao extends RocksBaseDao<ClusterConfigPO>{
             } else {
                 po.setUpdateTime(new Date());
             }
-            batchPut(batch, po.getClusterName(), po);
+            txPut(tx, po.getClusterName(), po);
         }
         return clusterConfigPOList.size();
     }

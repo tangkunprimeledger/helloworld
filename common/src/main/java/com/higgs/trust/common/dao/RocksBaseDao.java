@@ -64,7 +64,6 @@ public abstract class RocksBaseDao<V> {
                 return JSON.parseObject(data, clazz);
             }
         } catch (RocksDBException e) {
-            System.out.println(e);
             throw new RuntimeException(e);
         }
         return null;
@@ -345,6 +344,29 @@ public abstract class RocksBaseDao<V> {
         }
 
         return columnFamilyHandle;
+    }
+
+    public void txPut(Transaction tx, String key, V v) {
+        try {
+            ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
+
+            byte[] keyBytes = JSON.toJSONBytes(key);
+            byte[] value = JSON.toJSONBytes(v);
+            tx.put(columnFamilyHandle, keyBytes, value);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void txDelete(Transaction tx, String key) {
+        ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
+
+        byte[] keyBytes = JSON.toJSONBytes(key);
+        try {
+            tx.delete(columnFamilyHandle, keyBytes);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Class<V> getRealType() {

@@ -11,7 +11,7 @@ import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.CannotAcquireLockException;
@@ -80,8 +80,9 @@ import org.springframework.transaction.support.TransactionTemplate;
                 }
             });
         } else {
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
             try {
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                ThreadLocalUtils.putRocksTx(tx);
                 Package pack = packageRepository.load(height);
                 if (null == pack) {
                     log.error("cannot acquire package, invalid height[{}].", height);
@@ -93,11 +94,11 @@ import org.springframework.transaction.support.TransactionTemplate;
                     doProcess(pack);
                 }
 
-                RocksUtils.batchCommit(new WriteOptions().setSync(true), ThreadLocalUtils.getWriteBatch());
+                RocksUtils.txCommit(tx);
             } catch (Throwable e) {
                 log.error("package process exception. ", e);
             } finally {
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();;
             }
 
         }

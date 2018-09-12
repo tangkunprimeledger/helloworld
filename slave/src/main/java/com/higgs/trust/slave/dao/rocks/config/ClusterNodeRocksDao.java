@@ -7,7 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -24,10 +24,10 @@ public class ClusterNodeRocksDao extends RocksBaseDao<ClusterNodePO>{
     }
 
     public void saveWithTransaction(ClusterNodePO clusterNodePO) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[ClusterNodeRocksDao.saveWithTransaction] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[ClusterNodeRocksDao.saveWithTransaction] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String key = clusterNodePO.getNodeName();
@@ -37,7 +37,7 @@ public class ClusterNodeRocksDao extends RocksBaseDao<ClusterNodePO>{
         }
 
         clusterNodePO.setCreateTime(new Date());
-        batchPut(batch, key, clusterNodePO);
+        txPut(tx, key, clusterNodePO);
     }
 
     public int batchInsert(List<ClusterNodePO> clusterNodePOList) {
@@ -45,10 +45,10 @@ public class ClusterNodeRocksDao extends RocksBaseDao<ClusterNodePO>{
             return 0;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[ClusterNodeRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[ClusterNodeRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (ClusterNodePO po : clusterNodePOList) {
@@ -57,7 +57,7 @@ public class ClusterNodeRocksDao extends RocksBaseDao<ClusterNodePO>{
             } else {
                 po.setUpdateTime(new Date());
             }
-            batchPut(batch, po.getNodeName(), po);
+            txPut(tx, po.getNodeName(), po);
         }
         return clusterNodePOList.size();
     }

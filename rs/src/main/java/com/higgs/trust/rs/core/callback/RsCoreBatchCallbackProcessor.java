@@ -64,7 +64,6 @@ import java.util.*;
                         processRegisterPolicy(rsCoreTxVOS);
                         return;
                     case REGISTER_RS:
-                        processRegisterRS(rsCoreTxVOS);
                         return;
                     case CONTRACT_ISSUE:
                         return;
@@ -80,7 +79,6 @@ import java.util.*;
                         processCaAuth(rsCoreTxVOS);
                         return;
                     case CANCEL_RS:
-                        processCancelRS(rsCoreTxVOS);
                         return;
                     case NODE_JOIN:
                         processNodeJoin(rsCoreTxVOS);
@@ -215,16 +213,6 @@ import java.util.*;
         if (!CollectionUtils.isEmpty(voteRules)) {
             voteRuleRepository.batchInsert(voteRules);
         }
-        //update request status
-        requestRepository.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
-    }
-
-    private void processRegisterRS(List<RsCoreTxVO> rsCoreTxVOS) {
-        requestRepository.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
-    }
-
-    private void processCancelRS(List<RsCoreTxVO> rsCoreTxVOS) {
-        requestRepository.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
     }
 
     /**

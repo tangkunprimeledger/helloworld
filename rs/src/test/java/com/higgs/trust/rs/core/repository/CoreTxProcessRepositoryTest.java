@@ -6,7 +6,7 @@ import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
@@ -19,12 +19,13 @@ public class CoreTxProcessRepositoryTest extends IntegrateBaseTest{
     @Autowired
     private CoreTxProcessRepository coreTxProcessRepository;
     @Test public void testAdd() throws Exception {
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         for (int i = 0; i < 100; i++) {
             coreTxProcessRepository.add("test-tx-id-" + i, CoreTxStatusEnum.INIT);
         }
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testQueryByTxId() throws Exception {
@@ -40,11 +41,12 @@ public class CoreTxProcessRepositoryTest extends IntegrateBaseTest{
 
     @Test public void testUpdateStatus() throws Exception {
 
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
 //        for (int i = 99; i >= 80; i -= 3) {
-            ThreadLocalUtils.putWriteBatch(new WriteBatch());
+            ThreadLocalUtils.putRocksTx(tx);
             coreTxProcessRepository.updateStatus("test-tx-id-23", CoreTxStatusEnum.INIT, CoreTxStatusEnum.END);
-            RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-            ThreadLocalUtils.clearWriteBatch();
+            RocksUtils.txCommit(tx);
+            ThreadLocalUtils.clearRocksTx();
 //        }
     }
 
@@ -56,10 +58,11 @@ public class CoreTxProcessRepositoryTest extends IntegrateBaseTest{
             rsCoreTxVOList.add(rsCoreTxVO);
         }
 
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         coreTxProcessRepository.batchInsert(rsCoreTxVOList, CoreTxStatusEnum.PERSISTED);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testBatchUpdateStatus() throws Exception {
@@ -69,10 +72,11 @@ public class CoreTxProcessRepositoryTest extends IntegrateBaseTest{
             rsCoreTxVO.setTxId("test-tx-id-" + i);
             rsCoreTxVOList.add(rsCoreTxVO);
         }
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         coreTxProcessRepository.batchUpdateStatus(rsCoreTxVOList, CoreTxStatusEnum.INIT, CoreTxStatusEnum.END);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testDeleteEnd() throws Exception {

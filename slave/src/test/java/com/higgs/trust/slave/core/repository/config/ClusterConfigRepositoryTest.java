@@ -6,7 +6,7 @@ import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
@@ -37,11 +37,13 @@ public class ClusterConfigRepositoryTest extends BaseTest{
             clusterConfigPO.setNodeNum(5 + i);
             list.add(clusterConfigPO);
         }
+
         if (!initConfig.isUseMySQL()) {
-            ThreadLocalUtils.putWriteBatch(new WriteBatch());
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            ThreadLocalUtils.putRocksTx(tx);
             clusterConfigRepository.batchInsert(list);
-            RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-            ThreadLocalUtils.clearWriteBatch();
+            RocksUtils.txCommit(tx);
+            ThreadLocalUtils.clearRocksTx();;
         } else {
             clusterConfigRepository.batchInsert(list);
         }
@@ -63,10 +65,11 @@ public class ClusterConfigRepositoryTest extends BaseTest{
         }
 
         if (!initConfig.isUseMySQL()) {
-            ThreadLocalUtils.putWriteBatch(new WriteBatch());
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            ThreadLocalUtils.putRocksTx(tx);
             clusterConfigRepository.batchUpdate(list);
-            RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-            ThreadLocalUtils.clearWriteBatch();
+            RocksUtils.txCommit(tx);
+            ThreadLocalUtils.clearRocksTx();;
         } else {
             clusterConfigRepository.batchUpdate(list);
         }

@@ -14,11 +14,10 @@ import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
-import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.CancelRS;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
@@ -26,8 +25,6 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import static org.testng.Assert.*;
 
 public class RequestRepositoryTest extends IntegrateBaseTest{
 
@@ -64,10 +61,11 @@ public class RequestRepositoryTest extends IntegrateBaseTest{
     }
 
     @Test public void testUpdateRequest() throws Exception {
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         requestRepository.updateRequest("test-request-id-1", RequestEnum.PROCESS, RequestEnum.DONE, RespCodeEnum.SYS_FAIL.getRespCode(), "服务异常");
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testBatchUpdateStatus() throws Exception {
@@ -105,10 +103,11 @@ public class RequestRepositoryTest extends IntegrateBaseTest{
             rsCoreTxVOS.add(rsCoreTxVO);
         }
 
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         requestRepository.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
 
         List<RequestPO> list = requestRocksDao.queryByPrefix("test-tx-id");
         System.out.println(list);

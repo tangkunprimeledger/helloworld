@@ -5,16 +5,13 @@ import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
-import com.higgs.trust.rs.core.dao.po.VoteReceiptPO;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.testng.Assert.*;
 
 public class VoteReceiptRepositoryTest extends IntegrateBaseTest {
 
@@ -54,10 +51,11 @@ public class VoteReceiptRepositoryTest extends IntegrateBaseTest {
             voteReceipts.add(voteReceipt);
             voteReceipts.add(voteReceipt1);
         }
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         voteReceiptRepository.batchAdd(voteReceipts);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testQueryByTxId() throws Exception {

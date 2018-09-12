@@ -7,7 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.manage.RsNodePO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -28,19 +28,41 @@ public class RsNodeRocksDao extends RocksBaseDao<RsNodePO> {
             return 0;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[RsNodeRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[RsNodeRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (RsNodePO po : rsNodePOList) {
-            if (null == po.getCreateTime()) {
-                po.setCreateTime(new Date());
-            } else {
-                po.setUpdateTime(new Date());
+            po.setCreateTime(new Date());
+            txPut(tx, po.getRsId(), po);
+        }
+
+        return rsNodePOList.size();
+    }
+
+    public int batchUpdate(List<RsNodePO> rsNodePOList) {
+        if (CollectionUtils.isEmpty(rsNodePOList)) {
+            return 0;
+        }
+
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[RsNodeRocksDao.batchUpdate] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
+        }
+
+        for (RsNodePO po : rsNodePOList) {
+            String key = po.getRsId();
+            RsNodePO oldPO = get(key);
+            if (null == oldPO) {
+                log.error("[RsNodeRocksDao.batchUpdate] rs node is not exist. rsId={}", key);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_IS_NOT_EXIST);
             }
-            batchPut(batch, po.getRsId(), po);
+            oldPO.setStatus(po.getStatus());
+            oldPO.setUpdateTime(new Date());
+            txPut(tx, key, oldPO);
         }
 
         return rsNodePOList.size();

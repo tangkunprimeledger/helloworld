@@ -7,14 +7,11 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -45,11 +42,6 @@ public class PackStatusRocksDao extends RocksBaseDao<Long>{
     }
 
     public void save(Long height, String status) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[PackStatusRocksDao.save] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
-        }
 
         DecimalFormat df = new DecimalFormat(Constant.PACK_STATUS_HEIGHT_FORMAT);
         String key = status + Constant.SPLIT_SLASH + df.format(height);
@@ -58,27 +50,33 @@ public class PackStatusRocksDao extends RocksBaseDao<Long>{
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }
 
-        batchPut(batch, key, height);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PackStatusRocksDao.save] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
+        }
+
+        txPut(tx, key, height);
     }
 
     public void batchDelete(Long height, String status) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[PackStatusRocksDao.batchDelete] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PackStatusRocksDao.batchDelete] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         DecimalFormat df = new DecimalFormat(Constant.PACK_STATUS_HEIGHT_FORMAT);
         String key = status + Constant.SPLIT_SLASH + df.format(height);
 
-        batchDelete(batch, key);
+        txDelete(tx, key);
     }
 
     public void update(Long height, String from , String to) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[PackStatusRocksDao.update] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PackStatusRocksDao.update] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         DecimalFormat df = new DecimalFormat(Constant.PACK_STATUS_HEIGHT_FORMAT);
@@ -89,11 +87,11 @@ public class PackStatusRocksDao extends RocksBaseDao<Long>{
         }
 
         //delete
-        batchDelete(batch, key);
+        txDelete(tx, key);
 
         //put
         String newKey = to + Constant.SPLIT_SLASH + df.format(height);
-        batchPut(batch, newKey, height);
+        txPut(tx, newKey, height);
     }
 
     public String getStatusByHeight(Long height) {

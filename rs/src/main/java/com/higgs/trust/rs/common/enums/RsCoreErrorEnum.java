@@ -58,7 +58,7 @@ public enum RsCoreErrorEnum {
     RS_CORE_CA_AUTH_ERROR("308", "auth ca error", false),
     RS_CORE_ROCKS_KEY_ALREADY_EXIST("309", "rocks key is exist", false),
     RS_CORE_ROCKS_KEY_IS_NOT_EXIST("310", "rocks key is not exist", false),
-    RS_CORE_ROCKS_WRITE_BATCH_IS_NULL("311", "rocks write batch is null", false),
+    RS_CORE_ROCKS_TRANSACTION_IS_NULL("311", "rocks transaction is null", false),
     ;
     //@formatter:on
 

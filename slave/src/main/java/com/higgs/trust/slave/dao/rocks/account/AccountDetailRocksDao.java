@@ -8,7 +8,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.account.AccountDetailPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -31,15 +31,15 @@ public class AccountDetailRocksDao extends RocksBaseDao<AccountDetailPO> {
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[AccountDetailRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[AccountDetailRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
         for (AccountDetailPO po : pos) {
             String key = po.getBizFlowNo() + Constant.SPLIT_SLASH + po.getAccountNo();
             po.setCreateTime(new Date());
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
     }
 }

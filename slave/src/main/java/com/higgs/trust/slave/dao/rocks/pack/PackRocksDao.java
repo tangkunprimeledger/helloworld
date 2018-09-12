@@ -1,19 +1,16 @@
 package com.higgs.trust.slave.dao.rocks.pack;
 
-import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.dao.RocksBaseDao;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.pack.PackagePO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -28,10 +25,11 @@ public class PackRocksDao extends RocksBaseDao<PackagePO> {
 
     public void save(PackagePO po) {
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[PackRocksDao.save] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PackRocksDao.save] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String height = String.valueOf(po.getHeight());
@@ -40,14 +38,15 @@ public class PackRocksDao extends RocksBaseDao<PackagePO> {
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }
         po.setCreateTime(new Date());
-        batchPut(batch, height, po);
+
+        txPut(tx, height, po);
     }
 
     public void updateStatus(Long height, String from, String to) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[PackRocksDao.updateStatus] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PackRocksDao.updateStatus] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String heightStr = String.valueOf(height);
@@ -65,7 +64,7 @@ public class PackRocksDao extends RocksBaseDao<PackagePO> {
         po.setUpdateTime(new Date());
         po.setStatus(to);
 
-        batchPut(batch, heightStr, po);
+        txPut(tx, heightStr, po);
     }
 
     public List<Long> queryHeightListByHeight(List<String> packHeights) {
@@ -85,12 +84,12 @@ public class PackRocksDao extends RocksBaseDao<PackagePO> {
     }
 
     public void batchDelete(Long h) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[PackStatusRocksDao.batchDelete] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PackStatusRocksDao.batchDelete] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
-        batchDelete(batch, String.valueOf(h));
+        txDelete(tx, String.valueOf(h));
     }
 }

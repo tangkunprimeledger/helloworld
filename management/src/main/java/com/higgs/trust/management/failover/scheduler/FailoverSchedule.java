@@ -22,7 +22,7 @@ import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -207,11 +207,12 @@ import java.util.List;
             });
         } else {
             try {
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
                 packageService.process(packContext, true, false);
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                RocksUtils.txCommit(tx);
             } finally {
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();
             }
         }
     }

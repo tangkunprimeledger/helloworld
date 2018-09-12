@@ -25,7 +25,7 @@ import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import lombok.extern.slf4j.Slf4j;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,8 +69,9 @@ import java.util.*;
                     }
                 });
             } else {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
                 try {
-                    ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                    ThreadLocalUtils.putRocksTx(tx);
 
                     log.info("[process] transaction start, insert genius block into rocks db");
                     blockRepository.saveBlock(block, txReceiptMap);
@@ -84,9 +85,9 @@ import java.util.*;
                     //save block height in system_property
                     systemPropertyRepository.saveWithTransaction(Constant.MAX_BLOCK_HEIGHT, String.valueOf(block.getBlockHeader().getHeight()), "max block height");
 
-                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                    RocksUtils.txCommit(tx);
                 } finally {
-                    ThreadLocalUtils.clearWriteBatch();
+                    ThreadLocalUtils.clearRocksTx();;
                 }
             }
         } catch (Throwable e) {

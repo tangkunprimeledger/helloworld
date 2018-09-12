@@ -9,7 +9,7 @@ import com.higgs.trust.slave.dao.po.config.ConfigPO;
 import com.higgs.trust.slave.dao.rocks.config.ConfigRocksDao;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.enums.UsageEnum;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,10 +85,11 @@ public class ConfigRepositoryTest extends BaseTest {
             config.setUsage(UsageEnum.BIZ.getCode());
             list.add(config);
         }
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         configRepository.batchUpdate(list);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
         Config c = configRepository.getBizConfig("node-1");
         System.out.println(c);
     }

@@ -33,7 +33,7 @@ import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,12 +96,13 @@ import java.util.List;
                 });
             } else {
                 try {
-                    ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    ThreadLocalUtils.putRocksTx(tx);
                     respData =  submitTx(coreTransactionConvertor
                         .buildCoreTransaction(reqId, null, buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId()));
-                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                    RocksUtils.txCommit(tx);
                 } finally {
-                    ThreadLocalUtils.clearWriteBatch();
+                    ThreadLocalUtils.clearRocksTx();
                 }
             }
 
@@ -184,8 +185,8 @@ import java.util.List;
                 });
             } else {
                 try {
-                    ThreadLocalUtils.putWriteBatch(new WriteBatch());
-
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    ThreadLocalUtils.putRocksTx(tx);
                     //组装CoreTransaction，下发
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
@@ -194,9 +195,9 @@ import java.util.List;
                         .buildCoreTransaction(reqId, jsonObject, buildPolicyActionList(registerPolicyVO),
                             InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
 
-                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                    RocksUtils.txCommit(tx);
                 } finally {
-                    ThreadLocalUtils.clearWriteBatch();
+                    ThreadLocalUtils.clearRocksTx();
                 }
             }
 
@@ -239,15 +240,16 @@ import java.util.List;
                 });
             } else {
                 try {
-                    ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    ThreadLocalUtils.putRocksTx(tx);
 
                     //组装CoreTransaction，下发
                     respData = submitTx(coreTransactionConvertor
                         .buildCoreTransaction(reqId, null, buildCancelRsActionList(cancelRsVO), InitPolicyEnum.CANCEL_RS.getPolicyId()));
 
-                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                    RocksUtils.txCommit(tx);
                 } finally {
-                    ThreadLocalUtils.clearWriteBatch();
+                    ThreadLocalUtils.clearRocksTx();
                 }
             }
 

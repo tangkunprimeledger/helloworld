@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.repository;
 
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
-import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.dao.mysql.manage.RsNodeDao;
 import com.higgs.trust.slave.dao.po.manage.RsNodePO;
 import com.higgs.trust.slave.dao.rocks.manage.RsNodeRocksDao;
@@ -16,11 +15,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -165,7 +162,7 @@ import java.util.List;
         if (initConfig.isUseMySQL()) {
             return rsNodeDao.batchUpdate(rsNodePOList);
         }
-        return rsNodeRocksDao.batchInsert(rsNodePOList);
+        return rsNodeRocksDao.batchUpdate(rsNodePOList);
     }
 
     public int batchInsert(List<RsNodePO> rsNodePOList) {

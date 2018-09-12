@@ -18,9 +18,13 @@ import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.CancelRS;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
-import org.rocksdb.*;
+import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.ReadOptions;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -28,11 +32,48 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-public class CoreTxRepositoryTest extends IntegrateBaseTest {
+@Slf4j public class CoreTxRepositoryTest extends IntegrateBaseTest {
 
     @Autowired private CoreTxRepository coreTxRepository;
 
+    @Autowired private CoreTxProcessRepository coreTxProcessRepository;
+
     @Autowired private CoreTxRocksDao coreTxRocksDao;
+
+    @BeforeMethod public void buildCoreTx() {
+        CoreTransaction coreTx = new CoreTransaction();
+        List<Action> actionList = new ArrayList<>();
+        RegisterPolicy action = new RegisterPolicy();
+        action.setIndex(0);
+        action.setType(ActionTypeEnum.REGISTER_POLICY);
+        action.setPolicyName("OPEN_ACCOUNT");
+        action.setPolicyId("OPEN_ACCOUNT");
+        action.setDecisionType(DecisionTypeEnum.FULL_VOTE);
+        action.setContractAddr(null);
+
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("TRUST-TEST0");
+        action.setRsIds(rsIds);
+        actionList.add(action);
+
+        coreTx.setTxId("test-tx-id-0");
+        coreTx.setPolicyId(InitPolicyEnum.REGISTER_POLICY.getPolicyId());
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("data", actionList);
+        coreTx.setBizModel(jsonObject);
+        coreTx.setLockTime(new Date());
+        coreTx.setSender("TRUST-TEST0");
+        coreTx.setVersion("1.0.0");
+        coreTx.setSendTime(new Date());
+        coreTx.setActionList(actionList);
+
+        List<SignInfo> signInfos = new ArrayList<>();
+        SignInfo signInfo = new SignInfo();
+        signInfo.setOwner("TRUST-TEST0");
+        signInfo.setSign("test-signature");
+        signInfos.add(signInfo);
+    }
 
     @Test public void testAdd() throws Exception {
         CoreTransaction coreTx = new CoreTransaction();
@@ -112,23 +153,25 @@ public class CoreTxRepositoryTest extends IntegrateBaseTest {
         signInfo.setSign("test update sign datas-tetst");
         signInfos.add(signInfo);
 
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
 
         coreTxRepository.updateSignDatas("test-tx-id-113", signInfos);
 
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
         CoreTransactionPO po = coreTxRepository.queryByTxId("test-tx-id-113", false);
         System.out.println(po);
     }
 
     @Test public void testSaveExecuteResultAndHeight() throws Exception {
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         coreTxRepository
             .saveExecuteResultAndHeight("test-tx-id-113", CoreTxResultEnum.FAIL, "120009", "transaction is invalid",
                 20L);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
         CoreTransactionPO po = coreTxRepository.queryByTxId("test-tx-id-113", false);
     }
 
@@ -167,10 +210,11 @@ public class CoreTxRepositoryTest extends IntegrateBaseTest {
             rsCoreTxVOS.add(rsCoreTxVO);
         }
 
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         coreTxRepository.batchInsert(rsCoreTxVOS, 25L);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testBatchUpdate() throws Exception {
@@ -207,43 +251,82 @@ public class CoreTxRepositoryTest extends IntegrateBaseTest {
             rsCoreTxVO.setSignDatas(signInfos);
             rsCoreTxVOS.add(rsCoreTxVO);
         }
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
 
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        ThreadLocalUtils.putRocksTx(tx);
         coreTxRepository.batchUpdate(rsCoreTxVOS, 32L);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testGetForUpdate() throws Exception {
-        new Thread(new Runnable() {
-            @Override public void run() {
-                try {
-                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
-                    System.out.println("Thread1: run");
-                    CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), "test-tx-id-0", false);
-                    System.out.println("Thread1: " + po);
+        CoreTransaction coreTx = new CoreTransaction();
 
-                    Thread.sleep(10000);
-                    RocksUtils.txCommit(tx);
-                } catch (Throwable e) {
-                    System.out.println("Thread1: " + e);
-                }
+        Random r = new Random();
+
+        List<Action> actionList = new ArrayList<>();
+        RegisterPolicy action = new RegisterPolicy();
+        action.setIndex(0);
+        action.setType(ActionTypeEnum.REGISTER_POLICY);
+        action.setPolicyName("OPEN_ACCOUNT");
+        action.setPolicyId("OPEN_ACCOUNT");
+        action.setDecisionType(DecisionTypeEnum.FULL_VOTE);
+        action.setContractAddr(null);
+
+        List<String> rsIds = new ArrayList<>();
+        rsIds.add("TRUST-TEST0");
+        action.setRsIds(rsIds);
+        actionList.add(action);
+
+        coreTx.setTxId("test-tx-id-1");
+        coreTx.setPolicyId(InitPolicyEnum.REGISTER_POLICY.getPolicyId());
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("data", actionList);
+        coreTx.setBizModel(jsonObject);
+        coreTx.setLockTime(new Date());
+        coreTx.setSender("TRUST-TEST0");
+        coreTx.setVersion("1.0.0");
+        coreTx.setSendTime(new Date());
+        coreTx.setActionList(actionList);
+
+        List<SignInfo> signInfos = new ArrayList<>();
+        SignInfo signInfo = new SignInfo();
+        signInfo.setOwner("TRUST-TEST0");
+        signInfo.setSign("test-signature");
+        signInfos.add(signInfo);
+
+        try {
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            System.out.println("Thread1: run");
+            CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), "test-tx-id-1", true);
+            if (null == po) {
+                coreTxRepository.add(coreTx, signInfos, 0L);
+                coreTxProcessRepository.add("test-tx-id-1", CoreTxStatusEnum.INIT);
+
+            System.out
+                .println("Thread1: before transaction commit. " + coreTxRepository.queryByTxId("test-tx-id-1", false));
             }
-        }).start();
+            RocksUtils.txCommit(tx);
+            System.out
+                .println("Thread1: after transaction commit. " + coreTxRepository.queryByTxId("test-tx-id-1", false));
+        } catch (Throwable e) {
+            System.out.println("Thread1: " + e);
+        }
 
-        new Thread(new Runnable() {
-            @Override public void run() {
-                try {
-                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
-                    System.out.println("Thread2: run");
-                    CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), "test-tx-id-0", false);
-                    System.out.println("Thread2: " + po);
-
-                    RocksUtils.txCommit(tx);
-                } catch (Throwable e) {
-                    System.out.println("Thread2: " + e);
-                }
-            }
-        }).start();
+        //        new Thread(new Runnable() {
+        //            @Override public void run() {
+        //                try {
+        //                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        //                    System.out.println("Thread2: run");
+        //                    CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), "test-tx-id-0", false);
+        //                    System.out.println("Thread2: " + po);
+        //
+        //                    RocksUtils.txCommit(tx);
+        //                } catch (Throwable e) {
+        //                    System.out.println("Thread2: " + e);
+        //                }
+        //            }
+        //        }).start();
     }
 }

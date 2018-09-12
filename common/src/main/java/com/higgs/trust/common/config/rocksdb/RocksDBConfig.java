@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
     private long DB_FILE_FLASH_SIZE;
     @Value("${trust.rocksdb.file.extra.size: 99999999999}")
     private long DB_FILE_EXTEND_SIZE;
-    @Value("${trust.rocksdb.transaction.lockTimeout: 1000}")
+    @Value("${trust.rocksdb.transaction.lockTimeout: 10000}")
     private long LOCK_TIMEOUT;
 
     private static List<String> columnFamily;
@@ -109,7 +109,6 @@ import java.util.stream.Collectors;
             new DBOptions().setDbPaths(dbPaths).setCreateIfMissing(true).setCreateMissingColumnFamilies(true);
 
         final TransactionDBOptions transactionDBOptions = new TransactionDBOptions().setTransactionLockTimeout(LOCK_TIMEOUT);
-
         List<ColumnFamilyHandle> columnFamilyHandleList = new ArrayList<>();
         TransactionDB rocksDB =
             TransactionDB.open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);

@@ -1,10 +1,10 @@
 package com.higgs.trust.management.failover.service;
 
 import com.higgs.trust.common.dao.RocksUtils;
-import com.higgs.trust.common.utils.ThreadLocalUtils;
-import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
+import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
@@ -27,7 +27,7 @@ import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -404,11 +404,12 @@ import java.util.concurrent.Executors;
             });
         } else {
             try {
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
                 packageService.process(packContext, true, true);
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                RocksUtils.txCommit(tx);
             } finally {
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();
             }
         }
         boolean persistValid =

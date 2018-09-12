@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,10 +27,10 @@ public class BlockRocksDao extends RocksBaseDao <BlockPO> {
     }
 
     public void save(BlockPO blockPO) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[BlockRocksDao.save] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[BlockRocksDao.save] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String height = String.valueOf(blockPO.getHeight());
@@ -38,7 +38,7 @@ public class BlockRocksDao extends RocksBaseDao <BlockPO> {
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
         }
 
-        batchPut(batch, height, blockPO);
+        txPut(tx, height, blockPO);
     }
 
     public List<Long> getLimitHeight(List<String> blockHeights) {

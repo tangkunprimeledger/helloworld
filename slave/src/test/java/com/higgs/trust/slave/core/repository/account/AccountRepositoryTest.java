@@ -6,7 +6,7 @@ import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.model.bo.account.AccountDcRecord;
 import com.higgs.trust.slave.model.bo.account.AccountDetail;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
@@ -44,10 +44,11 @@ public class AccountRepositoryTest extends BaseTest {
             accountDetail.setRemark("test");
             accountDetails.add(accountDetail);
         }
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         accountRepository.batchInsertAccountDetail(accountDetails);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testBatchInsertDcRecords() throws Exception {
@@ -60,9 +61,10 @@ public class AccountRepositoryTest extends BaseTest {
             accountDcRecord.setDcFlag("flag");
         }
 
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         accountRepository.batchInsertDcRecords(accountDcRecords);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 }

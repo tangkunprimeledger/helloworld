@@ -8,15 +8,13 @@ import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.dao.po.VoteRulePO;
 import com.higgs.trust.rs.core.dao.rocks.VoteRuleRocksDao;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.testng.Assert.*;
 
 public class VoteRuleRepositoryTest extends IntegrateBaseTest{
     @Autowired
@@ -31,10 +29,11 @@ public class VoteRuleRepositoryTest extends IntegrateBaseTest{
         voteRule.setCallbackType(CallbackTypeEnum.ALL);
         voteRule.setVotePattern(VotePatternEnum.SYNC);
 
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         voteRuleRepository.add(voteRule);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
     }
 
     @Test public void testQueryByPolicyId() throws Exception {
@@ -52,10 +51,12 @@ public class VoteRuleRepositoryTest extends IntegrateBaseTest{
 
             voteRuleList.add(voteRule);
         }
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         voteRuleRepository.batchInsert(voteRuleList);
-        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-        ThreadLocalUtils.clearWriteBatch();
+        RocksUtils.txCommit(tx);
+        ThreadLocalUtils.clearRocksTx();
 
         List<VoteRulePO> voteRules = voteRuleRocksDao.queryByPrefix("test-policy-id");
         System.out.println(voteRules);

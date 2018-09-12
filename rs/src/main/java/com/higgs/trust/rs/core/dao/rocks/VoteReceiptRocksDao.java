@@ -8,7 +8,7 @@ import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.dao.po.VoteReceiptPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -40,16 +40,16 @@ public class VoteReceiptRocksDao extends RocksBaseDao<VoteReceiptPO> {
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[VoteReceiptRocksDao.batchInsert] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[VoteReceiptRocksDao.batchInsert] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (VoteReceiptPO po : list) {
             String key = po.getTxId() + Constant.SPLIT_SLASH + po.getVoter();
             po.setCreateTime(new Date());
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
     }
 

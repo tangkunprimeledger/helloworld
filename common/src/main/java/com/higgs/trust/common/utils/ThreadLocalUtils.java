@@ -1,26 +1,26 @@
 package com.higgs.trust.common.utils;
 
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 
 /**
  * ThreadLocal utils
  * @author tangfashuang
  */
 public class ThreadLocalUtils {
-    private static final ThreadLocal<WriteBatch> writeBatch = new ThreadLocal<>();
+    private static final ThreadLocal<Transaction> rocksTx = new ThreadLocal<>();
 
-    public static void putWriteBatch (WriteBatch batch) {
-        if (null != getWriteBatch()) {
-            clearWriteBatch();
+    public static void putRocksTx(Transaction tx) {
+        if (null != getRocksTx()) {
+            clearRocksTx();
         }
-        writeBatch.set(batch);
+        rocksTx.set(tx);
     }
 
-    public static void clearWriteBatch() {
-        writeBatch.remove();
+    public static void clearRocksTx() {
+        rocksTx.remove();
     }
 
-    public static WriteBatch getWriteBatch() {
-        return writeBatch.get();
+    public static Transaction getRocksTx() {
+        return rocksTx.get();
     }
 }

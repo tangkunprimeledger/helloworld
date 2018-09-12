@@ -1,11 +1,13 @@
 package com.higgs.trust.slave.dao.rocks.manage;
 
 import com.higgs.trust.common.dao.RocksBaseDao;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -27,13 +29,16 @@ public class PolicyRocksDao extends RocksBaseDao<PolicyPO> {
             return 0;
         }
 
-        WriteBatch batch = new WriteBatch();
-        for (PolicyPO po : policyPOList) {
-            po.setCreateTime(new Date());
-            batchPut(batch, po.getPolicyId(), po);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PolicyRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
-        batchCommit(new WriteOptions(), batch);
+        for (PolicyPO po : policyPOList) {
+            po.setCreateTime(new Date());
+            txPut(tx, po.getPolicyId(), po);
+        }
         return policyPOList.size();
     }
 }

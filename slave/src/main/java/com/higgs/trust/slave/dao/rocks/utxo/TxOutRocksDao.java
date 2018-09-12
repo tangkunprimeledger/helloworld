@@ -7,7 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -28,10 +28,10 @@ public class TxOutRocksDao extends RocksBaseDao<TxOutPO>{
             return 0;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[TxOutRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[TxOutRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (TxOutPO po : txOutPOList) {
@@ -41,7 +41,7 @@ public class TxOutRocksDao extends RocksBaseDao<TxOutPO>{
             } else {
                 po.setUpdateTime(new Date());
             }
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
         return txOutPOList.size();
     }

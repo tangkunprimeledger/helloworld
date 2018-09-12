@@ -6,7 +6,7 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.po.block.BlockPO;
 import lombok.extern.slf4j.Slf4j;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,10 +20,10 @@ public class BlockTestRocksDao extends RocksBaseDao<BlockPO> {
     }
 
     public void save(BlockPO po) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[BlockTestRocksDao.save] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[BlockTestRocksDao.save] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String height = String.valueOf(po.getHeight());
@@ -32,6 +32,6 @@ public class BlockTestRocksDao extends RocksBaseDao<BlockPO> {
         }
         po.setSignedTxs(null);
 
-        batchPut(batch, height, po);
+        txPut(tx, height, po);
     }
 }

@@ -12,7 +12,6 @@ import com.higgs.trust.slave.dao.po.pack.PackagePO;
 import com.higgs.trust.slave.dao.rocks.pack.PackRocksDao;
 import com.higgs.trust.slave.dao.rocks.pack.PackStatusRocksDao;
 import com.higgs.trust.slave.model.bo.Package;
-import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.config.SystemProperty;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -20,13 +19,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.Transaction;
-import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -307,8 +303,8 @@ import java.util.Set;
 
         List<Long> heights = packStatusRocksDao.queryByPrefix(status.getIndex());
         int count = 0;
-
-        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
         try {
             for (Long h : heights) {
                 if (height.compareTo(h) >= 0) {
@@ -318,9 +314,9 @@ import java.util.Set;
                     count++;
                 }
             }
-            RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+            RocksUtils.txCommit(tx);
         } finally {
-            ThreadLocalUtils.clearWriteBatch();
+            ThreadLocalUtils.clearRocksTx();;
         }
         return count;
     }

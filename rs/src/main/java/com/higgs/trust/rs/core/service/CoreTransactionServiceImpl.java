@@ -46,7 +46,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
-import org.rocksdb.*;
+import org.rocksdb.ReadOptions;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -188,18 +190,17 @@ import java.util.concurrent.TimeUnit;
             });
         } else {
             Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            ThreadLocalUtils.putRocksTx(tx);
             try {
                 if (null == coreTxRepository.getForUpdate(tx, new ReadOptions(), coreTx.getTxId(), true)) {
-                    ThreadLocalUtils.putWriteBatch(new WriteBatch());
                     //save coreTxProcess to db
                     coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
                     //save coreTx to db
                     coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
-                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                    RocksUtils.txCommit(tx);
                 }
             } finally {
-                ThreadLocalUtils.clearWriteBatch();
-                RocksUtils.txCommit(tx);
+                ThreadLocalUtils.clearRocksTx();;
             }
         }
         //send redis msg for slave
@@ -242,24 +243,20 @@ import java.util.concurrent.TimeUnit;
                 }
             });
         } else {
-            Transaction tx = null;
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
             try {
-                tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
                 CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);
                 if (null == po) {
                     log.warn("[processInitTx]cannot acquire lock, txId={}", txId);
                     return;
                 }
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
-
                 bo = processInitTxInTransaction(po);
-
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
             } finally {
                 if (null != tx) {
                     RocksUtils.txCommit(tx);
                 }
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();;
             }
         }
 
@@ -422,22 +419,20 @@ import java.util.concurrent.TimeUnit;
                 }
             });
         } else {
-            Transaction tx = null;
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
             try {
-                tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
                 CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);
                 if (null == po) {
                     log.warn("[processNeedVoteTx]the coreTx can not acquired lock txId:{}", txId);
                     return;
                 }
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
                 processNeedVoteTxInTransaction(po);
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
             } finally {
                 if (tx != null) {
                     RocksUtils.txCommit(tx);
                 }
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();;
             }
         }
     }
@@ -643,11 +638,12 @@ import java.util.concurrent.TimeUnit;
                             });
                         } else {
                             try {
-                                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                                ThreadLocalUtils.putRocksTx(tx);
                                 toEndOrCallBackByError(bo, CoreTxStatusEnum.WAIT, mRes, true);
-                                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                                RocksUtils.txCommit(tx);
                             } finally {
-                                ThreadLocalUtils.clearWriteBatch();
+                                ThreadLocalUtils.clearRocksTx();
                             }
                         }
 

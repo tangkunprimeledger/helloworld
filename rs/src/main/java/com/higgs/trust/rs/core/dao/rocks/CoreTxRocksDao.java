@@ -9,9 +9,7 @@ import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.rocksdb.ReadOptions;
 import org.rocksdb.Transaction;
-import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -41,11 +39,11 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
         }
         po.setCreateTime(new Date());
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
             put(key, po);
         } else {
-            batchPut(batch, key, po);
+            txPut(tx, key, po);
         }
     }
 
@@ -54,10 +52,10 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
      * @param po
      */
     public void saveWithTransaction(CoreTransactionPO po) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxRocksDao.saveWithTransaction] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxRocksDao.saveWithTransaction] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         String key = po.getTxId();
@@ -66,7 +64,7 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
         }
         po.setCreateTime(new Date());
-        batchPut(batch, key, po);
+        txPut(tx, key, po);
     }
 
     public List<CoreTransactionPO> queryByTxIds(List<String> txIdList) {
@@ -87,10 +85,10 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
     }
 
     public void updateSignDatas(String txId, String signJSON) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxRocksDao.updateSignDatas] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxRocksDao.updateSignDatas] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         CoreTransactionPO po = get(txId);
@@ -100,14 +98,14 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
         }
         po.setUpdateTime(new Date());
         po.setSignDatas(signJSON);
-        batchPut(batch, txId, po);
+        txPut(tx, txId, po);
     }
 
     public void saveExecuteResultAndHeight(String txId, String result, String respCode, String respMsg, Long blockHeight) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxRocksDao.saveExecuteResultAndHeight] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxRocksDao.saveExecuteResultAndHeight] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         CoreTransactionPO po = get(txId);
@@ -120,7 +118,7 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
         po.setErrorCode(respCode);
         po.setErrorMsg(respMsg);
         po.setBlockHeight(blockHeight);
-        batchPut(batch, txId, po);
+        txPut(tx, txId, po);
     }
 
     public void batchInsert(List<CoreTransactionPO> coreTransactionPOList) {
@@ -128,15 +126,15 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxRocksDao.batchInsert] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxRocksDao.batchInsert] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (CoreTransactionPO po : coreTransactionPOList) {
             po.setCreateTime(new Date());
-            batchPut(batch, po.getTxId(), po);
+            txPut(tx, po.getTxId(), po);
         }
     }
 
@@ -145,10 +143,10 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
             return;
         }
 
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[CoreTxRocksDao.batchUpdate] write batch is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxRocksDao.batchUpdate] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (RsCoreTxVO vo : txs) {
@@ -162,7 +160,7 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
             po.setBlockHeight(blockHeight);
             po.setExecuteResult(vo.getExecuteResult().getCode());
             po.setUpdateTime(new Date());
-            batchPut(batch, po.getTxId(), po);
+            txPut(tx, po.getTxId(), po);
         }
     }
 }

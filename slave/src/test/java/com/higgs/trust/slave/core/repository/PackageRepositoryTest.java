@@ -8,7 +8,6 @@ import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
-import com.higgs.trust.slave.dao.po.pack.PackagePO;
 import com.higgs.trust.slave.dao.rocks.pack.PackRocksDao;
 import com.higgs.trust.slave.dao.rocks.pack.PackStatusRocksDao;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -18,7 +17,10 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.*;
+import org.rocksdb.ReadOptions;
+import org.rocksdb.RocksDBException;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -103,18 +105,26 @@ public class PackageRepositoryTest extends BaseTest {
         pack.setHeight(2L);
         pack.setPackageTime(System.currentTimeMillis());
 
-        try {
-            ThreadLocalUtils.putWriteBatch(new WriteBatch());
-            for (int i = 0; i < 100; i++) {
-                pack.setHeight(2L + i);
-                packageRepository.save(pack);
-            }
+        Long height = 2L;
+        long begin1 = System.currentTimeMillis();
+        for (int j = 0; j < 1000; j++) {
+            try {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
+                for (int i = 0; i < 150; i++) {
+                    pack.setHeight(height++);
+                    packageRepository.save(pack);
+                }
 
-            RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
-            System.out.println("after commit. load package height=20L, " + packageRepository.load(20L));
-        } finally {
-            ThreadLocalUtils.clearWriteBatch();
+                RocksUtils.txCommit(tx);
+                //            System.out.println("transaction-after commit. load package height=120L, " + packageRepository.load(120L));
+            } finally {
+                ThreadLocalUtils.clearRocksTx();;
+            }
         }
+
+        System.out.println("transaction time: " + (System.currentTimeMillis() - begin1));
+
     }
 
     @Test public void testUpdateStatus() throws Exception {
@@ -122,8 +132,9 @@ public class PackageRepositoryTest extends BaseTest {
             packageRepository.updateStatus(3L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
         } else {
             try {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
                 //Long height = packStatusRocksDao.get(PackageStatusEnum.WAIT_PERSIST_CONSENSUS.getCode() + Constant.SPLIT_SLASH + 2);
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                ThreadLocalUtils.putRocksTx(tx);
 //                packageRepository
 //                    .updateStatus(5L, PackageStatusEnum.RECEIVED, PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
 //                packageRepository
@@ -156,9 +167,9 @@ public class PackageRepositoryTest extends BaseTest {
                     .updateStatus(90L, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
                 packageRepository
                     .updateStatus(70L, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                RocksUtils.txCommit(tx);
             } finally {
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();
             }
         }
     }
@@ -254,7 +265,7 @@ public class PackageRepositoryTest extends BaseTest {
         new Thread(new Runnable() {
             @Override public void run() {
                 Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                ThreadLocalUtils.putRocksTx(tx);
                 try {
                     Long height = packageRepository.getForUpdate(tx, new ReadOptions(), key, false);
                     System.out.println(Thread.currentThread().getName() + " acquired lock");
@@ -262,13 +273,13 @@ public class PackageRepositoryTest extends BaseTest {
                         .updateStatus(20L, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
                     Thread.sleep(200);
                     tx.commit();
-                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                    RocksUtils.txCommit(tx);
                 } catch (RocksDBException e) {
                     throw new RuntimeException(e);
                 } catch (InterruptedException e) {
                     System.out.println(e);
                 } finally {
-                    ThreadLocalUtils.clearWriteBatch();
+                    ThreadLocalUtils.clearRocksTx();
                 }
             }
         }).start();
@@ -276,7 +287,7 @@ public class PackageRepositoryTest extends BaseTest {
         new Thread(new Runnable() {
             @Override public void run() {
                 Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                ThreadLocalUtils.putRocksTx(tx);
                 try {
                     System.out.println("acquired value = " + packStatusRocksDao.get(key));
                     Long height = packageRepository.getForUpdate(tx, new ReadOptions(), key, true);
@@ -285,13 +296,13 @@ public class PackageRepositoryTest extends BaseTest {
                         .updateStatus(20L, PackageStatusEnum.WAIT_PERSIST_CONSENSUS, PackageStatusEnum.PERSISTED);
                     Thread.sleep(500);
                     tx.commit();
-                    RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                    RocksUtils.txCommit(tx);
                 } catch (RocksDBException e) {
                     throw new RuntimeException(e);
                 } catch (InterruptedException e) {
                     System.out.println(e);
                 } finally {
-                    ThreadLocalUtils.clearWriteBatch();
+                    ThreadLocalUtils.clearRocksTx();
                 }
             }
         }).start();

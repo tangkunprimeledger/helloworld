@@ -111,7 +111,7 @@
           "size": 99999999999
         },
         "transaction": {
-          "lockTimeout": 1000
+          "lockTimeout": 10000
         }
       }
     },

@@ -42,7 +42,7 @@ import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -167,16 +167,17 @@ import java.util.stream.Collectors;
                 }
             });
         } else {
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
             try {
-                ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                ThreadLocalUtils.putRocksTx(tx);
 
                 packageRepository.save(pack);
                 pendingTxRepository.batchInsertToRocks(pack.getSignedTxList(), pack.getHeight());
 
                 systemPropertyRepository.saveWithTransaction(Constant.MAX_PACK_HEIGHT, String.valueOf(pack.getHeight()), "max package height");
-                RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                RocksUtils.txCommit(tx);
             } finally {
-                ThreadLocalUtils.clearWriteBatch();
+                ThreadLocalUtils.clearRocksTx();;
             }
         }
     }
@@ -436,8 +437,9 @@ import java.util.stream.Collectors;
                         }
                     });
                 } else {
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
                     try {
-                        ThreadLocalUtils.putWriteBatch(new WriteBatch());
+                        ThreadLocalUtils.putRocksTx(tx);
 
                         Profiler.enter("[callbackRSForClusterPersisted]");
                         callbackRS(txs, txReceiptMap, true, false, blockHeader);
@@ -449,9 +451,9 @@ import java.util.stream.Collectors;
                             PackageStatusEnum.PERSISTED);
                         Profiler.release();
 
-                        RocksUtils.batchCommit(new WriteOptions(), ThreadLocalUtils.getWriteBatch());
+                        RocksUtils.txCommit(tx);
                     } finally {
-                        ThreadLocalUtils.clearWriteBatch();
+                        ThreadLocalUtils.clearRocksTx();;
                     }
                 }
             } catch (SlaveException e) {

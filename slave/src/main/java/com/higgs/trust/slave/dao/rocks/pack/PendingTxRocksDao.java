@@ -7,7 +7,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.rocksdb.WriteBatch;
+import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -44,24 +44,25 @@ import java.util.Map;
             log.error("[PendingTxRocksDao.batchInsert] txIds is empty or packHeight is null");
             return;
         }
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[PendingTxRocksDao.batchInsert] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PendingTxRocksDao.batchInsert] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
         for (String txId : txIds) {
-            batchPut(batch, txId, packHeight);
+            txPut(tx, txId, packHeight);
         }
     }
 
     public void batchDelete(String txId) {
-        WriteBatch batch = ThreadLocalUtils.getWriteBatch();
-        if (null == batch) {
-            log.error("[PackStatusRocksDao.batchDelete] write batch is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_WRITE_BATCH_IS_NULL);
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[PackStatusRocksDao.batchDelete] transaction is null");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
-        batchDelete(batch, txId);
+        txDelete(tx, txId);
     }
+
 }
