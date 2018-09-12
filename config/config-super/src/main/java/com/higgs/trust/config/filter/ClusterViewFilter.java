@@ -6,6 +6,7 @@ package com.higgs.trust.config.filter;
 import com.higgs.trust.config.node.command.ViewCommand;
 import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.config.view.IClusterViewManager;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CommandFilter;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Component;
  * @date 2018/9/4
  */
 @Order(2) @Component @Slf4j public class ClusterViewFilter implements CommandFilter {
+
+    @Autowired private NodeState nodeState;
 
     @Autowired private IClusterViewManager viewManager;
 
@@ -50,6 +53,9 @@ import org.springframework.stereotype.Component;
                     viewManager.resetEndHeight(height);
                     if (command.getClusterOptTx() != null) {
                         viewManager.changeView(command);
+                        if (nodeState.isMaster()) {
+                            nodeState.changeMaster(nodeState.MASTER_NA);
+                        }
                     }
                 } else {
                     //the height not all in current view

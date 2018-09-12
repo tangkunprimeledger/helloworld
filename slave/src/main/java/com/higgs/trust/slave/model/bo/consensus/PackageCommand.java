@@ -47,10 +47,8 @@ import org.hibernate.validator.constraints.NotEmpty;
      */
     @NotEmpty @JSONField(label = "sign") private String sign;
 
-    public PackageCommand(Long term, long view, String masterName, PackageVO value) {
+    public PackageCommand(String masterName, PackageVO value) {
         super(value);
-        this.term = term;
-        this.view = view;
         this.masterName = masterName;
     }
 

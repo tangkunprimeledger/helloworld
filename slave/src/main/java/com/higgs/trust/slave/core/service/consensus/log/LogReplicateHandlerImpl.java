@@ -58,6 +58,8 @@ import java.util.concurrent.TimeUnit;
             log.error("[LogReplicateHandler.replicatePackage]param validate failed, cause package is null ");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
+        command.setTerm(nodeState.getCurrentTerm());
+        command.setView(viewManager.getCurrentViewId());
         String signValue = command.getSignValue();
         command.setSign(CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey()));
         boolean flag = false;

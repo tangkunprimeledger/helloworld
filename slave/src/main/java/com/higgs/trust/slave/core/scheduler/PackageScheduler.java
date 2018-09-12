@@ -180,7 +180,7 @@ import java.util.Set;
      * @return
      */
     private PackageCommand createPackCommand(Package pack,SignedTransaction nodeOptTx){
-        PackageCommand command = new PackageCommand(nodeState.getCurrentTerm(),viewManager.getCurrentViewId(),nodeState.getNodeName(),
+        PackageCommand command = new PackageCommand(nodeState.getNodeName(),
             PackageConvert.convertPackToPackVO(pack));
         if(nodeOptTx!=null) {
             //convert sign info
