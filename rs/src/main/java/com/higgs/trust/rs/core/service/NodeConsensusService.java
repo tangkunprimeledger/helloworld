@@ -174,10 +174,6 @@ import java.util.UUID;
             log.error("[leaveConsensus] error occured while thread sleep", e);
             return FAIL;
         }
-
-        log.info("[leaveConsensus] start to transform node status from running to offline");
-        nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
-
         log.info("[leaveConsensus] end leave consensus layer and transform node status");
         return SUCCESS;
 

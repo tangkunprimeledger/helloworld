@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.service.action.node;
 
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -44,6 +45,7 @@ import org.springframework.stereotype.Component;
         if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())) {
             log.info("leave consensus layer, user={}", nodeAction.getNodeName());
             consensusStateMachine.leaveConsensus();
+            nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
         }
 
         Profiler.enter("[NodeLeaveHandler.nodeLeave]");
