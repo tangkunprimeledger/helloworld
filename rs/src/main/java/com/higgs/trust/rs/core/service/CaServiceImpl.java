@@ -13,6 +13,7 @@ import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.integration.CaClient;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
@@ -274,6 +275,7 @@ import java.util.*;
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.CA_AUTH.getPolicyId());
         coreTx.setActionList(buildAuthActionList(list));
+        coreTx.setTxType(TxTypeEnum.CA.getCode());
         return coreTx;
     }
 
@@ -313,6 +315,7 @@ import java.util.*;
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.CA_UPDATE.getPolicyId());
         coreTx.setActionList(buildUpdateActionList(caVO));
+        coreTx.setTxType(TxTypeEnum.CA.getCode());
         return coreTx;
     }
 
@@ -337,6 +340,7 @@ import java.util.*;
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.CA_CANCEL.getPolicyId());
         coreTx.setActionList(buildCancelActionList(caVO));
+        coreTx.setTxType(TxTypeEnum.CA.getCode());
         return coreTx;
     }
 

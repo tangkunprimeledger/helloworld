@@ -14,6 +14,7 @@ import com.higgs.trust.rs.core.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.core.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.core.vo.manage.RegisterRsVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -92,8 +93,10 @@ import java.util.List;
                     }
 
                     //组装UTXO,CoreTransaction，下发
-                    return submitTx(coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(), null,
-                        buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId()));
+                    CoreTransaction coreTx = coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),null,
+                        buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.RS.getCode());
+                    return submitTx(coreTx);
                 }
             });
 
@@ -149,8 +152,8 @@ import java.util.List;
         RespData respData;
         try {
             //开启事务
-            respData = txRequired.execute(new TransactionCallback<RespData>() {
-                @Override public RespData doInTransaction(TransactionStatus txStatus) {
+            respData = txRequired.execute(new TransactionCallback<RespData<?>>() {
+                @Override public RespData<?> doInTransaction(TransactionStatus txStatus) {
                     //初步幂等校验
                     RespData respData = requestHelper.requestIdempotent(registerPolicyVO.getRequestId());
                     if (null != respData) {
@@ -176,9 +179,11 @@ import java.util.List;
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
                     jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
-                    return submitTx(coreTransactionConvertor
+                    CoreTransaction coreTx = coreTransactionConvertor
                         .buildCoreTransaction(registerPolicyVO.getRequestId(), jsonObject,
-                            buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
+                            buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.POLICY.getCode());
+                    return submitTx(coreTx);
                 }
             });
 
@@ -221,9 +226,11 @@ import java.util.List;
                     }
 
                     //组装UTXO,CoreTransaction，下发
-                    return submitTx(coreTransactionConvertor
+                    CoreTransaction coreTx = coreTransactionConvertor
                         .buildCoreTransaction(cancelRsVO.getRequestId(), null, buildCancelRsActionList(cancelRsVO),
-                            InitPolicyEnum.CANCEL_RS.getPolicyId()));
+                            InitPolicyEnum.CANCEL_RS.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.RS.getCode());
+                    return submitTx(coreTx);
                 }
             });
 
