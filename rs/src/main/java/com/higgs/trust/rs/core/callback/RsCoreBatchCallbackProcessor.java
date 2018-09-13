@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -14,11 +16,14 @@ import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.dao.RequestJDBCDao;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.dao.config.ConfigJDBCDao;
 import com.higgs.trust.slave.model.bo.BlockHeader;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
+import com.higgs.trust.slave.model.bo.node.NodeAction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +43,7 @@ import java.util.*;
     @Autowired private ConfigJDBCDao configJDBCDao;
     @Autowired private NodeState nodeState;
     @Autowired private RequestJDBCDao requestJDBCDao;
+    @Autowired private ConsensusStateMachine consensusStateMachine;
 
     private TxBatchCallbackHandler getCallbackHandler() {
         TxBatchCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxBatchCallback();
@@ -84,7 +90,6 @@ import java.util.*;
                         processNodeJoin(rsCoreTxVOS);
                         return;
                     case NODE_LEAVE:
-                        processNodeLeave(rsCoreTxVOS);
                         return;
                     default:
                         break;
@@ -99,6 +104,7 @@ import java.util.*;
     public void onEnd(List<RsCoreTxVO> txs, BlockHeader blockHeader) {
         Map<String, List<RsCoreTxVO>> map = parseTx(txs);
         for (String policyId : map.keySet()) {
+            List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
             if (policyEnum != null) {
                 switch (policyEnum) {
@@ -123,12 +129,12 @@ import java.util.*;
                     case NODE_JOIN:
                         return;
                     case NODE_LEAVE:
+                        processNodeLeave(rsCoreTxVOS);
                         return;
                     default:
                         break;
                 }
             }
-            List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             //callback custom
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
             txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
@@ -322,6 +328,20 @@ import java.util.*;
             log.info("[processNodeLeave]node leave is fail");
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_LEAVE_ERROR, 1);
             return;
+        }
+        log.debug("rsCoreTxVOS.size={}", rsCoreTxVOS.size());
+        List<Action> actionList = rsCoreTxVOS.get(0).getActionList();
+        if (CollectionUtils.isNotEmpty(actionList)) {
+            Action action = actionList.get(0);
+            if (action instanceof NodeAction) {
+                NodeAction nodeAction = (NodeAction)action;
+                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())
+                    && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
+                    log.info("leave consensus layer, user={}", nodeAction.getNodeName());
+                    consensusStateMachine.leaveConsensus();
+                    nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
+                }
+            }
         }
     }
 }

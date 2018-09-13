@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 @Slf4j @Component public class NodeLeaveHandler implements ActionHandler {
 
     @Autowired private NodeSnapshotHandler nodeSnapshotHandler;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
+
     @Autowired private NodeState nodeState;
 
     @Override public void verifyParams(Action action) throws SlaveException {
@@ -41,14 +41,6 @@ import org.springframework.stereotype.Component;
         NodeAction nodeAction = (NodeAction)actionData.getCurrentAction();
 
         log.info("[NodeLeaveHandler.process] start to process node leave action, user={}", nodeAction.getNodeName());
-
-        if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName()) && nodeState
-            .isState(NodeStateEnum.Running)) {
-            log.info("leave consensus layer, user={}", nodeAction.getNodeName());
-            consensusStateMachine.leaveConsensus();
-            nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
-        }
-
         Profiler.enter("[NodeLeaveHandler.nodeLeave]");
         ClusterNode clusterNode = new ClusterNode();
         BeanUtils.copyProperties(nodeAction, clusterNode);
