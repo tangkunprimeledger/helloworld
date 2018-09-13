@@ -20,7 +20,7 @@ public class EncryptAmount {
     private String statues;
 
     private static final int FULL_RANDOM_BIT = 64;
-    private static final int SAFE_RANDOM_BIT = 32;
+    private static final int SAFE_RANDOM_BIT = 28;
     private static final int SAFE_ZERO_NUM = 10;
     private static final int FIX_SCALE = 10;
 
@@ -130,6 +130,14 @@ public class EncryptAmount {
 
         return (he.hasPubKey()|| he.hasFullKey());
 
+    }
+
+    public static String GenSubKey(String key, int seqno, int nodeNum){
+        return HomomorphicEncryption.GenSubKey(key, seqno, nodeNum);
+    }
+
+    public static String MergeKey(String key1, String key2){
+        return HomomorphicEncryption.MergeKey(key1, key2);
     }
 
     public  static String exportPubKey(){

@@ -19,6 +19,11 @@ public class BGNKey {
 	private BigInteger n;
 	private Field f;
 	private PropertiesParameters param;
+	static private int subSeqno = 0, subNodeNum = 0;
+	static private Element subP;
+
+	static private int MIN_KEY_NODE_NUM = 4;
+	static private int MIN_SUB_KEY_BIT = 32;
 
 
 	public BGNKey(TypeA1Pairing pairing, Element gen, Element point,
@@ -66,11 +71,45 @@ public class BGNKey {
 			this.P.setFromBytes(Base58.decode(pubKey.getString("P")));
 			this.Q.setFromBytes(Base58.decode(pubKey.getString("Q")));
 			this.n = Base58.decodeToBigInteger(pubKey.getString("n"));
+			if(pubKey.getString("nodeNum") != null){
+				subNodeNum = Integer.valueOf(pubKey.getString("nodeNum"));
+				subSeqno = 1;
+				Element newP = f.newElement();
+				Element newQ = f.newElement();
+				Element tmpP = f.newElement();
+				int seqno;
+				for (seqno = 1; seqno <= subNodeNum; seqno++){
+					if (pubKey.getString("P" + String.valueOf(seqno)) == null) {
+						break;
+					}
+					tmpP.setFromBytes(Base58.decode(pubKey.getString("P" + String.valueOf(seqno))));
+					if (seqno % 2 == 0){
+						newQ = newQ.add(tmpP);
+					}
+					if (seqno % 2 == 1){
+						newP = newP.add(tmpP);
+					}
+				}
+				if (seqno > subNodeNum){
+					if (Base58.encode(P.toBytes()).compareTo(Base58.encode(newP.toBytes())) != 0
+							&& Base58.encode(Q.toBytes()).compareTo(Base58.encode(newQ.toBytes())) != 0){
+						P = newP;
+						Q = newQ;
+					} else {
+						P = null;
+						Q = null;
+						f = null;
+						n = null;
+					}
+
+				}
+			}
 
 		} catch (Exception e) {
 
 		}
 	}
+
 
 	Element doPairing(Element A, Element B) {
 		return map.pairing(A, B);
@@ -96,7 +135,7 @@ public class BGNKey {
 		return  this.param;
 	}
 
-	String exportPubKey(){
+	String exportPubKeyMod(){
 
 		try {
 			PairingParameters param1 = (PairingParameters) SerializerUtil.deserialize(SerializerUtil.serialize(param));
@@ -119,7 +158,7 @@ public class BGNKey {
 
 	}
 
-	String exportPubKeyWithN(){
+	String exportPubKey(){
 
 		try {
 			PairingParameters param1 = (PairingParameters) SerializerUtil.deserialize(SerializerUtil.serialize(param));
@@ -133,12 +172,75 @@ public class BGNKey {
 			pubKey.put("P",Base58.encode(P.toBytes()));
 			pubKey.put("Q",Base58.encode(Q.toBytes()));
 			pubKey.put("n",Base58.encode(n.toByteArray()));
+			if (subNodeNum != 0){
+				pubKey.put("nodeNum",String.valueOf(subNodeNum));
+				pubKey.put("P"+String.valueOf(subSeqno),Base58.encode(subP.toBytes()));
+			}
 			return  pubKey.toJSONString();
 		} catch (Exception e){
 			return null;
 		}
 
 	}
+
+	static String GenSubKey(String key, int seqno, int nodeNum){
+		Element T;
+		JSONObject ob = JSONObject.parseObject(key);
+		int oldNodeNum = Integer.valueOf(ob.getString("nodeNum") == null ? "-1":ob.getString("nodeNum"));
+		BGNKey baseKey = new BGNKey(key);
+		T = baseKey.getField().newElement();
+		T.setFromBytes(Base58.decode(ob.getString("P")));
+		T = T.mul(baseKey.getN());
+		if (Base58.encode(T.toBytes()).compareTo(ob.getString("P")) == 0
+				&& baseKey.getN().compareTo(BigInteger.ZERO) != 0
+				&& seqno <= nodeNum && seqno > 0
+				&&((oldNodeNum != -1 && oldNodeNum == nodeNum) || oldNodeNum == -1)
+				&& nodeNum >= MIN_KEY_NODE_NUM
+				&& baseKey.getN().bitLength()/nodeNum/2 >= MIN_SUB_KEY_BIT){
+			subP = baseKey.getField().newElement();
+			do {
+				BigInteger r = new BigInteger(baseKey.getN().bitLength()/nodeNum/2 ,64,new Random());
+				subP.set(baseKey.getP());
+				subP = subP.mul(r);
+			} while (Base58.encode(subP.toBytes()).compareTo(ob.getString("P")) == 0
+					|| Base58.encode(subP.toBytes()).compareTo(ob.getString("Q")) == 0);
+			subSeqno = seqno;
+			ob.put("P"+String.valueOf(subSeqno),Base58.encode(subP.toBytes()));
+			subNodeNum = nodeNum;
+
+			if (oldNodeNum == -1){
+				ob.put("nodeNum",String.valueOf(subNodeNum));
+			}
+			return ob.toJSONString();
+		}
+		return null;
+	}
+
+	public static String MergeKey(String key1, String key2) {
+		JSONObject ob1 = JSONObject.parseObject(key1);
+		JSONObject ob2 = JSONObject.parseObject(key2);
+
+		if (ob1.getString("param").compareTo(ob2.getString("param")) == 0
+				&& ob1.getString("P").compareTo(ob2.getString("P")) == 0
+				&& ob1.getString("Q").compareTo(ob2.getString("Q")) == 0
+				&& ob1.getString("n").compareTo(ob2.getString("n")) == 0){
+
+			int NodeNum1 = Integer.valueOf(ob1.getString("nodeNum") == null ? "-1":ob1.getString("nodeNum"));
+			int NodeNum2 = Integer.valueOf(ob2.getString("nodeNum") == null ? "-1":ob2.getString("nodeNum"));
+			if (NodeNum1 == NodeNum2 && NodeNum2 != -1) {
+				for(int seqno = 1; seqno <= NodeNum2; seqno++){
+					if (ob1.getString("P" + String.valueOf(seqno)) == null
+							&& ob2.getString("P" + String.valueOf(seqno)) != null){
+						ob1.put("P" + String.valueOf(seqno),ob2.getString("P" + String.valueOf(seqno)));
+					}
+				}
+				return  ob1.toJSONString();
+			}
+
+		}
+		return null;
+	}
+
 
 	String exportFullKey(){
 		try {
@@ -149,6 +251,10 @@ public class BGNKey {
 			fullKey.put("P",Base58.encode(P.toBytes()));
 			fullKey.put("Q",Base58.encode(Q.toBytes()));
 			fullKey.put("n",Base58.encode(n.toByteArray()));
+			if (subNodeNum != 0){
+				fullKey.put("nodeNum",String.valueOf(subNodeNum));
+				fullKey.put("P"+String.valueOf(subSeqno),Base58.encode(subP.toBytes()));
+			}
 			return  fullKey.toJSONString();
 		} catch (Exception e){
 			return null;

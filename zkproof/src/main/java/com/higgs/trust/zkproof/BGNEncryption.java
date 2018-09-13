@@ -192,4 +192,5 @@ public class BGNEncryption implements HomomorphicEncryption {
 	public boolean tooBigRandom(BigInteger r) {
 		return tooBig(r);
 	}
+
 }
