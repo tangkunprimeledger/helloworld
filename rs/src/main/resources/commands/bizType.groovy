@@ -2,12 +2,12 @@ package commands
 
 import com.higgs.trust.rs.core.repository.BizTypeRepository
 import lombok.extern.slf4j.Slf4j
-import org.apache.naming.factory.BeanFactory
 import org.crsh.cli.Argument
 import org.crsh.cli.Command
 import org.crsh.cli.Required
 import org.crsh.cli.Usage
 import org.crsh.command.InvocationContext
+import org.springframework.beans.factory.BeanFactory
 
 @Slf4j
 @Usage("for biz type operation")
