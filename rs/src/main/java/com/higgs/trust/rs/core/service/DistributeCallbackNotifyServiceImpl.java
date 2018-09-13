@@ -162,7 +162,7 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
             msgList.add(redisTopicMsg);
         }
         String message = JSON.toJSONString(msgList);
-        topic.publish(message);
+        topic.publishAsync(message);
     }
 
     /**
