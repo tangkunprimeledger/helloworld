@@ -2,12 +2,15 @@ package com.higgs.trust.slave.core.managment;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
+import com.higgs.trust.common.dao.RocksUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.p2p.ClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.KeyModeEnum;
 import com.higgs.trust.slave.common.enums.RunModeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -18,6 +21,8 @@ import com.higgs.trust.slave.core.service.ca.CaInitService;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
@@ -45,6 +50,8 @@ import org.springframework.transaction.support.TransactionTemplate;
     @Autowired private ClusterInfo clusterInfo;
 
     @Autowired private TransactionTemplate txRequired;
+
+    @Autowired private InitConfig initConfig;
 
     @Value("${trust.start.mode:cluster}") private String startMode;
 
@@ -89,8 +96,25 @@ import org.springframework.transaction.support.TransactionTemplate;
 
         // auto generate keyPair for cluster
         if (keyMode.equals(KeyModeEnum.AUTO.getCode())) {
-            txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            if (initConfig.isUseMySQL()) {
+                txRequired.execute(new TransactionCallbackWithoutResult() {
+                    @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                        // generate keyPair for consensus layer
+                        Crypto consensusCrypto = CryptoUtil.getProtocolCrypto();
+                        KeyPair keyPair = consensusCrypto.generateKeyPair();
+                        saveConfig(keyPair.getPubKey(), keyPair.getPriKey(), UsageEnum.CONSENSUS);
+
+                        // generate keyPair for biz layer
+                        Crypto bizCrypto = CryptoUtil.getBizCrypto();
+                        keyPair = bizCrypto.generateKeyPair();
+                        saveConfig(keyPair.getPubKey(), keyPair.getPriKey(), UsageEnum.BIZ);
+                    }
+                });
+            } else {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                try {
+                    ThreadLocalUtils.putRocksTx(tx);
+
                     // generate keyPair for consensus layer
                     Crypto consensusCrypto = CryptoUtil.getProtocolCrypto();
                     KeyPair keyPair = consensusCrypto.generateKeyPair();
@@ -100,8 +124,12 @@ import org.springframework.transaction.support.TransactionTemplate;
                     Crypto bizCrypto = CryptoUtil.getBizCrypto();
                     keyPair = bizCrypto.generateKeyPair();
                     saveConfig(keyPair.getPubKey(), keyPair.getPriKey(), UsageEnum.BIZ);
+
+                    RocksUtils.txCommit(tx);
+                } finally {
+                    ThreadLocalUtils.clearRocksTx();
                 }
-            });
+            }
         } else if (keyMode.equals(KeyModeEnum.MANUAL.getCode())) {
             // load keyPair for cluster from json file
             saveConfig(publicKey, privateKey, UsageEnum.CONSENSUS);

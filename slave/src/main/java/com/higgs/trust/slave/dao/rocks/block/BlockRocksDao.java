@@ -12,9 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author tangfashuang
@@ -81,6 +79,14 @@ public class BlockRocksDao extends RocksBaseDao <BlockPO> {
         for (String key : resultMap.keySet()) {
             blockPOS.add(resultMap.get(key));
         }
+
+        // sort by height asc
+        Collections.sort(blockPOS, new Comparator<BlockPO>() {
+            @Override public int compare(BlockPO po1, BlockPO po2) {
+                return po1.getHeight().compareTo(po2.getHeight());
+            }
+        });
+
         return blockPOS;
     }
 }
