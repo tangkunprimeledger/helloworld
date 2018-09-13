@@ -58,13 +58,10 @@ import java.util.*;
                 log.warn("rsPubKeyList is empty. default verify pass");
                 return true;
             }
-            Profiler.enter("[doVerifySign]");
             return verifyRsSign(ctx, signedTransaction.getSignatureList(), rsPubKeyList, decisionType);
         } catch (Throwable e) {
             log.error("verify signatures exception. ", e);
             return false;
-        }finally {
-            Profiler.release();
         }
     }
 
@@ -101,6 +98,7 @@ import java.util.*;
         DecisionTypeEnum decisionType) {
         boolean flag = false;
         try {
+            Profiler.enter("[doVerifySign]");
             Map<String, String> signedMap = SignInfo.makeSignMap(signatureList);
             if (DecisionTypeEnum.FULL_VOTE == decisionType) {
 
@@ -130,6 +128,8 @@ import java.util.*;
         } catch (Throwable e) {
             log.error("verify signature exception. ", e);
             return false;
+        } finally {
+            Profiler.release();
         }
         return flag;
     }
