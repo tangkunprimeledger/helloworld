@@ -41,7 +41,6 @@ import java.util.List;
             log.error("received transaction list is empty");
             return null;
         }
-        Profiler.start("add pending transaction");
 
         List<TransactionVO> transactionVOList = new ArrayList<>();
         transactions.forEach(signedTransaction -> {
@@ -50,16 +49,13 @@ import java.util.List;
             transactionVO.setTxId(txId);
             //verify params for transaction
             try {
-                Profiler.enter("[tx.verify]");
                 transactionValidator.verify(signedTransaction);
-            }catch (SlaveException e){
+            } catch (SlaveException e){
                 transactionVO.setErrCode(e.getCode().getCode());
                 transactionVO.setErrMsg(e.getCode().getDescription());
                 transactionVO.setRetry(false);
                 transactionVOList.add(transactionVO);
                 return;
-            }finally {
-                Profiler.release();
             }
             //limit queue size
             if (packageCache.getPendingTxQueueSize() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
@@ -72,7 +68,6 @@ import java.util.List;
             }
 
             try {
-                Profiler.enter("append deque last");
                 //insert memory
                 boolean result = packageCache.appendDequeLast(signedTransaction);
                 if (!result) {
@@ -82,17 +77,10 @@ import java.util.List;
                     transactionVO.setRetry(true);
                     transactionVOList.add(transactionVO);
                 }
-                Profiler.release();
             } catch (Throwable e) {
                 log.error("transaction insert into memory exception. txId={}, ", txId, e);
             }
         });
-
-        Profiler.release();
-
-        if (Profiler.getDuration() > 0) {
-            Profiler.logDump();
-        }
 
         // if all transaction received success, RespData will set data 'null'
         if (CollectionUtils.isEmpty(transactionVOList)) {
