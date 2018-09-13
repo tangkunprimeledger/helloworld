@@ -30,10 +30,10 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
+import com.higgs.trust.slave.core.service.pending.TransactionValidator;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -91,7 +91,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
     @Autowired
     private ThreadPoolTaskExecutor txSubmitExecutorPool;
     @Autowired
-    private ThreadPoolTaskExecutor txProcessExecutorPool;
+    private TransactionValidator transactionValidator;
     @Autowired
     private RedissonClient redissonClient;
     @Autowired
@@ -154,16 +154,22 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
 
     @Override
     public void submitTx(CoreTransaction coreTx) {
-        log.debug("[submitTx]{}", coreTx);
+        if(log.isDebugEnabled()){
+            log.debug("[submitTx]{}", coreTx);
+        }
         if (coreTx == null) {
             log.error("[submitTx] the tx is null");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
         //validate param
-        BeanValidateResult validateResult = BeanValidator.validate(coreTx);
-        if (!validateResult.isSuccess()) {
-            log.error("[submitTx] param validate is fail,first msg:{}", validateResult.getFirstMsg());
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
+        try {
+            transactionValidator.verify(coreTx);
+        }catch (SlaveException e) {
+            if (e.getCode() == SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR) {
+                log.error("[submitTx] param validate is fail", e);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR,e);
+            }
+            throw e;
         }
         //check bizType
         String policyId = coreTx.getPolicyId();

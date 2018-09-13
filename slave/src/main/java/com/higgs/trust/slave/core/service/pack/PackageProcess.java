@@ -118,7 +118,7 @@ import java.util.concurrent.atomic.AtomicLong;
      */
     private void initProcessedHeight() {
         Long currentHeight = blockRepository.getMaxHeight();
-        updateProcessedHeight(currentHeight);
+        updateProcessedHeight(currentHeight == null ? 1L : currentHeight);
     }
 
     /**
