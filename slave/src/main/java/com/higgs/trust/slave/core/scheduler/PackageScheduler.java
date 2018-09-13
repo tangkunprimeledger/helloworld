@@ -2,14 +2,13 @@ package com.higgs.trust.slave.core.scheduler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.higgs.trust.common.utils.TraceUtils;
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
-import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
-import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -20,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.sleuth.Span;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.sleuth.Span;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -42,8 +41,6 @@ import java.util.Set;
     @Autowired private PackageService packageService;
 
     @Autowired private PackageProcess packageProcess;
-
-    @Autowired private BlockRepository blockRepository;
 
     @Autowired private NodeState nodeState;
 
@@ -113,7 +110,7 @@ import java.util.Set;
             return;
         }
         //get max block height
-        Long currentHeight = blockRepository.getMaxHeight();
+        Long currentHeight = packageProcess.getMaxHeight();
 
         if (null == currentHeight) {
             log.error("please initial Genesis block.");

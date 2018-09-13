@@ -54,17 +54,16 @@ import org.springframework.stereotype.Component;
         if (StringUtils.isEmpty(coreTx.getVersion())) {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-        if (CollectionUtils.isEmpty(coreTx.getActionList())) {
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-        TransactionProcessor processor =
-            processorHolder.getProcessor(VersionEnum.getBizTypeEnumBycode(coreTx.getVersion()));
-        for (Action action : coreTx.getActionList()) {
-            if (action == null || action.getType() == null || action.getIndex() == null) {
-                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        if (!CollectionUtils.isEmpty(coreTx.getActionList())) {
+            TransactionProcessor processor =
+                processorHolder.getProcessor(VersionEnum.getBizTypeEnumBycode(coreTx.getVersion()));
+            for (Action action : coreTx.getActionList()) {
+                if (action == null || action.getType() == null || action.getIndex() == null) {
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+                }
+                ActionHandler actionHandler = processor.getHandlerByType(action.getType());
+                actionHandler.verifyParams(action);
             }
-            ActionHandler actionHandler = processor.getHandlerByType(action.getType());
-            actionHandler.verifyParams(action);
         }
     }
 }

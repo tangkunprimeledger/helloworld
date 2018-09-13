@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.vo.BlockVO;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -187,6 +188,7 @@ import java.util.List;
         if (log.isDebugEnabled()) {
             log.debug("[BlockRepository.saveBlock] is start");
         }
+        Profiler.enter("[insert.block]");
         BlockHeader blockHeader = block.getBlockHeader();
         BlockPO blockPO = new BlockPO();
         blockPO.setHeight(blockHeader.getHeight());
@@ -226,9 +228,13 @@ import java.util.List;
         } catch (DuplicateKeyException e) {
             log.error("[saveBlock] is idempotent blockHeight:{}", blockHeader.getHeight());
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        }finally {
+            Profiler.release();
         }
+        Profiler.enter("[start.batch.insert.txs]");
         //save transactions
         transactionRepository.batchSaveTransaction(blockHeader.getHeight(), blockTime, txs, txReceipts);
+        Profiler.release();
         if (log.isDebugEnabled()) {
             log.debug("[BlockRepository.saveBlock] is end");
         }
