@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.repository;
 import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
+import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
@@ -60,5 +61,10 @@ public class RsNodeRepositoryTest extends BaseTest {
         RsNode rs = rsNodeRepository.convertActionToRsNode(registerRS);
         assertEquals(rs.getRsId(), registerRS.getRsId());
 
+    }
+
+    @Test public void testQueryRsAndPubKey() throws Exception {
+        List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
+        System.out.println(rsPubKeyList);
     }
 }

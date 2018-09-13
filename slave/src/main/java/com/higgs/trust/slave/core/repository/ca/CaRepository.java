@@ -91,7 +91,7 @@ import java.util.List;
             key.add(user + Constant.SPLIT_SLASH + usage);
         }
 
-        List<CaPO> list = caRocksDao.getCaListByUsers(users);
+        List<CaPO> list = caRocksDao.getCaListByUsers(key);
         return BeanConvertor.convertList(list, Ca.class);
 
     }

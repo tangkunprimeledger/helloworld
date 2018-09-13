@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.repository;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.vo.CoreTransactionVO;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -174,6 +175,7 @@ import java.util.*;
     }
 
     private List<TransactionReceiptPO> buildTxReceiptPO(Long blockHeight, Map<String, TransactionReceipt> txReceiptMap) {
+        Profiler.enter("build txReceiptPOs");
         List<TransactionReceiptPO> receiptPOS = new ArrayList<>();
         for (String txId : txReceiptMap.keySet()) {
             TransactionReceipt receipt = txReceiptMap.get(txId);
@@ -186,6 +188,7 @@ import java.util.*;
                 receiptPOS.add(po);
             }
         }
+        Profiler.release();
         return receiptPOS;
     }
 
