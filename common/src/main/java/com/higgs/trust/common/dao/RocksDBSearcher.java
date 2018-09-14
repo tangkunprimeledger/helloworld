@@ -46,6 +46,21 @@ import java.util.List;
     }
 
     /**
+     * query by limit
+     *
+     * @param tableName
+     * @param count
+     * @param order
+     * @return
+     */
+    public List<Object> queryByLimit(String tableName, int count, int order){
+        setTableName(tableName);
+        if(count > 1000){
+            count = 1000;
+        }
+        return queryByLimit(count,order);
+    }
+    /**
      * set table name
      *
      * @param tableName

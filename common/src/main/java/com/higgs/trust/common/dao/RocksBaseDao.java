@@ -382,4 +382,37 @@ public abstract class RocksBaseDao<V> {
         }
         return rocksDBWrapper.getColumnFamilyHandleMap().keySet();
     }
+
+    /**
+     * query by limit
+     *
+     * @param count
+     * @param order
+     * @return
+     */
+    public List<V> queryByLimit(int count,int order) {
+        RocksIterator iterator = iterator();
+        List<V> list = new ArrayList<>(count);
+        int i = 0;
+        //desc
+        if(order == 0){
+            for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
+                list.add(JSON.parseObject(iterator.value(), clazz));
+                if(i == count){
+                    break;
+                }
+                i++;
+            }
+        //asc
+        }else if (order == 1){
+            for (iterator.seekToFirst(); iterator.isValid(); iterator.next()) {
+                list.add(JSON.parseObject(iterator.value(), clazz));
+                if(i == count){
+                    break;
+                }
+                i++;
+            }
+        }
+        return list;
+    }
 }

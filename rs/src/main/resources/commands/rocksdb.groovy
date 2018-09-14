@@ -31,7 +31,7 @@ class rocksdb {
         def result = searcher.showTables()
         if (result) {
             out.println("$result")
-        }else{
+        } else {
             out.println("is empty")
         }
     }
@@ -39,10 +39,11 @@ class rocksdb {
     @Usage('query by key')
     @Command
     def queryByKey(InvocationContext context,
-                  @Usage("tableName") @Required @Argument String tableName,@Usage("keyName") @Required @Argument String keyName) {
+                   @Usage("tableName") @Required @Argument String tableName,
+                   @Usage("keyName") @Required @Argument String keyName) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def searcher = beans.getBean(RocksDBSearcher.class)
-        def result = searcher.queryByKey(tableName,keyName)
+        def result = searcher.queryByKey(tableName, keyName)
         if (result) {
             out.println("$result")
         } else {
@@ -53,13 +54,30 @@ class rocksdb {
     @Usage('query by prefix and limit size')
     @Command
     def queryByPrefix(InvocationContext context,
-                   @Usage("tableName") @Required @Argument String tableName,
+                      @Usage("tableName") @Required @Argument String tableName,
                       @Usage("prefix") @Required @Argument String prefix,
                       @Usage("limit") @Argument int limit
-                      ) {
+    ) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def searcher = beans.getBean(RocksDBSearcher.class)
-        def result = searcher.queryByPrefix(tableName,prefix,limit)
+        def result = searcher.queryByPrefix(tableName, prefix, limit)
+        if (result) {
+            result.forEach({ entry -> out.println("$entry") })
+        } else {
+            out.println("is empty")
+        }
+    }
+
+    @Usage('query by count and order')
+    @Command
+    def queryByLimit(InvocationContext context,
+                     @Usage("tableName") @Required @Argument String tableName,
+                     @Usage("count") @Required @Argument int count,
+                     @Usage("order 0:DESC 1:ASC") @Required @Argument int order
+    ) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def searcher = beans.getBean(RocksDBSearcher.class)
+        def result = searcher.queryByLimit(tableName, count, order)
         if (result) {
             result.forEach({ entry -> out.println("$entry") })
         } else {
