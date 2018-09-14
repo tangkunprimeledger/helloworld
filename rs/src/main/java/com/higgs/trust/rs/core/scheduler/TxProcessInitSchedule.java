@@ -24,12 +24,17 @@ public class TxProcessInitSchedule {
 
     private int pageNo = 1;
     private int pageSize = 100;
+    /**
+     * rocks db seek key:01-tx_id
+     */
+    private String lastPreKey = null;
 
     @Scheduled(fixedDelayString = "${rs.core.schedule.processInit:500}")
     public void exe() {
-        List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.INIT, (pageNo - 1) * pageSize, pageSize);
+        List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.INIT, (pageNo - 1) * pageSize, pageSize,lastPreKey);
         if (CollectionUtils.isEmpty(list)) {
             pageNo = 1;
+            lastPreKey = null;
             return;
         }
         for (CoreTransactionProcessPO po : list) {
@@ -39,6 +44,7 @@ public class TxProcessInitSchedule {
                 log.error("has error", e);
             }
         }
+        lastPreKey = list.get(list.size() - 1).getTxId();
         pageNo++;
     }
 }
