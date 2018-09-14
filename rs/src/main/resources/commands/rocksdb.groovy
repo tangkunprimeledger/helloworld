@@ -69,7 +69,7 @@ class rocksdb {
     def queryByCount(InvocationContext context,
                      @Usage("tableName") @Required @Argument String tableName,
                      @Usage("count") @Required @Argument int count,
-                     @Usage("order 0:DESC 1:ASC") @Argument int order
+                     @Usage("order 0:DESC 1:ASC") @Required @Argument int order
     ) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def helper = beans.getBean(RocksDBHelper.class)
@@ -81,11 +81,10 @@ class rocksdb {
         }
     }
 
-
-    @Usage('clear designated tables')
+    @Usage('clear tables')
     @Command
     def clear(InvocationContext context,
-              @Usage("tableNames") @Required @Argument String... tableNames) {
+              @Usage("tableNames") @Required @Argument String[] tableNames) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def helper = beans.getBean(RocksDBHelper.class)
         def result = helper.clear(tableNames)
@@ -98,7 +97,8 @@ class rocksdb {
 
     @Usage('clear all tables allow ignored')
     @Command
-    def clearAll(InvocationContext context,@Usage("ignored table names") @Argument String... ignoreTables) {
+    def clearAll(InvocationContext context,
+              @Usage("ignored table names") @Argument String[] ignoreTables) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def helper = beans.getBean(RocksDBHelper.class)
         def result = helper.clearAll(ignoreTables)
