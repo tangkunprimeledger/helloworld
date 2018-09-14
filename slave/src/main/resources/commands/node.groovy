@@ -128,7 +128,7 @@ class node {
         if (isCluster) {
             clusterInfoService.initClusterViewFromCluster()
         } else {
-            clusterInfoService.initClusterViewFromDB()
+            clusterInfoService.initClusterViewFromDB(true)
         }
         out.println("refresh cluster view successful")
     }

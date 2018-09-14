@@ -14,7 +14,6 @@ import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.action.GeniusBlockService;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.PackageListener;
-import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -37,15 +36,14 @@ import java.util.concurrent.Executors;
 @Order(2) @Service @Slf4j public class SyncService implements PackageListener {
 
     @Autowired private FailoverProperties properties;
-    @Autowired private SyncPackageCache cache;
     @Autowired private BlockRepository blockRepository;
     @Autowired private BlockService blockService;
     @Autowired private BlockSyncService blockSyncService;
     @Autowired private PackageService packageService;
     @Autowired private NodeState nodeState;
-    @Autowired private ClusterViewService clusterViewService;
     @Autowired private TransactionTemplate txNested;
     @Autowired private GeniusBlockService geniusBlockService;
+    private Long receivedFistHeight = null;
 
     public void asyncAutoSync() {
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -67,34 +65,23 @@ import java.util.concurrent.Executors;
         log.info("auto sync starting ...");
         try {
             Long currentHeight = blockRepository.getMaxHeight();
-            if (currentHeight == null || currentHeight == 0) {
-                syncGenesis();
-                currentHeight = 1L;
+            Long failoverHeight = null;
+            if (receivedFistHeight != null) {
+                failoverHeight = receivedFistHeight - 1;
+            } else {
+                Long clusterHeight = blockSyncService.getSafeHeight(properties.getTryTimes());
+                if (clusterHeight == null) {
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
+                }
+                failoverHeight = clusterHeight;
             }
-            Long clusterHeight = null;
-            clusterHeight = blockSyncService.getSafeHeight(properties.getTryTimes());
-            if (clusterHeight == null) {
-                throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
-            }
-            if (clusterHeight <= currentHeight + properties.getThreshold()) {
-                return;
-            }
-            cache.reset(clusterHeight);
-            do {
+            while (currentHeight.compareTo(failoverHeight) < 0) {
                 sync(currentHeight + 1, properties.getHeaderStep());
                 currentHeight = blockRepository.getMaxHeight();
-                if (currentHeight >= clusterHeight && cache.getMinHeight() <= clusterHeight) {
-                    Long newHeight = getClusterHeight();
-                    if (newHeight != null) {
-                        clusterHeight = newHeight;
-                        cache.reset(clusterHeight);
-                    } else {
-                        throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
-                    }
+                if (receivedFistHeight != null) {
+                    failoverHeight = receivedFistHeight - 1;
                 }
-                //如果没有package接收，根据latestHeight判断是否在阈值内，否则，根据cache判断
-            } while (cache.getMinHeight() <= clusterHeight ? clusterHeight > currentHeight + properties.getThreshold() :
-                currentHeight + 1 < cache.getMinHeight());
+            }
         } catch (Exception e) {
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SYNC_BLOCKS_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
@@ -296,8 +283,8 @@ import java.util.concurrent.Executors;
      * receive package height
      */
     @Override public void received(Package pack) {
-        if (nodeState.isState(NodeStateEnum.AutoSync)) {
-            cache.receivePackHeight(pack.getHeight());
+        if (nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync) && receivedFistHeight == null) {
+            receivedFistHeight = pack.getHeight();
         }
     }
 

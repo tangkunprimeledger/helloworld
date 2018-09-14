@@ -66,7 +66,7 @@ import java.util.List;
         List<Config> configList =
             configRepository.getConfig(new Config(nodeState.getNodeName(), UsageEnum.CONSENSUS.getCode()));
         nodeState.setConsensusPrivateKey(null != configList ? configList.get(0).getPriKey() : null);
-        clusterViewService.initClusterViewFromDB();
+        clusterViewService.initClusterViewFromDB(false);
     }
 
     private boolean needInit() {
