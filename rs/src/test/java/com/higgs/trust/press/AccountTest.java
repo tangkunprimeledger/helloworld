@@ -111,11 +111,12 @@ public class AccountTest extends BasePressTest{
     public int income() {
         int num = 0;
         for (int i = 0; i < 7; i = i + 2) {
+            BigDecimal amount = new BigDecimal(500);
             AccountingVO vo = new AccountingVO();
             vo.setReqNo("tx_id_income_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
-            vo.setDebitTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + i, new BigDecimal(5000))));
+            vo.setDebitTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + i, amount)));
             vo.setCreditTradeInfo(
-                Lists.newArrayList(new AccountTradeInfo("account_no_" + (i + 1), new BigDecimal(5000))));
+                Lists.newArrayList(new AccountTradeInfo("account_no_" + (i + 1), amount)));
             send("press/accounting", JSON.toJSONString(vo));
             sleep();
             num++;
@@ -131,9 +132,10 @@ public class AccountTest extends BasePressTest{
         for (int i = 0; i < 7; i = i + 2) {
             AccountingVO vo = new AccountingVO();
             vo.setReqNo("tx_id_out_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
+            BigDecimal amount = new BigDecimal(10);
             vo.setDebitTradeInfo(
-                Lists.newArrayList(new AccountTradeInfo("account_no_" + (i + 1), new BigDecimal(100))));
-            vo.setCreditTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + i, new BigDecimal(100))));
+                Lists.newArrayList(new AccountTradeInfo("account_no_" + (i + 1), amount)));
+            vo.setCreditTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + i,amount)));
             send("press/accounting", JSON.toJSONString(vo));
             sleep();
             num++;
@@ -147,14 +149,13 @@ public class AccountTest extends BasePressTest{
     public int transfer() {
         int num = 0;
         for (int i = 0; i < 6; i++) {
+            BigDecimal amount = new BigDecimal(new Random().nextInt(100) + 1);
             AccountingVO vo = new AccountingVO();
             vo.setReqNo("tx_id_transfer_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
             if (i % 2 == 0) {
-                BigDecimal amount = new BigDecimal(new Random().nextInt(1000));
                 vo.setDebitTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + i, amount)));
                 vo.setCreditTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + (i + 2), amount)));
             } else {
-                BigDecimal amount = new BigDecimal(new Random().nextInt(2000));
                 vo.setDebitTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + i, amount)));
                 vo.setCreditTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + (i + 2), amount)));
             }
@@ -175,7 +176,7 @@ public class AccountTest extends BasePressTest{
             vo.setReqNo("tx_id_freeze_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
             vo.setAccountNo("account_no_" + i);
             vo.setBizFlowNo("biz_flow_no_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000));
-            BigDecimal amount = new BigDecimal(new Random().nextInt(100));
+            BigDecimal amount = new BigDecimal(new Random().nextInt(10) + 1);
             vo.setAmount(amount);
             freezeMap.put(vo.getAccountNo(), vo.getBizFlowNo());
             send("press/freeze", JSON.toJSONString(vo));
@@ -195,7 +196,7 @@ public class AccountTest extends BasePressTest{
             vo.setReqNo("tx_id_unfreeze_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
             vo.setAccountNo("account_no_" + i);
             vo.setBizFlowNo(freezeMap.remove(vo.getAccountNo()));
-            BigDecimal amount = new BigDecimal(new Random().nextInt(100));
+            BigDecimal amount = new BigDecimal("0.1");
             vo.setAmount(amount);
             send("press/unfreeze", JSON.toJSONString(vo));
             sleep();
