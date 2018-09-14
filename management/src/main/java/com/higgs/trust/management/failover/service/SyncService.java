@@ -284,15 +284,17 @@ import java.util.concurrent.Executors;
      * receive package height
      */
     @Override public void received(Package pack) {
+        Long height = pack.getHeight();
         if (receivedFistHeight == null) {
-            receivedFistHeight = pack.getHeight();
-            currentPackageHeight = pack.getHeight();
+            receivedFistHeight = height;
+            currentPackageHeight = height;
             return;
         }
-        if (pack.getHeight() == currentPackageHeight + 1) {
-            currentPackageHeight = pack.getHeight();
-        } else if (pack.getHeight() > currentPackageHeight + 1) {
-            currentPackageHeight = pack.getHeight();
+        if (height == currentPackageHeight + 1) {
+            currentPackageHeight = height;
+        } else if (height > currentPackageHeight + 1) {
+            log.warn("received discontinuous height, current height:{}, package height:{}", currentPackageHeight, height);
+            currentPackageHeight = height;
             receivedFistHeight = currentPackageHeight;
         }
     }
