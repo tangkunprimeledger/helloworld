@@ -16,6 +16,7 @@ import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -125,6 +126,24 @@ public class CoreTransactionConvertor {
         utxoAction.setUtxoActionType(utxoActionTypeEnum);
         utxoAction.setIndex(index);
         return utxoAction;
+    }
+
+    /**
+     * build currency action
+     *
+     * @param currency
+     * @param index
+     * @param remark
+     * @return
+     */
+    public IssueCurrency buildIssueCurrencyAction(String currency, int index, String remark,String homomorphicPk) {
+        IssueCurrency currencyAction = new IssueCurrency();
+        currencyAction.setCurrencyName(currency);
+        currencyAction.setRemark(remark);
+        currencyAction.setType(ActionTypeEnum.ISSUE_CURRENCY);
+        currencyAction.setIndex(index);
+        currencyAction.setHomomorphicPk(homomorphicPk);
+        return currencyAction;
     }
 
     /**

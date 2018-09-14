@@ -57,11 +57,12 @@ import java.util.List;
      * @param remark
      * @return
      */
-    public CurrencyInfo buildCurrencyInfo(String currency, String remark) {
+    public CurrencyInfo buildCurrencyInfo(String currency, String remark,String homomorphicPk) {
         CurrencyInfo currencyInfo = new CurrencyInfo();
         currencyInfo.setCurrency(currency);
         currencyInfo.setRemark(remark);
         currencyInfo.setCreateTime(new Date());
+        currencyInfo.setHomomorphicPk(homomorphicPk);
         return currencyInfo;
     }
 

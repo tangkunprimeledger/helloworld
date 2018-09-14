@@ -241,7 +241,7 @@ import java.util.*;
     }
 
     @Override public void issueCurrency(IssueCurrency bo) {
-        CurrencyInfo currencyInfo = currencyRepository.buildCurrencyInfo(bo.getCurrencyName(),bo.getRemark());
+        CurrencyInfo currencyInfo = currencyRepository.buildCurrencyInfo(bo.getCurrencyName(),bo.getRemark(),bo.getHomomorphicPk());
         currencyRepository.create(currencyInfo);
     }
 

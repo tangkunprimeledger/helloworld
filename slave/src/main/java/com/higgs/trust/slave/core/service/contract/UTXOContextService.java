@@ -6,6 +6,9 @@ import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
+import com.higgs.trust.slave.dao.account.CurrencyInfoDao;
+import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
+import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.Sign;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
@@ -26,6 +29,9 @@ public class UTXOContextService extends ContractApiService {
 
     @Autowired
     private UTXOSnapshotHandler utxoSnapshotHandler;
+
+    @Autowired
+    private CurrencyInfoDao currencyInfoDao;
 
 
     public UTXOAction getAction() {
@@ -51,6 +57,15 @@ public class UTXOContextService extends ContractApiService {
     public List<UTXO> queryUTXOList(List<TxIn> inputList) {
         log.info("When process UTXO contract  querying queryTxOutList by inputList:{}", inputList);
         return utxoSnapshotHandler.queryUTXOList(inputList);
+    }
+
+    public String getCurrency(String currency){
+        log.info("get a homomorphic key when verify a crypto currency");
+        CurrencyInfoPO currencyInfoPO =  currencyInfoDao.queryByCurrency(currency);
+        if(currencyInfoPO != null){
+            return currencyInfoPO.getHomomorphicPk();
+        }
+        return "";
     }
 
     /**

@@ -7,6 +7,7 @@
         <result column="currency" property="currency"/>
         <result column="remark" property="remark"/>
         <result column="create_time" property="createTime"/>
+        <result column="homomorphicPk" property="homomorphicPk"/>
     </resultMap>
     <!-- currency_info table all fields -->
     <sql id="baseColumnList">
