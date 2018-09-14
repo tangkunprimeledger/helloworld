@@ -50,7 +50,7 @@ import java.util.List;
 
     @Value("${higgs.trust.keys.consensusPrivateKey}") String priKeyForConsensus;
 
-    @StateChangeListener(value = NodeStateEnum.SelfChecking, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
+    @StateChangeListener(value = NodeStateEnum.Initialize, before = true) @Order(Ordered.HIGHEST_PRECEDENCE)
     public void init() throws FileNotFoundException {
         if (needInit()) {
             // 1、生成公私钥,存入db
