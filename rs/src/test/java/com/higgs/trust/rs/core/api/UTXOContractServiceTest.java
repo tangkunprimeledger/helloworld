@@ -21,11 +21,9 @@ import java.util.List;
 public class UTXOContractServiceTest extends IntegrateBaseTest {
     @Autowired
     private RsBlockChainService rsBlockChainService;
-    public static void main(String[] args){
-            processTest();
-    }
+
     @Test
-    public static void processTest() {
+    public  void processTest() {
         UTXOAction utxoAction = new UTXOAction();
 
         List<TxIn> inputList = org.testng.collections.Lists.newArrayList();
@@ -87,7 +85,7 @@ public class UTXOContractServiceTest extends IntegrateBaseTest {
         coreTransaction.setActionList(actionList);
 
         System.out.println(JSON.toJSONString(coreTransaction));
-//        System.out.println("contract resault:"+rsBlockChainService.processContract(coreTransaction));
+       System.out.println("contract resault:"+rsBlockChainService.processContract(coreTransaction));
     }
 
     @Test
