@@ -90,7 +90,7 @@ import java.util.*;
      * @param ignoreTables
      * @return
      */
-    public boolean clearAll(String... ignoreTables) {
+    public boolean clearAll(String[] ignoreTables) {
         Set<String> tableNames = showTables();
         if (CollectionUtils.isEmpty(tableNames)) {
             return false;
