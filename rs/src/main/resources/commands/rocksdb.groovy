@@ -69,7 +69,7 @@ class rocksdb {
     def queryByCount(InvocationContext context,
                      @Usage("tableName") @Required @Argument String tableName,
                      @Usage("count") @Required @Argument int count,
-                     @Usage("order 0:DESC 1:ASC") @Required @Argument int order
+                     @Usage("order 0-DESC 1-ASC") @Required @Argument int order
     ) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def helper = beans.getBean(RocksDBHelper.class)
