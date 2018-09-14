@@ -30,7 +30,7 @@ class rocksdb {
         def searcher = beans.getBean(RocksDBSearcher.class)
         def result = searcher.showTables()
         if (result) {
-            out.println($result)
+            out.println("$result")
         }else{
             out.println("is empty")
         }
@@ -44,7 +44,7 @@ class rocksdb {
         def searcher = beans.getBean(RocksDBSearcher.class)
         def result = searcher.queryByKey(tableName,keyName)
         if (result) {
-            out.println($result)
+            out.println("$result")
         } else {
             out.println("is empty")
         }
@@ -61,7 +61,7 @@ class rocksdb {
         def searcher = beans.getBean(RocksDBSearcher.class)
         def result = searcher.queryByPrefix(tableName,prefix,limit)
         if (result) {
-            result.forEach({ entry -> out.println($entry) })
+            result.forEach({ entry -> out.println("$entry") })
         } else {
             out.println("is empty")
         }
