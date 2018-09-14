@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
     @Autowired private TransactionTemplate txNested;
     @Autowired private GeniusBlockService geniusBlockService;
     private Long receivedFistHeight = null;
+    private Long currentPackageHeight = null;
 
     public void asyncAutoSync() {
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -283,8 +284,16 @@ import java.util.concurrent.Executors;
      * receive package height
      */
     @Override public void received(Package pack) {
-        if (nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync) && receivedFistHeight == null) {
+        if (receivedFistHeight == null) {
             receivedFistHeight = pack.getHeight();
+            currentPackageHeight = pack.getHeight();
+            return;
+        }
+        if (pack.getHeight() == currentPackageHeight + 1) {
+            currentPackageHeight = pack.getHeight();
+        } else if (pack.getHeight() > currentPackageHeight + 1) {
+            currentPackageHeight = pack.getHeight();
+            receivedFistHeight = currentPackageHeight;
         }
     }
 
