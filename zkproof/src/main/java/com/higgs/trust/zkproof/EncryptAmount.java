@@ -239,4 +239,7 @@ public class EncryptAmount {
         return he;
     }
 
+    public String getEncryptString(){
+        return eb;
+    }
 }
