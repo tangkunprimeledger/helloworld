@@ -384,32 +384,32 @@ public abstract class RocksBaseDao<V> {
     }
 
     /**
-     * query by limit
+     * query by count and order
      *
      * @param count
      * @param order
      * @return
      */
-    public List<V> queryByLimit(int count,int order) {
+    public List<V> queryByCount(int count,int order) {
         RocksIterator iterator = iterator();
         List<V> list = new ArrayList<>(count);
         int i = 0;
         //desc
         if(order == 0){
             for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
-                list.add(JSON.parseObject(iterator.value(), clazz));
                 if(i == count){
                     break;
                 }
+                list.add(JSON.parseObject(iterator.value(), clazz));
                 i++;
             }
         //asc
         }else if (order == 1){
             for (iterator.seekToFirst(); iterator.isValid(); iterator.next()) {
-                list.add(JSON.parseObject(iterator.value(), clazz));
                 if(i == count){
                     break;
                 }
+                list.add(JSON.parseObject(iterator.value(), clazz));
                 i++;
             }
         }

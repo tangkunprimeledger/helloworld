@@ -25,8 +25,8 @@ public class TxSubmitSlaveSchedule {
     @Autowired private CoreTxProcessRepository coreTxProcessRepository;
     @Autowired private CoreTxRepository coreTxRepository;
     private int pageNo = 1;
-    private int pageSize = 200;
-    private int maxPageNo = 50;
+    private int pageSize = 500;
+    private int maxPageNo = 500;
     /**
      * rocks db seek key:01-tx_id
      */

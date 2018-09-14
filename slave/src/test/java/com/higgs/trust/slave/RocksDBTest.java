@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class RocksDBTest {
-    private static final String dbPath = "/Volumes/work/log/rocks/";
+    private static final String dbPath = "log/rocks/";
     static {
         RocksDB.loadLibrary();
     }

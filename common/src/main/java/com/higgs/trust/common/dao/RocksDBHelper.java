@@ -1,12 +1,12 @@
 package com.higgs.trust.common.dao;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author liuyu
@@ -49,19 +49,19 @@ import java.util.Set;
     }
 
     /**
-     * query by limit
+     * query by count and order
      *
      * @param tableName
      * @param count
      * @param order
      * @return
      */
-    public List<Object> queryByLimit(String tableName, int count, int order) {
+    public List<Object> queryByCount(String tableName, int count, int order) {
         setTableName(tableName);
         if (count > 1000) {
             count = 1000;
         }
-        return queryByLimit(count, order);
+        return queryByCount(count, order);
     }
 
     /**
@@ -87,14 +87,27 @@ import java.util.Set;
     /**
      * clear all tables
      *
+     * @param ignoreTables
      * @return
      */
-    public boolean clearAll() {
+    public boolean clearAll(String... ignoreTables) {
         Set<String> tableNames = showTables();
         if (CollectionUtils.isEmpty(tableNames)) {
             return false;
         }
-        clear(tableNames.toArray(new String[tableNames.size()]));
+        Map<String,String> ignoredMap = new HashMap<>();
+        if(!ArrayUtils.isEmpty(ignoreTables)) {
+            for (String ignored : ignoreTables) {
+                ignoredMap.put(ignored, ignored);
+            }
+        }
+        List<String> list = new ArrayList<>();
+        for(String name : tableNames){
+            if(!ignoredMap.containsKey(name)){
+                list.add(name);
+            }
+        }
+        clear(list.toArray(new String[]{}));
         return true;
     }
 
