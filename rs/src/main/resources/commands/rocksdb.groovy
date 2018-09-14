@@ -30,9 +30,9 @@ class rocksdb {
         def searcher = beans.getBean(RocksDBSearcher.class)
         def result = searcher.showTables()
         if (result) {
-            out.println("result:$result")
+            out.println($result)
         }else{
-            out.println("has error")
+            out.println("is empty")
         }
     }
 
@@ -44,9 +44,9 @@ class rocksdb {
         def searcher = beans.getBean(RocksDBSearcher.class)
         def result = searcher.queryByKey(tableName,keyName)
         if (result) {
-            out.println("result:$result")
+            out.println($result)
         } else {
-            out.println("has error")
+            out.println("is empty")
         }
     }
 
@@ -55,15 +55,15 @@ class rocksdb {
     def queryByPrefix(InvocationContext context,
                    @Usage("tableName") @Required @Argument String tableName,
                       @Usage("prefix") @Required @Argument String prefix,
-                      @Usage("limit") @Required @Argument int limit
+                      @Usage("limit") @Argument int limit
                       ) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def searcher = beans.getBean(RocksDBSearcher.class)
         def result = searcher.queryByPrefix(tableName,prefix,limit)
         if (result) {
-            out.println("result:$result")
+            result.forEach({ entry -> out.println($entry) })
         } else {
-            out.println("has error")
+            out.println("is empty")
         }
     }
 }

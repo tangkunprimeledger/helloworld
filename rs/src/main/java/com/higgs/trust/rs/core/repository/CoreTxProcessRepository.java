@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.repository;
 
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -11,7 +12,7 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.dao.rocks.CoreTxProcessRocksDao;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
-import org.rocksdb.Transaction;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
@@ -84,13 +85,16 @@ public class CoreTxProcessRepository {
      * @param coreTxStatusEnum
      * @param row
      * @param count
+     * @param preKey
+     *          for rocks db seek
      * @return
      */
-    public List<CoreTransactionProcessPO> queryByStatus(CoreTxStatusEnum coreTxStatusEnum, int row, int count) {
+    public List<CoreTransactionProcessPO> queryByStatus(CoreTxStatusEnum coreTxStatusEnum, int row, int count,String preKey) {
         if (rsConfig.isUseMySQL()) {
             return coreTransactionProcessDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
         }
-        return coreTxProcessRocksDao.queryByPrefix(coreTxStatusEnum.getIndex(), count);
+        preKey = StringUtils.isEmpty(preKey) ? coreTxStatusEnum.getIndex() : coreTxStatusEnum.getIndex() + Constant.SPLIT_SLASH + preKey;
+        return coreTxProcessRocksDao.queryByPrefix(preKey, count);
     }
 
     /**

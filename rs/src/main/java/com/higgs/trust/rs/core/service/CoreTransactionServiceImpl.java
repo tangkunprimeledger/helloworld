@@ -560,29 +560,6 @@ import java.util.concurrent.TimeUnit;
         }
     }
 
-    /**
-     * submit slave by schedule
-     */
-    @Override public void submitToSlave() {
-        //max size
-        int maxSize = 200;
-        List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.WAIT, 0, maxSize);
-        if (CollectionUtils.isEmpty(list)) {
-            return;
-        }
-        List<String> txIdList = Lists.newArrayListWithCapacity(list.size());
-        for (CoreTransactionProcessPO po : list) {
-            txIdList.add(po.getTxId());
-        }
-        List<CoreTransactionPO> coreTransactionPOList = coreTxRepository.queryByTxIds(txIdList);
-        List<CoreTxBO> boList = new ArrayList<>(list.size());
-        for (CoreTransactionPO po : coreTransactionPOList) {
-            boList.add(coreTxRepository.convertTxBO(po));
-        }
-        //submit
-        submitToSlave(boList);
-    }
-
     @Override public RsCoreTxVO queryCoreTx(String txId) {
         CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(txId, false);
         if (coreTransactionPO == null) {
@@ -604,7 +581,7 @@ import java.util.concurrent.TimeUnit;
      *
      * @param boList
      */
-    private void submitToSlave(List<CoreTxBO> boList) {
+    @Override public void submitToSlave(List<CoreTxBO> boList) {
         List<SignedTransaction> txs = makeTxs(boList);
         try {
             log.debug("[submitToSlave] start");
