@@ -3,8 +3,10 @@ package com.higgs.trust.common.dao;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author liuyu
@@ -54,34 +56,47 @@ import java.util.List;
      * @param order
      * @return
      */
-    public List<Object> queryByLimit(String tableName, int count, int order){
+    public List<Object> queryByLimit(String tableName, int count, int order) {
         setTableName(tableName);
-        if(count > 1000){
+        if (count > 1000) {
             count = 1000;
         }
-        return queryByLimit(count,order);
+        return queryByLimit(count, order);
     }
+
     /**
      * clear tables
      *
      * @param tableNames
      * @return
      */
-    public boolean clear(String[] tableNames){
-        if(ArrayUtils.isEmpty(tableNames)){
+    public boolean clear(String[] tableNames) {
+        if (ArrayUtils.isEmpty(tableNames)) {
             return false;
         }
-        for(String tableName:tableNames){
+        for (String tableName : tableNames) {
             setTableName(tableName);
             String beginKey = queryFirstKey(null);
             String endKey = queryLastKey();
-            deleteRange(beginKey,endKey);
+            deleteRange(beginKey, endKey);
             delete(endKey);
         }
         return true;
     }
 
-
+    /**
+     * clear all tables
+     *
+     * @return
+     */
+    public boolean clearAll() {
+        Set<String> tableNames = showTables();
+        if (CollectionUtils.isEmpty(tableNames)) {
+            return false;
+        }
+        clear(tableNames.toArray(new String[tableNames.size()]));
+        return true;
+    }
 
     /**
      * set table name

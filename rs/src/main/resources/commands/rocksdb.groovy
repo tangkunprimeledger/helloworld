@@ -95,4 +95,17 @@ class rocksdb {
             out.println("clear is fail")
         }
     }
+
+    @Usage('clear all tables')
+    @Command
+    def clearAll(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def helper = beans.getBean(RocksDBHelper.class)
+        def result = helper.clearAll()
+        if (result) {
+            out.println("clear all is success")
+        } else {
+            out.println("clear all is fail")
+        }
+    }
 }
