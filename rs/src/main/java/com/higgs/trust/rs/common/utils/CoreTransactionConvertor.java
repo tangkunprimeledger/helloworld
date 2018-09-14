@@ -7,6 +7,7 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.account.IssueCurrency;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.DataIdentityAction;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
@@ -15,7 +16,6 @@ import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -78,7 +78,7 @@ public class CoreTransactionConvertor {
      * @param state
      * @return
      */
-    public TxOut buildTxOut(String identity,Integer actionIndex, Integer index, JSONObject state) {
+    public TxOut buildTxOut(String identity, Integer actionIndex, Integer index, JSONObject state) {
         TxOut txOut = new TxOut();
         txOut.setIdentity(identity);
         txOut.setActionIndex(actionIndex);
@@ -88,7 +88,8 @@ public class CoreTransactionConvertor {
     }
 
     /**
-     *build dataIdentityAction
+     * build dataIdentityAction
+     *
      * @param identity
      * @param index
      * @return
@@ -105,6 +106,7 @@ public class CoreTransactionConvertor {
 
     /**
      * build UTXOAction
+     *
      * @param utxoActionTypeEnum
      * @param contractAddress
      * @param stateClass
@@ -113,7 +115,7 @@ public class CoreTransactionConvertor {
      * @param txOutList
      * @return
      */
-    public UTXOAction  buildUTXOAction(UTXOActionTypeEnum utxoActionTypeEnum, String contractAddress, String stateClass, int index, List<TxIn> inputList, List<TxOut> txOutList){
+    public UTXOAction buildUTXOAction(UTXOActionTypeEnum utxoActionTypeEnum, String contractAddress, String stateClass, int index, List<TxIn> inputList, List<TxOut> txOutList) {
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setInputList(inputList);
         utxoAction.setOutputList(txOutList);
@@ -124,5 +126,23 @@ public class CoreTransactionConvertor {
         utxoAction.setIndex(index);
         return utxoAction;
     }
+
+    /**
+     * build currency action
+     *
+     * @param currency
+     * @param index
+     * @param remark
+     * @return
+     */
+    public IssueCurrency buildIssueCurrencyAction(String currency, int index, String remark) {
+        IssueCurrency currencyAction = new IssueCurrency();
+        currencyAction.setCurrencyName(currency);
+        currencyAction.setRemark(remark);
+        currencyAction.setType(ActionTypeEnum.ISSUE_CURRENCY);
+        currencyAction.setIndex(index);
+        return currencyAction;
+    }
+
 
 }
