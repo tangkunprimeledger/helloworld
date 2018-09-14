@@ -324,7 +324,6 @@ import java.util.concurrent.TimeUnit;
                     RsCoreErrorEnum.RS_CORE_VOTE_VOTERS_IS_EMPTY_ERROR, true);
                 return null;
             }
-
             //when not like before policy s ,still submit to slave
             coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             return bo;
@@ -343,7 +342,7 @@ import java.util.concurrent.TimeUnit;
         //if receipts is empty,should retry
         if (CollectionUtils.isEmpty(receipts)) {
             log.error("[processInitTx]voting receipts is empty by SYNC txId:{}", bo.getTxId());
-            return bo;
+            return null;
         }
         //get sign info from receipts
         List<SignInfo> signInfos = voteService.getSignInfos(receipts);
@@ -358,7 +357,7 @@ import java.util.concurrent.TimeUnit;
         if (receipts.size() < needVoters.size()) {
             log.error("[processInitTx]receipts.size:{} is less than voters.size:{} txId:{}", receipts.size(),
                 needVoters.size(), bo.getTxId());
-            return bo;
+            return null;
         }
         //check vote decision for SYNC pattern
         if (votePattern == VotePatternEnum.SYNC) {
@@ -373,7 +372,7 @@ import java.util.concurrent.TimeUnit;
             if (!decision) {
                 toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL,
                     true);
-                return bo;
+                return null;
             }
             //change status to WAIT for SYNC pattern
             coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
