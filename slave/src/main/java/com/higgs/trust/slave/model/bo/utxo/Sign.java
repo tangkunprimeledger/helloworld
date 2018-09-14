@@ -38,6 +38,12 @@ public class Sign  extends BaseBO{
     private  String signature;
 
     /**
+     * crypto type RSA, SM, ECC
+     */
+    @NotBlank
+    private String cryptoType;
+
+    /**
      * make map of sign data
      * key:pubKey
      * value:sign

@@ -158,7 +158,7 @@ public class UTXOContextService extends ContractApiService {
                 log.error("UTXO sign info :{} for PubKey or Signature is null error!", sign);
                 return false;
             }
-            if (!CryptoUtil.getBizCrypto().verify(message, sign.getSignature(), sign.getPubKey())) {
+            if (!CryptoUtil.getBizCrypto(sign.getCryptoType()).verify(message, sign.getSignature(), sign.getPubKey())) {
                 log.error("UTXO verify message :{} for Signature :{} with pubKey :{}  failed error!", message, sign.getSignature(), sign.getPubKey());
                 return false;
             }

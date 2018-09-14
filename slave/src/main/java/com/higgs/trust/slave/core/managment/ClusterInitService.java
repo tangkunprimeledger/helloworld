@@ -97,7 +97,7 @@ import org.springframework.transaction.support.TransactionTemplate;
                     saveConfig(keyPair.getPubKey(), keyPair.getPriKey(), UsageEnum.CONSENSUS);
 
                     // generate keyPair for biz layer
-                    Crypto bizCrypto = CryptoUtil.getBizCrypto();
+                    Crypto bizCrypto = CryptoUtil.getBizCrypto(null);
                     keyPair = bizCrypto.generateKeyPair();
                     saveConfig(keyPair.getPubKey(), keyPair.getPriKey(), UsageEnum.BIZ);
                 }
