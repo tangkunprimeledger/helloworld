@@ -10,8 +10,7 @@ import java.util.List;
  * @description
  * @date 2018-09-13
  */
-@Component
-public class RocksDBSearcher extends RocksBaseDao<Object>{
+@Component public class RocksDBSearcher extends RocksBaseDao<Object> {
     /**
      * the definition of table name
      */
@@ -28,7 +27,7 @@ public class RocksDBSearcher extends RocksBaseDao<Object>{
      * @param key
      * @return
      */
-    public Object queryByKey(String tableName,String key) {
+    public Object queryByKey(String tableName, String key) {
         setTableName(tableName);
         return get(key);
     }
@@ -41,9 +40,9 @@ public class RocksDBSearcher extends RocksBaseDao<Object>{
      * @param limit
      * @return
      */
-    public List<Object> queryByPrefix(String tableName,String prefix, int limit) {
+    public List<Object> queryByPrefix(String tableName, String prefix, int limit) {
         setTableName(tableName);
-        return queryByPrefix(prefix,limit);
+        return queryByPrefix(prefix, limit == 0 ? -1 : limit);
     }
 
     /**
@@ -51,8 +50,8 @@ public class RocksDBSearcher extends RocksBaseDao<Object>{
      *
      * @param tableName
      */
-    private void setTableName(String tableName){
-        if(StringUtils.isEmpty(tableName)){
+    private void setTableName(String tableName) {
+        if (StringUtils.isEmpty(tableName)) {
             throw new RuntimeException("table name is null");
         }
         this.tableName = tableName.trim();
