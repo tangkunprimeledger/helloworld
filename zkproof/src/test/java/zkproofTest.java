@@ -69,15 +69,26 @@ public class zkproofTest {
 
        System.out.println(EncryptAmount.exportPubKey());
 
-       EncryptAmount amt1 = new EncryptAmount(new BigDecimal("100.24"),EncryptAmount.FULL_RANDOM);
+       EncryptAmount amt1 = new EncryptAmount(new BigDecimal("90000000000.24"),EncryptAmount.FULL_RANDOM);
        EncryptAmount amt2 = new EncryptAmount(new BigDecimal("50.1"), amt1.getSubRandom());
        EncryptAmount amt3 = amt1.subtract(amt2);
-       EncryptAmount amt4 = new EncryptAmount(new BigDecimal("50.14"),EncryptAmount.FULL_RANDOM.subtract(amt2.getRandom()));
+       EncryptAmount amt4 = new EncryptAmount(new BigDecimal("90000000000.24").subtract(new BigDecimal("50.1")),EncryptAmount.FULL_RANDOM.subtract(amt2.getRandom()));
 
        System.out.println(amt1);
        System.out.println(amt2);
        System.out.println(amt3);
        System.out.println(amt4);
+
+       EncryptAmount.initHomomorphicEncryption("Paillier", 512);
+
+       EncryptAmount amt11 = new EncryptAmount(new BigDecimal("124.52"),EncryptAmount.FULL_RANDOM);
+       EncryptAmount amt12 = new EncryptAmount(new BigDecimal("50.14"), EncryptAmount.FULL_RANDOM);
+       EncryptAmount amt13 = amt11.add(amt12);
+
+       System.out.println(amt11);
+       System.out.println(amt12);
+       System.out.println(amt13);
+       System.out.println(EncryptAmount.Decryption(amt13.toString()));
 
     //    String em2 = EncryptAmount.getHe().Encryption(BigInteger.ONE,BigInteger.ONE);
     //    BigInteger m2 = EncryptAmount.getHe().Decryption(em2);
