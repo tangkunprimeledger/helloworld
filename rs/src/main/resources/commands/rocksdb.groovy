@@ -1,10 +1,6 @@
 package commands
 
-import com.higgs.trust.common.dao.RocksDBSearcher
-import com.higgs.trust.common.dao.RocksUtils
-import com.higgs.trust.rs.core.api.CaService
-import com.higgs.trust.slave.api.RocksDbService
-import com.higgs.trust.slave.core.service.ca.CaInitService
+import com.higgs.trust.common.dao.RocksDBHelper
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Argument
 import org.crsh.cli.Command
@@ -27,8 +23,8 @@ class rocksdb {
     @Command
     def showTables(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def searcher = beans.getBean(RocksDBSearcher.class)
-        def result = searcher.showTables()
+        def helper = beans.getBean(RocksDBHelper.class)
+        def result = helper.showTables()
         if (result) {
             out.println("$result")
         } else {
@@ -42,8 +38,8 @@ class rocksdb {
                    @Usage("tableName") @Required @Argument String tableName,
                    @Usage("keyName") @Required @Argument String keyName) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def searcher = beans.getBean(RocksDBSearcher.class)
-        def result = searcher.queryByKey(tableName, keyName)
+        def helper = beans.getBean(RocksDBHelper.class)
+        def result = helper.queryByKey(tableName, keyName)
         if (result) {
             out.println("$result")
         } else {
@@ -59,8 +55,8 @@ class rocksdb {
                       @Usage("limit") @Argument int limit
     ) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def searcher = beans.getBean(RocksDBSearcher.class)
-        def result = searcher.queryByPrefix(tableName, prefix, limit)
+        def helper = beans.getBean(RocksDBHelper.class)
+        def result = helper.queryByPrefix(tableName, prefix, limit)
         if (result) {
             result.forEach({ entry -> out.println("$entry") })
         } else {
@@ -76,12 +72,27 @@ class rocksdb {
                      @Usage("order 0:DESC 1:ASC") @Required @Argument int order
     ) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def searcher = beans.getBean(RocksDBSearcher.class)
-        def result = searcher.queryByLimit(tableName, count, order)
+        def helper = beans.getBean(RocksDBHelper.class)
+        def result = helper.queryByLimit(tableName, count, order)
         if (result) {
             result.forEach({ entry -> out.println("$entry") })
         } else {
             out.println("is empty")
+        }
+    }
+
+
+    @Usage('clear tables')
+    @Command
+    def clear(InvocationContext context,
+                     @Usage("tableNames") @Required @Argument String ...tableNames) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def helper = beans.getBean(RocksDBHelper.class)
+        def result = helper.clear(tableNames)
+        if (result) {
+            out.println("clear is success")
+        } else {
+            out.println("clear is fail")
         }
     }
 }

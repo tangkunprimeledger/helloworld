@@ -1,5 +1,6 @@
 package com.higgs.trust.common.dao;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * @description
  * @date 2018-09-13
  */
-@Component public class RocksDBSearcher extends RocksBaseDao<Object> {
+@Component public class RocksDBHelper extends RocksBaseDao<Object> {
     /**
      * the definition of table name
      */
@@ -60,6 +61,28 @@ import java.util.List;
         }
         return queryByLimit(count,order);
     }
+    /**
+     * clear tables
+     *
+     * @param tableNames
+     * @return
+     */
+    public boolean clear(String[] tableNames){
+        if(ArrayUtils.isEmpty(tableNames)){
+            return false;
+        }
+        for(String tableName:tableNames){
+            setTableName(tableName);
+            String beginKey = queryFirstKey(null);
+            String endKey = queryLastKey();
+            deleteRange(beginKey,endKey);
+            delete(endKey);
+        }
+        return true;
+    }
+
+
+
     /**
      * set table name
      *
