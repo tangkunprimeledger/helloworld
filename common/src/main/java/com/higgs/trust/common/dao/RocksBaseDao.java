@@ -9,10 +9,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * BaseDao including some basic database operation. All sub-dao classes have to extend
@@ -374,4 +371,15 @@ public abstract class RocksBaseDao<V> {
         return (Class<V>)pt.getActualTypeArguments()[0];
     }
 
+    /**
+     * show all defined table names
+     *
+     * @return
+     */
+    public Set<String> showTables(){
+        if(rocksDBWrapper.getColumnFamilyHandleMap() == null){
+            return Collections.emptySet();
+        }
+        return rocksDBWrapper.getColumnFamilyHandleMap().keySet();
+    }
 }
