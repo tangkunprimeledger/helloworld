@@ -35,7 +35,7 @@ public class CoreTxProcessRepositoryTest extends IntegrateBaseTest{
     }
 
     @Test public void testQueryByStatus() throws Exception {
-        List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.END, 0, 20);
+        List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.END, 0, 20,null);
         Assert.assertEquals(list.size(), 10);
     }
 
@@ -82,7 +82,7 @@ public class CoreTxProcessRepositoryTest extends IntegrateBaseTest{
     @Test public void testDeleteEnd() throws Exception {
         coreTxProcessRepository.deleteEnd();
 
-        List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.END, 0, 1000);
+        List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.END, 0, 1000,null);
         Assert.assertEquals(list.size(), 0);
     }
 }
