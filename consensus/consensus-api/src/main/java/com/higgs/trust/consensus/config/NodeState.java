@@ -169,23 +169,26 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
         boolean result = false;
         switch (from) {
             case Starting:
-                result = SelfChecking == to;
+                result = Initialize == to || Offline == to;
+                break;
+            case Initialize:
+                result = StartingConsensus == to || Offline == to;
+                break;
+            case StartingConsensus:
+                result = SelfChecking == to || Offline == to;
                 break;
             case SelfChecking:
                 result = AutoSync == to || ArtificialSync == to || Running == to || Offline == to;
                 break;
             case AutoSync:
             case ArtificialSync:
-                result = SelfChecking == to || StartingConsensus == to || Running == to || Offline == to;
-                break;
-            case StartingConsensus:
-                result = Running == to || SelfChecking == to || Offline == to;
+                result = SelfChecking == to || Running == to || Offline == to;
                 break;
             case Running:
                 result = SelfChecking == to || Offline == to;
                 break;
             case Offline:
-                result = SelfChecking == to;
+                result = SelfChecking == to||Initialize==to;
                 break;
 
         }

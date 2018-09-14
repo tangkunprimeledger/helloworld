@@ -61,12 +61,11 @@ import java.util.concurrent.Executors;
      * 自动同步区块
      */
     @StateChangeListener(NodeStateEnum.AutoSync) public void autoSync() {
-        if (!nodeState.isState(NodeStateEnum.AutoSync)) {
+        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
             return;
         }
         log.info("auto sync starting ...");
         try {
-            clusterViewService.initClusterViewFromCluster();
             Long currentHeight = blockRepository.getMaxHeight();
             if (currentHeight == null || currentHeight == 0) {
                 syncGenesis();
@@ -99,8 +98,6 @@ import java.util.concurrent.Executors;
         } catch (Exception e) {
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SYNC_BLOCKS_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
-        } finally {
-            clusterViewService.initClusterViewFromDB();
         }
     }
 
