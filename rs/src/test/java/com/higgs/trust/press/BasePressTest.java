@@ -10,7 +10,8 @@ import com.higgs.trust.slave.api.vo.RespData;
  * @date 2018-09-11
  */
 public class BasePressTest {
-    private static String BASE_URL = "http://10.200.173.194:7071/";
+//    private static String BASE_URL = "http://10.200.173.194:7071/";
+    private static String BASE_URL = "http://10.200.172.98:7070/";
     /**
      INSERT INTO `biz_type` (`policy_id`, `biz_type`, `create_time`) VALUES ('CREATE_CURRENCY', 'CREATE_CURRENCY', '2018-6-21 15:15:25');
      INSERT INTO `biz_type` (`policy_id`, `biz_type`, `create_time`) VALUES ('OPEN_MY_ACCOUNT', 'OPEN_MY_ACCOUNT', '2018-6-21 15:15:25');
