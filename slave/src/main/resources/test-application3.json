@@ -92,7 +92,7 @@
         "maxWait": 60000,
         "min-evictable-idle-time-millis": 300000,
         "minIdle": 1,
-        "password": "root",
+        "password": "920125",
         "time-between-eviction-runs-millis": 60000,
         "url": "jdbc:mysql://localhost:3306/trust3?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
@@ -118,6 +118,10 @@
     },
     "key": {
       "mode": "manual"
+    },
+    "redisson": {
+      "sentinel.masterName":"",
+      "password": ""
     }
   },
   "logging": {
@@ -180,7 +184,7 @@
         "2": "TRUST-TEST2",
         "3": "TRUST-TEST3"
       },
-      "defaultDir": "D:/tmp/files3"
+      "defaultDir": "C:/tmp/files3"
     }
   }
 }

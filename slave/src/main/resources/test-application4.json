@@ -4,12 +4,19 @@
       "NFLoadBalancerRuleClassName": "com.higgs.trust.common.feign.RequestHeaderRoundRobinRule"
     }
   },
-  "copycat": {
-    "server": {
-      "address": "127.0.0.1:8804",
-      "cluster": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803,127.0.0.1:8804",
-      "client": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803,127.0.0.1:8804",
-      "logDir": "/tmp/higgs/trust/copycat/log4"
+  "atomix": {
+    "address": "127.0.0.1:8800",
+    "cluster": {
+      "0": "127.0.0.1:8800",
+      "1": "127.0.0.1:8801",
+      "2": "127.0.0.1:8802",
+      "3": "127.0.0.1:8803",
+      "4": "127.0.0.1:8804"
+    }
+  },
+  "config": {
+    "term": {
+      "maxTermsSize": 8
     }
   },
   "eureka": {
@@ -22,7 +29,7 @@
   },
   "higgs": {
     "trust": {
-      "electionMaster": false,
+      "electionMaster": true,
       "masterName": "TRUST-TEST0",
       "nodeName": "TRUST-TEST4",
       "prefix": "TRUST",
@@ -178,7 +185,7 @@
         "3": "TRUST-TEST3",
         "4": "TRUST-TEST4"
       },
-      "defaultDir": "D:/tmp/files4"
+      "defaultDir": "C:/tmp/files4"
     }
   }
 }

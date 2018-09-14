@@ -42,7 +42,6 @@ import org.spongycastle.math.ec.custom.sec.SecP256K1Curve;
 import org.spongycastle.util.encoders.Base64;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -202,11 +201,11 @@ import static com.google.common.base.Preconditions.*;
         return new KeyPair(pubKey, priKey);
     }
 
-    protected ECKey(@Nullable BigInteger priv, ECPoint pub) {
+    protected ECKey(BigInteger priv, ECPoint pub) {
         this(priv, new LazyECPoint(checkNotNull(pub)));
     }
 
-    protected ECKey(@Nullable BigInteger priv, LazyECPoint pub) {
+    protected ECKey(BigInteger priv, LazyECPoint pub) {
         if (priv != null) {
             checkArgument(priv.bitLength() <= 32 * 8, "private key exceeds 32 bytes: %s bits", priv.bitLength());
             // Try and catch buggy callers or bad key imports, etc. Zero and one
@@ -228,7 +227,7 @@ import static com.google.common.base.Preconditions.*;
      * importing a key from elsewhere. The public key will be automatically
      * derived from the private key.
      */
-    @Deprecated public ECKey(@Nullable byte[] privKeyBytes, @Nullable byte[] pubKey) {
+    @Deprecated public ECKey(byte[] privKeyBytes, byte[] pubKey) {
         this(privKeyBytes == null ? null : new BigInteger(1, privKeyBytes), pubKey);
     }
 
@@ -258,7 +257,7 @@ import static com.google.common.base.Preconditions.*;
      * @param compressed If set to true and pubKey is null, the derived public key will
      *                   be in compressed form.
      */
-    @Deprecated public ECKey(@Nullable BigInteger privKey, @Nullable byte[] pubKey, boolean compressed) {
+    @Deprecated public ECKey(BigInteger privKey, byte[] pubKey, boolean compressed) {
         if (privKey == null && pubKey == null)
             throw new IllegalArgumentException("ECKey requires at least private or public key");
         this.priv = privKey;
@@ -283,7 +282,7 @@ import static com.google.common.base.Preconditions.*;
      * public key already correctly matches the public key. If only the public
      * key is supplied, this ECKey cannot be used for signing.
      */
-    @Deprecated private ECKey(@Nullable BigInteger privKey, @Nullable byte[] pubKey) {
+    @Deprecated private ECKey(BigInteger privKey, byte[] pubKey) {
         this(privKey, pubKey, false);
     }
 
@@ -539,7 +538,7 @@ import static com.google.common.base.Preconditions.*;
      * @return An ECKey containing only the public part, or null if recovery
      * wasn't possible.
      */
-    @Nullable public static ECKey recoverFromSignature(int recId, ECDSASignature sig, Sha256Hash message,
+    public static ECKey recoverFromSignature(int recId, ECDSASignature sig, Sha256Hash message,
         boolean compressed) {
         Preconditions.checkArgument(recId >= 0, "recId must be positive");
         Preconditions.checkArgument(sig.r.signum() >= 0, "r must be positive");
@@ -701,7 +700,7 @@ import static com.google.common.base.Preconditions.*;
      * @throws KeyCrypterException              if there's something wrong with aesKey.
      * @throws ECKey.MissingPrivateKeyException if this key cannot sign because it's pubkey only.
      */
-    public ECDSASignature sign(Sha256Hash input, @Nullable KeyParameter aesKey) throws KeyCrypterException {
+    public ECDSASignature sign(Sha256Hash input, KeyParameter aesKey) throws KeyCrypterException {
         KeyCrypter crypter = getKeyCrypter();
         if (crypter != null) {
             if (aesKey == null)
@@ -748,8 +747,8 @@ import static com.google.common.base.Preconditions.*;
      * @throws KeyCrypterException   if this ECKey is encrypted and no AESKey is provided or it
      *                               does not decrypt the ECKey.
      */
-    public String signMessage(String message, Charset charset, @Nullable KeyParameter aesKey,
-        @Nullable byte[] headerBytes) {
+    public String signMessage(String message, Charset charset, KeyParameter aesKey,
+        byte[] headerBytes) {
         byte[] data = CryptoUtils.formatMessageForSigning(message, charset, headerBytes);
         Sha256Hash hash = Sha256Hash.twiceOf(data);
         ECDSASignature sig = sign(hash, aesKey);
@@ -780,7 +779,7 @@ import static com.google.common.base.Preconditions.*;
         return signMessage(hash, null);
     }
 
-    public String signMessage(Sha256Hash messageHash, @Nullable KeyParameter aesKey) {
+    public String signMessage(Sha256Hash messageHash, KeyParameter aesKey) {
         ECDSASignature sig = sign(messageHash, aesKey);
         // Now we have to work backwards to figure out the recId needed to
         // recover the signature.
@@ -883,7 +882,7 @@ import static com.google.common.base.Preconditions.*;
      * Returns the the encrypted private key bytes and initialisation vector for
      * this ECKey, or null if the ECKey is not encrypted.
      */
-    @Nullable public EncryptedData getEncryptedPrivateKey() {
+    public EncryptedData getEncryptedPrivateKey() {
         return encryptedPrivateKey;
     }
 
@@ -891,7 +890,7 @@ import static com.google.common.base.Preconditions.*;
      * Returns the KeyCrypter that was used to encrypt to encrypt this ECKey.
      * You need this to decrypt the ECKey.
      */
-    @Nullable public KeyCrypter getKeyCrypter() {
+    public KeyCrypter getKeyCrypter() {
         return keyCrypter;
     }
 

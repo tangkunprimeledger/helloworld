@@ -21,14 +21,14 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-atomix</artifactId>
         </dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.higgs.trust</groupId>-->
-            <!--<artifactId>consensus-smart</artifactId>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.higgs.trust</groupId>
-            <artifactId>consensus-zk</artifactId>
+            <artifactId>consensus-smart</artifactId>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.higgs.trust</groupId>-->
+            <!--<artifactId>consensus-zk</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-p2pvalid</artifactId>
