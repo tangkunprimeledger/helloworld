@@ -136,11 +136,11 @@ import java.util.concurrent.Future;
 
     private VoteReceipt processAcceptVoting(VotingRequest votingRequest, CoreTransaction coreTx) {
         try {
-            //save record
-            voteReqRecordRepository.add(makeVoteRequestRecord(votingRequest));
+            String sign = null;
+            VoteResultEnum voteResultEnum = VoteResultEnum.INIT;
             //process SYNC
             if (StringUtils.equals(votingRequest.getVotePattern(), VotePatternEnum.SYNC.getCode())) {
-                VoteResultEnum voteResult = VoteResultEnum.AGREE;
+                voteResultEnum = VoteResultEnum.AGREE;
                 try {
                     //check self node status
                     boolean r = checkSelfNodeStatus();
@@ -149,26 +149,26 @@ import java.util.concurrent.Future;
                         txCallbackRegistor.onVote(votingRequest);
                     }else {
                         log.info("[acceptVoting]self.rs status is not COMMON");
-                        voteResult = VoteResultEnum.DISAGREE;
+                        voteResultEnum = VoteResultEnum.DISAGREE;
                     }
                 } catch (Throwable e) {
                     log.error("[acceptVoting]callback custom has error", e);
-                    voteResult = VoteResultEnum.DISAGREE;
+                    voteResultEnum = VoteResultEnum.DISAGREE;
                 }
-                log.info("[acceptVoting]txId:{},voteResult:{}", coreTx.getTxId(), voteResult);
-                String sign = null;
-                if (voteResult == VoteResultEnum.AGREE) {
+                log.info("[acceptVoting]txId:{},voteResult:{}", coreTx.getTxId(), voteResultEnum);
+                if (voteResultEnum == VoteResultEnum.AGREE) {
                     //get sign info
                     SignInfo signInfo = signService.signTx(coreTx);
                     sign = signInfo.getSign();
                 }
-                //update sign info vote result
-                voteReqRecordRepository.setVoteResult(coreTx.getTxId(), sign, voteResult);
-                return makeVoteReceipt(coreTx.getTxId(), sign, voteResult);
-            } else {
-                //for ASYNC
-                return makeVoteReceipt(coreTx.getTxId(), null, VoteResultEnum.INIT);
             }
+            //save record
+            VoteRequestRecord requestRecord = makeVoteRequestRecord(votingRequest);
+            requestRecord.setSign(sign);
+            requestRecord.setVoteResult(voteResultEnum);
+            voteReqRecordRepository.add(requestRecord);
+            //return receipt
+            return makeVoteReceipt(coreTx.getTxId(), sign, voteResultEnum);
         } catch (SlaveException e) {
             if (e.getCode() == SlaveErrorEnum.SLAVE_IDEMPOTENT) {
                 log.info("[acceptVoting]voteRequestRecord is already exist txId:{}", coreTx.getTxId());
