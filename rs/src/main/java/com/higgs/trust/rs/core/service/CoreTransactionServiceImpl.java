@@ -248,12 +248,14 @@ import java.util.concurrent.TimeUnit;
         } else {
             Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
             try {
+                Profiler.enter("processInitTx.getForUpdate");
                 ThreadLocalUtils.putRocksTx(tx);
                 CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);
                 if (null == po) {
                     log.warn("[processInitTx]cannot acquire lock, txId={}", txId);
                     return;
                 }
+                Profiler.release();
                 bo = processInitTxInTransaction(po);
             } finally {
                 if (null != tx) {
@@ -289,20 +291,24 @@ import java.util.concurrent.TimeUnit;
     }
 
     private CoreTxBO processInitTxInTransaction(CoreTransactionPO po) {
-
+        Profiler.enter("processInitTx.queryByTxId");
         if (null == coreTxProcessRepository.queryByTxId(po.getTxId(), CoreTxStatusEnum.INIT)) {
             log.info("[processInitTx]the coreTx is null or status is not INIT txId:{}", po.getTxId());
             return null;
         }
+        Profiler.release();
         Date lockTime = po.getLockTime();
         if (lockTime != null && lockTime.after(new Date())) {
             log.info("[processInitTx]should skip this tx by lock time:{}", lockTime);
             return null;
         }
         //convert bo
+        Profiler.enter("processInitTx.convertTxBO");
         CoreTxBO bo = coreTxRepository.convertTxBO(po);
+        Profiler.release();
         String policyId = bo.getPolicyId();
         log.debug("[processInitTx]policyId:{}", policyId);
+        Profiler.enter("processInitTx.getPolicyById");
         Policy policy = policyRepository.getPolicyById(policyId);
         if (policy == null) {
             log.error("[processInitTx]get policy is null by policyId:{}", policyId);
@@ -310,7 +316,9 @@ import java.util.concurrent.TimeUnit;
                 RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED, true);
             return null;
         }
+        Profiler.release();
         // vote rule
+        Profiler.enter("processInitTx.getVoteRule");
         VoteRule voteRule = getVoteRule(policyId);
         if (voteRule == null || null == voteRule.getVotePattern()) {
             log.error("[processInitTx]get voteRule is null or votePattern is null by policyId:{}", policyId);
@@ -318,7 +326,7 @@ import java.util.concurrent.TimeUnit;
                 RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR, true);
             return null;
         }
-
+        Profiler.release();
         VotePatternEnum votePattern = voteRule.getVotePattern();
         //check rs ids
         if (CollectionUtils.isEmpty(policy.getRsIds())) {
@@ -336,17 +344,22 @@ import java.util.concurrent.TimeUnit;
             coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             return bo;
         }
-
+        Profiler.enter("processInitTx.getVoters");
         //get need voters from saved sign info
         List<String> needVoters = voteService.getVoters(bo.getSignDatas(), policy.getRsIds());
+        Profiler.release();
         if (CollectionUtils.isEmpty(needVoters)) {
             log.warn("[processInitTx]need voters is empty txId:{}", bo.getTxId());
             //still submit to slave
+            Profiler.enter("processInitTx.updateStatus");
             coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+            Profiler.release();
             return bo;
         }
+        Profiler.enter("processInitTx.requestVoting");
         //request voting
         List<VoteReceipt> receipts = voteService.requestVoting(bo, needVoters, votePattern);
+        Profiler.release();
         //if receipts is empty,should retry
         if (CollectionUtils.isEmpty(receipts)) {
             log.error("[processInitTx]voting receipts is empty by SYNC txId:{}", bo.getTxId());
@@ -355,8 +368,10 @@ import java.util.concurrent.TimeUnit;
         //get sign info from receipts
         List<SignInfo> signInfos = voteService.getSignInfos(receipts);
         signInfos.addAll(bo.getSignDatas());
+        Profiler.enter("processInitTx.updateSignDatas");
         //update signDatas
         coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
+        Profiler.release();
         //save already voting result for SYNC pattern
         if (votePattern == VotePatternEnum.SYNC) {
             voteReceiptRepository.batchAdd(receipts);
@@ -369,6 +384,7 @@ import java.util.concurrent.TimeUnit;
         }
         //check vote decision for SYNC pattern
         if (votePattern == VotePatternEnum.SYNC) {
+            Profiler.enter("processInitTx.processSYNC");
             //add them when have last receipts
             List<VoteReceipt> lastReceipts = voteReceiptRepository.queryByTxId(bo.getTxId());
             if (!CollectionUtils.isEmpty(lastReceipts)) {
@@ -384,6 +400,7 @@ import java.util.concurrent.TimeUnit;
             }
             //change status to WAIT for SYNC pattern
             coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+            Profiler.release();
         } else {
             //change status to NEED_VOTE for ASYNC pattern
             coreTxProcessRepository
