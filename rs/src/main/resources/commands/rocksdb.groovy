@@ -80,7 +80,7 @@ class rocksdb {
             out.println("is empty")
         }
     }
-
+/*
     @Usage('clear tables')
     @Command
     def clear(InvocationContext context,
@@ -108,4 +108,5 @@ class rocksdb {
             out.println("clear all is fail")
         }
     }
+*/
 }
