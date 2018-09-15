@@ -26,7 +26,7 @@ public class TxSubmitSlaveSchedule {
     @Autowired private CoreTxRepository coreTxRepository;
     private int pageNo = 1;
     private int pageSize = 1000;
-    private int maxPageNo = 500;
+    private int maxPageNo = 1000;
     /**
      * rocks db seek key:01-tx_id
      */
@@ -40,18 +40,21 @@ public class TxSubmitSlaveSchedule {
             lastPreKey = null;
             return;
         }
-        List<String> txIdList = Lists.newArrayListWithCapacity(list.size());
-        for (CoreTransactionProcessPO po : list) {
-            txIdList.add(po.getTxId());
-        }
+        int size = list.size();
+        //TODO:for press test
+        log.info("submit.size:{}",size);
+        List<String> txIdList = new ArrayList<>(size);
+        list.forEach(entry->{
+            txIdList.add(entry.getTxId());
+        });
         //reset preKey by last txId
-        lastPreKey = txIdList.get(txIdList.size() - 1);
+        lastPreKey = txIdList.get(size - 1);
 
         List<CoreTransactionPO> coreTransactionPOList = coreTxRepository.queryByTxIds(txIdList);
-        List<CoreTxBO> boList = new ArrayList<>(list.size());
-        for (CoreTransactionPO po : coreTransactionPOList) {
-            boList.add(coreTxRepository.convertTxBO(po));
-        }
+        List<CoreTxBO> boList = new ArrayList<>(size);
+        coreTransactionPOList.forEach(entry->{
+            boList.add(coreTxRepository.convertTxBO(entry));
+        });
         coreTransactionService.submitToSlave(boList);
         pageNo++;
     }

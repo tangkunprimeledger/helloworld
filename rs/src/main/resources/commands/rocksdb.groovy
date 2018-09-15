@@ -83,7 +83,7 @@ class rocksdb {
 
     @Usage('clear tables')
     @Command
-    def clear(InvocationContext context,
+    def clearTables(InvocationContext context,
               @Usage("tableNames") @Required @Argument String[] tableNames) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def helper = beans.getBean(RocksDBHelper.class)

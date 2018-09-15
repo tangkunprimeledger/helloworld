@@ -24,7 +24,7 @@ public class TxProcessInitSchedule {
 
     private int pageNo = 1;
     private int pageSize = 1000;
-    private int maxPageNo = 500;
+    private int maxPageNo = 1000;
     /**
      * rocks db seek key:01-tx_id
      */
@@ -38,14 +38,17 @@ public class TxProcessInitSchedule {
             lastPreKey = null;
             return;
         }
-        for (CoreTransactionProcessPO po : list) {
+        list.forEach(entry->{
             try {
-                coreTransactionService.processInitTx(po.getTxId());
+                coreTransactionService.processInitTx(entry.getTxId());
             } catch (Throwable e) {
                 log.error("has error", e);
             }
-        }
-        lastPreKey = list.get(list.size() - 1).getTxId();
+        });
+        int size = list.size();
+        //TODO:for press test
+        log.info("process init.size:{}",size);
+        lastPreKey = list.get(size - 1).getTxId();
         pageNo++;
     }
 }

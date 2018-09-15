@@ -384,19 +384,24 @@ public abstract class RocksBaseDao<V> {
     }
 
     /**
-     * query by count and order
+     * query by prefix 、count and order
      *
      * @param count
      * @param order
      * @return
      */
-    public List<V> queryByCount(int count,int order) {
+    public List<V> queryByPrefix(String prefix,int count,int order) {
         RocksIterator iterator = iterator();
         List<V> list = new ArrayList<>(count);
         int i = 0;
         //desc
         if(order == 0){
-            for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
+            if(StringUtils.isEmpty(prefix)){
+                iterator.seekToLast();
+            }else {
+                iterator.seek(JSON.toJSONBytes(prefix));
+            }
+            for (; iterator.isValid(); iterator.prev()) {
                 if(i == count){
                     break;
                 }
@@ -405,7 +410,12 @@ public abstract class RocksBaseDao<V> {
             }
         //asc
         }else if (order == 1){
-            for (iterator.seekToFirst(); iterator.isValid(); iterator.next()) {
+            if(StringUtils.isEmpty(prefix)){
+                iterator.seekToFirst();
+            }else {
+                iterator.seek(JSON.toJSONBytes(prefix));
+            }
+            for (; iterator.isValid(); iterator.next()) {
                 if(i == count){
                     break;
                 }

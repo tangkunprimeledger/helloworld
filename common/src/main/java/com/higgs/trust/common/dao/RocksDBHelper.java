@@ -61,7 +61,7 @@ import java.util.*;
         if (count > 1000) {
             count = 1000;
         }
-        return queryByCount(count, order);
+        return queryByPrefix(null,count, order);
     }
 
     /**
