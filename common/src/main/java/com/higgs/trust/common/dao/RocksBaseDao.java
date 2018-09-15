@@ -157,7 +157,8 @@ public abstract class RocksBaseDao<V> {
                 list.add(JSON.parseObject(iterator.value(), clazz));
             }
         } else {
-            for (iterator.seek(prefixByte); iterator.isValid() && limit-- > 0 && isPrefix(prefix, iterator.key()); iterator.next()) {
+            for (iterator.seek(prefixByte);
+                 iterator.isValid() && limit-- > 0 && isPrefix(prefix, iterator.key()); iterator.next()) {
                 list.add(JSON.parseObject(iterator.value(), clazz));
             }
         }
@@ -194,7 +195,7 @@ public abstract class RocksBaseDao<V> {
 
         RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
         byte[] prefixByte = JSON.toJSONBytes(prefix);
-        for (iterator.seekForPrev(prefixByte); iterator.isValid();) {
+        for (iterator.seekForPrev(prefixByte); iterator.isValid(); ) {
             return JSON.parseObject(iterator.value(), clazz);
         }
 
@@ -208,7 +209,7 @@ public abstract class RocksBaseDao<V> {
 
         RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
         byte[] prefixByte = JSON.toJSONBytes(prefix);
-        for (iterator.seekForPrev(prefixByte); iterator.isValid();) {
+        for (iterator.seekForPrev(prefixByte); iterator.isValid(); ) {
             return (String)JSON.parse(iterator.key());
         }
 
@@ -234,12 +235,12 @@ public abstract class RocksBaseDao<V> {
     public String queryFirstKey(String prefix) {
         RocksIterator iterator = iterator();
         if (StringUtils.isEmpty(prefix)) {
-            for (iterator.seekToFirst(); iterator.isValid();) {
+            for (iterator.seekToFirst(); iterator.isValid(); ) {
                 return (String)JSON.parse(iterator.key());
             }
         } else {
             byte[] prefixByte = JSON.toJSONBytes(prefix);
-            for (iterator.seek(prefixByte); iterator.isValid();) {
+            for (iterator.seek(prefixByte); iterator.isValid(); ) {
                 if (isPrefix(prefix, iterator.key())) {
                     return (String)JSON.parse(iterator.key());
                 }
@@ -376,8 +377,8 @@ public abstract class RocksBaseDao<V> {
      *
      * @return
      */
-    public Set<String> showTables(){
-        if(rocksDBWrapper.getColumnFamilyHandleMap() == null){
+    public Set<String> showTables() {
+        if (rocksDBWrapper.getColumnFamilyHandleMap() == null) {
             return Collections.emptySet();
         }
         return rocksDBWrapper.getColumnFamilyHandleMap().keySet();
@@ -390,33 +391,45 @@ public abstract class RocksBaseDao<V> {
      * @param order
      * @return
      */
-    public List<V> queryByPrefix(String prefix,int count,int order) {
-        RocksIterator iterator = iterator();
+    public List<V> queryByPrefix(String prefix, int count, int order) {
+        RocksIterator iterator = null;
         List<V> list = new ArrayList<>(count);
         int i = 0;
         //desc
-        if(order == 0){
-            if(StringUtils.isEmpty(prefix)){
+        if (order == 0) {
+            if (StringUtils.isEmpty(prefix)) {
+                iterator = iterator();
                 iterator.seekToLast();
-            }else {
+            } else {
+                ReadOptions readOptions = new ReadOptions();
+                readOptions.setPrefixSameAsStart(true);
+                iterator = iterator(readOptions);
                 iterator.seek(JSON.toJSONBytes(prefix));
             }
-            for (; iterator.isValid(); iterator.prev()) {
-                if(i == count){
+            for (;
+                 iterator.isValid() && (StringUtils.isEmpty(prefix) ? true : isPrefix(prefix, iterator.key())); iterator
+                     .prev()) {
+                if (i == count) {
                     break;
                 }
                 list.add(JSON.parseObject(iterator.value(), clazz));
                 i++;
             }
         //asc
-        }else if (order == 1){
-            if(StringUtils.isEmpty(prefix)){
+        } else if (order == 1) {
+            if (StringUtils.isEmpty(prefix)) {
+                iterator = iterator();
                 iterator.seekToFirst();
-            }else {
+            } else {
+                ReadOptions readOptions = new ReadOptions();
+                readOptions.setPrefixSameAsStart(true);
+                iterator = iterator(readOptions);
                 iterator.seek(JSON.toJSONBytes(prefix));
             }
-            for (; iterator.isValid(); iterator.next()) {
-                if(i == count){
+            for (;
+                 iterator.isValid() && (StringUtils.isEmpty(prefix) ? true : isPrefix(prefix, iterator.key())); iterator
+                     .next()) {
+                if (i == count) {
                     break;
                 }
                 list.add(JSON.parseObject(iterator.value(), clazz));

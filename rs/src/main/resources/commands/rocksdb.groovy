@@ -83,11 +83,11 @@ class rocksdb {
 
     @Usage('clear tables')
     @Command
-    def clearTables(InvocationContext context,
-              @Usage("tableNames") @Required @Argument String[] tableNames) {
+    def clear(InvocationContext context,
+              @Usage("to clear table names,multiple comma-connected") @Required @Argument String tableNames) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def helper = beans.getBean(RocksDBHelper.class)
-        def result = helper.clear(tableNames)
+        def result = helper.clear(tableNames.split(","))
         if (result) {
             out.println("clear is success")
         } else {
@@ -95,19 +95,19 @@ class rocksdb {
         }
     }
 
-/*
+
     @Usage('clear all tables allow ignored')
     @Command
     def clearAll(InvocationContext context,
-              @Usage("ignored table names") @Argument String[] ignoreTables) {
+              @Usage("ignored table names,multiple comma-connected") @Argument String ignoreTables) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def helper = beans.getBean(RocksDBHelper.class)
-        def result = helper.clearAll(ignoreTables)
+        def result = helper.clearAll(ignoreTables == null ? null : ignoreTables.split(","))
         if (result) {
             out.println("clear all is success")
         } else {
             out.println("clear all is fail")
         }
     }
-*/
+
 }
