@@ -40,6 +40,9 @@ public class TxProcessInitSchedule {
             lastPreKey = null;
             return;
         }
+        int size = list.size();
+        //TODO:for press test
+        log.info("process init.size:{}",size);
         list.forEach(entry->{
             try {
                 coreTransactionService.processInitTx(entry.getTxId());
@@ -47,9 +50,6 @@ public class TxProcessInitSchedule {
                 log.error("has error", e);
             }
         });
-        int size = list.size();
-        //TODO:for press test
-        log.info("process init.size:{}",size);
         lastPreKey = list.get(size - 1).getTxId();
         pageNo++;
     }

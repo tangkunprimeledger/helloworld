@@ -282,7 +282,7 @@ import java.util.concurrent.TimeUnit;
         }
         Profiler.release();
         Profiler.release();
-        if(Profiler.getDuration() >= 50000L){
+        if(Profiler.getDuration() > 10000L){
             Profiler.logDump();
         }
         log.debug("[processInitTx]is success");
@@ -302,7 +302,7 @@ import java.util.concurrent.TimeUnit;
         //convert bo
         CoreTxBO bo = coreTxRepository.convertTxBO(po);
         String policyId = bo.getPolicyId();
-        log.info("[processInitTx]policyId:{}", policyId);
+        log.debug("[processInitTx]policyId:{}", policyId);
         Policy policy = policyRepository.getPolicyById(policyId);
         if (policy == null) {
             log.error("[processInitTx]get policy is null by policyId:{}", policyId);
