@@ -94,7 +94,7 @@ public class CoreTxProcessRepository {
             return coreTransactionProcessDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
         }
         preKey = StringUtils.isEmpty(preKey) ? coreTxStatusEnum.getIndex() : coreTxStatusEnum.getIndex() + Constant.SPLIT_SLASH + preKey;
-        return coreTxProcessRocksDao.queryByPrefix(preKey, count,0);
+        return coreTxProcessRocksDao.queryByPrefix(preKey, count);
     }
 
     /**
