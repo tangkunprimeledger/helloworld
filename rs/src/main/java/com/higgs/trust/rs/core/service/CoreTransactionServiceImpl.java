@@ -368,13 +368,15 @@ import java.util.concurrent.TimeUnit;
         //get sign info from receipts
         List<SignInfo> signInfos = voteService.getSignInfos(receipts);
         signInfos.addAll(bo.getSignDatas());
-        Profiler.enter("processInitTx.updateSignDatas");
         //update signDatas
+        Profiler.enter("processInitTx.updateSignDatas");
         coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
         Profiler.release();
         //save already voting result for SYNC pattern
         if (votePattern == VotePatternEnum.SYNC) {
+            Profiler.enter("processInitTx.batchAddReceipts");
             voteReceiptRepository.batchAdd(receipts);
+            Profiler.release();
         }
         //when there is failure as net-timeout,should retry
         if (receipts.size() < needVoters.size()) {
