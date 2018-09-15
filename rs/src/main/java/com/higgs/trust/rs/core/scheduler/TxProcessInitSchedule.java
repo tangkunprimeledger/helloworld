@@ -23,7 +23,7 @@ public class TxProcessInitSchedule {
     private CoreTxProcessRepository coreTxProcessRepository;
 
     private int pageNo = 1;
-    private int pageSize = 1000;
+    private int pageSize = 500;
     private int maxPageNo = 1000;
     /**
      * rocks db seek key:01-tx_id
@@ -34,6 +34,8 @@ public class TxProcessInitSchedule {
     public void exe() {
         List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.INIT, (pageNo - 1) * pageSize, pageSize,lastPreKey);
         if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {
+            //TODO:for press test
+            log.info("list maybe empty,pageNo:{}",pageNo);
             pageNo = 1;
             lastPreKey = null;
             return;

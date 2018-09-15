@@ -5,6 +5,7 @@ import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -226,10 +227,12 @@ import java.util.concurrent.TimeUnit;
     @Override
     public void processInitTx(String txId) {
         //check txId,the redis msg may be null
-        if (StringUtils.isBlank(txId)) {
+        if (StringUtils.isEmpty(txId)) {
             return;
         }
-        log.info("[processInitTx]txId:{}", txId);
+        log.debug("[processInitTx]txId:{}", txId);
+        Profiler.start("processInitTx.monitor");
+        Profiler.enter("processInitTx.process");
         CoreTxBO bo;
         if (rsConfig.isUseMySQL()) {
             bo = txRequired.execute(new TransactionCallback<CoreTxBO>() {
@@ -259,11 +262,11 @@ import java.util.concurrent.TimeUnit;
                 ThreadLocalUtils.clearRocksTx();;
             }
         }
-
+        Profiler.release();
         if (null == bo) {
             return;
         }
-
+        Profiler.enter("processInitTx.parseVoteRule");
         /**
          * if voteRule is null, bo must be null
          */
@@ -277,7 +280,12 @@ import java.util.concurrent.TimeUnit;
                 }
             });
         }
-        log.info("[processInitTx]is success");
+        Profiler.release();
+        Profiler.release();
+        if(Profiler.getDuration() >= 50000L){
+            Profiler.logDump();
+        }
+        log.debug("[processInitTx]is success");
     }
 
     private CoreTxBO processInitTxInTransaction(CoreTransactionPO po) {
