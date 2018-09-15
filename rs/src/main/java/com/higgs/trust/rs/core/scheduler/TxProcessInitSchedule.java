@@ -23,7 +23,7 @@ public class TxProcessInitSchedule {
     private CoreTxProcessRepository coreTxProcessRepository;
 
     private int pageNo = 1;
-    private int pageSize = 500;
+    private int pageSize = 1000;
     private int maxPageNo = 500;
     /**
      * rocks db seek key:01-tx_id
