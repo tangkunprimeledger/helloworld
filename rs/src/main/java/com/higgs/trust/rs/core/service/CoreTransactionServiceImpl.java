@@ -258,10 +258,12 @@ import java.util.concurrent.TimeUnit;
                 Profiler.release();
                 bo = processInitTxInTransaction(po);
             } finally {
+                Profiler.enter("processInitTx.txCommit");
                 if (null != tx) {
                     RocksUtils.txCommit(tx);
                 }
                 ThreadLocalUtils.clearRocksTx();;
+                Profiler.release();
             }
         }
         Profiler.release();
