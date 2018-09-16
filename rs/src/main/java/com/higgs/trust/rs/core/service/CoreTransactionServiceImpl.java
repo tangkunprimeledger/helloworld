@@ -246,10 +246,10 @@ import java.util.concurrent.TimeUnit;
                 }
             });
         } else {
-//            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
             try {
                 Profiler.enter("processInitTx.getForUpdate");
-//                ThreadLocalUtils.putRocksTx(tx);
+                ThreadLocalUtils.putRocksTx(tx);
                 CoreTransactionPO po = coreTxRepository.queryByTxId(txId,true);//coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);
                 if (null == po) {
                     log.warn("[processInitTx]cannot acquire lock, txId={}", txId);
@@ -258,10 +258,10 @@ import java.util.concurrent.TimeUnit;
                 Profiler.release();
                 bo = processInitTxInTransaction(po);
             } finally {
-//                if (null != tx) {
-//                    RocksUtils.txCommit(tx);
-//                }
-//                ThreadLocalUtils.clearRocksTx();;
+                if (null != tx) {
+                    RocksUtils.txCommit(tx);
+                }
+                ThreadLocalUtils.clearRocksTx();;
             }
         }
         Profiler.release();
