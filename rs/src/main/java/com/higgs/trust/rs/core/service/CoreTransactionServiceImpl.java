@@ -246,7 +246,9 @@ import java.util.concurrent.TimeUnit;
                 }
             });
         } else {
+            Profiler.enter("processInitTx.beginTransaction");
             Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            Profiler.release();
             try {
                 Profiler.enter("processInitTx.getForUpdate");
                 ThreadLocalUtils.putRocksTx(tx);
@@ -256,13 +258,15 @@ import java.util.concurrent.TimeUnit;
                     return;
                 }
                 Profiler.release();
+                Profiler.enter("processInitTx.process.Tx");
                 bo = processInitTxInTransaction(po);
+                Profiler.release();
             } finally {
                 Profiler.enter("processInitTx.txCommit");
                 if (null != tx) {
                     RocksUtils.txCommit(tx);
                 }
-                ThreadLocalUtils.clearRocksTx();;
+                ThreadLocalUtils.clearRocksTx();
                 Profiler.release();
             }
         }
