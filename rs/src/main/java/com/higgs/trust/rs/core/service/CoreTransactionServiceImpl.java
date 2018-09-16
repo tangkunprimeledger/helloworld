@@ -284,7 +284,7 @@ import java.util.concurrent.TimeUnit;
         }
         Profiler.release();
         Profiler.release();
-        if(Profiler.getDuration() > 10000L){
+        if(Profiler.getDuration() > 30000L){
             Profiler.logDump();
         }
         log.debug("[processInitTx]is success");

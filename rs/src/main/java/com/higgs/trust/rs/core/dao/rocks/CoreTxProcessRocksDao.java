@@ -2,6 +2,7 @@ package com.higgs.trust.rs.core.dao.rocks;
 
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.dao.RocksBaseDao;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -54,8 +55,10 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
         }
 
         String key = from.getIndex() + Constant.SPLIT_SLASH + txId;
+        Profiler.enter("[rocks.updateStatus.get]");
         //first query
         CoreTransactionProcessPO po = get(key);
+        Profiler.release();
         if (null == po) {
             log.error("[CoreTxProcessRocksDao.updateStatus] core transaction process is not exist, key={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_IS_NOT_EXIST);
@@ -65,9 +68,13 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
         po.setStatus(to.getCode());
         String newKey = to.getIndex() + Constant.SPLIT_SLASH + txId;
         //second delete
+        Profiler.enter("[rocks.updateStatus.delete]");
         txDelete(tx, key);
+        Profiler.release();
         //last update(put)
+        Profiler.enter("[rocks.updateStatus.put]");
         txPut(tx, newKey, po);
+        Profiler.release();
     }
 
     public void batchInsert(List<CoreTransactionProcessPO> poList, String index) {
