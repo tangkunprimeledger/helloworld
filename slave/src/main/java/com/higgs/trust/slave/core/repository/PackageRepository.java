@@ -135,7 +135,8 @@ import java.util.Set;
         if (initConfig.isUseMySQL()) {
             heights = packageDao.queryHeightListByHeight(height);
         } else {
-            heights = packStatusRocksDao.queryByPrefix(PackageStatusEnum.RECEIVED.getIndex(), LOAD_LIMIT);
+            heights = packStatusRocksDao.queryByPrefix(PackageStatusEnum.RECEIVED.getIndex(), LOAD_LIMIT,
+                PackageStatusEnum.RECEIVED.getIndex() + Constant.SPLIT_SLASH + (height + 1));
         }
         return heights;
     }

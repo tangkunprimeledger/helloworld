@@ -146,12 +146,28 @@ public abstract class RocksBaseDao<V> {
         return list;
     }
 
+    public List<V> queryByPrefix(String prefix) {
+        return queryByPrefix(prefix, -1, null);
+    }
+
     public List<V> queryByPrefix(String prefix, int limit) {
+        return queryByPrefix(prefix, limit, null);
+    }
+
+    public List<V> queryByPrefix(String prefix, int limit, String position) {
         ReadOptions readOptions = new ReadOptions();
         readOptions.setPrefixSameAsStart(true);
         RocksIterator iterator = iterator(readOptions);
         List<V> list = new ArrayList<>();
-        byte[] prefixByte = JSON.toJSONBytes(prefix);
+
+        //position represents start pos.
+        byte[] prefixByte;
+        if (StringUtils.isEmpty(position)) {
+            prefixByte = JSON.toJSONBytes(prefix);
+        } else {
+            prefixByte = JSON.toJSONBytes(position);
+        }
+
         if (limit < 0) {
             for (iterator.seek(prefixByte); iterator.isValid() && isPrefix(prefix, iterator.key()); iterator.next()) {
                 list.add(JSON.parseObject(iterator.value(), clazz));
@@ -260,10 +276,6 @@ public abstract class RocksBaseDao<V> {
             return JSON.parseObject(iterator.value(), clazz);
         }
         return null;
-    }
-
-    public List<V> queryByPrefix(String prefix) {
-        return queryByPrefix(prefix, -1);
     }
 
     public List<String> keys() {
