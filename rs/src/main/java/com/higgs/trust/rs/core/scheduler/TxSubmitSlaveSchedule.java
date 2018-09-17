@@ -10,6 +10,7 @@ import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class TxSubmitSlaveSchedule {
     @Autowired private CoreTxProcessRepository coreTxProcessRepository;
     @Autowired private CoreTxRepository coreTxRepository;
     private int pageNo = 1;
+    @Value("${rs.core.schedule.submitSize:500}")
     private int pageSize = 500;
     private int maxPageNo = 1000;
     /**
