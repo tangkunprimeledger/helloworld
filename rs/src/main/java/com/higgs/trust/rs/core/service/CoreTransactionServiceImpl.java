@@ -205,7 +205,7 @@ import java.util.concurrent.TimeUnit;
             }
         }
         //send redis msg for slave
-//        asyncProcessInitTx(coreTx.getTxId());
+        asyncProcessInitTx(coreTx.getTxId());
     }
 
     /**
