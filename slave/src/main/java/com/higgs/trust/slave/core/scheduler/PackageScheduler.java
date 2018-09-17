@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -134,7 +135,7 @@ import java.util.Set;
             for (Long height : heights) {
                 // process next block as height = maxBlockHeight + 1
                 if (height != currentHeight + 1) {
-                    log.warn("package height is not continuous!");
+                    log.warn("package height is not continuous,currentHeight:{},heights:{}",currentHeight,heights);
                     return;
                 }
 
