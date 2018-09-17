@@ -306,9 +306,9 @@ import java.util.stream.Collectors;
         } finally {
             Profiler.release();
             //print if lager than 300 ms
-            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
-                Profiler.logDump();
-            }
+//            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
+//                Profiler.logDump();
+//            }
         }
         log.info("process package finish");
     }

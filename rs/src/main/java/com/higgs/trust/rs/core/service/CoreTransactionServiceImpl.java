@@ -333,6 +333,7 @@ import java.util.concurrent.TimeUnit;
             return null;
         }
         Profiler.release();
+        Profiler.enter("processInitTx.checkVotePattern");
         VotePatternEnum votePattern = voteRule.getVotePattern();
         //check rs ids
         if (CollectionUtils.isEmpty(policy.getRsIds())) {
@@ -350,18 +351,19 @@ import java.util.concurrent.TimeUnit;
             coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             return bo;
         }
+        Profiler.release();
         Profiler.enter("processInitTx.getVoters");
         //get need voters from saved sign info
         List<String> needVoters = voteService.getVoters(bo.getSignDatas(), policy.getRsIds());
         Profiler.release();
+        Profiler.enter("processInitTx.updateStatus");
         if (CollectionUtils.isEmpty(needVoters)) {
             log.warn("[processInitTx]need voters is empty txId:{}", bo.getTxId());
             //still submit to slave
-            Profiler.enter("processInitTx.updateStatus");
             coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
-            Profiler.release();
             return bo;
         }
+        Profiler.release();
         Profiler.enter("processInitTx.requestVoting");
         //request voting
         List<VoteReceipt> receipts = voteService.requestVoting(bo, needVoters, votePattern);
