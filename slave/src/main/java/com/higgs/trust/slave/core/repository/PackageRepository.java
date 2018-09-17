@@ -42,8 +42,6 @@ import java.util.Set;
 
     @Autowired PendingTxRepository pendingTxRepository;
 
-    private static final int LOAD_LIMIT = 30;
-
     @Autowired InitConfig initConfig;
 
     /**
@@ -135,8 +133,7 @@ import java.util.Set;
         if (initConfig.isUseMySQL()) {
             heights = packageDao.queryHeightListByHeight(height);
         } else {
-            heights = packStatusRocksDao.queryByPrefix(PackageStatusEnum.RECEIVED.getIndex(), LOAD_LIMIT,
-                PackageStatusEnum.RECEIVED.getIndex() + Constant.SPLIT_SLASH + (height + 1));
+            heights = packStatusRocksDao.queryHeightListByHeight(height + 1);
         }
         return heights;
     }

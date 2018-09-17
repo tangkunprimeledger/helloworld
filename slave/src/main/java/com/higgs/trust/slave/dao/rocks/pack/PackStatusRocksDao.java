@@ -20,7 +20,9 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class PackStatusRocksDao extends RocksBaseDao<Long>{
+public class PackStatusRocksDao extends RocksBaseDao<Long> {
+    private static final int LOAD_LIMIT = 30;
+
     @Override protected String getColumnFamilyName() {
         return "packageStatus";
     }
@@ -105,5 +107,11 @@ public class PackStatusRocksDao extends RocksBaseDao<Long>{
             }
         }
         return null;
+    }
+
+    public List<Long> queryHeightListByHeight(Long height) {
+        DecimalFormat df = new DecimalFormat(Constant.PACK_STATUS_HEIGHT_FORMAT);
+        String position = PackageStatusEnum.RECEIVED.getIndex() + Constant.SPLIT_SLASH + df.format(height);
+        return queryByPrefix(PackageStatusEnum.RECEIVED.getIndex(), LOAD_LIMIT, position);
     }
 }
