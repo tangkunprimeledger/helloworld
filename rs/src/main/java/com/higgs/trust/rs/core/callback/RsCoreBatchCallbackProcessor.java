@@ -161,8 +161,8 @@ import java.util.*;
                 }
             }
             //callback custom
-            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onFailover(policyId,rsCoreTxVOS,blockHeader);
+//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+//            txBatchCallbackHandler.onFailover(policyId,rsCoreTxVOS,blockHeader);
         }
     }
 
