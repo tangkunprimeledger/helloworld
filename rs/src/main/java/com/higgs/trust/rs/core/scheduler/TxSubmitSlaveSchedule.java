@@ -1,10 +1,8 @@
 package com.higgs.trust.rs.core.scheduler;
 
-import com.google.common.collect.Lists;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
-import com.higgs.trust.rs.core.dao.CoreTransactionDao;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
