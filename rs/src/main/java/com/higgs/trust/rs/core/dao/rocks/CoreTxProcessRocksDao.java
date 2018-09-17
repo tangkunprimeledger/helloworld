@@ -55,10 +55,10 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
         }
 
         String key = from.getIndex() + Constant.SPLIT_SLASH + txId;
-//        Profiler.enter("[rocks.updateStatus.get]");
+        Profiler.enter("[rocks.updateStatus.get]");
         //first query
         CoreTransactionProcessPO po = get(key);
-//        Profiler.release();
+        Profiler.release();
         if (null == po) {
             log.error("[CoreTxProcessRocksDao.updateStatus] core transaction process is not exist, key={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_IS_NOT_EXIST);
@@ -68,13 +68,13 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
         po.setStatus(to.getCode());
         String newKey = to.getIndex() + Constant.SPLIT_SLASH + txId;
         //second delete
-//        Profiler.enter("[rocks.updateStatus.delete]");
+        Profiler.enter("[rocks.updateStatus.delete]");
         txDelete(tx, key);
-//        Profiler.release();
+        Profiler.release();
         //last update(put)
-//        Profiler.enter("[rocks.updateStatus.put]");
+        Profiler.enter("[rocks.updateStatus.put]");
         txPut(tx, newKey, po);
-//        Profiler.release();
+        Profiler.release();
     }
 
     public void batchInsert(List<CoreTransactionProcessPO> poList, String index) {

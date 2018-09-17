@@ -106,7 +106,7 @@ public class CoreTxProcessRepository {
      */
     public void updateStatus(String txId, CoreTxStatusEnum from, CoreTxStatusEnum to) {
         try {
-//            Profiler.enter("[rs.core.updateStatus]");
+            Profiler.enter("[rs.core.updateStatus]");
             if (rsConfig.isUseMySQL()) {
                 int r = coreTransactionProcessDao.updateStatus(txId, from.getCode(), to.getCode());
                 if (r != 1) {
@@ -117,7 +117,7 @@ public class CoreTxProcessRepository {
                 coreTxProcessRocksDao.updateStatus(txId, from, to);
             }
         } finally {
-//            Profiler.release();
+            Profiler.release();
         }
     }
 
