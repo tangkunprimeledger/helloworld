@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 @Configuration @Setter @Getter
 public class InitConfig implements InitializingBean{
     @NotNull @Value("${trust.useMySQL:true}") private boolean useMySQL;
+    @NotNull @Value("${trust.mockRS:false}") private boolean mockRS;
     @Value("${trust.utxo.display:2}")
     private int DISPLAY;
 

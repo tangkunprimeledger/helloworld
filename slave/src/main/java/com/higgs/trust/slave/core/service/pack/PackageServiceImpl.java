@@ -475,6 +475,10 @@ import java.util.stream.Collectors;
      */
     private void callbackRS(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap,
         boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
+        //TODO:liuyu
+        if(initConfig.isMockRS()){
+            return;
+        }
         if (log.isDebugEnabled()) {
             log.debug("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         }
