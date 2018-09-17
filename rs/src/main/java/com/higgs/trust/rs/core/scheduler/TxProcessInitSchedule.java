@@ -1,9 +1,11 @@
 package com.higgs.trust.rs.core.scheduler;
 
+import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
-import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
+import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,9 @@ public class TxProcessInitSchedule {
     @Autowired
     private CoreTransactionService coreTransactionService;
     @Autowired
-    private CoreTxProcessRepository coreTxProcessRepository;
+    private CoreTxRepository coreTxRepository;
+    @Autowired
+    private RsConfig rsConfig;
 
     private int pageNo = 1;
     @Value("${rs.core.schedule.initSize:200}")
@@ -34,22 +38,43 @@ public class TxProcessInitSchedule {
 
     @Scheduled(fixedRateString = "${rs.core.schedule.processInit:500}")
     public void exe() {
-        List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.INIT, (pageNo - 1) * pageSize, pageSize,lastPreKey);
-        if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {
-            pageNo = 1;
-            lastPreKey = null;
-            return;
-        }
-        int size = list.size();
-        //TODO:for press test
-        log.info("process init.size:{}",size);
-        list.forEach(entry->{
-            try {
-                coreTransactionService.processInitTx(entry.getTxId());
-            } catch (Throwable e) {
-                log.error("has error", e);
+        if (rsConfig.isUseMySQL()) {
+            List<CoreTransactionProcessPO> list = coreTxRepository
+                .queryByStatusFromMysql(CoreTxStatusEnum.INIT, (pageNo - 1) * pageSize, pageSize, lastPreKey);
+            if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {
+                pageNo = 1;
+                lastPreKey = null;
+                return;
             }
-        });
+            int size = list.size();
+            //TODO:for press test
+            log.info("process init.size:{}", size);
+            list.forEach(entry -> {
+                try {
+                    coreTransactionService.processInitTx(entry.getTxId());
+                } catch (Throwable e) {
+                    log.error("has error", e);
+                }
+            });
+        } else {
+            List<CoreTransactionPO> list = coreTxRepository
+                .queryByStatusFromRocks(CoreTxStatusEnum.INIT, (pageNo - 1) * pageSize, pageSize, lastPreKey);
+            if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {
+                pageNo = 1;
+                lastPreKey = null;
+                return;
+            }
+            int size = list.size();
+            //TODO:for press test
+            log.info("process init.size:{}", size);
+            list.forEach(entry -> {
+                try {
+                    coreTransactionService.processInitTx(entry.getTxId());
+                } catch (Throwable e) {
+                    log.error("has error", e);
+                }
+            });
+        }
 //        lastPreKey = list.get(size - 1).getTxId();
         pageNo++;
     }

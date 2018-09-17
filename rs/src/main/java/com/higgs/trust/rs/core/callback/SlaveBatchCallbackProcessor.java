@@ -11,7 +11,6 @@ import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
@@ -53,8 +52,6 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
     private SlaveCallbackRegistor slaveCallbackRegistor;
     @Autowired
     private CoreTxRepository coreTxRepository;
-    @Autowired
-    private CoreTxProcessRepository coreTxProcessRepository;
     @Autowired
     private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired
@@ -278,11 +275,7 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
      */
     private void batchInsert(List<RsCoreTxVO> txs, Long height, CoreTxStatusEnum statusEnum) {
         //insert coreTx
-        coreTxRepository.batchInsert(txs, height);
-        //when the status is end, no need to insert coreTxProcess.because they will be delete
-        if (statusEnum != CoreTxStatusEnum.END) {
-            coreTxProcessRepository.batchInsert(txs, statusEnum);
-        }
+        coreTxRepository.batchInsert(txs, height, statusEnum);
     }
 
     /**
@@ -299,6 +292,6 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
             coreTxRepository.batchUpdate(txs, height);
         }
         //update coreTxProcess status
-        coreTxProcessRepository.batchUpdateStatus(txs, from, to);
+        coreTxRepository.batchUpdateStatus(txs, from, to, height);
     }
 }

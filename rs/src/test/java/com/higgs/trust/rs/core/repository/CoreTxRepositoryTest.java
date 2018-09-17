@@ -36,8 +36,6 @@ import java.util.Random;
 
     @Autowired private CoreTxRepository coreTxRepository;
 
-    @Autowired private CoreTxProcessRepository coreTxProcessRepository;
-
     @Autowired private CoreTxRocksDao coreTxRocksDao;
 
     @BeforeMethod public void buildCoreTx() {
@@ -212,7 +210,7 @@ import java.util.Random;
 
         Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
         ThreadLocalUtils.putRocksTx(tx);
-        coreTxRepository.batchInsert(rsCoreTxVOS, 25L);
+        coreTxRepository.batchInsert(rsCoreTxVOS, 25L, CoreTxStatusEnum.INIT);
         RocksUtils.txCommit(tx);
         ThreadLocalUtils.clearRocksTx();
     }
@@ -302,7 +300,6 @@ import java.util.Random;
             CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), "test-tx-id-1", true);
             if (null == po) {
                 coreTxRepository.add(coreTx, signInfos, 0L);
-                coreTxProcessRepository.add("test-tx-id-1", CoreTxStatusEnum.INIT);
 
             System.out
                 .println("Thread1: before transaction commit. " + coreTxRepository.queryByTxId("test-tx-id-1", false));

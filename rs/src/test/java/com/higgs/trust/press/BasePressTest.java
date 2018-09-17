@@ -11,7 +11,8 @@ import com.higgs.trust.slave.api.vo.RespData;
  */
 public class BasePressTest {
 //    private static String BASE_URL = "http://10.200.173.194:7071/";
-    private static String BASE_URL = "http://10.200.172.98:7070/";
+//    private static String BASE_URL = "http://10.200.172.100:7070/";
+    private static String BASE_URL = "http://127.0.0.1:7070/";
     /**
      INSERT INTO `biz_type` (`policy_id`, `biz_type`, `create_time`) VALUES ('CREATE_CURRENCY', 'CREATE_CURRENCY', '2018-6-21 15:15:25');
      INSERT INTO `biz_type` (`policy_id`, `biz_type`, `create_time`) VALUES ('OPEN_MY_ACCOUNT', 'OPEN_MY_ACCOUNT', '2018-6-21 15:15:25');
@@ -34,6 +35,18 @@ public class BasePressTest {
             Long endTime = System.currentTimeMillis();
 //            System.out.println("[send]resp.code:" + respData.getRespCode());
             System.out.println("[send]used:" + (endTime - startTime) + "ms");
+        } catch (Throwable t) {
+            System.out.println("[send] has error" + t);
+        }
+    }
+
+    public void get(String api, String params) {
+        //        System.out.println(("[send]req:" + params));
+        try {
+            String resultString = OkHttpClientManager.postAsString(BASE_URL + "rocks/data/get?columnFamily=config&key=1", params, 10000L);
+            RespData respData = JSON.parseObject(resultString, RespData.class);
+            Long endTime = System.currentTimeMillis();
+            //            System.out.println("[send]resp.code:" + respData.getRespCode());
         } catch (Throwable t) {
             System.out.println("[send] has error" + t);
         }

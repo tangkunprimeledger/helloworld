@@ -1,3 +1,4 @@
+/*
 package com.higgs.trust.rs.core.repository;
 
 import com.higgs.trust.IntegrateBaseTest;
@@ -85,4 +86,4 @@ public class CoreTxProcessRepositoryTest extends IntegrateBaseTest{
         List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.END, 0, 1000,null);
         Assert.assertEquals(list.size(), 0);
     }
-}
+}*/

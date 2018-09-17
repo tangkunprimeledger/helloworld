@@ -22,7 +22,6 @@ import com.higgs.trust.rs.core.callback.RsCoreBatchCallbackProcessor;
 import com.higgs.trust.rs.core.callback.RsCoreCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
-import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
@@ -71,7 +70,6 @@ import java.util.concurrent.TimeUnit;
     @Autowired private RsConfig rsConfig;
     @Autowired private BizTypeService bizTypeService;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Autowired private CoreTxProcessRepository coreTxProcessRepository;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private VoteReceiptRepository voteReceiptRepository;
     @Autowired private VoteService voteService;
@@ -183,8 +181,6 @@ import java.util.concurrent.TimeUnit;
         if (rsConfig.isUseMySQL()) {
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    //save coreTxProcess to db
-                    coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
                     //save coreTx to db
                     coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
                 }
@@ -194,8 +190,6 @@ import java.util.concurrent.TimeUnit;
             ThreadLocalUtils.putRocksTx(tx);
             try {
                 if (null == coreTxRepository.getForUpdate(tx, new ReadOptions(), coreTx.getTxId(), true)) {
-                    //save coreTxProcess to db
-                    coreTxProcessRepository.add(coreTx.getTxId(), CoreTxStatusEnum.INIT);
                     //save coreTx to db
                     coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
                     RocksUtils.txCommit(tx);
@@ -298,7 +292,7 @@ import java.util.concurrent.TimeUnit;
 
     private CoreTxBO processInitTxInTransaction(CoreTransactionPO po) {
         Profiler.enter("processInitTx.queryByTxId");
-        if (null == coreTxProcessRepository.queryByTxId(po.getTxId(), CoreTxStatusEnum.INIT)) {
+        if (null == coreTxRepository.queryStatusByTxId(po.getTxId(), CoreTxStatusEnum.INIT)) {
             log.info("[processInitTx]the coreTx is null or status is not INIT txId:{}", po.getTxId());
             return null;
         }
@@ -348,7 +342,7 @@ import java.util.concurrent.TimeUnit;
                 return null;
             }
             //when not like before policy s ,still submit to slave
-            coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+            coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             return bo;
         }
         Profiler.release();
@@ -360,7 +354,7 @@ import java.util.concurrent.TimeUnit;
         if (CollectionUtils.isEmpty(needVoters)) {
             log.warn("[processInitTx]need voters is empty txId:{}", bo.getTxId());
             //still submit to slave
-            coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+            coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             return bo;
         }
         Profiler.release();
@@ -409,11 +403,11 @@ import java.util.concurrent.TimeUnit;
                 return null;
             }
             //change status to WAIT for SYNC pattern
-            coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
+            coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             Profiler.release();
         } else {
             //change status to NEED_VOTE for ASYNC pattern
-            coreTxProcessRepository
+            coreTxRepository
                 .updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.NEED_VOTE);
         }
         if (!CollectionUtils.isEmpty(signInfos)) {
@@ -473,7 +467,7 @@ import java.util.concurrent.TimeUnit;
 
     private void processNeedVoteTxInTransaction(CoreTransactionPO po) {
 
-        if (null == coreTxProcessRepository.queryByTxId(po.getTxId(), CoreTxStatusEnum.NEED_VOTE)) {
+        if (null == coreTxRepository.queryStatusByTxId(po.getTxId(), CoreTxStatusEnum.NEED_VOTE)) {
             log.info("[processNeedVoteTx]the coreTx status is not NEED_VOTE txId:{}", po.getTxId());
             return;
         }
@@ -537,7 +531,7 @@ import java.util.concurrent.TimeUnit;
         }
         coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
         //change status to WAIT for SYNC pattern
-        coreTxProcessRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);
+        coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.NEED_VOTE, CoreTxStatusEnum.WAIT);
         log.info("[processNeedVoteTx]is success");
     }
 
@@ -569,7 +563,7 @@ import java.util.concurrent.TimeUnit;
         coreTxRepository
             .saveExecuteResultAndHeight(txId, CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), 0L);
         //update status from 'from' to END
-        coreTxProcessRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
+        coreTxRepository.updateStatus(txId, from, CoreTxStatusEnum.END);
         respData.setData(coreTxRepository.convertTxVO(bo));
         //callback custom rs
         if (isCallback) {
@@ -599,7 +593,7 @@ import java.util.concurrent.TimeUnit;
         if (coreTransactionPO == null) {
             return null;
         }
-        CoreTransactionProcessPO coreTransactionProcessPO = coreTxProcessRepository.queryByTxId(txId, null);
+        CoreTransactionProcessPO coreTransactionProcessPO = coreTxRepository.queryStatusByTxId(txId, null);
         CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
         RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO, RsCoreTxVO.class);
         coreTxVO.setStatus(CoreTxStatusEnum.formCode(

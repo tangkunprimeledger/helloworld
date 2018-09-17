@@ -1,6 +1,6 @@
 package com.higgs.trust.rs.core.scheduler;
 
-import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
+import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
 public class CoreTxProcessDeleteSchedule {
     @Autowired
-    private CoreTxProcessRepository coreTxProcessRepository;
+    private CoreTxRepository coreTxRepository;
 
     /**
      * task to delete coreTxProcess rows for status = END,
@@ -27,6 +27,6 @@ public class CoreTxProcessDeleteSchedule {
      */
     @Scheduled(fixedDelay = 1000 * 60 * 60) public void deleteEndRows() {
         log.info("Task to delete coreTransactionProcess for status with END");
-       coreTxProcessRepository.deleteEnd();
+       coreTxRepository.deleteEnd();
     }
 }
