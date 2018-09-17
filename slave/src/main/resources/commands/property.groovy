@@ -27,24 +27,14 @@ class property {
         out.println(msg)
     }
 
-    @Usage('add system property')
+    @Usage('set system property')
     @Command
-    def add(InvocationContext context, @Usage("property key")
+    def set(InvocationContext context, @Usage("property key")
     @Required @Argument String key,
             @Usage("property value") @Required @Argument String value, @Usage("property desc") @Argument String desc) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def systemPropertyHandler = beans.getBean(SystemPropertyHandler.class)
-        def msg = systemPropertyHandler.add(key, value, desc)
-        out.println(msg)
-    }
-
-    @Usage('update system property')
-    @Command
-    def update(InvocationContext context, @Usage("property key")
-    @Required @Argument String key, @Usage("property value") @Required @Argument String value) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def systemPropertyHandler = beans.getBean(SystemPropertyHandler.class)
-        def msg = systemPropertyHandler.update(key, value)
+        def msg = systemPropertyHandler.set(key, value, desc)
         out.println(msg)
     }
 }

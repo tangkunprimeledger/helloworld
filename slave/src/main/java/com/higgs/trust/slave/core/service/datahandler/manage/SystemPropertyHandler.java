@@ -79,76 +79,39 @@ public class SystemPropertyHandler {
         return "key = " + key + " value = " + systemPropertyVO.getValue();
     }
 
-
     /**
-     * add property into db
+     * set system property ,it may be add or update
      *
      * @param key
      * @param value
      * @param desc
      * @return
      */
-    public String add(String key, String value, String desc) {
+    public String set(String key, String value, String desc) {
+
         //check arguments
         if (StringUtils.isBlank(key) || StringUtils.isBlank(value)) {
             log.error("Key and value can not be null. key = {},value = {}", key, value);
-            return "Add property into system failed! Key or value can not be null. key = " + key + " ,value = " + value;
+            return "Set property into system failed! Key or value can not be null. key = " + key + " ,value = " + value;
         }
 
-        //add data into DB
+        //set data into DB
         try {
             //check data whether in db
             SystemPropertyVO systemPropertyVO = querySystemPropertyByKey(key);
             if (null != systemPropertyVO) {
-                log.error("Add property into system failed! There is property in system for key = {} value = {}", key, value);
-                return "Add property into system failed! There is property in system. key = " + key + " ,value = " + value;
+                //update property
+                systemPropertyRepository.update(key, value, desc);
+                //invalidate cache value
+                systemPropertyCache.invalidate(key);
+                return "Set property into system success! key= " + key + "  value = " + value;
             }
             systemPropertyRepository.add(key, value, desc);
         } catch (Throwable e) {
-            log.error("Add property into system failed!", e);
-            return "Add property into system failed!" + e;
+            log.error("Set property into system failed!", e);
+            return "Set property into system failed!" + e;
         }
-        return "Add property into system success! key= " + key + "  value = " + value;
-    }
-
-
-    /**
-     * update property into db
-     *
-     * @param key
-     * @param value
-     * @return
-     */
-    public String update(String key, String value) {
-        //check arguments
-        if (StringUtils.isBlank(key) || StringUtils.isBlank(value)) {
-            log.error("Key and value can not be null. key = {},value = {}", key, value);
-            return "Update property into system failed! Key or value can not be null. key = " + key + " ,value = " + value;
-        }
-
-        //update data into DB
-        try {
-            //check data whether in db
-            SystemPropertyVO systemPropertyVO = querySystemPropertyByKey(key);
-            if (null == systemPropertyVO) {
-                log.error("Update property into system failed! There is no property in system for key = {}", key);
-                return "Update property into system failed! There is no property in system. key = " + key + " ,value = " + value;
-            }
-
-            //update property
-            int updateRows = systemPropertyRepository.update(key, value);
-            if (1 != updateRows) {
-                log.error("Update property into system failed!Key = {} value = {}", key, value);
-                return "Update property into system failed! key = " + key + " ,value = " + value;
-            }
-            //invalidate cache value
-            systemPropertyCache.invalidate(key);
-
-        } catch (Throwable e) {
-            log.error("Update property into system failed!", e);
-            return "Update property into system failed!" + e;
-        }
-        return "Update property into system success! key= " + key + "  value = " + value;
+        return "Set property into system success! key= " + key + "  value = " + value;
     }
 
 }

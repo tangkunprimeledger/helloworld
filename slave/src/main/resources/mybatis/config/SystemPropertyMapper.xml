@@ -30,7 +30,11 @@
 	<!-- update -->
 	<update id="update">
 		UPDATE `system_property`
-		SET `value` = #{value},`update_time`= now(3)
+		SET `value` = #{value},
+		<if test="desc != null and desc!=''">
+			`desc`=#{desc},
+		</if>
+		`update_time`= now(3)
 		WHERE
 		`key` = #{key} and `value`!=  #{value}
 	</update>

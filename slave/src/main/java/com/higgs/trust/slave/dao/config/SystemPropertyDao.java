@@ -22,8 +22,10 @@ public interface SystemPropertyDao extends BaseDao<SystemPropertyPO> {
     /**
      * query  system property by key
      * @param key
+     * @param value
+     * @param desc
      * @return
      */
-    int update(@Param("key") String key, @Param("value") String value);
+    int update(@Param("key") String key, @Param("value") String value, @Param("desc") String desc);
 
 }
