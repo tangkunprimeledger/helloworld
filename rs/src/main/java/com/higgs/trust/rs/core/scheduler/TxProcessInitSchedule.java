@@ -23,7 +23,7 @@ public class TxProcessInitSchedule {
     private CoreTxProcessRepository coreTxProcessRepository;
 
     private int pageNo = 1;
-    private int pageSize = 500;
+    private int pageSize = 200;
     private int maxPageNo = 1000;
     /**
      * rocks db seek key:01-tx_id
@@ -48,7 +48,7 @@ public class TxProcessInitSchedule {
                 log.error("has error", e);
             }
         });
-        lastPreKey = list.get(size - 1).getTxId();
+//        lastPreKey = list.get(size - 1).getTxId();
         pageNo++;
     }
 }

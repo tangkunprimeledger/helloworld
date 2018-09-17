@@ -46,7 +46,7 @@ public class TxSubmitSlaveSchedule {
             txIdList.add(entry.getTxId());
         });
         //reset preKey by last txId
-        lastPreKey = txIdList.get(size - 1);
+//        lastPreKey = txIdList.get(size - 1);
 
         List<CoreTransactionPO> coreTransactionPOList = coreTxRepository.queryByTxIds(txIdList);
         List<CoreTxBO> boList = new ArrayList<>(size);
