@@ -252,7 +252,7 @@ import java.util.concurrent.TimeUnit;
             try {
                 Profiler.enter("processInitTx.getForUpdate");
                 ThreadLocalUtils.putRocksTx(tx);
-                CoreTransactionPO po = coreTxRepository.queryByTxId(txId,true);//coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);
+                CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);//coreTxRepository.queryByTxId(txId,true);//
                 if (null == po) {
                     log.warn("[processInitTx]cannot acquire lock, txId={}", txId);
                     return;
