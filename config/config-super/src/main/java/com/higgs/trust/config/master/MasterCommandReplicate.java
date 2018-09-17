@@ -56,7 +56,8 @@ import java.util.stream.Collectors;
                         && operation.getView() == viewManager.getCurrentViewId() && operation.getMasterName()
                         .equalsIgnoreCase(value.getProposer()) && value.getVoter().equalsIgnoreCase(e.getKey());
                 }).collect(Collectors.toList());
-            if (collect.size() >= (2 * currentView.getFaultNum() + 1)) {
+            //appliedQuorum numbers of nodes receive ChangeMasterCommand , here verifiedQuorum is (n+f)/2 + 1
+            if (collect.size() >= currentView.getAppliedQuorum()) {
                 if (log.isDebugEnabled()) {
                     log.debug("new term is {}, new master is {}", operation.getTerm(), operation.getMasterName());
                 }

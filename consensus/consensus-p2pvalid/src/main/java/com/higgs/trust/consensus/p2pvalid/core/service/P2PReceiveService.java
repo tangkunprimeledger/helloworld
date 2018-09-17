@@ -98,7 +98,7 @@ import java.util.concurrent.ConcurrentHashMap;
         //add command to memory
         _old.put(fromNode, validCommandWrap);
         //check threshold
-        int applyThreshold = Math.min(view.getFaultNum() * 2 + 1, view.getNodeNames().size());
+        int applyThreshold = Math.min(view.getAppliedQuorum(), view.getNodeNames().size());
         if (_old.size() < applyThreshold) {
             if (log.isDebugEnabled()) {
                 log.debug("command.size is less than applyThreshold:{}", applyThreshold);

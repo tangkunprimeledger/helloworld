@@ -50,6 +50,30 @@ import java.util.Map;
         return nodeNames;
     }
 
+    /**
+     * get quorum size for 'apply' peration, like package-persisting, and change-master-confirm
+     * AppliedQuorum is (n + f)/2 + 1
+     *
+     * @param
+     * @return quorum size
+    */
+    public int getAppliedQuorum(){
+        return (nodes.size()+ faultNum)/2 + 1;
+    }
+
+    /**
+     * get quorum size for 'verify' or 'query' peration,
+     * like get-cluster-height, get-safe-height, change-master-verify,
+     * and validate-header
+     * VerifiedQuorum is f + 1
+     *
+     * @param
+     * @return quorum size
+    */
+    public int getVerifiedQuorum(){
+        return faultNum + 1;
+    }
+
     public String getPubKey(String nodeName) {
         return nodes.get(nodeName);
     }

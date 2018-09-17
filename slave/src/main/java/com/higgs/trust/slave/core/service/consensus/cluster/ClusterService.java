@@ -54,8 +54,7 @@ import java.util.*;
      * @return
      */
     @Override public Long getSafeHeight() {
-        ClusterView startView = viewManager.getCurrentView();
-        int treshold = 2 * startView.getFaultNum() + 1;
+        ClusterView view = viewManager.getCurrentView();
             Map<String, Long> heightMap = getAllClusterHeight();
             int size = 0;
             List<Long> heightList = new ArrayList<>();
@@ -65,14 +64,14 @@ import java.util.*;
                     heightList.add(height);
                 }
             }
-            if (size >= treshold) {
-                log.debug("get more than (2f+1) nodes' height,size:{},treshold:{}", size, treshold);
+            if (size >= view.getAppliedQuorum()) {
+                log.debug("get more than quorum nodes' height, size:{}", size);
                 List<Long> sortedHeights = new ArrayList<>();
                 heightList.stream().sorted(Comparator.comparingLong(Long::longValue).reversed()).forEach(height->sortedHeights.add(height));
-                log.debug("sorted heightList:{}", sortedHeights);
-                return sortedHeights.get(treshold - 1);
+                log.debug("sorted heightList:{}, appliedQuorum:{}, verifiedQuorum:{}", sortedHeights,view.getAppliedQuorum(),view.getVerifiedQuorum());
+                return sortedHeights.get(view.getVerifiedQuorum()-1);
             } else {
-                log.debug("get no more than (2f+1) nodes' height");
+                log.debug("get no more than quorum nodes' height, size:{}", size);
             }
         return null;
     }

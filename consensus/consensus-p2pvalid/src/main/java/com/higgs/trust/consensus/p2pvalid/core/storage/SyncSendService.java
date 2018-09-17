@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         ConcurrentHashMap<String, CommandCounter<T>> resultMap = sendAndHandle(validCommand, view);
         for (Map.Entry<String, CommandCounter<T>> entry : resultMap.entrySet()) {
             CommandCounter<T> value = entry.getValue();
-            if (value.getCounter().get() >= (2 * view.getFaultNum() + 1)) {
+            if (value.getCounter().get() >= view.getVerifiedQuorum()) {
                 return value.getCommand();
             }
         }

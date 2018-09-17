@@ -111,7 +111,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         ClusterView currentView = viewManager.getCurrentView();
         Map<String, ChangeMasterVerifyResponse> responseMap = changeMasterVerify();
-        if (responseMap == null || responseMap.size() < (2 * currentView.getFaultNum() + 1)) {
+        //appliedQuorum numbers of nodes respond to changeMaster, here appliedQuorum is (f+n)/2+1
+        if (responseMap == null || responseMap.size() < currentView.getAppliedQuorum()) {
             resetHeartbeatTimeout();
             return;
         }
