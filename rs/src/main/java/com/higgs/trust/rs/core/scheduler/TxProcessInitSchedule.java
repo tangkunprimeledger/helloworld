@@ -30,7 +30,7 @@ public class TxProcessInitSchedule {
      */
     private String lastPreKey = null;
 
-    @Scheduled(fixedDelayString = "${rs.core.schedule.processInit:500}")
+    @Scheduled(fixedRateString = "${rs.core.schedule.processInit:500}")
     public void exe() {
         List<CoreTransactionProcessPO> list = coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.INIT, (pageNo - 1) * pageSize, pageSize,lastPreKey);
         if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {

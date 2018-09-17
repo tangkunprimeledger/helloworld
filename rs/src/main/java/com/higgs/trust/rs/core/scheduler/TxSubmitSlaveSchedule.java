@@ -32,7 +32,7 @@ public class TxSubmitSlaveSchedule {
      */
     private String lastPreKey = null;
 
-    @Scheduled(fixedDelayString = "${rs.core.schedule.submitSlave:500}") public void exe() {
+    @Scheduled(fixedRateString = "${rs.core.schedule.submitSlave:500}") public void exe() {
         List<CoreTransactionProcessPO> list =
             coreTxProcessRepository.queryByStatus(CoreTxStatusEnum.WAIT, (pageNo - 1) * pageSize, pageSize, lastPreKey);
         if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {
