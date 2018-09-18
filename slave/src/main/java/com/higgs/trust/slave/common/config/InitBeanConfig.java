@@ -100,27 +100,27 @@ public class InitBeanConfig {
         return new HashBlockingMap<>(Constant.MAX_BLOCKING_QUEUE_SIZE);
     }
 
-    @Bean(name = "txProcessExecutorPool")
-    public ThreadPoolTaskExecutor txProcessExecutorPool() {
-        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(10);
-        threadPoolTaskExecutor.setMaxPoolSize(10);
-        threadPoolTaskExecutor.setQueueCapacity(5000);
-        threadPoolTaskExecutor.setThreadNamePrefix("txProcessExecutor-");
-        threadPoolTaskExecutor.initialize();
-        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
-    }
-
-    @Bean(name = "txSubmitExecutorPool")
-    public ThreadPoolTaskExecutor txSubmitExecutorPool() {
-        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(10);
-        threadPoolTaskExecutor.setMaxPoolSize(10);
-        threadPoolTaskExecutor.setQueueCapacity(5000);
-        threadPoolTaskExecutor.setThreadNamePrefix("txSubmitExecutor-");
-        threadPoolTaskExecutor.initialize();
-        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
-    }
+//    @Bean(name = "txProcessExecutorPool")
+//    public ThreadPoolTaskExecutor txProcessExecutorPool() {
+//        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+//        threadPoolTaskExecutor.setCorePoolSize(10);
+//        threadPoolTaskExecutor.setMaxPoolSize(10);
+//        threadPoolTaskExecutor.setQueueCapacity(5000);
+//        threadPoolTaskExecutor.setThreadNamePrefix("txProcessExecutor-");
+//        threadPoolTaskExecutor.initialize();
+//        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+//    }
+//
+//    @Bean(name = "txSubmitExecutorPool")
+//    public ThreadPoolTaskExecutor txSubmitExecutorPool() {
+//        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+//        threadPoolTaskExecutor.setCorePoolSize(10);
+//        threadPoolTaskExecutor.setMaxPoolSize(10);
+//        threadPoolTaskExecutor.setQueueCapacity(5000);
+//        threadPoolTaskExecutor.setThreadNamePrefix("txSubmitExecutor-");
+//        threadPoolTaskExecutor.initialize();
+//        return new LazyTraceThreadPoolTaskExecutor(beanFactory, threadPoolTaskExecutor);
+//    }
 
     @Bean(name = "syncVotingExecutorPool")
     public ThreadPoolTaskExecutor syncVotingExecutorPool() {

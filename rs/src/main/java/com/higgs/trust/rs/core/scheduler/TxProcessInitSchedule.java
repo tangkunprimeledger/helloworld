@@ -6,6 +6,9 @@ import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
+import com.higgs.trust.rs.core.task.TxIdBO;
+import com.higgs.trust.rs.core.task.TxIdConsumer;
+import com.higgs.trust.rs.core.task.TxIdProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,8 @@ public class TxProcessInitSchedule {
     private CoreTxRepository coreTxRepository;
     @Autowired
     private RsConfig rsConfig;
+    @Autowired
+    private TxIdProducer txIdProducer;
 
     private int pageNo = 1;
     @Value("${rs.core.schedule.initSize:200}")
@@ -68,11 +73,12 @@ public class TxProcessInitSchedule {
             //TODO:for press test
             log.info("process init.size:{}", size);
             list.forEach(entry -> {
-                try {
-                    coreTransactionService.processInitTx(entry.getTxId());
-                } catch (Throwable e) {
-                    log.error("has error", e);
-                }
+                txIdProducer.put(new TxIdBO(entry.getTxId(),CoreTxStatusEnum.INIT));
+//                try {
+//                    coreTransactionService.processInitTx(entry.getTxId());
+//                } catch (Throwable e) {
+//                    log.error("has error", e);
+//                }
             });
         }
 //        lastPreKey = list.get(size - 1).getTxId();

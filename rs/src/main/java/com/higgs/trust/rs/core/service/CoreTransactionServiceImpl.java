@@ -25,6 +25,8 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
+import com.higgs.trust.rs.core.task.TxIdBO;
+import com.higgs.trust.rs.core.task.TxIdProducer;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
@@ -52,7 +54,6 @@ import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -78,11 +79,12 @@ import java.util.concurrent.TimeUnit;
     @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
     @Autowired private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired private SignServiceImpl signService;
-    @Autowired private ThreadPoolTaskExecutor txSubmitExecutorPool;
+//    @Autowired private ThreadPoolTaskExecutor txSubmitExecutorPool;
     @Autowired private RedissonClient redissonClient;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
     @Autowired private DistributeCallbackNotifyService distributeCallbackNotifyService;
+    @Autowired private TxIdProducer txIdProducer;
 
     /**
      * init redis distribution topic listener
@@ -107,7 +109,8 @@ import java.util.concurrent.TimeUnit;
     private void initAsyncProcessInitTxListener() {
         RTopic<String> topic = redissonClient.getTopic(RedisTopicEnum.ASYNC_TO_PROCESS_INIT_TX.getCode());
         topic.addListener((channel, msg) -> {
-            processInitTx(msg);
+//            processInitTx(msg);
+            txIdProducer.put(new TxIdBO(msg,CoreTxStatusEnum.INIT));
         });
     }
 
@@ -211,7 +214,7 @@ import java.util.concurrent.TimeUnit;
         try {
             // send topic
             RTopic<String> topic = redissonClient.getTopic(RedisTopicEnum.ASYNC_TO_PROCESS_INIT_TX.getCode());
-            topic.publish(txId);
+            topic.publishAsync(txId);
         } catch (Throwable e) {
             log.error("Publish msg to process initTx msg failed！");
         }
@@ -275,12 +278,13 @@ import java.util.concurrent.TimeUnit;
         VoteRule voteRule = getVoteRule(bo.getPolicyId());
         if (voteRule.getVotePattern() == VotePatternEnum.SYNC) {
             //submit by async
-            txSubmitExecutorPool.execute(new Runnable() {
-                @Override public void run() {
-                    log.info("submitToSlave by signal");
-                    submitToSlave(Lists.newArrayList(bo));
-                }
-            });
+//            txSubmitExecutorPool.execute(new Runnable() {
+//                @Override public void run() {
+//                    log.info("submitToSlave by signal");
+//                    submitToSlave(Lists.newArrayList(bo));
+//                }
+//            });
+            txIdProducer.put(new TxIdBO(bo.getTxId(),CoreTxStatusEnum.WAIT));
         }
         Profiler.release();
         Profiler.release();
