@@ -6,19 +6,19 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author liuyu
  */
 @Component @Slf4j public class TxIdProducer implements InitializingBean {
-    private ArrayBlockingQueue<TxIdBO> queueInit = null;
-    private ArrayBlockingQueue<TxIdBO> queueWait = null;
+    private LinkedBlockingQueue<TxIdBO> queueInit = null;
+    private LinkedBlockingQueue<TxIdBO> queueWait = null;
     @Value("${rs.core.schedule.queueSize:10000}") private int maxSize;
 
     @Override public void afterPropertiesSet() throws Exception {
-        queueInit = new ArrayBlockingQueue<>(maxSize);
-        queueWait = new ArrayBlockingQueue<>(maxSize);
+        queueInit = new LinkedBlockingQueue<>(maxSize);
+        queueWait = new LinkedBlockingQueue<>(maxSize);
     }
 
     /**
