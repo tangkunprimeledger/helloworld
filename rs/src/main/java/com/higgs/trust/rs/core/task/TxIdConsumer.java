@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
     @Autowired private TxIdProducer txIdProducer;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Value("${rs.core.schedule.taskSize:30}") private int taskSize;
+    @Value("${rs.core.schedule.taskSize:50}") private int taskSize;
     @Value("${rs.core.schedule.interval:1}") private Long interval;
 
     private ScheduledExecutorService executorInit;
@@ -42,7 +42,6 @@ import java.util.concurrent.TimeUnit;
      */
     public void startConsume() {
         int size = taskSize / 3;
-        size = taskSize - size;
         //for init
         executorInit = new ScheduledThreadPoolExecutor(size);
         for (int i = 0; i < size; i++) {

@@ -202,6 +202,9 @@ import java.util.concurrent.TimeUnit;
             }
         }
         //TODO:liuyu for test
+        CoreTransactionPO corePO = coreTxRepository.queryByStatus(coreTx.getTxId(),CoreTxStatusEnum.INIT);
+        log.info("po of db:{}",corePO);
+        //TODO:liuyu for test
         //put into queue
         txIdProducer.put(new TxIdBO(coreTx.getTxId(),CoreTxStatusEnum.INIT));
         //send redis msg for slave
@@ -226,8 +229,9 @@ import java.util.concurrent.TimeUnit;
 
     @Override
     public void processInitTx(String txId) {
-        //check txId,the redis msg may be null
-        if (StringUtils.isEmpty(txId)) {
+        //check by status
+        CoreTransactionPO corePO = coreTxRepository.queryByStatus(txId,CoreTxStatusEnum.INIT);
+        if(corePO == null){
             return;
         }
         log.debug("[processInitTx]txId:{}", txId);
