@@ -140,6 +140,11 @@ public class EncryptAmount {
         return HomomorphicEncryption.MergeKey(key1, key2);
     }
 
+    public static boolean ContainKey(String fullKey, String subKey){
+        return HomomorphicEncryption.ContainKey(fullKey, subKey);
+    }
+
+
     public  static String exportPubKey(){
 
         if (he.hasPubKey() ){

@@ -56,10 +56,12 @@ public class zkproofTest {
        String key2 = EncryptAmount.GenSubKey(EncryptAmount.exportFullKey(),2,4);
        String key3 = EncryptAmount.GenSubKey(EncryptAmount.exportFullKey(),3,4);
        String key4 = EncryptAmount.GenSubKey(EncryptAmount.exportFullKey(),4,4);
-       key1 = EncryptAmount.MergeKey(key1,key2);
-       key1 = EncryptAmount.MergeKey(key1,key3);
-       key1 = EncryptAmount.MergeKey(key1,key4);
+       String key11 = EncryptAmount.MergeKey(key1,key2);
+       String key12 = EncryptAmount.MergeKey(key11,key3);
+       key1 = EncryptAmount.MergeKey(key12,key4);
        System.out.println( key1);
+
+       System.out.println("Is key1 contain key2 ? " + EncryptAmount.ContainKey(key11,key12));
 
        String em1 = EncryptAmount.getHe().Encryption(BigInteger.ONE,BigInteger.ONE);
        BigInteger m1 = EncryptAmount.getHe().Decryption(em1);
