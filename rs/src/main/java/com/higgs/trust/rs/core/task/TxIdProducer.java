@@ -14,7 +14,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 @Component @Slf4j public class TxIdProducer implements InitializingBean {
     private ArrayBlockingQueue<TxIdBO> queueInit = null;
     private ArrayBlockingQueue<TxIdBO> queueWait = null;
-    @Value("rs.core.schedule.queueSize:10000") private int maxSize;
+    @Value("${rs.core.schedule.queueSize:10000}") private int maxSize;
 
     @Override public void afterPropertiesSet() throws Exception {
         queueInit = new ArrayBlockingQueue<>(maxSize);

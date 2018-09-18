@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit;
     @Autowired private TxIdProducer txIdProducer;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Value("rs.core.schedule.taskSize:8") private int size;
-    @Value("rs.core.schedule.interval:1") private Long interval;
+    @Value("${rs.core.schedule.taskSize:8}") private int size;
+    @Value("${rs.core.schedule.interval:1}") private Long interval;
 
     private ScheduledExecutorService executorInit;
     private ScheduledExecutorService executorWait;
