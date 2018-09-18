@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.repository.account;
 
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.slave.api.enums.account.AccountStateEnum;
-import com.higgs.trust.slave.api.enums.account.ChangeDirectionEnum;
 import com.higgs.trust.slave.api.vo.AccountInfoVO;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -20,21 +19,17 @@ import com.higgs.trust.slave.dao.po.account.AccountInfoWithOwnerPO;
 import com.higgs.trust.slave.dao.rocks.account.AccountDcRecordRocksDao;
 import com.higgs.trust.slave.dao.rocks.account.AccountDetailRocksDao;
 import com.higgs.trust.slave.dao.rocks.account.AccountInfoRocksDao;
-import com.higgs.trust.slave.model.bo.DataIdentity;
 import com.higgs.trust.slave.model.bo.account.AccountDcRecord;
 import com.higgs.trust.slave.model.bo.account.AccountDetail;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.account.OpenAccount;
-import com.higgs.trust.slave.model.convert.DataIdentityConvert;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 /**
