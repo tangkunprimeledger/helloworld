@@ -36,6 +36,7 @@ import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
+import com.higgs.trust.slave.core.service.pending.TransactionValidator;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -76,13 +77,12 @@ import java.util.concurrent.TimeUnit;
     @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
     @Autowired private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired private SignServiceImpl signService;
-//    @Autowired private ThreadPoolTaskExecutor txSubmitExecutorPool;
     @Autowired private RedissonClient redissonClient;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
     @Autowired private DistributeCallbackNotifyService distributeCallbackNotifyService;
     @Autowired private TxIdProducer txIdProducer;
-
+    @Autowired private TransactionValidator transactionValidator;
     /**
      * init redis distribution topic listener
      *
@@ -149,13 +149,8 @@ import java.util.concurrent.TimeUnit;
             log.error("[submitTx] the tx is null");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
-        //TODO:liuyu use tx.validator
-        //validate param
-//        BeanValidateResult validateResult = BeanValidator.validate(coreTx);
-//        if (!validateResult.isSuccess()) {
-//            log.error("[submitTx] param validate is fail,first msg:{}", validateResult.getFirstMsg());
-//            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
-//        }
+        //tx.validator
+        transactionValidator.verify(coreTx);
         //check bizType
         String policyId = coreTx.getPolicyId();
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);

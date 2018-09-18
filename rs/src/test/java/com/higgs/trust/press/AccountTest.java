@@ -56,8 +56,7 @@ public class AccountTest extends BasePressTest{
         private AccountTest accountTest = new AccountTest();
         @Override public void run() {
             while (true) {
-                int num = exe();
-                System.out.println("###"+Thread.currentThread().getName() + "-num:" + num);
+                exe();
             }
         }
         //

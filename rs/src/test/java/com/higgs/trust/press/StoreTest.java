@@ -46,7 +46,7 @@ public class StoreTest extends BasePressTest{
     public void store() {
         for (int i = 0; i < 8; i++) {
             StoreVO vo = new StoreVO();
-            vo.setReqNo("tx_id_store_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
+            vo.setReqNo("tx_id_store_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(10000) + "-" + Thread.currentThread().getName());
             vo.setValues(new String[]{"store-value-" + i,"aaa-" + i,"xxx-" + i,"bbb-" + i,"vvvv-" + i});
             send("press/store", JSON.toJSONString(vo));
         }
