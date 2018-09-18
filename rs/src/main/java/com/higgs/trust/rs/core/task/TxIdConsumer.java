@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
         if (executorWait == null || executorWait.isShutdown() || executorWait.isTerminated()) {
             executorWait = new ScheduledThreadPoolExecutor(size);
             for (int i = 1; i < (size + 1); i++) {
-                executorWait.scheduleAtFixedRate(new RsTaskHandler(CoreTxStatusEnum.INIT), 0, interval, TimeUnit.MILLISECONDS);
+                executorWait.scheduleAtFixedRate(new RsTaskHandler(CoreTxStatusEnum.WAIT), 0, interval, TimeUnit.MILLISECONDS);
             }
         }
     }
