@@ -100,6 +100,7 @@ import java.util.concurrent.TimeUnit;
          * @param list
          */
         private void processInit(List<TxIdBO> list) {
+            log.info("processInit.size:{}",list.size());
             list.forEach(entry->{
                 try {
                     coreTransactionService.processInitTx(entry.getTxId());
@@ -125,6 +126,7 @@ import java.util.concurrent.TimeUnit;
                 CoreTxBO coreTxBO = coreTxRepository.convertTxBO(entry);
                 coreTxs.add(coreTxBO);
             });
+            log.info("submitToSlave.size:{}",coreTxs.size());
             coreTransactionService.submitToSlave(coreTxs);
         }
     }
