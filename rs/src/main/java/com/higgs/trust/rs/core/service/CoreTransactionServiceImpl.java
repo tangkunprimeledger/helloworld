@@ -201,8 +201,10 @@ import java.util.concurrent.TimeUnit;
                 ThreadLocalUtils.clearRocksTx();;
             }
         }
+        //put into queue
+        txIdProducer.put(new TxIdBO(coreTx.getTxId(),CoreTxStatusEnum.INIT));
         //send redis msg for slave
-        asyncProcessInitTx(coreTx.getTxId());
+//        asyncProcessInitTx(coreTx.getTxId());
     }
 
     /**

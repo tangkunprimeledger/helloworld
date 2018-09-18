@@ -71,7 +71,7 @@ public class TxProcessInitSchedule {
             }
             int size = list.size();
             //TODO:for press test
-            log.info("process init.size:{}", size);
+            log.info("process initDB.size:{},queueInitSize:{},queueSubmitSize:{}", size,txIdProducer.initSize(),txIdProducer.waitSize());
             list.forEach(entry -> {
                 txIdProducer.put(new TxIdBO(entry.getTxId(),CoreTxStatusEnum.INIT));
 //                try {

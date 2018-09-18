@@ -1,17 +1,19 @@
 package com.higgs.trust.rs.core.task;
 
-import com.google.common.collect.Lists;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +27,7 @@ import java.util.concurrent.TimeUnit;
     @Autowired private TxIdProducer txIdProducer;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Value("${rs.core.schedule.taskSize:8}") private int size;
+    @Value("${rs.core.schedule.taskSize:25}") private int size;
     @Value("${rs.core.schedule.interval:1}") private Long interval;
 
     private ScheduledExecutorService executorInit;
@@ -60,25 +62,34 @@ import java.util.concurrent.TimeUnit;
      */
     class RsTaskHandler implements Runnable {
         private CoreTxStatusEnum statusEnum;
+        private int maxSize;
 
         public RsTaskHandler(CoreTxStatusEnum statusEnum) {
             this.statusEnum = statusEnum;
+            this.maxSize = statusEnum == CoreTxStatusEnum.INIT ? 50 : 500;
         }
 
         @Override public void run() {
-            TxIdBO txIdBO = txIdProducer.take(this.statusEnum);
-            if (txIdBO == null) {
+            List<TxIdBO> list = new ArrayList<>(maxSize);
+            int i = 0;
+            while (i < maxSize){
+                TxIdBO txIdBO = txIdProducer.take(this.statusEnum);
+                if (txIdBO != null) {
+                    list.add(txIdBO);
+                }
+                i++;
+            }
+            if(CollectionUtils.isEmpty(list)){
                 return;
             }
-            CoreTxStatusEnum statusEnum = txIdBO.getStatusEnum();
             //process init
             if (statusEnum == CoreTxStatusEnum.INIT) {
-                processInit(txIdBO);
+                processInit(list);
                 return;
             }
             //process wait
             if (statusEnum == CoreTxStatusEnum.WAIT) {
-                processWait(txIdBO);
+                processWait(list);
                 return;
             }
         }
@@ -86,29 +97,35 @@ import java.util.concurrent.TimeUnit;
         /**
          * process init
          *
-         * @param txIdBO
+         * @param list
          */
-        private void processInit(TxIdBO txIdBO) {
-            try {
-                coreTransactionService.processInitTx(txIdBO.getTxId());
-            } catch (Throwable e) {
-                log.error("task.processInit has error", e);
-            }
+        private void processInit(List<TxIdBO> list) {
+            list.forEach(entry->{
+                try {
+                    coreTransactionService.processInitTx(entry.getTxId());
+                } catch (Throwable e) {
+                    log.error("task.processInit has error", e);
+                }
+            });
         }
 
         /**
          * process wait
          *
-         * @param txIdBO
+         * @param list
          */
-        private void processWait(TxIdBO txIdBO) {
-            try {
-                CoreTransactionPO po = coreTxRepository.queryByTxId(txIdBO.getTxId(), false);
-                CoreTxBO coreTxBO = coreTxRepository.convertTxBO(po);
-                coreTransactionService.submitToSlave(Lists.newArrayList(coreTxBO));
-            }catch (Throwable e){
-                log.error("task.processWait has error", e);
-            }
+        private void processWait(List<TxIdBO> list) {
+            List<String> ids = new ArrayList<>(list.size());
+            List<CoreTxBO> coreTxs = new ArrayList<>(list.size());
+            list.forEach(entry->{
+                ids.add(entry.getTxId());
+            });
+            List<CoreTransactionPO> pos = coreTxRepository.queryByTxIds(ids);
+            pos.forEach(entry->{
+                CoreTxBO coreTxBO = coreTxRepository.convertTxBO(entry);
+                coreTxs.add(coreTxBO);
+            });
+            coreTransactionService.submitToSlave(coreTxs);
         }
     }
 }

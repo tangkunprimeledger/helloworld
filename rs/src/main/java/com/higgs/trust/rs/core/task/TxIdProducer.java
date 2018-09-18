@@ -36,7 +36,6 @@ import java.util.concurrent.ArrayBlockingQueue;
         } catch (Exception e) {
             log.error("put txId has error", e);
         }
-        log.info("queue - initSize:{},waitSize:{}", queueInit.size(),queueWait.size());
     }
 
     /**
@@ -47,13 +46,30 @@ import java.util.concurrent.ArrayBlockingQueue;
     public TxIdBO take(CoreTxStatusEnum statusEnum) {
         try {
             if(statusEnum == CoreTxStatusEnum.INIT) {
-                return queueInit.take();
+                return queueInit.poll();
             }else if(statusEnum == CoreTxStatusEnum.WAIT){
-                return queueWait.take();
+                return queueWait.poll();
             }
         } catch (Exception e) {
             log.error("take txId has error", e);
         }
         return null;
+    }
+
+    /**
+     * size for init
+     * @return
+     */
+    public int initSize(){
+        return queueInit.size();
+    }
+
+    /**
+     * size for wait
+     *
+     * @return
+     */
+    public int waitSize(){
+        return queueWait.size();
     }
 }
