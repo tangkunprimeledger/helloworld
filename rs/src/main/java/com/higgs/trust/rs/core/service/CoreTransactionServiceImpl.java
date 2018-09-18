@@ -202,9 +202,6 @@ import java.util.concurrent.TimeUnit;
             }
         }
         //TODO:liuyu for test
-        CoreTransactionPO corePO = coreTxRepository.queryByStatus(coreTx.getTxId(),CoreTxStatusEnum.INIT);
-        log.info("po of db:{}",corePO);
-        //TODO:liuyu for test
         //put into queue
         txIdProducer.put(new TxIdBO(coreTx.getTxId(),CoreTxStatusEnum.INIT));
         //send redis msg for slave
@@ -325,7 +322,7 @@ import java.util.concurrent.TimeUnit;
         //get need voters from saved sign info
         List<String> needVoters = voteService.getVoters(bo.getSignDatas(), policy.getRsIds());
         if (CollectionUtils.isEmpty(needVoters)) {
-            log.warn("[processInitTx]need voters is empty txId:{}", bo.getTxId());
+            log.debug("[processInitTx]need voters is empty txId:{}", bo.getTxId());
             //still submit to slave
             coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             return bo;
