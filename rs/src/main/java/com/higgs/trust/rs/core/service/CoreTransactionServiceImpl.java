@@ -286,7 +286,7 @@ import java.util.concurrent.TimeUnit;
 //                    submitToSlave(Lists.newArrayList(bo));
 //                }
 //            });
-            txIdProducer.put(new TxIdBO(bo.getTxId(),CoreTxStatusEnum.WAIT));
+            txIdProducer.put(new TxIdBO(txId,CoreTxStatusEnum.WAIT));
         }
         Profiler.release();
         Profiler.release();
