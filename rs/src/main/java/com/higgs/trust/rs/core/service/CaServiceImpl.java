@@ -362,7 +362,7 @@ import java.util.*;
 
         // generate temp pubKey and priKey and insert into db
         log.info("[generateTmpKeyPair] start to generate tempKeyPairs");
-        Crypto crypto = CryptoUtil.getBizCrypto();
+        Crypto crypto = CryptoUtil.getBizCrypto(null);
         KeyPair keyPair = crypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();
@@ -443,7 +443,7 @@ import java.util.*;
         caVO1.setUser(nodeState.getNodeName());
 
         // generate KeyPair for biz layer
-        Crypto bizCrypto = CryptoUtil.getBizCrypto();
+        Crypto bizCrypto = CryptoUtil.getBizCrypto(null);
         keyPair = bizCrypto.generateKeyPair();
         pubKey = keyPair.getPubKey();
         priKey = keyPair.getPriKey();

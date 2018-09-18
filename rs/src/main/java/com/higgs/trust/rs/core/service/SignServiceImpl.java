@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
         if(log.isDebugEnabled()){
             log.debug("[signTx]priKeyForBiz:{}", privateKey);
         }
-        String sign = CryptoUtil.getBizCrypto().sign(coreTxJSON, privateKey);
+        String sign = CryptoUtil.getBizCrypto(null).sign(coreTxJSON, privateKey);
         if(log.isDebugEnabled()){
             log.debug("[signTx]sign:{}", sign);
         }
