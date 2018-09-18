@@ -47,9 +47,9 @@ import java.util.concurrent.ArrayBlockingQueue;
     public TxIdBO take(CoreTxStatusEnum statusEnum) {
         try {
             if(statusEnum == CoreTxStatusEnum.INIT) {
-                queueInit.take();
+                return queueInit.take();
             }else if(statusEnum == CoreTxStatusEnum.WAIT){
-                queueWait.take();
+                return queueWait.take();
             }
         } catch (Exception e) {
             log.error("take txId has error", e);
