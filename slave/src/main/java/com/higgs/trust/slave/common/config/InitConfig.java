@@ -44,7 +44,6 @@ import java.util.concurrent.*;
 @Slf4j
 @Configuration
 @Getter
-@Setter
 public class InitConfig {
     @Autowired
     BeanFactory beanFactory;
