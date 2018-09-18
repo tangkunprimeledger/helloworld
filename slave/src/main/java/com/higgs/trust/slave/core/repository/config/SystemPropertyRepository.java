@@ -1,20 +1,13 @@
 package com.higgs.trust.slave.core.repository.config;
 
 import com.higgs.trust.common.utils.BeanConvertor;
-import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.common.config.InitConfig;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.mysql.config.SystemPropertyDao;
 import com.higgs.trust.slave.dao.po.config.SystemPropertyPO;
 import com.higgs.trust.slave.dao.rocks.config.SystemPropertyRocksDao;
 import com.higgs.trust.slave.model.bo.config.SystemProperty;
 import lombok.extern.slf4j.Slf4j;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.WriteBatch;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
