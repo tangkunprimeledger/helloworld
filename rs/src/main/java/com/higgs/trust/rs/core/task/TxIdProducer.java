@@ -29,9 +29,9 @@ import java.util.concurrent.LinkedBlockingQueue;
     public void put(TxIdBO txId) {
         try {
             if(txId.getStatusEnum() == CoreTxStatusEnum.INIT) {
-                queueInit.put(txId);
+                queueInit.offer(txId);
             }else if(txId.getStatusEnum() == CoreTxStatusEnum.WAIT){
-                queueWait.put(txId);
+                queueWait.offer(txId);
             }
         } catch (Exception e) {
             log.error("put txId has error", e);
