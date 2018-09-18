@@ -14,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Component @Slf4j public class TxIdProducer implements InitializingBean {
     private LinkedBlockingQueue<TxIdBO> queueInit = null;
     private LinkedBlockingQueue<TxIdBO> queueWait = null;
-    @Value("${rs.core.schedule.queueSize:10000}") private int maxSize;
+    @Value("${rs.core.schedule.queueSize:5000}") private int maxSize;
 
     @Override public void afterPropertiesSet() throws Exception {
         queueInit = new LinkedBlockingQueue<>(maxSize);

@@ -95,9 +95,7 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_WAIT_ASYNC_TIMEOUT_EXCEPTION, message);
         }
         String resultJson = finalLockObject.getResult().toString();
-        log.info("[syncWaitNotify]resultJson:{}",resultJson);
         return JSON.parseObject(resultJson, RespData.class);
-
     }
 
     /**

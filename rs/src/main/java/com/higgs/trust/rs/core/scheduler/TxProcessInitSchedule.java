@@ -53,18 +53,14 @@ public class TxProcessInitSchedule {
             }
             int size = list.size();
             //TODO:for press test
-            log.info("process init.size:{}", size);
+            log.info("process initDB.size:{},queueInitSize:{},queueWaitSize:{}", size,txIdProducer.initSize(),txIdProducer.waitSize());
             list.forEach(entry -> {
-                try {
-                    coreTransactionService.processInitTx(entry.getTxId());
-                } catch (Throwable e) {
-                    log.error("has error", e);
-                }
+                txIdProducer.put(new TxIdBO(entry.getTxId(),CoreTxStatusEnum.INIT));
             });
         } else {
             List<CoreTransactionPO> list = coreTxRepository
                 .queryByStatusFromRocks(CoreTxStatusEnum.INIT, (pageNo - 1) * pageSize, pageSize, lastPreKey);
-            if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {
+            if (CollectionUtils.isEmpty(list)) {
                 pageNo = 1;
                 lastPreKey = null;
                 return;
@@ -74,14 +70,8 @@ public class TxProcessInitSchedule {
             log.info("process initDB.size:{},queueInitSize:{},queueWaitSize:{}", size,txIdProducer.initSize(),txIdProducer.waitSize());
             list.forEach(entry -> {
                 txIdProducer.put(new TxIdBO(entry.getTxId(),CoreTxStatusEnum.INIT));
-//                try {
-//                    coreTransactionService.processInitTx(entry.getTxId());
-//                } catch (Throwable e) {
-//                    log.error("has error", e);
-//                }
             });
         }
-//        lastPreKey = list.get(size - 1).getTxId();
         pageNo++;
     }
 }
