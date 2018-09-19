@@ -100,16 +100,9 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionPO>{
 
         for (CoreTransactionPO po : poList) {
             String key = from.getIndex() + Constant.SPLIT_SLASH + po.getTxId();
-            CoreTransactionPO oldPO = get(key);
-            if (null == oldPO) {
-                log.error("[CoreTxProcessRocksDao.batchUpdate] core transaction is not exist, key={}", key);
-                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_IS_NOT_EXIST);
-            }
-
-            delete(key);
-            oldPO.setUpdateTime(new Date());
+            txDelete(tx, key);
             String newKey = to.getIndex() + Constant.SPLIT_SLASH + po.getTxId();
-            txPut(tx, newKey, oldPO);
+            txPut(tx, newKey, po);
         }
     }
 
