@@ -24,23 +24,23 @@ public class TransactionRepositoryTest extends BaseTest {
 
     @Test public void testQueryTxIds() throws Exception {
         for (int i = 0; i < 1000; i++) {
-            List<String> txIds = transactionRocksDao.queryKeysByPrefix("tfs", 100);
-            for (int j = 0; j < 100; j++){
-                txIds.add("tfs-test-tx-id-" + System.currentTimeMillis());
-            }
-
-            long begin = System.currentTimeMillis();
-            List<String> resultTxIds1 = transactionRepository.queryTxIdsByIds(txIds);
-            System.out.println("multiGet: " + (System.currentTimeMillis() - begin));
-
-            List<String> resultTxIds2 = new ArrayList<>();
-            long begin2 = System.currentTimeMillis();
-            for (String txId : txIds) {
-                if (transactionRocksDao.keyMayExist(txId) && null !=transactionRocksDao.get(txId)) {
-                    resultTxIds2.add(txId);
-                }
-            }
-            System.out.println("keyMayExist: " + (System.currentTimeMillis() - begin2));
+//            List<String> txIds = transactionRocksDao.queryKeysByPrefix("tfs", 100);
+//            for (int j = 0; j < 100; j++){
+//                txIds.add("tfs-test-tx-id-" + System.currentTimeMillis());
+//            }
+//
+//            long begin = System.currentTimeMillis();
+//            List<String> resultTxIds1 = transactionRepository.queryTxIdsByIds(txIds);
+//            System.out.println("multiGet: " + (System.currentTimeMillis() - begin));
+//
+//            List<String> resultTxIds2 = new ArrayList<>();
+//            long begin2 = System.currentTimeMillis();
+//            for (String txId : txIds) {
+//                if (transactionRocksDao.keyMayExist(txId) && null !=transactionRocksDao.get(txId)) {
+//                    resultTxIds2.add(txId);
+//                }
+//            }
+//            System.out.println("keyMayExist: " + (System.currentTimeMillis() - begin2));
         }
     }
 

@@ -172,39 +172,7 @@ import java.util.Set;
         }
     }
 
-    /**
-     * get min height with package status and start height
-     *
-     * @param startHeight
-     * @param statusSet
-     * @return
-     */
-    public Long getMinHeight(long startHeight, Set<String> statusSet) {
-        if (initConfig.isUseMySQL()) {
-            return packageDao.getMinHeightWithHeightAndStatus(startHeight, statusSet);
-        } else {
-            if (statusSet.contains(PackageStatusEnum.RECEIVED.getCode())) {
-                return getNeedFailoverHeight(startHeight);
-            } else {
-                throw new UnsupportedOperationException("package status is not received");
-            }
-        }
-    }
-
-    private Long getNeedFailoverHeight(long startHeight) {
-        if (!packRocksDao.keyMayExist(String.valueOf(startHeight))) {
-            SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_PACK_HEIGHT);
-            if (null != bo && !StringUtils.isEmpty(bo.getValue())) {
-                long packHeight = Long.parseLong(bo.getValue());
-                if ((packHeight > startHeight) && packRocksDao.keyMayExist(bo.getValue())) {
-                    return packHeight;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
+     /**
      * get count with package status
      *
      * @param statusSet

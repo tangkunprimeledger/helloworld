@@ -124,13 +124,16 @@ import java.util.List;
      * @return
      */
     private boolean needFailover(long height) {
-        Long minHeight =
-            packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode()));
-        if (minHeight == null) {
+        Long maxHeight = packageRepository.getMaxHeight();
+        if (maxHeight == null || height > maxHeight.longValue()) {
             return false;
         }
+
         Package pack = packageRepository.load(height);
-        if (pack == null || pack.getStatus() == PackageStatusEnum.FAILOVER) {
+        if (pack != null && pack.getStatus() == PackageStatusEnum.FAILOVER) {
+            return true;
+        }
+        if (height < maxHeight.longValue() && pack == null) {
             return true;
         }
 
@@ -147,10 +150,8 @@ import java.util.List;
         if (log.isDebugEnabled()) {
             log.debug("check and instert package:{} for failover", height);
         }
-        Long minHeight =
-            packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode()));
-        Long maxHeight = blockService.getMaxHeight();
-        if (minHeight == null || height <= maxHeight) {
+        Long maxPackHeight = packageRepository.getMaxHeight();
+        if (maxPackHeight == null || height > maxPackHeight.longValue()) {
             return false;
         }
         Package pack = packageRepository.load(height);
