@@ -176,7 +176,18 @@ import java.util.List;
         pack.setHeight(height);
         pack.setStatus(PackageStatusEnum.FAILOVER);
         try {
-            packageRepository.save(pack);
+            if (!initConfig.isUseMySQL()) {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                try {
+                    ThreadLocalUtils.putRocksTx(tx);
+                    packageRepository.save(pack);
+                    RocksUtils.txCommit(tx);
+                } finally {
+                    ThreadLocalUtils.clearRocksTx();
+                }
+            } else {
+                packageRepository.save(pack);
+            }
         } catch (Exception e) {
             log.warn("insert failover package failed.", e);
             return false;

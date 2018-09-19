@@ -228,10 +228,12 @@ import java.util.*;
         if (CollectionUtils.isEmpty(txs)) {
             return datas;
         }
+        Profiler.enter("buildTxIds");
         List<String> txIds = new ArrayList<>();
         for (SignedTransaction signedTransaction : txs) {
             txIds.add(signedTransaction.getCoreTx().getTxId());
         }
+        Profiler.release();
 
         if (initConfig.isUseMySQL()) {
             List<TransactionPO> transactionPOS = transactionDao.queryByTxIds(txIds);
@@ -242,7 +244,9 @@ import java.util.*;
                 datas.add(transactionPO.getTxId());
             }
         } else {
+            Profiler.enter("query txIds from RocksDB");
             List<String> resultTxIds = transactionRocksDao.queryTxIds(txIds);
+            Profiler.release();
             if (!CollectionUtils.isEmpty(resultTxIds)) {
                 datas.addAll(resultTxIds);
             }
