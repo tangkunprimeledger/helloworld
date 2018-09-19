@@ -36,7 +36,12 @@ import java.util.List;
      */
     @RequestMapping(value = "/batch") RespData batch(@RequestBody List<CoreTransaction> list) {
         list.forEach(entry->{
-            rsCoreFacade.processTx(entry);
+            try {
+                rsCoreFacade.processTx(entry);
+            }catch (Throwable e){
+                log.info("entry->{}",entry);
+                log.error("has error",e);
+            }
         });
         return new RespData();
     }
