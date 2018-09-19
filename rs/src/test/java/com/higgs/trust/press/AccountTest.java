@@ -93,7 +93,7 @@ public class AccountTest extends BasePressTest{
             OpenAccountVO vo = new OpenAccountVO();
             vo.setReqNo("tx_id_open_account_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
             vo.setCurrencyName("CNY");
-            vo.setAccountNo("account_no_" + i);
+            vo.setAccountNo(AccountingService.ACCOUNT_NO_PREFIX + i);
             if (i % 2 == 0) {
                 vo.setFundDirection(0);
             } else {
