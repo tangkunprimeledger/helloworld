@@ -27,7 +27,8 @@ import java.util.concurrent.TimeUnit;
     @Autowired private TxIdProducer txIdProducer;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Value("${rs.core.schedule.taskSize:50}") private int taskSize;
+    @Value("${rs.core.schedule.taskInitSize:30}") private int taskInitSize;
+    @Value("${rs.core.schedule.taskWaitSize:10}") private int taskWaitSize;
     @Value("${rs.core.schedule.interval:1}") private Long interval;
 
     private ScheduledExecutorService executorInit;
@@ -41,16 +42,14 @@ import java.util.concurrent.TimeUnit;
      * start
      */
     public void startConsume() {
-        int size = taskSize / 3;
         //for init
-        executorInit = new ScheduledThreadPoolExecutor(size);
-        for (int i = 0; i < size; i++) {
+        executorInit = new ScheduledThreadPoolExecutor(taskInitSize);
+        for (int i = 0; i < taskInitSize; i++) {
             executorInit.scheduleAtFixedRate(new RsTaskHandler(CoreTxStatusEnum.INIT), 0, interval, TimeUnit.MILLISECONDS);
         }
-        size = taskSize - size;
         //for wait
-        executorWait = new ScheduledThreadPoolExecutor(size);
-        for (int i = 0; i < size; i++) {
+        executorWait = new ScheduledThreadPoolExecutor(taskWaitSize);
+        for (int i = 0; i < taskWaitSize; i++) {
             executorWait.scheduleAtFixedRate(new RsTaskHandler(CoreTxStatusEnum.WAIT), 0, interval, TimeUnit.MILLISECONDS);
         }
     }
