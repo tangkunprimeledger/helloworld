@@ -184,13 +184,21 @@ import java.util.Set;
             return packageDao.getMinHeightWithHeightAndStatus(startHeight, statusSet);
         } else {
             if (statusSet.contains(PackageStatusEnum.RECEIVED.getCode())) {
-                SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_BLOCK_HEIGHT);
-                if (null != bo && !StringUtils.isEmpty(bo.getValue())) {
-                    Long height = Long.parseLong(bo.getValue()) + 1;
-                    return packRocksDao.get(String.valueOf(height)) == null ? null : height;
-                }
+                return getNeedFailoverHeight(startHeight);
             } else {
                 throw new UnsupportedOperationException("package status is not received");
+            }
+        }
+    }
+
+    private Long getNeedFailoverHeight(long startHeight) {
+        if (!packRocksDao.keyMayExist(String.valueOf(startHeight))) {
+            SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_PACK_HEIGHT);
+            if (null != bo && !StringUtils.isEmpty(bo.getValue())) {
+                long packHeight = Long.parseLong(bo.getValue());
+                if ((packHeight > startHeight) && packRocksDao.keyMayExist(bo.getValue())) {
+                    return packHeight;
+                }
             }
         }
         return null;
@@ -314,7 +322,28 @@ import java.util.Set;
             }
             RocksUtils.txCommit(tx);
         } finally {
-            ThreadLocalUtils.clearRocksTx();;
+            ThreadLocalUtils.clearRocksTx();
+        }
+        //delete package which status = 'RECEIVED', but block is exist which height = package.height
+        return deleteReceivedPackLessThanHeight(height, count);
+    }
+
+    private int deleteReceivedPackLessThanHeight(Long height, int count) {
+        List<Long> heights = packStatusRocksDao.queryByStatusAndLessThanHeight(PackageStatusEnum.RECEIVED.getIndex(), height);
+        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+        ThreadLocalUtils.putRocksTx(tx);
+        try {
+            for (Long h : heights) {
+                if (height.compareTo(h) >= 0) {
+                    deletePendingTx(height);
+                    packRocksDao.batchDelete(h);
+                    packStatusRocksDao.batchDelete(h, PackageStatusEnum.RECEIVED.getIndex());
+                    count++;
+                }
+            }
+            RocksUtils.txCommit(tx);
+        } finally {
+            ThreadLocalUtils.clearRocksTx();
         }
         return count;
     }

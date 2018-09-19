@@ -84,44 +84,12 @@ public abstract class RocksBaseDao<V> {
         }
     }
 
-    public void batchPut(WriteBatch batch, String k, V v) {
-        ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
-
-        byte[] key = JSON.toJSONBytes(k);
-        byte[] value = JSON.toJSONBytes(v);
-
-        try {
-            batch.put(columnFamilyHandle, key, value);
-        } catch (RocksDBException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void delete(String k) {
         try {
             ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
 
             byte[] key = JSON.toJSONBytes(k);
             rocksDBWrapper.getRocksDB().delete(columnFamilyHandle, key);
-        } catch (RocksDBException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void batchDelete(WriteBatch batch, String k) {
-        ColumnFamilyHandle columnFamilyHandle = getColumnFamilyHandle();
-
-        byte[] key = JSON.toJSONBytes(k);
-        try {
-            batch.remove(columnFamilyHandle, key);
-        } catch (RocksDBException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void batchCommit(WriteOptions options, WriteBatch writeBatch) {
-        try {
-            rocksDBWrapper.getRocksDB().write(options, writeBatch);
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
@@ -274,6 +242,35 @@ public abstract class RocksBaseDao<V> {
         RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
         for (iterator.seek(prefixByte); iterator.isValid(); iterator.next()) {
             return JSON.parseObject(iterator.value(), clazz);
+        }
+        return null;
+    }
+
+    public V queryMoreThanByPrefixAndPosition(String prefix, String position) {
+        byte[] prefixByte = JSON.toJSONBytes(prefix);
+
+        RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
+        for (iterator.seek(prefixByte); iterator.isValid() && isPrefix(prefix, iterator.key()); iterator.next()) {
+            String key = (String)JSON.parse(iterator.key());
+            if (key.compareTo(position) >= 0) {
+                return JSON.parseObject(iterator.value(), clazz);
+            }
+        }
+        return null;
+    }
+
+    public List<V> queryLessThanByPrefixAndPosition(String prefix, String position) {
+        byte[] prefixByte = JSON.toJSONBytes(prefix);
+
+        List<V> list = new ArrayList<>();
+        RocksIterator iterator = iterator(new ReadOptions().setPrefixSameAsStart(true));
+        for (iterator.seek(prefixByte); iterator.isValid() && isPrefix(prefix, iterator.key()); iterator.next()) {
+            String key = (String)JSON.parse(iterator.key());
+            if (key.compareTo(position) <= 0) {
+                list.add(JSON.parseObject(iterator.value(), clazz));
+            } else {
+
+            }
         }
         return null;
     }

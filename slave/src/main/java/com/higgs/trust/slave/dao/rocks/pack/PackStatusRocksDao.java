@@ -114,4 +114,10 @@ public class PackStatusRocksDao extends RocksBaseDao<Long> {
         String position = PackageStatusEnum.RECEIVED.getIndex() + Constant.SPLIT_SLASH + df.format(height);
         return queryByPrefix(PackageStatusEnum.RECEIVED.getIndex(), LOAD_LIMIT, position);
     }
+
+    public List<Long> queryByStatusAndLessThanHeight(String index, Long height) {
+        DecimalFormat df = new DecimalFormat(Constant.PACK_STATUS_HEIGHT_FORMAT);
+        String position = index + Constant.SPLIT_SLASH + df.format(height);
+        return queryLessThanByPrefixAndPosition(index, position);
+    }
 }
