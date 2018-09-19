@@ -2,6 +2,8 @@ package com.higgs.trust.press;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.ParserConfig;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -20,8 +22,20 @@ import java.util.Random;
 public class BatchTest extends BasePressTest{
 
     public static void main(String[] args) throws Exception {
-       new BatchTest().exe();
-//        test();
+        ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
+        //JSON不做循环引用检测
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
+        //JSON输出NULL属性
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteMapNullValue.getMask();
+        //toJSONString的时候对一级key进行按照字母排序
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.SortField.getMask();
+        //toJSONString的时候对嵌套结果进行按照字母排序
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
+        //toJSONString的时候记录Class的name
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
+
+//       new BatchTest().exe();
+        test();
     }
 
     /**
@@ -30,7 +44,7 @@ public class BatchTest extends BasePressTest{
      * @throws IOException
      */
     private static void test() throws IOException {
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             new Thread(new BatchTest.MyTask()).start();
         }
         //wait
@@ -67,7 +81,7 @@ public class BatchTest extends BasePressTest{
             String accountNo = "batch_account_no_" + System.currentTimeMillis() + "_" + new Random().nextInt(10000);
             List<Action> actions = new ArrayList<>();
             actions.add(TestDataMaker
-                .makeOpenAccountAction(accountNo, i, i % 2 == 0 ? FundDirectionEnum.DEBIT : FundDirectionEnum.CREDIT));
+                .makeOpenAccountAction(accountNo, 0, i % 2 == 0 ? FundDirectionEnum.DEBIT : FundDirectionEnum.CREDIT));
             CoreTransaction coreTransaction =
                 TestDataMaker.makeCoreTx(actions, 0, AccountingService.POLICY_ID, new JSONObject());
             txs.add(coreTransaction);

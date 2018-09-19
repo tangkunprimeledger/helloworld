@@ -141,6 +141,7 @@ import java.util.Random;
         coreTransaction.setActionList(Lists.newArrayList(action));
         coreTransaction.setSender(rsConfig.getRsName());
         coreTransaction.setVersion(VersionEnum.V1.getCode());
+        coreTransaction.setSendTime(new Date());
         return coreTransaction;
     }
 }

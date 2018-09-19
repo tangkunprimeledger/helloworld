@@ -74,8 +74,8 @@ public class TestDataMaker {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setPolicyId(policyId);
         coreTx.setTxId(
-            "tx_id_" + actions.get(0).getType().getCode() + "_" + index + "_" + System.currentTimeMillis() + Thread
-                .currentThread().getName());
+            "tx_id_" + actions.get(0).getType().getCode() + "_" + index + "_" + System.currentTimeMillis() + "-"
+                + new Random().nextInt(100000) + "-" + Thread.currentThread().getName());
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setActionList(actions == null ? new ArrayList<>() : actions);
         coreTx.setBizModel(bizModel);

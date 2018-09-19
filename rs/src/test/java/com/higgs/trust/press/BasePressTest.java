@@ -27,10 +27,11 @@ public class BasePressTest {
      * @param params
      */
     public void send(String api, String params) {
-        //        System.out.println(("[send]req:" + params));
+//            System.out.println(("[send]req:" + params));
         try {
             Long startTime = System.currentTimeMillis();
             String resultString = OkHttpClientManager.postAsString(BASE_URL + api, params, 10000L);
+//            System.out.println("resultString:" + resultString);
             RespData respData = JSON.parseObject(resultString, RespData.class);
             Long endTime = System.currentTimeMillis();
 //            System.out.println("[send]resp.code:" + respData.getRespCode());
