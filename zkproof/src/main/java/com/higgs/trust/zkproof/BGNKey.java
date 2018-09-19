@@ -241,6 +241,38 @@ public class BGNKey {
 		return null;
 	}
 
+	public static boolean ContainKey(String fullKey, String subKey){
+		JSONObject ob1 = JSONObject.parseObject(fullKey);
+		JSONObject ob2 = JSONObject.parseObject(subKey);
+
+		if (ob1.getString("param").compareTo(ob2.getString("param")) == 0
+				&& ob1.getString("P").compareTo(ob2.getString("P")) == 0
+				&& ob1.getString("Q").compareTo(ob2.getString("Q")) == 0
+				&& ob1.getString("n").compareTo(ob2.getString("n")) == 0){
+
+			int NodeNum1 = Integer.valueOf(ob1.getString("nodeNum") == null ? "-1":ob1.getString("nodeNum"));
+			int NodeNum2 = Integer.valueOf(ob2.getString("nodeNum") == null ? "-1":ob2.getString("nodeNum"));
+			if (NodeNum1 == NodeNum2 && NodeNum2 != -1) {
+				for(int seqno = 1; seqno <= NodeNum2; seqno++){
+					if (ob2.getString("P" + String.valueOf(seqno)) != null  ){
+						if (ob1.getString("P" + String.valueOf(seqno)) != null){
+							if(ob2.getString("P" + String.valueOf(seqno)).compareTo(ob1.getString("P" + String.valueOf(seqno))) != 0){
+								return false;
+							}
+						}
+						else {
+							return false;
+						}
+					}
+				}
+				return  true;
+			}
+
+		}
+
+		return false;
+	}
+
 
 	String exportFullKey(){
 		try {

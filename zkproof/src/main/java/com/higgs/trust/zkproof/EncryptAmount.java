@@ -140,6 +140,11 @@ public class EncryptAmount {
         return HomomorphicEncryption.MergeKey(key1, key2);
     }
 
+    public static boolean ContainKey(String fullKey, String subKey){
+        return HomomorphicEncryption.ContainKey(fullKey, subKey);
+    }
+
+
     public  static String exportPubKey(){
 
         if (he.hasPubKey() ){
@@ -197,12 +202,17 @@ public class EncryptAmount {
        return Base58.encode(BigInteger.ZERO.toByteArray());
     }
 
-    public static BigInteger Decryption(String str){
+    public static BigDecimal Decryption(String str){
         if (he.hasFullKey()){
-            return he.Decryption(str);
+            if (keyType.compareTo("Paillier") == 0){
+                return new BigDecimal(he.Decryption(str).divide(SAFE_MASK).toString()).divide(BigDecimal.TEN.pow(FIX_SCALE));
+            } else {
+                return new BigDecimal(he.Decryption(str).toString()).divide(BigDecimal.TEN.pow(FIX_SCALE));
+            }
+
         }
 
-        return BigInteger.ZERO;
+        return BigDecimal.ZERO;
     }
 
     public BigInteger getSubRandom(){
@@ -239,7 +249,4 @@ public class EncryptAmount {
         return he;
     }
 
-    public String getEncryptString(){
-        return eb;
-    }
 }

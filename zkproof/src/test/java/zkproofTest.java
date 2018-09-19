@@ -56,10 +56,12 @@ public class zkproofTest {
        String key2 = EncryptAmount.GenSubKey(EncryptAmount.exportFullKey(),2,4);
        String key3 = EncryptAmount.GenSubKey(EncryptAmount.exportFullKey(),3,4);
        String key4 = EncryptAmount.GenSubKey(EncryptAmount.exportFullKey(),4,4);
-       key1 = EncryptAmount.MergeKey(key1,key2);
-       key1 = EncryptAmount.MergeKey(key1,key3);
-       key1 = EncryptAmount.MergeKey(key1,key4);
+       String key11 = EncryptAmount.MergeKey(key1,key2);
+       String key12 = EncryptAmount.MergeKey(key11,key3);
+       key1 = EncryptAmount.MergeKey(key12,key4);
        System.out.println( key1);
+
+       System.out.println("Is key1 contain key2 ? " + EncryptAmount.ContainKey(key11,key12));
 
        String em1 = EncryptAmount.getHe().Encryption(BigInteger.ONE,BigInteger.ONE);
        BigInteger m1 = EncryptAmount.getHe().Decryption(em1);
@@ -69,15 +71,26 @@ public class zkproofTest {
 
        System.out.println(EncryptAmount.exportPubKey());
 
-       EncryptAmount amt1 = new EncryptAmount(new BigDecimal("100.24"),EncryptAmount.FULL_RANDOM);
+       EncryptAmount amt1 = new EncryptAmount(new BigDecimal("90000000000.24"),EncryptAmount.FULL_RANDOM);
        EncryptAmount amt2 = new EncryptAmount(new BigDecimal("50.1"), amt1.getSubRandom());
        EncryptAmount amt3 = amt1.subtract(amt2);
-       EncryptAmount amt4 = new EncryptAmount(new BigDecimal("50.14"),EncryptAmount.FULL_RANDOM.subtract(amt2.getRandom()));
+       EncryptAmount amt4 = new EncryptAmount(new BigDecimal("90000000000.24").subtract(new BigDecimal("50.1")),EncryptAmount.FULL_RANDOM.subtract(amt2.getRandom()));
 
        System.out.println(amt1);
        System.out.println(amt2);
        System.out.println(amt3);
        System.out.println(amt4);
+
+       EncryptAmount.initHomomorphicEncryption("Paillier", 512);
+
+       EncryptAmount amt11 = new EncryptAmount(new BigDecimal("124.52"),EncryptAmount.FULL_RANDOM);
+       EncryptAmount amt12 = new EncryptAmount(new BigDecimal("50.14"), EncryptAmount.FULL_RANDOM);
+       EncryptAmount amt13 = amt11.add(amt12);
+
+       System.out.println(amt11);
+       System.out.println(amt12);
+       System.out.println(amt13);
+       System.out.println(EncryptAmount.Decryption(amt13.toString()));
 
     //    String em2 = EncryptAmount.getHe().Encryption(BigInteger.ONE,BigInteger.ONE);
     //    BigInteger m2 = EncryptAmount.getHe().Decryption(em2);

@@ -55,8 +55,8 @@ public class SystemPropertyRepository {
      * @param value
      * @return
      */
-    public int update(String key, String value){
-        return systemPropertyDao.update(key, value);
+    public int update(String key, String value, String desc){
+        return systemPropertyDao.update(key, value, desc);
     }
 
 }

@@ -62,4 +62,15 @@ public interface HomomorphicEncryption {
         return null;
     }
 
+    static boolean ContainKey(String fullKey, String subKey){
+        JSONObject ob1 = JSONObject.parseObject(fullKey);
+        JSONObject ob2 = JSONObject.parseObject(subKey);
+        if (ob1.getString("key_type").compareTo("BGN") == 0
+                &&ob2.getString("key_type").compareTo("BGN") == 0){
+            return BGNKey.ContainKey(fullKey, subKey);
+        }
+        return false;
+    }
+
+
 }

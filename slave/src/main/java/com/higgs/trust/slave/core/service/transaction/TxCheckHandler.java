@@ -112,7 +112,7 @@ import java.util.*;
 
                 //verify signature
                 for (RsPubKey rsPubKey : rsPubKeyList) {
-                    if (null != rsPubKey && !CryptoUtil.getBizCrypto()
+                    if (null != rsPubKey && !CryptoUtil.getBizCrypto(null)
                         .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
                         return false;
                     }
@@ -120,7 +120,7 @@ import java.util.*;
                 flag = true;
             } else if (DecisionTypeEnum.ONE_VOTE == decisionType) {
                 for (RsPubKey rsPubKey : rsPubKeyList) {
-                    if (null != rsPubKey && CryptoUtil.getBizCrypto()
+                    if (null != rsPubKey && CryptoUtil.getBizCrypto(null)
                         .verify(JSON.toJSONString(ctx), signedMap.get(rsPubKey.getRsId()), rsPubKey.getPubKey())) {
                         return true;
                     }
