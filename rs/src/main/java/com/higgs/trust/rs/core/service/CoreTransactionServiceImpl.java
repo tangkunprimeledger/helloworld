@@ -300,7 +300,7 @@ import java.util.concurrent.TimeUnit;
         VotePatternEnum votePattern = voteRule.getVotePattern();
         //check rs ids
         if (CollectionUtils.isEmpty(policy.getRsIds())) {
-            log.warn("[processInitTx]rs ids is empty");
+            log.debug("[processInitTx]rs ids is empty txId:{}", bo.getTxId());
             //the blow system policy  needs rsIds
             if (StringUtils.equals(InitPolicyEnum.CONTRACT_ISSUE.getPolicyId(), policyId)
                 || StringUtils.equals(InitPolicyEnum.CONTRACT_DESTROY.getPolicyId(), policyId)
