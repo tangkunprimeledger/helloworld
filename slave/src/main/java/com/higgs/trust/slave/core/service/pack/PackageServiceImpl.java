@@ -489,7 +489,6 @@ import java.util.stream.Collectors;
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         SlaveBatchCallbackHandler batchCallbackHandler = null;
         if (callbackHandler == null) {
-            log.warn("[callbackRS]callbackHandler is not register");
             //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             batchCallbackHandler = slaveCallbackRegistor.getSlaveBatchCallbackHandler();
             if (batchCallbackHandler == null) {

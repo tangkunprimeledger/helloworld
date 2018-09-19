@@ -65,38 +65,33 @@ public class CoreTxRepository {
      * @param signInfos
      */
     public void add(CoreTransaction coreTx, List<SignInfo> signInfos, Long blockHeight) {
-        try {
-            Profiler.enter("[rs.core.addCoreTx]");
-            CoreTransactionPO po = BeanConvertor.convertBean(coreTx, CoreTransactionPO.class);
-            po.setVersion(coreTx.getVersion());
-            if (coreTx.getBizModel() != null) {
-                po.setBizModel(coreTx.getBizModel().toJSONString());
-            }
-            String actionDataJSON = JSON.toJSONString(coreTx.getActionList());
-            po.setActionDatas(actionDataJSON);
-            String signDataJSON = JSON.toJSONString(signInfos);
-            po.setSignDatas(signDataJSON);
-            po.setBlockHeight(blockHeight);
-            po.setCreateTime(new Date());
+        CoreTransactionPO po = BeanConvertor.convertBean(coreTx, CoreTransactionPO.class);
+        po.setVersion(coreTx.getVersion());
+        if (coreTx.getBizModel() != null) {
+            po.setBizModel(coreTx.getBizModel().toJSONString());
+        }
+        String actionDataJSON = JSON.toJSONString(coreTx.getActionList());
+        po.setActionDatas(actionDataJSON);
+        String signDataJSON = JSON.toJSONString(signInfos);
+        po.setSignDatas(signDataJSON);
+        po.setBlockHeight(blockHeight);
+        po.setCreateTime(new Date());
 
-            if (rsConfig.isUseMySQL()) {
-                try {
-                    coreTransactionDao.add(po);
-                    //status INIT
-                    CoreTransactionProcessPO coreTxProcessPO = new CoreTransactionProcessPO();
-                    coreTxProcessPO.setTxId(coreTx.getTxId());
-                    coreTxProcessPO.setStatus(CoreTxStatusEnum.INIT.getCode());
-                    coreTransactionProcessDao.add(coreTxProcessPO);
-                } catch (DuplicateKeyException e) {
-                    log.error("[add.core_transaction]has idempotent error");
-                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
-                }
-            } else {
-                coreTxRocksDao.save(po);
-                coreTxProcessRocksDao.saveWithTransaction(po, CoreTxStatusEnum.INIT.getIndex());
+        if (rsConfig.isUseMySQL()) {
+            try {
+                coreTransactionDao.add(po);
+                //status INIT
+                CoreTransactionProcessPO coreTxProcessPO = new CoreTransactionProcessPO();
+                coreTxProcessPO.setTxId(coreTx.getTxId());
+                coreTxProcessPO.setStatus(CoreTxStatusEnum.INIT.getCode());
+                coreTransactionProcessDao.add(coreTxProcessPO);
+            } catch (DuplicateKeyException e) {
+                log.error("[add.core_transaction]has idempotent error");
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
             }
-        } finally {
-            Profiler.release();
+        } else {
+            coreTxRocksDao.save(po);
+            coreTxProcessRocksDao.saveWithTransaction(po, CoreTxStatusEnum.INIT.getIndex());
         }
     }
 
@@ -428,19 +423,14 @@ public class CoreTxRepository {
      * @param to
      */
     public void updateStatus(String txId, CoreTxStatusEnum from, CoreTxStatusEnum to) {
-        try {
-            Profiler.enter("[rs.core.updateStatus]");
-            if (rsConfig.isUseMySQL()) {
-                int r = coreTransactionProcessDao.updateStatus(txId, from.getCode(), to.getCode());
-                if (r != 1) {
-                    log.error("[updateStatus]from {} to {} is fail txId:{}", from, to, txId);
-                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
-                }
-            } else {
-                coreTxProcessRocksDao.updateStatus(txId, from, to);
+        if (rsConfig.isUseMySQL()) {
+            int r = coreTransactionProcessDao.updateStatus(txId, from.getCode(), to.getCode());
+            if (r != 1) {
+                log.error("[updateStatus]from {} to {} is fail txId:{}", from, to, txId);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED);
             }
-        } finally {
-            Profiler.release();
+        } else {
+            coreTxProcessRocksDao.updateStatus(txId, from, to);
         }
     }
 
@@ -515,5 +505,18 @@ public class CoreTxRepository {
         } else {
             coreTxProcessRocksDao.deleteEND(CoreTxStatusEnum.END.getIndex());
         }
+    }
+
+
+    /**
+     * query by status
+     *
+     * @param txId
+     * @param statusEnum
+     * @return
+     */
+    public CoreTransactionPO queryByStatus(String txId,CoreTxStatusEnum statusEnum){
+        String key = statusEnum.getIndex() + Constant.SPLIT_SLASH + txId;
+        return coreTxProcessRocksDao.get(key);
     }
 }

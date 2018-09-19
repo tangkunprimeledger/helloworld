@@ -5,7 +5,6 @@ import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.MonitorLogUtils;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
@@ -36,9 +35,8 @@ import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
+import com.higgs.trust.slave.core.service.pending.TransactionValidator;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
@@ -79,13 +77,12 @@ import java.util.concurrent.TimeUnit;
     @Autowired private RsCoreCallbackProcessor rsCoreCallbackHandler;
     @Autowired private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired private SignServiceImpl signService;
-//    @Autowired private ThreadPoolTaskExecutor txSubmitExecutorPool;
     @Autowired private RedissonClient redissonClient;
     @Autowired private HashBlockingMap<RespData> persistedResultMap;
     @Autowired private HashBlockingMap<RespData> clusterPersistedResultMap;
     @Autowired private DistributeCallbackNotifyService distributeCallbackNotifyService;
     @Autowired private TxIdProducer txIdProducer;
-
+    @Autowired private TransactionValidator transactionValidator;
     /**
      * init redis distribution topic listener
      *
@@ -109,7 +106,6 @@ import java.util.concurrent.TimeUnit;
     private void initAsyncProcessInitTxListener() {
         RTopic<String> topic = redissonClient.getTopic(RedisTopicEnum.ASYNC_TO_PROCESS_INIT_TX.getCode());
         topic.addListener((channel, msg) -> {
-//            processInitTx(msg);
             txIdProducer.put(new TxIdBO(msg,CoreTxStatusEnum.INIT));
         });
     }
@@ -127,7 +123,8 @@ import java.util.concurrent.TimeUnit;
                 respData = distributeCallbackNotifyService.syncWaitNotify(txId, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY, rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
             }
         } catch (Throwable e) {
-            log.error("tx handle exception. ", e);
+            //TODO:liuyu
+//            log.error("tx handle exception. ", e);
             respData = new RespData();
             respData.setCode(RespCodeEnum.SYS_FAIL.getRespCode());
             respData.setMsg("handle transaction exception.");
@@ -145,17 +142,15 @@ import java.util.concurrent.TimeUnit;
 
     @Override
     public void submitTx(CoreTransaction coreTx) {
-        log.info("[submitTx]{}", coreTx);
+        if(log.isDebugEnabled()){
+            log.debug("[submitTx]{}", coreTx);
+        }
         if (coreTx == null) {
             log.error("[submitTx] the tx is null");
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
         }
-        //validate param
-        BeanValidateResult validateResult = BeanValidator.validate(coreTx);
-        if (!validateResult.isSuccess()) {
-            log.error("[submitTx] param validate is fail,first msg:{}", validateResult.getFirstMsg());
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_VALIDATE_ERROR);
-        }
+        //tx.validator
+        transactionValidator.verify(coreTx);
         //check bizType
         String policyId = coreTx.getPolicyId();
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -198,9 +193,10 @@ import java.util.concurrent.TimeUnit;
                     RocksUtils.txCommit(tx);
                 }
             } finally {
-                ThreadLocalUtils.clearRocksTx();;
+                ThreadLocalUtils.clearRocksTx();
             }
         }
+        //TODO:liuyu for test
         //put into queue
         txIdProducer.put(new TxIdBO(coreTx.getTxId(),CoreTxStatusEnum.INIT));
         //send redis msg for slave
@@ -225,13 +221,12 @@ import java.util.concurrent.TimeUnit;
 
     @Override
     public void processInitTx(String txId) {
-        //check txId,the redis msg may be null
-        if (StringUtils.isEmpty(txId)) {
+        //check by status
+        CoreTransactionPO corePO = coreTxRepository.queryByStatus(txId,CoreTxStatusEnum.INIT);
+        if(corePO == null){
             return;
         }
         log.debug("[processInitTx]txId:{}", txId);
-        Profiler.start("processInitTx.monitor");
-        Profiler.enter("processInitTx.process");
         CoreTxBO bo;
         if (rsConfig.isUseMySQL()) {
             bo = txRequired.execute(new TransactionCallback<CoreTxBO>() {
@@ -245,76 +240,48 @@ import java.util.concurrent.TimeUnit;
                 }
             });
         } else {
-            Profiler.enter("processInitTx.beginTransaction");
             Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
-            Profiler.release();
             try {
-                Profiler.enter("processInitTx.getForUpdate");
                 ThreadLocalUtils.putRocksTx(tx);
-                CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);//coreTxRepository.queryByTxId(txId,true);//
+                CoreTransactionPO po = coreTxRepository.getForUpdate(tx, new ReadOptions(), txId, true);
                 if (null == po) {
                     log.warn("[processInitTx]cannot acquire lock, txId={}", txId);
                     return;
                 }
-                Profiler.release();
-                Profiler.enter("processInitTx.process.Tx");
                 bo = processInitTxInTransaction(po);
-                Profiler.release();
             } finally {
-                Profiler.enter("processInitTx.txCommit");
                 if (null != tx) {
                     RocksUtils.txCommit(tx);
                 }
                 ThreadLocalUtils.clearRocksTx();
-                Profiler.release();
             }
         }
-        Profiler.release();
         if (null == bo) {
             return;
         }
-        Profiler.enter("processInitTx.parseVoteRule");
         /**
          * if voteRule is null, bo must be null
          */
         VoteRule voteRule = getVoteRule(bo.getPolicyId());
         if (voteRule.getVotePattern() == VotePatternEnum.SYNC) {
-            //submit by async
-//            txSubmitExecutorPool.execute(new Runnable() {
-//                @Override public void run() {
-//                    log.info("submitToSlave by signal");
-//                    submitToSlave(Lists.newArrayList(bo));
-//                }
-//            });
             txIdProducer.put(new TxIdBO(txId,CoreTxStatusEnum.WAIT));
         }
-        Profiler.release();
-        Profiler.release();
-        if(Profiler.getDuration() > 1000L){
-            Profiler.logDump();
-        }
-        log.debug("[processInitTx]is success");
     }
 
     private CoreTxBO processInitTxInTransaction(CoreTransactionPO po) {
-        Profiler.enter("processInitTx.queryByTxId");
         if (null == coreTxRepository.queryStatusByTxId(po.getTxId(), CoreTxStatusEnum.INIT)) {
             log.info("[processInitTx]the coreTx is null or status is not INIT txId:{}", po.getTxId());
             return null;
         }
-        Profiler.release();
         Date lockTime = po.getLockTime();
         if (lockTime != null && lockTime.after(new Date())) {
             log.info("[processInitTx]should skip this tx by lock time:{}", lockTime);
             return null;
         }
         //convert bo
-        Profiler.enter("processInitTx.convertTxBO");
         CoreTxBO bo = coreTxRepository.convertTxBO(po);
-        Profiler.release();
         String policyId = bo.getPolicyId();
         log.debug("[processInitTx]policyId:{}", policyId);
-        Profiler.enter("processInitTx.getPolicyById");
         Policy policy = policyRepository.getPolicyById(policyId);
         if (policy == null) {
             log.error("[processInitTx]get policy is null by policyId:{}", policyId);
@@ -322,9 +289,7 @@ import java.util.concurrent.TimeUnit;
                 RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED, true);
             return null;
         }
-        Profiler.release();
         // vote rule
-        Profiler.enter("processInitTx.getVoteRule");
         VoteRule voteRule = getVoteRule(policyId);
         if (voteRule == null || null == voteRule.getVotePattern()) {
             log.error("[processInitTx]get voteRule is null or votePattern is null by policyId:{}", policyId);
@@ -332,12 +297,10 @@ import java.util.concurrent.TimeUnit;
                 RsCoreErrorEnum.RS_CORE_VOTE_RULE_NOT_EXISTS_ERROR, true);
             return null;
         }
-        Profiler.release();
-        Profiler.enter("processInitTx.checkVotePattern");
         VotePatternEnum votePattern = voteRule.getVotePattern();
         //check rs ids
         if (CollectionUtils.isEmpty(policy.getRsIds())) {
-            log.warn("[processInitTx]rs ids is empty");
+            log.debug("[processInitTx]rs ids is empty txId:{}", bo.getTxId());
             //the blow system policy  needs rsIds
             if (StringUtils.equals(InitPolicyEnum.CONTRACT_ISSUE.getPolicyId(), policyId)
                 || StringUtils.equals(InitPolicyEnum.CONTRACT_DESTROY.getPolicyId(), policyId)
@@ -351,23 +314,16 @@ import java.util.concurrent.TimeUnit;
             coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             return bo;
         }
-        Profiler.release();
-        Profiler.enter("processInitTx.getVoters");
         //get need voters from saved sign info
         List<String> needVoters = voteService.getVoters(bo.getSignDatas(), policy.getRsIds());
-        Profiler.release();
-        Profiler.enter("processInitTx.updateStatus");
         if (CollectionUtils.isEmpty(needVoters)) {
-            log.warn("[processInitTx]need voters is empty txId:{}", bo.getTxId());
+            log.debug("[processInitTx]need voters is empty txId:{}", bo.getTxId());
             //still submit to slave
             coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
             return bo;
         }
-        Profiler.release();
-        Profiler.enter("processInitTx.requestVoting");
         //request voting
         List<VoteReceipt> receipts = voteService.requestVoting(bo, needVoters, votePattern);
-        Profiler.release();
         //if receipts is empty,should retry
         if (CollectionUtils.isEmpty(receipts)) {
             log.error("[processInitTx]voting receipts is empty by SYNC txId:{}", bo.getTxId());
@@ -377,14 +333,10 @@ import java.util.concurrent.TimeUnit;
         List<SignInfo> signInfos = voteService.getSignInfos(receipts);
         signInfos.addAll(bo.getSignDatas());
         //update signDatas
-        Profiler.enter("processInitTx.updateSignDatas");
         coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
-        Profiler.release();
         //save already voting result for SYNC pattern
         if (votePattern == VotePatternEnum.SYNC) {
-            Profiler.enter("processInitTx.batchAddReceipts");
             voteReceiptRepository.batchAdd(receipts);
-            Profiler.release();
         }
         //when there is failure as net-timeout,should retry
         if (receipts.size() < needVoters.size()) {
@@ -394,7 +346,6 @@ import java.util.concurrent.TimeUnit;
         }
         //check vote decision for SYNC pattern
         if (votePattern == VotePatternEnum.SYNC) {
-            Profiler.enter("processInitTx.processSYNC");
             //add them when have last receipts
             List<VoteReceipt> lastReceipts = voteReceiptRepository.queryByTxId(bo.getTxId());
             if (!CollectionUtils.isEmpty(lastReceipts)) {
@@ -410,7 +361,6 @@ import java.util.concurrent.TimeUnit;
             }
             //change status to WAIT for SYNC pattern
             coreTxRepository.updateStatus(bo.getTxId(), CoreTxStatusEnum.INIT, CoreTxStatusEnum.WAIT);
-            Profiler.release();
         } else {
             //change status to NEED_VOTE for ASYNC pattern
             coreTxRepository

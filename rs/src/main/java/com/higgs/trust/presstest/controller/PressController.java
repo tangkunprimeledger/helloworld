@@ -7,12 +7,16 @@ import com.higgs.trust.presstest.service.StoreService;
 import com.higgs.trust.presstest.vo.*;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
+import com.higgs.trust.rs.core.api.RsCoreFacade;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.model.bo.CoreTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author liuyu
@@ -22,7 +26,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/press") @RestController @Slf4j public class PressController {
     @Autowired private AccountService accountService;
     @Autowired private StoreService storeService;
+    @Autowired private RsCoreFacade rsCoreFacade;
 
+    /**
+     * 交易批量接口
+     *
+     * @param list
+     * @return
+     */
+    @RequestMapping(value = "/batch") RespData batch(@RequestBody List<CoreTransaction> list) {
+        list.forEach(entry->{
+            rsCoreFacade.processTx(entry);
+        });
+        return new RespData();
+    }
     /**
      * 创建币种
      *

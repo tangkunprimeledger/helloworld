@@ -30,7 +30,7 @@ public class AccountTest extends BasePressTest{
         AccountTest accountTest = new AccountTest();
 //                accountTest.createCurrency();
 //                accountTest.openAccount();
-//                accountTest.income();
+                accountTest.income();
         //        accountTest.out();
         //               accountTest.transfer();
 //        accountTest.freeze();
@@ -42,7 +42,7 @@ public class AccountTest extends BasePressTest{
      * @throws IOException
      */
     private static void test() throws IOException {
-        for (int i = 0; i < 800; i++) {
+        for (int i = 0; i < 1000; i++) {
             new Thread(new MyTask()).start();
         }
         //wait
@@ -56,8 +56,7 @@ public class AccountTest extends BasePressTest{
         private AccountTest accountTest = new AccountTest();
         @Override public void run() {
             while (true) {
-                int num = exe();
-                System.out.println("###"+Thread.currentThread().getName() + "-num:" + num);
+                exe();
             }
         }
         //
@@ -81,7 +80,7 @@ public class AccountTest extends BasePressTest{
     public void createCurrency() {
         CurrencyVO vo = new CurrencyVO();
         vo.setReqNo("tx_id_create_currency_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
-        vo.setCurrencyName("CYN");
+        vo.setCurrencyName("CNY");
         vo.setRemark("币种");
         send("press/createCurrency", JSON.toJSONString(vo));
     }
@@ -93,8 +92,8 @@ public class AccountTest extends BasePressTest{
         for (int i = 0; i < 8; i++) {
             OpenAccountVO vo = new OpenAccountVO();
             vo.setReqNo("tx_id_open_account_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
-            vo.setCurrencyName("CYN");
-            vo.setAccountNo("account_no_" + i);
+            vo.setCurrencyName("CNY");
+            vo.setAccountNo(AccountingService.ACCOUNT_NO_PREFIX + i);
             if (i % 2 == 0) {
                 vo.setFundDirection(0);
             } else {
@@ -111,7 +110,7 @@ public class AccountTest extends BasePressTest{
     public int income() {
         int num = 0;
         for (int i = 0; i < 7; i = i + 2) {
-            BigDecimal amount = new BigDecimal(50000000);
+            BigDecimal amount = new BigDecimal(5000);
             AccountingVO vo = new AccountingVO();
             vo.setReqNo("tfs_tx_id_income_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
             vo.setDebitTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + i, amount)));

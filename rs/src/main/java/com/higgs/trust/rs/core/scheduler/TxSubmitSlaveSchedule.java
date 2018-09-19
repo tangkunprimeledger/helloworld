@@ -44,32 +44,27 @@ public class TxSubmitSlaveSchedule {
                 return;
             }
             size = list.size();
-            //TODO:for press test
-            log.info("submit.size:{}", size);
             List<String> txIdList = new ArrayList<>(size);
             list.forEach(entry -> {
                 txIdList.add(entry.getTxId());
             });
-            //reset preKey by last txId
-            //        lastPreKey = txIdList.get(size - 1);
-
             coreTransactionPOList = coreTxRepository.queryByTxIds(txIdList);
-
         } else {
             coreTransactionPOList = coreTxRepository.queryByStatusFromRocks(CoreTxStatusEnum.WAIT, (pageNo - 1) * pageSize, pageSize, lastPreKey);
-            if (CollectionUtils.isEmpty(coreTransactionPOList) || pageNo == maxPageNo) {
+            if (CollectionUtils.isEmpty(coreTransactionPOList)) {
                 pageNo = 1;
                 lastPreKey = null;
                 return;
             }
             size = coreTransactionPOList.size();
-            log.info("submit.size:{}", size);
         }
 
         List<CoreTxBO> boList = new ArrayList<>(size);
         coreTransactionPOList.forEach(entry -> {
             boList.add(coreTxRepository.convertTxBO(entry));
         });
+        //TODO:for press test
+        log.info("submit.size:{}", size);
         coreTransactionService.submitToSlave(boList);
         pageNo++;
     }

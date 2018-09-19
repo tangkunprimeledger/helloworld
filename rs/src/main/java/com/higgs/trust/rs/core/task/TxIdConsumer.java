@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
     @Autowired private TxIdProducer txIdProducer;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Value("${rs.core.schedule.taskSize:25}") private int size;
+    @Value("${rs.core.schedule.taskSize:50}") private int taskSize;
     @Value("${rs.core.schedule.interval:1}") private Long interval;
 
     private ScheduledExecutorService executorInit;
@@ -41,19 +41,17 @@ import java.util.concurrent.TimeUnit;
      * start
      */
     public void startConsume() {
+        int size = taskSize / 3;
         //for init
-        if (executorInit == null || executorInit.isShutdown() || executorInit.isTerminated()) {
-            executorInit = new ScheduledThreadPoolExecutor(size);
-            for (int i = 1; i < (size + 1); i++) {
-                executorInit.scheduleAtFixedRate(new RsTaskHandler(CoreTxStatusEnum.INIT), 0, interval, TimeUnit.MILLISECONDS);
-            }
+        executorInit = new ScheduledThreadPoolExecutor(size);
+        for (int i = 0; i < size; i++) {
+            executorInit.scheduleAtFixedRate(new RsTaskHandler(CoreTxStatusEnum.INIT), 0, interval, TimeUnit.MILLISECONDS);
         }
+        size = taskSize - size;
         //for wait
-        if (executorWait == null || executorWait.isShutdown() || executorWait.isTerminated()) {
-            executorWait = new ScheduledThreadPoolExecutor(size);
-            for (int i = 1; i < (size + 1); i++) {
-                executorWait.scheduleAtFixedRate(new RsTaskHandler(CoreTxStatusEnum.WAIT), 0, interval, TimeUnit.MILLISECONDS);
-            }
+        executorWait = new ScheduledThreadPoolExecutor(size);
+        for (int i = 0; i < size; i++) {
+            executorWait.scheduleAtFixedRate(new RsTaskHandler(CoreTxStatusEnum.WAIT), 0, interval, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -66,7 +64,7 @@ import java.util.concurrent.TimeUnit;
 
         public RsTaskHandler(CoreTxStatusEnum statusEnum) {
             this.statusEnum = statusEnum;
-            this.maxSize = statusEnum == CoreTxStatusEnum.INIT ? 50 : 500;
+            this.maxSize = statusEnum == CoreTxStatusEnum.INIT ? 50 : 200;
         }
 
         @Override public void run() {
@@ -100,7 +98,9 @@ import java.util.concurrent.TimeUnit;
          * @param list
          */
         private void processInit(List<TxIdBO> list) {
-            log.info("processInit.size:{}",list.size());
+            if(log.isDebugEnabled()) {
+                log.debug("processInit.size:{}", list.size());
+            }
             list.forEach(entry->{
                 try {
                     coreTransactionService.processInitTx(entry.getTxId());
@@ -126,7 +126,9 @@ import java.util.concurrent.TimeUnit;
                 CoreTxBO coreTxBO = coreTxRepository.convertTxBO(entry);
                 coreTxs.add(coreTxBO);
             });
-            log.info("submitToSlave.size:{}",coreTxs.size());
+            if(log.isDebugEnabled()){
+                log.debug("submitToSlave.size:{}",coreTxs.size());
+            }
             coreTransactionService.submitToSlave(coreTxs);
         }
     }

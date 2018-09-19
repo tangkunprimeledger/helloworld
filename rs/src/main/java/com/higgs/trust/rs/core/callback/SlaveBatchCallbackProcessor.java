@@ -82,13 +82,13 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
         boolean needCallbackCustom = false;
         //sendByOther
         if (!CollectionUtils.isEmpty(otherTxs)) {
-            log.info("[onPersisted]batchInsert.coreTx coreTxProcess,blockHeight:{}", blockHeader.getHeight());
+            log.debug("[onPersisted]batchInsert.coreTx coreTxProcess,blockHeight:{}", blockHeader.getHeight());
             batchInsert(otherTxs, blockHeader.getHeight(), CoreTxStatusEnum.PERSISTED);
             needCallbackCustom = true;
         }
         //sendBySelf
         if (!CollectionUtils.isEmpty(selfTxs)) {
-            log.info("[onPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
+            log.debug("[onPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
             try {
                 batchUpdate(selfTxs, blockHeader.getHeight(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
                 needCallbackCustom = true;
@@ -119,7 +119,7 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
             log.warn("[onClusterPersisted]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
             return;
         }
-        log.info("[onClusterPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
+        log.debug("[onClusterPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
         boolean needCallbackCustom = false;
         try {
             batchUpdate(allTxs, blockHeader.getHeight(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
