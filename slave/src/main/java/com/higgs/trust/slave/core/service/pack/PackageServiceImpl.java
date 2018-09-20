@@ -33,6 +33,7 @@ import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.transaction.TransactionExecutor;
 import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
@@ -109,15 +110,9 @@ import java.util.stream.Collectors;
         return pack;
     }
 
-    @Override public void submitConsensus(List<Package> packs) {
 
-        List<PackageVO> voList = new LinkedList<>();
-        for (Package pack : packs) {
-            voList.add(PackageConvert.convertPackToPackVO(pack));
-        }
-
-
-        logReplicateHandler.replicatePackage(voList);
+    @Override public void submitConsensus(PackageCommand command) {
+        logReplicateHandler.replicatePackage(command);
     }
 
     /**
@@ -223,9 +218,11 @@ import java.util.stream.Collectors;
     private void preparePackContext(PackContext packContext) {
         //set rsId and public key map
         List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
-        if (!CollectionUtils.isEmpty(rsPubKeyList)) {
+        if (CollectionUtils.isNotEmpty(rsPubKeyList)) {
             packContext.setRsPubKeyMap(
                 rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
+        }else{
+            packContext.setRsPubKeyMap(Collections.emptyMap());
         }
     }
 

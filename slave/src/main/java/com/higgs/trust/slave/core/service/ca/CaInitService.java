@@ -3,6 +3,7 @@ package com.higgs.trust.slave.core.service.ca;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.config.Config;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 
 /**
@@ -12,20 +13,6 @@ import java.util.List;
  */
 public interface CaInitService {
 
-    /**
-     * @param
-     * @return
-     * @desc TODO
-     */
-    RespData<String> initStart();
-
-    /**
-     * @param
-     * @return
-     * @desc construct ca init tx and send to slave
-     */
-    RespData<List<Config>> initCaTx();
-
-    void initKeyPair();
+    void initKeyPair() throws FileNotFoundException;
 
 }

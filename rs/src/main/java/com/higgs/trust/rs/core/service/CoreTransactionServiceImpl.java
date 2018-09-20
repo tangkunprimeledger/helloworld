@@ -6,6 +6,8 @@ import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -29,6 +31,7 @@ import com.higgs.trust.rs.core.task.TxIdProducer;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -83,6 +86,9 @@ import java.util.concurrent.TimeUnit;
     @Autowired private DistributeCallbackNotifyService distributeCallbackNotifyService;
     @Autowired private TxIdProducer txIdProducer;
     @Autowired private TransactionValidator transactionValidator;
+    @Autowired
+    private IClusterViewManager viewManager;
+
     /**
      * init redis distribution topic listener
      *
@@ -136,7 +142,6 @@ import java.util.concurrent.TimeUnit;
             respData.setMsg("tx handle timeout");
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.RS_WAIT_TIME_OUT_ERROR.getMonitorTarget(), 1);
         }
-
         return respData;
     }
 
@@ -164,16 +169,20 @@ import java.util.concurrent.TimeUnit;
         //check idempotent by txId
         CoreTransactionPO po = coreTxRepository.queryByTxId(coreTx.getTxId(), false);
         if (po != null) {
-            log.info("[submitTx]is idempotent txId:{}", coreTx.getTxId());
+            log.warn("[submitTx]is idempotent txId:{}", coreTx.getTxId());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
         //reset sendTime
         coreTx.setSendTime(new Date());
-        //sign tx for self
-        SignInfo signInfo = signService.signTx(coreTx);
-        if (signInfo == null) {
-            log.error("[submitTx] self sign data is empty");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
+        List<SignInfo> signs = Lists.newArrayList();
+        if(!TxTypeEnum.isTargetType(coreTx.getTxType(),TxTypeEnum.NODE)) {
+            //sign tx for self
+            SignInfo signInfo = signService.signTx(coreTx);
+            if (signInfo == null) {
+                log.error("[submitTx] self sign data is empty");
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_VERIFY_SIGNATURE_FAILED);
+            }
+            signs.add(signInfo);
         }
 
         if (rsConfig.isUseMySQL()) {
@@ -288,6 +297,17 @@ import java.util.concurrent.TimeUnit;
             toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT,
                 RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED, true);
             return null;
+        }
+        //define default sign type
+        SignInfo.SignTypeEnum signType = SignInfo.SignTypeEnum.BIZ;
+        //check txType for NODE type
+        if(TxTypeEnum.isTargetType(bo.getTxType(),TxTypeEnum.NODE)) {
+            //reset rsIds,require all consensus layer nodes
+            ClusterView currentView = viewManager.getCurrentView();
+            policy.setRsIds(currentView.getNodeNames());
+            //reset sign type
+            signType = SignInfo.SignTypeEnum.CONSENSUS;
+            log.info("[processInitTx]reset rsIds:{}",policy.getRsIds());
         }
         // vote rule
         VoteRule voteRule = getVoteRule(policyId);
@@ -444,6 +464,13 @@ import java.util.concurrent.TimeUnit;
                 RsCoreErrorEnum.RS_CORE_TX_POLICY_NOT_EXISTS_FAILED, true);
             return;
         }
+        //check tx type
+        boolean isNodeType = TxTypeEnum.isTargetType(bo.getTxType(),TxTypeEnum.NODE);
+        if(isNodeType) {
+            //reset rsIds,require all consensus layer nodes
+            ClusterView currentView = viewManager.getCurrentView();
+            policy.setRsIds(currentView.getNodeNames());
+        }
         List<String> rsIds = policy.getRsIds();
         if (CollectionUtils.isEmpty(rsIds)) {
             log.error("[processNeedVoteTx]rsIds is empty by txId:{}", bo.getTxId());
@@ -457,11 +484,14 @@ import java.util.concurrent.TimeUnit;
             log.warn("[processNeedVoteTx]receipts is empty by txId:{}", bo.getTxId());
             return;
         }
-        //filter self
-        List<String> lastRsIds = new ArrayList<>();
-        for (String rsName : rsIds) {
-            if (!StringUtils.equals(rsName, rsConfig.getRsName())) {
-                lastRsIds.add(rsName);
+        //normal business
+        if(!isNodeType) {
+            lastRsIds = new ArrayList<>();
+            //filter self
+            for (String rsName : rsIds) {
+                if (!StringUtils.equals(rsName, rsConfig.getRsName())) {
+                    lastRsIds.add(rsName);
+                }
             }
         }
         if (receipts.size() != lastRsIds.size()) {
@@ -477,12 +507,16 @@ import java.util.concurrent.TimeUnit;
                 true);
             return;
         }
-        List<SignInfo> signInfos = voteService.getSignInfos(receipts);
-        List<SignInfo> lastSigns = bo.getSignDatas();
-        for (SignInfo signInfo : lastSigns) {
-            if (StringUtils.equals(rsConfig.getRsName(), signInfo.getOwner())) {
-                signInfos.add(signInfo);
-                break;
+        //get signType
+        SignInfo.SignTypeEnum signType = isNodeType ? SignInfo.SignTypeEnum.CONSENSUS : SignInfo.SignTypeEnum.BIZ;
+        List<SignInfo> signInfos = voteService.getSignInfos(receipts,signType);
+        if(!isNodeType) {
+            List<SignInfo> lastSigns = bo.getSignDatas();
+            for (SignInfo signInfo : lastSigns) {
+                if (StringUtils.equals(rsConfig.getRsName(), signInfo.getOwner())) {
+                    signInfos.add(signInfo);
+                    break;
+                }
             }
         }
         coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
@@ -547,6 +581,7 @@ import java.util.concurrent.TimeUnit;
     @Override public RsCoreTxVO queryCoreTx(String txId) {
         CoreTransactionPO coreTransactionPO = coreTxRepository.queryByTxId(txId, false);
         if (coreTransactionPO == null) {
+            log.error("[queryCoreTx]result is null txId:{}",txId);
             return null;
         }
         CoreTransactionProcessPO coreTransactionProcessPO = coreTxRepository.queryStatusByTxId(txId, null);

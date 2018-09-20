@@ -64,14 +64,4 @@ class ca {
         caService.cancelKeyPair(user)
         out.println("send CA cancel tx successful, user= $user")
     }
-
-    @Usage('init CA')
-    @Command
-    def initCA(InvocationContext context) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def caInitService = beans.getBean(CaInitService.class)
-        caInitService.initStart()
-        out.println("send CA init tx successful")
-    }
-
 }

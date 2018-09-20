@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
+import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
@@ -13,18 +15,24 @@ import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.VotingRequest;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
+import com.higgs.trust.slave.model.bo.node.NodeAction;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author liuyu
@@ -36,7 +44,7 @@ import org.springframework.stereotype.Component;
     @Autowired private VoteRuleRepository voteRuleRepository;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
-    @Autowired AbstractClusterInfo clusterInfo;
+    @Autowired private ConsensusStateMachine consensusStateMachine;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -126,6 +134,7 @@ import org.springframework.stereotype.Component;
                 case NODE_JOIN:
                     return;
                 case NODE_LEAVE:
+                    processNodeLeave(respData);
                     return;
                 default:
                     break;
@@ -205,9 +214,6 @@ import org.springframework.stereotype.Component;
             return;
         }
 
-        clusterInfo.setRefresh();
-        log.info("[processCaUpdate] set cluster info refresh");
-
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
@@ -236,9 +242,6 @@ import org.springframework.stereotype.Component;
             return;
         }
 
-        clusterInfo.setRefresh();
-        log.info("[processCaCancel] set cluster info refresh");
-
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
@@ -260,7 +263,7 @@ import org.springframework.stereotype.Component;
         config.setValid(false);
         configRepository.updateConfig(config);
 
-        log.info("[processCaCancel] end invalid pubKeyForConsensus/priKey, nodeName={}", nodeState.getNodeName());
+        log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
     }
 
     private void processCaAuth(RespData<CoreTransaction> respData) {
@@ -269,9 +272,6 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_AUTH_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processCaAuth] set cluster info refresh");
     }
 
     private void processNodeJoin(RespData<CoreTransaction> respData) {
@@ -280,9 +280,6 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_JOIN_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeJoin] set cluster info refresh");
     }
 
     private void processNodeLeave(RespData<CoreTransaction> respData) {
@@ -291,8 +288,18 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_LEAVE_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeLeave] set cluster info refresh");
+        List<Action> actionList = respData.getData().getActionList();
+        if (CollectionUtils.isNotEmpty(actionList)) {
+            Action action = actionList.get(0);
+            if (action instanceof NodeAction) {
+                NodeAction nodeAction = (NodeAction)action;
+                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())
+                    && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
+                    log.info("leave consensus layer, user={}", nodeAction.getNodeName());
+                    consensusStateMachine.leaveConsensus();
+                    nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
+                }
+            }
+        }
     }
 }

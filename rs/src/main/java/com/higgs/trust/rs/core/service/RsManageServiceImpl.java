@@ -17,6 +17,7 @@ import com.higgs.trust.rs.core.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.core.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.core.vo.manage.RegisterRsVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -89,17 +90,22 @@ import java.util.List;
                 //开启事务
                 respData = txRequired.execute(new TransactionCallback<RespData>() {
                     @Override public RespData doInTransaction(TransactionStatus txStatus) {
-                        //组装CoreTransaction，下发
-                        return submitTx(coreTransactionConvertor
-                            .buildCoreTransaction(reqId, null, buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId()));
+                        //组装UTXO,CoreTransaction，下发
+                        CoreTransaction coreTx = coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),null,
+                            buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId());
+                        coreTx.setTxType(TxTypeEnum.RS.getCode());
+                        return submitTx(coreTx);
                     }
                 });
             } else {
                 try {
                     Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
                     ThreadLocalUtils.putRocksTx(tx);
-                    respData =  submitTx(coreTransactionConvertor
-                        .buildCoreTransaction(reqId, null, buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId()));
+                    //组装UTXO,CoreTransaction，下发
+                    CoreTransaction coreTx = coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),null,
+                        buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.RS.getCode());
+                    respData =  submitTx(coreTx);
                     RocksUtils.txCommit(tx);
                 } finally {
                     ThreadLocalUtils.clearRocksTx();
@@ -178,9 +184,11 @@ import java.util.List;
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
                         jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
-                        return submitTx(coreTransactionConvertor
-                            .buildCoreTransaction(reqId, jsonObject, buildPolicyActionList(registerPolicyVO),
-                                InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
+                        CoreTransaction coreTx = coreTransactionConvertor
+                            .buildCoreTransaction(registerPolicyVO.getRequestId(), jsonObject,
+                                buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId());
+                        coreTx.setTxType(TxTypeEnum.POLICY.getCode());
+                        return submitTx(coreTx);
                     }
                 });
             } else {
@@ -191,10 +199,11 @@ import java.util.List;
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
                     jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
-                    respData = submitTx(coreTransactionConvertor
-                        .buildCoreTransaction(reqId, jsonObject, buildPolicyActionList(registerPolicyVO),
-                            InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
-
+                    CoreTransaction coreTx = coreTransactionConvertor
+                        .buildCoreTransaction(registerPolicyVO.getRequestId(), jsonObject,
+                            buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.POLICY.getCode());
+                    respData = submitTx(coreTx);
                     RocksUtils.txCommit(tx);
                 } finally {
                     ThreadLocalUtils.clearRocksTx();
@@ -234,8 +243,11 @@ import java.util.List;
                 respData = txRequired.execute(new TransactionCallback<RespData>() {
                     @Override public RespData doInTransaction(TransactionStatus txStatus) {
                         //组装CoreTransaction，下发
-                        return submitTx(coreTransactionConvertor
-                            .buildCoreTransaction(reqId, null, buildCancelRsActionList(cancelRsVO), InitPolicyEnum.CANCEL_RS.getPolicyId()));
+                        CoreTransaction coreTx = coreTransactionConvertor
+                            .buildCoreTransaction(cancelRsVO.getRequestId(), null, buildCancelRsActionList(cancelRsVO),
+                                InitPolicyEnum.CANCEL_RS.getPolicyId());
+                        coreTx.setTxType(TxTypeEnum.RS.getCode());
+                        return submitTx(coreTx);
                     }
                 });
             } else {
@@ -244,9 +256,11 @@ import java.util.List;
                     ThreadLocalUtils.putRocksTx(tx);
 
                     //组装CoreTransaction，下发
-                    respData = submitTx(coreTransactionConvertor
-                        .buildCoreTransaction(reqId, null, buildCancelRsActionList(cancelRsVO), InitPolicyEnum.CANCEL_RS.getPolicyId()));
-
+                    CoreTransaction coreTx = coreTransactionConvertor
+                        .buildCoreTransaction(cancelRsVO.getRequestId(), null, buildCancelRsActionList(cancelRsVO),
+                            InitPolicyEnum.CANCEL_RS.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.RS.getCode());
+                    respData = submitTx(coreTx);
                     RocksUtils.txCommit(tx);
                 } finally {
                     ThreadLocalUtils.clearRocksTx();

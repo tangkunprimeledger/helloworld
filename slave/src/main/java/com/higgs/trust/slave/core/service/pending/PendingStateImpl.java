@@ -89,7 +89,7 @@ import java.util.List;
         return transactionVOList;
     }
 
-    @Override public List<SignedTransaction> getPendingTransactions(int count) {
+    @Override public Object[] getPendingTransactions(int count) {
         return packageCache.getPendingTxQueue(count);
     }
 

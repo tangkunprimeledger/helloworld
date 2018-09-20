@@ -75,5 +75,4 @@ public interface CaService {
      * @desc TODO
      */
     Ca getCa(String user);
-
 }

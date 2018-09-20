@@ -88,7 +88,7 @@ public class CoreTxRepository {
                 coreTransactionProcessDao.add(coreTxProcessPO);
             } catch (DuplicateKeyException e) {
                 log.error("[add.core_transaction]has idempotent error");
-                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT, e);
             }
         } else {
             coreTxRocksDao.save(po);
@@ -133,7 +133,7 @@ public class CoreTxRepository {
                     }
                 } catch (DuplicateKeyException e) {
                     log.error("[add.core_transaction]has idempotent error");
-                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT, e);
                 }
             } else {
                 coreTxRocksDao.saveWithTransaction(po);
@@ -291,7 +291,7 @@ public class CoreTxRepository {
                     }
                 } catch (DuplicateKeyException e) {
                     log.error("[batchInsert.core_transaction]has idempotent error");
-                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT, e);
                 }
             } else {
                 coreTxRocksDao.batchInsert(coreTransactionPOList);
@@ -345,6 +345,7 @@ public class CoreTxRepository {
             if (vo.getBizModel() != null) {
                 po.setBizModel(vo.getBizModel().toJSONString());
             }
+            po.setTxType(vo.getTxType());
             po.setVersion(vo.getVersion().getCode());
             po.setLockTime(vo.getLockTime());
             po.setSendTime(vo.getSendTime());

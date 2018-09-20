@@ -3,11 +3,15 @@ package com.higgs.trust.consensus.bftsmartcustom.started.custom;
 import bftsmart.reconfiguration.RCMessage;
 import bftsmart.reconfiguration.util.RSAKeyLoader;
 import bftsmart.tom.util.TOMUtil;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Objects;
@@ -83,12 +87,11 @@ public class SendRCMessage {
         }
         Socket s = null;
         OutputStream os = null;
-        InputStream is = null;
         BufferedReader reader = null;
         ObjectOutputStream objectOutputStream = null;
         try {
+            log.info("create socket connection to {}:{}", ip, port);
             s = new Socket(ip, port);
-            is = s.getInputStream();
             reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
             os = s.getOutputStream();
             objectOutputStream = new ObjectOutputStream(os);
@@ -108,12 +111,13 @@ public class SendRCMessage {
                 }
                 TimeUnit.MILLISECONDS.sleep(10);
             }
-            reader.close();
             objectOutputStream.flush();
-            objectOutputStream.close();
-            s.close();
         } catch (Exception e) {
-            log.error("Failed to get the private key : ", e);
+            log.error("send message to ttp failed", e);
+        } finally {
+            IOUtils.closeQuietly(reader);
+            IOUtils.closeQuietly(objectOutputStream);
+            IOUtils.closeQuietly(s);
         }
     }
 }

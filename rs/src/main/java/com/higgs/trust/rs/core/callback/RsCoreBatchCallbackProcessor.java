@@ -3,8 +3,9 @@ package com.higgs.trust.rs.core.callback;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
-import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -15,11 +16,14 @@ import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.repository.RequestRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.BlockHeader;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
+import com.higgs.trust.slave.model.bo.node.NodeAction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +43,7 @@ import java.util.*;
     @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
     @Autowired private RequestRepository requestRepository;
-    @Autowired AbstractClusterInfo clusterInfo;
+    @Autowired private ConsensusStateMachine consensusStateMachine;
 
     private TxBatchCallbackHandler getCallbackHandler() {
         TxBatchCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxBatchCallback();
@@ -52,7 +56,7 @@ import java.util.*;
 
     public void onPersisted(List<RsCoreTxVO> txs, BlockHeader blockHeader) {
         Map<String, List<RsCoreTxVO>> map = parseTx(txs);
-        log.debug("[onPersisted]map:{}",map);
+        log.debug("[onPersisted]map:{}", map);
         for (String policyId : map.keySet()) {
             List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -84,7 +88,6 @@ import java.util.*;
                         processNodeJoin(rsCoreTxVOS);
                         return;
                     case NODE_LEAVE:
-                        processNodeLeave(rsCoreTxVOS);
                         return;
                     default:
                         break;
@@ -99,6 +102,7 @@ import java.util.*;
     public void onEnd(List<RsCoreTxVO> txs, BlockHeader blockHeader) {
         Map<String, List<RsCoreTxVO>> map = parseTx(txs);
         for (String policyId : map.keySet()) {
+            List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
             if (policyEnum != null) {
                 switch (policyEnum) {
@@ -123,15 +127,15 @@ import java.util.*;
                     case NODE_JOIN:
                         return;
                     case NODE_LEAVE:
+                        processNodeLeave(rsCoreTxVOS);
                         return;
                     default:
                         break;
                 }
             }
-//            List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
-//            //callback custom
+            //callback custom
 //            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-//            txBatchCallbackHandler.onEnd(policyId,rsCoreTxVOS,blockHeader);
+//            txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -254,8 +258,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_UPDATE_ERROR, 1);
             return;
         }
-        clusterInfo.setRefresh();
-        log.info("[processCaUpdate] set cluster info refresh");
 
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
@@ -277,9 +279,6 @@ import java.util.*;
             return;
         }
 
-        clusterInfo.setRefresh();
-        log.info("[processCaCancel] set cluster info refresh");
-
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
         if (CollectionUtils.isEmpty(nodes)) {
@@ -300,9 +299,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_AUTH_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processCaAuth] set cluster info refresh");
     }
 
     private void processNodeJoin(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -312,9 +308,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_JOIN_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeJoin] set cluster info refresh");
     }
 
     private void processNodeLeave(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -324,8 +317,19 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_LEAVE_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeLeave] set cluster info refresh");
+        log.debug("rsCoreTxVOS.size={}", rsCoreTxVOS.size());
+        List<Action> actionList = rsCoreTxVOS.get(0).getActionList();
+        if (CollectionUtils.isNotEmpty(actionList)) {
+            Action action = actionList.get(0);
+            if (action instanceof NodeAction) {
+                NodeAction nodeAction = (NodeAction)action;
+                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())
+                    && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
+                    log.info("leave consensus layer, user={}", nodeAction.getNodeName());
+                    consensusStateMachine.leaveConsensus();
+                    nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
+                }
+            }
+        }
     }
 }

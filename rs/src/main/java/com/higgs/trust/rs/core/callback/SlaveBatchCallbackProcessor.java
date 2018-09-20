@@ -11,6 +11,9 @@ import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
+import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
@@ -179,7 +182,28 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
         }
         log.info("[onFailover]batchInsert.coreTx,blockHeight:{}", blockHeader.getHeight());
         if (rsConfig.isUseMySQL()) {
-            batchInsert(allTxs, blockHeader.getHeight(), CoreTxStatusEnum.END);
+            try {
+                batchInsert(allTxs, blockHeader.getHeight(), CoreTxStatusEnum.END);
+            }catch (RsCoreException e){
+                //数据库中可能还有原业务数据，当单个节点跟集群区块不一致时，
+                //需要恢复差异的数据，本节点未做完的交易可能会再failover回来.
+                if(e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT){
+                    //process for each
+                    for(RsCoreTxVO tx : allTxs) {
+                        boolean isExist = coreTxRepository.isExist(tx.getTxId());
+                        if (isExist) {
+                            CoreTransactionProcessPO processPO = coreTxProcessRepository.queryByTxId(tx.getTxId(),false);
+                            if(processPO != null){
+                                coreTxProcessRepository.updateStatus(tx.getTxId(),CoreTxStatusEnum.formCode(processPO.getStatus()),CoreTxStatusEnum.END);
+                            }
+                        } else {
+                            coreTxRepository.add(coreTxRepository.convertTxVO(tx), tx.getSignDatas(), blockHeader.getHeight());
+                        }
+                    }
+                }else {
+                    throw e;
+                }
+            }
         } else {
             coreTxRepository.failoverBatchInsert(allTxs, blockHeader.getHeight());
         }

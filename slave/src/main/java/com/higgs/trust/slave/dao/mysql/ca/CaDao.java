@@ -3,6 +3,7 @@ package com.higgs.trust.slave.dao.mysql.ca;
 import com.higgs.trust.common.mybatis.BaseDao;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -64,4 +65,9 @@ import java.util.List;
      */  
     CaPO getCaForConsensus(String user);
 
+    /**
+     * get all pubKeys
+     * @return
+     */
+    List<CaPO> getAllPubkeyByUsage(@Param("usage")String usage);
 }

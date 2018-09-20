@@ -3,10 +3,12 @@ package com.higgs.trust.slave.core.managment.master;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
     private ConcurrentLinkedHashMap existTxMap =
         new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE)
             .build();
-    private BlockingQueue<Package> pendingPack = new LinkedBlockingDeque<>();
+    private BlockingQueue<PackageCommand> pendingPack = new LinkedBlockingDeque<>();
 
     @Override public void beforeChange(String masterName) {
         synchronized (this) {
@@ -88,14 +90,14 @@ import java.util.concurrent.atomic.AtomicLong;
         return packHeight.get();
     }
 
-    public List<SignedTransaction> getPendingTxQueue(int count) {
+    public Object[] getPendingTxQueue(int count) {
         if (null == pendingTxQueue.peekFirst()) {
             return null;
         }
 
         //TODO 压测分析日志
-        log.info("pendingTxQueue.size={}", pendingTxQueue.size());
-
+        log.debug("pendingTxQueue.size={}", pendingTxQueue.size());
+        Object[] objs = new Object[2];
         int num = 0;
         List<SignedTransaction> list = new ArrayList<>();
         Set<String> txIdSet = new HashSet<>();
@@ -104,11 +106,18 @@ import java.util.concurrent.atomic.AtomicLong;
             if (null != signedTx && !txIdSet.contains(signedTx.getCoreTx().getTxId())) {
                 list.add(signedTx);
                 txIdSet.add(signedTx.getCoreTx().getTxId());
+                TxTypeEnum txTypeEnum = TxTypeEnum.getBycode(signedTx.getCoreTx().getTxType());
+                //for consensus
+                if(txTypeEnum!=null && txTypeEnum == TxTypeEnum.NODE){
+                    objs[1] = signedTx;
+                    break;
+                }
             } else {
                 break;
             }
         }
-        return list;
+        objs[0] = list;
+        return objs;
     }
 
     public void appendDequeFirst(SignedTransaction signedTransaction) {
@@ -132,12 +141,12 @@ import java.util.concurrent.atomic.AtomicLong;
         return pendingTxQueue.size();
     }
 
-    public void putPendingPack(Package pack) throws InterruptedException {
+    public void putPendingPack(PackageCommand command) throws InterruptedException {
         synchronized (this) {
             try {
                 long packageHeight = packHeight.incrementAndGet();
-                pack.setHeight(packageHeight);
-                pendingPack.offer(pack, 100, TimeUnit.MILLISECONDS);
+                command.get().setHeight(packageHeight);
+                pendingPack.offer(command, 100, TimeUnit.MILLISECONDS);
             } catch (Throwable e) {
                 //set packHeight
                 packHeight.getAndDecrement();
@@ -150,13 +159,18 @@ import java.util.concurrent.atomic.AtomicLong;
         return pendingPack.size();
     }
 
-    public Package getPackage() {
+    public PackageCommand getPackage() {
         return pendingPack.poll();
     }
 
-    public List<Package> getPackages() {
+    /**
+     * is deprecated use <getPackage/>
+     * @return
+     */
+    @Deprecated
+    public List<PackageCommand> getPackages() {
         int i = 0;
-        List<Package> packageList = new LinkedList<>();
+        List<PackageCommand> packageList = new LinkedList<>();
         while ((null != pendingPack.peek()) && (i++ < BATCH_PACKAGE)) {
             packageList.add(pendingPack.poll());
         }

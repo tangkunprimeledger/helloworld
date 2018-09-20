@@ -5,6 +5,7 @@ package com.higgs.trust.config.master.command;
 
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -16,6 +17,12 @@ import lombok.ToString;
     extends AbstractConsensusCommand<Long> implements SignatureCommand {
 
     private static final long serialVersionUID = 4579567364750332581L;
+
+    /**
+     * the cluster view number
+     */
+    @Getter private long view;
+
     /**
      * master name
      */
@@ -26,8 +33,9 @@ import lombok.ToString;
      */
     @Setter private String sign;
 
-    public MasterHeartbeatCommand(long term, String masterName) {
+    public MasterHeartbeatCommand(long term, long view, String masterName) {
         super(term);
+        this.view = view;
         this.masterName = masterName;
     }
 
@@ -36,7 +44,7 @@ import lombok.ToString;
     }
 
     @Override public String getSignValue() {
-        return masterName + get();
+        return masterName + get() + view;
     }
 
     @Override public String getSignature() {

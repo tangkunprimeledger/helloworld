@@ -2,7 +2,7 @@ package commands
 
 import com.higgs.trust.config.master.ChangeMasterService
 import com.higgs.trust.config.master.INodeInfoService
-import com.higgs.trust.config.term.TermManager
+import com.higgs.trust.config.snapshot.TermManager
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.*
 import org.crsh.command.InvocationContext
@@ -22,7 +22,8 @@ class term {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def termManager = beans.getBean(TermManager.class)
         def nodeInfoService = beans.getBean(INodeInfoService.class)
-        context.provide([Name: "Master Heartbeat", Value: termManager.getMasterHeartbeat().get()])
+        def changeMasterService = beans.getBean(ChangeMasterService.class)
+        context.provide([Name: "Master Heartbeat", Value: changeMasterService.getMasterHeartbeat().get()])
         context.provide([Name: "Master Election", Value: nodeInfoService.isElectionMaster()])
         out.println("")
         termManager.getTerms().forEach({ t -> context.provide(Term: t.term, StartHeight: t.startHeight, EndHeight: t.endHeight, MasterName: t.masterName) })

@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-import com.higgs.trust.consensus.p2pvalid.config.ValidClusterInfoCmd;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
+import com.higgs.trust.slave.core.service.consensus.view.ValidClusterViewCmd;
 import com.higgs.trust.slave.model.bo.consensus.ValidBlockHeaderCmd;
 import com.higgs.trust.slave.model.bo.consensus.ValidClusterHeightCmd;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ public class ResponseCommandJsonDeserializer implements ObjectDeserializer {
     static {
         typeMap.put(ValidBlockHeaderCmd.class.getSimpleName(), ValidBlockHeaderCmd.class);
         typeMap.put(ValidClusterHeightCmd.class.getSimpleName(), ValidClusterHeightCmd.class);
-        typeMap.put(ValidClusterInfoCmd.class.getSimpleName(), ValidClusterInfoCmd.class);
+        typeMap.put(ValidClusterViewCmd.class.getSimpleName(), ValidClusterViewCmd.class);
 //        typeMap.put(ChangeMasterVerifyResponseCmd.class.getSimpleName(), ChangeMasterVerifyResponseCmd.class);
     }
 

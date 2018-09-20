@@ -111,7 +111,8 @@ public class PendingStateImplTest extends BaseTest {
     }
 
     @Test public void getPendingTransactions() {
-        List<SignedTransaction> signedTransactions = pendingState.getPendingTransactions(2);
+        Object[] objs = pendingState.getPendingTransactions(2);
+        List<SignedTransaction> signedTransactions = (List<SignedTransaction>)objs[0];
         Assert.assertEquals(2, signedTransactions.size());
         Assert.assertEquals("pending-tx-test-5", signedTransactions.get(0).getCoreTx().getTxId());
         Assert.assertEquals("pending-tx-test-6", signedTransactions.get(1).getCoreTx().getTxId());

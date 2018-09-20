@@ -22,8 +22,8 @@ import lombok.Setter;
 
     private String requestId;
 
-    public BlockHeaderCmd(BlockHeader value) {
-        super(value);
+    public BlockHeaderCmd(BlockHeader value, long view) {
+        super(value, view);
         this.requestId = VALID_HEADER_ID + Constant.SPLIT_SLASH + value.getHeight() + Constant.SPLIT_SLASH + System
             .currentTimeMillis();
     }

@@ -28,6 +28,11 @@ import java.util.Map;
     private long term;
 
     /**
+     * the cluster view number
+     */
+    private long view;
+
+    /**
      * the node name of master
      */
     private String masterName;
@@ -37,9 +42,10 @@ import java.util.Map;
      */
     @Setter private String sign;
 
-    public ChangeMasterCommand(long term, String masterName, Map<String, ChangeMasterVerifyResponse> value) {
+    public ChangeMasterCommand(long term, long view, String masterName, Map<String, ChangeMasterVerifyResponse> value) {
         super(value);
         this.term = term;
+        this.view = view;
         this.masterName = masterName;
     }
 
@@ -49,7 +55,7 @@ import java.util.Map;
 
     @Override public String getSignValue() {
         StringBuffer sb = new StringBuffer();
-        sb.append(term).append(masterName);
+        sb.append(term).append(view).append(masterName);
         get().values().stream().sorted(Comparator.comparing(ChangeMasterVerifyResponse::getVoter))
             .forEach(r -> sb.append(r.getSign()));
         return Hashing.sha256().hashString(sb.toString(), Charsets.UTF_8).toString();

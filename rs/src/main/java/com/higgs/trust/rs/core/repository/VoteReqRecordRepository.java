@@ -12,11 +12,15 @@ import com.higgs.trust.rs.core.dao.rocks.VoteRequestRecordRocksDao;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author liuyu
@@ -89,5 +93,26 @@ import java.util.Date;
         } else {
             voteRequestRecordRocksDao.setVoteResult(txId, sign, voteResult.getCode());
         }
+    }
+
+    /**
+     * query all request for init result
+     *
+     * @param row
+     * @param count
+     * @return
+     */
+    public List<VoteRequestRecord> queryAllInitRequest(int row,int count){
+        List<VoteRequestRecordPO> poList = voteRequestRecordDao.queryAllInitRequest(row,count);
+        if(CollectionUtils.isEmpty(poList)){
+            return null;
+        }
+        List<VoteRequestRecord> list = new ArrayList<>();
+        for(VoteRequestRecordPO po : poList){
+            VoteRequestRecord requestRecord = BeanConvertor.convertBean(po,VoteRequestRecord.class);
+            requestRecord.setVoteResult(VoteResultEnum.fromCode(po.getVoteResult()));
+            list.add(requestRecord);
+        }
+        return list;
     }
 }

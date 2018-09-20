@@ -20,9 +20,9 @@ import lombok.Setter;
     private String requestId;
 
     public ChangeMasterVerifyCmd(ChangeMasterVerify value) {
-        super(value);
-        this.requestId = String
-            .join("_", CHANGE_MASTER_VERIFY, "" + value.getTerm(), "" + System.currentTimeMillis());
+        super(value, value.getView());
+        this.requestId = String.join("_", CHANGE_MASTER_VERIFY, "" + value.getTerm(), "" + value.getView(),
+            "" + System.currentTimeMillis());
     }
 
     @Override public String messageDigest() {

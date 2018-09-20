@@ -1,0 +1,43 @@
+{
+    "height": 1,
+    "version": 1,
+    "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "numberOfTransactions": 1,
+    "transactions": [
+        {
+            "actions": [
+                {
+                    "nodeName": "TRUST-TEST0",
+                    "keys": [
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqZ8Q2W2xl+Dc9i6HzHieRqfzUlSYzIOSCXUTkDBWO4jLI7JlZdq6K4y27m41q3Mls6IHlRdaUI/hxLZYYLdoORQGlrGB+aza0WR5phFamxlf+kd+PY1XNYeCb3KB1Ep+w7N8iSycHPk70m8D7SMl7DKGXDKEY6Ald2cTqvfcqqSfFi4qvCI3El7IfEiOv/3EuDGbKYem7Zo8XV/+uJlK3O+4LXaQy0nBajUlj7TjPYNP/9PYAjCeNzNOix8AEkwk3y6DIPpgIItlk6qTqSn+pBjaeSfRefMezO4l75K9J/3g/N/Oi+7v6Th+Xi2sQTaqv6sJNU3Qav+/DX+tfDXbAQIDAQAB", "type": "biz" },
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4CkXxDiD147k9vzZ0c9SU6gamK5hEQUXPTmZJsvvsEd81obOdcVys3MC879R28pKX+ccWU50Rf9YfwECnRkMBUQz7byuwfCk2fjrZpJLQ77uyQmEW08Y3RAb5iTYvHGVB3cPP+ZMSBRrW0apKec3atOGM1bYWkhud30MOvirGwf2swu7mEQNn4eFKHeK2hhIcannozFfJL0rRtk0Zlv7m6hIWdQ2CztV8PVfj+yA8IjoLb2x64r8UQYrYmjxM2ZbEITfXvjpJrrFM8tus3Mtcl+m6NH8X/k1pLPGi6VPBsFwh5g3M4szYn01QffPSL+gMI8YvoaycgWutSlRNzXkuwIDAQAB", "type": "consensus" }
+                    ]
+                    
+                },
+				{
+                    "nodeName": "TRUST-TEST1",
+                    "keys": [
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwTz/2MCJTUYdWvP21RsKqM1O+TZ+a6yBUE8slOCWSoWCI6Iyp2FRGbTBm52elyPhZDPM/yMzJb8rve1Mz4YlJvERE6KHEGRMTecVHnk2a65gIscvF8gWbaPkcKAIMEAcLVHd0vH24Oy+S8ccm6aUQVhHwiykSK/dmWQQtq2dBf8VmSuiv7u/QcrjbnYbhZddOpsHdIqgkyyvmofKamD9ZDfkOnr92Rw2qw97WCJ9ns3OSJKXI5ncpL6dSf4/IeSCKvmFJ8GUFh7tnwYSqS8friy8GPw1hNPIBaHKgr6pPUvWOGXEvt350L1E497WTg12E8g1VPKb1UfzEMC+88AMyQIDAQAB", "type": "biz" },
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj5oZwOnv2p8JFG6sN/CEO8k5FJL8ipPiUay48JmtAjMwBRuA+wZjLWYT9CXzRPBHd1d62gXPkvbZXRXnd/YBy5d3UsF/jyiTUgyrB7iP1gn0QCgVDshUG/j0za7GRu/MNwLJF+KJcGLPVGSdEYZAmzN8V2fYJtuoKuPQL55/5lYoZnIPKlwZ/4+Z6h9uZ9iAN3OICGKTaZWdptHTlbqUdXu5B4S4b9Lr0yOixD8VzqueFrcDWQCEzyDRd9zcLhTiM1wVw6nqFli3iND564dxVbm3KQuH9eM8Vgyd6fH83LklG3zzoHOrIJzTobblM3GSl6ySVpqNGub5FYJSBmo76QIDAQAB", "type": "consensus" }
+                    ]
+                    
+                },
+				{
+                    "nodeName": "TRUST-TEST2",
+                    "keys": [
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoYq0sovWlbmn3dxTT+talLziDQMQoEm0ntCixUWVf7MGwcyGHn/YdiNUZuu2/kZf9Te9wIidjEV5/Vpdp2IHJP/PdJdiIMEPSOSu21qNyReuwTp8vDHlBK/zOQ1TbBHI6cs3mFBPC3ldFXS8tCHIi/iiEc7OdwxoIVvqlnChaPRx0N7b2umioH6RqqGqq+jIRyX/vN10GKpQ6HgPch0KByJ4v79Ka7SE8Dx+ykRJoZza/uApn8G6q8XC65+aUmITF+FwogOnwDPh6PNodBIJIEDtFWasHH+A1EVgBaRh7fn9NWybQIPdYk/zHobPdTvUskdmmK+L2m30BdUnO+VyZQIDAQAB", "type": "biz" },
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlW50PWIKgzZh3XTGyZw250iukfFoHPfP9mK/3D52Js/NQ0Pb8qPh359FKYWi8fevO+gtdAusTgou0dWqVUvWdz7G1nHPQ9wIexOirCNDmKSGBRLzZC0j7RWi53Nc6/JJg+pdX4xfihHCVOS/qjSQdcKQFu6t+4sZT05IFxeaMFHJbCQmGmWcZ85oqkVOVBgFOwBMRdBfMzlTvgxgfmFvkbSDMjyr9Q4fepfHNWNuIt9c1mibI0Td8y5e+ywIRHEjSQHbRVEKDl5NGCdXl3ya2Z0UmrrDjjuga/Hvwt8iPo8n4DYWYsBnEIK7xMqeY7UOA9FbTKOyFD6cQ5+Ukve0OQIDAQAB", "type": "consensus" }
+                    ]
+                    
+                },
+                {
+                    "nodeName": "TRUST-TEST3",
+                    "keys": [
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjo08TH9FE2pms/x+BzKY+BxLqnjH6GIkfI3OO1bRES6Nj44R2K7qZkSwxJoeuehtRHmLbP+l5QWoivbDeFR3cJgZLfj9IE+RjqbD/esbIG2AHcU2Pan0dJr3G1m/TGlRdfmfPKKfvalF26wR+pNua3P7Brxrn7io41OLFruQlAznlXvK/kydONYRqaAzlGWxbqmlBgWuETBxzhtXQciMO8qJ2xGnc4ptvONrEGtQJ0ZXU1zOYKoOGsD9dF4OBg1yH1odTaljozbZGUX3vNAdUTidk+mqRFeJD97a9W+cLpnYCMMRMml6J1TIUvjZ3iUUguaYZXaQ/di9m2qzXh4dVwIDAQAB", "type": "biz" },
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl26CKTqV/KmO8OmD0wSNiMysDKFOvKKDX/FOQEOpuBC/dffFaturWtQHaTUfje9vSwi3gFCL0k5kJQvnlIrscCVmx+j+I0x6O2G4LM7mQovCaxjRmBtIJHvurUMgVJLibazhVFbPvVn6UMv2I58PTDqdekXJ0Urz9vmr5yrHZEpw20MBFO7Ve0J+TXVQ0pamX9zVnVSgeSgBu9w+ex/8t0lJkeQJrauJ47MnHYobVVKgwktwIPQMZVhiFlp1fkwr+xuI1OAfaqfPyLAnWTT60L8AhpxEfo3LiLG7UdLlZMgpjadEEiS6NZONb8hXi9mbQAYfORokkwXdVOuHlJcdRQIDAQAB", "type": "consensus" }
+                    ]
+                }
+            ]
+        }
+    ]
+}
