@@ -41,7 +41,7 @@ public class TxProcessInitSchedule {
      */
     private String lastPreKey = null;
 
-    @Scheduled(fixedRateString = "${rs.core.schedule.processInit:500}")
+    @Scheduled(fixedDelayString = "${rs.core.schedule.processInit:500}")
     public void exe() {
         if (rsConfig.isUseMySQL()) {
             List<CoreTransactionProcessPO> list = coreTxRepository

@@ -32,7 +32,7 @@ public class TxSubmitSlaveSchedule {
      */
     private String lastPreKey = null;
 
-    @Scheduled(fixedRateString = "${rs.core.schedule.submitSlave:500}") public void exe() {
+    @Scheduled(fixedDelayString = "${rs.core.schedule.submitSlave:500}") public void exe() {
         List<CoreTransactionPO> coreTransactionPOList;
         int size;
         if (rsConfig.isUseMySQL()) {
