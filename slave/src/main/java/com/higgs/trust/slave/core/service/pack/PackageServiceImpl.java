@@ -177,9 +177,10 @@ import java.util.stream.Collectors;
                 systemPropertyRepository.saveWithTransaction(Constant.MAX_PACK_HEIGHT, String.valueOf(pack.getHeight()), "max package height");
                 RocksUtils.txCommit(tx);
             } finally {
-                ThreadLocalUtils.clearRocksTx();;
+                ThreadLocalUtils.clearRocksTx();
             }
         }
+        log.info("receive package from consensus finish, pack height: {}", pack.getHeight());
     }
 
     /**

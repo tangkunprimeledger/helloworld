@@ -163,4 +163,31 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
             txPut(tx, po.getTxId(), po);
         }
     }
+
+    public void failoverBatchInsert(List<CoreTransactionPO> coreTransactionPOList) {
+        if (CollectionUtils.isEmpty(coreTransactionPOList)) {
+            return;
+        }
+
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxRocksDao.failoverBatchInsert] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
+        }
+
+        for (CoreTransactionPO po : coreTransactionPOList) {
+            String txId = po.getTxId();
+            CoreTransactionPO oldPo = get(txId);
+            if (null == oldPo) {
+                txPut(tx, txId, po);
+            } else {
+                oldPo.setUpdateTime(new Date());
+                oldPo.setBlockHeight(po.getBlockHeight());
+                oldPo.setErrorCode(po.getErrorCode());
+                oldPo.setErrorMsg(po.getErrorMsg());
+                oldPo.setExecuteResult(po.getExecuteResult());
+                txPut(tx, txId, oldPo);
+            }
+        }
+    }
 }

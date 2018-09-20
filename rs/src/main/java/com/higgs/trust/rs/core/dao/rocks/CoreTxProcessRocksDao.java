@@ -154,4 +154,20 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionPO>{
         return null;
     }
 
+    public void failoverBatchDelete(List<CoreTransactionPO> coreTransactionPOList) {
+        if (CollectionUtils.isEmpty(coreTransactionPOList)) {
+            return;
+        }
+
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxProcessRocksDao.failoverBatchDelete] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
+        }
+
+        for (CoreTransactionPO po : coreTransactionPOList) {
+            String key = CoreTxStatusEnum.WAIT.getIndex() + Constant.SPLIT_SLASH + po.getTxId();
+            txDelete(tx, key);
+        }
+    }
 }

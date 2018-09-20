@@ -98,9 +98,8 @@ import org.springframework.transaction.support.TransactionTemplate;
             } catch (Throwable e) {
                 log.error("package process exception. ", e);
             } finally {
-                ThreadLocalUtils.clearRocksTx();;
+                ThreadLocalUtils.clearRocksTx();
             }
-
         }
     }
 

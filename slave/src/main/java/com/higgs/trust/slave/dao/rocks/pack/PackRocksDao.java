@@ -26,7 +26,6 @@ public class PackRocksDao extends RocksBaseDao<PackagePO> {
 
     public void save(PackagePO po) {
 
-
         Transaction tx = ThreadLocalUtils.getRocksTx();
         if (null == tx) {
             log.error("[PackRocksDao.save] transaction is null");

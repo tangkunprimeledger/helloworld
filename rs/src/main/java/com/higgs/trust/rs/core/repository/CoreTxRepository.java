@@ -24,6 +24,7 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.Transaction;
@@ -518,5 +519,14 @@ public class CoreTxRepository {
     public CoreTransactionPO queryByStatus(String txId,CoreTxStatusEnum statusEnum){
         String key = statusEnum.getIndex() + Constant.SPLIT_SLASH + txId;
         return coreTxProcessRocksDao.get(key);
+    }
+
+    public void failoverBatchInsert(List<RsCoreTxVO> txs, Long blockHeight) {
+        if (CollectionUtils.isEmpty(txs)) {
+            return;
+        }
+        List<CoreTransactionPO> coreTransactionPOList = convert(txs, blockHeight);
+        coreTxRocksDao.failoverBatchInsert(coreTransactionPOList);
+        coreTxProcessRocksDao.failoverBatchDelete(coreTransactionPOList);
     }
 }

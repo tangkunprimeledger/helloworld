@@ -292,27 +292,6 @@ import java.util.Set;
         } finally {
             ThreadLocalUtils.clearRocksTx();
         }
-        //delete package which status = 'RECEIVED', but block is exist which height = package.height
-        return deleteReceivedPackLessThanHeight(height, count);
-    }
-
-    private int deleteReceivedPackLessThanHeight(Long height, int count) {
-        List<Long> heights = packStatusRocksDao.queryByStatusAndLessThanHeight(PackageStatusEnum.RECEIVED.getIndex(), height);
-        Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
-        ThreadLocalUtils.putRocksTx(tx);
-        try {
-            for (Long h : heights) {
-                if (height.compareTo(h) >= 0) {
-                    deletePendingTx(height);
-                    packRocksDao.batchDelete(h);
-                    packStatusRocksDao.batchDelete(h, PackageStatusEnum.RECEIVED.getIndex());
-                    count++;
-                }
-            }
-            RocksUtils.txCommit(tx);
-        } finally {
-            ThreadLocalUtils.clearRocksTx();
-        }
         return count;
     }
 

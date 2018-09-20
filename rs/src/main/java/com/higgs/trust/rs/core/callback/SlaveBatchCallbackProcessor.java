@@ -178,7 +178,11 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
             log.warn("[onFailover]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
         }
         log.info("[onFailover]batchInsert.coreTx,blockHeight:{}", blockHeader.getHeight());
-        batchInsert(allTxs, blockHeader.getHeight(), CoreTxStatusEnum.END);
+        if (rsConfig.isUseMySQL()) {
+            batchInsert(allTxs, blockHeader.getHeight(), CoreTxStatusEnum.END);
+        } else {
+            coreTxRepository.failoverBatchInsert(allTxs, blockHeader.getHeight());
+        }
         rsCoreBatchCallbackProcessor.onFailover(allTxs, blockHeader);
     }
 
