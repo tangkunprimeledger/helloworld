@@ -118,6 +118,14 @@
     },
     "key": {
       "mode": "manual"
+    },
+    "redisson": {
+      "sentinel": {
+        "masterName": ""
+      },
+      "password": "",
+      "address": "redis://127.0.0.1:6379",
+      "single": true
     }
   },
   "logging": {
@@ -180,7 +188,7 @@
         "2": "TRUST-TEST2",
         "3": "TRUST-TEST3"
       },
-      "defaultDir": "D:/tmp/files3"
+      "defaultDir": "C:/tmp/files3"
     }
   }
 }
