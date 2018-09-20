@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.core.service.action;
 
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
@@ -12,7 +14,6 @@ import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
 import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
-import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -40,7 +41,6 @@ import java.util.*;
     @Autowired BlockRepository blockRepository;
     @Autowired TransactionTemplate txRequired;
     @Autowired CaRepository caRepository;
-    @Autowired CaInitHandler caInitHandler;
     @Autowired SystemPropertyRepository systemPropertyRepository;
     @Autowired InitConfig initConfig;
 
@@ -81,7 +81,8 @@ import java.util.*;
                     saveCa(block);
 
                     //save block height in system_property
-                    systemPropertyRepository.saveWithTransaction(Constant.MAX_BLOCK_HEIGHT, String.valueOf(block.getBlockHeader().getHeight()), "max block height");
+                    systemPropertyRepository.saveWithTransaction(
+                        Constant.MAX_BLOCK_HEIGHT, String.valueOf(block.getBlockHeader().getHeight()), "max block height");
 
                     RocksUtils.txCommit(tx);
                 } finally {

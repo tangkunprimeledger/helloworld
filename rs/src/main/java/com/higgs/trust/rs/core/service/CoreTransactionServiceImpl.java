@@ -189,7 +189,7 @@ import java.util.concurrent.TimeUnit;
             txRequired.execute(new TransactionCallbackWithoutResult() {
                 @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                     //save coreTx to db
-                    coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+                    coreTxRepository.add(coreTx, signs, 0L);
                 }
             });
         } else {
@@ -198,7 +198,7 @@ import java.util.concurrent.TimeUnit;
             try {
                 if (null == coreTxRepository.getForUpdate(tx, new ReadOptions(), coreTx.getTxId(), true)) {
                     //save coreTx to db
-                    coreTxRepository.add(coreTx, Lists.newArrayList(signInfo), 0L);
+                    coreTxRepository.add(coreTx, signs, 0L);
                     RocksUtils.txCommit(tx);
                 }
             } finally {
@@ -350,7 +350,7 @@ import java.util.concurrent.TimeUnit;
             return null;
         }
         //get sign info from receipts
-        List<SignInfo> signInfos = voteService.getSignInfos(receipts);
+        List<SignInfo> signInfos = voteService.getSignInfos(receipts, signType);
         signInfos.addAll(bo.getSignDatas());
         //update signDatas
         coreTxRepository.updateSignDatas(bo.getTxId(), signInfos);
@@ -485,6 +485,7 @@ import java.util.concurrent.TimeUnit;
             return;
         }
         //normal business
+        List<String> lastRsIds = rsIds;
         if(!isNodeType) {
             lastRsIds = new ArrayList<>();
             //filter self

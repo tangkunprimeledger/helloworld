@@ -11,9 +11,7 @@ import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
-import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
@@ -192,9 +190,9 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
                     for(RsCoreTxVO tx : allTxs) {
                         boolean isExist = coreTxRepository.isExist(tx.getTxId());
                         if (isExist) {
-                            CoreTransactionProcessPO processPO = coreTxProcessRepository.queryByTxId(tx.getTxId(),false);
+                            CoreTransactionProcessPO processPO = coreTxRepository.queryStatusByTxId(tx.getTxId(),null);
                             if(processPO != null){
-                                coreTxProcessRepository.updateStatus(tx.getTxId(),CoreTxStatusEnum.formCode(processPO.getStatus()),CoreTxStatusEnum.END);
+                                coreTxRepository.updateStatus(tx.getTxId(),CoreTxStatusEnum.formCode(processPO.getStatus()),CoreTxStatusEnum.END);
                             }
                         } else {
                             coreTxRepository.add(coreTxRepository.convertTxVO(tx), tx.getSignDatas(), blockHeader.getHeight());

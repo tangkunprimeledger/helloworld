@@ -1,9 +1,12 @@
 package com.higgs.trust.slave.core.managment;
 
+import com.higgs.trust.common.dao.RocksUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.core.service.ca.CaInitService;
@@ -11,6 +14,8 @@ import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
@@ -41,6 +46,8 @@ import java.util.List;
     @Autowired private TransactionTemplate txRequired;
 
     @Autowired private ClusterViewService clusterViewService;
+
+    @Autowired private InitConfig initConfig;
 
     @Value("${higgs.trust.keys.bizPublicKey}") String pubKeyForBiz;
 

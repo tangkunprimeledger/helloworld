@@ -90,10 +90,21 @@ import java.util.List;
     }
 
     public Config getBizConfig(String user) {
+        return getConfig(user, UsageEnum.BIZ);
+    }
+
+
+    /**
+     * get config by nodeName and usage
+     *
+     * @param user
+     * @param usageEnum
+     * @return
+     */
+    public Config getConfig(String user,UsageEnum usageEnum) {
         ConfigPO configPO = new ConfigPO();
         configPO.setNodeName(user);
-        configPO.setUsage(UsageEnum.BIZ.getCode());
-
+        configPO.setUsage(usageEnum.getCode());
         Config config = new Config();
         if (initConfig.isUseMySQL()) {
             List<ConfigPO> list = configDao.getConfig(configPO);
@@ -109,6 +120,7 @@ import java.util.List;
         }
         return config;
     }
+
 
     /**
      * batch insert
