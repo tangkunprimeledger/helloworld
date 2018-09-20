@@ -1,6 +1,7 @@
 package com.higgs.trust.zkproof;
 
 import com.alibaba.fastjson.JSONObject;
+import com.sun.deploy.util.StringUtils;
 
 import java.math.BigInteger;
 
@@ -53,6 +54,9 @@ public interface HomomorphicEncryption {
     }
 
     static String MergeKey(String key1, String key2){
+        if(key2 == null||key2.length()==0){
+            return key1;
+        }
         JSONObject ob1 = JSONObject.parseObject(key1);
         JSONObject ob2 = JSONObject.parseObject(key2);
         if (ob1.getString("key_type").compareTo("BGN") == 0
