@@ -1,7 +1,7 @@
 package com.higgs.trust.zkproof;
 
 import com.alibaba.fastjson.JSONObject;
-import com.sun.deploy.util.StringUtils;
+
 
 import java.math.BigInteger;
 
