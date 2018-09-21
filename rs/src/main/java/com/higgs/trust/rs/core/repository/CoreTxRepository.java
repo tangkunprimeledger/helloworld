@@ -32,9 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author liuyu
@@ -98,7 +96,8 @@ public class CoreTxRepository {
 
     /**
      * create new core_transaction
-     *  @param coreTx
+     *
+     * @param coreTx
      * @param signInfos
      * @param coreTxStatusEnum
      */
@@ -161,7 +160,6 @@ public class CoreTxRepository {
         return coreTxRocksDao.get(txId);
     }
 
-
     /**
      * query by txIds
      *
@@ -214,7 +212,8 @@ public class CoreTxRepository {
      * @param respCode
      * @param respMsg
      */
-    public void saveExecuteResultAndHeight(String txId, CoreTxResultEnum executResult, String respCode, String respMsg, Long blockHeight) {
+    public void saveExecuteResultAndHeight(String txId, CoreTxResultEnum executResult, String respCode, String respMsg,
+        Long blockHeight) {
         try {
             Profiler.enter("[rs.core.saveExecuteResult]");
             if (rsConfig.isUseMySQL()) {
@@ -313,6 +312,10 @@ public class CoreTxRepository {
      * @param blockHeight
      */
     public void batchUpdate(List<RsCoreTxVO> txs, Long blockHeight) {
+        if (CollectionUtils.isEmpty(txs)) {
+            return;
+        }
+
         try {
             Profiler.enter("[rs.core.batchUpdate]");
             if (rsConfig.isUseMySQL()) {
@@ -322,13 +325,38 @@ public class CoreTxRepository {
                     throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_FAILED);
                 }
             } else {
-                coreTxRocksDao.batchUpdate(txs, blockHeight);
+                List<String> txIds = new ArrayList<>(txs.size());
+                Map<String, RsCoreTxVO> map = new HashMap<>(txs.size());
+                for (RsCoreTxVO vo : txs) {
+                    txIds.add(vo.getTxId());
+                    map.put(vo.getTxId(), vo);
+                }
+
+                if (txIds.size() != map.size()) {
+                    log.error("[batchUpdate.coreTx]  is fail, rsIds.size:{}, map.size:{}", txIds.size(), map.size());
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_FAILED);
+                }
+
+                List<CoreTransactionPO> pos = coreTxRocksDao.queryByTxIds(txIds);
+                if (txIds.size() != pos.size()) {
+                    log.error("[batchUpdate.coreTx]  is fail, rsIds.size:{}, pos.size:{}", txIds.size(), pos.size());
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_UPDATE_FAILED);
+                }
+
+                for (CoreTransactionPO po : pos) {
+                    RsCoreTxVO vo = map.get(po.getTxId());
+                    po.setErrorMsg(vo.getErrorMsg());
+                    po.setErrorCode(vo.getErrorCode());
+                    po.setExecuteResult(vo.getExecuteResult().getCode());
+                    po.setBlockHeight(blockHeight);
+                    po.setUpdateTime(new Date());
+                    coreTxRocksDao.updateWithTransaction(po);
+                }
             }
         } finally {
             Profiler.release();
         }
     }
-
 
     /**
      * convert bean
@@ -376,7 +404,8 @@ public class CoreTxRepository {
         if (rsConfig.isUseMySQL()) {
             return coreTransactionProcessDao.queryByTxId(txId, statusEnum.getCode());
         }
-        CoreTxStatusEnum coreTxStatusEnum = coreTxProcessRocksDao.queryByTxIdAndStatus(txId, statusEnum == null ? null : statusEnum.getIndex());
+        CoreTxStatusEnum coreTxStatusEnum =
+            coreTxProcessRocksDao.queryByTxIdAndStatus(txId, statusEnum == null ? null : statusEnum.getIndex());
 
         if (null == coreTxStatusEnum) {
             return null;
@@ -394,11 +423,11 @@ public class CoreTxRepository {
      * @param coreTxStatusEnum
      * @param row
      * @param count
-     * @param preKey
-     *          for rocks db seek
+     * @param preKey           for rocks db seek
      * @return
      */
-    public List<CoreTransactionProcessPO> queryByStatusFromMysql(CoreTxStatusEnum coreTxStatusEnum, int row, int count,String preKey) {
+    public List<CoreTransactionProcessPO> queryByStatusFromMysql(CoreTxStatusEnum coreTxStatusEnum, int row, int count,
+        String preKey) {
         return coreTransactionProcessDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
     }
 
@@ -409,7 +438,7 @@ public class CoreTxRepository {
      * @param row
      * @param count
      * @param preKey
-     *          for rocks db seek
+     * for rocks db seek
      * @return
      */
     public List<CoreTransactionPO> queryByStatusFromRocks(CoreTxStatusEnum coreTxStatusEnum, int row, int count,String preKey) {
@@ -509,7 +538,6 @@ public class CoreTxRepository {
         }
     }
 
-
     /**
      * query by status
      *
@@ -517,7 +545,7 @@ public class CoreTxRepository {
      * @param statusEnum
      * @return
      */
-    public CoreTransactionPO queryByStatus(String txId,CoreTxStatusEnum statusEnum){
+    public CoreTransactionPO queryByStatus(String txId, CoreTxStatusEnum statusEnum) {
         String key = statusEnum.getIndex() + Constant.SPLIT_SLASH + txId;
         return coreTxProcessRocksDao.get(key);
     }

@@ -29,6 +29,7 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
 
     /**
      * with transaction or no transaction
+     *
      * @param po
      */
     public void save(CoreTransactionPO po) {
@@ -69,7 +70,7 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
 
     public List<CoreTransactionPO> queryByTxIds(List<String> txIdList) {
         if (CollectionUtils.isEmpty(txIdList)) {
-           return null;
+            return null;
         }
 
         Map<String, CoreTransactionPO> resultMap = multiGet(txIdList);
@@ -101,7 +102,8 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
         txPut(tx, txId, po);
     }
 
-    public void saveExecuteResultAndHeight(String txId, String result, String respCode, String respMsg, Long blockHeight) {
+    public void saveExecuteResultAndHeight(String txId, String result, String respCode, String respMsg,
+        Long blockHeight) {
         Transaction tx = ThreadLocalUtils.getRocksTx();
         if (null == tx) {
             log.error("[CoreTxRocksDao.saveExecuteResultAndHeight] transaction is null");
@@ -119,6 +121,15 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
         po.setErrorMsg(respMsg);
         po.setBlockHeight(blockHeight);
         txPut(tx, txId, po);
+    }
+
+    public void updateWithTransaction(CoreTransactionPO po) {
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[CoreTxRocksDao.updateWithTransaction] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
+        }
+        txPut(tx, po.getTxId(), po);
     }
 
     public void batchInsert(List<CoreTransactionPO> coreTransactionPOList) {
