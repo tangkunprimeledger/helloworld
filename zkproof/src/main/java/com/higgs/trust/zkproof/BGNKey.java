@@ -19,11 +19,14 @@ public class BGNKey {
 	private BigInteger n;
 	private Field f;
 	private PropertiesParameters param;
-	static private int subSeqno = 0, subNodeNum = 0;
-	static private Element subP;
+	//static private int subSeqno = 0, subNodeNum = 0;
+	private static ThreadLocal<Integer> threadSubSeqno = new ThreadLocal<Integer>();
+	private static ThreadLocal<Integer> threadSubNodeNum = new ThreadLocal<Integer>();
+	//static private Element subP;
+	private static ThreadLocal<Element> threadSubP = new ThreadLocal<Element>();
 
-	static private int MIN_KEY_NODE_NUM = 4;
-	static private int MIN_SUB_KEY_BIT = 32;
+	static private final int MIN_KEY_NODE_NUM = 4;
+	static private final int MIN_SUB_KEY_BIT = 32;
 
 
 	public BGNKey(TypeA1Pairing pairing, Element gen, Element point,
@@ -72,13 +75,13 @@ public class BGNKey {
 			this.Q.setFromBytes(Base58.decode(pubKey.getString("Q")));
 			this.n = Base58.decodeToBigInteger(pubKey.getString("n"));
 			if(pubKey.getString("nodeNum") != null){
-				subNodeNum = Integer.valueOf(pubKey.getString("nodeNum"));
-				subSeqno = 1;
+				threadSubNodeNum.set(Integer.valueOf(pubKey.getString("nodeNum")));
+				threadSubSeqno.set(1);
 				Element newP = f.newElement();
 				Element newQ = f.newElement();
 				Element tmpP = f.newElement();
 				int seqno;
-				for (seqno = 1; seqno <= subNodeNum; seqno++){
+				for (seqno = 1; seqno <= threadSubNodeNum.get(); seqno++){
 					if (pubKey.getString("P" + String.valueOf(seqno)) == null) {
 						break;
 					}
@@ -90,7 +93,7 @@ public class BGNKey {
 						newP = newP.add(tmpP);
 					}
 				}
-				if (seqno > subNodeNum){
+				if (seqno > threadSubNodeNum.get()){
 					if (Base58.encode(P.toBytes()).compareTo(Base58.encode(newP.toBytes())) != 0
 							&& Base58.encode(Q.toBytes()).compareTo(Base58.encode(newQ.toBytes())) != 0){
 						P = newP;
@@ -172,9 +175,9 @@ public class BGNKey {
 			pubKey.put("P",Base58.encode(P.toBytes()));
 			pubKey.put("Q",Base58.encode(Q.toBytes()));
 			pubKey.put("n",Base58.encode(n.toByteArray()));
-			if (subNodeNum != 0){
-				pubKey.put("nodeNum",String.valueOf(subNodeNum));
-				pubKey.put("P"+String.valueOf(subSeqno),Base58.encode(subP.toBytes()));
+			if (threadSubNodeNum.get() != null){
+				pubKey.put("nodeNum",String.valueOf(threadSubNodeNum.get()));
+				pubKey.put("P"+String.valueOf(threadSubSeqno.get()),Base58.encode(threadSubP.get().toBytes()));
 			}
 			return  pubKey.toJSONString();
 		} catch (Exception e){
@@ -197,19 +200,20 @@ public class BGNKey {
 				&&((oldNodeNum != -1 && oldNodeNum == nodeNum) || oldNodeNum == -1)
 				&& nodeNum >= MIN_KEY_NODE_NUM
 				&& baseKey.getN().bitLength()/nodeNum/2 >= MIN_SUB_KEY_BIT){
-			subP = baseKey.getField().newElement();
+			Element subP = baseKey.getField().newElement();
 			do {
 				BigInteger r = new BigInteger(baseKey.getN().bitLength()/nodeNum/2 ,64,new Random());
 				subP.set(baseKey.getP());
 				subP = subP.mul(r);
+				threadSubP.set(subP);
 			} while (Base58.encode(subP.toBytes()).compareTo(ob.getString("P")) == 0
 					|| Base58.encode(subP.toBytes()).compareTo(ob.getString("Q")) == 0);
-			subSeqno = seqno;
-			ob.put("P"+String.valueOf(subSeqno),Base58.encode(subP.toBytes()));
-			subNodeNum = nodeNum;
+			threadSubSeqno.set(seqno);
+			ob.put("P"+String.valueOf(threadSubSeqno.get()),Base58.encode(subP.toBytes()));
+			threadSubNodeNum.set(nodeNum);
 
 			if (oldNodeNum == -1){
-				ob.put("nodeNum",String.valueOf(subNodeNum));
+				ob.put("nodeNum",String.valueOf(threadSubNodeNum.get()));
 			}
 			return ob.toJSONString();
 		}
@@ -283,9 +287,9 @@ public class BGNKey {
 			fullKey.put("P",Base58.encode(P.toBytes()));
 			fullKey.put("Q",Base58.encode(Q.toBytes()));
 			fullKey.put("n",Base58.encode(n.toByteArray()));
-			if (subNodeNum != 0){
-				fullKey.put("nodeNum",String.valueOf(subNodeNum));
-				fullKey.put("P"+String.valueOf(subSeqno),Base58.encode(subP.toBytes()));
+			if (threadSubNodeNum.get() != null){
+				fullKey.put("nodeNum",String.valueOf(threadSubNodeNum.get()));
+				fullKey.put("P"+String.valueOf(threadSubSeqno.get()),Base58.encode(threadSubP.get().toBytes()));
 			}
 			return  fullKey.toJSONString();
 		} catch (Exception e){
@@ -301,13 +305,10 @@ public class BGNKey {
 
 		}
 		return false;
-
 	}
 
 	boolean hasPubKey(){
-
 		return (P != null && Q != null && n != null && param != null);
-
 	}
 
 }
