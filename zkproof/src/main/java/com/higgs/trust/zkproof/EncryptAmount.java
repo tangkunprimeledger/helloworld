@@ -11,11 +11,13 @@ public class EncryptAmount {
     private String eb;
 
 
-    private static String keyType;
+    //private static String keyType;
+    private static ThreadLocal<String> threadKeyType = new ThreadLocal<String>();
 
     private BigInteger r;
 
-    private static HomomorphicEncryption he;
+    //private static HomomorphicEncryption he;
+    private static ThreadLocal<HomomorphicEncryption> threadHe = new ThreadLocal<HomomorphicEncryption>();
 
     private String statues;
 
@@ -54,13 +56,14 @@ public class EncryptAmount {
         this.b = b;
         this.eb = eb;
         this.r = r;
+
         if (r.bitLength() <= SAFE_RANDOM_BIT ){
             statues = STATUES.unSafeRandom.getCode();
         }
-        else if (he.tooBig(b)){
+        else if (threadHe.get().tooBig(b)){
             statues = STATUES.tooBig.getCode();
         }
-        else if (he.tooBigRandom(r)) {
+        else if (threadHe.get().tooBigRandom(r)) {
             statues = STATUES.tooBigRandom.getCode();
         }
         else{
@@ -79,40 +82,40 @@ public class EncryptAmount {
            b = BigInteger.ZERO;
            eb = Base58.encode(BigInteger.ZERO.toByteArray());
         }
-        else if (he.tooBig(b)){
+        else if (threadHe.get().tooBig(b)){
             statues = STATUES.tooBig.getCode();
             r = BigInteger.ZERO;
             b = BigInteger.ZERO;
             eb = Base58.encode(BigInteger.ZERO.toByteArray());
         }
-        else if (he.tooBigRandom(r)){
+        else if (threadHe.get().tooBigRandom(r)){
             statues = STATUES.tooBigRandom.getCode();
             r = BigInteger.ZERO;
             b = BigInteger.ZERO;
             eb = Base58.encode(BigInteger.ZERO.toByteArray());
         }
         else{
-            if (keyType.compareTo("Paillier") == 0) {
+            if (threadKeyType.get().compareTo("Paillier") == 0) {
                 b = b.multiply(SAFE_MASK).add(r);
             }
-            eb = he.Encryption(b,r);
+            eb = threadHe.get().Encryption(b,r);
             statues = STATUES.success.getCode();
         }
 
     }
 
     public static void initHomomorphicEncryption(String type, int bits){
-        keyType = type;
+        threadKeyType.set(type);
         HomomorphicEncryption heCheck;
         do {
 
-            if (keyType.compareTo("Paillier") == 0){
-                he = new Paillier(bits);
-                heCheck = new Paillier(he.exportFullKey());
+            if (threadKeyType.get().compareTo("Paillier") == 0){
+                threadHe.set(new Paillier(bits));
+                heCheck = new Paillier(threadHe.get().exportFullKey());
             }
             else{
-                he = new BGNEncryption(bits);
-                heCheck = new BGNEncryption(he.exportFullKey());
+                threadHe.set(new BGNEncryption(bits));
+                heCheck = new BGNEncryption(threadHe.get().exportFullKey());
             }
          }  while (!heCheck.hasFullKey());
     }
@@ -120,15 +123,15 @@ public class EncryptAmount {
     public static boolean setHomomorphicEncryptionKey(String key) {
 
         JSONObject keyJ = JSONObject.parseObject(key);
-        keyType = keyJ.getString("key_type");
+        threadKeyType.set(keyJ.getString("key_type"));
         if (keyJ.getString("key_type").compareTo("Paillier") == 0){
-            he = new Paillier(key);
+            threadHe.set(new Paillier(key));
         }
         else {
-            he = new BGNEncryption(key);
+            threadHe.set(new BGNEncryption(key));
         }
 
-        return (he.hasPubKey()|| he.hasFullKey());
+        return (threadHe.get().hasPubKey()|| threadHe.get().hasFullKey());
 
     }
 
@@ -140,12 +143,17 @@ public class EncryptAmount {
         return HomomorphicEncryption.MergeKey(key1, key2);
     }
 
+    public static boolean ContainKey(String fullKey, String subKey){
+        return HomomorphicEncryption.ContainKey(fullKey, subKey);
+    }
+
+
     public  static String exportPubKey(){
 
-        if (he.hasPubKey() ){
-            return he.exportPubKey();
-        } else if (he.hasFullKey()) {
-            return he.exportPubKey();
+        if (threadHe.get().hasPubKey() ){
+            return threadHe.get().exportPubKey();
+        } else if (threadHe.get().hasFullKey()) {
+            return threadHe.get().exportPubKey();
         }
 
         return  null;
@@ -153,16 +161,16 @@ public class EncryptAmount {
 
     public  static String exportFullKey(){
 
-        if (he.hasFullKey() || he.hasPubKey()){
-            return he.exportFullKey();
+        if (threadHe.get().hasFullKey() || threadHe.get().hasPubKey()){
+            return threadHe.get().exportFullKey();
         }
         return  null;
     }
 
     public static String cipherAdd(String em1, String em2){
-        if (he != null && (he.hasPubKey() || he.hasFullKey())){
+        if (threadHe.get() != null && (threadHe.get().hasPubKey() || threadHe.get().hasFullKey())){
 
-            return  he.cipherAdd(em1, em2);
+            return  threadHe.get().cipherAdd(em1, em2);
         }
         return Base58.encode(BigInteger.ZERO.toByteArray());
     }
@@ -171,18 +179,18 @@ public class EncryptAmount {
 
     public EncryptAmount add(EncryptAmount amount){
 
-        if(he.hasPubKey() || he.hasFullKey()) {
-            return new EncryptAmount(b.add(amount.b),he.cipherAdd(eb, amount.eb),r.add(amount.r));
+        if(threadHe.get().hasPubKey() || threadHe.get().hasFullKey()) {
+            return new EncryptAmount(b.add(amount.b),threadHe.get().cipherAdd(eb, amount.eb),r.add(amount.r));
         }
         return  new EncryptAmount(BigInteger.ZERO,Base58.encode(BigInteger.ZERO.toByteArray()),BigInteger.ZERO);
     }
 
     public EncryptAmount subtract(EncryptAmount amount){
 
-        if((he.hasPubKey() || he.hasFullKey()) && b.compareTo(amount.b) >= 0 && r.compareTo(amount.r) > 0
+        if((threadHe.get().hasPubKey() || threadHe.get().hasFullKey()) && b.compareTo(amount.b) >= 0 && r.compareTo(amount.r) > 0
                 && this.isAvailable() && amount.isAvailable()) {
 
-            return  new EncryptAmount(b.subtract(amount.b) , he.Encryption(b.subtract(amount.b),r.subtract(amount.r)),r.subtract(amount.r));
+            return  new EncryptAmount(b.subtract(amount.b) , threadHe.get().Encryption(b.subtract(amount.b),r.subtract(amount.r)),r.subtract(amount.r));
         }
 
         return  new EncryptAmount(BigInteger.ZERO, Base58.encode(BigInteger.ZERO.toByteArray()),BigInteger.ZERO);
@@ -198,11 +206,11 @@ public class EncryptAmount {
     }
 
     public static BigDecimal Decryption(String str){
-        if (he.hasFullKey()){
-            if (keyType.compareTo("Paillier") == 0){
-                return new BigDecimal(he.Decryption(str).divide(SAFE_MASK).toString()).divide(BigDecimal.TEN.pow(FIX_SCALE));
+        if (threadHe.get().hasFullKey()){
+            if (threadKeyType.get().compareTo("Paillier") == 0){
+                return new BigDecimal(threadHe.get().Decryption(str).divide(SAFE_MASK).toString()).divide(BigDecimal.TEN.pow(FIX_SCALE));
             } else {
-                return new BigDecimal(he.Decryption(str).toString()).divide(BigDecimal.TEN.pow(FIX_SCALE));
+                return new BigDecimal(threadHe.get().Decryption(str).toString()).divide(BigDecimal.TEN.pow(FIX_SCALE));
             }
 
         }
@@ -241,7 +249,7 @@ public class EncryptAmount {
     public String getStatues(){  return this.statues; }
 
     public static HomomorphicEncryption getHe(){
-        return he;
+        return threadHe.get();
     }
 
 }
