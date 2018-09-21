@@ -96,7 +96,7 @@ import java.util.concurrent.atomic.AtomicLong;
         }
 
         //TODO 压测分析日志
-        log.debug("pendingTxQueue.size={}", pendingTxQueue.size());
+        log.info("pendingTxQueue.size={}", pendingTxQueue.size());
         Object[] objs = new Object[2];
         int num = 0;
         List<SignedTransaction> list = new ArrayList<>();
