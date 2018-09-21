@@ -47,7 +47,7 @@ import java.util.*;
             return blockDao.getMaxHeight();
         } else {
             SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_BLOCK_HEIGHT);
-            return bo != null && !StringUtils.isEmpty(bo.getValue()) ? Long.parseLong(bo.getValue()) : null;
+            return (bo != null && !StringUtils.isEmpty(bo.getValue())) ? Long.parseLong(bo.getValue()) : null;
         }
     }
 
@@ -266,17 +266,7 @@ import java.util.*;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
             }
         } else {
-
             Profiler.enter("save max block height");
-            SystemProperty systemProperty = systemPropertyRepository.queryByKey(Constant.MAX_BLOCK_HEIGHT);
-            if (null != systemProperty && !StringUtils.isEmpty(systemProperty.getValue())) {
-                Long maxBlockHeight = Long.parseLong(systemProperty.getValue());
-                if (blockHeight.compareTo(maxBlockHeight + 1) != 0) {
-                    log.error("[saveBlock] block height is continuous, blockHeight={}, maxBlockHeight={}", blockHeight,
-                        maxBlockHeight);
-                    throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BLOCK_HEIGHT_UNEQUAL_ERROR);
-                }
-            }
             systemPropertyRepository
                 .saveWithTransaction(Constant.MAX_BLOCK_HEIGHT, String.valueOf(blockHeight), "max block height");
             Profiler.release();
