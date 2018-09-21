@@ -41,10 +41,10 @@ import java.util.List;
     @Autowired private TransactionTemplate txNested;
 
     /**
-     * 自动failover，判断状态是否为NodeStateEnum.Running
+     * 自动failover，判断状态是否为NodeStateEnum.Running  || Standby
      */
     @Scheduled(fixedDelayString = "${trust.schedule.failover:10000}") public void failover() {
-        if (!nodeState.isState(NodeStateEnum.Running)) {
+        if (!nodeState.isState(NodeStateEnum.Running, NodeStateEnum.Standby)) {
             return;
         }
         if (log.isDebugEnabled()) {
