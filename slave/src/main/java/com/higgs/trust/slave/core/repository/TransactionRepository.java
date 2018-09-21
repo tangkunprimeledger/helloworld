@@ -175,7 +175,6 @@ import java.util.*;
     }
 
     private List<TransactionReceiptPO> buildTxReceiptPO(Long blockHeight, Map<String, TransactionReceipt> txReceiptMap) {
-        Profiler.enter("build txReceiptPOs");
         List<TransactionReceiptPO> receiptPOS = new ArrayList<>();
         for (String txId : txReceiptMap.keySet()) {
             TransactionReceipt receipt = txReceiptMap.get(txId);
@@ -188,7 +187,6 @@ import java.util.*;
                 receiptPOS.add(po);
             }
         }
-        Profiler.release();
         return receiptPOS;
     }
 

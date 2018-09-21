@@ -164,7 +164,6 @@ import java.util.concurrent.locks.ReentrantLock;
      * start the snapshot transaction.Tag isOpenTransaction to be true.
      */
     @Override public void startTransaction() {
-        Profiler.enter("[Snapshot.startTransaction]");
         log.debug("Start to start snapshot transaction, and get lock for it");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -187,14 +186,13 @@ import java.util.concurrent.locks.ReentrantLock;
             lock.unlock();
         }
         log.debug("End of start snapshot transaction");
-        Profiler.release();
     }
 
     /**
      * clear packageCache and txCache
      */
     @Override public void clear() {
-        Profiler.enter("[Snapshot.destroy]");
+//        Profiler.enter("[Snapshot.destroy]");
         log.debug("Start to destroy snapshot");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -216,14 +214,14 @@ import java.util.concurrent.locks.ReentrantLock;
             lock.unlock();
         }
         log.debug("End of destroy snapshot");
-        Profiler.release();
+//        Profiler.release();
     }
 
     /**
      * clear globalCache and packageCache and txCache
      */
     @Override public void destroy() {
-        Profiler.enter("[Snapshot.destroy]");
+//        Profiler.enter("[Snapshot.destroy]");
         log.debug("Start to destroy snapshot");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -259,7 +257,7 @@ import java.util.concurrent.locks.ReentrantLock;
             lock.unlock();
         }
         log.debug("End of destroy snapshot");
-        Profiler.release();
+//        Profiler.release();
     }
 
     /**
@@ -273,7 +271,7 @@ import java.util.concurrent.locks.ReentrantLock;
      * @return
      */
     @Override public Object get(SnapshotBizKeyEnum key1, Object key2) {
-        Profiler.enter("[Snapshot.get]");
+//        Profiler.enter("[Snapshot.get]");
         try {
             log.debug("Start to get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
             //Check null
@@ -285,17 +283,14 @@ import java.util.concurrent.locks.ReentrantLock;
             }
 
             //get data from txCache
-            Profiler.enter("[Snapshot.get] get data from tx cache");
             Value value = getDataFromTxCache(key1, key2);
             if (null != value) {
                 log.debug("Get snapshotBizKeyEnum: {} , innerKey : {} , value :{} from  snapshot, it is in the txCache",
                     key1, key2, value.getObject());
                 return transferValue(value.getObject());
             }
-            Profiler.release();
 
             //get data from packageCache
-            Profiler.enter("[Snapshot.get] get data from package cache");
             value = getDataFromPackageCache(key1, key2);
             if (null != value) {
                 log.debug(
@@ -303,10 +298,8 @@ import java.util.concurrent.locks.ReentrantLock;
                     key1, key2, value.getObject());
                 return transferValue(value.getObject());
             }
-            Profiler.release();
 
             //get data from globalCache
-            Profiler.enter("[Snapshot.get] get data from global cache");
             Object object = getDataFromGlobalCache(key1, key2);
 
             log.debug("End of get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
@@ -316,8 +309,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
             return transferValue(object);
         } finally {
-            Profiler.release();
-            Profiler.release();
+//            Profiler.release();
         }
     }
 
