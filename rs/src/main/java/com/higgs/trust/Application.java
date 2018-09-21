@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -23,7 +22,6 @@ import java.util.concurrent.ScheduledExecutorService;
 @EnableTransactionManagement
 @EnableAspectJAutoProxy
 @Slf4j
-@EnableFeignClients
 public class Application {
     //异常推进任务定时器线程池
     public static final ScheduledExecutorService COMMON_THREAD_POOL = Executors

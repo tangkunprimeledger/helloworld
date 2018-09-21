@@ -29,13 +29,13 @@ import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.enums.UsageEnum;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
-import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -95,9 +95,6 @@ import java.util.*;
                 log.error("send tx error, resp = {}", respData);
                 return FAIL;
             }
-        } catch (HystrixRuntimeException e1) {
-            log.error("wait timeOut", e1);
-            return FAIL;
         } catch (Throwable e2) {
             log.error("send ca auth error", e2);
             return FAIL;
