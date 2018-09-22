@@ -8,6 +8,9 @@ import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Convetor
  *
@@ -48,6 +51,18 @@ public class UTXOConvert {
         txOutPO.setSTxId(actionData.getCurrentTransaction().getCoreTx().getTxId());
         txOutPO.setStatus(UTXOStatusEnum.SPENT.getCode());
         return txOutPO;
+    }
+
+    public static String toTxInString(List<TxIn> listTxIn){
+        Collections.sort(listTxIn,(a,b)->{
+            if(!a.getActionIndex().equals(b.getActionIndex())){
+                return a.getActionIndex() - b.getActionIndex();
+            }
+            return a.getIndex() - b.getIndex();
+        });
+        StringBuffer sb = new StringBuffer();
+        listTxIn.forEach(a->sb.append(a.toString()));
+        return sb.toString();
     }
 
 }

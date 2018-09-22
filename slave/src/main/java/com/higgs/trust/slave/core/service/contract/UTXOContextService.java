@@ -13,6 +13,7 @@ import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.Sign;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
+import com.higgs.trust.slave.model.convert.UTXOConvert;
 import com.higgs.trust.zkproof.EncryptAmount;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -59,7 +60,12 @@ public class UTXOContextService extends ContractApiService {
         return utxoSnapshotHandler.queryUTXOList(inputList);
     }
 
-    public String getCurrency(String currency){
+    /**
+     * 根据币种获取同态公钥
+     * @param currency
+     * @return
+     */
+    public String getCurrencyHomomorphicPk(String currency){
         log.info("get a homomorphic key when verify a crypto currency");
         CurrencyInfoPO currencyInfoPO =  currencyInfoDao.queryByCurrency(currency);
         if(currencyInfoPO != null){
@@ -156,6 +162,16 @@ public class UTXOContextService extends ContractApiService {
     }
 
     /**
+     * 初始发币加密
+     * @param amount
+     * @return
+     */
+    public String issueEnrypt(String amount){
+        EncryptAmount encryptAmount = new EncryptAmount(new BigDecimal(amount),EncryptAmount.FULL_RANDOM);
+        return encryptAmount.toString();
+    }
+
+    /**
      * verify UTXO Signature list
      * all the Signature is sign from the same message with different private key
      *
@@ -180,5 +196,12 @@ public class UTXOContextService extends ContractApiService {
         }
         return true;
     }
+
+    public boolean verifyTxInSignature(List<Sign> signList,List<TxIn> txInList){
+        String message = UTXOConvert.toTxInString(txInList);
+        return verifySignature(signList,message);
+    }
+
+
 }
 
