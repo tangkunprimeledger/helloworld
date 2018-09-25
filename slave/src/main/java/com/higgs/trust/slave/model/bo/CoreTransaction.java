@@ -56,7 +56,7 @@ public class CoreTransaction extends BaseBO {
     /**
      * transaction send time
      */
-    @NotBlank
+    @NotNull
     private Date sendTime;
     /**
      * the tx sender's rsId
@@ -71,6 +71,6 @@ public class CoreTransaction extends BaseBO {
     /**
      * the type of transaction
      */
-    @NotNull
+    @NotBlank
     private String txType = TxTypeEnum.DEFAULT.getCode();
 }
