@@ -230,11 +230,6 @@ import java.util.concurrent.TimeUnit;
 
     @Override
     public void processInitTx(String txId) {
-        //check by status
-        CoreTransactionPO corePO = coreTxRepository.queryByStatus(txId,CoreTxStatusEnum.INIT);
-        if(corePO == null){
-            return;
-        }
         log.debug("[processInitTx]txId:{}", txId);
         CoreTxBO bo;
         if (rsConfig.isUseMySQL()) {
@@ -242,13 +237,18 @@ import java.util.concurrent.TimeUnit;
                 @Override public CoreTxBO doInTransaction(TransactionStatus transactionStatus) {
                     CoreTransactionPO po = coreTxRepository.queryByTxId(txId, true);
                     if (null == po) {
-                        log.warn("[processInitTx]cannot acquire lock, txId={}", txId);
+                        log.debug("[processInitTx]cannot acquire lock, txId={}", txId);
                         return null;
                     }
                     return processInitTxInTransaction(po);
                 }
             });
         } else {
+            //check by status
+            CoreTransactionPO corePO = coreTxRepository.queryByStatus(txId,CoreTxStatusEnum.INIT);
+            if(corePO == null){
+                return;
+            }
             Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
             try {
                 ThreadLocalUtils.putRocksTx(tx);
