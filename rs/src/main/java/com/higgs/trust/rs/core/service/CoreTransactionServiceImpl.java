@@ -170,8 +170,6 @@ import java.util.concurrent.TimeUnit;
             log.warn("[submitTx]is idempotent txId:{}", coreTx.getTxId());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_IDEMPOTENT);
         }
-        //reset sendTime
-        coreTx.setSendTime(new Date());
         List<SignInfo> signs = Lists.newArrayList();
         if (!TxTypeEnum.isTargetType(coreTx.getTxType(), TxTypeEnum.NODE)) {
             //sign tx for self
