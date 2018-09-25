@@ -38,7 +38,7 @@ public class CoreTransactionProcessDaoTest extends IntegrateBaseTest {
     @Test
     public void updateStatus(){
         System.out.println("updateStatus  to WAIT:"+coreTransactionProcessDao.updateStatus("123", CoreTxStatusEnum.INIT.getCode(),CoreTxStatusEnum.WAIT.getCode()));
-        System.out.println("updateStatus  to END:"+coreTransactionProcessDao.updateStatus("123", CoreTxStatusEnum.WAIT.getCode(),CoreTxStatusEnum.END.getCode()));
+        System.out.println("updateStatus  to END:"+coreTransactionProcessDao.updateStatus("123", CoreTxStatusEnum.WAIT.getCode(),CoreTxStatusEnum.INIT.getCode()));
 
     }
 

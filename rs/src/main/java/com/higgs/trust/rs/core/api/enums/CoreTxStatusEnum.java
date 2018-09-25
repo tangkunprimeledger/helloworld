@@ -13,9 +13,8 @@ import java.util.List;
 public enum CoreTxStatusEnum {
     INIT("01","INIT","the init status"),
     NEED_VOTE("02","NEED_VOTE","need vote by async"),
-    WAIT("03","WAIT","wait submit to slave"),
-    PERSISTED("04","PERSISTED","slave persisted"),
-    END("05","END","the end status");
+    WAIT("03","WAIT","wait submit to slave")
+    ;
 
     private String index;
     private String code;

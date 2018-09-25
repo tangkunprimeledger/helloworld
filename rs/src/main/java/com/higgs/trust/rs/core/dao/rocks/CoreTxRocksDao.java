@@ -28,27 +28,6 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
     }
 
     /**
-     * with transaction or no transaction
-     *
-     * @param po
-     */
-    public void save(CoreTransactionPO po) {
-        String key = po.getTxId();
-        if (keyMayExist(key) && null != get(key)) {
-            log.error("[CoreTxRocksDao.save] core transaction is already exist, txId={}", key);
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
-        }
-        po.setCreateTime(new Date());
-
-        Transaction tx = ThreadLocalUtils.getRocksTx();
-        if (null == tx) {
-            put(key, po);
-        } else {
-            txPut(tx, key, po);
-        }
-    }
-
-    /**
      * db transaction
      * @param po
      */
@@ -145,32 +124,6 @@ public class CoreTxRocksDao extends RocksBaseDao<CoreTransactionPO>{
 
         for (CoreTransactionPO po : coreTransactionPOList) {
             po.setCreateTime(new Date());
-            txPut(tx, po.getTxId(), po);
-        }
-    }
-
-    public void batchUpdate(List<RsCoreTxVO> txs, Long blockHeight) {
-        if (CollectionUtils.isEmpty(txs)) {
-            return;
-        }
-
-        Transaction tx = ThreadLocalUtils.getRocksTx();
-        if (null == tx) {
-            log.error("[CoreTxRocksDao.batchUpdate] transaction is null");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
-        }
-
-        for (RsCoreTxVO vo : txs) {
-            CoreTransactionPO po = get(vo.getTxId());
-            if (null == po) {
-                log.error("[CoreTxRocksDao.batchUpdate] core transaction is not exist");
-                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_IS_NOT_EXIST);
-            }
-            po.setErrorMsg(vo.getErrorMsg());
-            po.setErrorCode(vo.getErrorCode());
-            po.setBlockHeight(blockHeight);
-            po.setExecuteResult(vo.getExecuteResult().getCode());
-            po.setUpdateTime(new Date());
             txPut(tx, po.getTxId(), po);
         }
     }

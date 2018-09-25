@@ -490,7 +490,7 @@ import java.util.stream.Collectors;
             //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             batchCallbackHandler = slaveCallbackRegistor.getSlaveBatchCallbackHandler();
             if (batchCallbackHandler == null) {
-                log.warn("[callbackRS]batchCallbackHandler is not register");
+                log.debug("[callbackRS]batchCallbackHandler is not register");
                 return;
             }
         }
