@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuyu
@@ -27,10 +27,10 @@ import java.util.List;
      * build root hash for block header
      *
      * @param packageData
-     * @param txReceipts
+     * @param txReceiptMap
      * @return
      */
-    public StateRootHash build(PackageData packageData, List<TransactionReceipt> txReceipts) {
+    public StateRootHash build(PackageData packageData, Map<String, TransactionReceipt> txReceiptMap) {
         //hash for transactions
         String txRootHash = txRootHashBuilder.buildTxs(packageData.getCurrentBlock().getSignedTxList());
         if (StringUtils.isEmpty(txRootHash)) {
@@ -38,7 +38,7 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BUILD_TX_ROOT_HASH_ERROR);
         }
         //hash for transaction execute results
-        String txReceiptHash = txRootHashBuilder.buildReceipts(txReceipts);
+        String txReceiptHash = txRootHashBuilder.buildReceipts(txReceiptMap);
         if (StringUtils.isEmpty(txReceiptHash)) {
             log.error("[SnapshotRootHash.buildHeader]the txReceiptHash is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BUILD_TX_RECEIPT_ROOT_HASH_ERROR);

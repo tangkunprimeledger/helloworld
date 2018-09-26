@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.callback;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -10,7 +11,7 @@ import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
@@ -53,8 +54,6 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
     @Autowired
     private CoreTxRepository coreTxRepository;
     @Autowired
-    private CoreTxProcessRepository coreTxProcessRepository;
-    @Autowired
     private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired
     private VoteRuleRepository voteRuleRepository;
@@ -69,8 +68,10 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
     }
 
     @Override
-    public void onPersisted(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts, BlockHeader blockHeader) {
-        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
+    public void onPersisted(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap, BlockHeader blockHeader) {
+        Profiler.enter("[rc.core.parseTxs]");
+        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceiptMap);
+        Profiler.release();
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         List<RsCoreTxVO> selfTxs = map.get(KEY_SELF);
         List<RsCoreTxVO> otherTxs = map.get(KEY_OTHER);
@@ -82,13 +83,13 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
         boolean needCallbackCustom = false;
         //sendByOther
         if (!CollectionUtils.isEmpty(otherTxs)) {
-            log.info("[onPersisted]batchInsert.coreTx coreTxProcess,blockHeight:{}", blockHeader.getHeight());
+            log.debug("[onPersisted]batchInsert.coreTx coreTxProcess,blockHeight:{}", blockHeader.getHeight());
             batchInsert(otherTxs, blockHeader.getHeight(), CoreTxStatusEnum.PERSISTED);
             needCallbackCustom = true;
         }
         //sendBySelf
         if (!CollectionUtils.isEmpty(selfTxs)) {
-            log.info("[onPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
+            log.debug("[onPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
             try {
                 batchUpdate(selfTxs, blockHeader.getHeight(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
                 needCallbackCustom = true;
@@ -104,20 +105,22 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
         }
         //callback custom rs
         if (needCallbackCustom) {
+            Profiler.enter("[rc.core.callbackCustom]");
             callbackCustom(allTxs, blockHeader, RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY, true);
+            Profiler.release();
         }
     }
 
 
     @Override
-    public void onClusterPersisted(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts, BlockHeader blockHeader) {
-        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
+    public void onClusterPersisted(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap, BlockHeader blockHeader) {
+        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceiptMap);
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         if (CollectionUtils.isEmpty(allTxs)) {
             log.warn("[onClusterPersisted]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
             return;
         }
-        log.info("[onClusterPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
+        log.debug("[onClusterPersisted]batchUpdate.coreTx,blockHeight:{}", blockHeader.getHeight());
         boolean needCallbackCustom = false;
         try {
             batchUpdate(allTxs, blockHeader.getHeight(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
@@ -142,34 +145,66 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
      */
     private void callbackCustom(List<RsCoreTxVO> allTxs, BlockHeader blockHeader, RedisMegGroupEnum redisMegGroupEnum, boolean isOnPersisted) {
         if (isOnPersisted) {
+            Profiler.enter("[rc.core.onPersisted]");
             rsCoreBatchCallbackProcessor.onPersisted(allTxs, blockHeader);
+            Profiler.release();
         } else {
             rsCoreBatchCallbackProcessor.onEnd(allTxs, blockHeader);
         }
         //sync notify
+        List<RespData<String>> respDatas = new ArrayList<>(allTxs.size());
         for (RsCoreTxVO tx : allTxs) {
             try {
-                RespData respData = new RespData();
+                RespData<String> respData = new RespData<>();
                 if (CoreTxResultEnum.SUCCESS != tx.getExecuteResult()) {
                     respData.setCode(tx.getErrorCode());
                     respData.setMsg(tx.getErrorMsg());
                 }
-                distributeCallbackNotifyService.notifySyncResult(tx.getTxId(), respData, redisMegGroupEnum);
+                respData.setData(tx.getTxId());
+                respDatas.add(respData);
             } catch (Throwable e) {
                 log.warn("[callbackCustom]sync notify rs resp data failed", e);
             }
         }
+        Profiler.enter("[rc.core.notifySyncResult]");
+        distributeCallbackNotifyService.notifySyncResult(respDatas, redisMegGroupEnum);
+        Profiler.release();
     }
 
     @Override
-    public void onFailover(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts, BlockHeader blockHeader) {
-        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceipts);
+    public void onFailover(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap, BlockHeader blockHeader) {
+        Map<String, List<RsCoreTxVO>> map = parseTxs(txs, txReceiptMap);
         List<RsCoreTxVO> allTxs = map.get(KEY_ALL);
         if (CollectionUtils.isEmpty(allTxs)) {
             log.warn("[onFailover]allTxs is empty,blockHeight:{}", blockHeader.getHeight());
         }
         log.info("[onFailover]batchInsert.coreTx,blockHeight:{}", blockHeader.getHeight());
-        batchInsert(allTxs, blockHeader.getHeight(), CoreTxStatusEnum.END);
+        if (rsConfig.isUseMySQL()) {
+            try {
+                batchInsert(allTxs, blockHeader.getHeight(), CoreTxStatusEnum.END);
+            }catch (RsCoreException e){
+                //数据库中可能还有原业务数据，当单个节点跟集群区块不一致时，
+                //需要恢复差异的数据，本节点未做完的交易可能会再failover回来.
+                if(e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT){
+                    //process for each
+                    for(RsCoreTxVO tx : allTxs) {
+                        boolean isExist = coreTxRepository.isExist(tx.getTxId());
+                        if (isExist) {
+                            CoreTransactionProcessPO processPO = coreTxRepository.queryStatusByTxId(tx.getTxId(),null);
+                            if(processPO != null){
+                                coreTxRepository.updateStatus(tx.getTxId(),CoreTxStatusEnum.formCode(processPO.getStatus()),CoreTxStatusEnum.END);
+                            }
+                        } else {
+                            coreTxRepository.add(coreTxRepository.convertTxVO(tx), tx.getSignDatas(), blockHeader.getHeight());
+                        }
+                    }
+                }else {
+                    throw e;
+                }
+            }
+        } else {
+            coreTxRepository.failoverBatchInsert(allTxs, blockHeader.getHeight());
+        }
         rsCoreBatchCallbackProcessor.onFailover(allTxs, blockHeader);
     }
 
@@ -177,10 +212,10 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
      * parse txs
      *
      * @param txs
-     * @param txReceipts
+     * @param txReceiptMap
      * @return
      */
-    private Map<String, List<RsCoreTxVO>> parseTxs(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts) {
+    private Map<String, List<RsCoreTxVO>> parseTxs(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap) {
         Map<String, List<RsCoreTxVO>> map = new HashMap<>();
         List<RsCoreTxVO> allList = new ArrayList<>();
         List<RsCoreTxVO> selfList = new ArrayList<>();
@@ -196,17 +231,17 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
             RsCoreTxVO vo = BeanConvertor.convertBean(coreTx, RsCoreTxVO.class);
             vo.setSignDatas(tx.getSignatureList());
             vo.setVersion(VersionEnum.getBizTypeEnumBycode(coreTx.getVersion()));
-            for (TransactionReceipt receipt : txReceipts) {
-                if (StringUtils.equals(receipt.getTxId(), coreTx.getTxId())) {
-                    SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
-                    if (slaveErrorEnum != null) {
-                        vo.setErrorCode(receipt.getErrorCode());
-                        vo.setErrorMsg(slaveErrorEnum.getDescription());
-                    }
-                    vo.setExecuteResult(receipt.isResult() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL);
-                    break;
+            TransactionReceipt receipt = txReceiptMap.get(coreTx.getTxId());
+
+            if (null != receipt) {
+                SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
+                if (slaveErrorEnum != null) {
+                    vo.setErrorCode(receipt.getErrorCode());
+                    vo.setErrorMsg(slaveErrorEnum.getDescription());
                 }
+                vo.setExecuteResult(receipt.isResult() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL);
             }
+
             if (!sendBySelf(coreTx.getSender())) {
                 otherList.add(vo);
             } else {
@@ -266,11 +301,7 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
      */
     private void batchInsert(List<RsCoreTxVO> txs, Long height, CoreTxStatusEnum statusEnum) {
         //insert coreTx
-        coreTxRepository.batchInsert(txs, height);
-        //when the status is end, no need to insert coreTxProcess.because they will be delete
-        if (statusEnum != CoreTxStatusEnum.END) {
-            coreTxProcessRepository.batchInsert(txs, statusEnum);
-        }
+        coreTxRepository.batchInsert(txs, height, statusEnum);
     }
 
     /**
@@ -287,6 +318,6 @@ public class SlaveBatchCallbackProcessor implements SlaveBatchCallbackHandler, I
             coreTxRepository.batchUpdate(txs, height);
         }
         //update coreTxProcess status
-        coreTxProcessRepository.batchUpdateStatus(txs, from, to);
+        coreTxRepository.batchUpdateStatus(txs, from, to, height);
     }
 }

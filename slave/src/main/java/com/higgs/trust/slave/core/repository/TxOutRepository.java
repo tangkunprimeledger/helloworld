@@ -5,16 +5,17 @@ import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.api.vo.UTXOVO;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.dao.mysql.utxo.TxOutDao;
+import com.higgs.trust.slave.dao.mysql.utxo.TxOutJDBCDao;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
-import com.higgs.trust.slave.dao.utxo.TxOutDao;
-import com.higgs.trust.slave.dao.utxo.TxOutJDBCDao;
+import com.higgs.trust.slave.dao.rocks.utxo.TxOutRocksDao;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
@@ -38,8 +39,10 @@ public class TxOutRepository {
     @Autowired
     private TxOutJDBCDao txOutJDBCDao;
 
-    @Value("${trust.utxo.display:2}")
-    private int DISPLAY;
+    @Autowired
+    private TxOutRocksDao txOutRocksDao;
+
+    @Autowired InitConfig initConfig;
 
     /**
      * query txOut by txId, index and actionIndex
@@ -50,7 +53,10 @@ public class TxOutRepository {
      * @return
      */
     public TxOutPO queryTxOut(String txId, Integer index, Integer actionIndex) {
-        return txOutDao.queryTxOut(txId, index, actionIndex);
+        if (initConfig.isUseMySQL()) {
+            return txOutDao.queryTxOut(txId, index, actionIndex);
+        }
+        return txOutRocksDao.get(txId + "_" + index + "_" + actionIndex);
     }
 
     /**
@@ -60,9 +66,13 @@ public class TxOutRepository {
      * @return
      */
     public boolean batchInsert(List<TxOutPO> txOutPOList) {
-        int affectRows = 0;
+        int affectRows;
         try {
-            affectRows = txOutJDBCDao.batchInsert(txOutPOList);
+            if (initConfig.isUseMySQL()) {
+                affectRows = txOutJDBCDao.batchInsert(txOutPOList);
+            } else {
+                affectRows = txOutRocksDao.batchInsert(txOutPOList);
+            }
         } catch (DuplicateKeyException e) {
             log.error("batch insert UTXO fail, because there is DuplicateKeyException for txOutPOList:", txOutPOList);
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_DUPLICATE_KEY_EXCEPTION.getMonitorTarget(), 1);
@@ -78,7 +88,13 @@ public class TxOutRepository {
      * @return
      */
     public boolean batchUpdate(List<TxOutPO> txOutPOList) {
-        return txOutPOList.size() == txOutJDBCDao.batchUpdate(txOutPOList);
+        int affectRows;
+        if (initConfig.isUseMySQL()) {
+            affectRows = txOutJDBCDao.batchUpdate(txOutPOList);
+        } else {
+            affectRows = txOutRocksDao.batchInsert(txOutPOList);
+        }
+        return txOutPOList.size() == affectRows;
     }
 
     public List<UTXOVO> queryTxOutByTxId(String txId) {
@@ -91,7 +107,7 @@ public class TxOutRepository {
         List<UTXOVO> utxovoList = convertPOListToVOList(list);
 
         for (UTXOVO vo : utxovoList) {
-            queryTxOutBySTxId(vo, txId, DISPLAY);
+            queryTxOutBySTxId(vo, txId, initConfig.getDISPLAY());
         }
         return utxovoList;
     }

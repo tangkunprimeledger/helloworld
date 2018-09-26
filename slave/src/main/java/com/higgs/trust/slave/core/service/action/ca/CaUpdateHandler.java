@@ -1,10 +1,9 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -25,12 +24,12 @@ import org.springframework.stereotype.Component;
 
     @Autowired CaSnapshotHandler caSnapshotHandler;
     @Autowired CaHelper caHelper;
-    @Autowired private ClusterInfo clusterInfo;
 
     @Override public void verifyParams(Action action) throws SlaveException {
         CaAction caAction = (CaAction)action;
         caHelper.verifyParams(caAction);
     }
+
     /**
      * the storage for the action
      *
@@ -40,8 +39,8 @@ import org.springframework.stereotype.Component;
         // convert action and validate it
         CaAction caAction = (CaAction)actionData.getCurrentAction();
 
-        log.info("[CaUpdateHandler.process] start to process ca update action, user={}, pubKey={}, usage={}", caAction.getUser(),
-            caAction.getPubKey(),caAction.getUsage());
+        log.info("[CaUpdateHandler.process] start to process ca update action, user={}, pubKey={}, usage={}",
+            caAction.getUser(), caAction.getPubKey(), caAction.getUsage());
 
         if (!caHelper.validate(caAction, ActionTypeEnum.CA_UPDATE)) {
             log.error("[CaUpdateHandler.process] actionData validate error, user={}, pubKey={}", caAction.getUser(),
@@ -55,7 +54,6 @@ import org.springframework.stereotype.Component;
         BeanUtils.copyProperties(caAction, ca);
         caSnapshotHandler.updateCa(ca);
 
-//        clusterInfo.refresh();
         Profiler.release();
 
         // TODO  添加refresh()方法属性集群配置信息

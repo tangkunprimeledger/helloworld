@@ -65,8 +65,6 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
      */
     @Getter @Setter private String consensusPrivateKey;
 
-
-
     /**
      * cluster name, as the prefix of cluster nodes
      */
@@ -80,7 +78,6 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
 
     @Override public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
-        this.privateKey = properties.getPrivateKey();
         this.clusterName = properties.getPrefix();
 
         registerStateListener();
@@ -172,20 +169,26 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
         boolean result = false;
         switch (from) {
             case Starting:
-                result = SelfChecking == to;
+                result = Initialize == to || Offline == to;
+                break;
+            case Initialize:
+                result = StartingConsensus == to || Offline == to;
+                break;
+            case StartingConsensus:
+                result = SelfChecking == to || Offline == to;
                 break;
             case SelfChecking:
                 result = AutoSync == to || ArtificialSync == to || Running == to || Offline == to;
                 break;
             case AutoSync:
             case ArtificialSync:
-                result = Running == to || SelfChecking == to || Offline == to;
+                result = SelfChecking == to || Running == to || Offline == to;
                 break;
             case Running:
                 result = SelfChecking == to || Offline == to;
                 break;
             case Offline:
-                result = SelfChecking == to;
+                result = SelfChecking == to||Initialize==to;
                 break;
 
         }

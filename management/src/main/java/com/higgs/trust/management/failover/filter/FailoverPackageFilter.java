@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author suimi
  * @date 2018/6/21
  */
-@Order(3) @Slf4j @Component public class FailoverPackageFilter implements CommandFilter {
+@Order(4) @Slf4j @Component public class FailoverPackageFilter implements CommandFilter {
 
     @Autowired private BlockRepository blockRepository;
 
@@ -30,14 +30,14 @@ import java.util.concurrent.atomic.AtomicLong;
     public void doFilter(ConsensusCommit<? extends AbstractConsensusCommand> commit, CommandFilterChain chain) {
         if (commit.operation() instanceof PackageCommand) {
             PackageCommand command = (PackageCommand)commit.operation();
-            Long[] packageHeight = command.getPackageHeight();
-            if (packageHeight[0] <= blockHeight.get()) {
+            long packageHeight = command.getPackageHeight();
+            if (packageHeight <= blockHeight.get()) {
                 log.warn("package command:{} rejected,current block height:{}", packageHeight, blockHeight.get());
                 commit.close();
                 return;
             } else {
                 blockHeight.set(blockRepository.getMaxHeight());
-                if (packageHeight[0] <= blockHeight.get()) {
+                if (packageHeight <= blockHeight.get()) {
                     log.warn("package command:{} rejected,current block height:{}", packageHeight, blockHeight.get());
                     commit.close();
                     return;

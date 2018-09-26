@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `core_transaction` (
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
 	`error_msg` varchar(256) DEFAULT NULL COMMENT 'tx execute error msg',
 	`send_time` datetime(3) NOT NULL COMMENT 'tx send time',
+	`tx_type` varchar(16) NOT NULL DEFAULT 'DEFAULT' COMMENT 'the type of transaction',
 	`block_height` BIGINT (20) DEFAULT '0' COMMENT 'the block height',
 	`create_time` datetime(3) NOT NULL COMMENT 'create time',
 	`update_time` datetime(3) DEFAULT NULL COMMENT 'update time',

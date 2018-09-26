@@ -15,13 +15,4 @@ public class DataIdentityRepositoryTest extends BaseTest{
         System.out.println("queryByIdentity:" + dataIdentityRepository.queryDataIdentity("12312312"));
     }
 
-    @Test
-    public void testSave() throws Exception {
-        DataIdentity dataIdentityPO = new DataIdentity();
-        dataIdentityPO.setIdentity("123wew123"+new Date());
-        dataIdentityPO.setDataOwner("wangxinlicai-rsid");
-        dataIdentityPO.setChainOwner("bitUn");
-        dataIdentityRepository.save(dataIdentityPO);
-    }
-
 }

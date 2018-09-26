@@ -26,7 +26,9 @@ import org.springframework.stereotype.Component;
 
     @Override public void run(String... args) {
         try {
-            nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
+            nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.Initialize);
+            nodeState.changeState(NodeStateEnum.Initialize, NodeStateEnum.StartingConsensus);
+            nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.SelfChecking);
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
             nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
         } catch (Exception e) {

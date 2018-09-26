@@ -1,8 +1,12 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.rs.core.bo.CoreTxBO;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+
+import java.util.List;
 
 /**
  * @author liuyu
@@ -40,10 +44,10 @@ public interface CoreTransactionService {
     void processNeedVoteTx(String txId);
 
     /**
-     * submit to slave for wait status,called by scheduler
+     * submit to slave
+     * @param boList
      */
-    void submitToSlave();
-
+    void submitToSlave(List<CoreTxBO> boList);
     /**
      * query by txId
      *

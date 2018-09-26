@@ -1,13 +1,18 @@
 package com.higgs.trust.slave.core.repository;
 
-import com.higgs.trust.slave.dao.manage.RsNodeDao;
+import com.higgs.trust.slave.common.config.InitConfig;
+import com.higgs.trust.slave.core.repository.ca.CaRepository;
+import com.higgs.trust.slave.dao.mysql.manage.RsNodeDao;
 import com.higgs.trust.slave.dao.po.manage.RsNodePO;
+import com.higgs.trust.slave.dao.rocks.manage.RsNodeRocksDao;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.manage.RegisterRS;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,13 +29,24 @@ import java.util.List;
 
     @Autowired private RsNodeDao rsNodeDao;
 
+    @Autowired private RsNodeRocksDao rsNodeRocksDao;
+
+    @Autowired private CaRepository caRepository;
+
+    @Autowired private InitConfig initConfig;
     /**
      * query all rs and public key
      *
      * @return
      */
     public List<RsNode> queryAll() {
-        List<RsNodePO> rsNodePOList = rsNodeDao.queryAll();
+        List<RsNodePO> rsNodePOList;
+        if (initConfig.isUseMySQL()) {
+            rsNodePOList = rsNodeDao.queryAll();
+        } else {
+            rsNodePOList = rsNodeRocksDao.queryAll();
+        }
+
         if (CollectionUtils.isEmpty(rsNodePOList)) {
             log.info("rs public key list is empty");
             return null;
@@ -71,30 +87,50 @@ import java.util.List;
      * @return
      */
     public RsNode queryByRsId(String rsId) {
-        RsNodePO rsNodePO = rsNodeDao.queryByRsId(rsId);
 
-        if (null == rsNodePO) {
-            return null;
+        RsNodePO rsNodePO;
+        if (initConfig.isUseMySQL()) {
+            rsNodePO = rsNodeDao.queryByRsId(rsId);
+        } else {
+            rsNodePO = rsNodeRocksDao.get(rsId);
         }
 
-        return convertRsNodePOtoRsNode(rsNodePO);
+        return null == rsNodePO ? null : convertRsNodePOtoRsNode(rsNodePO);
     }
 
     public List<RsPubKey> queryRsAndPubKey() {
-        return rsNodeDao.queryRsAndPubKey();
+        if (initConfig.isUseMySQL()) {
+            return rsNodeDao.queryRsAndPubKey();
+        }
+        return queryRsAndPubKeyFromRocks();
     }
 
-    /**
-     * save rs node
-     *
-     * @param rsNode
-     */
-    public void save(RsNode rsNode) {
-        if (null == rsNode) {
-            log.error("rs node is null");
-            return;
+    private List<RsPubKey> queryRsAndPubKeyFromRocks() {
+        List<RsNodePO> rsNodePOList = rsNodeRocksDao.queryAll();
+        if (CollectionUtils.isEmpty(rsNodePOList)) {
+            return null;
         }
-        rsNodeDao.add(convertRsNodeToRsNodePO(rsNode));
+
+        List<String> rsIds = new ArrayList<>();
+        for (RsNodePO po : rsNodePOList) {
+            if (StringUtils.equals(RsNodeStatusEnum.COMMON.getCode(), po.getStatus())) {
+                rsIds.add(po.getRsId());
+            }
+        }
+
+        List<Ca> list = caRepository.getCaListByUsers(rsIds, "biz");
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+
+        List<RsPubKey> rsPubKeys = new ArrayList<>();
+        for (Ca ca : list) {
+            RsPubKey rsPubKey = new RsPubKey();
+            rsPubKey.setPubKey(ca.getPubKey());
+            rsPubKey.setRsId(ca.getUser());
+            rsPubKeys.add(rsPubKey);
+        }
+        return rsPubKeys;
     }
 
     public RsNode convertActionToRsNode(RegisterRS registerRS) {
@@ -123,10 +159,16 @@ import java.util.List;
     }
 
     public int batchUpdate(List<RsNodePO> rsNodePOList) {
-        return rsNodeDao.batchUpdate(rsNodePOList);
+        if (initConfig.isUseMySQL()) {
+            return rsNodeDao.batchUpdate(rsNodePOList);
+        }
+        return rsNodeRocksDao.batchUpdate(rsNodePOList);
     }
 
     public int batchInsert(List<RsNodePO> rsNodePOList) {
-        return rsNodeDao.batchInsert(rsNodePOList);
+        if (initConfig.isUseMySQL()) {
+            return rsNodeDao.batchInsert(rsNodePOList);
+        }
+        return rsNodeRocksDao.batchInsert(rsNodePOList);
     }
 }

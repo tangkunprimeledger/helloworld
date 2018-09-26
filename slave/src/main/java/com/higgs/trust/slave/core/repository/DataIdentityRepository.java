@@ -1,11 +1,13 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.dao.dataIdentity.DataIdentityDao;
-import com.higgs.trust.slave.dao.dataIdentity.DataIdentityJDBCDao;
+import com.higgs.trust.slave.dao.mysql.dataIdentity.DataIdentityDao;
+import com.higgs.trust.slave.dao.mysql.dataIdentity.DataIdentityJDBCDao;
 import com.higgs.trust.slave.dao.po.DataIdentityPO;
+import com.higgs.trust.slave.dao.rocks.dataidentity.DataIdentityRocksDao;
 import com.higgs.trust.slave.model.bo.DataIdentity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -28,7 +30,13 @@ public class DataIdentityRepository {
     private DataIdentityDao dataIdentityDao;
 
     @Autowired
+    private DataIdentityRocksDao dataIdentityRocksDao;
+
+    @Autowired
     private DataIdentityJDBCDao dataIdentityJDBCDao;
+
+    @Autowired
+    private InitConfig initConfig;
 
     /**
      * query identity data by identity
@@ -37,25 +45,14 @@ public class DataIdentityRepository {
      * @return
      */
     public DataIdentity queryDataIdentity(String identity) {
-        DataIdentityPO identityPO = dataIdentityDao.queryByIdentity(identity);
+        DataIdentityPO identityPO;
+        if (initConfig.isUseMySQL()) {
+            identityPO = dataIdentityDao.queryByIdentity(identity);
+        } else {
+            identityPO = dataIdentityRocksDao.get(identity);
+        }
         return BeanConvertor.convertBean(identityPO, DataIdentity.class);
     }
-
-    /**
-     * save data identity
-     *
-     * @param dataIdentity
-     */
-    public void save(DataIdentity dataIdentity) {
-        DataIdentityPO dataIdentityPO = BeanConvertor.convertBean(dataIdentity, DataIdentityPO.class);
-        try {
-            dataIdentityDao.add(dataIdentityPO);
-        } catch (DuplicateKeyException e) {
-            log.error("Insert dataIdentityPO fail, because there is DuplicateKeyException for dataidentity:", dataIdentityPO);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
-        }
-    }
-
 
     /**
      * batch insert data identity
@@ -69,7 +66,10 @@ public class DataIdentityRepository {
         }
         List<DataIdentityPO> dataIdentityPOList = BeanConvertor.convertList(dataIdentityList,DataIdentityPO.class);
         try {
-          return  dataIdentityPOList.size() == dataIdentityJDBCDao.batchInsert(dataIdentityPOList);
+            if (initConfig.isUseMySQL()) {
+                return dataIdentityPOList.size() == dataIdentityJDBCDao.batchInsert(dataIdentityPOList);
+            }
+            return dataIdentityList.size() == dataIdentityRocksDao.batchInsert(dataIdentityPOList);
         } catch (DuplicateKeyException e) {
             log.error("bachInsert dataIdentity fail, because there is DuplicateKeyException for dataIdentityPOList:", dataIdentityPOList);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
@@ -84,9 +84,6 @@ public class DataIdentityRepository {
      */
     public boolean isExist(String identity) {
         DataIdentity dataIdentity = queryDataIdentity(identity);
-        if (null == dataIdentity) {
-            return false;
-        }
-        return true;
+        return dataIdentity != null;
     }
 }

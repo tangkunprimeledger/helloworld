@@ -3,11 +3,15 @@ package com.higgs.trust.slave.core.service.datahandler.node;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.service.snapshot.agent.CaSnapshotAgent;
+import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.dao.po.config.ClusterConfigPO;
 import com.higgs.trust.slave.dao.po.config.ClusterNodePO;
+import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,9 +31,7 @@ import org.springframework.stereotype.Service;
         if (log.isDebugEnabled()) {
             log.debug("[nodeJoin] start to update clusterNodeInfo, clusterNode={}", JSON.toJSONString(clusterNode));
         }
-
         ClusterNodePO clusterNodeCache = caSnapshotAgent.getClusterNode(clusterNode.getNodeName());
-
         if (null == clusterNodeCache) {
             caSnapshotAgent.saveClusterNode(clusterNode);
         } else {
@@ -49,6 +51,15 @@ import org.springframework.stereotype.Service;
             caSnapshotAgent.updateClusterConfig(clusterConfig);
         }
 
+        // update ca valid for consensus layer
+        CaPO caPO = caSnapshotAgent.getCa(clusterNode.getNodeName(), UsageEnum.CONSENSUS.getCode());
+        Ca ca = new Ca();
+        BeanUtils.copyProperties(caPO, ca);
+        ca.setValid(true);
+        if (log.isDebugEnabled()) {
+            log.debug("[nodeJoin] start to update ca, ca={}", JSON.toJSONString(ca));
+        }
+        caSnapshotAgent.updateCa(ca);
     }
 
     @Override public void nodeLeave(ClusterNode clusterNode) {
@@ -79,6 +90,16 @@ import org.springframework.stereotype.Service;
                     JSON.toJSONString(clusterConfig));
             }
             caSnapshotAgent.updateClusterConfig(clusterConfig);
+
+            CaPO caPO = caSnapshotAgent.getCa(clusterNode.getNodeName(), UsageEnum.CONSENSUS.getCode());
+            caPO.setValid(false);
+            Ca ca = new Ca();
+            BeanUtils.copyProperties(caPO, ca);
+            if (log.isDebugEnabled()) {
+                log.debug("[nodeLeave] start to update ca for cosensus, ca={}", JSON.toJSONString(ca));
+            }
+            caSnapshotAgent.updateCa(ca);
+
         }
 
     }

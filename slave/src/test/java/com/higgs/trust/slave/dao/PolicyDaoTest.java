@@ -3,7 +3,7 @@ package com.higgs.trust.slave.dao;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
-import com.higgs.trust.slave.dao.manage.PolicyDao;
+import com.higgs.trust.slave.dao.mysql.manage.PolicyDao;
 import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -5,9 +5,11 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.Profiler;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.SlaveBatchCallbackHandler;
@@ -15,10 +17,15 @@ import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.api.vo.RespData;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.repository.*;
+import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.core.repository.PendingTxRepository;
+import com.higgs.trust.slave.core.repository.RsNodeRepository;
+import com.higgs.trust.slave.core.repository.TransactionRepository;
+import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandler;
@@ -26,6 +33,7 @@ import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.transaction.TransactionExecutor;
 import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
@@ -35,6 +43,8 @@ import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -51,6 +61,7 @@ import java.util.stream.Collectors;
 @Service @Slf4j public class PackageServiceImpl implements PackageService {
     @Autowired private TransactionTemplate txRequired;
     @Autowired private PackageRepository packageRepository;
+    @Autowired private SystemPropertyRepository systemPropertyRepository;
     @Autowired private BlockService blockService;
     @Autowired private LogReplicateHandler logReplicateHandler;
     @Autowired private TransactionExecutor transactionExecutor;
@@ -61,6 +72,7 @@ import java.util.stream.Collectors;
     @Autowired private RsNodeRepository rsNodeRepository;
     @Autowired private PendingTxRepository pendingTxRepository;
     @Autowired private NodeState nodeState;
+    @Autowired private InitConfig initConfig;
 
     /**
      * create new package from pending transactions
@@ -94,18 +106,13 @@ import java.util.stream.Collectors;
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
         //set status = INIT
-        pack.setStatus(PackageStatusEnum.INIT);
+        pack.setStatus(PackageStatusEnum.RECEIVED);
         return pack;
     }
 
-    @Override public void submitConsensus(List<Package> packs) {
 
-        List<PackageVO> voList = new LinkedList<>();
-        for (Package pack : packs) {
-            voList.add(PackageConvert.convertPackToPackVO(pack));
-        }
-
-        logReplicateHandler.replicatePackage(voList);
+    @Override public void submitConsensus(PackageCommand command) {
+        logReplicateHandler.replicatePackage(command);
     }
 
     /**
@@ -145,14 +152,30 @@ import java.util.stream.Collectors;
                 return;
             }
         }
-        txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                pack.setStatus(PackageStatusEnum.RECEIVED);
+        pack.setStatus(PackageStatusEnum.RECEIVED);
+        if (initConfig.isUseMySQL()) {
+            txRequired.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    packageRepository.save(pack);
+                    //save pendingTx to db
+                    pendingTxRepository.batchInsert(pack.getSignedTxList(), PendingTxStatusEnum.PACKAGED, pack.getHeight());
+                }
+            });
+        } else {
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            try {
+                ThreadLocalUtils.putRocksTx(tx);
+
                 packageRepository.save(pack);
-                //save pendingTx to db
-                pendingTxRepository.batchInsert(pack.getSignedTxList(), PendingTxStatusEnum.PACKAGED, pack.getHeight());
+                pendingTxRepository.batchInsertToRocks(pack.getSignedTxList(), pack.getHeight());
+
+                systemPropertyRepository.saveWithTransaction(Constant.MAX_PACK_HEIGHT, String.valueOf(pack.getHeight()), "max package height");
+                RocksUtils.txCommit(tx);
+            } finally {
+                ThreadLocalUtils.clearRocksTx();
             }
-        });
+        }
+        log.info("receive package from consensus finish, pack height: {}", pack.getHeight());
     }
 
     /**
@@ -195,9 +218,11 @@ import java.util.stream.Collectors;
     private void preparePackContext(PackContext packContext) {
         //set rsId and public key map
         List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
-        if (!CollectionUtils.isEmpty(rsPubKeyList)) {
+        if (CollectionUtils.isNotEmpty(rsPubKeyList)) {
             packContext.setRsPubKeyMap(
                 rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
+        }else{
+            packContext.setRsPubKeyMap(Collections.emptyMap());
         }
     }
 
@@ -227,12 +252,12 @@ import java.util.stream.Collectors;
 
             Profiler.enter("[execute txs]");
             //persist all transactions
-            List<TransactionReceipt> txReceipts = executeTransactions(packContext);
+            Map<String, TransactionReceipt> txReceiptMap = executeTransactions(packContext);
             Profiler.release();
 
             Profiler.enter("[build block header]");
             //build a new block hash from db datas
-            BlockHeader dbHeader = blockService.buildHeader(packContext, txReceipts);
+            BlockHeader dbHeader = blockService.buildHeader(packContext, txReceiptMap);
             Profiler.release();
 
             //build block and save to context
@@ -245,12 +270,12 @@ import java.util.stream.Collectors;
 
             //persist block
             Profiler.enter("[block flush]");
-            blockService.persistBlock(block, txReceipts);
+            blockService.persistBlock(block, txReceiptMap);
             Profiler.release();
 
             //call back business
             Profiler.enter("[callbackRS]");
-            callbackRS(block.getSignedTxList(), txReceipts, false, isFailover, dbHeader);
+            callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
@@ -292,13 +317,13 @@ import java.util.stream.Collectors;
      * @param packageData
      * @return
      */
-    private List<TransactionReceipt> executeTransactions(PackageData packageData) {
+    private Map<String, TransactionReceipt> executeTransactions(PackageData packageData) {
         List<SignedTransaction> txs = packageData.getCurrentPackage().getSignedTxList();
         Profiler.enter("[queryTxIds]");
         List<String> dbTxs = transactionRepository.queryTxIds(txs);
         Profiler.release();
         List<SignedTransaction> persistedDatas = new ArrayList<>();
-        List<TransactionReceipt> txReceipts = new ArrayList<>(txs.size());
+        Map<String, TransactionReceipt> txReceipts = new HashMap<>(txs.size());
         //loop validate each transaction
         for (SignedTransaction tx : txs) {
             String title = new StringBuffer("[execute tx ").append(tx.getCoreTx().getTxId()).append("]").toString();
@@ -314,7 +339,7 @@ import java.util.stream.Collectors;
                 TransactionReceipt receipt =
                     transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
                 persistedDatas.add(tx);
-                txReceipts.add(receipt);
+                txReceipts.put(receipt.getTxId(), receipt);
             } finally {
                 Profiler.release();
             }
@@ -391,14 +416,31 @@ import java.util.stream.Collectors;
                         }
                     });
                 }
-                List<TransactionReceipt> txReceipts = transactionRepository.queryTxReceipts(txs);
+                Map<String, TransactionReceipt> txReceiptMap = transactionRepository.queryTxReceiptMap(txs);
                 Profiler.release();
 
-                txRequired.execute(new TransactionCallbackWithoutResult() {
-                    @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                        //call back business
+                if (initConfig.isUseMySQL()) {
+                    txRequired.execute(new TransactionCallbackWithoutResult() {
+                        @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                            //call back business
+                            Profiler.enter("[callbackRSForClusterPersisted]");
+                            callbackRS(txs, txReceiptMap, true, false, blockHeader);
+                            Profiler.release();
+
+                            //update package status ---- PERSISTED
+                            Profiler.enter("[updatePackStatus]");
+                            packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
+                                PackageStatusEnum.PERSISTED);
+                            Profiler.release();
+                        }
+                    });
+                } else {
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    try {
+                        ThreadLocalUtils.putRocksTx(tx);
+
                         Profiler.enter("[callbackRSForClusterPersisted]");
-                        callbackRS(txs, txReceipts, true, false, blockHeader);
+                        callbackRS(txs, txReceiptMap, true, false, blockHeader);
                         Profiler.release();
 
                         //update package status ---- PERSISTED
@@ -406,8 +448,12 @@ import java.util.stream.Collectors;
                         packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
                             PackageStatusEnum.PERSISTED);
                         Profiler.release();
+
+                        RocksUtils.txCommit(tx);
+                    } finally {
+                        ThreadLocalUtils.clearRocksTx();;
                     }
-                });
+                }
             } catch (SlaveException e) {
                 throw e;
             } catch (Throwable e) {
@@ -425,8 +471,12 @@ import java.util.stream.Collectors;
     /**
      * call back business
      */
-    private void callbackRS(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,
+    private void callbackRS(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap,
         boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
+        //TODO:liuyu
+        if(initConfig.isMockRS()){
+            return;
+        }
         if (log.isDebugEnabled()) {
             log.debug("[callbackRS]isClusterPersisted:{}", isClusterPersisted);
         }
@@ -437,7 +487,6 @@ import java.util.stream.Collectors;
         SlaveCallbackHandler callbackHandler = slaveCallbackRegistor.getSlaveCallbackHandler();
         SlaveBatchCallbackHandler batchCallbackHandler = null;
         if (callbackHandler == null) {
-            log.warn("[callbackRS]callbackHandler is not register");
             //throw new SlaveException(SlaveErrorEnum.SLAVE_RS_CALLBACK_NOT_REGISTER_ERROR);
             batchCallbackHandler = slaveCallbackRegistor.getSlaveBatchCallbackHandler();
             if (batchCallbackHandler == null) {
@@ -451,7 +500,7 @@ import java.util.stream.Collectors;
                 if (log.isDebugEnabled()) {
                     log.debug("[callbackRS]start fail-over batch rs height:{}", blockHeader.getHeight());
                 }
-                batchCallbackHandler.onFailover(txs, txReceipts, blockHeader);
+                batchCallbackHandler.onFailover(txs, txReceiptMap, blockHeader);
                 return;
             }
             //callback business
@@ -459,9 +508,9 @@ import java.util.stream.Collectors;
                 log.info("[callbackRS]start batchCallback rs height:{}", blockHeader.getHeight());
             }
             if (isClusterPersisted) {
-                batchCallbackHandler.onClusterPersisted(txs, txReceipts, blockHeader);
+                batchCallbackHandler.onClusterPersisted(txs, txReceiptMap, blockHeader);
             } else {
-                batchCallbackHandler.onPersisted(txs, txReceipts, blockHeader);
+                batchCallbackHandler.onPersisted(txs, txReceiptMap, blockHeader);
             }
             if (log.isDebugEnabled()) {
                 log.info("[callbackRS]end batchCallback rs height:{}", blockHeader.getHeight());
@@ -474,16 +523,15 @@ import java.util.stream.Collectors;
             RespData<CoreTransaction> respData = new RespData<>();
             respData.setData(tx.getCoreTx());
             //make resp code and msg for fail tx
-            for (TransactionReceipt receipt : txReceipts) {
-                if (StringUtils.equals(receipt.getTxId(), txId) && !receipt.isResult()) {
-                    respData.setCode(receipt.getErrorCode());
-                    SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
-                    if (slaveErrorEnum != null) {
-                        respData.setMsg(slaveErrorEnum.getDescription());
-                    }
-                    break;
+            TransactionReceipt receipt = txReceiptMap.get(txId);
+            if (null != receipt && !receipt.isResult()) {
+                respData.setCode(receipt.getErrorCode());
+                SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
+                if (slaveErrorEnum != null) {
+                    respData.setMsg(slaveErrorEnum.getDescription());
                 }
             }
+
             if (isFailover) {
                 if (log.isDebugEnabled()) {
                     log.debug("[callbackRS]start fail over rs txId:{}", txId);
@@ -493,7 +541,7 @@ import java.util.stream.Collectors;
             }
             //callback business
             if (log.isDebugEnabled()) {
-                log.info("[callbackRS]start callback rs txId:{}", txId);
+                log.debug("[callbackRS]start callback rs txId:{}", txId);
             }
             if (isClusterPersisted) {
                 callbackHandler.onClusterPersisted(respData, tx.getSignatureList(), blockHeader);
@@ -501,7 +549,7 @@ import java.util.stream.Collectors;
                 callbackHandler.onPersisted(respData, tx.getSignatureList(), blockHeader);
             }
             if (log.isDebugEnabled()) {
-                log.info("[callbackRS]end callback rs txId:{}", txId);
+                log.debug("[callbackRS]end callback rs txId:{}", txId);
             }
         }
     }
@@ -542,16 +590,5 @@ import java.util.stream.Collectors;
             return "";
         }
         return data;
-    }
-
-    /**
-     * package status change function
-     *
-     * @param pack
-     * @param from
-     * @param to
-     */
-    @Override public void statusChange(Package pack, PackageStatusEnum from, PackageStatusEnum to) {
-        packageRepository.updateStatus(pack.getHeight(), from, to);
     }
 }

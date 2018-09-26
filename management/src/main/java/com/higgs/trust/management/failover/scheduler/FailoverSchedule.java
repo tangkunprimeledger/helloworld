@@ -1,13 +1,16 @@
 package com.higgs.trust.management.failover.scheduler;
 
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.management.failover.service.BlockSyncService;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
@@ -19,6 +22,8 @@ import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -39,6 +44,7 @@ import java.util.List;
     @Autowired private NodeState nodeState;
     @Autowired private FailoverProperties properties;
     @Autowired private TransactionTemplate txNested;
+    @Autowired private InitConfig initConfig;
 
     /**
      * 自动failover，判断状态是否为NodeStateEnum.Running
@@ -106,11 +112,8 @@ import java.util.List;
             return false;
         }
         Block finalBlock = block;
-        txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-                failoverBlock(finalBlock);
-            }
-        });
+        failoverBlock(finalBlock);
+
         return true;
     }
 
@@ -121,13 +124,16 @@ import java.util.List;
      * @return
      */
     private boolean needFailover(long height) {
-        Long minHeight =
-            packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode()));
-        if (minHeight == null) {
+        Long maxHeight = packageRepository.getMaxHeight();
+        if (maxHeight == null || height > maxHeight.longValue()) {
             return false;
         }
+
         Package pack = packageRepository.load(height);
-        if (pack == null || pack.getStatus() == PackageStatusEnum.FAILOVER) {
+        if (pack != null && pack.getStatus() == PackageStatusEnum.FAILOVER) {
+            return true;
+        }
+        if (height < maxHeight.longValue() && pack == null) {
             return true;
         }
 
@@ -144,10 +150,8 @@ import java.util.List;
         if (log.isDebugEnabled()) {
             log.debug("check and instert package:{} for failover", height);
         }
-        Long minHeight =
-            packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode()));
-        Long maxHeight = blockService.getMaxHeight();
-        if (minHeight == null || height <= maxHeight) {
+        Long maxPackHeight = packageRepository.getMaxHeight();
+        if (maxPackHeight == null || height > maxPackHeight.longValue()) {
             return false;
         }
         Package pack = packageRepository.load(height);
@@ -173,7 +177,18 @@ import java.util.List;
         pack.setHeight(height);
         pack.setStatus(PackageStatusEnum.FAILOVER);
         try {
-            packageRepository.save(pack);
+            if (!initConfig.isUseMySQL()) {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                try {
+                    ThreadLocalUtils.putRocksTx(tx);
+                    packageRepository.save(pack);
+                    RocksUtils.txCommit(tx);
+                } finally {
+                    ThreadLocalUtils.clearRocksTx();
+                }
+            } else {
+                packageRepository.save(pack);
+            }
         } catch (Exception e) {
             log.warn("insert failover package failed.", e);
             return false;
@@ -196,10 +211,21 @@ import java.util.List;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+        if (initConfig.isUseMySQL()) {
+            txNested.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    packageService.process(packContext, true, false);
+                }
+            });
+        } else {
+            try {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
                 packageService.process(packContext, true, false);
+                RocksUtils.txCommit(tx);
+            } finally {
+                ThreadLocalUtils.clearRocksTx();
             }
-        });
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.higgs.trust.rs.core.repository;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.dao.VoteRuleJDBCDao;
+import com.higgs.trust.rs.core.dao.rocks.VoteRuleRocksDao;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.dao.VoteRuleDao;
@@ -26,6 +27,7 @@ import java.util.List;
 @Slf4j @Repository public class VoteRuleRepository {
     @Autowired private RsConfig rsConfig;
     @Autowired private VoteRuleDao voteRuleDao;
+    @Autowired private VoteRuleRocksDao voteRuleRocksDao;
     @Autowired private VoteRuleJDBCDao voteRuleJDBCDao;
 
     /**
@@ -34,20 +36,19 @@ import java.util.List;
      * @param voteRule
      */
     public void add(VoteRule voteRule) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return;
-        }
         VoteRulePO voteRulePO = new VoteRulePO();
         voteRulePO.setPolicyId(voteRule.getPolicyId());
         voteRulePO.setVotePattern(voteRule.getVotePattern().getCode());
         voteRulePO.setCallbackType(voteRule.getCallbackType().getCode());
-        voteRulePO.setCreateTime(new Date());
-        try {
-            voteRuleDao.add(voteRulePO);
-        } catch (DuplicateKeyException e) {
-            log.error("[add.vote-rule] is idempotent by policyId:{}", voteRule.getPolicyId());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        if (rsConfig.isUseMySQL()) {
+            try {
+                voteRuleDao.add(voteRulePO);
+            } catch (DuplicateKeyException e) {
+                log.error("[add.vote-rule] is idempotent by policyId:{}", voteRule.getPolicyId());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+            }
+        } else {
+            voteRuleRocksDao.saveWithTransaction(voteRulePO);
         }
     }
 
@@ -58,11 +59,13 @@ import java.util.List;
      * @return
      */
     public VoteRule queryByPolicyId(String policyId) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return null;
+        VoteRulePO voteRulePO;
+        if (rsConfig.isUseMySQL()) {
+            voteRulePO = voteRuleDao.queryByPolicyId(policyId);
+        } else {
+            voteRulePO = voteRuleRocksDao.get(policyId);
         }
-        VoteRulePO voteRulePO = voteRuleDao.queryByPolicyId(policyId);
+
         if (voteRulePO == null) {
             return null;
         }
@@ -79,21 +82,20 @@ import java.util.List;
      * @param voteRules
      */
     public void batchInsert(List<VoteRule> voteRules) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return;
-        }
         List<VoteRulePO> voteRulePOs = new ArrayList<>(voteRules.size());
         for(VoteRule voteRule : voteRules){
             VoteRulePO voteRulePO = new VoteRulePO();
             voteRulePO.setPolicyId(voteRule.getPolicyId());
             voteRulePO.setVotePattern(voteRule.getVotePattern().getCode());
             voteRulePO.setCallbackType(voteRule.getCallbackType().getCode());
-            voteRulePO.setCreateTime(new Date());
             voteRulePOs.add(voteRulePO);
         }
         try {
-            voteRuleJDBCDao.batchInsert(voteRulePOs);
+            if (rsConfig.isUseMySQL()) {
+                voteRuleJDBCDao.batchInsert(voteRulePOs);
+            } else {
+                voteRuleRocksDao.batchInsert(voteRulePOs);
+            }
         } catch (DuplicateKeyException e) {
             log.error("[add.vote-rule] is idempotent");
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);

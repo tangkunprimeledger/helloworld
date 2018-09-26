@@ -1,6 +1,7 @@
 package com.higgs.trust.contract.rhino.types;
 
 import com.higgs.trust.contract.rhino.function.MathFuncs;
+import com.higgs.trust.contract.rhino.function.MathNativeFunction;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -63,7 +64,7 @@ public class BigDecimalWrap {
      * @return
      */
     public boolean eq(Object x) {
-        BigDecimal bigDecimal = MathFuncs.getBigDecimal(x);
+        BigDecimal bigDecimal = MathNativeFunction.toBigDecimal(x);
         return rawBigDecimal.compareTo(bigDecimal) == 0;
     }
 
@@ -73,7 +74,7 @@ public class BigDecimalWrap {
      * @return
      */
     public boolean gt(Object x) {
-        BigDecimal bigDecimal = MathFuncs.getBigDecimal(x);
+        BigDecimal bigDecimal = MathNativeFunction.toBigDecimal(x);
         return rawBigDecimal.compareTo(bigDecimal) > 0;
     }
 
@@ -83,7 +84,7 @@ public class BigDecimalWrap {
      * @return
      */
     public boolean gte(Object x) {
-        BigDecimal bigDecimal = MathFuncs.getBigDecimal(x);
+        BigDecimal bigDecimal = MathNativeFunction.toBigDecimal(x);
         return rawBigDecimal.compareTo(bigDecimal) >= 0;
     }
 
@@ -93,7 +94,7 @@ public class BigDecimalWrap {
      * @return
      */
     public boolean lt(Object x) {
-        BigDecimal bigDecimal = MathFuncs.getBigDecimal(x);
+        BigDecimal bigDecimal = MathNativeFunction.toBigDecimal(x);
         return rawBigDecimal.compareTo(bigDecimal) < 0;
     }
 
@@ -103,8 +104,12 @@ public class BigDecimalWrap {
      * @return
      */
     public boolean lte(Object x) {
-        BigDecimal bigDecimal = MathFuncs.getBigDecimal(x);
+        BigDecimal bigDecimal = MathNativeFunction.toBigDecimal(x);
         return rawBigDecimal.compareTo(bigDecimal) <= 0;
+    }
+
+    public BigDecimal getRawBigDecimal() {
+        return rawBigDecimal;
     }
 
     @Override

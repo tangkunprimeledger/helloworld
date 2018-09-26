@@ -6,15 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component @ConfigurationProperties(prefix = "higgs.trust.failover") @Getter @Setter public class FailoverProperties {
-    /**
-     * the threshold of package cache
-     */
-    private int threshold = 100;
-
-    /**
-     * the package size of keep  when package cache overstep of threshold
-     */
-    private int keepSize = 10;
 
     /**
      * the size of blockheader which get from other node

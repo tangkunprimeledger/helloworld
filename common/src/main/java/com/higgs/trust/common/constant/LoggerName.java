@@ -11,6 +11,11 @@ public class LoggerName {
     public static final String SERVICE_DIGEST_LOGGER = "SERVICE-DIGEST";
 
     /**
+     * dao 日志名
+     */
+    public static final String DAO_DIGEST_LOGGER = "DAO-DIGEST";
+
+    /**
      * 性能日志名
      */
     public static final String PERF_LOGGER = "PERF";

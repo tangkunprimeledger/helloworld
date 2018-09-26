@@ -1,7 +1,8 @@
 package com.higgs.trust.consensus.p2pvalid.core.service;
 
 import com.higgs.trust.config.crypto.CryptoUtil;
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Component @Slf4j public class P2PSendService {
 
     @Autowired private NodeState nodeState;
-    @Autowired private ClusterInfo clusterInfo;
+    @Autowired protected IClusterViewManager viewManager;
     @Autowired private P2pConsensusClient p2pConsensusClient;
     @Autowired private ThreadPoolTaskExecutor p2pSendExecutor;
     @Value("${p2p.send.retryNum:3}") int retryNum;
@@ -40,11 +41,14 @@ import org.springframework.stereotype.Component;
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(validCommand.getClass());
         validCommandWrap.setFromNode(nodeState.getNodeName());
-        validCommandWrap.setSign(
-            CryptoUtil.getProtocolCrypto().sign(validCommand.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
+        validCommandWrap.setSign(CryptoUtil.getProtocolCrypto()
+            .sign(validCommand.getMessageDigestHash(), nodeState.getConsensusPrivateKey()));
         validCommandWrap.setValidCommand(validCommand);
-
-        clusterInfo.clusterNodeNames().forEach((toNodeName) -> {
+        ClusterView view = viewManager.getView(validCommand.getView());
+        if (view == null) {
+            throw new RuntimeException(String.format("the view %d not exist", validCommand.getView()));
+        }
+        view.getNodeNames().forEach((toNodeName) -> {
             p2pSendExecutor.execute(() -> {
                 execute(toNodeName, validCommandWrap);
             });

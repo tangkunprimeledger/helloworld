@@ -17,7 +17,7 @@ public class StringValidCommand extends ValidCommand<String> {
     }
 
     public StringValidCommand(String load) {
-        super(load);
+        super(load, -1);
     }
 
     @Override

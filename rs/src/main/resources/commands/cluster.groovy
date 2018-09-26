@@ -33,4 +33,13 @@ class cluster {
         def result = nodeService.leaveConsensus()
         out.println("leave consensus layer result= $result")
     }
+
+    @Usage('join consensus request layer')
+    @Command
+    def joinRequest(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def nodeService = beans.getBean(NodeConsensusService.class)
+        def result = nodeService.joinRequest()
+        out.println("join request result= $result")
+    }
 }

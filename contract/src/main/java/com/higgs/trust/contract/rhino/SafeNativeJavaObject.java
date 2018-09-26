@@ -1,9 +1,12 @@
 package com.higgs.trust.contract.rhino;
 
 import com.higgs.trust.contract.ExecuteConfig;
+import com.higgs.trust.contract.rhino.types.BigDecimalWrap;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +36,14 @@ public class SafeNativeJavaObject extends NativeJavaObject {
         Object val = unwrap();
         if (val instanceof Map) {
             Map mapVal = (Map) val;
-            return mapVal.containsKey(name) ? mapVal.get(name) : super.get(name, start);
+            Object result = mapVal.containsKey(name) ? mapVal.get(name) : super.get(name, start);
+            if (result instanceof BigDecimal) {
+                return new BigDecimalWrap((BigDecimal) result);
+            }
+            if (result instanceof BigInteger) {
+                return new BigDecimalWrap((BigInteger) result);
+            }
+            return result;
         }
 
         return super.get(name, start);
@@ -43,7 +53,7 @@ public class SafeNativeJavaObject extends NativeJavaObject {
     public Object get(final int index, final Scriptable start) {
         Object obj = unwrap();
         if (obj instanceof List) {
-            return  ((List) obj).get(index);
+            return ((List) obj).get(index);
         }
         return super.get(index, start);
     }
@@ -51,8 +61,13 @@ public class SafeNativeJavaObject extends NativeJavaObject {
     @Override
     public Object getDefaultValue(Class<?> hint) {
         if (javaObject instanceof Number) {
-            return ((Number)javaObject).doubleValue();
+            return ((Number) javaObject).doubleValue();
         }
         return super.getDefaultValue(hint);
+    }
+
+    @Override
+    public String toString() {
+        return javaObject.toString();
     }
 }

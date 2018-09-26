@@ -6,8 +6,8 @@ import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfi
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.server.Server;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
-import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
+import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +30,9 @@ import java.util.concurrent.TimeUnit;
 
     @Value("${bftSmart.systemConfigs.configs.system.ttp.id}") private String ttpId;
 
-    @Value("${higgs.trust.nodeName}")
-    private String nodeName;
+    @Value("${higgs.trust.nodeName}") private String nodeName;
 
-    @Autowired
-    private RSAKeyLoader rsaKeyLoader;
-
+    @Autowired private RSAKeyLoader rsaKeyLoader;
 
     @Autowired private Client client;
 
@@ -45,8 +42,7 @@ import java.util.concurrent.TimeUnit;
 
     @Autowired private SmartCommitReplicateComposite machine;
 
-    @Autowired
-    private NumberNameMapping numberNameMapping;
+    @Autowired private NumberNameMapping numberNameMapping;
 
     private Server server;
 
@@ -91,7 +87,7 @@ import java.util.concurrent.TimeUnit;
         sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
-    @Override @StateChangeListener(NodeStateEnum.Running) @Order public synchronized void start() {
+    @Override @StateChangeListener(NodeStateEnum.StartingConsensus) @Order public synchronized void start() {
         log.info("smart server starting,myid={}", myId);
         if (server != null) {
             log.warn("The service has started");

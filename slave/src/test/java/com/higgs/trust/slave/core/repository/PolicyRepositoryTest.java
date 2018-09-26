@@ -48,10 +48,6 @@ public class PolicyRepositoryTest extends BaseTest {
         System.out.println(policy);
     }
 
-    @Test public void save() {
-        policyRepository.save(policy);
-    }
-
     @Test public void convertActionToPolicy() {
         RegisterPolicy registerPolicy = new RegisterPolicy();
         registerPolicy.setPolicyId("test-0000");

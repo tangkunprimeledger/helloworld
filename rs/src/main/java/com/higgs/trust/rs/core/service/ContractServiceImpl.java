@@ -12,6 +12,7 @@ import com.higgs.trust.rs.core.bo.ContractQueryRequest;
 import com.higgs.trust.rs.core.dao.RequestDao;
 import com.higgs.trust.rs.core.dao.po.RequestPO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.ContractVO;
@@ -63,6 +64,7 @@ public class ContractServiceImpl implements ContractService {
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setPolicyId(InitPolicyEnum.CONTRACT_ISSUE.getPolicyId());
+        coreTx.setTxType(TxTypeEnum.CONTRACT.getCode());
         return coreTx;
     }
 
@@ -76,6 +78,7 @@ public class ContractServiceImpl implements ContractService {
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setPolicyId(InitPolicyEnum.CONTRACT_ISSUE.getPolicyId());
+        coreTx.setTxType(TxTypeEnum.CONTRACT.getCode());
         return coreTx;
     }
 

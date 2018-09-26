@@ -38,8 +38,6 @@ public abstract class BaseTest extends AbstractTestNGSpringContextTests {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.SortField.getMask();
         //toJSONString的时候对嵌套结果进行按照字母排序
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
-        //toJSONString的时候记录Class的name
-        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
     }
 
     @AfterClass

@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.service.action.node;
 
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -20,13 +21,13 @@ import org.springframework.stereotype.Component;
 @Slf4j @Component public class NodeLeaveHandler implements ActionHandler {
 
     @Autowired private NodeSnapshotHandler nodeSnapshotHandler;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
+
     @Autowired private NodeState nodeState;
 
     @Override public void verifyParams(Action action) throws SlaveException {
         NodeAction bo = (NodeAction)action;
-        if(StringUtils.isEmpty(bo.getNodeName())){
-            log.error("[verifyParams] nodeName is null or illegal param:{}",bo);
+        if (StringUtils.isEmpty(bo.getNodeName())) {
+            log.error("[verifyParams] nodeName is null or illegal param:{}", bo);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
     }
@@ -40,12 +41,6 @@ import org.springframework.stereotype.Component;
         NodeAction nodeAction = (NodeAction)actionData.getCurrentAction();
 
         log.info("[NodeLeaveHandler.process] start to process node leave action, user={}", nodeAction.getNodeName());
-
-        if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())) {
-            log.info("leave consensus layer, user={}", nodeAction.getNodeName());
-            consensusStateMachine.leaveConsensus();
-        }
-
         Profiler.enter("[NodeLeaveHandler.nodeLeave]");
         ClusterNode clusterNode = new ClusterNode();
         BeanUtils.copyProperties(nodeAction, clusterNode);

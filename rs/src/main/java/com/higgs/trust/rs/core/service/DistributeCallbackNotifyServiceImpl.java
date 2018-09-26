@@ -20,6 +20,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -43,22 +45,24 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
         //add callback message notify
         RTopic<String> topic = redissonClient.getTopic(RedisTopicEnum.CALLBACK_MESSAGE_NOTIFY.getCode());
         topic.addListener(((channel, msg) -> {
-            RedisTopicMsg redisTopicMsg = JSON.parseObject(msg, RedisTopicMsg.class);
-            processNotify(redisTopicMsg);
+            List<RedisTopicMsg> redisTopicMsgs = JSON.parseArray(msg, RedisTopicMsg.class);
+            for(RedisTopicMsg redisTopicMsg : redisTopicMsgs) {
+                processNotify(redisTopicMsg);
+            }
         }));
     }
 
     /**
      * notify callback finish
      *
-     * @param txId
-     * @param respData
+     * @param respDatas
      * @param redisMegGroupEnum
      */
     @Override
-    public void notifySyncResult(String txId, RespData respData, RedisMegGroupEnum redisMegGroupEnum) {
-        publishTopic(txId, respData, redisMegGroupEnum);
+    public void notifySyncResult(List<RespData<String>> respDatas, RedisMegGroupEnum redisMegGroupEnum) {
+        publishTopic(respDatas, redisMegGroupEnum);
     }
+
 
     /**
      * sync wait RespData
@@ -90,8 +94,8 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
             String message = MessageFormatter.format("wait async finish timeout, timeout={} ,timeUnit={}", timeout, timeUnit).getMessage();
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_WAIT_ASYNC_TIMEOUT_EXCEPTION, message);
         }
-        return JSON.parseObject(finalLockObject.getResult().toString(), RespData.class);
-
+        String resultJson = finalLockObject.getResult().toString();
+        return JSON.parseObject(resultJson, RespData.class);
     }
 
     /**
@@ -147,15 +151,18 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
     /**
      * publish  redis topic
      *
-     * @param txId
-     * @param respData
+     * @param respDatas
      * @param redisMegGroupEnum
      */
-    private void publishTopic(String txId, RespData respData, RedisMegGroupEnum redisMegGroupEnum) {
+    private void publishTopic(List<RespData<String>> respDatas, RedisMegGroupEnum redisMegGroupEnum) {
         RTopic<String> topic = redissonClient.getTopic(RedisTopicEnum.CALLBACK_MESSAGE_NOTIFY.getCode());
-        RedisTopicMsg redisTopicMsg = new RedisTopicMsg(txId, respData, redisMegGroupEnum);
-        String message = JSON.toJSONString(redisTopicMsg);
-        topic.publish(message);
+        List<RedisTopicMsg> msgList = new ArrayList<>(respDatas.size());
+        for(RespData<String> respData : respDatas){
+            RedisTopicMsg redisTopicMsg = new RedisTopicMsg(respData.getData(), respData, redisMegGroupEnum);
+            msgList.add(redisTopicMsg);
+        }
+        String message = JSON.toJSONString(msgList);
+        topic.publishAsync(message);
     }
 
     /**
