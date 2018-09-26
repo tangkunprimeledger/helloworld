@@ -21,14 +21,15 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-atomix</artifactId>
         </dependency>-->
-        <dependency>
-            <groupId>com.higgs.trust</groupId>
-            <artifactId>consensus-smart</artifactId>
-        </dependency>
         <!--<dependency>-->
             <!--<groupId>com.higgs.trust</groupId>-->
-            <!--<artifactId>consensus-zk</artifactId>-->
+            <!--<artifactId>consensus-smart</artifactId>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
+            <artifactId>consensus-zk</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-p2pvalid</artifactId>
@@ -175,10 +176,10 @@
         </dependency>
 
         <!--seg-->
-        <dependency>
-            <groupId>cn.primeledger.seg</groupId>
-            <artifactId>stability-spring-boot-starter</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>cn.primeledger.seg</groupId>-->
+            <!--<artifactId>stability-spring-boot-starter</artifactId>-->
+        <!--</dependency>-->
 
         <!--redisson-->
         <!-- redis client -->
