@@ -30,7 +30,7 @@ import static com.higgs.trust.network.utils.Threads.namedThreads;
  */
 public class MessagingService {
 
-    private static final long MAX_TIMEOUT_MILLIS = 5000;
+    private static final long MAX_TIMEOUT_MILLIS = 5000 * 4;
     private static final long TIMEOUT_INTERVAL = 50;
     private static final int CHANNEL_POOL_SIZE = 8;
 
