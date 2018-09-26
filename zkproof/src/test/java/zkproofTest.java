@@ -1,4 +1,3 @@
-import com.higgs.trust.zkproof.BGNEncryption;
 import com.higgs.trust.zkproof.EncryptAmount;
 import org.junit.Test;
 

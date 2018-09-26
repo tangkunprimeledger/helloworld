@@ -4,13 +4,12 @@
 package com.higgs.trust.slave.api.controller;
 
 import com.higgs.trust.slave.api.AccountInfoService;
-import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.vo.AccountInfoVO;
-import com.higgs.trust.slave.model.bo.Block;
-import com.higgs.trust.slave.model.bo.BlockHeader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

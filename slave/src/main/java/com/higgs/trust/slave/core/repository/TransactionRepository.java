@@ -57,6 +57,56 @@ import java.util.*;
     /**
      * query more execute receipt for txs
      *
+     * @param blockHeight
+     * @return
+     */
+    public Object[] queryTxReceipts(Long blockHeight) {
+        List<TransactionPO> txPOs = transactionDao.queryByBlockHeight(blockHeight);
+        if (CollectionUtils.isEmpty(txPOs)) {
+            return null;
+        }
+        Object[] objs = new Object[2];
+        objs[0] = makeSignedTxs(txPOs);
+        List<TransactionReceipt> receipts = new ArrayList<>(txPOs.size());
+        for (TransactionPO transactionPO : txPOs) {
+            TransactionReceipt receipt = new TransactionReceipt();
+            receipt.setTxId(transactionPO.getTxId());
+            receipt.setResult(StringUtils.equals(transactionPO.getExecuteResult(), "1") ? true : false);
+            receipt.setErrorCode(transactionPO.getErrorCode());
+            receipts.add(receipt);
+        }
+        objs[1] = receipts;
+        return objs;
+    }
+
+    /**
+     * make signed tx by tx po
+     *
+     * @param txPOs
+     * @return
+     */
+    private List<SignedTransaction> makeSignedTxs(List<TransactionPO> txPOs){
+        List<SignedTransaction> txs = new ArrayList<>();
+        for (TransactionPO tx : txPOs) {
+            SignedTransaction signedTransaction = new SignedTransaction();
+            CoreTransaction coreTx = BeanConvertor.convertBean(tx, CoreTransaction.class);
+            if (tx.getBizModel() != null) {
+                coreTx.setBizModel(JSON.parseObject(tx.getBizModel()));
+            }
+            String actionDatas = tx.getActionDatas();
+            List<Action> actions = JSON.parseArray(actionDatas, Action.class);
+            coreTx.setActionList(actions);
+            signedTransaction.setCoreTx(coreTx);
+            List<SignInfo> signDatas = JSON.parseArray(tx.getSignDatas(), SignInfo.class);
+            signedTransaction.setSignatureList(signDatas);
+            txs.add(signedTransaction);
+        }
+        return txs;
+    }
+
+    /**
+     * query more execute receipt for txs
+     *
      * @param txs
      * @return
      */
@@ -155,7 +205,6 @@ import java.util.*;
             log.info("[batchSaveTransaction] txs is empty");
             return;
         }
-        List<TransactionPO> txPOs = new ArrayList<>(txs.size());
 
         if (initConfig.isUseMySQL()) {
             List<TransactionPO> txPOs = buildTransactionPOs(blockHeight, blockTime, txs, txReceiptMap);

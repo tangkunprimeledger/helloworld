@@ -3,11 +3,9 @@ package com.higgs.trust.contract.mock;
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.contract.ContractStateStore;
 import com.higgs.trust.contract.StateManager;
-import com.higgs.trust.contract.rhino.types.NativeJavaMap;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 public class DbStateStoreImpl implements ContractStateStore {
 

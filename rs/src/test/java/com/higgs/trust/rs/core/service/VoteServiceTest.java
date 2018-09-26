@@ -5,7 +5,6 @@ import com.higgs.trust.rs.core.api.VoteService;
 import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
-import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.vo.ReceiptRequest;
 import com.higgs.trust.rs.core.vo.VotingRequest;
@@ -17,7 +16,6 @@ import com.higgs.trust.slave.model.bo.manage.Policy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

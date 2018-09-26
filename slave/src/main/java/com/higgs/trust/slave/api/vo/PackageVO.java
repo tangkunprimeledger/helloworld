@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.api.vo;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.Getter;

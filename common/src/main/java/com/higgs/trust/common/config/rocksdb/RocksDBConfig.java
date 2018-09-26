@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.validation.constraints.NotNull;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +19,9 @@ import java.util.stream.Collectors;
  * @author baizhengwen
  * @date 2018/2/24
  */
-@Configuration @Slf4j public class RocksDBConfig {
+@Configuration
+@Slf4j
+public class RocksDBConfig {
 
 
     /**
@@ -82,19 +83,17 @@ import java.util.stream.Collectors;
 
     }
 
-    @Bean public RocksDBWrapper rocksDBWrapper() throws RocksDBException {
+    @Bean
+    public RocksDBWrapper rocksDBWrapper() throws RocksDBException {
 
         ColumnFamilyOptions options = new ColumnFamilyOptions();
 
         final List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
 
         //must have the default column family
-        columnFamilyDescriptors
-            .add(new ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY, new ColumnFamilyOptions()));
+        columnFamilyDescriptors.add(new ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY, new ColumnFamilyOptions()));
 
-        List<ColumnFamilyDescriptor> descriptors =
-            columnFamily.stream().map(item -> new ColumnFamilyDescriptor(item.getBytes(), options))
-                .collect(Collectors.toList());
+        List<ColumnFamilyDescriptor> descriptors = columnFamily.stream().map(item -> new ColumnFamilyDescriptor(item.getBytes(), options)).collect(Collectors.toList());
 
         columnFamilyDescriptors.addAll(descriptors);
 
@@ -105,13 +104,11 @@ import java.util.stream.Collectors;
         dbPaths.add(new DbPath(Paths.get(flashPath), DB_FILE_FLASH_SIZE));
         dbPaths.add(new DbPath(Paths.get(extraPath), DB_FILE_EXTEND_SIZE));
 
-        final DBOptions dbOptions =
-            new DBOptions().setDbPaths(dbPaths).setCreateIfMissing(true).setCreateMissingColumnFamilies(true);
+        final DBOptions dbOptions = new DBOptions().setDbPaths(dbPaths).setCreateIfMissing(true).setCreateMissingColumnFamilies(true);
 
         final TransactionDBOptions transactionDBOptions = new TransactionDBOptions().setTransactionLockTimeout(LOCK_TIMEOUT);
         List<ColumnFamilyHandle> columnFamilyHandleList = new ArrayList<>();
-        TransactionDB rocksDB =
-            TransactionDB.open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
+        TransactionDB rocksDB = TransactionDB.open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
 
         int size = columnFamily.size();
         Map<String, ColumnFamilyHandle> columnFamilyHandleMap = new HashMap<>(size);

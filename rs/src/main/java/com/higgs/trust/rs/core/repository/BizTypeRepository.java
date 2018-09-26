@@ -1,15 +1,11 @@
 package com.higgs.trust.rs.core.repository;
 
-import com.higgs.trust.common.dao.RocksUtils;
-import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.core.dao.BizTypeDao;
 import com.higgs.trust.rs.core.dao.po.BizTypePO;
 import com.higgs.trust.rs.core.dao.rocks.BizTypeRocksDao;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

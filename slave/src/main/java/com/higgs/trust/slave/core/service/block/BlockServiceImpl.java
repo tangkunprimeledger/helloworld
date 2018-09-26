@@ -3,9 +3,9 @@ package com.higgs.trust.slave.core.service.block;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.hash.SnapshotRootHashBuilder;
 import com.higgs.trust.slave.model.bo.Block;
@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 
 /**

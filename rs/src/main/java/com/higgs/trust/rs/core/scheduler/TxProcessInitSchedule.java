@@ -7,7 +7,6 @@ import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.task.TxIdBO;
-import com.higgs.trust.rs.core.task.TxIdConsumer;
 import com.higgs.trust.rs.core.task.TxIdProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;

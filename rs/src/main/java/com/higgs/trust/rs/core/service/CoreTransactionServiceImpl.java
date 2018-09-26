@@ -36,7 +36,6 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
@@ -68,7 +67,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service @Slf4j public class CoreTransactionServiceImpl implements CoreTransactionService, InitializingBean {
-    @Value("${higgs.trust.joinConsensus:false}") private String joinConsensus;
+    @Value("${higgs.trust.isSlave:false}") private boolean isSlave;
     @Autowired private TransactionTemplate txRequired;
     @Autowired private RsConfig rsConfig;
     @Autowired private BizTypeService bizTypeService;

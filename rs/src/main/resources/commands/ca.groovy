@@ -1,7 +1,6 @@
 package commands
 
 import com.higgs.trust.rs.core.api.CaService
-import com.higgs.trust.slave.core.service.ca.CaInitService
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Argument
 import org.crsh.cli.Command

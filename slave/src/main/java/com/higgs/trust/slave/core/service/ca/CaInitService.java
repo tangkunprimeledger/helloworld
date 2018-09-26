@@ -1,10 +1,6 @@
 package com.higgs.trust.slave.core.service.ca;
 
-import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.model.bo.config.Config;
-
 import java.io.FileNotFoundException;
-import java.util.List;
 
 /**
  * @author WangQuanzhou

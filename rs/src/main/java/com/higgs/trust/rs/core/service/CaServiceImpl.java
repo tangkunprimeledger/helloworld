@@ -418,7 +418,7 @@ import java.util.*;
         List<CaVO> list = new LinkedList<>();
 
         // generate KeyPair for BIZ layer
-        Crypto consensusCrypto = CryptoUtil.getBizCrypto();
+        Crypto consensusCrypto = CryptoUtil.getBizCrypto(null);
         KeyPair keyPair = consensusCrypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();

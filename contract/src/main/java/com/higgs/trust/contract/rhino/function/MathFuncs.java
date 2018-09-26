@@ -1,11 +1,8 @@
 package com.higgs.trust.contract.rhino.function;
 
-import com.alibaba.fastjson.JSON;
 import org.mozilla.javascript.BaseFunction;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Arrays;
 
 /**
  * @author duhongming

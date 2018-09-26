@@ -9,7 +9,6 @@ import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.block.hash.TxRootHashBuilder;
 import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.action.Action;
-import com.higgs.trust.slave.model.enums.BlockHeaderTypeEnum;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -7,7 +7,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.Redisson;

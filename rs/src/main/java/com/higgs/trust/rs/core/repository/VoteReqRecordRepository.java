@@ -3,8 +3,8 @@ package com.higgs.trust.rs.core.repository;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
-import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
+import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.VoteRequestRecord;
 import com.higgs.trust.rs.core.dao.VoteRequestRecordDao;
 import com.higgs.trust.rs.core.dao.po.VoteRequestRecordPO;
@@ -13,13 +13,11 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**

@@ -16,7 +16,6 @@ import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRequestRecord;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
-import com.higgs.trust.rs.core.dao.po.VoteRequestRecordPO;
 import com.higgs.trust.rs.core.integration.ServiceProviderClient;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteReceiptRepository;

@@ -6,9 +6,8 @@ import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
-import com.higgs.trust.slave.dao.account.CurrencyInfoDao;
+import com.higgs.trust.slave.dao.mysql.account.CurrencyInfoDao;
 import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
-import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.Sign;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
@@ -62,13 +61,14 @@ public class UTXOContextService extends ContractApiService {
 
     /**
      * 根据币种获取同态公钥
+     *
      * @param currency
      * @return
      */
-    public String getCurrencyHomomorphicPk(String currency){
+    public String getCurrencyHomomorphicPk(String currency) {
         log.info("get a homomorphic key when verify a crypto currency");
-        CurrencyInfoPO currencyInfoPO =  currencyInfoDao.queryByCurrency(currency);
-        if(currencyInfoPO != null){
+        CurrencyInfoPO currencyInfoPO = currencyInfoDao.queryByCurrency(currency);
+        if (currencyInfoPO != null) {
             return currencyInfoPO.getHomomorphicPk();
         }
         return "";
@@ -83,7 +83,6 @@ public class UTXOContextService extends ContractApiService {
      * @param augend
      * @return
      */
-    public static BigDecimal add(String augend, String addend) {
     public BigDecimal add(String augend, String addend) {
         BigDecimal a = null;
         BigDecimal b = null;
@@ -106,6 +105,7 @@ public class UTXOContextService extends ContractApiService {
      * @param reduction
      * @return
      */
+
     public BigDecimal subtract(String minuend, String reduction) {
         BigDecimal a = null;
         BigDecimal b = null;
@@ -161,16 +161,13 @@ public class UTXOContextService extends ContractApiService {
                 log.error("UTXO sign info :{} for PubKey or Signature is null error!", sign);
                 return false;
             }
-            if (!CryptoUtil.getBizCrypto().verify(message, sign.getSignature(), sign.getPubKey())) {
+            if (!CryptoUtil.getBizCrypto(sign.getCryptoType()).verify(message, sign.getSignature(), sign.getPubKey())) {
                 log.error("UTXO verify message :{} for Signature :{} with pubKey :{}  failed error!", message, sign.getSignature(), sign.getPubKey());
                 return false;
             }
         }
         return true;
     }
-}
-
-
 
     public int cipherCompare(String a, String b) {
         if (EncryptAmount.cipherCompare(a, b)) {
@@ -193,43 +190,18 @@ public class UTXOContextService extends ContractApiService {
 
     /**
      * 初始发币加密
+     *
      * @param amount
      * @return
      */
-    public String issueEnrypt(String amount){
-        EncryptAmount encryptAmount = new EncryptAmount(new BigDecimal(amount),EncryptAmount.FULL_RANDOM);
+    public String issueEnrypt(String amount) {
+        EncryptAmount encryptAmount = new EncryptAmount(new BigDecimal(amount), EncryptAmount.FULL_RANDOM);
         return encryptAmount.toString();
     }
 
-    /**
-     * verify UTXO Signature list
-     * all the Signature is sign from the same message with different private key
-     *
-     * @param signList
-     * @param message
-     * @return
-     */
-    public boolean verifySignature(List<Sign> signList, String message) {
-        if (CollectionUtils.isEmpty(signList) || null == message) {
-            log.error("Verify UTXO Signature list for signList or message is null error!");
-            return false;
-        }
-        for (Sign sign : signList) {
-            if (StringUtils.isBlank(sign.getPubKey()) || StringUtils.isBlank(sign.getSignature())) {
-                log.error("UTXO sign info :{} for PubKey or Signature is null error!", sign);
-                return false;
-            }
-            if (!CryptoUtil.getBizCrypto(sign.getCryptoType()).verify(message, sign.getSignature(), sign.getPubKey())) {
-                log.error("UTXO verify message :{} for Signature :{} with pubKey :{}  failed error!", message, sign.getSignature(), sign.getPubKey());
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public boolean verifyTxInSignature(List<Sign> signList,List<TxIn> txInList){
+    public boolean verifyTxInSignature(List<Sign> signList, List<TxIn> txInList) {
         String message = UTXOConvert.toTxInString(txInList);
-        return verifySignature(signList,message);
+        return verifySignature(signList, message);
     }
 
 

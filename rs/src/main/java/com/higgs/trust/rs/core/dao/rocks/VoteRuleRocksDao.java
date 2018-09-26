@@ -8,7 +8,6 @@ import com.higgs.trust.rs.core.dao.po.VoteRulePO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.rocksdb.Transaction;
-import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;

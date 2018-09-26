@@ -1,11 +1,8 @@
 package com.higgs.trust.slave.core.service.transaction;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.config.crypto.CryptoUtil;
-import com.higgs.trust.config.view.ClusterOptTx;
-import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -27,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.net.CacheResponse;
 import java.util.*;
 
 /**
@@ -189,7 +185,7 @@ import java.util.*;
         if (signInfo.getSignType() == SignInfo.SignTypeEnum.CONSENSUS) {
             return CryptoUtil.getProtocolCrypto().verify(signValue, signInfo.getSign(), pubKey);
         } else {
-            return CryptoUtil.getBizCrypto().verify(signValue, signInfo.getSign(), pubKey);
+            return CryptoUtil.getBizCrypto(null).verify(signValue, signInfo.getSign(), pubKey);
         }
     }
 

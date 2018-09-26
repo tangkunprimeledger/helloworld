@@ -4,9 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-//import com.higgs.trust.config.master.command.ChangeMasterVerifyCmd;
-import com.higgs.trust.slave.core.service.consensus.view.ClusterViewCmd;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
+import com.higgs.trust.slave.core.service.consensus.view.ClusterViewCmd;
 import com.higgs.trust.slave.model.bo.consensus.BlockHeaderCmd;
 import com.higgs.trust.slave.model.bo.consensus.ClusterHeightCmd;
 import com.higgs.trust.slave.model.bo.consensus.PersistCommand;
@@ -16,6 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+
+//import com.higgs.trust.config.master.command.ChangeMasterVerifyCmd;
 
 /**
  * @author duhongming

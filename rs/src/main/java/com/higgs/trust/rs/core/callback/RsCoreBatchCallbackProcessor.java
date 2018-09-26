@@ -6,7 +6,6 @@ import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
-import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;

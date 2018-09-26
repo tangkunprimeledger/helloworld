@@ -2,7 +2,6 @@ package com.higgs.trust.zkproof;
 
 import com.alibaba.fastjson.JSONObject;
 
-
 import java.math.BigInteger;
 
 public interface HomomorphicEncryption {

@@ -1,7 +1,7 @@
 package com.higgs.trust.slave.dao;
 
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.dao.config.SystemPropertyDao;
+import com.higgs.trust.slave.dao.mysql.config.SystemPropertyDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -17,7 +17,7 @@ public class SystemPropertyDaoTest extends BaseTest {
     private SystemPropertyDao systemPropertyDao;
 
     @Test
-    public void update(){
+    public void update() {
 
         System.out.println(systemPropertyDao.update("CHAIN_OWNER", "lingchao", null));
         System.out.println(systemPropertyDao.update("CHAIN_OWNER", "lingao", "0000"));

@@ -31,7 +31,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service @Slf4j public class FailoverSchedule {

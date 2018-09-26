@@ -1,12 +1,11 @@
 package com.higgs.trust.slave.core.managment.master;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
-import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import lombok.extern.slf4j.Slf4j;
