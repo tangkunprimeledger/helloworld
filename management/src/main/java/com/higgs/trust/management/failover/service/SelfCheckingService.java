@@ -7,6 +7,7 @@ import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
+import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
@@ -43,7 +44,11 @@ import org.springframework.stereotype.Service;
         if (maxHeight == null) {
             return true;
         }
-        Block block = blockRepository.getBlock(maxHeight);
+        Long safeHeight = blockSyncService.getSafeHeight(properties.getStartupRetryTime());
+        if (safeHeight == null){
+            return false;
+        }
+        Block block = maxHeight <= safeHeight?blockRepository.getBlock(maxHeight):blockRepository.getBlock(safeHeight);
         int i = 0;
         if (blockSyncService.validating(block)) {
             do {

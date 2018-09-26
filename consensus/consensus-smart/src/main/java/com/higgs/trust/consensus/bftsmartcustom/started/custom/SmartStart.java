@@ -33,12 +33,9 @@ public class SmartStart implements ConsensusStateMachine {
     @Value("${bftSmart.systemConfigs.configs.system.ttp.id}")
     private String ttpId;
 
-    @Value("${higgs.trust.nodeName}")
-    private String nodeName;
+    @Value("${higgs.trust.nodeName}") private String nodeName;
 
-    @Autowired
-    private RSAKeyLoader rsaKeyLoader;
-
+    @Autowired private RSAKeyLoader rsaKeyLoader;
 
     @Autowired
     private Client client;
@@ -52,8 +49,7 @@ public class SmartStart implements ConsensusStateMachine {
     @Autowired
     private SmartCommitReplicateComposite machine;
 
-    @Autowired
-    private NumberNameMapping numberNameMapping;
+    @Autowired private NumberNameMapping numberNameMapping;
 
     private Server server;
 
@@ -100,10 +96,7 @@ public class SmartStart implements ConsensusStateMachine {
         sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
-    @Override
-    @StateChangeListener(NodeStateEnum.Running)
-    @Order
-    public synchronized void start() {
+    @Override @StateChangeListener(NodeStateEnum.StartingConsensus) @Order public synchronized void start() {
         log.info("smart server starting,myid={}", myId);
         if (server != null) {
             log.warn("The service has started");

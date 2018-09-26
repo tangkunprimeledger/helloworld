@@ -24,8 +24,8 @@ public class CoreTransactionProcessDaoTest extends IntegrateBaseTest {
 
     @Test
     public void queryByTxId(){
-        System.out.println("queryByTxId with for update :"+coreTransactionProcessDao.queryByTxId("123", true));
-        System.out.println("queryByTxId with not for update :"+coreTransactionProcessDao.queryByTxId("123", false));
+        System.out.println("queryByTxId with for update :"+coreTransactionProcessDao.queryByTxId("123", CoreTxStatusEnum.NEED_VOTE.getCode()));
+        System.out.println("queryByTxId with not for update :"+coreTransactionProcessDao.queryByTxId("123", CoreTxStatusEnum.NEED_VOTE.getCode()));
     }
 
 

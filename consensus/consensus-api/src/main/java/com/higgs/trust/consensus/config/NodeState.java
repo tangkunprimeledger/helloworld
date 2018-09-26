@@ -74,10 +74,7 @@ public class NodeState implements InitializingBean {
     /**
      * private key for consensus
      */
-    @Getter
-    @Setter
-    private String consensusPrivateKey;
-
+    @Getter @Setter private String consensusPrivateKey;
 
     /**
      * cluster name, as the prefix of cluster nodes
@@ -96,7 +93,6 @@ public class NodeState implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
-        this.privateKey = properties.getPrivateKey();
         this.clusterName = properties.getPrefix();
 
         registerStateListener();
@@ -195,7 +191,13 @@ public class NodeState implements InitializingBean {
         boolean result = false;
         switch (from) {
             case Starting:
-                result = SelfChecking == to;
+                result = Initialize == to || Offline == to;
+                break;
+            case Initialize:
+                result = StartingConsensus == to || Offline == to;
+                break;
+            case StartingConsensus:
+                result = SelfChecking == to || Offline == to;
                 break;
             case SelfChecking:
                 result = AutoSync == to || ArtificialSync == to || Running == to && !properties.isStandby() || Offline == to;
@@ -206,12 +208,13 @@ public class NodeState implements InitializingBean {
                 break;
             case Standby:
                 result = Running == to && !properties.isStandby() || AutoSync == to || ArtificialSync == to || Offline == to;
+                result = SelfChecking == to || Running == to || Offline == to;
                 break;
             case Running:
                 result = SelfChecking == to || Offline == to;
                 break;
             case Offline:
-                result = SelfChecking == to;
+                result = SelfChecking == to||Initialize==to;
                 break;
         }
         return result;

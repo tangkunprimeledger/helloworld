@@ -34,7 +34,6 @@ import static org.testng.Assert.assertEquals;
 
     @InjectMocks @Autowired SyncService syncService;
     @Mock FailoverProperties properties;
-    @Mock SyncPackageCache cache;
     @Mock BlockService blockService;
     @Mock BlockRepository blockRepository;
     @Mock BlockSyncService blockSyncService;
@@ -70,17 +69,6 @@ import static org.testng.Assert.assertEquals;
         }
     }
 
-    @Test public void testSyncInThreshold() {
-        Mockito.when(blockSyncService.getClusterHeight(Matchers.anyInt())).thenReturn(101L);
-        Mockito.when(properties.getThreshold()).thenReturn(100);
-        syncService.autoSync();
-    }
-
-    @Test public void testSyncOutThreshold() {
-        Mockito.when(blockSyncService.getClusterHeight(Matchers.anyInt())).thenReturn(102L);
-        Mockito.when(properties.getThreshold()).thenReturn(100);
-        syncService.autoSync();
-    }
 
     @Test public void testSyncWithParamNotState() {
         long startHeight = currentHeight + 1;
@@ -222,7 +210,7 @@ import static org.testng.Assert.assertEquals;
         try {
             syncService.sync(startHeight, size);
         } catch (SlaveException e) {
-            assertEquals(e.getCode(), ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID);
+            assertEquals(e.getCode(), ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
         }
         Mockito.verify(blockService, Mockito.times(1)).compareBlockHeader(Matchers.any(), Matchers.any());
     }
@@ -325,9 +313,7 @@ import static org.testng.Assert.assertEquals;
         Mockito.when(blockRepository.getMaxHeight()).thenReturn(blockHeight.longValue()).thenAnswer(invocation -> {
             return blockHeight.addAndGet(getHeaderTime.incrementAndGet() % 2 == 0 ? headerStep : 0);
         });
-        Mockito.when(properties.getThreshold()).thenReturn(50);
         Mockito.when(blockSyncService.getClusterHeight(Matchers.anyInt())).thenReturn(clusterHeight);
-        Mockito.when(cache.getMinHeight()).thenReturn(clusterHeight, cacheMinHeight);
         Mockito.when(properties.getTryTimes()).thenReturn(times);
         Mockito.when(properties.getBlockStep()).thenReturn(blockStep);
         Mockito.when(properties.getHeaderStep()).thenReturn(headerStep);

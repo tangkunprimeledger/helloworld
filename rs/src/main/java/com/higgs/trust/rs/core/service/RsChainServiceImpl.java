@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.service;
 
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.contract.ExecuteContextData;
@@ -52,7 +53,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
     @Autowired
     private NodeState nodeState;
     @Autowired
-    private ClusterInfo clusterInfo;
+    private IClusterViewManager viewManager;
     @Autowired
     private ClusterService clusterService;
 
@@ -261,9 +262,10 @@ public class RsChainServiceImpl implements RsBlockChainService {
         Map<String, Long> mapHeight = null;
         String masterName = null;
 
+        ClusterView clusterView = viewManager.getCurrentView();
         //query peers info
         try {
-            nodeNames = clusterInfo.clusterNodeNames();
+            nodeNames = clusterView.getNodeNames();
             mapHeight = clusterService.getAllClusterHeight();
             masterName = nodeState.getMasterName();
         } catch (Throwable e) {

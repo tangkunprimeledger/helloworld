@@ -1,16 +1,24 @@
 package com.higgs.trust.slave.core.repository.ca;
 
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.dao.ca.CaDao;
+import com.higgs.trust.slave.dao.mysql.ca.CaDao;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
+import com.higgs.trust.slave.dao.rocks.ca.CaRocksDao;
 import com.higgs.trust.slave.model.bo.ca.Ca;
+import com.higgs.trust.slave.model.bo.manage.RsPubKey;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,6 +29,8 @@ import java.util.List;
  */
 @Repository @Slf4j public class CaRepository {
     @Autowired private CaDao caDao;
+    @Autowired private CaRocksDao caRocksDao;
+    @Autowired private InitConfig initConfig;
 
     /**
      * @param ca
@@ -30,7 +40,11 @@ import java.util.List;
     public void insertCa(Ca ca) {
         CaPO caPO = new CaPO();
         BeanUtils.copyProperties(ca, caPO);
-        caDao.insertCa(caPO);
+        if (initConfig.isUseMySQL()) {
+            caDao.insertCa(caPO);
+        } else {
+            caRocksDao.save(caPO);
+        }
     }
 
     /**
@@ -41,7 +55,11 @@ import java.util.List;
     public void updateCa(Ca ca) {
         CaPO caPO = new CaPO();
         BeanUtils.copyProperties(ca, caPO);
-        caDao.updateCa(caPO);
+        if (initConfig.isUseMySQL()) {
+            caDao.updateCa(caPO);
+        } else {
+            caRocksDao.update(caPO);
+        }
     }
 
     /**
@@ -50,7 +68,13 @@ import java.util.List;
      * @desc get CA information by nodeName
      */
     public Ca getCaForBiz(String user) {
-        CaPO caPO = caDao.getCaForBiz(user);
+        CaPO caPO;
+        if (initConfig.isUseMySQL()) {
+            caPO = caDao.getCaForBiz(user);
+        } else {
+            caPO = caRocksDao.get(user + Constant.SPLIT_SLASH + "biz");
+        }
+
         if (null == caPO) {
             return null;
         }
@@ -59,8 +83,29 @@ import java.util.List;
         return newCa;
     }
 
+    public List<Ca> getCaListByUsers(List<String> users, String usage) {
+        if (CollectionUtils.isEmpty(users)) {
+            return null;
+        }
+
+        List<String> key = new ArrayList<>(users.size());
+        for (String user : users) {
+            key.add(user + Constant.SPLIT_SLASH + usage);
+        }
+
+        List<CaPO> list = caRocksDao.getCaListByUsers(key);
+        return BeanConvertor.convertList(list, Ca.class);
+
+    }
+
     public List<Ca> getAllCa() {
-        List<CaPO> list = caDao.getAllCa();
+        List<CaPO> list;
+        if (initConfig.isUseMySQL()) {
+            list = caDao.getAllCa();
+        } else {
+            list = caRocksDao.queryAll();
+        }
+
         List<Ca> CaList = new LinkedList<>();
         for (CaPO caPO : list) {
             Ca ca = new Ca();
@@ -77,12 +122,16 @@ import java.util.List;
      * @return
      */
     public boolean batchInsert(List<CaPO> caPOList) {
-        int affectRows = 0;
-        try {
-            affectRows = caDao.batchInsert(caPOList);
-        } catch (DuplicateKeyException e) {
-            log.error("batch insert ca fail, because there is DuplicateKeyException for caPOList:", caPOList);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        int affectRows;
+        if (initConfig.isUseMySQL()) {
+            try {
+                affectRows = caDao.batchInsert(caPOList);
+            } catch (DuplicateKeyException e) {
+                log.error("batch insert ca fail, because there is DuplicateKeyException for caPOList:", caPOList);
+                throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+            }
+        } else {
+            affectRows = caRocksDao.batchInsert(caPOList);
         }
         return affectRows == caPOList.size();
     }
@@ -94,16 +143,46 @@ import java.util.List;
      * @return
      */
     public boolean batchUpdate(List<CaPO> caPOList) {
-        return caPOList.size() == caDao.batchUpdate(caPOList);
+        if (initConfig.isUseMySQL()) {
+            return caPOList.size() == caDao.batchUpdate(caPOList);
+        }
+        return caPOList.size() == caRocksDao.batchInsert(caPOList);
     }
 
     public Ca getCaForConsensus(String user){
-        CaPO caPO = caDao.getCaForConsensus(user);
+        CaPO caPO;
+        if (initConfig.isUseMySQL()) {
+            caPO = caDao.getCaForConsensus(user);
+        } else {
+            caPO = caRocksDao.get(user + Constant.SPLIT_SLASH + "consensus");
+        }
+
         if (caPO == null){
             return null;
         }
         Ca ca = new Ca();
         BeanUtils.copyProperties(caPO,ca);
         return ca;
+    }
+
+    /**
+     * get all pubkeys
+     *
+     * @param usage
+     * @return
+     */
+    public List<RsPubKey> getAllPubkeyByUsage(UsageEnum usage){
+        List<CaPO> caPOs = caDao.getAllPubkeyByUsage(usage.getCode());
+        if (CollectionUtils.isEmpty(caPOs)){
+            return null;
+        }
+        List<RsPubKey> rsPubKeys = new ArrayList<>();
+        for(CaPO caPO : caPOs){
+            RsPubKey rsPubKey = new RsPubKey();
+            rsPubKey.setPubKey(caPO.getPubKey());
+            rsPubKey.setRsId(caPO.getUser());
+            rsPubKeys.add(rsPubKey);
+        }
+        return rsPubKeys;
     }
 }

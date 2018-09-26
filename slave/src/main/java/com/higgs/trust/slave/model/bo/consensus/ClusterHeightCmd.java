@@ -18,8 +18,8 @@ import lombok.Setter;
 
     private String requestId;
 
-    public ClusterHeightCmd(String requestId, Integer value) {
-        super(value);
+    public ClusterHeightCmd(String requestId, Integer value, long view) {
+        super(value, view);
         this.requestId = requestId;
     }
 

@@ -41,7 +41,7 @@ public class CaRepositoryTest extends BaseTest {
     }
 
     @Test public void testGetCa() throws Exception {
-        Ca ca = caRepository.getCaForBiz("wqz");
+        Ca ca = caRepository.getCaForBiz("TRUST-TEST0");
         System.out.println(ca.toString());
     }
 

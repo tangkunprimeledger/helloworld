@@ -9,7 +9,6 @@ import com.higgs.trust.slave.model.bo.contract.AccountContractBindingAction;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import reactor.core.support.Assert;
 

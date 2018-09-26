@@ -2,9 +2,6 @@ package com.higgs.trust.slave.core.service.datahandler.manage;
 
 import com.higgs.trust.slave.BaseTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.Test;
-
-import static org.testng.Assert.*;
 
 public class SystemPropertyHandlerTest extends BaseTest {
     @Autowired

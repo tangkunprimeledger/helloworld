@@ -28,8 +28,8 @@ public class CoreTxJDBCDao {
      * @return
      */
     public int batchInsert(List<CoreTransactionPO> list) {
-        StringBuilder sql = new StringBuilder("INSERT INTO core_transaction " + " (tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,execute_result,error_code,error_msg,send_time,block_height,create_time)" + "  VALUES");
-        String template = "(:c[${i}].txId,:c[${i}].policyId,:c[${i}].lockTime,:c[${i}].sender,:c[${i}].version,:c[${i}].bizModel,:c[${i}].actionDatas," + ":c[${i}].signDatas,:c[${i}].executeResult,:c[${i}].errorCode,:c[${i}].errorMsg,:c[${i}].sendTime,:c[${i}].blockHeight,NOW(3)),";
+        StringBuilder sql = new StringBuilder("INSERT INTO core_transaction " + " (tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,execute_result,error_code,error_msg,send_time,block_height,tx_type,create_time)" + "  VALUES");
+        String template = "(:c[${i}].txId,:c[${i}].policyId,:c[${i}].lockTime,:c[${i}].sender,:c[${i}].version,:c[${i}].bizModel,:c[${i}].actionDatas," + ":c[${i}].signDatas,:c[${i}].executeResult,:c[${i}].errorCode,:c[${i}].errorMsg,:c[${i}].sendTime,:c[${i}].blockHeight,:c[${i}].txType,NOW(3)),";
         int size = list.size();
         for (int i = 0; i < size; i++) {
             sql.append(template.replaceAll("\\$\\{i\\}", String.valueOf(i)));

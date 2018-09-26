@@ -4,10 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.dao.manage.PolicyDao;
+import com.higgs.trust.slave.common.config.InitConfig;
+import com.higgs.trust.slave.dao.mysql.manage.PolicyDao;
 import com.higgs.trust.slave.dao.po.manage.PolicyPO;
+import com.higgs.trust.slave.dao.rocks.manage.PolicyRocksDao;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
@@ -27,19 +27,28 @@ import java.util.Map;
  * @date 2018/04/02
  * @desc provide repository for business
  */
-@Repository @Slf4j public class PolicyRepository {
+@Repository
+@Slf4j
+public class PolicyRepository {
 
-    @Autowired private PolicyDao policyDao;
+    @Autowired
+    private PolicyDao policyDao;
+
+    @Autowired
+    private PolicyRocksDao policyRocksDao;
 
     @Autowired
     private RsNodeRepository rsNodeRepository;
     /**
      * the policy cache
      */
-    private Map<String,Policy> policyCache = new HashMap<>();
+    private Map<String, Policy> policyCache = new HashMap<>();
+
+    @Autowired
+    private InitConfig initConfig;
 
     public Policy getPolicyById(String policyId) {
-        if(policyCache.containsKey(policyId)){
+        if (policyCache.containsKey(policyId)) {
             return policyCache.get(policyId);
         }
         if (StringUtils.isEmpty(policyId)) {
@@ -66,14 +75,14 @@ import java.util.Map;
                 policy.setRsIds(null);
             }
         } else {
-            policy = policyDao.queryByPolicyId(policyId);
-        }
-
-        if (null == policy) {
-            return null;
+            if (initConfig.isUseMySQL()) {
+                policy = policyDao.queryByPolicyId(policyId);
+            } else {
+                policy = policyRocksDao.get(policyId);
+            }
         }
         Policy p = convertPolicyPOToPolicy(policy);
-        policyCache.put(policyId,p);
+        policyCache.put(policyId, p);
         return p;
     }
 
@@ -137,8 +146,12 @@ import java.util.Map;
     }
 
     public int batchInsert(List<PolicyPO> policyPOList) {
-        int i = policyDao.batchInsert(policyPOList);
         policyCache.clear();
-        return i;
+        if (initConfig.isUseMySQL()) {
+            return policyDao.batchInsert(policyPOList);
+        } else {
+            return policyRocksDao.batchInsert(policyPOList);
+        }
+
     }
 }

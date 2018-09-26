@@ -54,7 +54,9 @@ import java.util.Set;
     public void process(ActionData actionData) {
         RegisterPolicy bo = (RegisterPolicy)actionData.getCurrentAction();
 
-        log.info("[RegisterPolicyHandler.process] start, actionData:{}", bo);
+        if (log.isDebugEnabled()) {
+            log.debug("[RegisterPolicyHandler.process] start, actionData:{}", bo);
+        }
 
         if (null == bo) {
             log.error("[RegisterPolicyHandler.process] convert to RegisterPolicy error");
@@ -97,7 +99,9 @@ import java.util.Set;
         }
         policySnapshotHandler.registerPolicy(bo);
 
-        log.info("[RegisterPolicyHandler.process] finish");
+        if (log.isDebugEnabled()) {
+            log.debug("[RegisterPolicyHandler.process] finish");
+        }
     }
 
 }

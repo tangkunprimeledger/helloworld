@@ -1,12 +1,14 @@
 package com.higgs.trust.slave.core.repository.account;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.slave.dao.account.AccountJDBCDao;
-import com.higgs.trust.slave.dao.account.CurrencyInfoDao;
+import com.higgs.trust.slave.dao.mysql.account.AccountJDBCDao;
+import com.higgs.trust.slave.dao.mysql.account.CurrencyInfoDao;
 import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
+import com.higgs.trust.slave.dao.rocks.account.CurrencyInfoRocksDao;
 import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -26,6 +28,9 @@ import java.util.List;
 @Repository @Slf4j public class CurrencyRepository {
     @Autowired CurrencyInfoDao currencyInfoDao;
     @Autowired AccountJDBCDao accountJDBCDao;
+    @Autowired CurrencyInfoRocksDao currencyInfoRocksDao;
+    @Autowired InitConfig initConfig;
+
     /**
      * query currency info
      *
@@ -33,7 +38,12 @@ import java.util.List;
      * @return
      */
     public CurrencyInfo queryByCurrency(String currency) {
-        CurrencyInfoPO currencyInfoPO = currencyInfoDao.queryByCurrency(currency);
+        CurrencyInfoPO currencyInfoPO;
+        if (initConfig.isUseMySQL()) {
+            currencyInfoPO = currencyInfoDao.queryByCurrency(currency);
+        } else {
+            currencyInfoPO = currencyInfoRocksDao.get(currency);
+        }
         return BeanConvertor.convertBean(currencyInfoPO, CurrencyInfo.class);
     }
 
@@ -47,7 +57,10 @@ import java.util.List;
         if(StringUtils.isEmpty(currency)){
             return false;
         }
-        return currencyInfoDao.queryByCurrency(currency) != null;
+        if (initConfig.isUseMySQL()) {
+            return currencyInfoDao.queryByCurrency(currency) != null;
+        }
+        return currencyInfoRocksDao.get(currency) != null;
     }
 
     /**
@@ -67,22 +80,6 @@ import java.util.List;
     }
 
     /**
-     * create new currency info
-     *
-     * @param currencyInfo
-     */
-    public void create(CurrencyInfo currencyInfo) {
-        // build and add account info
-        CurrencyInfoPO currencyInfoPO = BeanConvertor.convertBean(currencyInfo, CurrencyInfoPO.class);
-        try {
-            currencyInfoDao.add(currencyInfoPO);
-        } catch (DuplicateKeyException e) {
-            log.error("[openAccount.persist] is idempotent for currency:{}", currencyInfo.getCurrency());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
-        }
-    }
-
-    /**
      * batch insert
      *
      * @param currencyInfos
@@ -93,11 +90,18 @@ import java.util.List;
         }
         try {
             Profiler.enter("[batchInsert currencyInfo]");
-            int r = accountJDBCDao.batchInsertCurrency(currencyInfos);
-            if (r != currencyInfos.size()) {
-                log.info("[batchInsert]the number of update rows is different from the original number");
-                throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+
+            if (initConfig.isUseMySQL()) {
+                int r = accountJDBCDao.batchInsertCurrency(currencyInfos);
+                if (r != currencyInfos.size()) {
+                    log.info("[batchInsert]the number of update rows is different from the original number");
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR);
+                }
+            } else {
+                currencyInfoRocksDao.batchInsert(
+                    BeanConvertor.convertList(currencyInfos, CurrencyInfoPO.class));
             }
+
         } catch (DuplicateKeyException e) {
             log.error("[batchInsert] has idempotent for currencyInfos:{}", currencyInfos);
             throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);

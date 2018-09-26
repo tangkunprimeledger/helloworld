@@ -50,7 +50,7 @@
 	<insert id="add" parameterType="Object">
 		insert into
 		vote_request_record(id,tx_id,sender,tx_data,sign,vote_result,create_time,update_time)
-		values(#{id},#{txId},#{sender},#{txData},#{sign},#{voteResult},now(),now())
+		values(#{id},#{txId},#{sender},#{txData},#{sign},#{voteResult},now(3),now(3))
 	</insert>
 	<!-- 删除记录 -->
 	<delete id="delete" parameterType="Object">
@@ -93,4 +93,12 @@
 		where tx_id=#{txId} and vote_result='INIT'
 	</update>
 
+	<!-- queryAllInitRequest -->
+	<select id="queryAllInitRequest" resultMap="baseResultMap"
+			parameterType="Object">
+		select
+		<include refid="baseColumnList" />
+		from vote_request_record
+		where vote_result='INIT' limit #{row},#{count}
+	</select>
 </mapper>

@@ -5,7 +5,7 @@ import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * @Description:
@@ -23,11 +23,11 @@ public interface BlockService {
      * build block p2p
      *
      * @param packageData
-     * @param txReceipts
+     * @param txReceiptMap
      * @return
      */
     BlockHeader buildHeader(PackageData packageData,
-        List<TransactionReceipt> txReceipts);
+        Map<String, TransactionReceipt> txReceiptMap);
 
     /**
      * get final persisted block header
@@ -61,7 +61,7 @@ public interface BlockService {
      * @param block
      * @param txReceipts
      */
-    void persistBlock(Block block, List<TransactionReceipt> txReceipts);
+    void persistBlock(Block block, Map<String, TransactionReceipt> txReceipts);
 
     /**
      * compare the two header datas

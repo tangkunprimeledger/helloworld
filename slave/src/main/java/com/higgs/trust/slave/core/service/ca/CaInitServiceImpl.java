@@ -1,26 +1,29 @@
 package com.higgs.trust.slave.core.service.ca;
 
-import com.higgs.trust.common.enums.MonitorTargetEnum;
-import com.higgs.trust.common.utils.MonitorLogUtils;
-import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.consensus.config.NodeProperties;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
-import com.higgs.trust.slave.api.enums.RespCodeEnum;
-import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.core.repository.config.ConfigRepository;
-import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
-import com.higgs.trust.slave.integration.ca.CaInitClient;
+import com.higgs.trust.slave.core.managment.ClusterInitHandler;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
-import com.higgs.trust.slave.model.bo.config.Config;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author WangQuanzhou
@@ -29,34 +32,19 @@ import java.util.*;
  */
 @Service @Slf4j public class CaInitServiceImpl implements CaInitService {
 
-    @Autowired private ConfigRepository configRepository;
     @Autowired private NodeState nodeState;
-    @Autowired private CaInitClient caClient;
-    @Autowired private ClusterInfo clusterInfo;
-    @Autowired private CaInitHandler caInitHandler;
-    @Autowired private NodeProperties nodeProperties;
+    @Autowired private ClusterInitHandler clusterInitHandler;
 
-    /**
-     * @return
-     * @desc execute command initStart on one node, it will call each node in the cluster to execute command initKeyPair
-     */
-    @Override public RespData<String> initStart() {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        nodeList.forEach((nodeName) -> {
-            initKeyPair();
-        });
-        return new RespData<>();
-    }
+    @Value("${higgs.trust.geniusPath:#{null}}") String geniusPath;
 
     /**
      * @param
      * @return
      * @desc
      */
-    @Override public void initKeyPair() {
+    @Override public void initKeyPair() throws FileNotFoundException {
 
-
-        List<Action> caActionList = acquirePubKeys(nodeProperties.getStartupRetryTime());
+        List<Action> caActionList = acquirePubKeys();
 
         // construct genius block and insert into db
         try {
@@ -74,7 +62,7 @@ import java.util.*;
                     caActionList.toString());
             }
 
-            caInitHandler.process(caActionList);
+            clusterInitHandler.process(caActionList);
             log.info("[CaInitServiceImpl.initKeyPair] end generate genius block");
 
         } catch (Throwable e) {
@@ -85,90 +73,39 @@ import java.util.*;
 
     }
 
-    private List<Action> acquirePubKeys(int retryCount) {
-        List<String> nodeList = clusterInfo.clusterNodeNames();
-        Set<String> nodeSet = new HashSet<>();
-        List<Action> caActionList = new LinkedList<>();
-        log.info(
-            "[CaInitServiceImpl.acquirePubKeys] start to acquire all nodes' pubKey, nodeList size = {}, nodeList = {}",
-            nodeList.size(), nodeList.toString());
-
-        int i = 0;
-        do {
-            if (nodeSet.size() == nodeList.size()) {
-                log.info("[CaInitServiceImpl.acquirePubKeys]  acquired all nodes' pubKey, nodeSet size = {}",
-                    nodeSet.size());
-                return caActionList;
-            }
-            // acquire all nodes' pubKey
-            nodeList.forEach((nodeName) -> {
-                try {
-                    synchronized (CaInitServiceImpl.class) {
-                        if (!nodeSet.contains(nodeName)) {
-                            RespData<List<Config>> resp = caClient.caInit(nodeName);
-                            if (resp.isSuccess()) {
-                                for (Config config : resp.getData()) {
-                                    CaAction caAction = new CaAction();
-                                    caAction.setType(ActionTypeEnum.CA_INIT);
-                                    caAction.setUser(nodeName);
-                                    caAction.setPubKey(config.getPubKey());
-                                    caAction.setUsage(config.getUsage());
-                                    log.info("user={}, pubKey={},usage={}", nodeName, config.getPubKey(),
-                                        config.getUsage());
-                                    caActionList.add(caAction);
-                                }
-                                nodeSet.add(nodeName);
-                            }
-                        }
-                    }
-                } catch (Throwable e) {
-                    log.warn("[CaInitServiceImpl.acquirePubKeys] acquire pubKey error, node={}", nodeName);
-                }
-            });
-            if (caActionList.size() < (nodeList.size() * 2)) {
-                try {
-                    Thread.sleep(3 * 1000);
-                } catch (InterruptedException e) {
-                    log.warn("acquire pubKey error.", e);
-                }
-            }
-        } while (caActionList.size() < (nodeList.size() * 2) && ++i < retryCount);
-
-        if (caActionList.size() < nodeList.size() * 2) {
-            log.error(
-                "[CaInitServiceImpl.acquirePubKeys]  error acquire all nodes' pubKey, caActionList size = {},caActionList={}, nodeList.size={},nodeList={}",
-                caActionList.size(), caActionList.toString(), nodeList.size(), nodeList.toString());
-            MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_ACQUIRE_PUBKEY_ERROR, 1);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_CA_INIT_ERROR,
-                "[CaInitServiceImpl.acquirePubKeys] cluster init CA error, can not acquire enough pubKeys");
+    private List<Action> acquirePubKeys() throws FileNotFoundException {
+        JsonParser parser = new JsonParser();
+        JsonObject object = null;
+        if (StringUtils.isBlank(geniusPath)) {
+            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("geniusBlock.json");
+            object = (JsonObject)parser.parse(new InputStreamReader(inputStream));
+        } else {
+            object = (JsonObject)parser.parse(new FileReader(geniusPath));
         }
 
-        log.info(
-            "[CaInitServiceImpl.acquirePubKeys]  end acquire all nodes' pubKey, caActionList size = {}, nodeSet size={}, nodeList.size()={}, caActionList = {}",
-            caActionList.size(), nodeSet.size(), nodeList.size(), caActionList);
+        JsonArray array = object.get("transactions").getAsJsonArray();
+
+        JsonArray actions = (array.get(0).getAsJsonObject()).get("actions").getAsJsonArray();
+
+        List<Action> caActionList = new LinkedList<>();
+
+        for (int k = 0; k < actions.size(); k++) {
+            JsonObject node = actions.get(k).getAsJsonObject();
+            String nodeName = node.get("nodeName").getAsString();
+            JsonArray pubKeys = node.get("keys").getAsJsonArray();
+            for (int i = 0; i < pubKeys.size(); i++) {
+                CaAction caAction = new CaAction();
+                String pubKey = pubKeys.get(i).getAsJsonObject().get("publicKey").getAsString();
+                String type = pubKeys.get(i).getAsJsonObject().get("type").getAsString();
+
+                caAction.setType(ActionTypeEnum.CA_INIT);
+                caAction.setUser(nodeName);
+                caAction.setPubKey(pubKey);
+                caAction.setUsage(type);
+                caActionList.add(caAction);
+            }
+        }
+        log.info("end acquirePubKeys, caActionList.size={}, caActionList={}", caActionList.size(), caActionList);
         return caActionList;
     }
-
-    @Override public RespData<List<Config>> initCaTx() {
-        // acquire pubKey from DB
-        List<Config> list = configRepository.getConfig(new Config(nodeState.getNodeName()));
-        if (null == list) {
-            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, key pair not exist", nodeState.getNodeName());
-            return new RespData<>(RespCodeEnum.DATA_NOT_EXIST);
-        }
-        if (list.size() != 2) {
-            log.info("[CaInitServiceImpl.initCaTx] nodeName={}, pub/priKey pairs not equal 2, list size={}",
-                nodeState.getNodeName(), list.size());
-            return new RespData<>(RespCodeEnum.SYS_FAIL);
-        }
-        log.info("[CaInitServiceImpl.initCaTx] nodeName={}, KeyPair list={}", nodeState.getNodeName(), list);
-        // erase priKey
-        for (Config config : list) {
-            config.setPriKey("");
-        }
-        RespData<List<Config>> resp = new RespData<>();
-        resp.setData(list);
-        return resp;
-    }
-
 }

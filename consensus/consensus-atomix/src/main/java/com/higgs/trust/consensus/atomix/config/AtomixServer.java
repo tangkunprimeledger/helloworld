@@ -51,10 +51,7 @@ public class AtomixServer implements ConsensusStateMachine, ConsensusClient {
 
     private Atomix atomix;
 
-    @StateChangeListener(NodeStateEnum.Running)
-    @Order
-    @Override
-    public synchronized void start() {
+    @StateChangeListener(NodeStateEnum.StartingConsensus) @Order @Override public synchronized void start() {
         List<Node> nodes = new ArrayList<>();
         AtomicReference<String> currentMember = new AtomicReference<>();
         properties.getCluster().forEach((key, value) -> {

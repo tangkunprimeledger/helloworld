@@ -1,19 +1,23 @@
 package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.common.dao.RocksUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.rs.common.enums.RequestEnum;
+import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RespCodeEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.common.utils.CoreTransactionConvertor;
-import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.RsManageService;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
+import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.vo.manage.CancelRsVO;
 import com.higgs.trust.rs.core.vo.manage.RegisterPolicyVO;
 import com.higgs.trust.rs.core.vo.manage.RegisterRsVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -30,6 +34,8 @@ import com.higgs.trust.slave.model.bo.manage.RsNode;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -52,11 +58,9 @@ import java.util.List;
 
     @Autowired private CoreTransactionConvertor coreTransactionConvertor;
 
-    @Autowired private RequestHelper requestHelper;
+    @Autowired private CoreTxRepository coreTxRepository;
 
     @Autowired private NodeState nodeState;
-
-    @Autowired private CaService caService;
 
     @Autowired private RsNodeRepository rsNodeRepository;
 
@@ -64,38 +68,49 @@ import java.util.List;
 
     @Autowired private CaRepository caRepository;
 
+    @Autowired private RsConfig rsConfig;
+
     @Override public RespData registerRs(RegisterRsVO registerRsVO) {
         RespData respData;
         try {
-            //开启事务
-            respData = txRequired.execute(new TransactionCallback<RespData>() {
-                @Override public RespData doInTransaction(TransactionStatus txStatus) {
-                    //请求幂等校验
-                    RespData respData = requestHelper.requestIdempotent(registerRsVO.getRequestId());
-                    if (null != respData) {
-                        return respData;
-                    }
+            //request idempotent check
+            String reqId = registerRsVO.getRequestId();
+            respData = checkIdempotent(reqId);
+            if (null != respData) {
+                return respData;
+            }
 
-                    //请求入库
-                    respData = requestHelper.insertRequest(registerRsVO.getRequestId(), registerRsVO);
-                    if (null != respData) {
-                        return respData;
-                    }
+            //校验rsId是否可注册
+            respData = checkRsForRegister(registerRsVO.getRsId());
+            if (null != respData) {
+                return respData;
+            }
 
-                    //校验rsId是否可注册
-                    respData = checkRsForRegister(registerRsVO.getRsId());
-                    if (null != respData) {
-                        //更新请求状态
-                        requestHelper.updateRequest(registerRsVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
-                            respData.getRespCode(), respData.getMsg());
-                        return respData;
+            if (rsConfig.isUseMySQL()) {
+                //开启事务
+                respData = txRequired.execute(new TransactionCallback<RespData>() {
+                    @Override public RespData doInTransaction(TransactionStatus txStatus) {
+                        //组装UTXO,CoreTransaction，下发
+                        CoreTransaction coreTx = coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),null,
+                            buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId());
+                        coreTx.setTxType(TxTypeEnum.RS.getCode());
+                        return submitTx(coreTx);
                     }
-
+                });
+            } else {
+                try {
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    ThreadLocalUtils.putRocksTx(tx);
                     //组装UTXO,CoreTransaction，下发
-                    return submitTx(coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(), null,
-                        buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId()));
+                    CoreTransaction coreTx = coreTransactionConvertor.buildCoreTransaction(registerRsVO.getRequestId(),null,
+                        buildRegisterRsActionList(registerRsVO), InitPolicyEnum.REGISTER_RS.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.RS.getCode());
+                    respData =  submitTx(coreTx);
+                    RocksUtils.txCommit(tx);
+                } finally {
+                    ThreadLocalUtils.clearRocksTx();
                 }
-            });
+            }
 
             if (null == respData) {
                 log.error("register rs error, respData is null");
@@ -148,39 +163,52 @@ import java.util.List;
     @Override public RespData registerPolicy(RegisterPolicyVO registerPolicyVO) {
         RespData respData;
         try {
-            //开启事务
-            respData = txRequired.execute(new TransactionCallback<RespData>() {
-                @Override public RespData doInTransaction(TransactionStatus txStatus) {
-                    //初步幂等校验
-                    RespData respData = requestHelper.requestIdempotent(registerPolicyVO.getRequestId());
-                    if (null != respData) {
-                        return respData;
-                    }
+            //request idempotent check
+            String reqId = registerPolicyVO.getRequestId();
+            respData = checkIdempotent(reqId);
+            if (null != respData) {
+                return respData;
+            }
 
-                    //请求入库
-                    respData = requestHelper.insertRequest(registerPolicyVO.getRequestId(), registerPolicyVO);
-                    if (null != respData) {
-                        return respData;
-                    }
+            //校验是否可注册policy
+            respData = checkPolicy(registerPolicyVO);
+            if (null != respData) {
+                return respData;
+            }
 
-                    //校验是否可注册policy
-                    respData = checkPolicy(registerPolicyVO);
-                    if (null != respData) {
-                        requestHelper
-                            .updateRequest(registerPolicyVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
-                                respData.getRespCode(), respData.getMsg());
-                        return respData;
+            if (rsConfig.isUseMySQL()) {
+                //开启事务
+                respData = txRequired.execute(new TransactionCallback<RespData>() {
+                    @Override public RespData doInTransaction(TransactionStatus txStatus) {
+                        //组装CoreTransaction，下发
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
+                        jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
+                        CoreTransaction coreTx = coreTransactionConvertor
+                            .buildCoreTransaction(registerPolicyVO.getRequestId(), jsonObject,
+                                buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId());
+                        coreTx.setTxType(TxTypeEnum.POLICY.getCode());
+                        return submitTx(coreTx);
                     }
-
+                });
+            } else {
+                try {
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    ThreadLocalUtils.putRocksTx(tx);
                     //组装CoreTransaction，下发
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("votePattern", registerPolicyVO.getVotePattern());
                     jsonObject.put("callbackType", registerPolicyVO.getCallbackType());
-                    return submitTx(coreTransactionConvertor
+                    CoreTransaction coreTx = coreTransactionConvertor
                         .buildCoreTransaction(registerPolicyVO.getRequestId(), jsonObject,
-                            buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId()));
+                            buildPolicyActionList(registerPolicyVO), InitPolicyEnum.REGISTER_POLICY.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.POLICY.getCode());
+                    respData = submitTx(coreTx);
+                    RocksUtils.txCommit(tx);
+                } finally {
+                    ThreadLocalUtils.clearRocksTx();
                 }
-            });
+            }
 
             if (null == respData) {
                 log.error("register policy error, respData is null");
@@ -196,36 +224,48 @@ import java.util.List;
     @Override public RespData cancelRs(CancelRsVO cancelRsVO) {
         RespData respData;
         try {
-            //开启事务
-            respData = txRequired.execute(new TransactionCallback<RespData>() {
-                @Override public RespData doInTransaction(TransactionStatus txStatus) {
-                    //请求幂等校验
-                    RespData respData = requestHelper.requestIdempotent(cancelRsVO.getRequestId());
-                    if (null != respData) {
-                        return respData;
-                    }
 
-                    //请求入库
-                    respData = requestHelper.insertRequest(cancelRsVO.getRequestId(), cancelRsVO);
-                    if (null != respData) {
-                        return respData;
-                    }
+            //request idempotent check
+            String reqId = cancelRsVO.getRequestId();
+            respData = checkIdempotent(reqId);
+            if (null != respData) {
+                return respData;
+            }
 
-                    //校验rsId是否可注销
-                    respData = checkRsForCancel(cancelRsVO.getRsId());
-                    if (null != respData) {
-                        //更新请求状态
-                        requestHelper.updateRequest(cancelRsVO.getRequestId(), RequestEnum.PROCESS, RequestEnum.DONE,
-                            respData.getRespCode(), respData.getMsg());
-                        return respData;
-                    }
+            //校验rsId是否可注销
+            respData = checkRsForCancel(cancelRsVO.getRsId());
+            if (null != respData) {
+                return respData;
+            }
 
-                    //组装UTXO,CoreTransaction，下发
-                    return submitTx(coreTransactionConvertor
+            if (rsConfig.isUseMySQL()) {
+                //开启事务
+                respData = txRequired.execute(new TransactionCallback<RespData>() {
+                    @Override public RespData doInTransaction(TransactionStatus txStatus) {
+                        //组装CoreTransaction，下发
+                        CoreTransaction coreTx = coreTransactionConvertor
+                            .buildCoreTransaction(cancelRsVO.getRequestId(), null, buildCancelRsActionList(cancelRsVO),
+                                InitPolicyEnum.CANCEL_RS.getPolicyId());
+                        coreTx.setTxType(TxTypeEnum.RS.getCode());
+                        return submitTx(coreTx);
+                    }
+                });
+            } else {
+                try {
+                    Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                    ThreadLocalUtils.putRocksTx(tx);
+
+                    //组装CoreTransaction，下发
+                    CoreTransaction coreTx = coreTransactionConvertor
                         .buildCoreTransaction(cancelRsVO.getRequestId(), null, buildCancelRsActionList(cancelRsVO),
-                            InitPolicyEnum.CANCEL_RS.getPolicyId()));
+                            InitPolicyEnum.CANCEL_RS.getPolicyId());
+                    coreTx.setTxType(TxTypeEnum.RS.getCode());
+                    respData = submitTx(coreTx);
+                    RocksUtils.txCommit(tx);
+                } finally {
+                    ThreadLocalUtils.clearRocksTx();
                 }
-            });
+            }
 
             if (null == respData) {
                 log.error("register rs error, respData is null");
@@ -313,9 +353,25 @@ import java.util.List;
             coreTransactionService.submitTx(coreTransaction);
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                return requestHelper.requestIdempotent(coreTransaction.getTxId());
+                return checkIdempotent(coreTransaction.getTxId());
             }
         }
         return new RespData<>();
+    }
+
+    /**
+     *
+     * @param txId
+     * @return
+     */
+    private RespData checkIdempotent(String txId) {
+        CoreTransactionPO po = coreTxRepository.queryByTxId(txId, false);
+        if (null != po) {
+            if (null == po.getBlockHeight()) {
+                return new RespData(RespCodeEnum.REQUEST_DUPLICATE.getRespCode(), RespCodeEnum.REQUEST_DUPLICATE.getMsg());
+            }
+            return new RespData<>(po.getErrorCode(), po.getErrorMsg());
+        }
+        return null;
     }
 }

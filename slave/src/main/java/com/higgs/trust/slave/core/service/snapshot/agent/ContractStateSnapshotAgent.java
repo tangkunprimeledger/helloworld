@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
-import com.alibaba.fastjson.JSON;
 import com.higgs.trust.contract.ContractStateStore;
 import com.higgs.trust.contract.JsonHelper;
 import com.higgs.trust.contract.StateManager;
@@ -12,7 +11,6 @@ import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.dao.po.contract.ContractStatePO;
 import com.higgs.trust.slave.model.bo.BaseBO;
 import com.higgs.trust.slave.model.bo.contract.ContractState;
-import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

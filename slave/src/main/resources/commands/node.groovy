@@ -1,11 +1,13 @@
 package commands
 
+import com.higgs.trust.config.view.ClusterViewManager
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
 import com.higgs.trust.consensus.core.ConsensusStateMachine
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
+import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*
@@ -106,6 +108,29 @@ class node {
         def consensusStateMachine = beans.getBean(ConsensusStateMachine.class)
         consensusStateMachine.start()
         out.println("start consensus successful")
+    }
+
+    @Usage('show the views of cluster')
+    @Command
+    def views(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def viewManager = beans.getBean(ClusterViewManager.class)
+        viewManager.getViews().forEach({ v -> context.provide(View: v.id, FaultNum: v.faultNum, StartHeight: v.startHeight, EndHeight: v.endHeight, NodeNames: v.nodeNames) })
+        out.println("")
+    }
+
+    @Usage('refresh the cluster view')
+    @Command
+    def refreshView(InvocationContext context,
+                    @Usage("init from cluster") @Option(names = ["c"]) Boolean isCluster) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def clusterInfoService = beans.getBean(ClusterViewService.class)
+        if (isCluster) {
+            clusterInfoService.initClusterViewFromCluster()
+        } else {
+            clusterInfoService.initClusterViewFromDB(true)
+        }
+        out.println("refresh cluster view successful")
     }
 
 }

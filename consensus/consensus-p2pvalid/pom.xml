@@ -21,12 +21,6 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>config-api</artifactId>
         </dependency>
-        <!-- mybatis begin -->
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis</artifactId>
-        </dependency>
-
         <!-- test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

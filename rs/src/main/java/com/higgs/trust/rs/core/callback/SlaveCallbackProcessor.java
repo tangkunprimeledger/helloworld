@@ -9,7 +9,6 @@ import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.repository.CoreTxProcessRepository;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
@@ -40,8 +39,6 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
     private SlaveCallbackRegistor slaveCallbackRegistor;
     @Autowired
     private CoreTxRepository coreTxRepository;
-    @Autowired
-    private CoreTxProcessRepository coreTxProcessRepository;
     @Autowired
     private RsCoreCallbackProcessor rsCoreCallbackProcessor;
     @Autowired
@@ -95,7 +92,7 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
         //save process result
         coreTxRepository.saveExecuteResultAndHeight(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), blockHeader.getHeight());
         //update status
-        coreTxProcessRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
+        coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
         //callback custom rs
         rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
         //同步通知
@@ -117,7 +114,7 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
 
         //update status to END
         try {
-            coreTxProcessRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
+            coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
         } catch (RsCoreException e) {
             //status is END no need to deal
             if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
@@ -193,10 +190,6 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
      * @param blockHeight
      */
     private void createCoreTx(CoreTransaction tx, List<SignInfo> signInfos, RespData respData, Long blockHeight, CoreTxStatusEnum coreTxStatusEnum) {
-        coreTxRepository.add(tx, signInfos, respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), blockHeight);
-        // END coreTxProcess  will be delete by task, so no need to insert it.
-        if (coreTxStatusEnum != CoreTxStatusEnum.END) {
-            coreTxProcessRepository.add(tx.getTxId(), coreTxStatusEnum);
-        }
+        coreTxRepository.add(tx, signInfos, respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), blockHeight, coreTxStatusEnum);
     }
 }

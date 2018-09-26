@@ -11,3 +11,5 @@ CREATE TABLE IF NOT EXISTS `core_transaction_process` (
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create core transaction process';
 
 alter table core_transaction drop column `status`;
+
+alter table `core_transaction` add column `tx_type` varchar(16) NOT NULL DEFAULT 'DEFAULT' COMMENT 'the type of transaction' AFTER `block_height`;

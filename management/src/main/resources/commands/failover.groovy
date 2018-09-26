@@ -1,9 +1,9 @@
 package commands
 
-import com.higgs.trust.config.p2p.ClusterInfo
+
+import com.higgs.trust.config.view.IClusterViewManager
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
-import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService
 import com.higgs.trust.management.failover.scheduler.FailoverSchedule
 import com.higgs.trust.management.failover.service.SelfCheckingService
 import com.higgs.trust.management.failover.service.SyncService
@@ -64,8 +64,9 @@ class failover {
             def height = blockService.getMaxHeight().toString()
             out.println("sync blocks successful, current height:$height")
         } else {
-            def clusterInfo = beans.getBean(ClusterInfo.class)
-            if (!clusterInfo.clusterNodeNames().contains(fromNode)) {
+            def viewManager = beans.getBean(IClusterViewManager.class)
+            def currentView = viewManager.getCurrentView();
+            if (!currentView.nodeNames.contains(fromNode)) {
                 out.println("The from node: $fromNode not exist")
                 return
             }
@@ -97,23 +98,6 @@ class failover {
         out.println("Self check result: $result")
     }
 
-
-    @Usage('refresh the cluster info')
-    @Command
-    def refreshClusterInfo(InvocationContext context,
-                           @Usage("init from cluster") @Option(names = ["c"]) Boolean isCluster) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def clusterInfoService = beans.getBean(ClusterInfoService.class)
-        def clusterInfo = beans.getBean(ClusterInfo.class)
-        if (isCluster) {
-            clusterInfoService.initWithCluster()
-        } else {
-            clusterInfo.refresh()
-        }
-        out.println("refresh successful")
-    }
-
-
     @Usage('sync the genesis block')
     @Command
     def genesis(InvocationContext context, @Option(names = ["f", "from"]) String fromNode) {
@@ -131,8 +115,9 @@ class failover {
             def height = blockService.getMaxHeight().toString()
             out.println("sync blocks successful, current height:$height")
         } else {
-            def clusterInfo = beans.getBean(ClusterInfo.class)
-            if (!clusterInfo.clusterNodeNames().contains(fromNode)) {
+            def viewManager = beans.getBean(IClusterViewManager.class)
+            def currentView = viewManager.getCurrentView()
+            if (!currentView.nodeNames.contains(fromNode)) {
                 out.println("The from node: $fromNode not exist")
                 return
             }

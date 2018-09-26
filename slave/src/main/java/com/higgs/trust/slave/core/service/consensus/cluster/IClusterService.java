@@ -18,6 +18,13 @@ public interface IClusterService {
     Long getClusterHeight(int size);
 
     /**
+     * get the safe block height of cluster
+     *
+     * @return
+    */
+    Long getSafeHeight();
+
+    /**
      * get the block height of cluster
      *
      * @param requestId the id of request

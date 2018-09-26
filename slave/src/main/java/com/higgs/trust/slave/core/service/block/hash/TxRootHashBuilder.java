@@ -8,13 +8,12 @@ import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author liuyu
@@ -69,17 +68,15 @@ import java.util.List;
      * @param receipts
      * @return
      */
-    public String buildReceipts(List<TransactionReceipt> receipts) {
-        if (CollectionUtils.isEmpty(receipts)) {
+    public String buildReceipts(Map<String, TransactionReceipt> receipts) {
+        if (MapUtils.isEmpty(receipts)) {
             return DEFAULT_HASH_FLAG;
         }
-        Collections.sort(receipts, new Comparator<TransactionReceipt>() {
-            @Override public int compare(TransactionReceipt o1, TransactionReceipt o2) {
-                return o1.getTxId().equals(o2.getTxId()) ? 1 : 0;
-            }
-        });
+        List<TransactionReceipt> list = receipts.entrySet().stream().sorted(Comparator.comparing(e->e.getKey())).map(e-> e.getValue()).collect(
+            Collectors.toList());
+
         //by merkle tree
-        MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.TX_RECEIEPT, Arrays.asList(receipts));
+        MerkleTree merkleTree = merkleService.build(MerkleTypeEnum.TX_RECEIEPT, Arrays.asList(list));
         if (merkleTree == null) {
             return null;
         }

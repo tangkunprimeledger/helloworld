@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
 
     public static Crypto getBizCrypto(String cryptoType) {
         if (log.isDebugEnabled()) {
-            log.debug("crypto type for biz layer is {}", biz);
+            log.trace("crypto type for biz layer is {}", biz);
         }
         Crypto crypto = StringUtils.isBlank(cryptoType) ? selector(biz) : selector(cryptoType);
         return crypto;
@@ -33,7 +33,7 @@ import javax.validation.constraints.NotNull;
 
     public static Crypto getProtocolCrypto() {
         if (log.isDebugEnabled()) {
-            log.debug("crypto type for consensus layer is {}", consensus);
+            log.trace("crypto type for consensus layer is {}", consensus);
         }
         return selector(consensus);
     }

@@ -71,7 +71,7 @@
         "maxWait": 60000,
         "min-evictable-idle-time-millis": 300000,
         "minIdle": 1,
-        "password": "root",
+        "password": "",
         "time-between-eviction-runs-millis": 60000,
         "url": "jdbc:mysql://192.168.99.100:3306/trust1?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"

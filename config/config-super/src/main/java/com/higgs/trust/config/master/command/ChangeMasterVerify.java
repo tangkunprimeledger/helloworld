@@ -24,6 +24,11 @@ import java.io.Serializable;
     private long term;
 
     /**
+     * the cluster view number
+     */
+    private long view;
+
+    /**
      * the node name of proposer
      */
     private String proposer;

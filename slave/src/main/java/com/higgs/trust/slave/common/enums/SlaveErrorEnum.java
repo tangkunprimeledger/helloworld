@@ -116,6 +116,9 @@ public enum SlaveErrorEnum implements ErrorInfo {
     SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR("838", "slave batch insert rows different error", false),
     SLAVE_PACKAGE_RECEIVED_INVALID_NODE_STATE("839", "the node state is not running", false),
     SLAVE_ACCOUNT_FREEZE_RECORD_IS_ALREADY_EXISTS_ERROR("840", "account freeze record is already exists error", false),
+    SLAVE_ROCKS_KEY_ALREADY_EXIST("841", "rocks key is exist", false),
+    SLAVE_ROCKS_KEY_IS_NOT_EXIST("842", "rocks key is not exist", false),
+    SLAVE_ROCKS_TRANSACTION_IS_NULL("843", "rocks transaction is null", false),
 
 
     SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),

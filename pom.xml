@@ -34,7 +34,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>1.5.10.RELEASE</spring-boot.version>
         <spring-cloud.version>Edgware.SR3</spring-cloud.version>
-        <atomix.version>3.0.1</atomix.version>
+        <atomix.version>3.0.5</atomix.version>
         <copycat.version>1.1.4</copycat.version>
     </properties>
 
@@ -294,6 +294,11 @@
                 <artifactId>concurrentlinkedhashmap-lru</artifactId>
                 <version>1.4.2</version>
             </dependency>
+            <dependency>
+                <groupId>org.rocksdb</groupId>
+                <artifactId>rocksdbjni</artifactId>
+                <version>5.14.2</version>
+            </dependency>
 
             <!--seg-->
             <dependency>
@@ -355,6 +360,18 @@
             <dependency>
                 <groupId>org.powermock</groupId>
                 <artifactId>powermock-classloading-xstream</artifactId>
+                <version>1.7.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-testng</artifactId>
+                <version>1.7.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-testng-common</artifactId>
                 <version>1.7.1</version>
                 <scope>test</scope>
             </dependency>

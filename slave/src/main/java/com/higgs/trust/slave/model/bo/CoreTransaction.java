@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.model.bo;
 
 import com.alibaba.fastjson.JSONObject;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.Getter;
 import lombok.Setter;
@@ -66,6 +67,9 @@ public class CoreTransaction extends BaseBO {
      */
     @NotBlank
     private String version;
-
-
+    /**
+     * the type of transaction
+     */
+    @NotNull
+    private String txType = TxTypeEnum.DEFAULT.getCode();
 }

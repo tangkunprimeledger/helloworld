@@ -83,6 +83,7 @@ public class UTXOContextService extends ContractApiService {
      * @param augend
      * @return
      */
+    public static BigDecimal add(String augend, String addend) {
     public BigDecimal add(String augend, String addend) {
         BigDecimal a = null;
         BigDecimal b = null;
@@ -140,6 +141,35 @@ public class UTXOContextService extends ContractApiService {
         }
         return a0.compareTo(b0);
     }
+
+
+    /**
+     * verify UTXO Signature list
+     * all the Signature is sign from the same message with different private key
+     *
+     * @param signList
+     * @param message
+     * @return
+     */
+    public boolean verifySignature(List<Sign> signList, String message) {
+        if (CollectionUtils.isEmpty(signList) || null == message) {
+            log.error("Verify UTXO Signature list for signList or message is null error!");
+            return false;
+        }
+        for (Sign sign : signList) {
+            if (StringUtils.isBlank(sign.getPubKey()) || StringUtils.isBlank(sign.getSignature())) {
+                log.error("UTXO sign info :{} for PubKey or Signature is null error!", sign);
+                return false;
+            }
+            if (!CryptoUtil.getBizCrypto().verify(message, sign.getSignature(), sign.getPubKey())) {
+                log.error("UTXO verify message :{} for Signature :{} with pubKey :{}  failed error!", message, sign.getSignature(), sign.getPubKey());
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
 
 
     public int cipherCompare(String a, String b) {

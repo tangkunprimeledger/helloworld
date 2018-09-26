@@ -22,6 +22,11 @@ import java.io.Serializable;
     @NonNull private long term;
 
     /**
+     * the cluster view number
+     */
+    @NonNull private long view;
+
+    /**
      * the node name of voter
      */
     @NonNull private String voter;
@@ -47,6 +52,6 @@ import java.io.Serializable;
     private String sign;
 
     public String getSignValue() {
-        return String.join(",", "" + term, voter, proposer, "" + packageHeight, "" + changeMaster);
+        return String.join(",", "" + term, "" + view, voter, proposer, "" + packageHeight, "" + changeMaster);
     }
 }

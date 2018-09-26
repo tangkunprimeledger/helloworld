@@ -363,7 +363,7 @@ import static org.testng.Assert.assertEquals;
 
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
-        pack.setStatus(PackageStatusEnum.INIT);
+        pack.setStatus(PackageStatusEnum.RECEIVED);
 
         BlockHeader header = new BlockHeader();
         header.setHeight(blockHeight);
