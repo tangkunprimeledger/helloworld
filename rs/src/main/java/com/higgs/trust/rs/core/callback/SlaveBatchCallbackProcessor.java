@@ -153,11 +153,9 @@ import java.util.Map;
             try {
                 batchInsert(allTxs, blockHeader.getHeight());
             } catch (RsCoreException e) {
-                log.error("[onFailover] batchInsert idempotent error", e);
                 //数据库中可能还有原业务数据，当单个节点跟集群区块不一致时，
                 //需要恢复差异的数据，本节点未做完的交易可能会再failover回来.
                 if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                    log.info("special handle: " + e.getCode());
                     //process for each
                     for (RsCoreTxVO tx : allTxs) {
                         boolean isExist = coreTxRepository.isExist(tx.getTxId());

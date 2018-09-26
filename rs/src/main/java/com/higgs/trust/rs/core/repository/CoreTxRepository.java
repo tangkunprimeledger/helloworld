@@ -374,7 +374,7 @@ import java.util.*;
      */
     public CoreTransactionProcessPO queryStatusByTxId(String txId, CoreTxStatusEnum statusEnum) {
         if (rsConfig.isUseMySQL()) {
-            return coreTransactionProcessDao.queryByTxId(txId, statusEnum.getCode());
+            return coreTransactionProcessDao.queryByTxId(txId, statusEnum == null ? null : statusEnum.getCode());
         }
         CoreTxStatusEnum coreTxStatusEnum =
             coreTxProcessRocksDao.queryByTxIdAndStatus(txId, statusEnum == null ? null : statusEnum.getIndex());
