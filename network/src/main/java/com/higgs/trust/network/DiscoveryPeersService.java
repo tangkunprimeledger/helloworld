@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 import java.util.concurrent.*;
 
+import static com.higgs.trust.network.utils.Threads.namedThreads;
+
 /**
  * @author duhongming
  * @date 2018/9/12
@@ -35,7 +37,7 @@ public class DiscoveryPeersService {
         this.peers = peers;
         this.executorService = executorService;
         this.localAddress = networkManage.localPeer().getAddress();
-        this.scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+        this.scheduledExecutor = Executors.newSingleThreadScheduledExecutor(namedThreads("Network-DiscoveryPeersService-%d", log));
 
         networkManage.messagingService.registerHandler(DISCOVERY_NODES_ACTION, this::discoveryPeersHandler);
     }

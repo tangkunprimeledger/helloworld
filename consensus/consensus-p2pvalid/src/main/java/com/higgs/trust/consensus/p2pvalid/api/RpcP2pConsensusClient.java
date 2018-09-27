@@ -6,7 +6,9 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import com.higgs.trust.network.Address;
 import com.higgs.trust.network.NetworkManage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,7 +18,9 @@ import java.util.concurrent.ExecutionException;
  * @author duhongming
  * @date 2018/9/18
  */
+@ConditionalOnProperty(name = "network.rpc", havingValue = "netty", matchIfMissing = true)
 @Component
+@Slf4j
 public class RpcP2pConsensusClient implements P2pConsensusClient {
 
     private static final String ACTION_TYPE_RECEIVE_COMMAND = "consensus/p2p/receive_command";
@@ -27,6 +31,10 @@ public class RpcP2pConsensusClient implements P2pConsensusClient {
 
     @Autowired
     private NetworkManage networkManage;
+
+    public RpcP2pConsensusClient() {
+        log.info("Use RpcP2pConsensusClient");
+    }
 
     @Override
     public ValidResponseWrap<ResponseCommand> send(String nodeName, ValidCommandWrap validCommandWrap) {

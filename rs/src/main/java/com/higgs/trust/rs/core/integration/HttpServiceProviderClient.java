@@ -10,7 +10,6 @@ import com.higgs.trust.slave.api.vo.RespData;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
-import java.util.List;
 
 /**
  * @author duhongming

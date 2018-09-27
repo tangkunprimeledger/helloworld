@@ -31,6 +31,12 @@ public class NetworkConfiguration {
     @Value("${network.port}")
     public int port;
 
+    @Value("${network.timeout}")
+    public int timeout;
+
+    @Value("${network.clientThreadNum}")
+    public int clientThreadNum;
+
     @Value("${network.peers}")
     public String[] peers;
 
@@ -98,6 +104,8 @@ public class NetworkConfiguration {
                 .publicKey(publicKey)
                 .seed(seeds)
                 .authentication(authentication)
+                .timeout(timeout)
+                .clientThreadNum(clientThreadNum)
                 .singleton()
                 .build();
         NetworkManage networkManage = new NetworkManage(networkConfig);

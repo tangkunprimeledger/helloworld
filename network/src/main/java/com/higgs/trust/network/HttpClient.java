@@ -1,7 +1,6 @@
 package com.higgs.trust.network;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.network.utils.RandomUtil;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,7 @@ import java.util.Random;
  * @date 2018/9/14
  */
 public class HttpClient {
-    private static OkHttpClient httpClient = new OkHttpClient.Builder().build();
+
     private static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -25,9 +24,12 @@ public class HttpClient {
 
     private NetworkManage networkManage;
 
+    private OkHttpClient httpClient;
+
     public HttpClient(NetworkManage networkManage) {
         this.networkManage = networkManage;
         this.random = new Random();
+        httpClient = new OkHttpClient.Builder().build();
     }
 
     public <T> T postJson(String nodeName, String resourceUrl, Object json, Class<T> resultClass) {

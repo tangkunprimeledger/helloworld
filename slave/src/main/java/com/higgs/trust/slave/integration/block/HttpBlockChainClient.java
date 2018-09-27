@@ -8,7 +8,9 @@ import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
@@ -18,7 +20,9 @@ import java.util.List;
  * @author duhongming
  * @date 2018/9/14
  */
-//@Component
+@ConditionalOnProperty(name = "network.rpc", havingValue = "http")
+@Component
+@Slf4j
 public class HttpBlockChainClient implements BlockChainClient {
 
     private static Type respDataListType;
@@ -34,6 +38,10 @@ public class HttpBlockChainClient implements BlockChainClient {
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
+    }
+
+    public HttpBlockChainClient() {
+        log.info("Use HttpBlockChainClient");
     }
 
     @Override
