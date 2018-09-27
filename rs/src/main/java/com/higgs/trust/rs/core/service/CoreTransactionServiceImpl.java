@@ -240,8 +240,8 @@ import java.util.concurrent.TimeUnit;
             });
         } else {
             //check by status
-            CoreTransactionPO corePO = coreTxRepository.queryByStatus(txId, CoreTxStatusEnum.INIT);
-            if (corePO == null) {
+            CoreTransactionProcessPO processPO = coreTxRepository.queryByStatus(txId, CoreTxStatusEnum.INIT);
+            if (processPO == null) {
                 return;
             }
             Transaction tx = RocksUtils.beginTransaction(new WriteOptions());

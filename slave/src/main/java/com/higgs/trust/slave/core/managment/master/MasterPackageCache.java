@@ -30,8 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
 
-    private static int BATCH_PACKAGE = 5;
-
     private AtomicLong packHeight = new AtomicLong(0);
     private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
     private ConcurrentLinkedHashMap existTxMap =
@@ -161,21 +159,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
     public PackageCommand getPackage() {
         return pendingPack.poll();
-    }
-
-    /**
-     * is deprecated use <getPackage/>
-     * @return
-     */
-    @Deprecated
-    public List<PackageCommand> getPackages() {
-        int i = 0;
-        List<PackageCommand> packageList = new LinkedList<>();
-        while ((null != pendingPack.peek()) && (i++ < BATCH_PACKAGE)) {
-            packageList.add(pendingPack.poll());
-        }
-
-        return packageList;
     }
 
 }

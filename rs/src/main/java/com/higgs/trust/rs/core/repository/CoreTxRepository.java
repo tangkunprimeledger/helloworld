@@ -127,9 +127,13 @@ import java.util.*;
             }
         } else {
             coreTxRocksDao.saveWithTransaction(po);
+
             //on init
             if (coreTxStatusEnum != null && coreTxStatusEnum == CoreTxStatusEnum.INIT) {
-                coreTxProcessRocksDao.saveWithTransaction(po, coreTxStatusEnum.getIndex());
+                CoreTransactionProcessPO processPO = new CoreTransactionProcessPO();
+                processPO.setTxId(po.getTxId());
+                processPO.setStatus(coreTxStatusEnum.getCode());
+                coreTxProcessRocksDao.saveWithTransaction(processPO, coreTxStatusEnum.getIndex());
             }
         }
     }
@@ -398,25 +402,15 @@ import java.util.*;
      * @param preKey           for rocks db seek
      * @return
      */
-    public List<CoreTransactionProcessPO> queryByStatusFromMysql(CoreTxStatusEnum coreTxStatusEnum, int row, int count,
+    public List<CoreTransactionProcessPO> queryByStatus(CoreTxStatusEnum coreTxStatusEnum, int row, int count,
         String preKey) {
-        return coreTransactionProcessDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
-    }
-
-    /**
-     * query for status by page no
-     *
-     * @param coreTxStatusEnum
-     * @param row
-     * @param count
-     * @param preKey           for rocks db seek
-     * @return
-     */
-    public List<CoreTransactionPO> queryByStatusFromRocks(CoreTxStatusEnum coreTxStatusEnum, int row, int count,
-        String preKey) {
-        preKey = StringUtils.isEmpty(preKey) ? coreTxStatusEnum.getIndex() :
-            coreTxStatusEnum.getIndex() + Constant.SPLIT_SLASH + preKey;
-        return coreTxProcessRocksDao.queryByPrefix(preKey, count);
+        if (rsConfig.isUseMySQL()) {
+            return coreTransactionProcessDao.queryByStatus(coreTxStatusEnum.getCode(), row, count);
+        } else {
+            preKey = StringUtils.isEmpty(preKey) ? coreTxStatusEnum.getIndex() :
+                coreTxStatusEnum.getIndex() + Constant.SPLIT_SLASH + preKey;
+            return coreTxProcessRocksDao.queryByPrefix(preKey, count);
+        }
     }
 
     /**
@@ -485,7 +479,7 @@ import java.util.*;
      * @param statusEnum
      * @return
      */
-    public CoreTransactionPO queryByStatus(String txId, CoreTxStatusEnum statusEnum) {
+    public CoreTransactionProcessPO queryByStatus(String txId, CoreTxStatusEnum statusEnum) {
         String key = statusEnum.getIndex() + Constant.SPLIT_SLASH + txId;
         return coreTxProcessRocksDao.get(key);
     }

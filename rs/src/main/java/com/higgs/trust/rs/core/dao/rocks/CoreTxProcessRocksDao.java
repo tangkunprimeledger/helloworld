@@ -6,7 +6,7 @@ import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
-import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,12 +23,12 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionPO>{
+public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO>{
     @Override protected String getColumnFamilyName() {
         return "coreTransactionProcess";
     }
 
-    public void saveWithTransaction(CoreTransactionPO po, String index) {
+    public void saveWithTransaction(CoreTransactionProcessPO po, String index) {
         String key = index + Constant.SPLIT_SLASH + po.getTxId();
         if (keyMayExist(key) && null != get(key)) {
             log.error("[CoreTxProcessRocksDao.save] core transaction process is exist, key={}", key);
@@ -56,7 +56,7 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionPO>{
 
         String key = from.getIndex() + Constant.SPLIT_SLASH + txId;
         //first query
-        CoreTransactionPO po = get(key);
+        CoreTransactionProcessPO po = get(key);
         if (null == po) {
             log.error("[CoreTxProcessRocksDao.updateStatus] core transaction process is not exist, key={}", key);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_IS_NOT_EXIST);
@@ -70,7 +70,7 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionPO>{
         txPut(tx, newKey, po);
     }
 
-    public void batchInsert(List<CoreTransactionPO> poList, String index) {
+    public void batchInsert(List<CoreTransactionProcessPO> poList, String index) {
         if (CollectionUtils.isEmpty(poList)) {
             return;
         }
@@ -81,7 +81,7 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionPO>{
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
         }
 
-        for (CoreTransactionPO po : poList) {
+        for (CoreTransactionProcessPO po : poList) {
             String key = index + Constant.SPLIT_SLASH + po.getTxId();
             po.setCreateTime(new Date());
             txPut(tx, key, po);
