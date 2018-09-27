@@ -60,8 +60,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class CoreTransactionServiceImpl implements CoreTransactionService, InitializingBean {
-    @Value("${higgs.trust.joinConsensus:false}")
-    private String joinConsensus;
+    @Value("${higgs.trust.isSlave:false}")
+    private boolean isSlave;
     @Autowired
     private TransactionTemplate txRequired;
     @Autowired
@@ -105,9 +105,8 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
     @Override
     public void afterPropertiesSet() throws Exception {
         log.info("Init redis distribution topic listener to process tx.");
-        //TODO lingchao open it ofter test
-        if (!Boolean.valueOf(joinConsensus)) {
-            log.info("this node not join consensus do not need to initAsyncProcessInitTxListener");
+        if (!isSlave) {
+            log.info("this node not slave do not need to initAsyncProcessInitTxListener");
             return;
         }
         //init Async process init tx listener

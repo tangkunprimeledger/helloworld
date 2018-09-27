@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "higgs.trust.isSlave", havingValue = "true", matchIfMissing = true)
 public class CoreTxProcessDeleteSchedule {
     @Autowired
     private CoreTxProcessRepository coreTxProcessRepository;
