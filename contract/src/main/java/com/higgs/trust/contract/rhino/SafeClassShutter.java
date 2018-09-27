@@ -20,6 +20,7 @@ public class SafeClassShutter implements ClassShutter {
 
     static {
         buildInClasses = new HashSet<>();
+        buildInClasses.add("java.lang.Object");
         buildInClasses.add("java.lang.Long");
         buildInClasses.add("java.lang.Integer");
         buildInClasses.add("java.math.BigDecimal");
@@ -28,7 +29,6 @@ public class SafeClassShutter implements ClassShutter {
         buildInClasses.add("java.lang.String");
         buildInClasses.add("java.util.ArrayList");
         buildInClasses.add("java.util.HashMap");
-        buildInClasses.add("java.util.LinkedList");
         buildInClasses.add("java.util.LinkedList");
         buildInClasses.add("java.util.TreeSet");
 

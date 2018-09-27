@@ -30,7 +30,7 @@ import static com.higgs.trust.network.utils.Threads.namedThreads;
  */
 public class MessagingService {
 
-    private static final long MAX_TIMEOUT_MILLIS = 5000 * 4;
+    private static final long MAX_TIMEOUT_MILLIS = 5000;
     private static final long TIMEOUT_INTERVAL = 50;
     private static final int CHANNEL_POOL_SIZE = 8;
 
@@ -52,6 +52,7 @@ public class MessagingService {
     private final AtomicLong messageIdGenerator = new AtomicLong(0);
 
     private ScheduledFuture<?> timeoutFuture;
+    private long maxTimeoutMillis;
 
     private final Map<Address, List<CompletableFuture<Channel>>> channels = Maps.newConcurrentMap();
 
@@ -66,6 +67,7 @@ public class MessagingService {
         this.config = networkManage.config();
         this.localPeer = networkManage.config().localPeer();
         this.localAddress = localPeer.getAddress();
+        this.maxTimeoutMillis = config.timeout() <= 0 ? MAX_TIMEOUT_MILLIS : config.timeout() * 1000;
     }
 
     public Address address() {
@@ -98,8 +100,8 @@ public class MessagingService {
     }
 
     private void initEventLoopGroup() {
-        clientGroup = new NioEventLoopGroup(2, namedThreads("netty-messaging-event-nio-client-%d", log));
-        serverGroup = new NioEventLoopGroup(0, namedThreads("netty-messaging-event-nio-server-%d", log));
+        clientGroup = new NioEventLoopGroup(config.clientThreadNum(), namedThreads("netty-network-event-nio-client-%d", log));
+        serverGroup = new NioEventLoopGroup(0, namedThreads("netty-network-event-nio-server-%d", log));
     }
 
     /**
@@ -532,7 +534,7 @@ public class MessagingService {
                     iterator.remove();
                     callback.completeExceptionally(new TimeoutException("Request timed out in " + elapsedTime + " milliseconds"));
                 } else {
-                    if (callback.timeout() == 0 && elapsedTime > MAX_TIMEOUT_MILLIS) {
+                    if (callback.timeout() == 0 && elapsedTime > maxTimeoutMillis) {
                         iterator.remove();
                         callback.completeExceptionally(new TimeoutException("Request timed out in " + elapsedTime + " milliseconds"));
                     }

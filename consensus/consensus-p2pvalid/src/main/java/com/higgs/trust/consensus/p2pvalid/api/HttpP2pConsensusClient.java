@@ -8,6 +8,8 @@ import com.higgs.trust.network.HttpClient;
 import com.higgs.trust.network.NetworkManage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -15,7 +17,8 @@ import java.util.List;
  * @author duhongming
  * @date 2018/9/13
  */
-//@Component
+@ConditionalOnProperty(name = "network.rpc", havingValue = "http")
+@Component
 @Slf4j
 public class HttpP2pConsensusClient implements P2pConsensusClient {
 
@@ -24,6 +27,10 @@ public class HttpP2pConsensusClient implements P2pConsensusClient {
 
     @Autowired
     private IClusterViewManager viewManager;
+
+    public HttpP2pConsensusClient() {
+        log.info("Use HttpP2pConsensusClient");
+    }
 
     @Override
     public ValidResponseWrap<ResponseCommand> send(String nodeName, ValidCommandWrap validCommandWrap) {

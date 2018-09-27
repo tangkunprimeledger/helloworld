@@ -9,7 +9,9 @@ import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
@@ -19,7 +21,9 @@ import java.util.List;
  * @author duhongming
  * @date 2018/9/18
  */
+@ConditionalOnProperty(name = "network.rpc", havingValue = "netty", matchIfMissing = true)
 @Component
+@Slf4j
 public class RpcBlockChainClient implements BlockChainClient {
 
     private static final String ACTION_TYPE_BLOCK_HEADER_GET = "block/header/get";
@@ -42,6 +46,10 @@ public class RpcBlockChainClient implements BlockChainClient {
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
+    }
+
+    public RpcBlockChainClient() {
+        log.info("Use RpcBlockChainClient");
     }
 
     @Override

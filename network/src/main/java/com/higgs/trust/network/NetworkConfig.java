@@ -20,6 +20,8 @@ public class NetworkConfig {
     private boolean singleton;
     private String signature;
     private MessageHandlerRegistry handlerRegistry;
+    private int timeout;
+    private int clientThreadNum;
 
     private Authentication authentication;
 
@@ -73,6 +75,18 @@ public class NetworkConfig {
 
     public MessageHandlerRegistry handlerRegistry() {
         return this.handlerRegistry;
+    }
+
+    public int timeout() {
+        return this.timeout;
+    }
+
+    /**
+     * The num of Netty client EventLoopGroup's threads
+     * @return
+     */
+    public int clientThreadNum() {
+        return this.clientThreadNum;
     }
 
     public static class NetworkConfigBuilder {
@@ -156,6 +170,16 @@ public class NetworkConfig {
 
         public NetworkConfigBuilder singleton() {
             config.singleton = true;
+            return this;
+        }
+
+        public NetworkConfigBuilder timeout(int timeout) {
+            config.timeout = timeout;
+            return this;
+        }
+
+        public NetworkConfigBuilder clientThreadNum(int num) {
+            config.clientThreadNum = num;
             return this;
         }
     }
