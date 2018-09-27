@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.managment.master;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
@@ -9,6 +10,9 @@ import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,9 +33,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
+    @Autowired private NodeState nodeState;
 
     private AtomicLong packHeight = new AtomicLong(0);
-    private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
+    private Deque<TermedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
     private ConcurrentLinkedHashMap existTxMap =
         new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE)
             .build();
@@ -41,8 +46,6 @@ import java.util.concurrent.atomic.AtomicLong;
         synchronized (this) {
             packHeight.set(0);
             pendingPack.clear();
-            existTxMap.clear();
-            pendingTxQueue.clear();
             initPackHeight();
         }
     }
@@ -99,8 +102,14 @@ import java.util.concurrent.atomic.AtomicLong;
         int num = 0;
         List<SignedTransaction> list = new ArrayList<>();
         Set<String> txIdSet = new HashSet<>();
+        long currentTerm = nodeState.getCurrentTerm();
         while (num++ < count) {
-            SignedTransaction signedTx = pendingTxQueue.pollFirst();
+            TermedTransaction termedTransaction = pendingTxQueue.pollFirst();
+            if(termedTransaction.getCurrentTerm() != currentTerm){
+                existTxMap.remove(termedTransaction.getTx().getCoreTx().getTxId());
+                continue;
+            }
+            SignedTransaction signedTx = termedTransaction.getTx();
             if (null != signedTx && !txIdSet.contains(signedTx.getCoreTx().getTxId())) {
                 list.add(signedTx);
                 txIdSet.add(signedTx.getCoreTx().getTxId());
@@ -119,7 +128,7 @@ import java.util.concurrent.atomic.AtomicLong;
     }
 
     public void appendDequeFirst(SignedTransaction signedTransaction) {
-        pendingTxQueue.offerFirst(signedTransaction);
+        pendingTxQueue.offerFirst(new TermedTransaction(signedTransaction,nodeState.getCurrentTerm()));
     }
 
     /**
@@ -130,7 +139,7 @@ import java.util.concurrent.atomic.AtomicLong;
         if (existTxMap.containsKey(txId)) {
             return false;
         }
-        pendingTxQueue.offerLast(signedTx);
+        pendingTxQueue.offerLast(new TermedTransaction(signedTx,nodeState.getCurrentTerm()));
         existTxMap.put(txId, txId);
         return true;
     }
@@ -161,4 +170,17 @@ import java.util.concurrent.atomic.AtomicLong;
         return pendingPack.poll();
     }
 
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    class TermedTransaction{
+        /**
+         * the transaction
+         */
+        SignedTransaction tx;
+        /**
+         * the term of cluster
+         */
+        long currentTerm;
+    }
 }
