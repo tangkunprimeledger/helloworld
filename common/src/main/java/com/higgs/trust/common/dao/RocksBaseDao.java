@@ -216,6 +216,18 @@ public abstract class RocksBaseDao<V> {
         return null;
     }
 
+
+    public V queryLastValueWithPrefix(String prefix) {
+        RocksIterator iterator = iterator();
+        for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
+            if (!isPrefix(prefix, iterator.key())) {
+                return null;
+            }
+            return JSON.parseObject(iterator.value(), clazz);
+        }
+        return null;
+    }
+
     public String queryFirstKey(String prefix) {
         RocksIterator iterator = iterator();
         if (StringUtils.isEmpty(prefix)) {
