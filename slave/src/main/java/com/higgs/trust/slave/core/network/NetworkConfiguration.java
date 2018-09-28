@@ -31,10 +31,10 @@ public class NetworkConfiguration {
     @Value("${network.port}")
     public int port;
 
-    @Value("${network.timeout}")
+    @Value("${network.timeout:0}")
     public int timeout;
 
-    @Value("${network.clientThreadNum}")
+    @Value("${network.clientThreadNum:0}")
     public int clientThreadNum;
 
     @Value("${network.peers}")
