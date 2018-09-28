@@ -74,7 +74,10 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
 
     @Override public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
         RespData<List<TransactionVO>> respData = new RespData();
-
+        if(!nodeState.isState(NodeStateEnum.Running)){
+            log.warn("the node status:{} is not Running please wait a later..",nodeState.getState());
+            return respData;
+        }
         if (CollectionUtils.isEmpty(transactions)) {
             log.error("received transaction list is empty");
             return new RespData(RespCodeEnum.PARAM_NOT_VALID);
