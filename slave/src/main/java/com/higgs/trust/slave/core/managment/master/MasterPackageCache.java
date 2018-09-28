@@ -105,12 +105,15 @@ import java.util.concurrent.atomic.AtomicLong;
         long currentTerm = nodeState.getCurrentTerm();
         while (num++ < count) {
             TermedTransaction termedTransaction = pendingTxQueue.pollFirst();
+            if(termedTransaction == null){
+                break;
+            }
             if(termedTransaction.getCurrentTerm() != currentTerm){
                 existTxMap.remove(termedTransaction.getTx().getCoreTx().getTxId());
                 continue;
             }
             SignedTransaction signedTx = termedTransaction.getTx();
-            if (null != signedTx && !txIdSet.contains(signedTx.getCoreTx().getTxId())) {
+            if (!txIdSet.contains(signedTx.getCoreTx().getTxId())) {
                 list.add(signedTx);
                 txIdSet.add(signedTx.getCoreTx().getTxId());
                 TxTypeEnum txTypeEnum = TxTypeEnum.getBycode(signedTx.getCoreTx().getTxType());
@@ -119,8 +122,6 @@ import java.util.concurrent.atomic.AtomicLong;
                     objs[1] = signedTx;
                     break;
                 }
-            } else {
-                break;
             }
         }
         objs[0] = list;
