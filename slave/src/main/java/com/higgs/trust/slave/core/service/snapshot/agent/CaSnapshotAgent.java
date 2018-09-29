@@ -294,14 +294,14 @@ import java.util.List;
     }
 
     /**
-     * the cache key of CA
+     * the cache key of ClusterConfig
      */
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class ClusterConfigCacheKey extends BaseBO {
         private String clusterName;
     }
 
     /**
-     * the cache key of CA
+     * the cache key of ClusterNode
      */
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class ClusterNodeCacheKey extends BaseBO {
         private String nodeName;

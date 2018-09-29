@@ -20,22 +20,22 @@ import javax.validation.constraints.NotNull;
  */
 @Order(1) @Component @Slf4j public class CryptoUtil {
 
-    public static String biz;
-    public static String consensus;
+    public static String bizCryptoType;
+    public static String consensusCryptoType;
 
     public static Crypto getBizCrypto(String cryptoType) {
         if (log.isDebugEnabled()) {
-            log.trace("crypto type for biz layer is {}", biz);
+            log.trace("crypto type for biz layer is {}", bizCryptoType);
         }
-        Crypto crypto = StringUtils.isBlank(cryptoType) ? selector(biz) : selector(cryptoType);
+        Crypto crypto = StringUtils.isBlank(cryptoType) ? selector(bizCryptoType) : selector(cryptoType);
         return crypto;
     }
 
     public static Crypto getProtocolCrypto() {
         if (log.isDebugEnabled()) {
-            log.trace("crypto type for consensus layer is {}", consensus);
+            log.trace("crypto type for consensus layer is {}", consensusCryptoType);
         }
-        return selector(consensus);
+        return selector(consensusCryptoType);
     }
 
     private static Crypto selector(String usage) {
@@ -54,12 +54,12 @@ import javax.validation.constraints.NotNull;
 
     @NotNull @Value("${higgs.trust.crypto.biz:RSA}") public void setBiz(String newBiz) {
         log.info("set biz,newBiz={}", newBiz);
-        biz = newBiz;
+        bizCryptoType = newBiz;
     }
 
     @NotNull @Value("${higgs.trust.crypto.consensus:RSA}") public void setConsensus(String newConsensus) {
         log.info("set biz,newConsensus={}", newConsensus);
-        consensus = newConsensus;
+        consensusCryptoType = newConsensus;
     }
 
 }

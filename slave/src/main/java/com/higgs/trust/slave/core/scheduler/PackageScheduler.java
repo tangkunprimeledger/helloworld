@@ -174,23 +174,22 @@ import java.util.Set;
      * @return
      */
     private PackageCommand createPackCommand(Package pack,SignedTransaction nodeOptTx){
-        PackageCommand command = new PackageCommand(nodeState.getNodeName(),
-            PackageConvert.convertPackToPackVO(pack));
+        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVO(pack));
         if(nodeOptTx!=null) {
             //convert sign info
-            List<ClusterOptTx.SignatureInfo> signs = new ArrayList<>(nodeOptTx.getSignatureList().size());
+            List<ClusterOptTx.SignatureInfo> signatureList = new ArrayList<>(nodeOptTx.getSignatureList().size());
             for(SignInfo signInfo : nodeOptTx.getSignatureList()){
                 ClusterOptTx.SignatureInfo signatureInfo = new ClusterOptTx.SignatureInfo();
                 signatureInfo.setSign(signInfo.getSign());
                 signatureInfo.setSigner(signInfo.getOwner());
-                signs.add(signatureInfo);
+                signatureList.add(signatureInfo);
             }
             List<Action> actionList = nodeOptTx.getCoreTx().getActionList();
             NodeAction action = (NodeAction)actionList.get(0);
             //make ClusterOptTx
             ClusterOptTx clusterOptTx = new ClusterOptTx();
             //txs signs
-            clusterOptTx.setSignatureList(signs);
+            clusterOptTx.setSignatureList(signatureList);
             //self node name
             clusterOptTx.setNodeName(action.getNodeName());
             //self pubkey
