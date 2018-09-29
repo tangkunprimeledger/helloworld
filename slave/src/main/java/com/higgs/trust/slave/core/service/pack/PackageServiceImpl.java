@@ -15,7 +15,6 @@ import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.SlaveBatchCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
-import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.context.AppContext;
@@ -37,7 +36,6 @@ import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
-import com.higgs.trust.slave.model.convert.PackageConvert;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -105,7 +103,7 @@ import java.util.stream.Collectors;
         Package pack = new Package();
         pack.setSignedTxList(signedTransactions);
         pack.setPackageTime(System.currentTimeMillis());
-        //set status = INIT
+        //set status = RECEIVED
         pack.setStatus(PackageStatusEnum.RECEIVED);
         return pack;
     }

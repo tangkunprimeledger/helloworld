@@ -1,13 +1,12 @@
 package com.higgs.trust.slave.core.managment.master;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
-import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
-import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import lombok.AllArgsConstructor;
@@ -105,10 +104,10 @@ import java.util.concurrent.atomic.AtomicLong;
         long currentTerm = nodeState.getCurrentTerm();
         while (num++ < count) {
             TermedTransaction termedTransaction = pendingTxQueue.pollFirst();
-            if(termedTransaction == null){
+            if (termedTransaction == null) {
                 break;
             }
-            if(termedTransaction.getCurrentTerm() != currentTerm){
+            if (termedTransaction.getCurrentTerm() != currentTerm) {
                 existTxMap.remove(termedTransaction.getTx().getCoreTx().getTxId());
                 continue;
             }
@@ -118,7 +117,7 @@ import java.util.concurrent.atomic.AtomicLong;
                 txIdSet.add(signedTx.getCoreTx().getTxId());
                 TxTypeEnum txTypeEnum = TxTypeEnum.getBycode(signedTx.getCoreTx().getTxType());
                 //for consensus
-                if(txTypeEnum!=null && txTypeEnum == TxTypeEnum.NODE){
+                if (txTypeEnum != null && txTypeEnum == TxTypeEnum.NODE) {
                     objs[1] = signedTx;
                     break;
                 }
@@ -129,7 +128,7 @@ import java.util.concurrent.atomic.AtomicLong;
     }
 
     public void appendDequeFirst(SignedTransaction signedTransaction) {
-        pendingTxQueue.offerFirst(new TermedTransaction(signedTransaction,nodeState.getCurrentTerm()));
+        pendingTxQueue.offerFirst(new TermedTransaction(signedTransaction, nodeState.getCurrentTerm()));
     }
 
     /**
@@ -140,7 +139,7 @@ import java.util.concurrent.atomic.AtomicLong;
         if (existTxMap.containsKey(txId)) {
             return false;
         }
-        pendingTxQueue.offerLast(new TermedTransaction(signedTx,nodeState.getCurrentTerm()));
+        pendingTxQueue.offerLast(new TermedTransaction(signedTx, nodeState.getCurrentTerm()));
         existTxMap.put(txId, txId);
         return true;
     }
@@ -171,10 +170,7 @@ import java.util.concurrent.atomic.AtomicLong;
         return pendingPack.poll();
     }
 
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    class TermedTransaction{
+    @Getter @Setter @AllArgsConstructor class TermedTransaction {
         /**
          * the transaction
          */

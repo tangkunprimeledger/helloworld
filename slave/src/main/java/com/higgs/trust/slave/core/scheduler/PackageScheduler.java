@@ -1,13 +1,12 @@
 package com.higgs.trust.slave.core.scheduler;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.config.view.ClusterOptTx;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -35,14 +34,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author tangfashuang
  * @date 2018/04/09 15:30
  */
-@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
-@Service @Slf4j public class PackageScheduler {
+@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true) @Service @Slf4j
+public class PackageScheduler {
 
     @Autowired private PendingState pendingState;
 
@@ -58,6 +56,8 @@ import java.util.Set;
 
     @Autowired private MasterPackageCache packageCache;
 
+    @Autowired private IClusterViewManager viewManager;
+
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
 
     /**
@@ -69,19 +69,19 @@ import java.util.Set;
             && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
 
             Object[] objs = pendingState.getPendingTransactions(TX_PENDING_COUNT);
-            if(objs == null){
+            if (objs == null) {
                 return;
             }
             List<SignedTransaction> signedTransactions = (List<SignedTransaction>)objs[0];
             if (CollectionUtils.isEmpty(signedTransactions)) {
                 return;
             }
-            // remove dup transactions
-            Set<SignedTransaction> txSet = Sets.newHashSet();
-            CollectionUtils.addAll(txSet, signedTransactions);
-            signedTransactions = Lists.newArrayList(txSet);
-            log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}",
-                packageCache.getPackHeight());
+
+            if (log.isDebugEnabled()) {
+                log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}",
+                    packageCache.getPackHeight());
+            }
+
             Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
             if (null == pack) {
                 //add pending signedTransactions to pendingTxQueue
@@ -89,13 +89,13 @@ import java.util.Set;
                 return;
             }
             try {
-                 //node operation transaction
+                //node operation transaction
                 SignedTransaction nodeOptTx = null;
-                if(objs[1] != null){
+                if (objs[1] != null) {
                     nodeOptTx = (SignedTransaction)objs[1];
                 }
                 //make package command
-                PackageCommand command = createPackCommand(pack,nodeOptTx);
+                PackageCommand command = createPackCommand(pack, nodeOptTx);
                 //put to queue
                 packageCache.putPendingPack(command);
             } catch (Throwable e) {
@@ -173,13 +173,12 @@ import java.util.Set;
      * @param nodeOptTx
      * @return
      */
-    private PackageCommand createPackCommand(Package pack,SignedTransaction nodeOptTx){
-        PackageCommand command = new PackageCommand(nodeState.getNodeName(),
-            PackageConvert.convertPackToPackVO(pack));
-        if(nodeOptTx!=null) {
+    private PackageCommand createPackCommand(Package pack, SignedTransaction nodeOptTx) {
+        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVO(pack));
+        if (nodeOptTx != null) {
             //convert sign info
             List<ClusterOptTx.SignatureInfo> signs = new ArrayList<>(nodeOptTx.getSignatureList().size());
-            for(SignInfo signInfo : nodeOptTx.getSignatureList()){
+            for (SignInfo signInfo : nodeOptTx.getSignatureList()) {
                 ClusterOptTx.SignatureInfo signatureInfo = new ClusterOptTx.SignatureInfo();
                 signatureInfo.setSign(signInfo.getSign());
                 signatureInfo.setSigner(signInfo.getOwner());
@@ -202,7 +201,8 @@ import java.util.Set;
             //txs sign value
             clusterOptTx.setSignatureValue(JSON.toJSONString(nodeOptTx.getCoreTx()));
             //action operation JOIN or LEAVE
-            clusterOptTx.setOperation(action.getType() == ActionTypeEnum.NODE_JOIN ? ClusterOptTx.Operation.JOIN : ClusterOptTx.Operation.LEAVE);
+            clusterOptTx.setOperation(action.getType() == ActionTypeEnum.NODE_JOIN ? ClusterOptTx.Operation.JOIN :
+                ClusterOptTx.Operation.LEAVE);
             //set
             command.setClusterOptTx(clusterOptTx);
         }
