@@ -6,7 +6,6 @@ import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.TraceUtils;
 import com.higgs.trust.config.view.ClusterOptTx;
-import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -52,8 +51,6 @@ public class PackageScheduler {
     @Autowired private NodeState nodeState;
 
     @Autowired private MasterPackageCache packageCache;
-
-    @Autowired private IClusterViewManager viewManager;
 
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
 
