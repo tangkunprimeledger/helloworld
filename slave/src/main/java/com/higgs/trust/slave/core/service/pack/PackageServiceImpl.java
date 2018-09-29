@@ -15,7 +15,6 @@ import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.SlaveBatchCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
-import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.context.AppContext;
@@ -37,7 +36,6 @@ import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
-import com.higgs.trust.slave.model.convert.PackageConvert;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -406,8 +404,19 @@ import java.util.stream.Collectors;
                 }
             }
             try {
-                Profiler.enter("[queryTransactions]");
-                List<SignedTransaction> txs = transactionRepository.queryTransactions(header.getHeight());
+                Profiler.enter("[cluster.persisted.queryTransactions]");
+                List<SignedTransaction> txs = null;
+                Map<String,TransactionReceipt> txReceiptMap = new HashMap<>();
+                if (initConfig.isUseMySQL()) {
+                    Object[] objs = transactionRepository.queryFinalTxsForMysql(header.getHeight());
+                    if(objs != null){
+                        txs = (List<SignedTransaction>)objs[0];
+                        txReceiptMap = (Map<String,TransactionReceipt>)objs[1];
+                    }
+                }else{
+                    txs = transactionRepository.queryTransactions(header.getHeight());
+                    txReceiptMap = transactionRepository.queryTxReceiptMapForRocksdb(txs);
+                }
                 if (!CollectionUtils.isEmpty(txs)) {
                     // sort signedTransactions by txId asc
                     Collections.sort(txs, new Comparator<SignedTransaction>() {
@@ -416,15 +425,17 @@ import java.util.stream.Collectors;
                         }
                     });
                 }
-                Map<String, TransactionReceipt> txReceiptMap = transactionRepository.queryTxReceiptMap(txs);
                 Profiler.release();
+
+                List<SignedTransaction> finalTxs = txs;
+                Map<String,TransactionReceipt> finalTxReceiptMap = txReceiptMap;
 
                 if (initConfig.isUseMySQL()) {
                     txRequired.execute(new TransactionCallbackWithoutResult() {
                         @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                             //call back business
                             Profiler.enter("[callbackRSForClusterPersisted]");
-                            callbackRS(txs, txReceiptMap, true, false, blockHeader);
+                            callbackRS(finalTxs, finalTxReceiptMap, true, false, blockHeader);
                             Profiler.release();
 
                             //update package status ---- PERSISTED
@@ -440,7 +451,7 @@ import java.util.stream.Collectors;
                         ThreadLocalUtils.putRocksTx(tx);
 
                         Profiler.enter("[callbackRSForClusterPersisted]");
-                        callbackRS(txs, txReceiptMap, true, false, blockHeader);
+                        callbackRS(finalTxs, finalTxReceiptMap, true, false, blockHeader);
                         Profiler.release();
 
                         //update package status ---- PERSISTED

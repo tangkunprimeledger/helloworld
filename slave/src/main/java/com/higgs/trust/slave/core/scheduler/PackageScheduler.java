@@ -12,7 +12,6 @@ import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
-import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -51,8 +50,6 @@ import java.util.Set;
     @Autowired private PackageService packageService;
 
     @Autowired private PackageProcess packageProcess;
-
-    @Autowired private BlockRepository blockRepository;
 
     @Autowired private NodeState nodeState;
 
@@ -129,7 +126,7 @@ import java.util.Set;
             return;
         }
         //get max block height
-        Long currentHeight = blockRepository.getMaxHeight();
+        Long currentHeight = packageProcess.getMaxHeight();
 
         if (null == currentHeight) {
             log.error("please initial Genesis block.");
