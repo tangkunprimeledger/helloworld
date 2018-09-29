@@ -142,7 +142,7 @@ public class PackageScheduler {
             for (Long height : heights) {
                 // process next block as height = maxBlockHeight + 1
                 if (height != currentHeight + 1) {
-                    log.warn("package height is not continuous!");
+                    log.warn("package height is not continuous,currentHeight:{},heights:{}",currentHeight,heights);
                     return;
                 }
 
