@@ -13,18 +13,19 @@ import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.rocksdb.Transaction;
 import org.rocksdb.WriteOptions;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author tangfashuang
  * @date 2018/04/17 11:43
  */
-@Service @Slf4j public class PackageProcess {
+@Service @Slf4j public class PackageProcess implements InitializingBean{
 
     @Autowired
     private PackageRepository packageRepository;
@@ -40,21 +41,33 @@ import org.springframework.transaction.support.TransactionTemplate;
 
     @Autowired
     private InitConfig initConfig;
+    /**
+     * current processed block height
+     */
+    private AtomicLong processedHeight = new AtomicLong(0);
 
+    /**
+     * initializing
+     *
+     * @throws Exception
+     */
+    @Override public void afterPropertiesSet() throws Exception {
+        initProcessedHeight();
+    }
     /**
      * package process logic
      *
      * @param height
      */
     public void process(final Long height) {
+        boolean result = false;
         if (initConfig.isUseMySQL()) {
-            txNested.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            result = txNested.execute(transactionStatus -> {
                     try {
                         Package pack = packageRepository.loadAndLock(height);
                         if (null == pack) {
                             log.error("cannot acquire package, invalid height[{}].", height);
-                            return;
+                            return false;
                         }
 
                         //process only deal the package with status RECEIVED in DB
@@ -63,12 +76,12 @@ import org.springframework.transaction.support.TransactionTemplate;
                         }
                     } catch (SlaveException e) {
                         transactionStatus.setRollbackOnly();
-                        if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR == e.getCode()
-                            || SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT == e.getCode()
-                            || SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH == e.getCode()) {
-                            return;
+                        if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR != e.getCode()
+                            && SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT != e.getCode()
+                            && SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH != e.getCode()) {
+                            log.error("slave exception.",e);
                         }
-                        log.error("slave exception. ", e);
+                        return false;
                     } catch (Throwable e) {
                         transactionStatus.setRollbackOnly();
                         if (e instanceof CannotAcquireLockException) {
@@ -76,8 +89,9 @@ import org.springframework.transaction.support.TransactionTemplate;
                         } else {
                             log.error("package process exception. ", e);
                         }
+                        return false;
                     }
-                }
+                    return true;
             });
         } else {
             Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
@@ -95,11 +109,19 @@ import org.springframework.transaction.support.TransactionTemplate;
                 }
 
                 RocksUtils.txCommit(tx);
+                result = true;
             } catch (Throwable e) {
+                result = false;
                 log.error("package process exception. ", e);
             } finally {
                 ThreadLocalUtils.clearRocksTx();
             }
+        }
+        if (result) {
+            /**
+             * update processed block height
+             */
+            updateProcessedHeight(height);
         }
     }
 
@@ -120,4 +142,29 @@ import org.springframework.transaction.support.TransactionTemplate;
         packageService.process(packContext,false,false);
     }
 
+    /**
+     * get max block height of processed
+     *
+     * @return
+     */
+    public Long getMaxHeight() {
+        return processedHeight.get();
+    }
+
+    /**
+     * initializing processed block height
+     */
+    private void initProcessedHeight() {
+        Long currentHeight = blockRepository.getMaxHeight();
+        updateProcessedHeight(currentHeight == null ? 1L : currentHeight);
+    }
+
+    /**
+     * update processed block height
+     *
+     * @param height
+     */
+    private void updateProcessedHeight(Long height) {
+        processedHeight.set(height);
+    }
 }
