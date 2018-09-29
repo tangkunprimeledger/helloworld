@@ -1,5 +1,6 @@
 package com.higgs.trust.zkproof;
 
+
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Field;
 import it.unisa.dia.gas.plaf.jpbc.util.math.BigIntegerUtils;
@@ -23,7 +24,7 @@ public class BGNEncryption implements HomomorphicEncryption {
 	}
 
 
-	public Element encrypt( BigInteger msg, BigInteger r) {
+	public Element encrypt(BigInteger msg, BigInteger r) {
 		//BigInteger t = BigIntegerUtils.getRandom(PK.getN());
 		Field f = pk.getField();
 		Element A = f.newElement();
