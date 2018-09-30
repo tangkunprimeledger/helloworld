@@ -164,7 +164,7 @@ import java.util.concurrent.atomic.AtomicLong;
      *
      * @param height
      */
-    private void updateProcessedHeight(Long height) {
+    public void updateProcessedHeight(Long height) {
         processedHeight.set(height);
     }
 }
