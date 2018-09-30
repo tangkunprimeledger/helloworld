@@ -1,5 +1,6 @@
 package commands
 
+import com.alibaba.fastjson.JSON
 import com.higgs.trust.common.dao.RocksDBHelper
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Argument
@@ -41,7 +42,8 @@ class rocksdb {
         def helper = beans.getBean(RocksDBHelper.class)
         def result = helper.queryByKey(tableName, keyName)
         if (result) {
-            out.println("$result")
+            def json = JSON.toJSONString(result)
+            out.println("$json")
         } else {
             out.println("is empty")
         }
@@ -58,7 +60,8 @@ class rocksdb {
         def helper = beans.getBean(RocksDBHelper.class)
         def result = helper.queryByPrefix(tableName, prefix, limit)
         if (result) {
-            result.forEach({ entry -> out.println("$entry") })
+            def json = JSON.toJSONString(result)
+            out.println("$json")
         } else {
             out.println("is empty")
         }
@@ -75,7 +78,8 @@ class rocksdb {
         def helper = beans.getBean(RocksDBHelper.class)
         def result = helper.queryByCount(tableName, count, order)
         if (result) {
-            result.forEach({ entry -> out.println("$entry") })
+            def json = JSON.toJSONString(result)
+            out.println("$json")
         } else {
             out.println("is empty")
         }
