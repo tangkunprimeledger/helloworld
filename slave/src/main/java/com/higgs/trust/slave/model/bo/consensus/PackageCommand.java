@@ -52,6 +52,11 @@ import org.hibernate.validator.constraints.NotEmpty;
         this.masterName = masterName;
     }
 
+    public PackageCommand(String masterName,byte[] value){
+        super(value);
+        this.masterName = masterName;
+    }
+
     @Override public long getPackageHeight() {
         return get().getHeight();
     }

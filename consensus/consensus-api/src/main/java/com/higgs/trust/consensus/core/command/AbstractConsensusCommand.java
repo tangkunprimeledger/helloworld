@@ -1,6 +1,10 @@
 package com.higgs.trust.consensus.core.command;
 
+import com.higgs.trust.consensus.util.DeflateUtil;
+import com.higgs.trust.consensus.util.ProtobufUtil;
 import lombok.ToString;
+
+import java.util.zip.DataFormatException;
 
 /**
  * @author cwy
@@ -9,13 +13,26 @@ import lombok.ToString;
     private static final long serialVersionUID = 1L;
     private T value;
     private Long traceId;
+    private byte[] bytes;
 
     public AbstractConsensusCommand(T value) {
         this.value = value;
     }
 
+    public AbstractConsensusCommand(byte[] bytes){
+        this.bytes = bytes;
+    }
+
+
+
     @Override public T get() {
         return this.value;
+    }
+
+    public T getValueFromByte(T obj) throws DataFormatException {
+        byte[] decom = DeflateUtil.uncompress(bytes);
+        Class<T> clazz = (Class<T>) obj.getClass();
+        return ProtobufUtil.deserializer(decom,clazz);
     }
 
     public Long getTraceId() {

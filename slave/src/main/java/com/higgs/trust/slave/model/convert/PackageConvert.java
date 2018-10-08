@@ -2,6 +2,8 @@ package com.higgs.trust.slave.model.convert;
 
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.consensus.util.DeflateUtil;
+import com.higgs.trust.consensus.util.ProtobufUtil;
 
 /**
  * @author tangfashuang
@@ -23,5 +25,10 @@ public class PackageConvert {
         packVO.setHeight(pack.getHeight());
         packVO.setSignedTxList(pack.getSignedTxList());
         return packVO;
+    }
+
+    public static byte[] convertPackToPackVOToBytes(Package pack){
+        byte[] bytes =  ProtobufUtil.serializer(pack);
+        return DeflateUtil.compress(bytes);
     }
 }

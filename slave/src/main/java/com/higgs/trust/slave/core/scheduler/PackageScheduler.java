@@ -168,7 +168,7 @@ public class PackageScheduler {
      * @return
      */
     private PackageCommand createPackCommand(Package pack, SignedTransaction nodeOptTx) {
-        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVO(pack));
+        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVOToBytes(pack));
         if (nodeOptTx != null) {
             //convert sign info
             List<ClusterOptTx.SignatureInfo> signs = new ArrayList<>(nodeOptTx.getSignatureList().size());
