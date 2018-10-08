@@ -32,13 +32,19 @@ import java.util.concurrent.atomic.AtomicInteger;
         long viewId = validCommand.getView();
         ClusterView view = viewId < 0 ? viewManager.getCurrentView() : viewManager.getView(viewId);
         ConcurrentHashMap<String, CommandCounter<T>> resultMap = sendAndHandle(validCommand, view);
+        int maxCounter = 0;
+        T command = null;
         for (Map.Entry<String, CommandCounter<T>> entry : resultMap.entrySet()) {
             CommandCounter<T> value = entry.getValue();
-            if (value.getCounter().get() >= view.getVerifiedQuorum()) {
-                return value.getCommand();
+            int counter = value.getCounter().get();
+            if (counter >= view.getVerifiedQuorum()) {
+                if(maxCounter < counter){
+                    maxCounter = counter;
+                    command = value.getCommand();
+                }
             }
         }
-        return null;
+        return command;
     }
 
     private <T extends ResponseCommand> ConcurrentHashMap<String, CommandCounter<T>> sendAndHandle(
