@@ -58,45 +58,47 @@ public class PackageScheduler {
      * master node create package
      */
     @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
+        while (packageCache.getPendingTxQueueSize() > 0) {
+            if (nodeState.isState(NodeStateEnum.Running)
+                && nodeState.isMaster()
+                && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
 
-        if (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster()
-            && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
-
-            Object[] objs = pendingState.getPendingTransactions(TX_PENDING_COUNT);
-            if (objs == null) {
-                return;
-            }
-            List<SignedTransaction> signedTransactions = (List<SignedTransaction>)objs[0];
-            if (CollectionUtils.isEmpty(signedTransactions)) {
-                return;
-            }
-
-            if (log.isDebugEnabled()) {
-                log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}",
-                    packageCache.getPackHeight());
-            }
-
-            Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
-            if (null == pack) {
-                //add pending signedTransactions to pendingTxQueue
-                pendingState.addPendingTxsToQueueFirst(signedTransactions);
-                return;
-            }
-            try {
-                //node operation transaction
-                SignedTransaction nodeOptTx = null;
-                if (objs[1] != null) {
-                    nodeOptTx = (SignedTransaction)objs[1];
+                Object[] objs = pendingState.getPendingTransactions(TX_PENDING_COUNT);
+                if (objs == null) {
+                    return;
                 }
-                //make package command
-                PackageCommand command = createPackCommand(pack, nodeOptTx);
-                //put to queue
-                packageCache.putPendingPack(command);
-            } catch (Throwable e) {
-                log.warn("pending pack offer InterruptedException. ", e);
-                pendingState.addPendingTxsToQueueFirst(signedTransactions);
+                List<SignedTransaction> signedTransactions = (List<SignedTransaction>)objs[0];
+                if (CollectionUtils.isEmpty(signedTransactions)) {
+                    return;
+                }
+
+                if (log.isDebugEnabled()) {
+                    log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}",
+                        packageCache.getPackHeight());
+                }
+
+                Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
+                if (null == pack) {
+                    //add pending signedTransactions to pendingTxQueue
+                    pendingState.addPendingTxsToQueueFirst(signedTransactions);
+                    return;
+                }
+                try {
+                    //node operation transaction
+                    SignedTransaction nodeOptTx = null;
+                    if (objs[1] != null) {
+                        nodeOptTx = (SignedTransaction)objs[1];
+                    }
+                    //make package command
+                    PackageCommand command = createPackCommand(pack, nodeOptTx);
+                    //put to queue
+                    packageCache.putPendingPack(command);
+                } catch (Throwable e) {
+                    log.warn("pending pack offer InterruptedException. ", e);
+                    pendingState.addPendingTxsToQueueFirst(signedTransactions);
+                }
+                log.debug("[PackageScheduler.createPackage] create package finished, packHeight={}", pack.getHeight());
             }
-            log.debug("[PackageScheduler.createPackage] create package finished, packHeight={}", pack.getHeight());
         }
     }
 

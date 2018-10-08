@@ -17,6 +17,7 @@ import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.action.GeniusBlockService;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.PackageListener;
+import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -49,6 +50,7 @@ import java.util.concurrent.Executors;
     @Autowired private TransactionTemplate txNested;
     @Autowired private GeniusBlockService geniusBlockService;
     @Autowired private InitConfig initConfig;
+    @Autowired private PackageProcess packageProcess;
     private Long receivedFistHeight = null;
     private Long currentPackageHeight = null;
 
@@ -404,6 +406,9 @@ import java.util.concurrent.Executors;
                 ThreadLocalUtils.clearRocksTx();
             }
         }
+        //update block height in memory
+        packageProcess.updateProcessedHeight(blockHeader.getHeight());
+
         boolean persistValid =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
         if (!persistValid) {
