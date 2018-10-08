@@ -56,7 +56,7 @@ import java.util.zip.DataFormatException;
 
         PackageVO packageVO = null;
         try {
-            packageVO = commit.operation().getValueFromByte(new PackageVO());
+            packageVO = commit.operation().getValueFromByte(PackageVO.class);
         } catch (DataFormatException e) {
             log.error("[LogReplicateHandler.packageReplicated]param validate failed, decompress package error:{}",e.getCause());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);

@@ -7,6 +7,7 @@ import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import lombok.AllArgsConstructor;
@@ -148,18 +149,30 @@ import java.util.concurrent.atomic.AtomicLong;
         return pendingTxQueue.size();
     }
 
-    public void putPendingPack(PackageCommand command) throws InterruptedException {
-        synchronized (this) {
-            try {
-                long packageHeight = packHeight.incrementAndGet();
-                command.get().setHeight(packageHeight);
-                pendingPack.offer(command, 100, TimeUnit.MILLISECONDS);
-            } catch (Throwable e) {
-                //set packHeight
-                packHeight.getAndDecrement();
-                throw e;
-            }
+    /**
+     * set height for package
+     *
+     * @param pack
+     */
+    public void setPackageHeight(Package pack){
+        try {
+            long packageHeight = packHeight.incrementAndGet();
+            pack.setHeight(packageHeight);
+        }catch (Throwable e){
+            //reset packHeight
+            packHeight.getAndDecrement();
+            throw e;
         }
+    }
+
+    /**
+     * put command to queue
+     *
+     * @param command
+     * @throws InterruptedException
+     */
+    public void putPendingPack(PackageCommand command) throws InterruptedException {
+        pendingPack.offer(command, 100, TimeUnit.MILLISECONDS);
     }
 
     public int getPendingPackSize() {

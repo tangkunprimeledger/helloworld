@@ -89,12 +89,14 @@ public class PackageScheduler {
                     if (objs[1] != null) {
                         nodeOptTx = (SignedTransaction)objs[1];
                     }
+                    //set package height
+                    packageCache.setPackageHeight(pack);
                     //make package command
                     PackageCommand command = createPackCommand(pack, nodeOptTx);
                     //put to queue
                     packageCache.putPendingPack(command);
                 } catch (Throwable e) {
-                    log.warn("pending pack offer InterruptedException. ", e);
+                    log.error("process pending pack has error", e);
                     pendingState.addPendingTxsToQueueFirst(signedTransactions);
                 }
                 log.debug("[PackageScheduler.createPackage] create package finished, packHeight={}", pack.getHeight());
@@ -170,7 +172,7 @@ public class PackageScheduler {
      * @return
      */
     private PackageCommand createPackCommand(Package pack, SignedTransaction nodeOptTx) {
-        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVOToBytes(pack));
+        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVOToBytes(pack),pack.getHeight());
         if (nodeOptTx != null) {
             //convert sign info
             List<ClusterOptTx.SignatureInfo> signs = new ArrayList<>(nodeOptTx.getSignatureList().size());

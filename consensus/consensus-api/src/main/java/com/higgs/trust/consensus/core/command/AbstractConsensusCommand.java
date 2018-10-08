@@ -29,9 +29,12 @@ import java.util.zip.DataFormatException;
         return this.value;
     }
 
-    public T getValueFromByte(T obj) throws DataFormatException {
+    public byte[] getValueBytes() {
+        return this.bytes;
+    }
+
+    public T getValueFromByte(Class<T> clazz) throws DataFormatException {
         byte[] decom = DeflateUtil.uncompress(bytes);
-        Class<T> clazz = (Class<T>) obj.getClass();
         return ProtobufUtil.deserializer(decom,clazz);
     }
 
