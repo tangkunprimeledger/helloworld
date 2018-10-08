@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.model.convert;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.consensus.util.DeflateUtil;
@@ -28,7 +29,8 @@ public class PackageConvert {
     }
 
     public static byte[] convertPackToPackVOToBytes(Package pack){
-        byte[] bytes =  ProtobufUtil.serializer(pack);
-        return DeflateUtil.compress(bytes);
+//        byte[] bytes =  ProtobufUtil.serializer(pack);
+        String result = JSON.toJSONString(pack);
+        return DeflateUtil.compress(result.getBytes());
     }
 }

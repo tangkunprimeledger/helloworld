@@ -1,5 +1,6 @@
 package com.higgs.trust.consensus.core.command;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.util.DeflateUtil;
 import com.higgs.trust.consensus.util.ProtobufUtil;
 import lombok.ToString;
@@ -35,7 +36,9 @@ import java.util.zip.DataFormatException;
 
     public T getValueFromByte(Class<T> clazz) throws DataFormatException {
         byte[] decom = DeflateUtil.uncompress(bytes);
-        return ProtobufUtil.deserializer(decom,clazz);
+        T result = JSON.parseObject(new String(decom),clazz);
+        return result;
+//        return ProtobufUtil.deserializer(decom,clazz);
     }
 
     public Long getTraceId() {
