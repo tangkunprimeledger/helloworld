@@ -1,6 +1,5 @@
 package com.higgs.trust.common.utils;
 
-import cn.primeledger.stability.trace.PrimeTraceUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.sleuth.Span;
 

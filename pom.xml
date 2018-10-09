@@ -279,7 +279,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>22.0</version>
+                <version>20.0</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -314,17 +314,17 @@
             </dependency>
 
             <!--seg-->
-            <dependency>
-                <groupId>cn.primeledger.seg</groupId>
-                <artifactId>stability-spring-boot-starter</artifactId>
-                <version>1.1.2-SNAPSHOT</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework.amqp</groupId>
-                        <artifactId>spring-rabbit</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+            <!--<dependency>-->
+                <!--<groupId>cn.primeledger.seg</groupId>-->
+                <!--<artifactId>stability-spring-boot-starter</artifactId>-->
+                <!--<version>1.1.2-SNAPSHOT</version>-->
+                <!--<exclusions>-->
+                    <!--<exclusion>-->
+                        <!--<groupId>org.springframework.amqp</groupId>-->
+                        <!--<artifactId>spring-rabbit</artifactId>-->
+                    <!--</exclusion>-->
+                <!--</exclusions>-->
+            <!--</dependency>-->
 
             <!--redisson-->
             <!-- redis client -->

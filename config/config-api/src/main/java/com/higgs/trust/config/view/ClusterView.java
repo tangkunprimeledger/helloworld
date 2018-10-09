@@ -57,7 +57,10 @@ import java.util.Map;
      * @param
      * @return quorum size
     */
-    public int getAppliedQuorum(){ return (nodes.size() + faultNum) / 2 + 1; }
+    public int getAppliedQuorum(){
+        int appliedQuprum = (nodes.size()+ faultNum) / 2 + 1;
+        return appliedQuprum <= nodes.size() ? appliedQuprum : nodes.size();
+    }
 
     /**
      * get quorum size for 'verify' or 'query' peration,
@@ -69,7 +72,8 @@ import java.util.Map;
      * @return quorum size
     */
     public int getVerifiedQuorum(){
-        return faultNum + 1;
+        int verifiedQuorum = faultNum + 1;
+        return verifiedQuorum <= nodes.size() ? verifiedQuorum : nodes.size();
     }
 
     /**

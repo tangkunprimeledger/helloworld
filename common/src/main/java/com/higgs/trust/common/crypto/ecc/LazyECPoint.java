@@ -20,7 +20,6 @@ import org.spongycastle.math.ec.ECCurve;
 import org.spongycastle.math.ec.ECFieldElement;
 import org.spongycastle.math.ec.ECPoint;
 
-import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -44,7 +43,7 @@ public class LazyECPoint {
     // This field is effectively final - once set it won't change again. However
     // it can be set after
     // construction.
-    @Nullable
+    
     private ECPoint point;
 
     public LazyECPoint(ECCurve curve, byte[] bits) {
