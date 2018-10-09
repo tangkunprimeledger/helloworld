@@ -27,7 +27,6 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.UnsignedLongs;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -542,7 +541,7 @@ public class CryptoUtils {
      * <p>
      * <code>[24] "Bitcoin Signed Message:\n" [message.length as a varint] message</code>
      */
-    public static byte[] formatMessageForSigning(String message, Charset charset, @Nullable byte[] headerBytes) {
+    public static byte[] formatMessageForSigning(String message, Charset charset, byte[] headerBytes) {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
