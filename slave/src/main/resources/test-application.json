@@ -37,13 +37,13 @@
         "consensus": "RSA",
         "biz": "RSA"
       },
-      "keys":{
+      "keys": {
         "bizPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqZ8Q2W2xl+Dc9i6HzHieRqfzUlSYzIOSCXUTkDBWO4jLI7JlZdq6K4y27m41q3Mls6IHlRdaUI/hxLZYYLdoORQGlrGB+aza0WR5phFamxlf+kd+PY1XNYeCb3KB1Ep+w7N8iSycHPk70m8D7SMl7DKGXDKEY6Ald2cTqvfcqqSfFi4qvCI3El7IfEiOv/3EuDGbKYem7Zo8XV/+uJlK3O+4LXaQy0nBajUlj7TjPYNP/9PYAjCeNzNOix8AEkwk3y6DIPpgIItlk6qTqSn+pBjaeSfRefMezO4l75K9J/3g/N/Oi+7v6Th+Xi2sQTaqv6sJNU3Qav+/DX+tfDXbAQIDAQAB",
         "bizPrivateKey": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpnxDZbbGX4Nz2LofMeJ5Gp/NSVJjMg5IJdROQMFY7iMsjsmVl2rorjLbubjWrcyWzogeVF1pQj+HEtlhgt2g5FAaWsYH5rNrRZHmmEVqbGV/6R349jVc1h4JvcoHUSn7Ds3yJLJwc+TvSbwPtIyXsMoZcMoRjoCV3ZxOq99yqpJ8WLiq8IjcSXsh8SI6//cS4MZsph6btmjxdX/64mUrc77gtdpDLScFqNSWPtOM9g0//09gCMJ43M06LHwASTCTfLoMg+mAgi2WTqpOpKf6kGNp5J9F58x7M7iXvkr0n/eD8386L7u/pOH5eLaxBNqq/qwk1TdBq/78Nf618NdsBAgMBAAECggEACu1ian90l3I3Ce0JdpS2rZqYRE+K4HIBcHaIYhubEo7Hd29AtQUYRUH1bvrOnlL2tNHVZzdv7Ay44LFWlDR8lGDD4+VfmDQYjLDKXXZ0vdUup7L/YPvACITIVGGuF30NGZJwjW3ASOWNgwr/18ER6lt+6GWgvcJNZ5nOXI9HOf7yBtXJ+VZJmqPztzJVx2gWnmCwv2uFb2sjWDkk0pisnQZnsFRkriPWBbRxqWh72fEqKVzG0sW6rbP2ZQT9AjXdIslT3Lqo2t1iA6d7cjB0dEgeRwRc68GWSw8ol54fW6ji0jfHc01Z9NQY1UhkyEKiFzf/7KlRzVIdaVuZ/+QcoQKBgQDiwasyV6HYYlwI8MrYSXm24w+J8Avm272rqnWIRuWbaZv6L9rfDkklijk746tmQslIgQEq0UA5Siq1zEsr8NBHxDiz0oGnc8uVh7h6HcgSpcKwNyXMP2CN+jdxvZzpLouS12M20jHYTDyR6nla/tUr/M9emSXjou17tUkiXSrEnQKBgQC/fxagpXxuo4wA9fZwJGylwUlpYXxtEH4r12NtH0TklbS26Zf+tk0ewKsQfLutlSmXSgOJcanZQgExfEmzb8VkhiJlzHBhBph30iFzD7GOkkAubvXGpYBfTlISQNVExK3w0r6VWxmLais9QU2ZIeqCKmqx96OXfX7gTKGKyci4tQKBgQDUJuaJXzvpO31oUAE4guYBmkb7gz9fas/2QLFeIxbHZPOuC//3GWKOYNhTlBrUvj+cOjZhXQ19jEqRdOYP4mq7+nYiqBzuEoSzDhwnBJ4f9D5GqBIRGmq36xbcr86SzB2B8Uq+C8Le39T7oCiSXkILuag6lYbBh7oxN9eI8yoEcQKBgQCndF34Gt4l7dQ23t8ij2eGxvAIO9xPjzWV5uKmAMsAzLzbmod0kDv+IWM1pq2DjEVza6COJxvsxSBAArx8Mcg+MGGR/WVkIx1e4hyn/lg5IUEImbVIgV8xeE6icZlNamPkjJVmC+TZmfy3swxFVXg5XRgyCig/B9nUEI7Oy8c/ZQKBgDHkeYDNoy5ESa1LNKy07GB1n+zooMA5g2x+VMfcFxrIyeE36hMmRGjMwaQa+j4DfOqo0RzjfEnvPscU910qpZ9Ymt5mvo6rcQ+ZB3a8J/AWxAla8txSHuweJulPuZY2opjSb6gjD7fIhac5bQYG3mp+s2LjEQHfseVIuNJ9bn3j",
         "consensusPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4CkXxDiD147k9vzZ0c9SU6gamK5hEQUXPTmZJsvvsEd81obOdcVys3MC879R28pKX+ccWU50Rf9YfwECnRkMBUQz7byuwfCk2fjrZpJLQ77uyQmEW08Y3RAb5iTYvHGVB3cPP+ZMSBRrW0apKec3atOGM1bYWkhud30MOvirGwf2swu7mEQNn4eFKHeK2hhIcannozFfJL0rRtk0Zlv7m6hIWdQ2CztV8PVfj+yA8IjoLb2x64r8UQYrYmjxM2ZbEITfXvjpJrrFM8tus3Mtcl+m6NH8X/k1pLPGi6VPBsFwh5g3M4szYn01QffPSL+gMI8YvoaycgWutSlRNzXkuwIDAQAB",
         "consensusPrivateKey": "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDgKRfEOIPXjuT2/NnRz1JTqBqYrmERBRc9OZkmy++wR3zWhs51xXKzcwLzv1Hbykpf5xxZTnRF/1h/AQKdGQwFRDPtvK7B8KTZ+OtmkktDvu7JCYRbTxjdEBvmJNi8cZUHdw8/5kxIFGtbRqkp5zdq04YzVthaSG53fQw6+KsbB/azC7uYRA2fh4Uod4raGEhxqeejMV8kvStG2TRmW/ubqEhZ1DYLO1Xw9V+P7IDwiOgtvbHrivxRBitiaPEzZlsQhN9e+OkmusUzy26zcy1yX6bo0fxf+TWks8aLpU8GwXCHmDczizNifTVB989Iv6Awjxi+hrJyBa61KVE3NeS7AgMBAAECggEBAJWpWgDcaspE0YJGF3gJn8HS/s7pvk0KxRVPm31Xs9RSJntkzfu7tHUzWMk8935zdWzKdRb7Vo5VidRh7EjPLENn4fPcgiFide5CT4jQLAgzNmJrRD9idAtEchwahcprW0D8sOXM8Sk+2N68Mr2TbmCYkYU9en3s1jRY/Q1ycWs9idpGiRosIUBOGUQSZ9do2mK5omsRpGdnDOpxDLL/fgGh0nJauUkySaTVB0fCwgECwINj23hZjfbqTQipSF1/g8V7zPwdXW7/49JJrretkRpd447wZQX/JR9VC68qleo/VbhG6JcAp/Ks2jrKZezXJKwaOpW0CnpR/JvwaeU3wCECgYEA+ABV2wTS9El2YVCn7Qw1Yx/uE7M+6GVGhfRM6W0TKfb2WQkhDD8eoOzfpsXSnZdtgXx7TglqcoNiO9KUrYgxNYplg6z2vAomomi9I9Rhk1CCzicYHEwuFVaKt8Fsc+Rwip4gwCakZc15ezYKF6a5uSXjmhg0CHXu/qYFIV+uEFUCgYEA52PpdcNE8RrQzB4jL/E4U+wGu4w6i/HIM5/VwiOYVbJ07I1+IqL5GGNdPT42YcsMpg3KaYWoZlKEq5tmXDOlGMOCgAo44djYFI09szcVe3myu/1/EKWdDUO7zBdv5HGAtaiFYmvujjBJFiM13PDiHHlYxkkAcy+GTPAyf5yL8M8CgYB8pVaBhTQt2bppAOvVxZwTnRnAxwdoMHa4nugFLnBCWEDK0T7N8++F/GgQXz8TO+eq/BDRUQQyV/yIird1XI03Fr8c5lMAga2XVUMy/eyo6P9Fc/q3RkanLN79qnbC7N7vnLhjO0jHbfWPysJZzs9r0jJJ4b5NPlEHphPQCVHoHQKBgET8abc9b4l+mC+y8ISzozqKDPvPdAkTHcAecCmAWUN7gBainK+Q7TkTLtI6gRYo5m1/gRBy0+Elyv4qx5rHnvpCF986rPjQoKOH9JRA4Pu+LcaUblS1O5yfzBauCiMOn/QI+TN9wFLOHIwoFT/45UDeANSlISg2TBEWL8gSETrLAoGAZc3rdHbXjxveqgMLfWjGdL5GJw+LlXQMbv6ucbDrlDt6MtJFmFmyycaGcEb+8RwWRJF0+N53uIGUW5BHf2EFR2Wdjm9ZxWoHfIe4CIMWxfCJsDzWc7ksAOTnHJNeWpe/1dnC73WJMHWTzwpm+NJkUYQu6Ag7nN8a7q3RisnUlkw="
       },
-      "geniusPath":"D:/workspace_idea/DL/trust/slave/src/main/resources/geniusBlock.json"
+      "geniusPath": "D:/workspace_idea/DL/trust/slave/src/main/resources/geniusBlock.json"
     }
   },
   "management": {
@@ -117,71 +117,72 @@
       "password": "",
       "address": "redis://127.0.0.1:6379",
       "single": true,
-    "key": {
-      "mode": "manual"
-    }
-  },
-  "logging": {
-    "config": "classpath:logback.xml",
-    "path": "/tmp/log"
-  },
-  "hystrix": {
-    "command": {
-      "default": {
-        "circuitBreaker.enabled": false,
-        "fallback.enabled": false
+      "key": {
+        "mode": "manual"
       }
     },
-    "threadpool": {
-      "default": {
-        "coreSize": 40,
-        "maximumSize": 200
+    "logging": {
+      "config": "classpath:logback.xml",
+      "path": "/tmp/log"
+    },
+    "hystrix": {
+      "command": {
+        "default": {
+          "circuitBreaker.enabled": false,
+          "fallback.enabled": false
+        }
+      },
+      "threadpool": {
+        "default": {
+          "coreSize": 40,
+          "maximumSize": 200
+        }
       }
-    }
-  },
-  "bftSmart": {
-    "systemConfigs": {
-      "myId": "0",
-      "myClientId": "1100",
-      "configs": {
-        "system.communication.useSenderThread": true,
-        "system.communication.defaultkeys": true,
-        "system.servers.num": "4",
-        "system.servers.f": "1",
-        "system.totalordermulticast.timeout": "2000",
-        "system.totalordermulticast.maxbatchsize": "400",
-        "system.totalordermulticast.nonces": "10",
-        "system.totalordermulticast.verifyTimestamps": false,
-        "system.communication.inQueueSize": "500000",
-        "system.communication.outQueueSize": "500000",
-        "system.communication.useSignatures": "0",
-        "system.communication.useMACs": "0",
-        "system.debug": "1",
-        "system.shutdownhook": true,
-        "system.totalordermulticast.state_transfer": true,
-        "system.totalordermulticast.highMark": "10000",
-        "system.totalordermulticast.revival_highMark": "10",
-        "system.totalordermulticast.timeout_highMark": "200",
-        "system.totalordermulticast.log": true,
-        "system.totalordermulticast.log_parallel": false,
-        "system.totalordermulticast.log_to_disk": true,
-        "system.totalordermulticast.sync_log": false,
-        "system.totalordermulticast.checkpoint_period": "1000",
-        "system.totalordermulticast.global_checkpoint_period": "120000",
-        "system.totalordermulticast.checkpoint_to_disk": false,
-        "system.totalordermulticast.sync_ckp": false,
-        "system.bft": true,
-        "system.ttp.id": "7001"
-      },
-      "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030,7001 127.0.0.1 11100",
-      "ttpPubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwuoTWbSFDnVjohwdZftoAwv3oCxUPnUiiNNH9pXryEW8kSFRGVJ7zJCwxJnt3YZGnpPGxnC3hAI4XkG26hO7+TxkgaYmv5GbamL946uZISxv0aNX3YbaOf//MC6F8tShFfCnpWlj68FYulM5dC2OOOHaUJfofQhmXfsaEWU251wIDAQAB",
-      "idNodeNameMap": {
-        "0": "TRUST-TEST0",
-        "1": "TRUST-TEST1",
-        "2": "TRUST-TEST2",
-        "3": "TRUST-TEST3"
-      },
-      "defaultDir": "C:/tmp/files0"
+    },
+    "bftSmart": {
+      "systemConfigs": {
+        "myId": "0",
+        "myClientId": "1100",
+        "configs": {
+          "system.communication.useSenderThread": true,
+          "system.communication.defaultkeys": true,
+          "system.servers.num": "4",
+          "system.servers.f": "1",
+          "system.totalordermulticast.timeout": "2000",
+          "system.totalordermulticast.maxbatchsize": "400",
+          "system.totalordermulticast.nonces": "10",
+          "system.totalordermulticast.verifyTimestamps": false,
+          "system.communication.inQueueSize": "500000",
+          "system.communication.outQueueSize": "500000",
+          "system.communication.useSignatures": "0",
+          "system.communication.useMACs": "0",
+          "system.debug": "1",
+          "system.shutdownhook": true,
+          "system.totalordermulticast.state_transfer": true,
+          "system.totalordermulticast.highMark": "10000",
+          "system.totalordermulticast.revival_highMark": "10",
+          "system.totalordermulticast.timeout_highMark": "200",
+          "system.totalordermulticast.log": true,
+          "system.totalordermulticast.log_parallel": false,
+          "system.totalordermulticast.log_to_disk": true,
+          "system.totalordermulticast.sync_log": false,
+          "system.totalordermulticast.checkpoint_period": "1000",
+          "system.totalordermulticast.global_checkpoint_period": "120000",
+          "system.totalordermulticast.checkpoint_to_disk": false,
+          "system.totalordermulticast.sync_ckp": false,
+          "system.bft": true,
+          "system.ttp.id": "7001"
+        },
+        "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030,7001 127.0.0.1 11100",
+        "ttpPubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwuoTWbSFDnVjohwdZftoAwv3oCxUPnUiiNNH9pXryEW8kSFRGVJ7zJCwxJnt3YZGnpPGxnC3hAI4XkG26hO7+TxkgaYmv5GbamL946uZISxv0aNX3YbaOf//MC6F8tShFfCnpWlj68FYulM5dC2OOOHaUJfofQhmXfsaEWU251wIDAQAB",
+        "idNodeNameMap": {
+          "0": "TRUST-TEST0",
+          "1": "TRUST-TEST1",
+          "2": "TRUST-TEST2",
+          "3": "TRUST-TEST3"
+        },
+        "defaultDir": "C:/tmp/files0"
+      }
     }
   }
 }
