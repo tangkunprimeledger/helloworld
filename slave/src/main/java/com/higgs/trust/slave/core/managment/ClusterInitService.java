@@ -2,6 +2,7 @@ package com.higgs.trust.slave.core.managment;
 
 import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.utils.ThreadLocalUtils;
+import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
@@ -49,6 +50,8 @@ import java.util.List;
 
     @Autowired private InitConfig initConfig;
 
+    @Autowired private NodeProperties nodeProperties;
+
     @Value("${higgs.trust.keys.bizPublicKey}") String pubKeyForBiz;
 
     @Value("${higgs.trust.keys.bizPrivateKey}") String priKeyForBiz;
@@ -74,6 +77,11 @@ import java.util.List;
             configRepository.getConfig(new Config(nodeState.getNodeName(), UsageEnum.CONSENSUS.getCode()));
         nodeState.setConsensusPrivateKey(null != configList ? configList.get(0).getPriKey() : null);
         clusterViewService.initClusterViewFromDB(false);
+
+        // if the node  is standby , init views form cluster
+        if(nodeProperties.isStandby()){
+            clusterViewService.initClusterViewFromCluster();
+        }
     }
 
     private boolean needInit() {

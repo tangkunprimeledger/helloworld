@@ -74,7 +74,9 @@ public class NodeState implements InitializingBean {
     /**
      * private key for consensus
      */
-    @Getter @Setter private String consensusPrivateKey;
+    @Getter
+    @Setter
+    private String consensusPrivateKey;
 
     /**
      * cluster name, as the prefix of cluster nodes
@@ -109,7 +111,7 @@ public class NodeState implements InitializingBean {
     /**
      * init stateful
      */
-    private void initStateful(){
+    private void initStateful() {
         for (NodeStatefulService statefulService : applicationContext.getBeansOfType(NodeStatefulService.class).values()) {
             statefulService.init();
         }
@@ -194,7 +196,7 @@ public class NodeState implements InitializingBean {
                 result = Initialize == to || Offline == to;
                 break;
             case Initialize:
-                result = StartingConsensus == to || Offline == to;
+                result = StartingConsensus == to || SelfChecking == to || Offline == to;
                 break;
             case StartingConsensus:
                 result = SelfChecking == to || Offline == to;
@@ -207,14 +209,13 @@ public class NodeState implements InitializingBean {
                 result = Running == to && !properties.isStandby() || SelfChecking == to || Offline == to || Standby == to && properties.isStandby();
                 break;
             case Standby:
-                result = Running == to && !properties.isStandby() || AutoSync == to || ArtificialSync == to || Offline == to;
-                result = SelfChecking == to || Running == to || Offline == to;
+                result = Running == to && !properties.isStandby() || AutoSync == to || ArtificialSync == to || Offline == to || SelfChecking == to;
                 break;
             case Running:
                 result = SelfChecking == to || Offline == to;
                 break;
             case Offline:
-                result = SelfChecking == to||Initialize==to;
+                result = SelfChecking == to || Initialize == to;
                 break;
         }
         return result;
