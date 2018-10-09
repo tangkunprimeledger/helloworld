@@ -57,9 +57,7 @@ import java.util.Map;
      * @param
      * @return quorum size
     */
-    public int getAppliedQuorum(){
-        return (nodes.size()+ faultNum)/2 + 1;
-    }
+    public int getAppliedQuorum(){ return (nodes.size() + faultNum) / 2 + 1; }
 
     /**
      * get quorum size for 'verify' or 'query' peration,
@@ -73,6 +71,15 @@ import java.util.Map;
     public int getVerifiedQuorum(){
         return faultNum + 1;
     }
+
+    /**
+     * get majority quorum,
+     * 4 for 6, 3 for 5, 3 for 4 ...
+     *
+     * @param
+     * @return quorum size
+    */
+    public int getMajorityQuorum() { return (nodes.size() + 2) / 2; }
 
     public String getPubKey(String nodeName) {
         return nodes.get(nodeName);
