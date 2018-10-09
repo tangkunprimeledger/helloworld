@@ -41,7 +41,6 @@ public class HttpClient {
     }
 
     public <T> T postJson(String url, Object json, Class<T> resultClass) {
-        log.info("post {}", url);
         RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, JSON.toJSONString(json));
         Request request = new Request.Builder()
                 .url(url)
@@ -51,7 +50,6 @@ public class HttpClient {
     }
 
     private <T> T postJson(String url, Object json, Type resultType) {
-        log.info("post {}", url);
         RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, JSON.toJSONString(json));
         Request request = new Request.Builder()
                 .url(url)
@@ -65,7 +63,6 @@ public class HttpClient {
     }
 
     public <T> T get(String url, Class<T> resultClass) {
-        log.info("get {}", url);
         Request request = new Request.Builder().url(url).build();
         return execute(request, resultClass);
     }
@@ -75,29 +72,23 @@ public class HttpClient {
     }
 
     public <T> List<T> getList(String url, Class<T> resultClass) {
-        log.info("get {}", url);
+        log.trace("get {}", url);
         Request request = new Request.Builder().url(url).build();
         return executeList(request, resultClass);
     }
 
-    @SuppressWarnings("Duplicates")
     private <T> T execute(Request request, Class<T> resultClass) {
-        try {
-            Call call = httpClient.newCall(request);
-            Response response = call.execute();
-            String jsonText = response.body().string();
-            return JSON.parseObject(jsonText, resultClass);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return this.<T>execute(request, (Type) resultClass);
     }
 
-    @SuppressWarnings("Duplicates")
     private <T> T execute(Request request, Type resultType) {
         try {
             Call call = httpClient.newCall(request);
             Response response = call.execute();
             String jsonText = response.body().string();
+            if (!response.isSuccessful()) {
+                throw new RuntimeException(jsonText);
+            }
             return JSON.<T>parseObject(jsonText, resultType);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -109,6 +100,9 @@ public class HttpClient {
             Call call = httpClient.newCall(request);
             Response response = call.execute();
             String jsonText = response.body().string();
+            if (!response.isSuccessful()) {
+                throw new RuntimeException(jsonText);
+            }
             return JSON.parseArray(jsonText, resultClass);
         } catch (IOException e) {
             throw new RuntimeException(e);
