@@ -38,10 +38,6 @@ import java.util.Map;
 
     @Autowired
     private RsNodeRepository rsNodeRepository;
-    /**
-     * the policy cache
-     */
-    private Map<String, Policy> policyCache = new HashMap<>();
 
     @Autowired
     private InitConfig initConfig;

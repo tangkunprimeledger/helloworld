@@ -1,9 +1,6 @@
 package com.higgs.trust.slave.core.scheduler;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
@@ -40,46 +37,51 @@ import java.util.List;
  * @author tangfashuang
  * @date 2018/04/09 15:30
  */
-@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true) @Service @Slf4j
-public class PackageScheduler {
 @ConditionalOnProperty(name = "higgs.trust.isSlave", havingValue = "true", matchIfMissing = true)
-@Service @Slf4j public class PackageScheduler {
+@Service
+@Slf4j
+public class PackageScheduler {
 
-    @Autowired private PendingState pendingState;
+    @Autowired
+    private PendingState pendingState;
 
-    @Autowired private PackageRepository packageRepository;
+    @Autowired
+    private PackageRepository packageRepository;
 
-    @Autowired private PackageService packageService;
+    @Autowired
+    private PackageService packageService;
 
-    @Autowired private PackageProcess packageProcess;
+    @Autowired
+    private PackageProcess packageProcess;
 
-    @Autowired private NodeState nodeState;
+    @Autowired
+    private NodeState nodeState;
 
-    @Autowired private MasterPackageCache packageCache;
+    @Autowired
+    private MasterPackageCache packageCache;
 
-    @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
+    @Value("${trust.batch.tx.limit:200}")
+    private int TX_PENDING_COUNT;
 
     /**
      * master node create package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.create}") public void createPackage() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.create}")
+    public void createPackage() {
         while (packageCache.getPendingTxQueueSize() > 0) {
-            if (nodeState.isState(NodeStateEnum.Running)
-                && nodeState.isMaster()
-                && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
+            if (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster() && packageCache.getPendingPackSize() < Constant.MAX_BLOCKING_QUEUE_SIZE) {
 
                 Object[] objs = pendingState.getPendingTransactions(TX_PENDING_COUNT);
                 if (objs == null) {
                     return;
                 }
-                List<SignedTransaction> signedTransactions = (List<SignedTransaction>)objs[0];
+                List<SignedTransaction> signedTransactions = (List<SignedTransaction>) objs[0];
                 if (CollectionUtils.isEmpty(signedTransactions)) {
                     return;
                 }
 
                 if (log.isDebugEnabled()) {
-                    log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}",
-                        packageCache.getPackHeight());
+                    log.debug("[PackageScheduler.createPackage] start create package, currentPackHeight={}", packageCache.getPackHeight());
                 }
 
                 Package pack = packageService.create(signedTransactions, packageCache.getPackHeight());
@@ -92,7 +94,7 @@ public class PackageScheduler {
                     //node operation transaction
                     SignedTransaction nodeOptTx = null;
                     if (objs[1] != null) {
-                        nodeOptTx = (SignedTransaction)objs[1];
+                        nodeOptTx = (SignedTransaction) objs[1];
                     }
                     //set package height
                     packageCache.setPackageHeight(pack);
@@ -112,9 +114,9 @@ public class PackageScheduler {
     /**
      * master node submit package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.submit}") public void submitPackage() {
-        while (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster()
-            && packageCache.getPendingPackSize() > 0) {
+    @Scheduled(fixedRateString = "${trust.schedule.package.submit}")
+    public void submitPackage() {
+        while (nodeState.isState(NodeStateEnum.Running) && nodeState.isMaster() && packageCache.getPendingPackSize() > 0) {
             Span span = TraceUtils.createSpan();
             try {
                 packageService.submitConsensus(packageCache.getPackage());
@@ -127,7 +129,8 @@ public class PackageScheduler {
     /**
      * process package
      */
-    @Scheduled(fixedRateString = "${trust.schedule.package.process}") public void processPackage() {
+    @Scheduled(fixedRateString = "${trust.schedule.package.process}")
+    public void processPackage() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
@@ -151,7 +154,7 @@ public class PackageScheduler {
             for (Long height : heights) {
                 // process next block as height = maxBlockHeight + 1
                 if (height != currentHeight + 1) {
-                    log.warn("package height is not continuous,currentHeight:{},heights:{}",currentHeight,heights);
+                    log.warn("package height is not continuous,currentHeight:{},heights:{}", currentHeight, heights);
                     return;
                 }
 
@@ -177,7 +180,7 @@ public class PackageScheduler {
      * @return
      */
     private PackageCommand createPackCommand(Package pack, SignedTransaction nodeOptTx) {
-        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVOToBytes(pack),pack.getHeight());
+        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVOToBytes(pack), pack.getHeight());
         if (nodeOptTx != null) {
             //convert sign info
             List<ClusterOptTx.SignatureInfo> signs = new ArrayList<>(nodeOptTx.getSignatureList().size());
@@ -188,7 +191,7 @@ public class PackageScheduler {
                 signs.add(signatureInfo);
             }
             List<Action> actionList = nodeOptTx.getCoreTx().getActionList();
-            NodeAction action = (NodeAction)actionList.get(0);
+            NodeAction action = (NodeAction) actionList.get(0);
             //make ClusterOptTx
             ClusterOptTx clusterOptTx = new ClusterOptTx();
             //txs signs
@@ -204,8 +207,7 @@ public class PackageScheduler {
             //txs sign value
             clusterOptTx.setSignatureValue(JSON.toJSONString(nodeOptTx.getCoreTx()));
             //action operation JOIN or LEAVE
-            clusterOptTx.setOperation(action.getType() == ActionTypeEnum.NODE_JOIN ? ClusterOptTx.Operation.JOIN :
-                ClusterOptTx.Operation.LEAVE);
+            clusterOptTx.setOperation(action.getType() == ActionTypeEnum.NODE_JOIN ? ClusterOptTx.Operation.JOIN : ClusterOptTx.Operation.LEAVE);
             //set
             command.setClusterOptTx(clusterOptTx);
         }

@@ -4,7 +4,6 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
-import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
@@ -16,6 +15,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.higgs.trust.slave.model.bo.Package;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -29,20 +29,24 @@ import java.util.concurrent.atomic.AtomicLong;
  * @date 2018/06/13 17:41
  * @desc set packHeight=null when master change
  */
-@Slf4j @Service public class MasterPackageCache implements MasterChangeListener {
+@Slf4j
+@Service
+public class MasterPackageCache implements MasterChangeListener {
 
-    @Autowired private BlockRepository blockRepository;
-    @Autowired private PackageRepository packageRepository;
-    @Autowired private NodeState nodeState;
+    @Autowired
+    private BlockRepository blockRepository;
+    @Autowired
+    private PackageRepository packageRepository;
+    @Autowired
+    private NodeState nodeState;
 
     private AtomicLong packHeight = new AtomicLong(0);
     private Deque<TermedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
-    private ConcurrentLinkedHashMap existTxMap =
-        new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE)
-            .build();
+    private ConcurrentLinkedHashMap existTxMap = new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE).build();
     private BlockingQueue<PackageCommand> pendingPack = new LinkedBlockingDeque<>();
 
-    @Override public void beforeChange(String masterName) {
+    @Override
+    public void beforeChange(String masterName) {
         synchronized (this) {
             packHeight.set(0);
             pendingPack.clear();
@@ -50,7 +54,8 @@ import java.util.concurrent.atomic.AtomicLong;
         }
     }
 
-    @Override public void masterChanged(String masterName) {
+    @Override
+    public void masterChanged(String masterName) {
 
     }
 
@@ -154,11 +159,11 @@ import java.util.concurrent.atomic.AtomicLong;
      *
      * @param pack
      */
-    public void setPackageHeight(Package pack){
+    public void setPackageHeight(Package pack) {
         try {
             long packageHeight = packHeight.incrementAndGet();
             pack.setHeight(packageHeight);
-        }catch (Throwable e){
+        } catch (Throwable e) {
             //reset packHeight
             packHeight.getAndDecrement();
             throw e;
@@ -183,7 +188,10 @@ import java.util.concurrent.atomic.AtomicLong;
         return pendingPack.poll();
     }
 
-    @Getter @Setter @AllArgsConstructor class TermedTransaction {
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    class TermedTransaction {
         /**
          * the transaction
          */
