@@ -73,7 +73,7 @@ public class RequestRepositoryTest extends IntegrateBaseTest{
         for (int i = 20; i < 50; i += 3) {
             RsCoreTxVO rsCoreTxVO = new RsCoreTxVO();
             rsCoreTxVO.setTxId("test-tx-id-" + i);
-            rsCoreTxVO.setStatus(CoreTxStatusEnum.PERSISTED);
+            rsCoreTxVO.setStatus(CoreTxStatusEnum.INIT);
             rsCoreTxVO.setErrorCode(null);
             rsCoreTxVO.setExecuteResult(CoreTxResultEnum.SUCCESS);
             rsCoreTxVO.setErrorMsg("");

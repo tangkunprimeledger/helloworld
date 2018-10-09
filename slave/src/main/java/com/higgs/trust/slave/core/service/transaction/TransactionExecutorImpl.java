@@ -78,20 +78,20 @@ import java.util.Map;
         SignedTransaction signedTransaction = transactionData.getCurrentTransaction();
         CoreTransaction coreTx = signedTransaction.getCoreTx();
         try {
-//            Profiler.enter("[tx.verifySignatures]");
-            /*//verify signatures
+            Profiler.enter("[tx.verifySignatures]");
+            //verify signatures
             if (!txCheckHandler.verifySignatures(signedTransaction, rsPubKeyMap)) {
                 log.error("SignedTransaction verify signature failed, signedTransaction={}, rsPubKeyMap={}",
                     signedTransaction.toString(), rsPubKeyMap.toString());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_TX_VERIFY_SIGNATURE_FAILED);
-            }*/
+            }
             // check action, if action type equals REGISTER_POLICY or REGISTER_RS, current transaction can have only one action.
             if (!txCheckHandler.checkActions(coreTx)) {
                 log.error("core transaction is invalid, txId={}", coreTx.getTxId());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
         } finally {
-//            Profiler.release();
+            Profiler.release();
         }
         // acquire version information
         String version = coreTx.getVersion();

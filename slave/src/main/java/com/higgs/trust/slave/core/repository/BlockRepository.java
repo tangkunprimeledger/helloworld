@@ -47,7 +47,7 @@ import java.util.*;
             return blockDao.getMaxHeight();
         } else {
             SystemProperty bo = systemPropertyRepository.queryByKey(Constant.MAX_BLOCK_HEIGHT);
-            return bo != null && !StringUtils.isEmpty(bo.getValue()) ? Long.parseLong(bo.getValue()) : null;
+            return (bo != null && !StringUtils.isEmpty(bo.getValue())) ? Long.parseLong(bo.getValue()) : null;
         }
     }
 
@@ -265,13 +265,14 @@ import java.util.*;
                 throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
             }
         } else {
+            Profiler.enter("save max block height");
+            systemPropertyRepository
+                .saveWithTransaction(Constant.MAX_BLOCK_HEIGHT, String.valueOf(blockHeight), "max block height");
+            Profiler.release();
+
             blockPO.setSignedTxs(txs);
             Profiler.enter("save block");
             blockRocksDao.save(blockPO);
-            Profiler.release();
-
-            Profiler.enter("save max block height");
-            systemPropertyRepository.saveWithTransaction(Constant.MAX_BLOCK_HEIGHT, String.valueOf(blockHeight), "max block height");
             Profiler.release();
         }
 
@@ -279,7 +280,6 @@ import java.util.*;
         //save transactions
         transactionRepository.batchSaveTransaction(blockHeight, blockTime, txs, txReceiptMap);
         Profiler.release();
-
 
         if (log.isDebugEnabled()) {
             log.debug("[BlockRepository.saveBlock] is end");

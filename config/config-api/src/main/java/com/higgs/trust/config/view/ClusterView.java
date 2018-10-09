@@ -76,6 +76,15 @@ import java.util.Map;
         return verifiedQuorum <= nodes.size() ? verifiedQuorum : nodes.size();
     }
 
+    /**
+     * get majority quorum,
+     * 4 for 6, 3 for 5, 3 for 4 ...
+     *
+     * @param
+     * @return quorum size
+    */
+    public int getMajorityQuorum() { return (nodes.size() + 2) / 2; }
+
     public String getPubKey(String nodeName) {
         return nodes.get(nodeName);
     }

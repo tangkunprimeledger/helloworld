@@ -27,7 +27,7 @@ import java.util.List;
     @Test public void genertor() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
         keyPairGen.initialize(2048);
-        String[] nodeNames = new String[] {"TRUST-NODE31", "TRUST-NODE32", "TRUST-NODE33", "TRUST-NODE34","TRUST-NODE35"};
+        String[] nodeNames = new String[] {"TRUST-NODEA", "TRUST-NODEB", "TRUST-NODEC", "TRUST-NODED","TRUST-NODEE"};
         List<Node> nodes = new ArrayList<>();
         Arrays.stream(nodeNames).forEach(nodeName -> {
             KeyPair bizKey = keyPairGen.generateKeyPair();

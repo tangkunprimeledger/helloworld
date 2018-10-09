@@ -1,6 +1,5 @@
 package com.higgs.trust.rs.core.scheduler;
 
-import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
@@ -22,10 +21,8 @@ import java.util.List;
 public class TxSubmitSlaveSchedule {
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTxRepository coreTxRepository;
-    @Autowired private RsConfig rsConfig;
     private int pageNo = 1;
-    @Value("${rs.core.schedule.submitSize:500}")
-    private int pageSize = 500;
+    @Value("${rs.core.schedule.submitSize:500}") private int pageSize = 500;
     private int maxPageNo = 1000;
     /**
      * rocks db seek key:01-tx_id
@@ -33,32 +30,19 @@ public class TxSubmitSlaveSchedule {
     private String lastPreKey = null;
 
     @Scheduled(fixedDelayString = "${rs.core.schedule.submitSlave:500}") public void exe() {
-        List<CoreTransactionPO> coreTransactionPOList;
-        int size;
-        if (rsConfig.isUseMySQL()) {
-            List<CoreTransactionProcessPO> list =
-                coreTxRepository.queryByStatusFromMysql(CoreTxStatusEnum.WAIT, (pageNo - 1) * pageSize, pageSize, lastPreKey);
-            if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {
-                pageNo = 1;
-                lastPreKey = null;
-                return;
-            }
-            size = list.size();
-            List<String> txIdList = new ArrayList<>(size);
-            list.forEach(entry -> {
-                txIdList.add(entry.getTxId());
-            });
-            coreTransactionPOList = coreTxRepository.queryByTxIds(txIdList);
-        } else {
-            coreTransactionPOList = coreTxRepository.queryByStatusFromRocks(CoreTxStatusEnum.WAIT, (pageNo - 1) * pageSize, pageSize, lastPreKey);
-            if (CollectionUtils.isEmpty(coreTransactionPOList)) {
-                pageNo = 1;
-                lastPreKey = null;
-                return;
-            }
-            size = coreTransactionPOList.size();
+        List<CoreTransactionProcessPO> list =
+            coreTxRepository.queryByStatus(CoreTxStatusEnum.WAIT, (pageNo - 1) * pageSize, pageSize, lastPreKey);
+        if (CollectionUtils.isEmpty(list) || pageNo == maxPageNo) {
+            pageNo = 1;
+            lastPreKey = null;
+            return;
         }
-
+        int size = list.size();
+        List<String> txIdList = new ArrayList<>(size);
+        list.forEach(entry -> {
+            txIdList.add(entry.getTxId());
+        });
+        List<CoreTransactionPO> coreTransactionPOList = coreTxRepository.queryByTxIds(txIdList);
         List<CoreTxBO> boList = new ArrayList<>(size);
         coreTransactionPOList.forEach(entry -> {
             boList.add(coreTxRepository.convertTxBO(entry));

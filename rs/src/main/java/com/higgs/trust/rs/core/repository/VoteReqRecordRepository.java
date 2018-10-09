@@ -38,8 +38,8 @@ import java.util.List;
     public void add(VoteRequestRecord voteRequestRecord) {
         VoteRequestRecordPO voteRequestRecordPO =
             BeanConvertor.convertBean(voteRequestRecord, VoteRequestRecordPO.class);
-        //default INIT result
-        voteRequestRecordPO.setVoteResult(VoteResultEnum.INIT.getCode());
+        //set vote result
+        voteRequestRecordPO.setVoteResult(voteRequestRecord.getVoteResult().getCode());
         if (rsConfig.isUseMySQL()) {
             try {
                 voteRequestRecordDao.add(voteRequestRecordPO);

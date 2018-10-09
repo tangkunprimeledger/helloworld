@@ -52,17 +52,7 @@ public class TransactionRocksDao extends RocksBaseDao<TransactionReceiptPO> {
             return null;
         }
 
-        Map<String, TransactionReceiptPO> resultMap = multiGet(txIds);
-        if (MapUtils.isEmpty(resultMap)) {
-            return null;
-        }
-
-        List<String> resultTxIds = new ArrayList<>(resultMap.size());
-        for (String key : resultMap.keySet()) {
-            resultTxIds.add(key);
-        }
-
-        return resultTxIds;
+        return multiGetKeys(txIds);
     }
 
     public void batchInsert(List<TransactionReceiptPO> receiptPOS) {

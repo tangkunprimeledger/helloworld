@@ -181,5 +181,13 @@
       },
       "defaultDir": "C:/tmp/files1"
     }
+  },
+  "network": {
+    "host": "127.0.0.1",
+    "port": 9002,
+    "peers": "127.0.0.1:9001,127.0.0.1:9002",
+    "rpc": "netty",
+    "timeout": 5,
+    "clientThreadNum": 0
   }
 }

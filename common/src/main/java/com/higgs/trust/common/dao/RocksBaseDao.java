@@ -2,7 +2,7 @@ package com.higgs.trust.common.dao;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.config.rocksdb.RocksDBWrapper;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.rocksdb.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -216,6 +216,18 @@ public abstract class RocksBaseDao<V> {
         return null;
     }
 
+
+    public V queryLastValueWithPrefix(String prefix) {
+        RocksIterator iterator = iterator();
+        for (iterator.seekToLast(); iterator.isValid(); iterator.prev()) {
+            if (!isPrefix(prefix, iterator.key())) {
+                return null;
+            }
+            return JSON.parseObject(iterator.value(), clazz);
+        }
+        return null;
+    }
+
     public String queryFirstKey(String prefix) {
         RocksIterator iterator = iterator();
         if (StringUtils.isEmpty(prefix)) {
@@ -299,15 +311,12 @@ public abstract class RocksBaseDao<V> {
             return null;
         }
         List<byte[]> keysBytes = new ArrayList<>();
+        List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>(keys.size());
         for (String k : keys) {
             keysBytes.add(JSON.toJSONBytes(k));
+            columnFamilyHandles.add(getColumnFamilyHandle());
         }
         try {
-            List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>(keysBytes.size());
-            for (int i = 0; i < keysBytes.size(); i++) {
-                columnFamilyHandles.add(getColumnFamilyHandle());
-            }
-
             Map<byte[], byte[]> map = rocksDBWrapper.getRocksDB().multiGet(columnFamilyHandles, keysBytes);
 
             if (!CollectionUtils.isEmpty(map)) {
@@ -319,6 +328,41 @@ public abstract class RocksBaseDao<V> {
                     }
                 }
                 return resultMap;
+            }
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    /**
+     * Returns a map of keys for which values were found in DB
+     *
+     * @param keys
+     * @return
+     * @throws RocksDBException
+     */
+    public List<String> multiGetKeys(List<String> keys) {
+        if (CollectionUtils.isEmpty(keys)) {
+            return null;
+        }
+        List<byte[]> keysBytes = new ArrayList<>();
+        List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>(keys.size());
+        for (String k : keys) {
+            keysBytes.add(JSON.toJSONBytes(k));
+            columnFamilyHandles.add(getColumnFamilyHandle());
+        }
+
+        try {
+
+            Map<byte[], byte[]> map = rocksDBWrapper.getRocksDB().multiGet(columnFamilyHandles, keysBytes);
+
+            if (!CollectionUtils.isEmpty(map)) {
+                List<String> existKeys = new ArrayList<>();
+                for (byte[] key : map.keySet()) {
+                    existKeys.add((String)JSON.parse(key));
+                }
+                return existKeys;
             }
         } catch (RocksDBException e) {
             throw new RuntimeException(e);

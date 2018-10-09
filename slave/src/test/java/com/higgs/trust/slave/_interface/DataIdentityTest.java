@@ -8,7 +8,7 @@ import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityServic
 import com.higgs.trust.slave.model.bo.DataIdentity;
 import com.higgs.trust.slave.model.bo.action.DataIdentityAction;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 

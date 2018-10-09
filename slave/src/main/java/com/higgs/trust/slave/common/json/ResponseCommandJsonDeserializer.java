@@ -28,7 +28,12 @@ public class ResponseCommandJsonDeserializer implements ObjectDeserializer {
         typeMap.put(ValidBlockHeaderCmd.class.getSimpleName(), ValidBlockHeaderCmd.class);
         typeMap.put(ValidClusterHeightCmd.class.getSimpleName(), ValidClusterHeightCmd.class);
         typeMap.put(ValidClusterViewCmd.class.getSimpleName(), ValidClusterViewCmd.class);
-//        typeMap.put(ChangeMasterVerifyResponseCmd.class.getSimpleName(), ChangeMasterVerifyResponseCmd.class);
+        try {
+            Class clazz = Class.forName("com.higgs.trust.config.master.command.ChangeMasterVerifyResponseCmd1");
+            typeMap.put(clazz.getSimpleName(), clazz);
+        } catch (ClassNotFoundException e) {
+        }
+
     }
 
     @Override

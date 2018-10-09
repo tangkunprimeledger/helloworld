@@ -41,7 +41,10 @@ import org.hibernate.validator.constraints.NotEmpty;
      * the cluster operation tx
      */
     private ClusterOptTx clusterOptTx;
-
+    /**
+     * the height of package
+     */
+    private long height;
     /**
      * signature
      */
@@ -50,10 +53,17 @@ import org.hibernate.validator.constraints.NotEmpty;
     public PackageCommand(String masterName, PackageVO value) {
         super(value);
         this.masterName = masterName;
+        this.height = value.getHeight();
+    }
+
+    public PackageCommand(String masterName,byte[] value,long height){
+        super(value);
+        this.masterName = masterName;
+        this.height = height;
     }
 
     @Override public long getPackageHeight() {
-        return get().getHeight();
+        return this.height;
     }
 
     @Override public String getNodeName() {
@@ -62,7 +72,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
     @Override public String getSignValue() {
         String join = String
-            .join(",", JSON.toJSONString(get()), "" + term, "" + view, masterName, JSON.toJSONString(clusterOptTx));
+            .join(",", JSON.toJSONString(getValueBytes()), "" + term, "" + view, masterName, JSON.toJSONString(clusterOptTx));
         return Hashing.sha256().hashString(join, Charsets.UTF_8).toString();
     }
 

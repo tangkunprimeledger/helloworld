@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -63,6 +64,7 @@ public class ContractServiceImpl implements ContractService {
         coreTx.setActionList(actionList);
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setSender(nodeState.getNodeName());
+        coreTx.setSendTime(new Date());
         coreTx.setPolicyId(InitPolicyEnum.CONTRACT_ISSUE.getPolicyId());
         coreTx.setTxType(TxTypeEnum.CONTRACT.getCode());
         return coreTx;
@@ -77,6 +79,7 @@ public class ContractServiceImpl implements ContractService {
         coreTx.setActionList(actionList);
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setSender(nodeState.getNodeName());
+        coreTx.setSendTime(new Date());
         coreTx.setPolicyId(InitPolicyEnum.CONTRACT_ISSUE.getPolicyId());
         coreTx.setTxType(TxTypeEnum.CONTRACT.getCode());
         return coreTx;

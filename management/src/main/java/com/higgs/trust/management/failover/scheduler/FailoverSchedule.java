@@ -16,6 +16,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
@@ -39,6 +40,16 @@ import java.util.List;
 @Slf4j
 public class FailoverSchedule {
 
+    @Autowired private BlockSyncService blockSyncService;
+    @Autowired private BlockService blockService;
+    @Autowired private PackageService packageService;
+    @Autowired private BlockRepository blockRepository;
+    @Autowired private PackageRepository packageRepository;
+    @Autowired private NodeState nodeState;
+    @Autowired private FailoverProperties properties;
+    @Autowired private TransactionTemplate txNested;
+    @Autowired private InitConfig initConfig;
+    @Autowired private PackageProcess packageProcess;
     @Autowired
     private BlockSyncService blockSyncService;
     @Autowired
@@ -265,5 +276,7 @@ public class FailoverSchedule {
                 ThreadLocalUtils.clearRocksTx();
             }
         }
+        //update block height in memory
+        packageProcess.updateProcessedHeight(blockHeader.getHeight());
     }
 }

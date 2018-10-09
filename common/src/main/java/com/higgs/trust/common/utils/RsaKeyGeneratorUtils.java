@@ -35,9 +35,6 @@ public class RsaKeyGeneratorUtils {
         String pubKey = Base64Utils.encodeToString(publicKey.getEncoded());
         String priKey = Base64Utils.encodeToString(privateKey.getEncoded());
 
-        System.out.println(pubKey.length());
-        System.out.println(priKey.length());
-
         Map map = new HashMap();
         map.put(PUB_KEY, pubKey);
         map.put(PRI_KEY, priKey);

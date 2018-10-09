@@ -53,6 +53,7 @@ import java.util.Map;
         try {
             MethodHandle requireMethod = MethodHandles.lookup().findStatic(ExecuteContext.class, "require", type(void.class, Object.class, Boolean.class, String.class));
             MethodHandle exceptionMethod = MethodHandles.lookup().findStatic(ExecuteContext.class, "exception", type(void.class, Object.class, String.class));
+            // jdk8u72 https://github.com/JetBrains/jdk8u_nashorn
             bindings.put("require", ScriptFunction.createBuiltin("require", requireMethod));
             bindings.put("exception", ScriptFunction.createBuiltin("exception", exceptionMethod));
         } catch (NoSuchMethodException e) {

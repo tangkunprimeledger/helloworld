@@ -44,8 +44,9 @@ import org.springframework.stereotype.Repository;
         } else if (txBatchCallbackHandler != null) {
             txBatchCallbackHandler.onVote(votingRequest);
         } else {
-            log.error("[onVote] callback handler is not register");
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
+            //TODO:liuyu for press-test
+//            log.error("[onVote] callback handler is not register");
+//            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
         }
     }
 }

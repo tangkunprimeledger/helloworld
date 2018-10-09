@@ -29,12 +29,9 @@ import java.util.Map;
  * @date 2018/04/02
  * @desc provide repository for business
  */
-@Repository
-@Slf4j
-public class PolicyRepository {
+@Repository @Slf4j public class PolicyRepository {
 
-    @Autowired
-    private PolicyDao policyDao;
+    @Autowired private PolicyDao policyDao;
 
     @Autowired
     private PolicyRocksDao policyRocksDao;
@@ -48,9 +45,13 @@ public class PolicyRepository {
 
     @Autowired
     private InitConfig initConfig;
+    /**
+     * the policy cache
+     */
+    private Map<String,Policy> policyCache = new HashMap<>();
 
     public Policy getPolicyById(String policyId) {
-        if (policyCache.containsKey(policyId)) {
+        if(policyCache.containsKey(policyId)){
             return policyCache.get(policyId);
         }
         if (StringUtils.isEmpty(policyId)) {
@@ -83,18 +84,13 @@ public class PolicyRepository {
                 policy = policyRocksDao.get(policyId);
             }
         }
-        Policy p = convertPolicyPOToPolicy(policy);
-        policyCache.put(policyId, p);
-        return p;
-    }
 
-    public void save(Policy policy) {
         if (null == policy) {
-            log.error("policy is null");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            return null;
         }
-        policyDao.add(convertPolicyToPolicyPO(policy));
-        policyCache.clear();
+        Policy p = convertPolicyPOToPolicy(policy);
+        policyCache.put(policyId,p);
+        return p;
     }
 
     public PolicyPO convertPolicyToPolicyPO(Policy policy) {
