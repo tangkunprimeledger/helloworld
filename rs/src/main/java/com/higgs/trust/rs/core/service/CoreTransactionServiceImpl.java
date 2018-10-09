@@ -128,6 +128,11 @@ import java.util.concurrent.TimeUnit;
                     .syncWaitNotify(txId, RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY,
                         rsConfig.getSyncRequestTimeout(), TimeUnit.MILLISECONDS);
             }
+        } catch (RsCoreException e) {
+            log.error("tx handle exception. ", e);
+            respData = new RespData();
+            respData.setCode(e.getCode().getCode());
+            respData.setMsg(e.getCode().getDescription());
         } catch (Throwable e) {
             log.error("tx handle exception. ", e);
             respData = new RespData();
