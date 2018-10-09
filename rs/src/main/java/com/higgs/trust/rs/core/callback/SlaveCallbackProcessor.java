@@ -11,6 +11,7 @@ import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
+import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -32,24 +33,15 @@ import java.util.List;
  * @description
  * @date 2018-05-13
  */
-@Component
-@Slf4j
-public class SlaveCallbackProcessor implements SlaveCallbackHandler, InitializingBean {
-    @Autowired
-    private SlaveCallbackRegistor slaveCallbackRegistor;
-    @Autowired
-    private CoreTxRepository coreTxRepository;
-    @Autowired
-    private RsCoreCallbackProcessor rsCoreCallbackProcessor;
-    @Autowired
-    private VoteRuleRepository voteRuleRepository;
-    @Autowired
-    private RsConfig rsConfig;
-    @Autowired
-    private DistributeCallbackNotifyService distributeCallbackNotifyService;
+@Component @Slf4j public class SlaveCallbackProcessor implements SlaveCallbackHandler, InitializingBean {
+    @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
+    @Autowired private CoreTxRepository coreTxRepository;
+    @Autowired private RsCoreCallbackProcessor rsCoreCallbackProcessor;
+    @Autowired private VoteRuleRepository voteRuleRepository;
+    @Autowired private RsConfig rsConfig;
+    @Autowired private DistributeCallbackNotifyService distributeCallbackNotifyService;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    @Override public void afterPropertiesSet() throws Exception {
         if (!rsConfig.isBatchCallback()) {
             slaveCallbackRegistor.registCallbackHandler(this);
         }
@@ -67,7 +59,7 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
         //not send by myself
         if (!sendBySelf(tx.getSender())) {
             //add tx,status=PERSISTED
-            createCoreTx(tx, signInfos, respData, blockHeader.getHeight(), CoreTxStatusEnum.PERSISTED);
+            createCoreTx(tx, signInfos, respData, blockHeader.getHeight());
             //callback custom rs
             rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
             return;
@@ -76,7 +68,7 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
         //check core_tx record
         if (!coreTxRepository.isExist(tx.getTxId())) {
             log.warn("onPersisted]call back self but core_tx is not exist txId:{}", tx.getTxId());
-            createCoreTx(tx, signInfos, respData, blockHeader.getHeight(), CoreTxStatusEnum.PERSISTED);
+            createCoreTx(tx, signInfos, respData, blockHeader.getHeight());
             //callback custom rs
             rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
             //同步通知
@@ -84,15 +76,20 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
             mRes.setData(tx.getTxId());
             mRes.setCode(respData.getRespCode());
             mRes.setMsg(respData.getMsg());
-            distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(mRes), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+            distributeCallbackNotifyService
+                .notifySyncResult(Lists.newArrayList(mRes), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
             return;
         }
 
         //for self
         //save process result
-        coreTxRepository.saveExecuteResultAndHeight(tx.getTxId(), respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), blockHeader.getHeight());
-        //update status
-        coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.WAIT, CoreTxStatusEnum.PERSISTED);
+        coreTxRepository.saveExecuteResultAndHeight(tx.getTxId(),
+            respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL, respData.getRespCode(),
+            respData.getMsg(), blockHeader.getHeight());
+        //update delete
+        RsCoreTxVO rsTx = new RsCoreTxVO();
+        rsTx.setTxId(tx.getTxId());
+        coreTxRepository.batchDelete(Lists.newArrayList(rsTx), CoreTxStatusEnum.WAIT);
         //callback custom rs
         rsCoreCallbackProcessor.onPersisted(respData, blockHeader);
         //同步通知
@@ -100,26 +97,17 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
         mRes.setData(tx.getTxId());
         mRes.setCode(respData.getRespCode());
         mRes.setMsg(respData.getMsg());
-        distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(mRes), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+        distributeCallbackNotifyService
+            .notifySyncResult(Lists.newArrayList(mRes), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
     }
 
-    @Override
-    public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos, BlockHeader blockHeader) {
+    @Override public void onClusterPersisted(RespData<CoreTransaction> respData, List<SignInfo> signInfos,
+        BlockHeader blockHeader) {
         CoreTransaction tx = respData.getData();
         CallbackTypeEnum callbackType = getCallbackType(tx);
         if (callbackType == CallbackTypeEnum.SELF && !sendBySelf(tx.getSender())) {
             log.debug("[onClusterPersisted]only call self");
             return;
-        }
-
-        //update status to END
-        try {
-            coreTxRepository.updateStatus(tx.getTxId(), CoreTxStatusEnum.PERSISTED, CoreTxStatusEnum.END);
-        } catch (RsCoreException e) {
-            //status is END no need to deal
-            if (RsCoreErrorEnum.RS_CORE_TX_UPDATE_STATUS_FAILED != e.getCode()) {
-                throw e;
-            }
         }
         //callback custom rs
         rsCoreCallbackProcessor.onEnd(respData, blockHeader);
@@ -128,7 +116,8 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
         mRes.setData(tx.getTxId());
         mRes.setCode(respData.getRespCode());
         mRes.setMsg(respData.getMsg());
-        distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(mRes),RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+        distributeCallbackNotifyService
+            .notifySyncResult(Lists.newArrayList(mRes), RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
     }
 
     @Override
@@ -140,7 +129,7 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
             return;
         }
         //create core_transaction
-        createCoreTx(tx, signInfos, respData, blockHeader.getHeight(), CoreTxStatusEnum.END);
+        createCoreTx(tx, signInfos, respData, blockHeader.getHeight());
         //callback custom rs
         rsCoreCallbackProcessor.onFailover(respData, blockHeader);
     }
@@ -189,7 +178,7 @@ public class SlaveCallbackProcessor implements SlaveCallbackHandler, Initializin
      * @param respData
      * @param blockHeight
      */
-    private void createCoreTx(CoreTransaction tx, List<SignInfo> signInfos, RespData respData, Long blockHeight, CoreTxStatusEnum coreTxStatusEnum) {
-        coreTxRepository.add(tx, signInfos, respData.isSuccess() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL, respData.getRespCode(), respData.getMsg(), blockHeight, coreTxStatusEnum);
+    private void createCoreTx(CoreTransaction tx, List<SignInfo> signInfos, RespData respData, Long blockHeight) {
+        coreTxRepository.add(tx, signInfos, respData, blockHeight);
     }
 }

@@ -1,14 +1,18 @@
 package com.higgs.trust.slave.core.managment.master;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.consensus.config.NodeState;
+import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,11 +33,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
     @Autowired private BlockRepository blockRepository;
     @Autowired private PackageRepository packageRepository;
-
-    private static int BATCH_PACKAGE = 5;
+    @Autowired private NodeState nodeState;
 
     private AtomicLong packHeight = new AtomicLong(0);
-    private Deque<SignedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
+    private Deque<TermedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
     private ConcurrentLinkedHashMap existTxMap =
         new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE)
             .build();
@@ -43,8 +46,6 @@ import java.util.concurrent.atomic.AtomicLong;
         synchronized (this) {
             packHeight.set(0);
             pendingPack.clear();
-            existTxMap.clear();
-            pendingTxQueue.clear();
             initPackHeight();
         }
     }
@@ -96,24 +97,31 @@ import java.util.concurrent.atomic.AtomicLong;
         }
 
         //TODO 压测分析日志
-        log.debug("pendingTxQueue.size={}", pendingTxQueue.size());
+        log.info("pendingTxQueue.size={}", pendingTxQueue.size());
         Object[] objs = new Object[2];
         int num = 0;
         List<SignedTransaction> list = new ArrayList<>();
         Set<String> txIdSet = new HashSet<>();
+        long currentTerm = nodeState.getCurrentTerm();
         while (num++ < count) {
-            SignedTransaction signedTx = pendingTxQueue.pollFirst();
-            if (null != signedTx && !txIdSet.contains(signedTx.getCoreTx().getTxId())) {
+            TermedTransaction termedTransaction = pendingTxQueue.pollFirst();
+            if (termedTransaction == null) {
+                break;
+            }
+            if (termedTransaction.getCurrentTerm() != currentTerm) {
+                existTxMap.remove(termedTransaction.getTx().getCoreTx().getTxId());
+                continue;
+            }
+            SignedTransaction signedTx = termedTransaction.getTx();
+            if (!txIdSet.contains(signedTx.getCoreTx().getTxId())) {
                 list.add(signedTx);
                 txIdSet.add(signedTx.getCoreTx().getTxId());
                 TxTypeEnum txTypeEnum = TxTypeEnum.getBycode(signedTx.getCoreTx().getTxType());
                 //for consensus
-                if(txTypeEnum!=null && txTypeEnum == TxTypeEnum.NODE){
+                if (txTypeEnum != null && txTypeEnum == TxTypeEnum.NODE) {
                     objs[1] = signedTx;
                     break;
                 }
-            } else {
-                break;
             }
         }
         objs[0] = list;
@@ -121,7 +129,7 @@ import java.util.concurrent.atomic.AtomicLong;
     }
 
     public void appendDequeFirst(SignedTransaction signedTransaction) {
-        pendingTxQueue.offerFirst(signedTransaction);
+        pendingTxQueue.offerFirst(new TermedTransaction(signedTransaction, nodeState.getCurrentTerm()));
     }
 
     /**
@@ -132,7 +140,7 @@ import java.util.concurrent.atomic.AtomicLong;
         if (existTxMap.containsKey(txId)) {
             return false;
         }
-        pendingTxQueue.offerLast(signedTx);
+        pendingTxQueue.offerLast(new TermedTransaction(signedTx, nodeState.getCurrentTerm()));
         existTxMap.put(txId, txId);
         return true;
     }
@@ -141,18 +149,30 @@ import java.util.concurrent.atomic.AtomicLong;
         return pendingTxQueue.size();
     }
 
-    public void putPendingPack(PackageCommand command) throws InterruptedException {
-        synchronized (this) {
-            try {
-                long packageHeight = packHeight.incrementAndGet();
-                command.get().setHeight(packageHeight);
-                pendingPack.offer(command, 100, TimeUnit.MILLISECONDS);
-            } catch (Throwable e) {
-                //set packHeight
-                packHeight.getAndDecrement();
-                throw e;
-            }
+    /**
+     * set height for package
+     *
+     * @param pack
+     */
+    public void setPackageHeight(Package pack){
+        try {
+            long packageHeight = packHeight.incrementAndGet();
+            pack.setHeight(packageHeight);
+        }catch (Throwable e){
+            //reset packHeight
+            packHeight.getAndDecrement();
+            throw e;
         }
+    }
+
+    /**
+     * put command to queue
+     *
+     * @param command
+     * @throws InterruptedException
+     */
+    public void putPendingPack(PackageCommand command) throws InterruptedException {
+        pendingPack.offer(command, 100, TimeUnit.MILLISECONDS);
     }
 
     public int getPendingPackSize() {
@@ -163,19 +183,14 @@ import java.util.concurrent.atomic.AtomicLong;
         return pendingPack.poll();
     }
 
-    /**
-     * is deprecated use <getPackage/>
-     * @return
-     */
-    @Deprecated
-    public List<PackageCommand> getPackages() {
-        int i = 0;
-        List<PackageCommand> packageList = new LinkedList<>();
-        while ((null != pendingPack.peek()) && (i++ < BATCH_PACKAGE)) {
-            packageList.add(pendingPack.poll());
-        }
-
-        return packageList;
+    @Getter @Setter @AllArgsConstructor class TermedTransaction {
+        /**
+         * the transaction
+         */
+        SignedTransaction tx;
+        /**
+         * the term of cluster
+         */
+        long currentTerm;
     }
-
 }

@@ -13,13 +13,11 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,8 +38,8 @@ import java.util.List;
     public void add(VoteRequestRecord voteRequestRecord) {
         VoteRequestRecordPO voteRequestRecordPO =
             BeanConvertor.convertBean(voteRequestRecord, VoteRequestRecordPO.class);
-        //default INIT result
-        voteRequestRecordPO.setVoteResult(VoteResultEnum.INIT.getCode());
+        //set vote result
+        voteRequestRecordPO.setVoteResult(voteRequestRecord.getVoteResult().getCode());
         if (rsConfig.isUseMySQL()) {
             try {
                 voteRequestRecordDao.add(voteRequestRecordPO);

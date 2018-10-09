@@ -9,13 +9,13 @@ import com.higgs.trust.slave.api.enums.RespCodeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.common.context.AppContext;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
+import com.higgs.trust.slave.core.service.pending.TransactionValidator;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -66,6 +66,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
 
     @Autowired private PendingTxRepository pendingTxRepository;
 
+    @Autowired private TransactionValidator transactionValidator;
+
     @Autowired private Executor txConsumerExecutor;
 
     @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
@@ -74,14 +76,14 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
 
     @Override public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
         RespData<List<TransactionVO>> respData = new RespData();
-
+        if(!nodeState.isState(NodeStateEnum.Running)){
+            log.warn("the node status:{} is not Running please wait a later..",nodeState.getState());
+            return respData;
+        }
         if (CollectionUtils.isEmpty(transactions)) {
             log.error("received transaction list is empty");
             return new RespData(RespCodeEnum.PARAM_NOT_VALID);
         }
-
-        List<TransactionVO> transactionVOList = new ArrayList<>();
-        List<SignedTransaction> newSignedTxList = new ArrayList<>();
 
         if (StringUtils.equals(nodeState.getMasterName(), MASTER_NA)) {
             log.warn("cluster master is N/A");
@@ -90,23 +92,25 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             return respData;
         }
 
+        List<TransactionVO> transactionVOList = new ArrayList<>();
+        List<SignedTransaction> newSignedTxList = new ArrayList<>();
+
         for (SignedTransaction signedTx : transactions) {
             TransactionVO transactionVO = new TransactionVO();
             String txId = signedTx.getCoreTx().getTxId();
             transactionVO.setTxId(txId);
 
-            // params check
-            BeanValidateResult validateResult = BeanValidator.validate(signedTx);
-            if (!validateResult.isSuccess()) {
-                log.error("transaction invalid. errMsg={}, txId={}", validateResult.getFirstMsg(), txId);
-                transactionVO.setErrCode(TxSubmitResultEnum.PARAM_INVALID.getCode());
-                transactionVO.setErrMsg(TxSubmitResultEnum.PARAM_INVALID.getDesc());
+            //verify params for transaction
+            try {
+                transactionValidator.verify(signedTx);
+            } catch (SlaveException e){
+                transactionVO.setErrCode(e.getCode().getCode());
+                transactionVO.setErrMsg(e.getCode().getDescription());
                 transactionVO.setRetry(false);
                 transactionVOList.add(transactionVO);
+                continue;
             }
-            else {
-                newSignedTxList.add(signedTx);
-            }
+            newSignedTxList.add(signedTx);
         }
 
         newSignedTxList = checkDbIdempotent(newSignedTxList, transactionVOList);
@@ -171,8 +175,10 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         }
 
         for (SignedTransaction signedTx : transactions) {
-            if (signedTxIds.contains(signedTx.getCoreTx().getTxId())) {
+            String txId = signedTx.getCoreTx().getTxId();
+            if (signedTxIds.contains(txId)) {
                 signedTransactions.add(signedTx);
+                signedTxIds.remove(txId);
             }
         }
         return signedTransactions;
@@ -223,7 +229,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
 
         List<TransactionVO> transactionVOList;
 
-                // when master is running , then add txs into local pending txs
+        // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
             if (nodeState.isState(NodeStateEnum.Running)) {
                 log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);

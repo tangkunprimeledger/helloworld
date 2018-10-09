@@ -42,7 +42,7 @@ public class AccountTest extends BasePressTest{
      * @throws IOException
      */
     private static void test() throws IOException {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             new Thread(new MyTask()).start();
         }
         //wait
@@ -110,7 +110,7 @@ public class AccountTest extends BasePressTest{
     public int income() {
         int num = 0;
         for (int i = 0; i < 7; i = i + 2) {
-            BigDecimal amount = new BigDecimal(5000);
+            BigDecimal amount = new BigDecimal(500);
             AccountingVO vo = new AccountingVO();
             vo.setReqNo("tfs_tx_id_income_" + i + "_" + System.currentTimeMillis() + new Random().nextInt(1000) + "-" + Thread.currentThread().getName());
             vo.setDebitTradeInfo(Lists.newArrayList(new AccountTradeInfo("account_no_" + i, amount)));

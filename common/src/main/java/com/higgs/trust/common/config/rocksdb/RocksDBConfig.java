@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.validation.constraints.NotNull;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,22 +21,15 @@ import java.util.stream.Collectors;
  */
 @Configuration @Slf4j public class RocksDBConfig {
 
-
     /**
      * rocks db config properties
      */
-    @Value("${trust.rocksdb.file.root:/data/home/admin/trust/rocks/}")
-    private String dbFileRoot;
-    @Value("${trust.rocksdb.file.flash.name:trust.db}")
-    private String DB_FILE_FLASH;
-    @Value("${trust.rocksdb.file.extra.name:trust-extra.db}")
-    private String DB_FILE_EXTRA;
-    @Value("${trust.rocksdb.file.flash.size:10000000000}")
-    private long DB_FILE_FLASH_SIZE;
-    @Value("${trust.rocksdb.file.extra.size: 99999999999}")
-    private long DB_FILE_EXTEND_SIZE;
-    @Value("${trust.rocksdb.transaction.lockTimeout: 10000}")
-    private long LOCK_TIMEOUT;
+    @Value("${trust.rocksdb.file.root:/data/home/admin/trust/rocks/}") private String dbFileRoot;
+    @Value("${trust.rocksdb.file.flash.name:trust.db}") private String DB_FILE_FLASH;
+    @Value("${trust.rocksdb.file.extra.name:trust-extra.db}") private String DB_FILE_EXTRA;
+    @Value("${trust.rocksdb.file.flash.size:10000000000}") private long DB_FILE_FLASH_SIZE;
+    @Value("${trust.rocksdb.file.extra.size: 99999999999}") private long DB_FILE_EXTEND_SIZE;
+    @Value("${trust.rocksdb.transaction.lockTimeout: 10000}") private long LOCK_TIMEOUT;
 
     private static List<String> columnFamily;
 
@@ -84,6 +76,11 @@ import java.util.stream.Collectors;
 
     @Bean public RocksDBWrapper rocksDBWrapper() throws RocksDBException {
 
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.indexOf("windows") >= 0) {
+            return new RocksDBWrapper(null, null);
+        }
+
         ColumnFamilyOptions options = new ColumnFamilyOptions();
 
         final List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
@@ -108,10 +105,11 @@ import java.util.stream.Collectors;
         final DBOptions dbOptions =
             new DBOptions().setDbPaths(dbPaths).setCreateIfMissing(true).setCreateMissingColumnFamilies(true);
 
-        final TransactionDBOptions transactionDBOptions = new TransactionDBOptions().setTransactionLockTimeout(LOCK_TIMEOUT);
+        final TransactionDBOptions transactionDBOptions =
+            new TransactionDBOptions().setTransactionLockTimeout(LOCK_TIMEOUT);
         List<ColumnFamilyHandle> columnFamilyHandleList = new ArrayList<>();
-        TransactionDB rocksDB =
-            TransactionDB.open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
+        TransactionDB rocksDB = TransactionDB
+            .open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
 
         int size = columnFamily.size();
         Map<String, ColumnFamilyHandle> columnFamilyHandleMap = new HashMap<>(size);

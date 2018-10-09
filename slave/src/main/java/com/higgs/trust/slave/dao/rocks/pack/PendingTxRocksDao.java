@@ -6,13 +6,10 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.rocksdb.Transaction;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author tangfashuang
@@ -28,15 +25,7 @@ import java.util.Map;
             log.error("[PendingTxRocksDao.getTxIds] txIds is null");
             return null;
         }
-        List<String> resultList = new ArrayList<>();
-        Map<String, Long> resultMap = multiGet(txIds);
-        if (!MapUtils.isEmpty(resultMap)) {
-            for (String key : resultMap.keySet()) {
-                resultList.add(key);
-            }
-        }
-
-        return resultList;
+        return multiGetKeys(txIds);
     }
 
     public void batchInsert(List<String> txIds, Long packHeight) {

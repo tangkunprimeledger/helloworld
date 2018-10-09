@@ -59,6 +59,17 @@ public class SafeNativeJavaObject extends NativeJavaObject {
     }
 
     @Override
+    public void put(String name, Scriptable start, Object value) {
+        Object val = unwrap();
+        if (val instanceof Map) {
+            Map mapVal = (Map) val;
+            mapVal.put(name, value);
+            return;
+        }
+        super.put(name, start, value);
+    }
+
+    @Override
     public Object getDefaultValue(Class<?> hint) {
         if (javaObject instanceof Number) {
             return ((Number) javaObject).doubleValue();

@@ -3,12 +3,12 @@ package com.higgs.trust;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.higgs.trust.slave.common.json.ActionJsonDeserializer;
+import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
+//import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -19,8 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableAspectJAutoProxy
 @Slf4j
-@EnableFeignClients
-//@EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class})
+//@EnableFeignClients
 public class Application {
 
     /**
@@ -38,8 +37,8 @@ public class Application {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.SortField.getMask();
         //toJSONString的时候对嵌套结果进行按照字母排序
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
-        //toJSONString的时候记录Class的name
-        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
+
+        ParserConfig.getGlobalInstance().putDeserializer(Action.class, new ActionJsonDeserializer());
 
         SpringApplication.run(Application.class, args);
 

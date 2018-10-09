@@ -63,6 +63,7 @@ public class BlockRepositoryTest  extends BaseTest {
     }
 
     @Test public void testListBlocks() throws Exception {
+        System.out.println(blockRepository.listBlocks(3, 2));
     }
 
     @Test public void testListBlockHeaders() throws Exception {

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.higgs.trust.common.utils.CollectionBean;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
+import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -62,6 +63,28 @@ public class CoreTxProcessJDBCDao {
             whereSql.append(",?");
         }
         sql.append(updateStatusSql).append(updateTimeSql).append(" WHERE `tx_id` in (" + whereSql.substring(1) + ")  AND `status`='" + from.getCode() + "'");
+        List<Object> params = Lists.newLinkedList();
+        params.addAll(txIdList);
+        return jdbcTemplate.update(sql.toString(), params.toArray());
+    }
+
+    /**
+     * batch delete
+     *
+     * @param list
+     * @param statusEnum
+     * @return
+     */
+    public int batchDelete(List<RsCoreTxVO> list,CoreTxStatusEnum statusEnum) {
+        StringBuilder sql = new StringBuilder("DELETE FROM core_transaction_process");
+        StringBuilder whereSql = new StringBuilder();
+        List<String> txIdList = Lists.newLinkedList();
+        for (RsCoreTxVO po : list) {
+            String txId = po.getTxId();
+            txIdList.add(txId);
+            whereSql.append(",?");
+        }
+        sql.append(" WHERE `tx_id` IN (" + whereSql.substring(1) + ")  AND `status`='" + statusEnum.getCode() + "'");
         List<Object> params = Lists.newLinkedList();
         params.addAll(txIdList);
         return jdbcTemplate.update(sql.toString(), params.toArray());

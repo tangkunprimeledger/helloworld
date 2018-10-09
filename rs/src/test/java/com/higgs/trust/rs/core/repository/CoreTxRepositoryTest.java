@@ -178,7 +178,7 @@ import java.util.Random;
         for (int i = 100; i < 120; i++) {
             RsCoreTxVO rsCoreTxVO = new RsCoreTxVO();
             rsCoreTxVO.setTxId("test-tx-id-" + i);
-            rsCoreTxVO.setStatus(CoreTxStatusEnum.PERSISTED);
+            rsCoreTxVO.setStatus(CoreTxStatusEnum.INIT);
             rsCoreTxVO.setErrorCode(null);
             rsCoreTxVO.setExecuteResult(CoreTxResultEnum.SUCCESS);
             rsCoreTxVO.setErrorMsg("");
@@ -210,7 +210,7 @@ import java.util.Random;
 
         Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
         ThreadLocalUtils.putRocksTx(tx);
-        coreTxRepository.batchInsert(rsCoreTxVOS, 25L, CoreTxStatusEnum.INIT);
+        coreTxRepository.batchInsert(rsCoreTxVOS, 25L);
         RocksUtils.txCommit(tx);
         ThreadLocalUtils.clearRocksTx();
     }
@@ -220,7 +220,7 @@ import java.util.Random;
         for (int i = 25; i < 41; i++) {
             RsCoreTxVO rsCoreTxVO = new RsCoreTxVO();
             rsCoreTxVO.setTxId("test-tx-id-" + i);
-            rsCoreTxVO.setStatus(CoreTxStatusEnum.PERSISTED);
+            rsCoreTxVO.setStatus(CoreTxStatusEnum.INIT);
             rsCoreTxVO.setErrorCode(null);
             rsCoreTxVO.setExecuteResult(CoreTxResultEnum.SUCCESS);
             rsCoreTxVO.setErrorMsg("");

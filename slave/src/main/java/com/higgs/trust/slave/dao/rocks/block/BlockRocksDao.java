@@ -31,12 +31,7 @@ public class BlockRocksDao extends RocksBaseDao <BlockPO> {
             throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_TRANSACTION_IS_NULL);
         }
 
-        String height = String.valueOf(blockPO.getHeight());
-        if (keyMayExist(height) && null != get(height)) {
-            throw new SlaveException(SlaveErrorEnum.SLAVE_ROCKS_KEY_ALREADY_EXIST);
-        }
-
-        txPut(tx, height, blockPO);
+        txPut(tx, String.valueOf(blockPO.getHeight()), blockPO);
     }
 
     public List<Long> getLimitHeight(List<String> blockHeights) {

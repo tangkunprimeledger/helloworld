@@ -39,6 +39,6 @@ public class CoreTxProcessJDBCDaoTest extends IntegrateBaseTest {
             coreTransactionProcessPO.setStatus(CoreTxStatusEnum.INIT.getCode());
             list.add(coreTransactionProcessPO);
         }
-        System.out.println("batchInsertTx:"+coreTxProcessJDBCDao.batchUpdate(list, CoreTxStatusEnum.WAIT,CoreTxStatusEnum.PERSISTED));
+        System.out.println("batchInsertTx:"+coreTxProcessJDBCDao.batchUpdate(list, CoreTxStatusEnum.INIT,CoreTxStatusEnum.WAIT));
     }
 }

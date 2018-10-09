@@ -18,6 +18,7 @@
         <module>registry</module>
         <module>config</module>
         <module>management</module>
+        <module>network</module>
     </modules>
 
     <parent>
@@ -35,6 +36,7 @@
         <spring-cloud.version>Edgware.SR3</spring-cloud.version>
         <atomix.version>3.0.5</atomix.version>
         <copycat.version>1.1.4</copycat.version>
+        <netty.version>4.1.27.Final</netty.version>
     </properties>
 
     <dependencyManagement>
@@ -68,6 +70,12 @@
             <dependency>
                 <groupId>com.higgs.trust</groupId>
                 <artifactId>contract</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>network</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -197,6 +205,13 @@
             </dependency>
             <!-- atomix end -->
 
+            <!-- netty -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+
             <!-- bean validator start -->
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -239,7 +254,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.37</version>
+                <version>1.2.49</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -300,15 +315,15 @@
 
             <!--seg-->
             <!--<dependency>-->
-                <!--<groupId>cn.primeledger.seg</groupId>-->
-                <!--<artifactId>stability-spring-boot-starter</artifactId>-->
-                <!--<version>1.1.2-SNAPSHOT</version>-->
-                <!--<exclusions>-->
-                    <!--<exclusion>-->
-                        <!--<groupId>org.springframework.amqp</groupId>-->
-                        <!--<artifactId>spring-rabbit</artifactId>-->
-                    <!--</exclusion>-->
-                <!--</exclusions>-->
+            <!--<groupId>cn.primeledger.seg</groupId>-->
+            <!--<artifactId>stability-spring-boot-starter</artifactId>-->
+            <!--<version>1.1.2-SNAPSHOT</version>-->
+            <!--<exclusions>-->
+            <!--<exclusion>-->
+            <!--<groupId>org.springframework.amqp</groupId>-->
+            <!--<artifactId>spring-rabbit</artifactId>-->
+            <!--</exclusion>-->
+            <!--</exclusions>-->
             <!--</dependency>-->
 
             <!--redisson-->
@@ -317,6 +332,28 @@
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson</artifactId>
                 <version>3.5.4</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-codec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-buffer</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-transport</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!--test-->
@@ -409,8 +446,8 @@
     <build>
         <plugins>
             <!--<plugin>-->
-                <!--<groupId>org.springframework.boot</groupId>-->
-                <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
+            <!--<groupId>org.springframework.boot</groupId>-->
+            <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
             <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -425,11 +462,11 @@
                 </executions>
             </plugin>
             <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
             <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
+                <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>

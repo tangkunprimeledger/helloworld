@@ -35,9 +35,8 @@ public class PackStatusRocksDao extends RocksBaseDao<Long> {
                 return queryForPrev(index);
             }
         }
-        return queryLastValue();
+        return queryLastValueWithPrefix(status);
     }
-
 
     public Long getMinHeightByStatus(String status) {
         return queryFirstValueByPrefix(status);

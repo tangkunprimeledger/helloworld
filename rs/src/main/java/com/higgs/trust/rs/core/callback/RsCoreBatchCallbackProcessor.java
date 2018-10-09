@@ -93,6 +93,7 @@ import java.util.*;
                         break;
                 }
             }
+            //TODO:liuyu for test
             //callback custom
 //            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
 //            txBatchCallbackHandler.onPersisted(policyId,rsCoreTxVOS,blockHeader);
@@ -133,6 +134,7 @@ import java.util.*;
                         break;
                 }
             }
+            //TODO:liuyu for test
             //callback custom
 //            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
 //            txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
@@ -164,6 +166,7 @@ import java.util.*;
                         break;
                 }
             }
+            //TODO:liuyu for test
             //callback custom
 //            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
 //            txBatchCallbackHandler.onFailover(policyId,rsCoreTxVOS,blockHeader);

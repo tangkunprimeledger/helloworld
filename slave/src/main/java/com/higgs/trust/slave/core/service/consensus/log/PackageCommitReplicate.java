@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.zip.DataFormatException;
 
 @Replicator @Slf4j @Component public class PackageCommitReplicate implements ApplicationContextAware, InitializingBean {
 
@@ -53,7 +54,13 @@ import java.util.concurrent.ExecutorService;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        PackageVO packageVO = commit.operation().get();
+        PackageVO packageVO = null;
+        try {
+            packageVO = commit.operation().getValueFromByte(PackageVO.class);
+        } catch (DataFormatException e) {
+            log.error("[LogReplicateHandler.packageReplicated]param validate failed, decompress package error:{}",e.getCause());
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
 
         // validate param
         if (packageVO == null) {
