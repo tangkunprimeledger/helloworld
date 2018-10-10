@@ -3,6 +3,7 @@ package commands
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
 import com.higgs.trust.management.failover.service.StandbyService
+import com.higgs.trust.network.NetworkManage
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Argument
 import org.crsh.cli.Command
@@ -33,7 +34,7 @@ class standby {
         standbyService.startOrResume()
         nodeState.changeState(NodeStateEnum.Standby, NodeStateEnum.Running)
         //refresh registry for the p2p
-
+        NetworkManage.getInstance().config().
         out.println("Standby set finish, now the state is : $nodeState.state")
     }
 }

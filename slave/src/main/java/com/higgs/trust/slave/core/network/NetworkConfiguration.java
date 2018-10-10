@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.network;
 
 import com.higgs.trust.config.crypto.CryptoUtil;
+import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
@@ -61,14 +62,19 @@ public class NetworkConfiguration {
     @Autowired
     private ConfigRepository configRepository;
 
+    @Autowired
+    private NodeProperties nodeProperties;
+
     @StateChangeListener({
             NodeStateEnum.Starting,
+            NodeStateEnum.Initialize,
             NodeStateEnum.Running,
             NodeStateEnum.Offline,
             NodeStateEnum.ArtificialSync,
             NodeStateEnum.AutoSync,
             NodeStateEnum.SelfChecking,
-            NodeStateEnum.StartingConsensus
+            NodeStateEnum.StartingConsensus,
+            NodeStateEnum.Standby
     })
     public void handleStateChange() {
         if (nodeState.getState() == NodeStateEnum.Offline) {
@@ -107,6 +113,7 @@ public class NetworkConfiguration {
                 .timeout(timeout)
                 .clientThreadNum(clientThreadNum)
                 .singleton()
+                .backupNode(nodeProperties.isStandby())
                 .build();
         NetworkManage networkManage = new NetworkManage(networkConfig);
         return networkManage;
