@@ -66,6 +66,10 @@ public class NetworkConfig {
         return isBackupNode;
     }
 
+    public void setBackupNode(boolean backupNode) {
+        isBackupNode = backupNode;
+    }
+
     public Authentication authentication() {
         return authentication;
     }
