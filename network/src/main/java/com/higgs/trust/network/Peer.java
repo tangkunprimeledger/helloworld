@@ -11,10 +11,6 @@ public class Peer implements Serializable {
 
     public static final int MAX_TRY_CONNECT_TIMES = 10;
 
-    public static final int STATE_OFFLINE = 0;
-    public static final int STATE_ALIVE = 1;
-    public static final int STATE_NEW = 2;
-
     private long nonce;
     private Address address;
     private String publicKey = "";
@@ -113,7 +109,7 @@ public class Peer implements Serializable {
         }
 
         Peer that = (Peer) obj;
-        return nodeName.equals(nodeName) && publicKey.equals(that.publicKey) && this.address.equals(that.address);
+        return nodeName.equals(nodeName) && publicKey.equals(that.publicKey) && this.address.equals(that.address) && this.isSlave == that.isSlave;
     }
 
     @Override

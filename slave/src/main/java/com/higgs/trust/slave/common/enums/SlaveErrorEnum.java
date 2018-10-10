@@ -119,6 +119,7 @@ public enum SlaveErrorEnum implements ErrorInfo {
     SLAVE_ROCKS_KEY_ALREADY_EXIST("841", "rocks key is exist", false),
     SLAVE_ROCKS_KEY_IS_NOT_EXIST("842", "rocks key is not exist", false),
     SLAVE_ROCKS_TRANSACTION_IS_NULL("843", "rocks transaction is null", false),
+    SLAVE_BLOCK_IS_NOT_EXIST("844", "the block is not exist", false),
 
 
     SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),

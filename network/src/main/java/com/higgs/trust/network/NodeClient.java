@@ -79,7 +79,7 @@ public class NodeClient {
 
                 Peer local = config.localPeer();
                 AuthenticationRequest authenticationRequest = new AuthenticationRequest(config.nodeName(),
-                        config.publicKey(), local.getNonce(), local.getHttpPort(), config.signature());
+                        config.publicKey(), local.getNonce(), local.getHttpPort(), config.signature(), config.isBackupNode());
                 NetworkRequest request = new NetworkRequest(0, NetworkRequest.AUTH_ACTION_NAME, Hessian.serialize(authenticationRequest));
                 f.channel().writeAndFlush(request);
                 retFuture.complete(f.channel());

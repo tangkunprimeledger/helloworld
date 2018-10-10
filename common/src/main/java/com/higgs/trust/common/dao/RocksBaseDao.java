@@ -1,6 +1,7 @@
 package com.higgs.trust.common.dao;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import com.higgs.trust.common.config.rocksdb.RocksDBWrapper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.rocksdb.*;
@@ -430,11 +431,13 @@ public abstract class RocksBaseDao<V> {
      *
      * @return
      */
-    public Set<String> showTables() {
+    public List<String> showTables() {
         if (rocksDBWrapper.getColumnFamilyHandleMap() == null) {
-            return Collections.emptySet();
+            return Lists.newArrayList();
         }
-        return rocksDBWrapper.getColumnFamilyHandleMap().keySet();
+        List<String> tables = new ArrayList<>(rocksDBWrapper.getColumnFamilyHandleMap().keySet());
+        Collections.sort(tables);
+        return tables;
     }
 
     /**

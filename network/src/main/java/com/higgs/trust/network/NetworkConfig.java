@@ -17,6 +17,7 @@ public class NetworkConfig {
     private String nodeName;
     private HashSet<Address> seeds;
     private Peer localPeer;
+    private boolean isBackupNode;
     private boolean singleton;
     private String signature;
     private MessageHandlerRegistry handlerRegistry;
@@ -61,6 +62,10 @@ public class NetworkConfig {
         return localPeer;
     }
 
+    public boolean isBackupNode() {
+        return isBackupNode;
+    }
+
     public Authentication authentication() {
         return authentication;
     }
@@ -103,6 +108,7 @@ public class NetworkConfig {
             config.localPeer.setConnected(true);
             config.localPeer.setNonce(nonce);
             config.localPeer.setHttpPort(config.httpPort);
+            config.localPeer.setSlave(config.isBackupNode());
 
             config.signature = config.authentication.sign(config.localPeer, config.privateKey);
 
@@ -132,6 +138,11 @@ public class NetworkConfig {
 
         public NetworkConfigBuilder nodeName(String nodeName) {
             config.nodeName = nodeName;
+            return this;
+        }
+
+        public NetworkConfigBuilder backupNode(boolean isBackupNode) {
+            config.isBackupNode = isBackupNode;
             return this;
         }
 
