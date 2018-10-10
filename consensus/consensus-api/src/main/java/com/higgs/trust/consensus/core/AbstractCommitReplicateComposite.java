@@ -29,15 +29,17 @@ import java.util.function.Function;
      * Registers operations for the class.
      */
     public Map<Class<?>, Function<ConsensusCommit<?>, ?>> registerCommit() {
-        Map<String, Object> withAnnotation = applicationContext.getBeansWithAnnotation(Replicator.class);
-        withAnnotation.values().stream().forEach(object -> {
-            Class<?> type = object.getClass();
-            for (Method method : type.getMethods()) {
-                if (isOperationMethod(method)) {
-                    registerMethod(object, method);
+        if(classFunctionMap.isEmpty()) {
+            Map<String, Object> withAnnotation = applicationContext.getBeansWithAnnotation(Replicator.class);
+            withAnnotation.values().stream().forEach(object -> {
+                Class<?> type = object.getClass();
+                for (Method method : type.getMethods()) {
+                    if (isOperationMethod(method)) {
+                        registerMethod(object, method);
+                    }
                 }
-            }
-        });
+            });
+        }
         return classFunctionMap;
     }
 
