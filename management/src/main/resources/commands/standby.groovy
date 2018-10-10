@@ -33,8 +33,9 @@ class standby {
         }
         standbyService.startOrResume()
         nodeState.changeState(NodeStateEnum.Standby, NodeStateEnum.Running)
-        //refresh registry for the p2p
-        NetworkManage.getInstance().config().
+
+        //restart network
+        standbyService.restartNetwork()
         out.println("Standby set finish, now the state is : $nodeState.state")
     }
 }
