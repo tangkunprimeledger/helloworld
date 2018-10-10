@@ -16,8 +16,8 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
-import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService;
+import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -50,28 +50,8 @@ public class FailoverSchedule {
     @Autowired private TransactionTemplate txNested;
     @Autowired private InitConfig initConfig;
     @Autowired private PackageProcess packageProcess;
-    @Autowired
-    private BlockSyncService blockSyncService;
-    @Autowired
-    private BlockService blockService;
-    @Autowired
-    private PackageService packageService;
-    @Autowired
-    private BlockRepository blockRepository;
-    @Autowired
-    private PackageRepository packageRepository;
-    @Autowired
-    private NodeState nodeState;
-    @Autowired
-    private FailoverProperties properties;
-    @Autowired
-    private TransactionTemplate txNested;
-    @Autowired
-    private InitConfig initConfig;
-    @Autowired
-    private SyncService syncService;
-    @Autowired
-    private ClusterViewService clusterViewService;
+    @Autowired private SyncService syncService;
+    @Autowired private ClusterViewService clusterViewService;
 
     /**
      * 自动failover，判断状态是否为NodeStateEnum.Running
