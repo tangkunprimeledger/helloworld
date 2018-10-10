@@ -371,6 +371,7 @@ public class MessagingService {
                             Peer newPeer = new Peer(networkRequest.sender(), request.getNodeName(), request.getPublicKey());
                             newPeer.setNonce(request.getNonce());
                             newPeer.setHttpPort(request.getHttpPort());
+                            newPeer.setSlave(request.isBackupNode());
                             if (!config.authentication().validate(newPeer, request.getSignature())) {
                                 ctx.writeAndFlush(new NetworkResponse(message.id(), NetworkResponse.Status.UNAUTHORIZED, EMPTY_PAYLOAD))
                                         .addListener(ChannelFutureListener.CLOSE);
@@ -391,7 +392,7 @@ public class MessagingService {
 
                     ConnectionSession session = ctx.channel().attr(ConnectionSession.ATTR_KEY_CONNECTION_SESSION).get();
                     if (session == null) {
-                        log.warn("非法请求 ...");
+                        log.warn("Illegal request from {} ...", ctx.channel().remoteAddress());
                         return;
                     }
 

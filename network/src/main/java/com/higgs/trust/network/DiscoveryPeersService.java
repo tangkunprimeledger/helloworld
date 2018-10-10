@@ -65,6 +65,10 @@ public class DiscoveryPeersService {
             return;
         }
 
+        if (peer.isSlave()) {
+            return;
+        }
+
         Peer oldPeer = peers.putIfAbsent(peer);
 
         if (oldPeer == null || oldPeer.getNonce() < peer.getNonce()) {
