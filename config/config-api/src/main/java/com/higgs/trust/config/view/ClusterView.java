@@ -83,7 +83,10 @@ import java.util.Map;
      * @param
      * @return quorum size
     */
-    public int getMajorityQuorum() { return (nodes.size() + 2) / 2; }
+    public int getMajorityQuorum() {
+        int majorityQuorum = (nodes.size() + 2) / 2;
+        return majorityQuorum <= nodes.size() ? majorityQuorum : nodes.size();
+    }
 
     public String getPubKey(String nodeName) {
         return nodes.get(nodeName);

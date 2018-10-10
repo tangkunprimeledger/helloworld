@@ -13,13 +13,15 @@ public class AuthenticationRequest implements Serializable {
     private long nonce;
     private int httpPort;
     private String signature;
+    private boolean isBackupNode;
 
-    public AuthenticationRequest(String nodeName, String publicKey, long nonce, int httpPort, String signature) {
+    public AuthenticationRequest(String nodeName, String publicKey, long nonce, int httpPort, String signature, boolean isBackupNode) {
         this.nodeName = nodeName;
         this.publicKey = publicKey;
         this.nonce = nonce;
         this.httpPort = httpPort;
         this.signature = signature;
+        this.isBackupNode = isBackupNode;
     }
 
     public String getPublicKey() {
@@ -60,5 +62,13 @@ public class AuthenticationRequest implements Serializable {
 
     public void setSignature(String signature) {
         this.signature = signature;
+    }
+
+    public boolean isBackupNode() {
+        return isBackupNode;
+    }
+
+    public void setBackupNode(boolean backupNode) {
+        isBackupNode = backupNode;
     }
 }

@@ -13,9 +13,9 @@ import org.springframework.context.annotation.Configuration;
  * @date 2018/9/11
  */
 @Configuration
-public class InitBeanConfig {
-    public InitBeanConfig() {
-        System.out.println("InitBeanConfig ..." + host);
+public class NetworkBeanConfig {
+    public NetworkBeanConfig() {
+        System.out.println("NetworkBeanConfig ..." + host);
     }
 
     @Value("${network.host}")
@@ -32,12 +32,11 @@ public class InitBeanConfig {
 
     @Bean
     public NetworkManage getNetworkManage() {
-        System.out.println("getNetworkManage ... " + peers);
-        if (peers == null ||peers.length == 0) {
+        if (peers == null || peers.length == 0) {
             throw new IllegalArgumentException("Network peers is empty");
         }
         Address[] seeds = new Address[peers.length];
-        for(int i = 0; i < peers.length; i++) {
+        for (int i = 0; i < peers.length; i++) {
             String[] host_port = peers[i].split(":");
             seeds[i] = new Address(host_port[0].trim(), Integer.parseInt(host_port[1].trim()));
         }
@@ -55,12 +54,5 @@ public class InitBeanConfig {
         NetworkManage networkManage = new NetworkManage(networkConfig);
 //        networkManage.start();
         return networkManage;
-    }
-
-    @Configuration
-    public static class AutoConfig {
-        public AutoConfig() {
-            System.out.println("AutoConfig ...");
-        }
     }
 }

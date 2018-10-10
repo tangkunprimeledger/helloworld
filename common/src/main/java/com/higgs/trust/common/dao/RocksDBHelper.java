@@ -5,7 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuyu
@@ -90,7 +93,7 @@ import java.util.*;
      * @return
      */
     public boolean clearAll(String[] ignoreTables) {
-        Set<String> tableNames = showTables();
+        List<String> tableNames = showTables();
         if (CollectionUtils.isEmpty(tableNames)) {
             return false;
         }

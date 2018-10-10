@@ -40,7 +40,16 @@ public final class Peers {
 
     public Peer getPeer(String nodeName) {
         for (Peer peer : map.values()) {
-            if (nodeName.equals(peer.getNodeName())) {
+            if (nodeName.equals(peer.getNodeName()) && !peer.isSlave()) {
+                return peer;
+            }
+        }
+        return null;
+    }
+
+    public Peer getBackupPeer(String nodeName) {
+        for (Peer peer : map.values()) {
+            if (nodeName.equals(peer.getNodeName()) && peer.isSlave()) {
                 return peer;
             }
         }
