@@ -1,6 +1,5 @@
 package com.higgs.trust.network.message;
 
-import com.higgs.trust.network.Address;
 import com.higgs.trust.network.Peer;
 
 import java.io.Serializable;

@@ -22,27 +22,16 @@ import org.springframework.beans.factory.BeanFactory
 class standby {
     @Usage('set Running')
     @Command
-    def set(InvocationContext context, @Usage("is standby")
-    @Required @Argument boolean isStandby) {
+    def setRunning(InvocationContext context) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def nodeState = beans.getBean(NodeState.class)
         def standbyService = beans.getBean(StandbyService.class)
-        NodeStateEnum state = nodeState.state
-        if(isStandby){
-            if (state != NodeStateEnum.Running){
-                out.println("Node state is not Running but $state, can't set standby")
-                return
-            }
-            standbyService.startOrResume()
-            nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Standby)
-        }else {
-            if (state != NodeStateEnum.Standby){
-                out.println("Node state is not Standby but $state, can't set not standby")
-                return
-            }
-            standbyService.pause()
-            nodeState.changeState(NodeStateEnum.Standby, NodeStateEnum.Running)
+        if (nodeState.state != NodeStateEnum.Standby) {
+            out.println("Node state is not Standby but $nodeState.state, can't set standby")
+            return
         }
+        standbyService.startOrResume()
+        nodeState.changeState(NodeStateEnum.Standby, NodeStateEnum.Running)
         //refresh registry for the p2p
 
         out.println("Standby set finish, now the state is : $nodeState.state")

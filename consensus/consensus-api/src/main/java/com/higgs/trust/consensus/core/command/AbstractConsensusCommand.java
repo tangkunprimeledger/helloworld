@@ -2,7 +2,6 @@ package com.higgs.trust.consensus.core.command;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.consensus.util.DeflateUtil;
-import com.higgs.trust.consensus.util.ProtobufUtil;
 import lombok.ToString;
 
 import java.util.zip.DataFormatException;

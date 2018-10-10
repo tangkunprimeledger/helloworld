@@ -8,7 +8,6 @@ import com.higgs.trust.rs.core.vo.ReceiptRequest;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.vo.RespData;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 

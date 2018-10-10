@@ -5,7 +5,6 @@ import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
-import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;

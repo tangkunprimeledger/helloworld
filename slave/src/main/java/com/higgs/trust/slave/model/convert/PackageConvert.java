@@ -1,10 +1,9 @@
 package com.higgs.trust.slave.model.convert;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.consensus.util.DeflateUtil;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.model.bo.Package;
-import com.higgs.trust.consensus.util.DeflateUtil;
-import com.higgs.trust.consensus.util.ProtobufUtil;
 
 /**
  * @author tangfashuang

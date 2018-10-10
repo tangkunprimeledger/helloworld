@@ -7,6 +7,7 @@ import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
+import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.higgs.trust.slave.model.bo.Package;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;

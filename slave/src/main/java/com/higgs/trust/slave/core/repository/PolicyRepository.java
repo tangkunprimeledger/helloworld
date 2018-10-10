@@ -5,8 +5,6 @@ import com.alibaba.fastjson.TypeReference;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.config.InitConfig;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.dao.mysql.manage.PolicyDao;
 import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import com.higgs.trust.slave.dao.rocks.manage.PolicyRocksDao;
