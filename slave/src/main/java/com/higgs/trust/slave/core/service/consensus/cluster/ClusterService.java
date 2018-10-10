@@ -69,7 +69,7 @@ import java.util.*;
                 List<Long> sortedHeights = new ArrayList<>();
                 heightList.stream().sorted(Comparator.comparingLong(Long::longValue).reversed()).forEach(height->sortedHeights.add(height));
                 log.debug("sorted heightList:{}, appliedQuorum:{}, verifiedQuorum:{}", sortedHeights,view.getAppliedQuorum(),view.getVerifiedQuorum());
-                return sortedHeights.get(view.getMajorityQuorum()-1);
+                return sortedHeights.get(view.getVerifiedQuorum()-1);
             } else {
                 log.debug("get no more than quorum nodes' height, size:{}", size);
             }
