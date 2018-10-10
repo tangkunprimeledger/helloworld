@@ -41,15 +41,15 @@ public class ValidResponseWrap<T extends ResponseCommand> implements Serializabl
         return tValidResponseWrap;
     }
 
-    public static ValidResponseWrap failedResponse() {
+    public static ValidResponseWrap<?> failedResponse() {
         return failedResponse("");
     }
 
-    public static ValidResponseWrap failedResponse(String message) {
+    public static ValidResponseWrap<?> failedResponse(String message) {
         return failedResponse(FAILED_CODE, message);
     }
 
-    public static ValidResponseWrap failedResponse(String code, String message) {
+    public static ValidResponseWrap<?> failedResponse(String code, String message) {
         ValidResponseWrap<ResponseCommand> response = new ValidResponseWrap<>();
         response.setCode(code);
         response.setMessage(message);
