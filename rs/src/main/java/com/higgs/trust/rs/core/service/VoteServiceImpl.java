@@ -311,7 +311,9 @@ import java.util.concurrent.Future;
     }
 
     @Override public boolean getDecision(List<VoteReceipt> receipts, DecisionTypeEnum decisionType) {
-        log.info("[getDecision]decisionType:{},receipts:{}", decisionType, receipts);
+        if(log.isDebugEnabled()){
+            log.debug("[getDecision]decisionType:{},receipts:{}", decisionType, receipts);
+        }
         if (decisionType == DecisionTypeEnum.FULL_VOTE) {
             //require all RS voting
             for (VoteReceipt receipt : receipts) {
