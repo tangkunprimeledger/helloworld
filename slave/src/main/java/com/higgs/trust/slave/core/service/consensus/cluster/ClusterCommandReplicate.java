@@ -11,6 +11,8 @@ package com.higgs.trust.slave.core.service.consensus.cluster;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.p2pvalid.annotation.P2pvalidReplicator;
 import com.higgs.trust.consensus.p2pvalid.core.ValidSyncCommit;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -56,7 +58,10 @@ import java.util.List;
         BlockHeaderCmd operation = commit.operation();
         BlockHeader header = operation.get();
         BlockHeader blockHeader = blockRepository.getBlockHeader(header.getHeight());
-        boolean result = blockHeader != null && blockService.compareBlockHeader(header, blockHeader);
+        if (blockHeader == null) {
+            throw new SlaveException(SlaveErrorEnum.SLAVE_BLOCK_IS_NOT_EXIST);
+        }
+        Boolean result = blockService.compareBlockHeader(header, blockHeader);
         log.info("node ={}, valid header result={}", nodeState.getNodeName(), result);
         return new ValidBlockHeaderCmd(operation.getRequestId(), header, result);
     }

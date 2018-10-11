@@ -107,6 +107,10 @@ public class NetworkManage {
         return peers.getPeer(nodeName);
     }
 
+    public Peer getBackupPeerByName(String nodeName) {
+        return peers.getBackupPeer(nodeName);
+    }
+
     public void addListener(NetworkListener listener) {
         synchronized (listeners) {
             listeners.add(listener);

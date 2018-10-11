@@ -2,13 +2,11 @@ package com.higgs.trust.network;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.higgs.trust.network.utils.Hessian;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -42,7 +40,16 @@ public final class Peers {
 
     public Peer getPeer(String nodeName) {
         for (Peer peer : map.values()) {
-            if (nodeName.equals(peer.getNodeName())) {
+            if (nodeName.equals(peer.getNodeName()) && !peer.isSlave()) {
+                return peer;
+            }
+        }
+        return null;
+    }
+
+    public Peer getBackupPeer(String nodeName) {
+        for (Peer peer : map.values()) {
+            if (nodeName.equals(peer.getNodeName()) && peer.isSlave()) {
                 return peer;
             }
         }
