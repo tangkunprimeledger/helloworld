@@ -141,19 +141,18 @@ import java.util.*;
             CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), nodeState.getConsensusPrivateKey()));
         validCommandWrap.setValidCommand(cmd);
         nodeNames.forEach((nodeName) -> {
-            NodeStateEnum state = null;
             try {
                 ValidResponseWrap<? extends ResponseCommand> validResponseWrap =
                     p2pConsensusClient.syncSend(nodeName, validCommandWrap);
                 Object response = validResponseWrap.result();
                 if (response != null) {
                     ResponseCommand command = (ResponseCommand)response;
-                    state = (NodeStateEnum)command.get();
+                    NodeStateEnum state = (NodeStateEnum)command.get();
+                    stateMap.put(nodeName, state.name());
                 }
             } catch (Throwable throwable) {
                 log.error("{}", throwable);
             }
-            stateMap.put(nodeName, state.name());
         });
         return stateMap;
     }
