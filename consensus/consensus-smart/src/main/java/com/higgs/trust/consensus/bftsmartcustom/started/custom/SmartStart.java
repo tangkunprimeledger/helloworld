@@ -6,6 +6,7 @@ import com.higgs.trust.consensus.bftsmartcustom.started.custom.config.SmartConfi
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.server.Server;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
+@StateListener
 @Configuration public class SmartStart implements ConsensusStateMachine {
 
     private static final Logger log = LoggerFactory.getLogger(SmartStart.class);

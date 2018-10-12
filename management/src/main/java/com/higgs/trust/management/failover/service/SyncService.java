@@ -7,6 +7,7 @@ import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
@@ -39,6 +40,7 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.concurrent.Executors;
 
+@StateListener
 @Order(2) @Service @Slf4j public class SyncService implements PackageListener {
 
     @Autowired private FailoverProperties properties;

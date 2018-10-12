@@ -7,6 +7,7 @@ import com.higgs.trust.consensus.atomix.core.primitive.CommandPrimitiveType;
 import com.higgs.trust.consensus.atomix.core.primitive.ICommandPrimitive;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author suimi
  * @date 2018/7/5
  */
+@StateListener
 @Slf4j @Service public class AtomixServer implements ConsensusStateMachine, ConsensusClient {
 
     @Autowired private AtomixRaftProperties properties;
