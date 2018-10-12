@@ -54,10 +54,16 @@ class node {
 
     @Usage('show the current state of node')
     @Command
-    def state(InvocationContext context) {
+    def state(InvocationContext context,@Option(names = ["a", "all"]) Boolean isAll) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def nodeState = beans.getBean(NodeState.class)
-        out.println("Node is $nodeState.state")
+        if(isAll){
+            def clusterService = beans.getBean(IClusterService.class)
+            def map = clusterService.getAllClusterState()
+            map.entrySet().forEach({ entry -> context.provide([name: entry.key, value: entry.value]) })
+        }else{
+            def nodeState = beans.getBean(NodeState.class)
+            out.println("Node is $nodeState.state")
+        }
     }
 
 

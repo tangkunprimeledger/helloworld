@@ -46,4 +46,10 @@ public interface IClusterService {
      */
     Map<String, Long> getAllClusterHeight();
 
+    /**
+     * Get the status of all node
+     *
+     * @return
+     */
+    Map<String, String> getAllClusterState();
 }
