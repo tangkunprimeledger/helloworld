@@ -588,7 +588,7 @@ import java.util.concurrent.TimeUnit;
         CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
         RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO, RsCoreTxVO.class);
         coreTxVO.setStatus(CoreTxStatusEnum.formCode(
-            null != coreTransactionProcessPO ? coreTransactionProcessPO.getStatus() : CoreTxStatusEnum.INIT.getCode()));
+            null != coreTransactionProcessPO ? coreTransactionProcessPO.getStatus() : null));
         coreTxVO.setExecuteResult(CoreTxResultEnum.formCode(coreTransactionPO.getExecuteResult()));
         coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
         coreTxVO.setErrorMsg(coreTransactionPO.getErrorMsg());
