@@ -40,8 +40,7 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-@StateListener
-@Order(2) @Service @Slf4j public class SyncService implements PackageListener {
+@StateListener @Order(2) @Service @Slf4j public class SyncService implements PackageListener {
 
     @Autowired private FailoverProperties properties;
     @Autowired private BlockRepository blockRepository;
@@ -179,6 +178,9 @@ import java.util.concurrent.Executors;
             if (blockStartHeight + properties.getBlockStep() > blockEndHeight) {
                 blockSize = new Long(blockEndHeight - blockStartHeight + 1).intValue();
             }
+            if (blockSize <= 0) {
+                break;
+            }
             List<Block> blocks = getAndValidatingBlock(preHeader, blockStartHeight, blockSize);
             blockSize = blocks.size();
             Block lastBlock = blocks.get(blockSize - 1);
@@ -303,7 +305,8 @@ import java.util.concurrent.Executors;
         if (height == currentPackageHeight + 1) {
             currentPackageHeight = height;
         } else if (height > currentPackageHeight + 1) {
-            log.warn("received discontinuous height, current height:{}, package height:{}", currentPackageHeight, height);
+            log.warn("received discontinuous height, current height:{}, package height:{}", currentPackageHeight,
+                height);
             currentPackageHeight = height;
             receivedFistHeight = currentPackageHeight;
         }
