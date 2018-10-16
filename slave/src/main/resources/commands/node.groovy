@@ -1,5 +1,6 @@
 package commands
 
+import com.higgs.trust.common.utils.LogLevelChanger
 import com.higgs.trust.config.view.ClusterViewManager
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
@@ -54,10 +55,16 @@ class node {
 
     @Usage('show the current state of node')
     @Command
-    def state(InvocationContext context) {
+    def state(InvocationContext context,@Option(names = ["a", "all"]) Boolean isAll) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def nodeState = beans.getBean(NodeState.class)
-        out.println("Node is $nodeState.state")
+        if(isAll){
+            def clusterService = beans.getBean(IClusterService.class)
+            def map = clusterService.getAllClusterState()
+            map.entrySet().forEach({ entry -> context.provide([name: entry.key, value: entry.value]) })
+        }else{
+            def nodeState = beans.getBean(NodeState.class)
+            out.println("Node is $nodeState.state")
+        }
     }
 
 
@@ -131,6 +138,14 @@ class node {
             clusterInfoService.initClusterViewFromDB(true)
         }
         out.println("refresh cluster view successful")
+    }
+
+    @Usage('change log level, log <logName> <[OFF|ERROR|WARN|INFO|DEBUG|TRACE|ALL]>')
+    @Command
+    def log(InvocationContext context,
+                       @Usage("log name") @Required @Argument String logName,
+                       @Usage("level") @Required @Argument String level) {
+        LogLevelChanger.change(logName, level);
     }
 
 }

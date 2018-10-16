@@ -4,6 +4,7 @@ import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.network.Address;
 import com.higgs.trust.network.NetworkConfig;
 import com.higgs.trust.network.NetworkManage;
@@ -24,6 +25,7 @@ import java.util.List;
  */
 @Configuration
 @Slf4j
+@StateListener
 public class NetworkConfiguration {
     @Value("${network.host}")
     public String host;

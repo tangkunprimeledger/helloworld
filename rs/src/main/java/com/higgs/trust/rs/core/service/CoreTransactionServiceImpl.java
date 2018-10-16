@@ -372,7 +372,7 @@ import java.util.concurrent.TimeUnit;
             }
             //get decision result from receipts
             boolean decision = voteService.getDecision(receipts, policy.getDecisionType());
-            log.info("[processInitTx]decision:{}", decision);
+            log.debug("[processInitTx]decision:{}", decision);
             if (!decision) {
                 toEndOrCallBackByError(bo, CoreTxStatusEnum.INIT, RsCoreErrorEnum.RS_CORE_VOTE_DECISION_FAIL, true);
                 return null;
