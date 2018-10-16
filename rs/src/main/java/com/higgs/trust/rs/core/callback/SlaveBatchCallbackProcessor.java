@@ -166,8 +166,13 @@ import java.util.Map;
                                     .batchDelete(Lists.newArrayList(tx), CoreTxStatusEnum.formCode(processPO.getStatus()));
                             }
                         } else {
+                            RespData respData = new RespData();
+                            if(tx.getExecuteResult() != CoreTxResultEnum.SUCCESS){
+                                respData.setCode(tx.getErrorCode());
+                                respData.setMsg(tx.getErrorMsg());
+                            }
                             coreTxRepository
-                                .add(coreTxRepository.convertTxVO(tx), tx.getSignDatas(), blockHeader.getHeight());
+                                .add(coreTxRepository.convertTxVO(tx), tx.getSignDatas(), respData,blockHeader.getHeight());
                         }
                     }
                 } else {

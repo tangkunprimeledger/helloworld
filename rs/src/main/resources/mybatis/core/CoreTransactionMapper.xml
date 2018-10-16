@@ -22,7 +22,7 @@
 	</resultMap>
 	<!-- core_transaction table all fields -->
 	<sql id="baseColumnList">
-		tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,execute_result,error_code,error_msg,send_time,create_time,update_time,tx_type
+		tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,execute_result,error_code,error_msg,send_time,create_time,update_time,tx_type,block_height
 	</sql>
 	<!-- 查询条件 -->
 	<sql id="baseWhereClause">
@@ -69,8 +69,8 @@
 	<!-- 插入记录 -->
 	<insert id="add" parameterType="Object">
 		insert into
-		core_transaction(tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,execute_result,error_code,error_msg,send_time,tx_type,create_time,update_time)
-		values(#{txId},#{policyId},#{lockTime},#{sender},#{version},#{bizModel},#{actionDatas},#{signDatas},#{executeResult},#{errorCode},#{errorMsg},#{sendTime},#{txType},now(),now())
+		core_transaction(tx_id,policy_id,lock_time,sender,version,biz_model,action_datas,sign_datas,execute_result,error_code,error_msg,send_time,tx_type,create_time,update_time,block_height)
+		values(#{txId},#{policyId},#{lockTime},#{sender},#{version},#{bizModel},#{actionDatas},#{signDatas},#{executeResult},#{errorCode},#{errorMsg},#{sendTime},#{txType},now(),now(),#{blockHeight})
 	</insert>
 	<!-- 查询列表 -->
 	<select id="queryByList" resultMap="baseResultMap"
