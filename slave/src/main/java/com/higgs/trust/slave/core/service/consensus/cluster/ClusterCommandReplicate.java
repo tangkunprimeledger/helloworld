@@ -16,10 +16,7 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.model.bo.BlockHeader;
-import com.higgs.trust.slave.model.bo.consensus.BlockHeaderCmd;
-import com.higgs.trust.slave.model.bo.consensus.ClusterHeightCmd;
-import com.higgs.trust.slave.model.bo.consensus.ValidBlockHeaderCmd;
-import com.higgs.trust.slave.model.bo.consensus.ValidClusterHeightCmd;
+import com.higgs.trust.slave.model.bo.consensus.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,6 +45,17 @@ import java.util.List;
         maxHeights.forEach(height -> cmds.add(new ValidClusterHeightCmd(operation.getRequestId(), height)));
         return cmds;
     }
+
+    /**
+     * handle the node state
+     *
+     * @param commit
+     */
+    public ValidClusterStateCmd handleNodeState(ValidSyncCommit<ClusterStateCmd> commit) {
+        ClusterStateCmd operation = commit.operation();
+        return new ValidClusterStateCmd(operation.getRequestId(), nodeState.getState());
+    }
+
 
     /**
      * handle the consensus result of validating block header

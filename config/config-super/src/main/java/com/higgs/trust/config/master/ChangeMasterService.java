@@ -14,6 +14,7 @@ import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
@@ -36,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author suimi
  * @date 2018/6/4
  */
+@StateListener
 @Slf4j @Service public class ChangeMasterService implements MasterChangeListener {
 
     /**

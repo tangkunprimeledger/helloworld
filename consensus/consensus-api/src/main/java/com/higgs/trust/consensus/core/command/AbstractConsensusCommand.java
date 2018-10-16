@@ -37,7 +37,6 @@ import java.util.zip.DataFormatException;
         byte[] decom = DeflateUtil.uncompress(bytes);
         T result = JSON.parseObject(new String(decom),clazz);
         return result;
-//        return ProtobufUtil.deserializer(decom,clazz);
     }
 
     public Long getTraceId() {

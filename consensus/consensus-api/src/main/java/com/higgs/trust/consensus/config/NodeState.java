@@ -3,6 +3,7 @@ package com.higgs.trust.consensus.config;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.config.listener.StateChangeListenerAdaptor;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.consensus.exception.ConsensusError;
 import com.higgs.trust.consensus.exception.ConsensusException;
 import lombok.Getter;
@@ -122,8 +123,7 @@ public class NodeState implements InitializingBean {
      */
     private void registerStateListener() {
         Map<NodeStateEnum, List<StateChangeListenerAdaptor>> stateListeners = new ConcurrentHashMap<>();
-        Arrays.stream(applicationContext.getBeanDefinitionNames()).forEach(beanName -> {
-            Object bean = applicationContext.getBean(beanName);
+        applicationContext.getBeansWithAnnotation(StateListener.class).forEach((beanName,bean) -> {
             Class<?> targetClass = AopProxyUtils.ultimateTargetClass(bean);
             Map<Method, StateChangeListener> methods = MethodIntrospector.selectMethods(targetClass, (MethodIntrospector.MetadataLookup<StateChangeListener>) method -> AnnotatedElementUtils.findMergedAnnotation(method, StateChangeListener.class));
             if (methods == null || methods.isEmpty()) {

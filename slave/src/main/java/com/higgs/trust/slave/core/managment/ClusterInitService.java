@@ -6,6 +6,7 @@ import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.network.NetworkManage;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.config.InitConfig;
@@ -35,30 +36,22 @@ import java.util.List;
  * @desc cluster init service
  * @date 2018/6/28 19:53
  */
-@Service
-@Slf4j
-public class ClusterInitService {
+@StateListener
+@Service @Slf4j public class ClusterInitService {
 
-    @Autowired
-    private BlockRepository blockRepository;
+    @Autowired private BlockRepository blockRepository;
 
-    @Autowired
-    private CaInitService caInitService;
+    @Autowired private CaInitService caInitService;
 
-    @Autowired
-    private ConfigRepository configRepository;
+    @Autowired private ConfigRepository configRepository;
 
-    @Autowired
-    private NodeState nodeState;
+    @Autowired private NodeState nodeState;
 
-    @Autowired
-    private TransactionTemplate txRequired;
+    @Autowired private TransactionTemplate txRequired;
 
-    @Autowired
-    private ClusterViewService clusterViewService;
+    @Autowired private ClusterViewService clusterViewService;
 
-    @Autowired
-    private InitConfig initConfig;
+    @Autowired private InitConfig initConfig;
 
     @Autowired
     private NodeProperties nodeProperties;
