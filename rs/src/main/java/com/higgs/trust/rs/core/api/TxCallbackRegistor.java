@@ -1,7 +1,5 @@
 package com.higgs.trust.rs.core.api;
 
-import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
-import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.callback.TxBatchCallbackHandler;
 import com.higgs.trust.rs.core.callback.TxCallbackHandler;
 import com.higgs.trust.rs.core.vo.VotingRequest;

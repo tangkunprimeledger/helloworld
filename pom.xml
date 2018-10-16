@@ -19,6 +19,7 @@
         <module>config</module>
         <module>management</module>
         <module>network</module>
+        <module>zkproof</module>
     </modules>
 
     <parent>
@@ -61,11 +62,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.higgs.trust</groupId>
-                <artifactId>consensus</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.higgs.trust</groupId>
@@ -144,6 +140,12 @@
             <dependency>
                 <groupId>com.higgs.trust</groupId>
                 <artifactId>registry</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.higgs.trust</groupId>
+                <artifactId>zkproof</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- internal end -->
@@ -315,15 +317,15 @@
 
             <!--seg-->
             <!--<dependency>-->
-            <!--<groupId>cn.primeledger.seg</groupId>-->
-            <!--<artifactId>stability-spring-boot-starter</artifactId>-->
-            <!--<version>1.1.2-SNAPSHOT</version>-->
-            <!--<exclusions>-->
-            <!--<exclusion>-->
-            <!--<groupId>org.springframework.amqp</groupId>-->
-            <!--<artifactId>spring-rabbit</artifactId>-->
-            <!--</exclusion>-->
-            <!--</exclusions>-->
+                <!--<groupId>cn.primeledger.seg</groupId>-->
+                <!--<artifactId>stability-spring-boot-starter</artifactId>-->
+                <!--<version>1.1.2-SNAPSHOT</version>-->
+                <!--<exclusions>-->
+                    <!--<exclusion>-->
+                        <!--<groupId>org.springframework.amqp</groupId>-->
+                        <!--<artifactId>spring-rabbit</artifactId>-->
+                    <!--</exclusion>-->
+                <!--</exclusions>-->
             <!--</dependency>-->
 
             <!--redisson-->

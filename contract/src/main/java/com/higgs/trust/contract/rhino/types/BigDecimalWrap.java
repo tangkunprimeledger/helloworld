@@ -1,6 +1,5 @@
 package com.higgs.trust.contract.rhino.types;
 
-import com.higgs.trust.contract.rhino.function.MathFuncs;
 import com.higgs.trust.contract.rhino.function.MathNativeFunction;
 
 import java.math.BigDecimal;

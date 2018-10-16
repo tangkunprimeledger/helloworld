@@ -12,8 +12,6 @@ import org.testng.annotations.Test;
 
 import java.util.Date;
 
-import static org.testng.Assert.*;
-
 public class RegisterRsHandlerTest extends BaseTest {
     @Autowired BlockService blockService;
 

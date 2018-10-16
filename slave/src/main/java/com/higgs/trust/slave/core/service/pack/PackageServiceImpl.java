@@ -95,7 +95,7 @@ import java.util.stream.Collectors;
         });
 
         log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, package.height: {}",
-            signedTransactions.size(), currentPackageHeight + 1);
+                signedTransactions.size(), currentPackageHeight + 1);
 
         /**
          * initial package
@@ -218,7 +218,7 @@ import java.util.stream.Collectors;
         List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
         if (CollectionUtils.isNotEmpty(rsPubKeyList)) {
             packContext.setRsPubKeyMap(
-                rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
+                    rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
         }else{
             packContext.setRsPubKeyMap(Collections.emptyMap());
         }
@@ -335,7 +335,7 @@ import java.util.stream.Collectors;
                 //set current transaction and execute
                 packageData.setCurrentTransaction(tx);
                 TransactionReceipt receipt =
-                    transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
+                        transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
                 persistedDatas.add(tx);
                 txReceipts.put(receipt.getTxId(), receipt);
             } finally {
@@ -374,10 +374,10 @@ import java.util.stream.Collectors;
     @Override public void persisted(BlockHeader header,boolean isCompare) {
         //check status for package
         boolean isPackageStatus = packageRepository
-            .isPackageStatus(header.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+                .isPackageStatus(header.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
         if (!isPackageStatus) {
             log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",
-                header.getHeight());
+                    header.getHeight());
             return;
         }
         try {
@@ -397,7 +397,7 @@ import java.util.stream.Collectors;
                 if (!r) {
                     log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", header.getHeight());
                     MonitorLogUtils
-                        .logIntMonitorInfo(MonitorTargetEnum.SLAVE_BLOCK_HEADER_NOT_EQUAL.getMonitorTarget(), 1);
+                            .logIntMonitorInfo(MonitorTargetEnum.SLAVE_BLOCK_HEADER_NOT_EQUAL.getMonitorTarget(), 1);
                     //change state to offline
                     nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
@@ -441,7 +441,7 @@ import java.util.stream.Collectors;
                             //update package status ---- PERSISTED
                             Profiler.enter("[updatePackStatus]");
                             packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
-                                PackageStatusEnum.PERSISTED);
+                                    PackageStatusEnum.PERSISTED);
                             Profiler.release();
                         }
                     });
@@ -457,7 +457,7 @@ import java.util.stream.Collectors;
                         //update package status ---- PERSISTED
                         Profiler.enter("[updatePackStatus]");
                         packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
-                            PackageStatusEnum.PERSISTED);
+                                PackageStatusEnum.PERSISTED);
                         Profiler.release();
 
                         RocksUtils.txCommit(tx);
@@ -483,7 +483,7 @@ import java.util.stream.Collectors;
      * call back business
      */
     private void callbackRS(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap,
-        boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
+                            boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
         //TODO:liuyu
         if(initConfig.isMockRS()){
             return;

@@ -10,11 +10,13 @@ import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.management.failover.service.BlockSyncService;
+import com.higgs.trust.management.failover.service.SyncService;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
+import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService;
 import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
@@ -32,10 +34,11 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Collections;
 import java.util.List;
 
-@Service @Slf4j public class FailoverSchedule {
+@Service
+@Slf4j
+public class FailoverSchedule {
 
     @Autowired private BlockSyncService blockSyncService;
     @Autowired private BlockService blockService;
@@ -47,11 +50,14 @@ import java.util.List;
     @Autowired private TransactionTemplate txNested;
     @Autowired private InitConfig initConfig;
     @Autowired private PackageProcess packageProcess;
+    @Autowired private SyncService syncService;
+    @Autowired private ClusterViewService clusterViewService;
 
     /**
      * 自动failover，判断状态是否为NodeStateEnum.Running
      */
-    @Scheduled(fixedDelayString = "${trust.schedule.failover:10000}") public void failover() {
+    @Scheduled(fixedDelayString = "${trust.schedule.failover:10000}")
+    public void failover() {
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
@@ -82,6 +88,24 @@ import java.util.List;
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.FAILOVER_BLOCK_ERROR, 1);
         }
     }
+
+    /**
+     * standby 自动 failover，判断状态是否为NodeStateEnum.Running
+     */
+    @Scheduled(fixedDelayString = "${trust.schedule.failover:10000}")
+    public void standbyFailover() {
+        //if not standby no need to autoSync
+        if (!nodeState.isState(NodeStateEnum.Standby)) {
+            return;
+        }
+
+        //init cluster view from cluster every task
+        clusterViewService.initClusterViewFromCluster();
+
+        //autoSync block
+        syncService.autoSync();
+    }
+
 
     /**
      * failover指定高度
@@ -127,14 +151,16 @@ import java.util.List;
      */
     private boolean needFailover(long height) {
         Long maxHeight = packageRepository.getMaxHeight();
+        //no package or next block height is bigger than max pack block height.No need to
         if (maxHeight == null || height > maxHeight.longValue()) {
             return false;
         }
-
+        //next block height  in  packs  and status is fail over  .Need to
         Package pack = packageRepository.load(height);
         if (pack != null && pack.getStatus() == PackageStatusEnum.FAILOVER) {
             return true;
         }
+        //next block height is smaller than max pack height and not pack for next block . Need to
         if (height < maxHeight.longValue() && pack == null) {
             return true;
         }
@@ -215,7 +241,8 @@ import java.util.List;
         PackContext packContext = packageService.createPackContext(pack);
         if (initConfig.isUseMySQL()) {
             txNested.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
                     packageService.process(packContext, true, false);
                 }
             });

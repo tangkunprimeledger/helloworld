@@ -59,7 +59,7 @@ import java.util.concurrent.Executors;
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 autoSync();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("auto sync block failed!", e);
             }
         });
@@ -69,7 +69,7 @@ import java.util.concurrent.Executors;
      * 自动同步区块
      */
     @StateChangeListener(NodeStateEnum.AutoSync) public void autoSync() {
-        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
+        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync, NodeStateEnum.Standby)) {
             return;
         }
         log.info("auto sync starting ...");
@@ -92,7 +92,7 @@ import java.util.concurrent.Executors;
                     failoverHeight = receivedFistHeight - 1;
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SYNC_BLOCKS_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
         }
@@ -125,7 +125,7 @@ import java.util.concurrent.Executors;
      * @param size        同步数量
      */
     public synchronized void sync(long startHeight, int size) {
-        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
+        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync, NodeStateEnum.Standby)) {
             throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_STATE_NOT_ALLOWED);
         }
         log.info("starting to sync the block, start height:{}, size:{}", startHeight, size);

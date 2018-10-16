@@ -10,7 +10,6 @@ import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.Transaction;
-import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;

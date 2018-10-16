@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.snapshot;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * loading cache service

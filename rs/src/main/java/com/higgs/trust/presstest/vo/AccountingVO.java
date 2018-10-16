@@ -4,9 +4,7 @@ import com.higgs.trust.rs.core.vo.BaseVO;
 import com.higgs.trust.slave.model.bo.account.AccountTradeInfo;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.Valid;
 import java.util.List;
 
 /**

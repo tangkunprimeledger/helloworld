@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.testng.Assert.*;
 
 @RunWith(PowerMockRunner.class) public class BlockSyncServiceTest {

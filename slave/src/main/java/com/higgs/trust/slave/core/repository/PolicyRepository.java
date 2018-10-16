@@ -144,5 +144,6 @@ import java.util.Map;
         } else {
             return policyRocksDao.batchInsert(policyPOList);
         }
+
     }
 }

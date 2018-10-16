@@ -3,7 +3,6 @@ package com.higgs.trust.contract.rhino;
 import com.higgs.trust.contract.ExecuteConfig;
 import com.higgs.trust.contract.ExecuteEngine;
 import com.higgs.trust.contract.ExecuteEngineFactory;
-import com.higgs.trust.contract.rhino.RhinoExecuteEngine;
 
 import java.util.Map;
 

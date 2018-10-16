@@ -6,7 +6,6 @@ import com.higgs.trust.rs.core.api.DistributeCallbackNotifyService;
 import com.higgs.trust.rs.core.api.enums.RedisMegGroupEnum;
 import com.higgs.trust.rs.core.api.enums.RedisTopicEnum;
 import com.higgs.trust.rs.core.callback.SlaveBatchCallbackProcessor;
-import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**

@@ -6,7 +6,6 @@ import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.snapshot.agent.DataIdentitySnapshotAgent;
 import com.higgs.trust.slave.model.bo.Block;
-import com.higgs.trust.slave.model.bo.DataIdentity;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -14,9 +13,6 @@ import com.higgs.trust.slave.model.bo.action.DataIdentityAction;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DataIdentityActionHandlerTest extends BaseTest {
     @Autowired

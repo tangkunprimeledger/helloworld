@@ -67,7 +67,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service @Slf4j public class CoreTransactionServiceImpl implements CoreTransactionService, InitializingBean {
-    @Value("${higgs.trust.joinConsensus:false}") private String joinConsensus;
+    @Value("${higgs.trust.isSlave:false}") private boolean isSlave;
     @Autowired private TransactionTemplate txRequired;
     @Autowired private RsConfig rsConfig;
     @Autowired private BizTypeService bizTypeService;
@@ -95,9 +95,8 @@ import java.util.concurrent.TimeUnit;
      */
     @Override public void afterPropertiesSet() throws Exception {
         log.info("Init redis distribution topic listener to process tx.");
-        //TODO lingchao open it ofter test
-        if (!Boolean.valueOf(joinConsensus)) {
-            log.info("this node not join consensus do not need to initAsyncProcessInitTxListener");
+        if (!isSlave) {
+            log.info("this node not slave do not need to initAsyncProcessInitTxListener");
             return;
         }
         //init Async process init tx listener
@@ -402,7 +401,7 @@ import java.util.concurrent.TimeUnit;
             //query vote rule
             voteRule = voteRuleRepository.queryByPolicyId(policyId);
         }
-
+        log.debug("[processInitTx]is success");
         return voteRule;
     }
 
@@ -572,8 +571,8 @@ import java.util.concurrent.TimeUnit;
         }
         //同步通知
         try {
-            persistedResultMap.put(bo.getTxId(), respData);
-            clusterPersistedResultMap.put(bo.getTxId(), respData);
+            distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(respData), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
+            distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(respData), RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
         } catch (Throwable e) {
             log.warn("sync notify rs resp data failed", e);
         }
@@ -589,7 +588,7 @@ import java.util.concurrent.TimeUnit;
         CoreTxBO coreTxBO = coreTxRepository.convertTxBO(coreTransactionPO);
         RsCoreTxVO coreTxVO = BeanConvertor.convertBean(coreTxBO, RsCoreTxVO.class);
         coreTxVO.setStatus(CoreTxStatusEnum.formCode(
-            null != coreTransactionProcessPO ? coreTransactionProcessPO.getStatus() : CoreTxStatusEnum.INIT.getCode()));
+            null != coreTransactionProcessPO ? coreTransactionProcessPO.getStatus() : null));
         coreTxVO.setExecuteResult(CoreTxResultEnum.formCode(coreTransactionPO.getExecuteResult()));
         coreTxVO.setErrorCode(coreTransactionPO.getErrorCode());
         coreTxVO.setErrorMsg(coreTransactionPO.getErrorMsg());

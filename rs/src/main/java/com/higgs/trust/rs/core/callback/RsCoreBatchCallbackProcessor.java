@@ -6,7 +6,6 @@ import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
-import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
@@ -37,13 +36,21 @@ import java.util.*;
  * @description
  * @date 2018-06-07
  */
-@Component @Slf4j public class RsCoreBatchCallbackProcessor {
-    @Autowired private TxCallbackRegistor txCallbackRegistor;
-    @Autowired private VoteRuleRepository voteRuleRepository;
-    @Autowired private ConfigRepository configRepository;
-    @Autowired private NodeState nodeState;
-    @Autowired private RequestRepository requestRepository;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
+@Component
+@Slf4j
+public class RsCoreBatchCallbackProcessor {
+    @Autowired
+    private TxCallbackRegistor txCallbackRegistor;
+    @Autowired
+    private VoteRuleRepository voteRuleRepository;
+    @Autowired
+    private ConfigRepository configRepository;
+    @Autowired
+    private NodeState nodeState;
+    @Autowired
+    private RequestRepository requestRepository;
+    @Autowired
+    private ConsensusStateMachine consensusStateMachine;
 
     private TxBatchCallbackHandler getCallbackHandler() {
         TxBatchCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxBatchCallback();
@@ -93,10 +100,9 @@ import java.util.*;
                         break;
                 }
             }
-            //TODO:liuyu for test
             //callback custom
-//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-//            txBatchCallbackHandler.onPersisted(policyId,rsCoreTxVOS,blockHeader);
+            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+            txBatchCallbackHandler.onPersisted(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -134,10 +140,9 @@ import java.util.*;
                         break;
                 }
             }
-            //TODO:liuyu for test
             //callback custom
-//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-//            txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
+            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+            txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -166,10 +171,10 @@ import java.util.*;
                         break;
                 }
             }
-            //TODO:liuyu for test
+
             //callback custom
-//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-//            txBatchCallbackHandler.onFailover(policyId,rsCoreTxVOS,blockHeader);
+            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+            txBatchCallbackHandler.onFailover(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -207,7 +212,7 @@ import java.util.*;
         List<VoteRule> voteRules = new ArrayList<>();
         for (RsCoreTxVO tx : rsCoreTxVOS) {
             if (tx.getExecuteResult() == CoreTxResultEnum.SUCCESS) {
-                RegisterPolicy registerPolicy = (RegisterPolicy)tx.getActionList().get(0);
+                RegisterPolicy registerPolicy = (RegisterPolicy) tx.getActionList().get(0);
                 JSONObject jsonObject = tx.getBizModel();
                 VoteRule voteRule = new VoteRule();
                 voteRule.setPolicyId(registerPolicy.getPolicyId());
@@ -285,8 +290,7 @@ import java.util.*;
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
         if (CollectionUtils.isEmpty(nodes)) {
-            log.info("[processCaCancel] current node ={}, is not ca cancel, end cancel pubKey/priKey",
-                nodeState.getNodeName());
+            log.info("[processCaCancel] current node ={}, is not ca cancel, end cancel pubKey/priKey", nodeState.getNodeName());
             return;
         }
         log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
@@ -325,9 +329,8 @@ import java.util.*;
         if (CollectionUtils.isNotEmpty(actionList)) {
             Action action = actionList.get(0);
             if (action instanceof NodeAction) {
-                NodeAction nodeAction = (NodeAction)action;
-                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())
-                    && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
+                NodeAction nodeAction = (NodeAction) action;
+                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName()) && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
                     log.info("leave consensus layer, user={}", nodeAction.getNodeName());
                     consensusStateMachine.leaveConsensus();
                     nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);

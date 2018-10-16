@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
             this.msg = msg;
         }
 
-        public static SignTypeEnum getBycode(String code) {
+        public static SignTypeEnum getByCode(String code) {
             for (SignTypeEnum signType : SignTypeEnum.values()) {
                 if (signType.getCode().equals(code)) {
                     return signType;

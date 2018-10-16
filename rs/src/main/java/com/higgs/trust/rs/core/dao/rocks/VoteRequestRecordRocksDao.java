@@ -7,7 +7,6 @@ import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.dao.po.VoteRequestRecordPO;
 import lombok.extern.slf4j.Slf4j;
 import org.rocksdb.Transaction;
-import org.rocksdb.WriteBatch;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;

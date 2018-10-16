@@ -6,10 +6,14 @@ import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
+import com.higgs.trust.slave.dao.mysql.account.CurrencyInfoDao;
+import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.utxo.Sign;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
+import com.higgs.trust.slave.model.convert.UTXOConvert;
+import com.higgs.trust.zkproof.EncryptAmount;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +29,9 @@ public class UTXOContextService extends ContractApiService {
 
     @Autowired
     private UTXOSnapshotHandler utxoSnapshotHandler;
+
+    @Autowired
+    private CurrencyInfoDao currencyInfoDao;
 
 
     public UTXOAction getAction() {
@@ -53,6 +60,21 @@ public class UTXOContextService extends ContractApiService {
     }
 
     /**
+     * 根据币种获取同态公钥
+     *
+     * @param currency
+     * @return
+     */
+    public String getCurrencyHomomorphicPk(String currency) {
+        log.info("get a homomorphic key when verify a crypto currency");
+        CurrencyInfoPO currencyInfoPO = currencyInfoDao.queryByCurrency(currency);
+        if (currencyInfoPO != null) {
+            return currencyInfoPO.getHomomorphicPk();
+        }
+        return "";
+    }
+
+    /**
      * add two big decimal data
      * usually used by add  amount
      * return  augend + addend
@@ -61,7 +83,7 @@ public class UTXOContextService extends ContractApiService {
      * @param augend
      * @return
      */
-    public static BigDecimal add(String augend, String addend) {
+    public BigDecimal add(String augend, String addend) {
         BigDecimal a = null;
         BigDecimal b = null;
         try {
@@ -83,6 +105,7 @@ public class UTXOContextService extends ContractApiService {
      * @param reduction
      * @return
      */
+
     public BigDecimal subtract(String minuend, String reduction) {
         BigDecimal a = null;
         BigDecimal b = null;
@@ -138,12 +161,49 @@ public class UTXOContextService extends ContractApiService {
                 log.error("UTXO sign info :{} for PubKey or Signature is null error!", sign);
                 return false;
             }
-            if (!CryptoUtil.getBizCrypto().verify(message, sign.getSignature(), sign.getPubKey())) {
+            if (!CryptoUtil.getBizCrypto(sign.getCryptoType()).verify(message, sign.getSignature(), sign.getPubKey())) {
                 log.error("UTXO verify message :{} for Signature :{} with pubKey :{}  failed error!", message, sign.getSignature(), sign.getPubKey());
                 return false;
             }
         }
         return true;
     }
+
+    public int cipherCompare(String a, String b) {
+        if (EncryptAmount.cipherCompare(a, b)) {
+            return 0;
+        }
+        return 1;
+    }
+
+
+    public void initPubKey(String pubKey) {
+        EncryptAmount.setHomomorphicEncryptionKey(pubKey);
+    }
+
+    public String cipherAdd(String em1, String em2) {
+        if (em1.equals("0")) {
+            return em2;
+        }
+        return EncryptAmount.cipherAdd(em1, em2);
+    }
+
+    /**
+     * 初始发币加密
+     *
+     * @param amount
+     * @return
+     */
+    public String issueEnrypt(String amount) {
+        EncryptAmount encryptAmount = new EncryptAmount(new BigDecimal(amount), EncryptAmount.FULL_RANDOM);
+        return encryptAmount.toString();
+    }
+
+    public boolean verifyTxInSignature(List<Sign> signList, List<TxIn> txInList) {
+        String message = UTXOConvert.toTxInString(txInList);
+        return verifySignature(signList, message);
+    }
+
+
 }
 

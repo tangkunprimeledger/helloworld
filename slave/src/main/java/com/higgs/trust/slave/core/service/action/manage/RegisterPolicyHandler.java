@@ -3,7 +3,6 @@ package com.higgs.trust.slave.core.service.action.manage;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.PolicySnapshotHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;

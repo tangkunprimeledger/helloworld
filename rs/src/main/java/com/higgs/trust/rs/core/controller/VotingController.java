@@ -8,7 +8,6 @@ import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.vo.ReceiptRequest;
 import com.higgs.trust.rs.core.vo.VotingRequest;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.model.bo.SignInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;

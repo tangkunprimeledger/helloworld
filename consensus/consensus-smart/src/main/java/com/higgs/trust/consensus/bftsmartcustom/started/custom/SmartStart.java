@@ -28,21 +28,27 @@ import java.util.concurrent.TimeUnit;
 
     private static final Logger log = LoggerFactory.getLogger(SmartStart.class);
 
-    @Value("${bftSmart.systemConfigs.myId}") private String myId;
+    @Value("${bftSmart.systemConfigs.myId}")
+    private String myId;
 
-    @Value("${bftSmart.systemConfigs.configs.system.ttp.id}") private String ttpId;
+    @Value("${bftSmart.systemConfigs.configs.system.ttp.id}")
+    private String ttpId;
 
     @Value("${higgs.trust.nodeName}") private String nodeName;
 
     @Autowired private RSAKeyLoader rsaKeyLoader;
 
-    @Autowired private Client client;
+    @Autowired
+    private Client client;
 
-    @Autowired private SmartConfig smartConfig;
+    @Autowired
+    private SmartConfig smartConfig;
 
-    @Autowired private IConsensusSnapshot consensusSnapshot;
+    @Autowired
+    private IConsensusSnapshot consensusSnapshot;
 
-    @Autowired private SmartCommitReplicateComposite machine;
+    @Autowired
+    private SmartCommitReplicateComposite machine;
 
     @Autowired private NumberNameMapping numberNameMapping;
 
@@ -54,7 +60,8 @@ import java.util.concurrent.TimeUnit;
     private String ip;
     private int port;
 
-    @Override public void leaveConsensus() {
+    @Override
+    public void leaveConsensus() {
         log.info("leave replica :" + myId);
         String hostsConfig = smartConfig.getHostsConfig();
         String[] configs = hostsConfig.split(",", -1);
@@ -71,7 +78,8 @@ import java.util.concurrent.TimeUnit;
         sendRCMessage.sendToTTP(ttpIp, ttpPort, Integer.valueOf(ttpId), rsaKeyLoader);
     }
 
-    @Override public void joinConsensus() {
+    @Override
+    public void joinConsensus() {
         String hostsConfig = smartConfig.getHostsConfig();
         String[] configs = hostsConfig.split(",", -1);
         for (String config : configs) {
@@ -130,15 +138,12 @@ import java.util.concurrent.TimeUnit;
             log.info("smart server Initialization complete");
 
             while (true) {
-                if (server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size()
-                    >= (server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN() - 1)) {
+                if (server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size() >= (server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN() - 1)) {
                     client.init();
                     break;
                 } else {
-                    log.info("connection count : " + server.getServiceReplica().getServerCommunicationSystem()
-                        .getServersConn().getConnections().size());
-                    log.info(
-                        "view N : " + server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN());
+                    log.info("connection count : " + server.getServiceReplica().getServerCommunicationSystem().getServersConn().getConnections().size());
+                    log.info("view N : " + server.getServiceReplica().getReplicaContext().getStaticConfiguration().getN());
                     log.warn("server connection fail");
                 }
                 try {

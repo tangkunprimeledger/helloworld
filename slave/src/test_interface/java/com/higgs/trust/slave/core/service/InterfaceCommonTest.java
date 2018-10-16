@@ -8,7 +8,6 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.account.TestDataMaker;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
-import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.PackContext;

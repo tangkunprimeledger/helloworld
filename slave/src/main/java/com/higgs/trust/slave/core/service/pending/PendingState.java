@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.service.pending;
 
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 
 import java.util.List;
 

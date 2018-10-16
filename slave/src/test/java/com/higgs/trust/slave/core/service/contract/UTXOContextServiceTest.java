@@ -27,13 +27,13 @@ public class UTXOContextServiceTest extends BaseTest {
         List<Sign> signList = Lists.newArrayList();
         for (int i = 0; i < 10; i++) {
             Sign sign = new Sign();
-            KeyPair keyPair = CryptoUtil.getBizCrypto().generateKeyPair();
+            KeyPair keyPair = CryptoUtil.getBizCrypto(null).generateKeyPair();
             sign.setPubKey(keyPair.getPubKey());
-            sign.setSignature(CryptoUtil.getBizCrypto().sign(masssage, keyPair.getPriKey()));
+            sign.setSignature(CryptoUtil.getBizCrypto(null).sign(masssage, keyPair.getPriKey()));
             signList.add(sign);
         }
 
-        System.out.println("verify result: "+ utxoContextService.verifySignature(signList, masssage));
+       // System.out.println("verify result: "+ utxoContextService.verifySignature(signList, masssage));
 
     }
 
