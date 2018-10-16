@@ -42,7 +42,9 @@ import org.springframework.context.annotation.Configuration;
     /**
      * mark whether the trust is standby
      */
-    private boolean isStandby = false;
+    private boolean standby = false;
+
+
 
     /**
      * trust path

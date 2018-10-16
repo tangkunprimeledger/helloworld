@@ -20,23 +20,23 @@ public class StandbyService extends NodeStatefulService {
 
     @Override
     public String getStatefulServiceName() {
-        return "standby";
+        return "NotStandby";
     }
 
     @Override
     protected void doStart() {
-        nodeProperties.setStandby(true);
+        nodeProperties.setStandby(false);
 
     }
 
     @Override
     protected void doPause() {
-        nodeProperties.setStandby(false);
+        nodeProperties.setStandby(true);
     }
 
     @Override
     protected void doResume() {
-        nodeProperties.setStandby(true);
+        nodeProperties.setStandby(false);
     }
 
 

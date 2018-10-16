@@ -32,7 +32,12 @@ class standby {
             return
         }
         standbyService.startOrResume()
-        nodeState.changeState(NodeStateEnum.Standby, NodeStateEnum.Running)
+        nodeState.changeState(NodeStateEnum.Standby, NodeStateEnum.Offline)
+        nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.Initialize)
+        nodeState.changeState(NodeStateEnum.Initialize, NodeStateEnum.StartingConsensus)
+        nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.SelfChecking)
+        nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync)
+        nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running)
 
         //restart network
         standbyService.restartNetwork()

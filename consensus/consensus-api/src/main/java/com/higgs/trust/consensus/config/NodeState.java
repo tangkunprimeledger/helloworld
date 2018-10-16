@@ -202,14 +202,14 @@ public class NodeState implements InitializingBean {
                 result = SelfChecking == to || Offline == to;
                 break;
             case SelfChecking:
-                result = AutoSync == to || ArtificialSync == to || Running == to && !properties.isStandby() || Offline == to;
+                result = AutoSync == to || ArtificialSync == to || Running == to && !properties.isStandby() || Standby == to && properties.isStandby() || Offline == to;
                 break;
             case AutoSync:
             case ArtificialSync:
                 result = Running == to && !properties.isStandby() || SelfChecking == to || Offline == to || Standby == to && properties.isStandby();
                 break;
             case Standby:
-                result = Running == to && !properties.isStandby() || AutoSync == to || ArtificialSync == to || Offline == to || SelfChecking == to;
+                result = AutoSync == to || ArtificialSync == to || Offline == to || SelfChecking == to;
                 break;
             case Running:
                 result = SelfChecking == to || Offline == to;
