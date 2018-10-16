@@ -1,5 +1,6 @@
 package commands
 
+import com.higgs.trust.common.utils.LogLevelChanger
 import com.higgs.trust.config.view.ClusterViewManager
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
@@ -137,6 +138,14 @@ class node {
             clusterInfoService.initClusterViewFromDB(true)
         }
         out.println("refresh cluster view successful")
+    }
+
+    @Usage('change log level, log <logName> <[OFF|ERROR|WARN|INFO|DEBUG|TRACE|ALL]>')
+    @Command
+    def log(InvocationContext context,
+                       @Usage("log name") @Required @Argument String logName,
+                       @Usage("level") @Required @Argument String level) {
+        LogLevelChanger.change(logName, level);
     }
 
 }
