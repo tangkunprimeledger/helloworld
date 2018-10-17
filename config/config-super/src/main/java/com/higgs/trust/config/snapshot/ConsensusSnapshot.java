@@ -48,9 +48,8 @@ import org.springframework.stereotype.Component;
     }
 
     @Override public void installSnapshot(byte[] snapshot) {
-        log.debug("install snapshot:{}", snapshot);
         SnapshotInfo snapshotInfo = serializer.decode(snapshot);
-        log.info("install snapshot:{}", snapshot);
+        log.info("install snapshot:{}", snapshotInfo);
         termManager.resetTerms(snapshotInfo.getTerms());
         viewManager.resetViews(snapshotInfo.getVies());
     }
