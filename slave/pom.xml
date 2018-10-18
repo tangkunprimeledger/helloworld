@@ -42,9 +42,13 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>consensus-p2pvalid</artifactId>
         </dependency>
-        <dependency>
+     <!--   <dependency>
             <groupId>com.higgs.trust</groupId>
             <artifactId>config-properties</artifactId>
+        </dependency>-->
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
+            <artifactId>config-super</artifactId>
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
