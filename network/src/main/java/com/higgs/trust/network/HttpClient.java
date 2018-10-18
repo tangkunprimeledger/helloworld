@@ -58,13 +58,13 @@ public class HttpClient {
         return execute(request, resultType);
     }
 
-    public <T> T get(String nodeName, String url, Class<T> resultClass) {
-        return get(getUrl(nodeName, url), resultClass);
+    public <T> T get(String nodeName, String url, Type resultType) {
+        return get(getUrl(nodeName, url), resultType);
     }
 
-    public <T> T get(String url, Class<T> resultClass) {
+    public <T> T get(String url, Type resultType) {
         Request request = new Request.Builder().url(url).build();
-        return execute(request, resultClass);
+        return execute(request, resultType);
     }
 
     public <T> List<T> getList(String nodeName, String url, Class<T> resultClass) {
