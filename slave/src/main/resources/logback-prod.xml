@@ -145,7 +145,7 @@
         <appender-ref ref="ERROR-APPENDER"/>
     </logger>
 
-    <logger name="io.atomix" level="info" additivity="false">
+    <logger name="io.atomix" level="trace" additivity="false">
         <appender-ref ref="COPYCAT-APPENDER"/>
         <appender-ref ref="ERROR-APPENDER"/>
     </logger>
