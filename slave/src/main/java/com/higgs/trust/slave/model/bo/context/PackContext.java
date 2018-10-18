@@ -2,8 +2,6 @@ package com.higgs.trust.slave.model.bo.context;
 
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.SignedTransaction;

@@ -2,8 +2,6 @@ package com.higgs.trust.network;
 
 import io.netty.util.AttributeKey;
 
-import java.nio.channels.Channel;
-
 /**
  * @author duhongming
  * @date 2018/9/6

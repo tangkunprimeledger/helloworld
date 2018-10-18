@@ -6,8 +6,6 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
 
-import java.math.BigInteger;
-
 /**
  * @author duhongming
  * @date 2018/6/6

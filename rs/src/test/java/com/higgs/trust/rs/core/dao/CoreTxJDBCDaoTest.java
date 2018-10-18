@@ -1,7 +1,6 @@
 package com.higgs.trust.rs.core.dao;
 
 import com.higgs.trust.IntegrateBaseTest;
-import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;

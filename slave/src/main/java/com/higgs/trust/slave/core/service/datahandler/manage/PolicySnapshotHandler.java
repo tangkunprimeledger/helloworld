@@ -12,7 +12,6 @@ import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
-import com.higgs.trust.slave.model.bo.merkle.MerkleTree;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,19 +1,9 @@
 package com.higgs.trust.slave.core.repository;
 
 import com.higgs.trust.slave.BaseTest;
-import com.higgs.trust.slave.dao.po.transaction.TransactionPO;
-import com.higgs.trust.slave.dao.po.transaction.TransactionReceiptPO;
 import com.higgs.trust.slave.dao.rocks.transaction.TransactionRocksDao;
-import com.higgs.trust.slave.model.bo.TransactionReceipt;
-import org.rocksdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.testng.Assert.*;
 
 public class TransactionRepositoryTest extends BaseTest {
     @Autowired

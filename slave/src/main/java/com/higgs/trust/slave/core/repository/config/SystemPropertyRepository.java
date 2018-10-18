@@ -73,13 +73,14 @@ public class SystemPropertyRepository {
      * @param value
      * @return
      */
-    public int update(String key, String value){
+    public int update(String key, String value, String desc){
         if (initConfig.isUseMySQL()) {
-            return systemPropertyDao.update(key, value);
+            return systemPropertyDao.update(key, value , desc);
         } else {
             SystemPropertyPO po = systemPropertyRocksDao.get(key);
             if (null != po) {
                 po.setValue(value);
+                po.setDesc(desc);
                 po.setUpdateTime(new Date());
                 systemPropertyRocksDao.put(key, po);
                 return 1;

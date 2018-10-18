@@ -39,6 +39,18 @@ import org.springframework.context.annotation.Configuration;
      */
     private long consensusWaitTime = 1000L;
 
+    /**
+     * mark whether the trust is standby
+     */
+    private boolean standby = false;
+
+
+
+    /**
+     * trust path
+     */
+    private String path;
+
     public boolean isMock() {
         return "Mock".equalsIgnoreCase(runMode);
     }

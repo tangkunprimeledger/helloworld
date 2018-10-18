@@ -35,7 +35,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -359,7 +358,7 @@ import java.util.*;
 
         // generate temp pubKey and priKey and insert into db
         log.info("[generateTmpKeyPair] start to generate tempKeyPairs");
-        Crypto crypto = CryptoUtil.getBizCrypto();
+        Crypto crypto = CryptoUtil.getBizCrypto(null);
         KeyPair keyPair = crypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();
@@ -415,7 +414,7 @@ import java.util.*;
         List<CaVO> list = new LinkedList<>();
 
         // generate KeyPair for BIZ layer
-        Crypto consensusCrypto = CryptoUtil.getBizCrypto();
+        Crypto consensusCrypto = CryptoUtil.getBizCrypto(null);
         KeyPair keyPair = consensusCrypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();

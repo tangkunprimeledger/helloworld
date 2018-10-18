@@ -1,25 +1,15 @@
 package com.higgs.trust.slave.core.service.action.account;
 
-import static com.higgs.trust.slave.api.enums.ActionTypeEnum.REGISTER_POLICY;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.Test;
-
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.slave._interface.InterfaceCommonTest;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.service.snapshot.agent.ManageSnapshotAgent;
 import com.higgs.trust.slave.model.bo.account.AccountFreeze;
-import com.higgs.trust.slave.model.bo.account.AccountOperation;
-import com.higgs.trust.slave.model.bo.account.OpenAccount;
 import com.higgs.trust.slave.model.bo.context.PackContext;
-import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
-import com.higgs.trust.tester.dbunit.DataBaseManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
+
+import java.util.Map;
 
 /**
  * @author hanson

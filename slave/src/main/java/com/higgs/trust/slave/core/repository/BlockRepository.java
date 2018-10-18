@@ -219,7 +219,6 @@ import java.util.*;
         if (log.isDebugEnabled()) {
             log.debug("[BlockRepository.saveBlock] is start");
         }
-
         BlockHeader blockHeader = block.getBlockHeader();
         //block height
         Long blockHeight = blockHeader.getHeight();

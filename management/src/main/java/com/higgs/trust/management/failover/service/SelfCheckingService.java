@@ -8,7 +8,6 @@ import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
-import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;

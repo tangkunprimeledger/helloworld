@@ -4,13 +4,8 @@
 package com.higgs.trust.consensus.atomix.core.primitive;
 
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
-import io.atomix.primitive.AbstractAsyncPrimitive;
 import io.atomix.primitive.AsyncPrimitive;
-import io.atomix.primitive.PrimitiveRegistry;
-import io.atomix.primitive.SyncPrimitive;
-import io.atomix.primitive.proxy.ProxyClient;
 
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 /**

@@ -22,8 +22,6 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.AssertJUnit.fail;
 
-import com.higgs.trust.tester.*;
-
 /**
  * @author WangQuanzhou
  * @desc test case for  MerkleServiceImpl

@@ -1,9 +1,9 @@
 package com.higgs.trust.network.codec;
 
+import com.higgs.trust.network.Address;
 import com.higgs.trust.network.message.NetworkMessage;
 import com.higgs.trust.network.message.NetworkRequest;
 import com.higgs.trust.network.message.NetworkResponse;
-import com.higgs.trust.network.Address;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;

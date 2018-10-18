@@ -9,12 +9,10 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
-import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.collections.Lists;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -7,7 +7,6 @@ import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
-import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
@@ -39,12 +38,19 @@ import java.util.List;
  * @description
  * @date 2018-06-07
  */
-@Component @Slf4j public class RsCoreCallbackProcessor implements TxCallbackHandler {
-    @Autowired private TxCallbackRegistor txCallbackRegistor;
-    @Autowired private VoteRuleRepository voteRuleRepository;
-    @Autowired private ConfigRepository configRepository;
-    @Autowired private NodeState nodeState;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
+@Component
+@Slf4j
+public class RsCoreCallbackProcessor implements TxCallbackHandler {
+    @Autowired
+    private TxCallbackRegistor txCallbackRegistor;
+    @Autowired
+    private VoteRuleRepository voteRuleRepository;
+    @Autowired
+    private ConfigRepository configRepository;
+    @Autowired
+    private NodeState nodeState;
+    @Autowired
+    private ConsensusStateMachine consensusStateMachine;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -55,12 +61,14 @@ import java.util.List;
         return txCallbackHandler;
     }
 
-    @Override public void onVote(VotingRequest votingRequest) {
+    @Override
+    public void onVote(VotingRequest votingRequest) {
         TxCallbackHandler callbackHandler = getCallbackHandler();
         callbackHandler.onVote(votingRequest);
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
+    @Override
+    public void onPersisted(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -98,16 +106,17 @@ import java.util.List;
                     break;
             }
         }
-//        try {
-//            Profiler.enter("[rs.custom.callback.onPersisted]");
-//            TxCallbackHandler callbackHandler = getCallbackHandler();
-//            callbackHandler.onPersisted(respData, blockHeader);
-//        } finally {
-//            Profiler.release();
-//        }
+        try {
+            Profiler.enter("[rs.custom.callback.onPersisted]");
+            TxCallbackHandler callbackHandler = getCallbackHandler();
+            callbackHandler.onPersisted(respData, blockHeader);
+        } finally {
+            Profiler.release();
+        }
     }
 
-    @Override public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
+    @Override
+    public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -140,16 +149,17 @@ import java.util.List;
                     break;
             }
         }
-//        try {
-//            Profiler.enter("[rs.custom.callback.onEnd]");
-//            TxCallbackHandler callbackHandler = getCallbackHandler();
-//            callbackHandler.onEnd(respData, blockHeader);
-//        } finally {
-//            Profiler.release();
-//        }
+        try {
+            Profiler.enter("[rs.custom.callback.onEnd]");
+            TxCallbackHandler callbackHandler = getCallbackHandler();
+            callbackHandler.onEnd(respData, blockHeader);
+        } finally {
+            Profiler.release();
+        }
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
+    @Override
+    public void onFailover(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -189,12 +199,11 @@ import java.util.List;
         }
         CoreTransaction coreTransaction = respData.getData();
         //get register policy action
-        RegisterPolicy registerPolicy = (RegisterPolicy)coreTransaction.getActionList().get(0);
+        RegisterPolicy registerPolicy = (RegisterPolicy) coreTransaction.getActionList().get(0);
         //check
         VoteRule voteRule = voteRuleRepository.queryByPolicyId(registerPolicy.getPolicyId());
         if (voteRule != null) {
-            log.info("[processRegisterPolicy]voteRule already exist policyId:{},txId:{}", registerPolicy.getPolicyId(),
-                coreTransaction.getTxId());
+            log.info("[processRegisterPolicy]voteRule already exist policyId:{},txId:{}", registerPolicy.getPolicyId(), coreTransaction.getTxId());
             return;
         }
         JSONObject jsonObject = coreTransaction.getBizModel();
@@ -217,8 +226,7 @@ import java.util.List;
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
-            log.info("[processCaUpdate] current node ={}, is not ca updated user={}, end update pubKey/priKey",
-                nodeState.getNodeName(), user);
+            log.info("[processCaUpdate] current node ={}, is not ca updated user={}, end update pubKey/priKey", nodeState.getNodeName(), user);
             return;
         }
 
@@ -245,15 +253,10 @@ import java.util.List;
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
-            log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
-                nodeState.getNodeName(), user);
+            log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey", nodeState.getNodeName(), user);
             return;
         }
-
-        /*if (nodeState.isState(NodeStateEnum.Running)) {
-            nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
-        }*/
-
+        
         log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodeState.getNodeName());
         //set pubKeyForConsensus and priKey to invalid
         Config config = configRepository.getBizConfig(user);
@@ -292,9 +295,8 @@ import java.util.List;
         if (CollectionUtils.isNotEmpty(actionList)) {
             Action action = actionList.get(0);
             if (action instanceof NodeAction) {
-                NodeAction nodeAction = (NodeAction)action;
-                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName())
-                    && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
+                NodeAction nodeAction = (NodeAction) action;
+                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName()) && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
                     log.info("leave consensus layer, user={}", nodeAction.getNodeName());
                     consensusStateMachine.leaveConsensus();
                     nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);

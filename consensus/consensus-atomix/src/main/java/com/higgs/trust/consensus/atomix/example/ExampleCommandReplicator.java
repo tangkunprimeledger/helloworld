@@ -1,10 +1,8 @@
 package com.higgs.trust.consensus.atomix.example;
 
-import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Zhu_Yuanxiang

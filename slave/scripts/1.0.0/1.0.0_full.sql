@@ -9,6 +9,7 @@ IF NOT EXISTS `currency_info` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`currency` VARCHAR (24) NOT NULL COMMENT 'currency',
 	`remark` VARCHAR (64) DEFAULT NULL COMMENT 'remark',
+	`homomorphicPk` TEXT DEFAULT NULL COMMENT 'homomorphicPk',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_currency` (`currency`)

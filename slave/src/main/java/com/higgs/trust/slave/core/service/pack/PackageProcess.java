@@ -25,7 +25,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author tangfashuang
  * @date 2018/04/17 11:43
  */
-@Service @Slf4j public class PackageProcess implements InitializingBean{
+@Service
+@Slf4j
+public class PackageProcess implements InitializingBean {
 
     @Autowired
     private PackageRepository packageRepository;
@@ -51,9 +53,11 @@ import java.util.concurrent.atomic.AtomicLong;
      *
      * @throws Exception
      */
-    @Override public void afterPropertiesSet() throws Exception {
+    @Override
+    public void afterPropertiesSet() throws Exception {
         initProcessedHeight();
     }
+
     /**
      * package process logic
      *
@@ -63,35 +67,33 @@ import java.util.concurrent.atomic.AtomicLong;
         boolean result = false;
         if (initConfig.isUseMySQL()) {
             result = txNested.execute(transactionStatus -> {
-                    try {
-                        Package pack = packageRepository.loadAndLock(height);
-                        if (null == pack) {
-                            log.error("cannot acquire package, invalid height[{}].", height);
-                            return false;
-                        }
-
-                        //process only deal the package with status RECEIVED in DB
-                        if (pack.getStatus() == PackageStatusEnum.RECEIVED) {
-                            doProcess(pack);
-                        }
-                    } catch (SlaveException e) {
-                        transactionStatus.setRollbackOnly();
-                        if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR != e.getCode()
-                            && SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT != e.getCode()
-                            && SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH != e.getCode()) {
-                            log.error("slave exception.",e);
-                        }
-                        return false;
-                    } catch (Throwable e) {
-                        transactionStatus.setRollbackOnly();
-                        if (e instanceof CannotAcquireLockException) {
-                            log.warn("cannot acquire package lock, height={}", height);
-                        } else {
-                            log.error("package process exception. ", e);
-                        }
+                try {
+                    Package pack = packageRepository.loadAndLock(height);
+                    if (null == pack) {
+                        log.error("cannot acquire package, invalid height[{}].", height);
                         return false;
                     }
-                    return true;
+
+                    //process only deal the package with status RECEIVED in DB
+                    if (pack.getStatus() == PackageStatusEnum.RECEIVED) {
+                        doProcess(pack);
+                    }
+                } catch (SlaveException e) {
+                    transactionStatus.setRollbackOnly();
+                    if (SlaveErrorEnum.SLAVE_PACKAGE_HEADER_IS_NULL_ERROR != e.getCode() && SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT != e.getCode() && SlaveErrorEnum.SLAVE_LAST_PACKAGE_NOT_FINISH != e.getCode()) {
+                        log.error("slave exception.", e);
+                    }
+                    return false;
+                } catch (Throwable e) {
+                    transactionStatus.setRollbackOnly();
+                    if (e instanceof CannotAcquireLockException) {
+                        log.warn("cannot acquire package lock, height={}", height);
+                    } else {
+                        log.error("package process exception. ", e);
+                    }
+                    return false;
+                }
+                return true;
             });
         } else {
             Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
@@ -129,17 +131,20 @@ import java.util.concurrent.atomic.AtomicLong;
         process(pack.getHeight());
     }
 
+    /**
+     * really process
+     *
+     * @param pack
+     */
     private void doProcess(Package pack) {
         // check next package height
         if (!pack.getHeight().equals(blockRepository.getMaxHeight() + 1)) {
-            log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(),
-                blockRepository.getMaxHeight() + 1);
+            log.warn("package.height: {} is unequal db.height:{}", pack.getHeight(), blockRepository.getMaxHeight() + 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_NOT_SUITABLE_HEIGHT);
         }
-
         PackContext packContext = packageService.createPackContext(pack);
         // do persist
-        packageService.process(packContext,false,false);
+        packageService.process(packContext, false, false);
     }
 
     /**

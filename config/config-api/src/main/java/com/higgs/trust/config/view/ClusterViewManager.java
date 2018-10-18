@@ -85,7 +85,7 @@ import java.util.*;
         }
         //verify consensus node sign
         String signValue = optTx.getSignatureValue();
-        Set<String> verifyedNode = new HashSet<>();
+        Set<String> verifiedNode = new HashSet<>();
         for (ClusterOptTx.SignatureInfo signInfo : optTx.getSignatureList()) {
             String pubKey = currentView.getPubKey(signInfo.getSigner());
             if (StringUtils.isBlank(pubKey)) {
@@ -97,13 +97,13 @@ import java.util.*;
                 log.warn("the sign of node:{} verify failed", signInfo.getSigner());
                 return;
             } else {
-                verifyedNode.add(signInfo.getSigner());
+                verifiedNode.add(signInfo.getSigner());
             }
         }
 
         //check have all consensus node sign
-        if (verifyedNode.size() != currentView.getNodeNames().size()) {
-            log.warn("there is {} node signed, need all consensus node sign", verifyedNode.size());
+        if (verifiedNode.size() != currentView.getNodeNames().size()) {
+            log.warn("there is {} node signed, need all consensus node sign", verifiedNode.size());
             return;
         }
 

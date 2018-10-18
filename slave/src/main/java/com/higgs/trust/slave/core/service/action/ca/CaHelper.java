@@ -5,7 +5,6 @@ import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
-import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

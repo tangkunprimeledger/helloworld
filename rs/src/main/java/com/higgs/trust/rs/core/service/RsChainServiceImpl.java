@@ -8,7 +8,6 @@ import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
-import com.higgs.trust.rs.core.contract.RsUTXOSmartContract;
 import com.higgs.trust.slave.api.AccountInfoService;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -16,6 +15,7 @@ import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
+import com.higgs.trust.slave.core.service.contract.UTXOSmartContract;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -48,7 +48,7 @@ public class RsChainServiceImpl implements RsBlockChainService {
     private AccountInfoService accountInfoService;
 
     @Autowired
-    private RsUTXOSmartContract rsUTXOSmartContract;
+    private UTXOSmartContract rsUTXOSmartContract;
 
     @Autowired
     private NodeState nodeState;

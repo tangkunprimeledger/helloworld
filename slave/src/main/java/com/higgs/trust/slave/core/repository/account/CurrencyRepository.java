@@ -1,10 +1,10 @@
 package com.higgs.trust.slave.core.repository.account;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.dao.mysql.account.AccountJDBCDao;
 import com.higgs.trust.slave.dao.mysql.account.CurrencyInfoDao;
 import com.higgs.trust.slave.dao.po.account.CurrencyInfoPO;
@@ -70,11 +70,12 @@ import java.util.List;
      * @param remark
      * @return
      */
-    public CurrencyInfo buildCurrencyInfo(String currency, String remark) {
+    public CurrencyInfo buildCurrencyInfo(String currency, String remark,String homomorphicPk) {
         CurrencyInfo currencyInfo = new CurrencyInfo();
         currencyInfo.setCurrency(currency);
         currencyInfo.setRemark(remark);
         currencyInfo.setCreateTime(new Date());
+        currencyInfo.setHomomorphicPk(homomorphicPk);
         return currencyInfo;
     }
 

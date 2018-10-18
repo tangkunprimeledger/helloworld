@@ -86,12 +86,9 @@ import java.util.stream.Collectors;
         final List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
 
         //must have the default column family
-        columnFamilyDescriptors
-            .add(new ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY, new ColumnFamilyOptions()));
+        columnFamilyDescriptors.add(new ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY, new ColumnFamilyOptions()));
 
-        List<ColumnFamilyDescriptor> descriptors =
-            columnFamily.stream().map(item -> new ColumnFamilyDescriptor(item.getBytes(), options))
-                .collect(Collectors.toList());
+        List<ColumnFamilyDescriptor> descriptors = columnFamily.stream().map(item -> new ColumnFamilyDescriptor(item.getBytes(), options)).collect(Collectors.toList());
 
         columnFamilyDescriptors.addAll(descriptors);
 
@@ -102,14 +99,12 @@ import java.util.stream.Collectors;
         dbPaths.add(new DbPath(Paths.get(flashPath), DB_FILE_FLASH_SIZE));
         dbPaths.add(new DbPath(Paths.get(extraPath), DB_FILE_EXTEND_SIZE));
 
-        final DBOptions dbOptions =
-            new DBOptions().setDbPaths(dbPaths).setCreateIfMissing(true).setCreateMissingColumnFamilies(true);
+        final DBOptions dbOptions = new DBOptions().setDbPaths(dbPaths).setCreateIfMissing(true).setCreateMissingColumnFamilies(true);
 
         final TransactionDBOptions transactionDBOptions =
             new TransactionDBOptions().setTransactionLockTimeout(LOCK_TIMEOUT);
         List<ColumnFamilyHandle> columnFamilyHandleList = new ArrayList<>();
-        TransactionDB rocksDB = TransactionDB
-            .open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
+        TransactionDB rocksDB = TransactionDB.open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
 
         int size = columnFamily.size();
         Map<String, ColumnFamilyHandle> columnFamilyHandleMap = new HashMap<>(size);

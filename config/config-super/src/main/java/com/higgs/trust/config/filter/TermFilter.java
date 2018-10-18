@@ -7,18 +7,19 @@ import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.config.master.ChangeMasterService;
 import com.higgs.trust.config.master.MasterHeartbeatService;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.config.node.command.TermCommand;
 import com.higgs.trust.config.snapshot.TermManager;
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CommandFilter;
 import com.higgs.trust.consensus.core.filter.CommandFilterChain;
 import lombok.extern.slf4j.Slf4j;
-//import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+//import org.apache.commons.lang.ArrayUtils;
 
 /**
  * @author suimi

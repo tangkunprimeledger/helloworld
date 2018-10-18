@@ -16,6 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 import org.slf4j.helpers.MessageFormatter;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,8 @@ public class DistributeCallbackNotifyServiceImpl implements DistributeCallbackNo
     private Cache<String, WaitAsyncFinishLockObject> lockCache = CacheBuilder.newBuilder().weakValues().build();
     @Autowired
     private RedissonClient redissonClient;
+
+    @Autowired BeanFactory beanFactory;
 
     @Override
     public void afterPropertiesSet() throws Exception {

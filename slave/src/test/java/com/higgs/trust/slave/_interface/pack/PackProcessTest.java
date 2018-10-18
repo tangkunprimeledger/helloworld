@@ -1,6 +1,5 @@
 package com.higgs.trust.slave._interface.pack;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.higgs.trust.slave._interface.InterfaceCommonTest;
 import com.higgs.trust.slave.common.exception.SlaveException;
@@ -8,7 +7,6 @@ import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 

@@ -3,10 +3,7 @@ package com.higgs.trust.network.springboot;
 import com.higgs.trust.network.NetworkManage;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
 
 /**
  * @author duhongming

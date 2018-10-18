@@ -29,4 +29,9 @@ import javax.validation.constraints.NotNull;
      */
     @NotNull private Integer actionIndex;
 
+    @Override
+    public String toString(){
+        return txId + index + actionIndex;
+    }
+
 }

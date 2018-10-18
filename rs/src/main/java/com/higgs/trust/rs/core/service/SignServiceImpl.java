@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
         if (signTypeEnum == SignInfo.SignTypeEnum.CONSENSUS) {
             return CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey());
         } else {
-            return CryptoUtil.getBizCrypto().sign(signValue, nodeState.getPrivateKey());
+            return CryptoUtil.getBizCrypto(null).sign(signValue, nodeState.getPrivateKey());
         }
     }
 }

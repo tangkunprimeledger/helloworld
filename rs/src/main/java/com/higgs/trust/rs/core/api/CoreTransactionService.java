@@ -1,7 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
 import com.higgs.trust.rs.core.bo.CoreTxBO;
-import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.CoreTransaction;

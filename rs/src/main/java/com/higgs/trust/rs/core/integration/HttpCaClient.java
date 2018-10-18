@@ -6,7 +6,6 @@ import com.higgs.trust.network.HttpClient;
 import com.higgs.trust.network.NetworkManage;
 import com.higgs.trust.slave.api.vo.CaVO;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
