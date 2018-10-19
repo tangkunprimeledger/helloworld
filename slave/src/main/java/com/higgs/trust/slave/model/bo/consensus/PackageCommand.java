@@ -9,7 +9,7 @@ import com.higgs.trust.config.node.command.ViewCommand;
 import com.higgs.trust.config.view.ClusterOptTx;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
-import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.model.bo.Package;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -20,7 +20,7 @@ import org.hibernate.validator.constraints.NotEmpty;
  * @author: pengdi
  **/
 @ToString(callSuper = true, exclude = {"sign"}) @Getter @Setter public class PackageCommand
-    extends AbstractConsensusCommand<PackageVO> implements SignatureCommand, TermCommand, ViewCommand {
+    extends AbstractConsensusCommand<Package> implements SignatureCommand, TermCommand, ViewCommand {
 
     /**
      * term
@@ -50,7 +50,7 @@ import org.hibernate.validator.constraints.NotEmpty;
      */
     @NotEmpty @JSONField(label = "sign") private String sign;
 
-    public PackageCommand(String masterName, PackageVO value) {
+    public PackageCommand(String masterName, Package value) {
         super(value);
         this.masterName = masterName;
         this.height = value.getHeight();

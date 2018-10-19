@@ -54,25 +54,25 @@ import java.util.zip.DataFormatException;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        PackageVO packageVO = null;
+        Package pack = null;
         try {
-            packageVO = commit.operation().getValueFromByte(PackageVO.class);
+            pack = commit.operation().getValueFromByte(Package.class);
         } catch (DataFormatException e) {
             log.error("[LogReplicateHandler.packageReplicated]param validate failed, decompress package error:{}",e.getCause());
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
         // validate param
-        if (packageVO == null) {
+        if (pack == null) {
             log.error("[LogReplicateHandler.packageReplicated]param validate failed, cause package is null ");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-        Long height = packageVO.getHeight();
+        Long height = pack.getHeight();
         log.debug("package reached consensus, height: {}", height);
 
         Span span = TraceUtils.createSpan();
         try {
-            BeanValidateResult result = BeanValidator.validate(packageVO);
+            BeanValidateResult result = BeanValidator.validate(pack);
             if (!result.isSuccess()) {
                 log.error(
                     "[LogReplicateHandler.packageReplicated]param validate failed, cause: " + result.getFirstMsg());
@@ -80,10 +80,10 @@ import java.util.zip.DataFormatException;
             }
 
             // receive package
-            Package pack = PackageConvert.convertPackVOToPack(packageVO);
             try {
                 packageService.receive(pack);
-                listeners.forEach(listener -> listener.received(pack));
+                Package finalPack = pack;
+                listeners.forEach(listener -> listener.received(finalPack));
             } catch (SlaveException e) {
                 //idempotent as success, other exceptions make the consensus layer retry
                 if (e.getCode() != SlaveErrorEnum.SLAVE_IDEMPOTENT) {

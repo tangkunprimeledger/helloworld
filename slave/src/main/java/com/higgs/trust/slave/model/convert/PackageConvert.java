@@ -28,7 +28,6 @@ public class PackageConvert {
     }
 
     public static byte[] convertPackToPackVOToBytes(Package pack){
-//        byte[] bytes =  ProtobufUtil.serializer(pack);
         String result = JSON.toJSONString(pack);
         return DeflateUtil.compress(result.getBytes());
     }
