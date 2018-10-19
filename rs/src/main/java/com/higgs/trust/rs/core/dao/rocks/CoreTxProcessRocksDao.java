@@ -63,6 +63,8 @@ public class CoreTxProcessRocksDao extends RocksBaseDao<CoreTransactionProcessPO
         }
 
         po.setUpdateTime(new Date());
+        //set state by 'to'
+        po.setStatus(to.getCode());
         String newKey = to.getIndex() + Constant.SPLIT_SLASH + txId;
         //second delete
         txDelete(tx, key);

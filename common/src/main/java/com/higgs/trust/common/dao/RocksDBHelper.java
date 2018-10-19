@@ -65,6 +65,17 @@ import java.util.Map;
         }
         return queryByPrefix(null,count, order);
     }
+    /**
+     * count by
+     *
+     * @param tableName
+     * @param prefix
+     * @return
+     */
+    public long countBy(String tableName,String prefix) {
+        setTableName(tableName);
+        return count(prefix);
+    }
 
     /**
      * clear tables
