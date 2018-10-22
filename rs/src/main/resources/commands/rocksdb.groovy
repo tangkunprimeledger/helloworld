@@ -85,6 +85,24 @@ class rocksdb {
         }
     }
 
+
+    @Usage('count by')
+    @Command
+    def count(InvocationContext context,
+              @Usage("tableName") @Required @Argument String tableName,
+              @Usage("prefix") @Argument String prefix
+    ) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def helper = beans.getBean(RocksDBHelper.class)
+        def result = helper.countBy(tableName,prefix)
+        if (result) {
+            out.println("$result")
+        } else {
+            out.println("is empty")
+        }
+    }
+
+
     @Usage('clear tables')
     @Command
     def clear(InvocationContext context,
@@ -103,7 +121,7 @@ class rocksdb {
     @Usage('clear all tables allow ignored')
     @Command
     def clearAll(InvocationContext context,
-              @Usage("ignored table names,multiple comma-connected") @Argument String ignoreTables) {
+                 @Usage("ignored table names,multiple comma-connected") @Argument String ignoreTables) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def helper = beans.getBean(RocksDBHelper.class)
         def result = helper.clearAll(ignoreTables == null ? null : ignoreTables.split(","))

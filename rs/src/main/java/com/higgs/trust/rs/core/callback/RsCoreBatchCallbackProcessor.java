@@ -101,8 +101,9 @@ public class RsCoreBatchCallbackProcessor {
                 }
             }
             //callback custom
-            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onPersisted(policyId, rsCoreTxVOS, blockHeader);
+            //TODO:for test
+//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+//            txBatchCallbackHandler.onPersisted(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -141,8 +142,9 @@ public class RsCoreBatchCallbackProcessor {
                 }
             }
             //callback custom
-            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
+            //TODO:for test
+//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+//            txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
@@ -173,8 +175,9 @@ public class RsCoreBatchCallbackProcessor {
             }
 
             //callback custom
-            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
-            txBatchCallbackHandler.onFailover(policyId, rsCoreTxVOS, blockHeader);
+            //TODO:for test
+//            TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
+//            txBatchCallbackHandler.onFailover(policyId, rsCoreTxVOS, blockHeader);
         }
     }
 
