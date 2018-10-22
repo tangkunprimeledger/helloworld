@@ -558,11 +558,10 @@ import java.util.concurrent.TimeUnit;
         vo.setErrorMsg(respData.getMsg());
         //delete by status
         coreTxRepository.batchDelete(Lists.newArrayList(vo), from);
-
-        respData.setData(coreTxRepository.convertTxVO(bo));
         //callback custom rs
         if (isCallback) {
             if (!rsConfig.isBatchCallback()) {
+                respData.setData(coreTxRepository.convertTxVO(bo));
                 rsCoreCallbackHandler.onEnd(respData, null);
             } else {
                 //for batch interface
@@ -571,6 +570,8 @@ import java.util.concurrent.TimeUnit;
         }
         //同步通知
         try {
+            //reset txId
+            respData.setData(bo.getTxId());
             distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(respData), RedisMegGroupEnum.ON_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
             distributeCallbackNotifyService.notifySyncResult(Lists.newArrayList(respData), RedisMegGroupEnum.ON_CLUSTER_PERSISTED_CALLBACK_MESSAGE_NOTIFY);
         } catch (Throwable e) {
