@@ -129,13 +129,13 @@ class node {
     @Usage('refresh the cluster view')
     @Command
     def refreshView(InvocationContext context,
-                    @Usage("init from cluster") @Option(names = ["c"]) Boolean isCluster) {
+                    @Usage("init from cluster") @Option(names = ["c"]) Boolean isCluster,@Usage("use db.height + 1") @Option(names = ["h"]) Boolean height) {
         BeanFactory beans = context.attributes['spring.beanfactory']
         def clusterInfoService = beans.getBean(ClusterViewService.class)
         if (isCluster) {
             clusterInfoService.initClusterViewFromCluster()
         } else {
-            clusterInfoService.initClusterViewFromDB(true)
+            clusterInfoService.initClusterViewFromDB(height)
         }
         out.println("refresh cluster view successful")
     }
