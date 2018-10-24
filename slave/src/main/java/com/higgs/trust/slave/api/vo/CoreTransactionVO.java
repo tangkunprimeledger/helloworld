@@ -54,4 +54,8 @@ public class CoreTransactionVO extends BaseBO{
      * execute error code
      */
     private String errorCode;
+    /**
+     * the type of transaction
+     */
+    private String txType;
 }
