@@ -102,7 +102,7 @@ public class MathNativeFunction {
     private static class EqualsFunction extends BaseFunction {
         @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-            return toBigDecimal(args[0]).equals(toBigDecimal(args[1]));
+            return toBigDecimal(args[0]).compareTo(toBigDecimal(args[1])) == 0;
         }
     }
 
