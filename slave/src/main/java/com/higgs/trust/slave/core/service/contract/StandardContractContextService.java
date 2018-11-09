@@ -75,4 +75,13 @@ import java.math.BigDecimal;
         ActionData actionData = getContextData(StandardExecuteContextData.class).getAction();
         return actionData.getCurrentPackage().getPackageTime();
     }
+    /**
+     * get current package height
+     *
+     * @return
+     */
+    public Long getPackageHeight(){
+        ActionData actionData = getContextData(StandardExecuteContextData.class).getAction();
+        return actionData.getCurrentPackage().getHeight();
+    }
 }
