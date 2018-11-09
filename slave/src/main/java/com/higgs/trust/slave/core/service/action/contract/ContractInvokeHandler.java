@@ -21,8 +21,7 @@ import org.springframework.util.StringUtils;
  */
 @Slf4j @Component public class ContractInvokeHandler implements ActionHandler {
 
-    @Autowired
-    private StandardSmartContract smartContract;
+    @Autowired private StandardSmartContract smartContract;
 
     private void check(ContractInvokeAction action) {
         if (StringUtils.isEmpty(action.getAddress())) {
@@ -39,19 +38,18 @@ import org.springframework.util.StringUtils;
         if (!(actionData.getCurrentAction() instanceof ContractInvokeAction)) {
             throw new IllegalArgumentException("action need a type of ContractInvokeAction");
         }
-        ContractInvokeAction invokeAction = (ContractInvokeAction) actionData.getCurrentAction();
+        ContractInvokeAction invokeAction = (ContractInvokeAction)actionData.getCurrentAction();
         this.check(invokeAction);
-        ExecuteContextData data = new StandardExecuteContextData().put("ActionData", actionData);
+        ExecuteContextData data = new StandardExecuteContextData().setAction(actionData);
         smartContract.execute(invokeAction.getAddress(), data, invokeAction.getArgs());
     }
 
     @Override public void verifyParams(Action action) throws SlaveException {
-        ContractInvokeAction invokeAction = (ContractInvokeAction) action;
+        ContractInvokeAction invokeAction = (ContractInvokeAction)action;
         check(invokeAction);
     }
 
-    @Override
-    public void process(ActionData actionData) {
+    @Override public void process(ActionData actionData) {
         log.debug("contract invoke start");
         Profiler.enter("contract invoke");
         try {
