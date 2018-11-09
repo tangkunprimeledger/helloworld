@@ -49,6 +49,9 @@ public class MathNativeFunction {
     private static class AddFunction extends BaseFunction {
         @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+            if (thisObj instanceof BigDecimalWrap) {
+                return new BigDecimalWrap(((BigDecimalWrap) thisObj).add(args[0]));
+            }
             BigDecimal result = toBigDecimal(args[0]).add(toBigDecimal(args[1]));
             if (args.length > 2) {
 
@@ -63,6 +66,9 @@ public class MathNativeFunction {
     private static class SubtractFunction extends BaseFunction {
         @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+            if (thisObj instanceof BigDecimalWrap) {
+                return new BigDecimalWrap(((BigDecimalWrap) thisObj).subtract(args[0]));
+            }
             BigDecimal result = toBigDecimal(args[0]).subtract(toBigDecimal(args[1]));
             if (args.length > 2) {
                 for(int i = 2; i < args.length; i++) {
@@ -76,6 +82,9 @@ public class MathNativeFunction {
     private static class MultiplyFunction extends BaseFunction {
         @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+            if (thisObj instanceof BigDecimalWrap) {
+                return new BigDecimalWrap(((BigDecimalWrap) thisObj).multiply(args[0]));
+            }
             BigDecimal result = toBigDecimal(args[0]).multiply(toBigDecimal(args[1]));
             if (args.length > 2) {
                 for(int i = 2; i < args.length; i++) {
@@ -89,6 +98,10 @@ public class MathNativeFunction {
     private static class DivideFunction extends BaseFunction {
         @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+            if (thisObj instanceof BigDecimalWrap) {
+                return new BigDecimalWrap(((BigDecimalWrap) thisObj).divide(args[0]));
+            }
+
             BigDecimal result = toBigDecimal(args[0]).divide(toBigDecimal(args[1]));
             if (args.length > 2) {
                 for (int i = 2; i < args.length; i++) {
@@ -102,6 +115,10 @@ public class MathNativeFunction {
     private static class EqualsFunction extends BaseFunction {
         @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+            if (thisObj instanceof BigDecimalWrap) {
+                return ((BigDecimalWrap) thisObj).eq(args[0]);
+            }
+
             return toBigDecimal(args[0]).compareTo(toBigDecimal(args[1])) == 0;
         }
     }
@@ -109,6 +126,10 @@ public class MathNativeFunction {
     private static class CompareFunction extends BaseFunction {
         @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+            if (thisObj instanceof BigDecimalWrap) {
+                return toBigDecimal(thisObj).compareTo(toBigDecimal(args[0]));
+            }
+
             return toBigDecimal(args[0]).compareTo(toBigDecimal(args[1]));
         }
     }
