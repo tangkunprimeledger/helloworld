@@ -1,8 +1,8 @@
 package com.higgs.trust.slave.core.service.snapshot.agent;
 
+import com.higgs.trust.common.utils.MD5;
 import com.higgs.trust.contract.ContractStateStore;
 import com.higgs.trust.contract.JsonHelper;
-import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.api.enums.SnapshotBizKeyEnum;
 import com.higgs.trust.slave.core.repository.contract.ContractStateRepository;
@@ -17,11 +17,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +51,7 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
             ContractStatePO po = new ContractStatePO();
             po.setAddress(contractState.getAddress());
             po.setState(JsonHelper.serialize(contractState.getState()));
+            po.setKeyDesc(contractState.getKeyDesc());
             list.add(po);
         });
         return list;
@@ -94,14 +97,14 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     }
 
     @Override
-    public void put(String key, StateManager state) {
-        Map<String, Object> newState = state.getState();
-        ContractStateCacheKey cacheKey = new ContractStateCacheKey(key);
+    public void put(String key, Map<String,Object> newState) {
+        ContractStateCacheKey cacheKey = new ContractStateCacheKey(key,key);
         ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey);
         if (contractState == null) {
             contractState = new ContractState();
-            contractState.setAddress(key);
+            contractState.setAddress(cacheKey.getAddress());
             contractState.setState(newState);
+            contractState.setKeyDesc(cacheKey.getKeyDesc());
             snapshot.insert(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey, contractState);
         } else {
             contractState.setState(newState);
@@ -112,12 +115,12 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     }
 
     @Override
-    public StateManager get(String key) {
-        ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key));
+    public Map<String,Object> get(String key) {
+        ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key,key));
         if (contractState == null) {
-            return new StateManager();
+            return new HashMap<String,Object>();
         }
-        return new StateManager(contractState.getState());
+        return contractState.getState();
     }
 
     @Override
@@ -130,5 +133,24 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     @AllArgsConstructor
     public static class ContractStateCacheKey extends BaseBO {
         private String address;
+        private String keyDesc;
+        /**
+         * get address for key
+         * @return
+         */
+        public String getAddress(){
+            if(StringUtils.isEmpty(address)){
+                return address;
+            }
+            return makeNewKey(address);
+        }
+        /**
+         * make new key by md5
+         * @param key
+         * @return
+         */
+        private String makeNewKey(String key){
+            return MD5.encode(key);
+        }
     }
 }

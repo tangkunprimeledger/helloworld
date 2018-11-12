@@ -16,6 +16,7 @@ import java.util.Map;
 public class ContractState extends BaseBO implements MerkleTreeSnapshotAgent.MerkleDataNode{
     private String address;
     private Map<String, Object> state;
+    private String keyDesc;
 
     @Override public String getUniqKey() {
         return address;

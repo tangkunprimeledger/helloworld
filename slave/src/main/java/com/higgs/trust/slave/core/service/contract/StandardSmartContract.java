@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 /**
  * SmartContract
  * @author duhongming
@@ -42,13 +44,12 @@ import org.springframework.stereotype.Service;
         manager.setExecuteConfig(executeConfig);
         manager.setDbStateStore(new ContractStateStore() {
             @Override
-            public void put(String key, StateManager state) {
-                log.debug("put contract state to db, the key is {}, state size: {}", key, state.getState().size());
+            public void put(String key, Map<String,Object> state) {
+                log.debug("put contract state to db, the key is {}, state size: {}", key, state.size());
                 contractStateSnapshotAgent.put(key, state);
             }
-
             @Override
-            public StateManager get(String key) {
+            public Map<String, Object> get(String key) {
                 return contractStateSnapshotAgent.get(key);
             }
 

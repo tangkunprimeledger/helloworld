@@ -29,6 +29,9 @@ public class DateFuncs {
 
     private static class IsSameDayFunc extends BaseFunction {
         @Override public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+            if(args[0] == null || args[1] == null){
+                return false;
+            }
             return DateUtils.isSameDay(formatDate(args[0]), formatDate(args[1]));
         }
     }
