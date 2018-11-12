@@ -7,14 +7,26 @@ import com.higgs.trust.contract.mock.Person;
 import com.higgs.trust.contract.mock.ShareContextSerivce;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ExceuteEngineManagerTest extends BaseTest {
 
     private ExecuteEngineManager getExceuteEngineManager() {
+        ExecuteConfig executeConfig = new ExecuteConfig();
+        executeConfig.setInstructionCountQuota(10000);
+        executeConfig.allow("com.higgs.trust.contract.mock.ShareContextSerivce")
+            .allow("com.higgs.trust.contract.mock.ShareBlockSerivce")
+            .allow("com.higgs.trust.contract.mock.Person")
+            .allow("com.higgs.trust.contract.mock.Colors")
+            .allow("java.lang.Class")
+            .allow(BigDecimal.class);
+        ExecuteConfig.DEBUG = true;
         ExecuteEngineManager manager = new ExecuteEngineManager();
         manager.registerService("ctx", new ShareContextSerivce());
         manager.setDbStateStore(new DbStateStoreImpl());
+        manager.setExecuteConfig(executeConfig);
         return manager;
     }
 
@@ -63,5 +75,22 @@ public class ExceuteEngineManagerTest extends BaseTest {
             //System.out.println(result.toString());
         }
         System.out.println(System.currentTimeMillis() - startTime);
+    }
+
+
+    @Test public void testAward() {
+        ExecuteEngineManager manager = getExceuteEngineManager();
+        String code = loadCodeFromResourceFile("file:/Users/liuyu/IdeaProjects/trust-integration/trust-integration/src/main/resources/award.js");
+        ExecuteContextData contextData = newContextData().put("admin", new Person("zhangs", 30));
+        ExecuteContext.newContext(contextData).setStateInstanceKey("0xddkdkadJAkdkdkkdkdd");
+        ExecuteEngine engine =manager.getExecuteEngine(code, "javascript");
+
+//        Object result = engine.execute("getTotalProbability", null);
+
+        String bizArgsJson = "{\"txId\":\"txId123\",\"user\":\"user01\",\"random\":\"91000\"}";
+        Object[] bizArgs = new Object[]{JSON.parseObject(bizArgsJson)};
+        Object result = engine.execute("lottery", bizArgs);
+
+        System.out.println(result.toString());
     }
 }

@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public abstract class BaseTest {
 
@@ -26,10 +28,15 @@ public abstract class BaseTest {
 
     protected String loadCodeFromResourceFile(String fileName) {
         try {
-            return IOUtils.toString(this.getClass().getResource(fileName), "UTF-8");
+            try {
+                return IOUtils.toString(new URI(fileName), "UTF-8");
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
+        return null;
     }
 }
