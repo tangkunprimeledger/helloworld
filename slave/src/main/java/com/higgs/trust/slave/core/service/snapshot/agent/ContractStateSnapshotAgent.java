@@ -97,7 +97,7 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     }
 
     @Override
-    public void put(String key, Map<String,Object> newState) {
+    public void put(String key, Object newState) {
         ContractStateCacheKey cacheKey = new ContractStateCacheKey(key,key);
         ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey);
         if (contractState == null) {
@@ -115,7 +115,7 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     }
 
     @Override
-    public Map<String,Object> get(String key) {
+    public Object get(String key) {
         ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key,key));
         if (contractState == null) {
             return new HashMap<String,Object>();

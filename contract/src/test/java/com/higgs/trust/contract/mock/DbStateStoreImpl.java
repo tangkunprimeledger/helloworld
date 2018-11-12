@@ -9,9 +9,9 @@ import java.util.Map;
 
 public class DbStateStoreImpl implements ContractStateStore {
 
-    private static Map<String, Map<String,Object>> db = new HashMap<>();
+    private static Map<String, Object> db = new HashMap<>();
 
-    @Override public void put(String key, Map<String,Object> state) {
+    @Override public void put(String key,Object state) {
         System.out.println("[put]key:" + key);
         db.put(key, state);
         System.out.println("[put]state:" + JSON.toJSONString(state));

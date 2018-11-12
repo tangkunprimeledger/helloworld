@@ -90,7 +90,7 @@ public class ContractStateRepository {
         return contractState;
     }
 
-    public void put(String address, Map<String, Object> state) {
+    public void put(String address,Object state) {
         ContractStatePO po = new ContractStatePO();
         po.setAddress(address);
         po.setState(JsonHelper.serialize(state));

@@ -2,7 +2,9 @@ package com.higgs.trust.contract;
 
 import com.higgs.trust.contract.rhino.types.NativeJavaMap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,12 +55,17 @@ public class StateManager {
         if(this.contractStateStore == null || this.state == null || this.state.isEmpty()){
             return;
         }
-        Map<String,Object> keys = new HashMap<>();
+        List<String> keys = new ArrayList<>();
+        int i = 0;
         for(String key : this.state.keySet()){
             Object value = this.state.get(key);
             String newKey = makeStateKey(key);
-            contractStateStore.put(newKey,(Map<String,Object>)value);
-            keys.put(newKey,"1");
+            contractStateStore.put(newKey,value);
+            //max size
+            if(i < 10){
+                keys.add(newKey);
+            }
+            i++;
         }
         //save contract state`s all keys
         contractStateStore.put(executeContext.getStateInstanceKey(),keys);

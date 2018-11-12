@@ -44,12 +44,12 @@ import java.util.Map;
         manager.setExecuteConfig(executeConfig);
         manager.setDbStateStore(new ContractStateStore() {
             @Override
-            public void put(String key, Map<String,Object> state) {
-                log.debug("put contract state to db, the key is {}, state size: {}", key, state.size());
+            public void put(String key, Object state) {
+                log.debug("put contract state to db, the key is {}, state: {}", key, state);
                 contractStateSnapshotAgent.put(key, state);
             }
             @Override
-            public Map<String, Object> get(String key) {
+            public Object get(String key) {
                 return contractStateSnapshotAgent.get(key);
             }
 

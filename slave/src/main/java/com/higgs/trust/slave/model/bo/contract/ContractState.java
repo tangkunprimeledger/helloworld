@@ -5,8 +5,6 @@ import com.higgs.trust.slave.model.bo.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Map;
-
 /**
  * @author duhongming
  * @date 2018/6/12
@@ -15,7 +13,7 @@ import java.util.Map;
 @Setter
 public class ContractState extends BaseBO implements MerkleTreeSnapshotAgent.MerkleDataNode{
     private String address;
-    private Map<String, Object> state;
+    private Object state;
     private String keyDesc;
 
     @Override public String getUniqKey() {

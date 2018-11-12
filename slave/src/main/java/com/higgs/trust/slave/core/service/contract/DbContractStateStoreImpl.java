@@ -16,12 +16,12 @@ import java.util.Map;
     @Autowired private ContractStateRepository contractStateRepository;
 
     @Override
-    public void put(String key, Map<String,Object> state) {
+    public void put(String key, Object state) {
         contractStateRepository.put(key,state);
     }
 
     @Override
-    public Map<String,Object> get(String key) {
+    public Object get(String key) {
         return contractStateRepository.get(key);
     }
 

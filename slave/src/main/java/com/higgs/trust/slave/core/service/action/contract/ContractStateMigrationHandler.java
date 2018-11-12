@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,17 +51,17 @@ public class ContractStateMigrationHandler implements ActionHandler {
     public void process(ActionData actionData) {
         ContractStateMigrationAction action = (ContractStateMigrationAction) actionData.getCurrentAction();
         checkAction(action);
-        Map<String,Object> state = contractStateSnapshotAgent.get(action.getFormInstanceAddress());
+        List<String> state = (List<String>)contractStateSnapshotAgent.get(action.getFormInstanceAddress());
         if (state == null || state.isEmpty()) {
             throw new RuntimeException("can't migration empty state.");
         }
-        Map<String,Object> toState = contractStateSnapshotAgent.get(action.getToInstanceAddress());
+        List<String> toState = (List<String>)contractStateSnapshotAgent.get(action.getToInstanceAddress());
         if (toState != null && !toState.isEmpty()) {
             throw new RuntimeException(String.format("can't migration state to %s, it already have state.", action.getToInstanceAddress()));
         }
         //state transfer
-        for(String key : state.keySet()){
-            Map<String,Object> data = contractStateSnapshotAgent.get(key);
+        for(String key : state){
+            Object data = contractStateSnapshotAgent.get(key);
             //make new key by new address
             key = key.replaceAll(action.getFormInstanceAddress(),action.getToInstanceAddress());
             //reset value by new key
