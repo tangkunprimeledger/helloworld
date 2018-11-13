@@ -4,6 +4,7 @@ import com.higgs.trust.config.node.command.ViewCommand;
 import com.higgs.trust.config.view.ClusterOptTx;
 import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.config.view.ClusterViewManager;
+import com.higgs.trust.config.view.LastPackage;
 import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CommandFilterChain;
@@ -41,6 +42,8 @@ public class ClusterViewFilterTest {
         ClusterView view2 = new ClusterView(2, 0, 10, 20, new HashMap<>());
         ClusterOptTx optTx = new ClusterOptTx();
         Mockito.when(viewManager.getCurrentView()).thenReturn(view2);
+        LastPackage lastPackage = new LastPackage(1L, 1L);
+        Mockito.when(viewManager.getLastPackage()).thenReturn(lastPackage);
         //---not current view
         //view not exist
         Mockito.when(viewManager.getView(Mockito.anyLong())).thenReturn(null);
@@ -62,6 +65,7 @@ public class ClusterViewFilterTest {
 
         //is old view, but not view package
         Mockito.reset(viewManager);
+        Mockito.when(viewManager.getLastPackage()).thenReturn(lastPackage);
         Mockito.when(viewManager.getCurrentView()).thenReturn(view2);
         Mockito.when(viewManager.getView(Mockito.anyLong())).thenReturn(view);
         commit = buildCommit(1, 11, optTx);
@@ -76,6 +80,8 @@ public class ClusterViewFilterTest {
         ClusterOptTx optTx = new ClusterOptTx();
         ClusterView view = new ClusterView(2, 0, 10, -1, new HashMap<>());
         Mockito.when(viewManager.getCurrentView()).thenReturn(view);
+        LastPackage lastPackage = new LastPackage(1L, 1L);
+        Mockito.when(viewManager.getLastPackage()).thenReturn(lastPackage);
         //---current view
         //start package
         Mockito.when(viewManager.getView(Mockito.anyLong())).thenReturn(view);
@@ -89,6 +95,7 @@ public class ClusterViewFilterTest {
 
         //next package
         Mockito.reset(viewManager);
+        Mockito.when(viewManager.getLastPackage()).thenReturn(lastPackage);
         view = new ClusterView(2, 0, 10, 12, new HashMap<>());
         Mockito.when(viewManager.getCurrentView()).thenReturn(view);
         Mockito.when(viewManager.getView(Mockito.anyLong())).thenReturn(view);
@@ -102,6 +109,7 @@ public class ClusterViewFilterTest {
 
         // old package
         Mockito.reset(viewManager);
+        Mockito.when(viewManager.getLastPackage()).thenReturn(lastPackage);
         commit = buildCommit(2, 12, optTx);
         Mockito.when(viewManager.getCurrentView()).thenReturn(view);
         Mockito.when(viewManager.getView(Mockito.anyLong())).thenReturn(view);
@@ -114,6 +122,7 @@ public class ClusterViewFilterTest {
 
         // out of package
         Mockito.reset(viewManager);
+        Mockito.when(viewManager.getLastPackage()).thenReturn(lastPackage);
         commit = buildCommit(2, 8, optTx);
         Mockito.when(viewManager.getCurrentView()).thenReturn(view);
         Mockito.when(viewManager.getView(Mockito.anyLong())).thenReturn(view);
@@ -126,7 +135,7 @@ public class ClusterViewFilterTest {
     }
 
     @Test public void testPackTimeReject(){
-        Mockito.when(viewManager.getLastPackTime()).thenReturn(1L).thenReturn(0L);
+        Mockito.when(viewManager.getLastPackage()).thenReturn(new LastPackage(10L,1L));
         ConsensusCommit<? extends AbstractConsensusCommand> commit = buildCommit(1, 11, 0,null);
         CommandFilterChain filterChain = Mockito.mock(CommandFilterChain.class);
         filter.doFilter(commit, filterChain);
@@ -134,17 +143,18 @@ public class ClusterViewFilterTest {
     }
 
     @Test public void testPackTime(){
-        Mockito.when(viewManager.getLastPackTime()).thenReturn(1L);
+        LastPackage lastPackage = new LastPackage(9L, 1L);
+        Mockito.when(viewManager.getLastPackage()).thenReturn(lastPackage);
         ClusterView view = new ClusterView(2, 0, 10, -1, new HashMap<>());
         Mockito.when(viewManager.getCurrentView()).thenReturn(view);
         Mockito.when(viewManager.getView(Mockito.anyLong())).thenReturn(view);
-        ConsensusCommit<? extends AbstractConsensusCommand> commit = buildCommit(2, 10, 1,null);
+        ConsensusCommit<? extends AbstractConsensusCommand> commit = buildCommit(2, 10, 2,null);
         CommandFilterChain filterChain = Mockito.mock(CommandFilterChain.class);
         filter.doFilter(commit, filterChain);
         Mockito.verify(viewManager, Mockito.times(1)).resetEndHeight(10);
         Assert.assertFalse(commit.isClosed());
         Mockito.verify(filterChain, Mockito.times(1)).doFilter(commit);
-        Mockito.verify(viewManager, Mockito.times(1)).resetLastPackTime(1);
+        Mockito.verify(viewManager, Mockito.times(1)).resetLastPackage(Mockito.any());
     }
 
 

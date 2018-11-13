@@ -5,6 +5,7 @@ package com.higgs.trust.config.snapshot;
 
 import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.config.view.IClusterViewManager;
+import com.higgs.trust.config.view.LastPackage;
 import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import com.netflix.discovery.converters.Auto;
 import io.atomix.utils.serializer.Namespace;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Component;
             .register(SnapshotInfo.class)
             .register(TermInfo.class)
             .register(ClusterView.class)
+            .register(LastPackage.class)
             .build();
         //@formatter:on
         serializer = Serializer.using(namespace);
@@ -44,7 +46,7 @@ import org.springframework.stereotype.Component;
         SnapshotInfo snapshotInfo = new SnapshotInfo();
         snapshotInfo.setTerms(termManager.getTerms());
         snapshotInfo.setVies(viewManager.getViews());
-        snapshotInfo.setLastPackTime(viewManager.getLastPackTime());
+        snapshotInfo.setLastPackage(viewManager.getLastPackage());
         log.info("get snapshot:{}", snapshotInfo);
         return serializer.encode(snapshotInfo);
     }
@@ -54,7 +56,7 @@ import org.springframework.stereotype.Component;
         log.info("install snapshot:{}", snapshotInfo);
         termManager.resetTerms(snapshotInfo.getTerms());
         viewManager.resetViews(snapshotInfo.getVies());
-        viewManager.resetLastPackTime(snapshotInfo.getLastPackTime());
+        viewManager.resetLastPackage(snapshotInfo.getLastPackage());
     }
 
 }
