@@ -45,6 +45,12 @@ import org.hibernate.validator.constraints.NotEmpty;
      * the height of package
      */
     private long height;
+
+    /**
+     * the time of package
+     */
+    private long time;
+
     /**
      * signature
      */
@@ -54,16 +60,22 @@ import org.hibernate.validator.constraints.NotEmpty;
         super(value);
         this.masterName = masterName;
         this.height = value.getHeight();
+        this.time = value.getPackageTime();
     }
 
-    public PackageCommand(String masterName,byte[] value,long height){
+    public PackageCommand(String masterName,byte[] value,long height, long time){
         super(value);
         this.masterName = masterName;
         this.height = height;
+        this.time = time;
     }
 
     @Override public long getPackageHeight() {
         return this.height;
+    }
+
+    @Override public long getPackageTime() {
+        return this.time;
     }
 
     @Override public String getNodeName() {

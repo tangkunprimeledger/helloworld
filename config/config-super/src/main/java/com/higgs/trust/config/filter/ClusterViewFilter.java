@@ -31,7 +31,12 @@ import org.springframework.stereotype.Component;
         if (commit.operation() instanceof ViewCommand) {
             ViewCommand command = (ViewCommand)commit.operation();
             long height = command.getPackageHeight();
-
+            long packTime = command.getPackageTime();
+            if (packTime < viewManager.getLastPackTime()) {
+                log.warn("the package time:{} later than lastPackTime:{}", packTime, viewManager.getLastPackTime());
+                commit.close();
+                return;
+            }
             ClusterView currentView = viewManager.getCurrentView();
             //not current view
             if (command.getView() != currentView.getId()) {
@@ -51,6 +56,7 @@ import org.springframework.stereotype.Component;
                 if (height == currentView.getEndHeight() + 1 || (height == currentView.getStartHeight()
                     && currentView.getEndHeight() == ClusterView.INIT_END_HEIGHT)) {
                     viewManager.resetEndHeight(height);
+                    viewManager.resetLastPackTime(packTime);
                     if (command.getClusterOptTx() != null) {
                         viewManager.changeView(command);
                     }

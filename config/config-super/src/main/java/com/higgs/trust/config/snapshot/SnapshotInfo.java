@@ -22,4 +22,6 @@ import java.util.List;
 
     private List<ClusterView> vies = new ArrayList<>();
 
+    private Long lastPackTime;
+
 }

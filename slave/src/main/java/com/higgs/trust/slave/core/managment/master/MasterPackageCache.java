@@ -41,6 +41,7 @@ public class MasterPackageCache implements MasterChangeListener {
     private NodeState nodeState;
 
     private AtomicLong packHeight = new AtomicLong(0);
+    private AtomicLong packTime = new AtomicLong(0);
     private Deque<TermedTransaction> pendingTxQueue = new ConcurrentLinkedDeque<>();
     private ConcurrentLinkedHashMap existTxMap = new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(Constant.MAX_EXIST_MAP_SIZE).build();
     private BlockingQueue<PackageCommand> pendingPack = new LinkedBlockingDeque<>();
@@ -49,6 +50,7 @@ public class MasterPackageCache implements MasterChangeListener {
     public void beforeChange(String masterName) {
         synchronized (this) {
             packHeight.set(0);
+            packTime.set(0);
             pendingPack.clear();
             initPackHeight();
         }
@@ -73,27 +75,32 @@ public class MasterPackageCache implements MasterChangeListener {
             log.error("please initialize genius block");
             return;
         }
-
+        long packageHeight = maxBlockHeight;
+        Long blockTime = blockRepository.getBlockHeader(maxBlockHeight).getBlockTime();
         //when exchange master, packHeight must be null
         if (null == packHeight || 0 == packHeight.get()) {
             Long maxPackHeight = packageRepository.getMaxHeight();
-            long packageHeight = maxBlockHeight;
+
             if (null != maxPackHeight) {
-                packageHeight = maxBlockHeight > maxPackHeight ? maxBlockHeight : maxPackHeight;
+                if(maxBlockHeight < maxPackHeight){
+                    packageHeight = maxPackHeight;
+                    blockTime = packageRepository.load(maxPackHeight).getPackageTime();
+                }
             }
             synchronized (this) {
-                log.info("set master package height:{}", packageHeight);
+                log.info("set master package height:{}, last package time:{}", packageHeight, blockTime);
                 packHeight.set(packageHeight);
+                packTime.set(blockTime);
             }
         }
     }
 
     public Long getPackHeight() {
-        if (packHeight == null) {
-            return null;
-        }
-
         return packHeight.get();
+    }
+
+    public Long getLastPackTime(){
+        return packTime.get();
     }
 
     public Object[] getPendingTxQueue(int count) {

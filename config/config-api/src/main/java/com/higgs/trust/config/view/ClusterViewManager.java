@@ -25,6 +25,8 @@ import java.util.*;
 
     private ArrayList<ClusterView> views = new ArrayList<>();
 
+    private Long lastPackTime;
+
     @Autowired
     private NodeState nodeState;
 
@@ -140,5 +142,13 @@ import java.util.*;
         }
         log.debug("reset currentView end height:{}", packageHeight);
         currentView.setEndHeight(packageHeight);
+    }
+
+    @Override public Long getLastPackTime() {
+        return lastPackTime;
+    }
+
+    @Override public void resetLastPackTime(long packTime) {
+        this.lastPackTime = packTime;
     }
 }

@@ -62,6 +62,13 @@ import java.util.Map;
             Math.max(maxBlockHeight == null ? 0 : maxBlockHeight, maxPackageHeight == null ? 0 : maxPackageHeight);
         viewManager.resetViews(Collections.singletonList(
             new ClusterView(0, useCurrentHeight ? height + 1 : 2, consensusNodeMap)));
+
+        //reset the last package time
+        if (maxBlockHeight > height) {
+            viewManager.resetLastPackTime(packageRepository.load(height).getPackageTime());
+        }else{
+            viewManager.resetLastPackTime(blockRepository.getBlockHeader(maxBlockHeight).getBlockTime());
+        }
     }
 
     /**

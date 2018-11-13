@@ -90,6 +90,10 @@ public class PackageScheduler {
                     pendingState.addPendingTxsToQueueFirst(signedTransactions);
                     return;
                 }
+                if (pack.getPackageTime() < packageCache.getLastPackTime()) {
+                    nodeState.changeMaster(nodeState.MASTER_NA);
+                    return;
+                }
                 try {
                     //node operation transaction
                     SignedTransaction nodeOptTx = null;
@@ -180,7 +184,7 @@ public class PackageScheduler {
      * @return
      */
     private PackageCommand createPackCommand(Package pack, SignedTransaction nodeOptTx) {
-        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVOToBytes(pack), pack.getHeight());
+        PackageCommand command = new PackageCommand(nodeState.getNodeName(), PackageConvert.convertPackToPackVOToBytes(pack), pack.getHeight(), pack.getPackageTime());
         if (nodeOptTx != null) {
             //convert sign info
             List<ClusterOptTx.SignatureInfo> signs = new ArrayList<>(nodeOptTx.getSignatureList().size());

@@ -125,12 +125,39 @@ public class ClusterViewFilterTest {
         Mockito.verify(viewManager, Mockito.times(0)).changeView(Mockito.any());
     }
 
+    @Test public void testPackTimeReject(){
+        Mockito.when(viewManager.getLastPackTime()).thenReturn(1L).thenReturn(0L);
+        ConsensusCommit<? extends AbstractConsensusCommand> commit = buildCommit(1, 11, 0,null);
+        CommandFilterChain filterChain = Mockito.mock(CommandFilterChain.class);
+        filter.doFilter(commit, filterChain);
+        Assert.assertTrue(commit.isClosed());
+    }
+
+    @Test public void testPackTime(){
+        Mockito.when(viewManager.getLastPackTime()).thenReturn(1L);
+        ClusterView view = new ClusterView(2, 0, 10, -1, new HashMap<>());
+        Mockito.when(viewManager.getCurrentView()).thenReturn(view);
+        Mockito.when(viewManager.getView(Mockito.anyLong())).thenReturn(view);
+        ConsensusCommit<? extends AbstractConsensusCommand> commit = buildCommit(2, 10, 1,null);
+        CommandFilterChain filterChain = Mockito.mock(CommandFilterChain.class);
+        filter.doFilter(commit, filterChain);
+        Mockito.verify(viewManager, Mockito.times(1)).resetEndHeight(10);
+        Assert.assertFalse(commit.isClosed());
+        Mockito.verify(filterChain, Mockito.times(1)).doFilter(commit);
+        Mockito.verify(viewManager, Mockito.times(1)).resetLastPackTime(1);
+    }
+
+
     private ConsensusCommit buildCommit(long view, long height, ClusterOptTx optTx) {
+        return buildCommit(view, height, System.currentTimeMillis(), optTx);
+    }
+
+    private ConsensusCommit buildCommit(long view, long height, long packTime, ClusterOptTx optTx) {
         return new ConsensusCommit() {
             private boolean closed = false;
 
             @Override public Object operation() {
-                return new PackageMockCommand(view, height, optTx);
+                return new PackageMockCommand(view, height, packTime, optTx);
             }
 
             @Override public void close() {
@@ -149,13 +176,16 @@ public class ClusterViewFilterTest {
 
         private long height;
 
+        private long packTime;
+
         private ClusterOptTx clusterOptTx;
 
-        public PackageMockCommand(long view, long height, ClusterOptTx optTx) {
+        public PackageMockCommand(long view, long height, long packTime, ClusterOptTx optTx) {
             super(optTx);
             this.view = view;
             this.height = height;
             this.clusterOptTx = optTx;
+            this.packTime = packTime;
         }
 
         @Override public long getView() {
@@ -164,6 +194,10 @@ public class ClusterViewFilterTest {
 
         @Override public long getPackageHeight() {
             return height;
+        }
+
+        @Override public long getPackageTime() {
+            return packTime;
         }
 
         @Override public ClusterOptTx getClusterOptTx() {

@@ -146,6 +146,10 @@ import static org.mockito.Matchers.anyString;
                 return 0;
             }
 
+            @Override public long getPackageTime() {
+                return 0;
+            }
+
             @Override public ClusterOptTx getClusterOptTx() {
                 return null;
             }
@@ -249,6 +253,10 @@ import static org.mockito.Matchers.anyString;
                 return 11;
             }
 
+            @Override public long getPackageTime() {
+                return 0;
+            }
+
             @Override public ClusterOptTx getClusterOptTx() {
                 ClusterOptTx clusterOptTx = new ClusterOptTx();
                 clusterOptTx.setNodeName("C");
@@ -296,6 +304,10 @@ import static org.mockito.Matchers.anyString;
                 return 11;
             }
 
+            @Override public long getPackageTime() {
+                return 0;
+            }
+
             @Override public ClusterOptTx getClusterOptTx() {
                 ClusterOptTx clusterOptTx = new ClusterOptTx();
                 clusterOptTx.setNodeName("C");
@@ -325,6 +337,10 @@ import static org.mockito.Matchers.anyString;
 
             @Override public long getPackageHeight() {
                 return height;
+            }
+
+            @Override public long getPackageTime() {
+                return 0;
             }
 
             @Override public ClusterOptTx getClusterOptTx() {
