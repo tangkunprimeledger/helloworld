@@ -105,6 +105,15 @@ public class RsChainServiceImpl implements RsBlockChainService {
         return blockChainService.isExistedCurrency(currency);
     }
 
+
+    /**
+     * check whether the contract address is existed
+     *
+     * @param address
+     * @return
+     */
+    @Override
+    public boolean isExistedContractAddress(String address){return  blockChainService.isExistedContractAddress(address);}
     /**
      * query System Property by key
      *
