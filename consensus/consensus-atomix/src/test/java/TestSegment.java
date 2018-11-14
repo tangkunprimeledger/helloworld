@@ -19,8 +19,8 @@ public class TestSegment {
 
         Serializer se = Serializer.using(RaftNamespaces.RAFT_STORAGE);
         SegmentedJournal segmentedJournal =
-            new SegmentedJournal("raft-group-partition-1", StorageLevel.DISK, new File("e:/tmp/3"), se, 1024 * 256 * 10,
-                1024, 1024 * 256, 0, 0);
+            new SegmentedJournal("raft-group-partition-1", StorageLevel.MAPPED, new File("C:\\Users\\suimi\\Downloads"), se, 1024 * 1024 * 32,
+                1024*1024, 1024 * 256, 0, 0);
     }
 
     @Test public void testKryoCompatibility() {

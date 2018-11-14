@@ -4,6 +4,7 @@ import com.higgs.trust.contract.ContractApiService;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Calendar;
 
 public class ShareContextSerivce extends ContractApiService {
 
@@ -39,5 +40,15 @@ public class ShareContextSerivce extends ContractApiService {
 
     public void setCtxObj(Object ctxObj) {
         this.ctxObj = ctxObj;
+    }
+
+    public Long getMaxBlockHeight(){
+        return 122344L;
+    }
+
+    public Long getPackageTime(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR,-1);
+        return calendar.getTimeInMillis();
     }
 }

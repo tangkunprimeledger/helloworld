@@ -4,6 +4,7 @@
 package com.higgs.trust.config.snapshot;
 
 import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.LastPackage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -22,4 +23,5 @@ import java.util.List;
 
     private List<ClusterView> vies = new ArrayList<>();
 
+    private LastPackage lastPackage;
 }
