@@ -40,4 +40,13 @@ import java.util.List;
      * @return
      */
     Long getQueryCount(@Param("height") Long height, @Param("txId") String txId);
+
+    /**
+     * query by txId and action index
+     *
+     * @param txId
+     * @param actionIndex
+     * @return
+     */
+    ContractPO queryByTxId(@Param("txId") String txId,@Param("actionIndex") int actionIndex);
 }

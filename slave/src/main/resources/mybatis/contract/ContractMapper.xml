@@ -76,4 +76,13 @@
     </select>
 
 
+    <!-- query by txId -->
+    <select id="queryByTxId" resultMap="baseResultMap">
+        SELECT
+        <include refid="baseColumnList"/>
+        FROM contract
+        WHERE action_index = #{actionIndex} and tx_id = #{txId}
+    </select>
+
+
 </mapper>

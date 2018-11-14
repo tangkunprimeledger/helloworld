@@ -200,4 +200,8 @@ public class ContractServiceImpl implements ContractService {
     public Object query(ContractQueryRequest request) {
         return smartContract.executeQuery(request.getAddress(), request.getMethodName(), request.getBizArgs());
     }
+
+    @Override public ContractVO queryByTxId(String txId, int actionIndex) {
+        return contractRepository.queryByTxId(txId,actionIndex);
+    }
 }

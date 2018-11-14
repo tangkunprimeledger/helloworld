@@ -68,4 +68,12 @@ public interface ContractService {
      * @return
      */
     Object query(ContractQueryRequest request);
+    /**
+     * query by txId and action index
+     *
+     * @param txId
+     * @param actionIndex
+     * @return
+     */
+    ContractVO queryByTxId(String txId,int actionIndex);
 }
