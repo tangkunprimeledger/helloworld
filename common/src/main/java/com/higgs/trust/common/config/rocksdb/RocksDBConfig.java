@@ -76,11 +76,6 @@ import java.util.stream.Collectors;
 
     @Bean public RocksDBWrapper rocksDBWrapper() throws RocksDBException {
 
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.indexOf("windows") >= 0) {
-            return new RocksDBWrapper(null, null);
-        }
-
         ColumnFamilyOptions options = new ColumnFamilyOptions();
 
         final List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
