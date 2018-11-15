@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.repository.contract;
 
 import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.dao.mysql.contract.ContractDao;
 import com.higgs.trust.slave.dao.po.contract.ContractPO;
@@ -9,6 +10,7 @@ import com.higgs.trust.slave.model.bo.contract.Contract;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -67,9 +69,21 @@ public class ContractRepository {
             return false;
         }
         Contract contract = queryByAddress(address);
-        if (null ==  contract){
+        if (null == contract) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * query by txId and action index
+     *
+     * @param txId
+     * @param actionIndex
+     * @return
+     */
+    public ContractVO queryByTxId(String txId,int actionIndex){
+        ContractPO po = contractDao.queryByTxId(txId,actionIndex);
+        return BeanConvertor.convertBean(po, ContractVO.class);
     }
 }

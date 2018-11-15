@@ -2,7 +2,9 @@ package com.higgs.trust.contract;
 
 import com.higgs.trust.contract.rhino.types.NativeJavaMap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,33 +12,14 @@ import java.util.Map;
  *  @author duhongming
  */
 public class StateManager {
+    private ExecuteContext executeContext;
+    private ContractStateStore contractStateStore;
     private Map<String, Object> state;
-    private Map<String, Object> oldState;
 
-    public StateManager() {
+    public StateManager(ExecuteContext executeContext,ContractStateStore contractStateStore) {
         state = new HashMap<>(8);
-    }
-
-    public StateManager(Map<String, Object> state) {
-        this(state, true);
-    }
-
-    public StateManager(Map<String, Object> state, boolean backup) {
-        this.state = state == null ? new HashMap<>(8) : state;
-        if (state != null && backup) {
-            this.oldState = new HashMap<>(this.state.size());
-            this.state.forEach((key, value) -> this.oldState.put(key, value));
-        }
-    }
-
-    private int toInt(Object value) {
-        if (value instanceof String) {
-            return Integer.parseInt((String) value);
-        } else if (value instanceof Number) {
-            return ((Number) value).intValue();
-        } else {
-            return ((Integer) value).intValue();
-        }
+        this.executeContext = executeContext;
+        this.contractStateStore = contractStateStore;
     }
 
     public StateManager put(String name, Object value) {
@@ -46,6 +29,10 @@ public class StateManager {
 
     public Object get(String name) {
         Object obj = this.state.get(name);
+        //from external store
+        if(obj == null && contractStateStore != null){
+            obj = contractStateStore.get(makeStateKey(name));
+        }
         if (obj == null) {
             return null;
         }
@@ -57,16 +44,42 @@ public class StateManager {
         return obj;
     }
 
-    public int getInt(String name) {
-        Object value = get(name);
-        return toInt(value);
-    }
-
     public Map<String, Object> getState() {
         return this.state;
     }
 
-    public Map<String, Object> getOldState() {
-        return this.oldState;
+    /**
+     * flush to store
+     */
+    public void flush(){
+        if(this.contractStateStore == null || this.state == null || this.state.isEmpty()){
+            return;
+        }
+        List<String> keys = new ArrayList<>();
+        int i = 0;
+        for(String key : this.state.keySet()){
+            Object value = this.state.get(key);
+            String newKey = makeStateKey(key);
+            contractStateStore.put(newKey,value);
+            //max size
+            if(i < 10){
+                keys.add(newKey);
+            }
+            i++;
+        }
+        //save contract state`s all keys
+        contractStateStore.put(executeContext.getStateInstanceKey(),keys);
+    }
+    /**
+     * make key by contract address
+     *
+     * @param keyName
+     * @return
+     */
+    private String makeStateKey(String keyName){
+        if(executeContext == null){
+            return null;
+        }
+        return executeContext.getStateInstanceKey() + "-" + keyName;
     }
 }

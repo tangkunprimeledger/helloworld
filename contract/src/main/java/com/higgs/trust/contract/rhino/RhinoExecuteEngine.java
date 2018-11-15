@@ -79,7 +79,7 @@ public class RhinoExecuteEngine implements ExecuteEngine {
             ContractStateStore dbStateStore = executeContext.getStateStore();
             if (dbStateStore != null && !ExecuteContext.getCurrent().isOnlyQuery()) {
                 StateManager state = (StateManager) scope.get(DB_STATE_CTX_KEY_NAME);
-                dbStateStore.put(executeContext.getStateInstanceKey(), state);
+                state.flush();
             }
             if (result instanceof NativeJavaObject) {
                 return ((NativeJavaObject) result).unwrap();
@@ -110,10 +110,7 @@ public class RhinoExecuteEngine implements ExecuteEngine {
         ExecuteContext context = ExecuteContext.getCurrent();
         ContractStateStore dbStateStore = context.getStateStore();
         if (dbStateStore != null) {
-            StateManager stateManager = dbStateStore.get(context.getStateInstanceKey());
-            if (stateManager == null) {
-                stateManager = new StateManager();
-            }
+            StateManager stateManager = new StateManager(context,dbStateStore);
             scope.put(DB_STATE_CTX_KEY_NAME, scope, stateManager);
         }
     }

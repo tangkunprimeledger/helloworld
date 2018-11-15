@@ -186,6 +186,7 @@ IF NOT EXISTS `contract_state` (
 	`address` VARCHAR (64) NOT NULL COMMENT 'contract address',
 	`update_time` datetime (3) DEFAULT NULL COMMENT 'update time',
 	`state` NVARCHAR (4096) NOT NULL COMMENT 'contract state',
+	`key_desc` VARCHAR (256) DEFAULT NULL COMMENT 'the key description',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_address` (`address`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'contract state';

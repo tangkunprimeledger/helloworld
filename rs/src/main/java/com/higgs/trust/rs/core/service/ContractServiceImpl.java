@@ -6,6 +6,7 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.ContractService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
 import com.higgs.trust.rs.core.bo.ContractQueryRequest;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
@@ -115,7 +116,11 @@ public class ContractServiceImpl implements ContractService {
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
-                return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
+                if(rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS){
+                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
+                }else{
+                    return RespData.success(txId);
+                }
             }
         }
         com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
@@ -160,7 +165,11 @@ public class ContractServiceImpl implements ContractService {
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
-                return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
+                if(rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS){
+                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
+                }else{
+                    return RespData.success(txId);
+                }
             }
         }
         com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
@@ -176,7 +185,11 @@ public class ContractServiceImpl implements ContractService {
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(migrationRequest.getTxId());
-                return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), migrationRequest.getTxId());
+                if(rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS){
+                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), migrationRequest.getTxId());
+                }else{
+                    return RespData.success(migrationRequest.getTxId());
+                }
             }
         }
         com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(migrationRequest.getTxId(), true);
@@ -186,5 +199,9 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public Object query(ContractQueryRequest request) {
         return smartContract.executeQuery(request.getAddress(), request.getMethodName(), request.getBizArgs());
+    }
+
+    @Override public ContractVO queryByTxId(String txId, int actionIndex) {
+        return contractRepository.queryByTxId(txId,actionIndex);
     }
 }

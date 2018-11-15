@@ -13,6 +13,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author duhongming
  * @date 2018/6/21
@@ -48,17 +51,21 @@ public class ContractStateMigrationHandler implements ActionHandler {
     public void process(ActionData actionData) {
         ContractStateMigrationAction action = (ContractStateMigrationAction) actionData.getCurrentAction();
         checkAction(action);
-
-        StateManager stateManager = contractStateSnapshotAgent.get(action.getFormInstanceAddress());
-        if (stateManager.getState().size() == 0) {
+        List<String> state = (List<String>)contractStateSnapshotAgent.get(action.getFormInstanceAddress());
+        if (state == null || state.isEmpty()) {
             throw new RuntimeException("can't migration empty state.");
         }
-
-        StateManager toStateManager = contractStateSnapshotAgent.get(action.getToInstanceAddress());
-        if (toStateManager.getState().size() > 0) {
+        List<String> toState = (List<String>)contractStateSnapshotAgent.get(action.getToInstanceAddress());
+        if (toState != null && !toState.isEmpty()) {
             throw new RuntimeException(String.format("can't migration state to %s, it already have state.", action.getToInstanceAddress()));
         }
-
-        contractStateSnapshotAgent.put(action.getToInstanceAddress(), stateManager);
+        //state transfer
+        for(String key : state){
+            Object data = contractStateSnapshotAgent.get(key);
+            //make new key by new address
+            key = key.replaceAll(action.getFormInstanceAddress(),action.getToInstanceAddress());
+            //reset value by new key
+            contractStateSnapshotAgent.put(key, data);
+        }
     }
 }

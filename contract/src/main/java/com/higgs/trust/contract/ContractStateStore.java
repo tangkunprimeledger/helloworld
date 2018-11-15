@@ -13,7 +13,7 @@ public interface ContractStateStore {
      * @param key
      * @param state
      */
-    void put(String key, StateManager state);
+    void put(String key, Object state);
 
     /**
      * get by key
@@ -21,7 +21,7 @@ public interface ContractStateStore {
      * @param key
      * @return value
      */
-    StateManager get(String key);
+    Object get(String key);
 
     /**
      * remove by key
