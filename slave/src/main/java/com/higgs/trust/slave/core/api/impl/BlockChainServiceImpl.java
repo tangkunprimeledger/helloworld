@@ -12,6 +12,7 @@ import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
+import com.higgs.trust.slave.core.repository.contract.ContractRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
@@ -42,42 +43,63 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
  * @date 2918/04/14 16:52
  * @desc block chain service
  */
-@Slf4j @Service public class BlockChainServiceImpl implements BlockChainService, InitializingBean {
+@Slf4j
+@Service
+public class BlockChainServiceImpl implements BlockChainService, InitializingBean {
 
-    @Autowired private PendingStateImpl pendingState;
+    @Autowired
+    private PendingStateImpl pendingState;
 
-    @Autowired private NodeState nodeState;
+    @Autowired
+    private NodeState nodeState;
 
-    @Autowired private BlockChainClient blockChainClient;
+    @Autowired
+    private BlockChainClient blockChainClient;
 
-    @Autowired private BlockRepository blockRepository;
+    @Autowired
+    private BlockRepository blockRepository;
 
-    @Autowired private TransactionRepository transactionRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
 
-    @Autowired private TxOutRepository txOutRepository;
+    @Autowired
+    private TxOutRepository txOutRepository;
 
-    @Autowired private DataIdentityRepository dataIdentityRepository;
+    @Autowired
+    private DataIdentityRepository dataIdentityRepository;
 
-    @Autowired private CurrencyRepository currencyRepository;
+    @Autowired
+    private CurrencyRepository currencyRepository;
 
-    @Autowired private UTXOSnapshotHandler utxoSnapshotHandler;
+    @Autowired
+    private UTXOSnapshotHandler utxoSnapshotHandler;
 
-    @Autowired private SystemPropertyHandler systemPropertyHandler;
+    @Autowired
+    private SystemPropertyHandler systemPropertyHandler;
 
-    @Autowired private PendingTxRepository pendingTxRepository;
+    @Autowired
+    private PendingTxRepository pendingTxRepository;
 
-    @Autowired private TransactionValidator transactionValidator;
+    @Autowired
+    private TransactionValidator transactionValidator;
 
-    @Autowired private Executor txConsumerExecutor;
+    @Autowired
+    private Executor txConsumerExecutor;
 
-    @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
+    @Autowired
+    private ContractRepository contractRepository;
 
-    @Value("${trust.sleep.submitToMaster:50}") private int SLEEP_FOR_SUBMIT_TO_MASTER;
+    @Value("${trust.batch.tx.limit:200}")
+    private int TX_PENDING_COUNT;
 
-    @Override public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
+    @Value("${trust.sleep.submitToMaster:50}")
+    private int SLEEP_FOR_SUBMIT_TO_MASTER;
+
+    @Override
+    public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
         RespData<List<TransactionVO>> respData = new RespData();
-        if(!nodeState.isState(NodeStateEnum.Running)){
-            log.warn("the node status:{} is not Running please wait a later..",nodeState.getState());
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            log.warn("the node status:{} is not Running please wait a later..", nodeState.getState());
             return respData;
         }
         if (CollectionUtils.isEmpty(transactions)) {
@@ -103,7 +125,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             //verify params for transaction
             try {
                 transactionValidator.verify(signedTx);
-            } catch (SlaveException e){
+            } catch (SlaveException e) {
                 transactionVO.setErrCode(e.getCode().getCode());
                 transactionVO.setErrMsg(e.getCode().getDescription());
                 transactionVO.setRetry(false);
@@ -130,7 +152,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
     }
 
     private List<SignedTransaction> checkDbIdempotent(List<SignedTransaction> transactions,
-        List<TransactionVO> transactionVOList) {
+                                                      List<TransactionVO> transactionVOList) {
 
         List<SignedTransaction> signedTransactions = new ArrayList<>();
 
@@ -186,10 +208,12 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
 
     /**
      * for performance test
+     *
      * @param tx
      * @return
      */
-    @Override public RespData<List<TransactionVO>> submitTransaction(SignedTransaction tx) {
+    @Override
+    public RespData<List<TransactionVO>> submitTransaction(SignedTransaction tx) {
         //TODO for load test
         log.info("accept tx with thread: " + Thread.currentThread().getName());
 
@@ -218,7 +242,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         return respData;
     }
 
-    @Override public RespData<List<TransactionVO>> submitToMaster(List<SignedTransaction> transactions) {
+    @Override
+    public RespData<List<TransactionVO>> submitToMaster(List<SignedTransaction> transactions) {
 
         RespData<List<TransactionVO>> respData = new RespData();
 
@@ -243,7 +268,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             if (log.isDebugEnabled()) {
                 //when it is not master ,then send txs to master node
                 log.debug("this node is not  master, send txs:{} to master node={}", transactions,
-                    nodeState.getMasterName());
+                        nodeState.getMasterName());
             }
             respData = blockChainClient.submitToMaster(nodeState.getMasterName(), transactions);
         }
@@ -266,15 +291,18 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         return transactionVOList;
     }
 
-    @Override public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
+    @Override
+    public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
         return blockRepository.listBlockHeaders(startHeight, size);
     }
 
-    @Override public List<Block> listBlocks(long startHeight, int size) {
+    @Override
+    public List<Block> listBlocks(long startHeight, int size) {
         return blockRepository.listBlocks(startHeight, size);
     }
 
-    @Override public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
+    @Override
+    public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
         if (null == req) {
             return null;
         }
@@ -294,7 +322,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             pageVO.setData(null);
         } else {
             List<BlockVO> list = blockRepository
-                .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+                    .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -302,7 +330,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         return pageVO;
     }
 
-    @Override public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
+    @Override
+    public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
 
         if (null == req) {
             return null;
@@ -325,8 +354,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             pageVO.setData(null);
         } else {
             List<CoreTransactionVO> list = transactionRepository
-                .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
-                    req.getPageSize());
+                    .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
+                            req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -334,7 +363,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         return pageVO;
     }
 
-    @Override public List<UTXOVO> queryUTXOByTxId(String txId) {
+    @Override
+    public List<UTXOVO> queryUTXOByTxId(String txId) {
         if (StringUtils.isBlank(txId)) {
             return null;
         }
@@ -350,7 +380,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param identity
      * @return
      */
-    @Override public boolean isExistedIdentity(String identity) {
+    @Override
+    public boolean isExistedIdentity(String identity) {
         if (StringUtils.isBlank(identity)) {
             return false;
         }
@@ -363,8 +394,20 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param currency
      * @return
      */
-    @Override public boolean isExistedCurrency(String currency) {
+    @Override
+    public boolean isExistedCurrency(String currency) {
         return currencyRepository.isExits(currency);
+    }
+
+    /**
+     * check whether the contract address is existed
+     *
+     * @param address
+     * @return
+     */
+    @Override
+    public boolean isExistedContractAddress(String address) {
+        return contractRepository.isExistedAddress(address);
     }
 
     /**
@@ -373,7 +416,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param key
      * @return
      */
-    @Override public SystemPropertyVO querySystemPropertyByKey(String key) {
+    @Override
+    public SystemPropertyVO querySystemPropertyByKey(String key) {
         return systemPropertyHandler.querySystemPropertyByKey(key);
     }
 
@@ -383,7 +427,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param inputList
      * @return
      */
-    @Override public List<UTXO> queryUTXOList(List<TxIn> inputList) {
+    @Override
+    public List<UTXO> queryUTXOList(List<TxIn> inputList) {
         log.info("When process UTXO contract  querying queryTxOutList by inputList:{}", inputList);
         return utxoSnapshotHandler.queryUTXOList(inputList);
     }
@@ -394,19 +439,23 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param name
      * @return
      */
-    @Override public UTXOActionTypeEnum getUTXOActionType(String name) {
+    @Override
+    public UTXOActionTypeEnum getUTXOActionType(String name) {
         return UTXOActionTypeEnum.getUTXOActionTypeEnumByName(name);
     }
 
-    @Override public BlockHeader getBlockHeader(Long blockHeight) {
+    @Override
+    public BlockHeader getBlockHeader(Long blockHeight) {
         return blockRepository.getBlockHeader(blockHeight);
     }
 
-    @Override public BlockHeader getMaxBlockHeader() {
+    @Override
+    public BlockHeader getMaxBlockHeader() {
         return blockRepository.getBlockHeader(blockRepository.getMaxHeight());
     }
 
-    @Override public void afterPropertiesSet() throws Exception {
+    @Override
+    public void afterPropertiesSet() throws Exception {
         txConsumerExecutor.execute(new ConsumerTx());
     }
 
@@ -415,7 +464,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      */
     private class ConsumerTx implements Runnable {
 
-        @Override public void run() {
+        @Override
+        public void run() {
             while (true) {
                 try {
                     Thread.sleep(SLEEP_FOR_SUBMIT_TO_MASTER);
@@ -458,11 +508,13 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         }
     }
 
-    @Override public Long getMaxBlockHeight() {
+    @Override
+    public Long getMaxBlockHeight() {
         return blockRepository.getMaxHeight();
     }
 
-    @Override public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
+    @Override
+    public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
         if (null == req) {
             return null;
         }
@@ -477,10 +529,11 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             req.setPageSize(20);
         }
         return blockRepository
-            .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+                .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
     }
 
-    @Override public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
+    @Override
+    public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
         if (null == req) {
             return null;
         }
@@ -495,19 +548,22 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             req.setPageSize(20);
         }
         return transactionRepository
-            .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
-                req.getPageSize());
+                .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
+                        req.getPageSize());
     }
 
-    @Override public BlockVO queryBlockByHeight(Long height) {
+    @Override
+    public BlockVO queryBlockByHeight(Long height) {
         return blockRepository.queryBlockByHeight(height);
     }
 
-    @Override public CoreTransactionVO queryTxById(String txId) {
+    @Override
+    public CoreTransactionVO queryTxById(String txId) {
         return transactionRepository.queryTxById(txId);
     }
 
-    @Override public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
+    @Override
+    public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
         return transactionRepository.queryTxs(txIds);
     }
 }

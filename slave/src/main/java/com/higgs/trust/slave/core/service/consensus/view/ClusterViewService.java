@@ -6,6 +6,7 @@ package com.higgs.trust.slave.core.service.consensus.view;
 import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.config.view.IClusterViewManager;
+import com.higgs.trust.config.view.LastPackage;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
@@ -16,6 +17,8 @@ import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
+import com.higgs.trust.slave.model.bo.BlockHeader;
+import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -60,8 +63,17 @@ import java.util.Map;
         Long maxPackageHeight = packageRepository.getMaxHeight();
         long height =
             Math.max(maxBlockHeight == null ? 0 : maxBlockHeight, maxPackageHeight == null ? 0 : maxPackageHeight);
-        viewManager.resetViews(Collections.singletonList(
-            new ClusterView(0, useCurrentHeight ? height + 1 : 2, consensusNodeMap)));
+        viewManager.resetViews(
+            Collections.singletonList(new ClusterView(0, useCurrentHeight ? height + 1 : 2, consensusNodeMap)));
+
+        //reset the last package time
+        if (maxBlockHeight > height) {
+            Package pack = packageRepository.load(height);
+            viewManager.resetLastPackage(new LastPackage(pack.getHeight(), pack.getPackageTime()));
+        } else {
+            BlockHeader blockHeader = blockRepository.getBlockHeader(maxBlockHeight);
+            viewManager.resetLastPackage(new LastPackage(blockHeader.getHeight(), blockHeader.getBlockTime()));
+        }
     }
 
     /**

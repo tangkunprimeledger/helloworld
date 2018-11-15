@@ -64,7 +64,7 @@ public class ContractRepository {
         return BeanConvertor.convertBean(po, Contract.class);
     }
 
-    public boolean isExistedAddress(String address) {
+    public boolean isExistedAddress(String address){
         if (StringUtils.isBlank(address)) {
             return false;
         }

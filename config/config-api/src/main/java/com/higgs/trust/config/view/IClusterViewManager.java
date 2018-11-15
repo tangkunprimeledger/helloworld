@@ -53,4 +53,14 @@ public interface IClusterViewManager {
      * @param height
      */
     void resetEndHeight(long height);
+
+    /**
+     * get the last package
+     */
+    LastPackage getLastPackage();
+
+    /**
+     * reset the last package
+     */
+    void resetLastPackage(LastPackage lastPackage);
 }

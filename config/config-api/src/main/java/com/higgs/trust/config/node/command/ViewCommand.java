@@ -22,6 +22,11 @@ public interface ViewCommand {
     long getPackageHeight();
 
     /**
+     * get the package time
+     */
+    long getPackageTime();
+
+    /**
      * get the cluster operation transaction {@link ClusterOptTx}
      */
     ClusterOptTx getClusterOptTx();

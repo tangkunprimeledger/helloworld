@@ -7,10 +7,10 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * test
@@ -18,16 +18,17 @@ import java.util.List;
  * @author lingchao
  * @create 2018年05月03日15:20
  */
-@Slf4j
-public class test{
-    private  static String pubk1 ="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLDDNiZKp0AAjfkVKkReFJFufF546YwPkT+JpwOLg/Sgo5SXk8b2NMhw6rLyGol6+xntEAdVQCqtMYrdgVh31VP15Ttbaivnmu2MaKHqIJbzpHXYiYmE2VDYyjOQIbbRvedD6c65nlHJfWBhGfw8CinnvvLamg1nSBBwZ6ZTuplQIDAQAB";
-    private  static String pubk2 ="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCROZWGFsdQBORNF2sZkL4NqbrWDq8mvgM3fkAh1QNKxPL1IlwLhYmu04IxkI4RTuukq3Did1tsUnh8OhdQKb2fJHywd2bGU9XueEGlilNGntH3JpPXYK5KWp4iwm3dzz/APlFI8DXnsSA404WEs82rTRoNOqncYEgjHPW1+48D5QIDAQAB";
+@Slf4j public class test {
+    private static String pubk1 =
+        "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLDDNiZKp0AAjfkVKkReFJFufF546YwPkT+JpwOLg/Sgo5SXk8b2NMhw6rLyGol6+xntEAdVQCqtMYrdgVh31VP15Ttbaivnmu2MaKHqIJbzpHXYiYmE2VDYyjOQIbbRvedD6c65nlHJfWBhGfw8CinnvvLamg1nSBBwZ6ZTuplQIDAQAB";
+    private static String pubk2 =
+        "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCROZWGFsdQBORNF2sZkL4NqbrWDq8mvgM3fkAh1QNKxPL1IlwLhYmu04IxkI4RTuukq3Did1tsUnh8OhdQKb2fJHywd2bGU9XueEGlilNGntH3JpPXYK5KWp4iwm3dzz/APlFI8DXnsSA404WEs82rTRoNOqncYEgjHPW1+48D5QIDAQAB";
 
- public  static  void main(String[] args) throws Exception {
-     List<SignedTransaction> signedTransactions = makeRegisterPolicyTxs();
-//     System.out.println("sing1+pubk1:" + SignUtils.verify(JSON.toJSONString(signedTransactions.get(0).getCoreTx()), signedTransactions.get(0).getSignatureList().get(0), pubk1));
-//     System.out.println("sing2+pubk2:" +  SignUtils.verify(JSON.toJSONString(signedTransactions.get(0).getCoreTx()), signedTransactions.get(0).getSignatureList().get(1), pubk2));
- }
+    public static void main(String[] args) throws Exception {
+        List<SignedTransaction> signedTransactions = makeRegisterPolicyTxs();
+        //     System.out.println("sing1+pubk1:" + SignUtils.verify(JSON.toJSONString(signedTransactions.get(0).getCoreTx()), signedTransactions.get(0).getSignatureList().get(0), pubk1));
+        //     System.out.println("sing2+pubk2:" +  SignUtils.verify(JSON.toJSONString(signedTransactions.get(0).getCoreTx()), signedTransactions.get(0).getSignatureList().get(1), pubk2));
+    }
 
     private static List<SignedTransaction> makeOpenAccountTxs() throws Exception {
         List<SignedTransaction> txs = new ArrayList<>();
@@ -36,8 +37,8 @@ public class test{
         actions.add(action);
 
         JSONObject bizModel = new JSONObject();
-        bizModel.put("data",action);
-        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 0, "test-policy-1",bizModel);
+        bizModel.put("data", action);
+        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 0, "test-policy-1", bizModel);
         coreTransaction.setSender("TRUST-NODE97");
         SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
 
@@ -52,13 +53,21 @@ public class test{
         actions.add(action);
 
         JSONObject bizModel = new JSONObject();
-        bizModel.put("data",action);
-        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 0, "000000",bizModel);
+        bizModel.put("data", action);
+        CoreTransaction coreTransaction = TestDataMaker.makeCoreTx(actions, 0, "000000", bizModel);
         SignedTransaction tx = TestDataMaker.makeSignedTx(coreTransaction);
 
         txs.add(tx);
         return txs;
     }
 
+    @Test public void test() {
+        Long A = new Long(285150);
+        Long B = new Long(285150);
+        log.info("result:{}", A.compareTo(B) > 0);
+        log.info("result:{}", A>=B);
+        log.info("result:{}", A==B);
+        log.info("result:{}", A.equals(B));
+    }
 
 }

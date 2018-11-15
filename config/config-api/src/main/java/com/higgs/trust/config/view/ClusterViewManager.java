@@ -25,6 +25,8 @@ import java.util.*;
 
     private ArrayList<ClusterView> views = new ArrayList<>();
 
+    private LastPackage lastPackage;
+
     @Autowired
     private NodeState nodeState;
 
@@ -141,4 +143,13 @@ import java.util.*;
         log.debug("reset currentView end height:{}", packageHeight);
         currentView.setEndHeight(packageHeight);
     }
+
+    @Override public LastPackage getLastPackage() {
+        return lastPackage;
+    }
+
+    @Override public void resetLastPackage(LastPackage lastPackage) {
+        this.lastPackage = lastPackage;
+    }
+
 }
