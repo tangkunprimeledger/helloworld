@@ -136,7 +136,7 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
      * @param key
      * @return
      */
-    private String makeNewKey(String key){
+    public static String makeNewKey(String key){
         return MD5.encode(key);
     }
 }

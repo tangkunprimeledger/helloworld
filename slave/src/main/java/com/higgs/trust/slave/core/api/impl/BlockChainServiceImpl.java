@@ -1,11 +1,15 @@
 package com.higgs.trust.slave.core.api.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.common.context.AppContext;
@@ -13,14 +17,20 @@ import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
 import com.higgs.trust.slave.core.repository.contract.ContractRepository;
+import com.higgs.trust.slave.core.repository.contract.ContractStateRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
 import com.higgs.trust.slave.core.service.pending.TransactionValidator;
+import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.action.Action;
+import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
+import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
+import com.higgs.trust.slave.model.bo.contract.ContractState;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
@@ -88,6 +98,10 @@ public class BlockChainServiceImpl implements BlockChainService, InitializingBea
 
     @Autowired
     private ContractRepository contractRepository;
+
+    @Autowired
+    private ContractStateRepository contractStateRepository;
+
 
     @Value("${trust.batch.tx.limit:200}")
     private int TX_PENDING_COUNT;
@@ -559,11 +573,71 @@ public class BlockChainServiceImpl implements BlockChainService, InitializingBea
 
     @Override
     public CoreTransactionVO queryTxById(String txId) {
-        return transactionRepository.queryTxById(txId);
+        CoreTransactionVO vo = transactionRepository.queryTxById(txId);
+        if(vo != null) {
+            Object contractState = getContractState(txId, vo);
+            vo.setContractState(contractState);
+        }
+        return vo;
     }
 
     @Override
     public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
         return transactionRepository.queryTxs(txIds);
+    }
+
+    /**
+     * get contract state
+     *
+     * @param txId
+     * @param vo
+     * @return
+     */
+    private Object getContractState(String txId,CoreTransactionVO vo) {
+        InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(vo.getPolicyId());
+        if (initPolicyEnum != InitPolicyEnum.CONTRACT_ISSUE && initPolicyEnum != InitPolicyEnum.CONTRACT_INVOKE) {
+            return null;
+        }
+        String address = null;
+        if(initPolicyEnum == InitPolicyEnum.CONTRACT_ISSUE){
+            //query contract by txId and action index
+            ContractVO contractVO = contractRepository.queryByTxId(txId, 0);
+            if (contractVO == null) {
+                log.info("[getContractState] get contract by txId:{} is null",txId);
+                return null;
+            }
+            address = contractVO.getAddress();
+        }else{
+            String actionDatas = vo.getActionDatas();
+            if(StringUtils.isEmpty(actionDatas)){
+                log.info("[getContractState] vo.getActionDatas is empty txId:{} ",txId);
+                return null;
+            }
+            List<ContractInvokeAction> actions = JSON.parseArray(actionDatas,ContractInvokeAction.class);
+            if(CollectionUtils.isEmpty(actions)){
+                log.info("[getContractState] parse actionDatas is empty txId:{} ",txId);
+                return null;
+            }
+            ContractInvokeAction action = actions.get(0);
+            if(action == null){
+                log.info("[getContractState] get ContractInvokeAction is null txId:{} ",txId);
+                return null;
+            }
+            address = action.getAddress();
+        }
+        if(StringUtils.isEmpty(address)){
+            log.info("[getContractState] get contract address is null");
+            return null;
+        }
+        //make new key
+        String key = StateManager.makeStateKey(address, txId);
+        //by md5
+        key = ContractStateSnapshotAgent.makeNewKey(key);
+        //query state by key
+        ContractState contractState = contractStateRepository.getState(key);
+        if (contractState == null) {
+            return null;
+        }
+        return contractState.getState();
     }
 }

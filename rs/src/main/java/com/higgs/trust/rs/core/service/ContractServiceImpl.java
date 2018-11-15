@@ -75,7 +75,7 @@ public class ContractServiceImpl implements ContractService {
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setSendTime(new Date());
-        coreTx.setPolicyId(InitPolicyEnum.CONTRACT_ISSUE.getPolicyId());
+        coreTx.setPolicyId(InitPolicyEnum.CONTRACT_INVOKE.getPolicyId());
         coreTx.setTxType(TxTypeEnum.CONTRACT.getCode());
         return coreTx;
     }

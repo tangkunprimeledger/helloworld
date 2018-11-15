@@ -58,4 +58,8 @@ public class CoreTransactionVO extends BaseBO{
      * the type of transaction
      */
     private String txType;
+    /**
+     * contract state
+     */
+    private Object contractState;
 }

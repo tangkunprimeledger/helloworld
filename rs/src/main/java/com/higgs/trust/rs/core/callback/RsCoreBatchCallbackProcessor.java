@@ -12,7 +12,6 @@ import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.repository.RequestRepository;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -48,8 +47,6 @@ public class RsCoreBatchCallbackProcessor {
     @Autowired
     private NodeState nodeState;
     @Autowired
-    private RequestRepository requestRepository;
-    @Autowired
     private ConsensusStateMachine consensusStateMachine;
 
     private TxBatchCallbackHandler getCallbackHandler() {
@@ -78,6 +75,8 @@ public class RsCoreBatchCallbackProcessor {
                         return;
                     case CONTRACT_ISSUE:
                         return;
+                    case CONTRACT_INVOKE:
+                        return;
                     case CONTRACT_DESTROY:
                         return;
                     case CA_UPDATE:
@@ -101,7 +100,6 @@ public class RsCoreBatchCallbackProcessor {
                 }
             }
             //callback custom
-            //TODO:for test
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
             txBatchCallbackHandler.onPersisted(policyId, rsCoreTxVOS, blockHeader);
         }
@@ -121,6 +119,8 @@ public class RsCoreBatchCallbackProcessor {
                     case REGISTER_RS:
                         return;
                     case CONTRACT_ISSUE:
+                        return;
+                    case CONTRACT_INVOKE:
                         return;
                     case CONTRACT_DESTROY:
                         return;
@@ -142,7 +142,6 @@ public class RsCoreBatchCallbackProcessor {
                 }
             }
             //callback custom
-            //TODO:for test
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
             txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
         }
@@ -158,6 +157,7 @@ public class RsCoreBatchCallbackProcessor {
                     case NA:
                     case REGISTER_RS:
                     case CONTRACT_ISSUE:
+                    case CONTRACT_INVOKE:
                     case CONTRACT_DESTROY:
                     case CA_UPDATE:
                     case CA_CANCEL:
@@ -175,7 +175,6 @@ public class RsCoreBatchCallbackProcessor {
             }
 
             //callback custom
-            //TODO:for test
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
             txBatchCallbackHandler.onFailover(policyId, rsCoreTxVOS, blockHeader);
         }

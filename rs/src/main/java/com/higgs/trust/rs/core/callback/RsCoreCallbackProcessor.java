@@ -83,6 +83,8 @@ public class RsCoreCallbackProcessor implements TxCallbackHandler {
                     return;
                 case CONTRACT_ISSUE:
                     return;
+                case CONTRACT_INVOKE:
+                    return;
                 case CONTRACT_DESTROY:
                     return;
                 case CA_UPDATE:
@@ -130,6 +132,8 @@ public class RsCoreCallbackProcessor implements TxCallbackHandler {
                     return;
                 case CONTRACT_ISSUE:
                     return;
+                case CONTRACT_INVOKE:
+                    return;
                 case CONTRACT_DESTROY:
                     return;
                 case CA_UPDATE:
@@ -169,6 +173,7 @@ public class RsCoreCallbackProcessor implements TxCallbackHandler {
                 case REGISTER_RS:
                 case CONTRACT_ISSUE:
                 case CONTRACT_DESTROY:
+                case CONTRACT_INVOKE:
                 case CA_UPDATE:
                 case CA_CANCEL:
                 case CA_AUTH:

@@ -1,6 +1,7 @@
 package com.higgs.trust.contract;
 
 import com.higgs.trust.contract.rhino.types.NativeJavaMap;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class StateManager {
         Object obj = this.state.get(name);
         //from external store
         if(obj == null && contractStateStore != null){
-            obj = contractStateStore.get(makeStateKey(name));
+            obj = contractStateStore.get(makeStateKey(executeContext.getStateInstanceKey(),name));
         }
         if (obj == null) {
             return null;
@@ -59,7 +60,7 @@ public class StateManager {
         int i = 0;
         for(String key : this.state.keySet()){
             Object value = this.state.get(key);
-            String newKey = makeStateKey(key);
+            String newKey = makeStateKey(executeContext.getStateInstanceKey(),key);
             contractStateStore.put(newKey,value);
             //max size
             if(i < 10){
@@ -73,13 +74,14 @@ public class StateManager {
     /**
      * make key by contract address
      *
+     * @param address
      * @param keyName
      * @return
      */
-    private String makeStateKey(String keyName){
-        if(executeContext == null){
+    public static String makeStateKey(String address,String keyName){
+        if(StringUtils.isEmpty(address)){
             return null;
         }
-        return executeContext.getStateInstanceKey() + "-" + keyName;
+        return address + "-" + keyName;
     }
 }

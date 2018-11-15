@@ -19,7 +19,9 @@ public enum InitPolicyEnum {
     CA_CANCEL("CA_CANCEL", "000009",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"ca cancel"),
     CANCEL_RS("CANCEL_RS", "000010", VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE, "cancel rs"),
     NODE_JOIN("NODE_JOIN", "000011",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"node join"),
-    NODE_LEAVE("NODE_LEAVE", "000012",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"node leave"),;
+    NODE_LEAVE("NODE_LEAVE", "000012",VotePatternEnum.ASYNC,DecisionTypeEnum.FULL_VOTE,"node leave"),
+    CONTRACT_INVOKE("CONTRACT_INVOKE", "000013",VotePatternEnum.SYNC,DecisionTypeEnum.FULL_VOTE, "contract invoke")
+    ;
     private String type;
 
     private String policyId;
