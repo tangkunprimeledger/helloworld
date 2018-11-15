@@ -9,6 +9,7 @@ import com.higgs.trust.slave.dao.rocks.contract.ContractRocksDao;
 import com.higgs.trust.slave.model.bo.contract.Contract;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -62,6 +63,18 @@ public class ContractRepository {
         }
         return BeanConvertor.convertBean(po, Contract.class);
     }
+
+    public boolean isExistedAddress(String address) {
+        if (StringUtils.isBlank(address)) {
+            return false;
+        }
+        Contract contract = queryByAddress(address);
+        if (null == contract) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * query by txId and action index
      *
