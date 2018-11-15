@@ -9,6 +9,7 @@ import com.higgs.trust.slave.dao.rocks.contract.ContractStateRocksDao;
 import com.higgs.trust.slave.model.bo.contract.ContractState;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -85,7 +86,14 @@ public class ContractStateRepository {
 
         ContractState contractState = new ContractState();
         contractState.setAddress(po.getAddress());
-        contractState.setState(JSON.parseObject(po.getState()));
+        if(StringUtils.isNotEmpty(po.getState())){
+            String stateJSON = po.getState();
+            if(stateJSON.startsWith("[")){
+                contractState.setState(JSON.parseArray(po.getState()));
+            }else{
+                contractState.setState(JSON.parseObject(po.getState()));
+            }
+        }
         contractState.setKeyDesc(po.getKeyDesc());
         return contractState;
     }

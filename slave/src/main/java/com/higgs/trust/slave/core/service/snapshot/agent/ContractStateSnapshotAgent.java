@@ -17,7 +17,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * an agent for contract state snapshot
@@ -60,7 +58,7 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     @Override
     public Object query(Object object) {
         ContractStateCacheKey key = (ContractStateCacheKey) object;
-        ContractState state = repository.getState(key.getAddress());
+        ContractState state = repository.getState(makeNewKey(key.getAddress()));
         return state;
     }
 
@@ -98,25 +96,24 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
 
     @Override
     public void put(String key, Object newState) {
-        ContractStateCacheKey cacheKey = new ContractStateCacheKey(key,key);
+        ContractStateCacheKey cacheKey = new ContractStateCacheKey(key);
         ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey);
         if (contractState == null) {
             contractState = new ContractState();
-            contractState.setAddress(cacheKey.getAddress());
+            contractState.setAddress(makeNewKey(key));
             contractState.setState(newState);
-            contractState.setKeyDesc(cacheKey.getKeyDesc());
+            contractState.setKeyDesc(key);
             snapshot.insert(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey, contractState);
         } else {
             contractState.setState(newState);
             snapshot.update(SnapshotBizKeyEnum.CONTRACT_SATE, cacheKey, contractState);
         }
-
         merkleTreeSnapshotAgent.addNode(MerkleTypeEnum.CONTRACT, contractState);
     }
 
     @Override
     public Object get(String key) {
-        ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key,key));
+        ContractState contractState = (ContractState) snapshot.get(SnapshotBizKeyEnum.CONTRACT_SATE, new ContractStateCacheKey(key));
         if (contractState == null) {
             return new HashMap<String,Object>();
         }
@@ -133,24 +130,13 @@ public class ContractStateSnapshotAgent implements CacheLoader, ContractStateSto
     @AllArgsConstructor
     public static class ContractStateCacheKey extends BaseBO {
         private String address;
-        private String keyDesc;
-        /**
-         * get address for key
-         * @return
-         */
-        public String getAddress(){
-            if(StringUtils.isEmpty(address)){
-                return address;
-            }
-            return makeNewKey(address);
-        }
-        /**
-         * make new key by md5
-         * @param key
-         * @return
-         */
-        private String makeNewKey(String key){
-            return MD5.encode(key);
-        }
+    }
+    /**
+     * make new key by md5
+     * @param key
+     * @return
+     */
+    private String makeNewKey(String key){
+        return MD5.encode(key);
     }
 }

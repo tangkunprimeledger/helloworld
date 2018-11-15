@@ -11,7 +11,7 @@
 
     <!-- contract table all fields -->
     <sql id="baseColumnList">
-        id,address,update_time,state
+        id,address,update_time,state,key_desc
     </sql>
 
     <!-- batch insert -->
