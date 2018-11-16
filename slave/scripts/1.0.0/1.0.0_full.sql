@@ -173,7 +173,7 @@ IF NOT EXISTS `contract` (
 	`action_index` INT NOT NULL COMMENT 'the index create action',
 	`language` VARCHAR (32) NOT NULL COMMENT 'contract code language',
   `version` VARCHAR(5) NOT NULL COMMENT  '',
-	`code` NVARCHAR (8192) NOT NULL COMMENT 'contract code',
+	`code` TEXT NOT NULL COMMENT 'contract code',
 	`create_time` DATETIME (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_address` (`address`),
