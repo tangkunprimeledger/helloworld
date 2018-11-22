@@ -172,7 +172,7 @@ public class ContractServiceImpl implements ContractService {
                 }
             }
         }
-        com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, false);
+        com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
         return respData.isSuccess() ? RespData.success(respData.getData()) : RespData.error(respData.getRespCode(), respData.getMsg(), respData.getData());
     }
 
