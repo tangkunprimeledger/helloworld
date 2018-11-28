@@ -14,6 +14,7 @@
         <module>rs</module>
         <module>consensus</module>
         <module>contract</module>
+        <module>evmcontract</module>
         <module>tester</module>
         <module>registry</module>
         <module>config</module>
