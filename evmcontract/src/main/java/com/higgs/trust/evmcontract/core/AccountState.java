@@ -128,7 +128,7 @@ public class AccountState {
         return rlpEncoded;
     }
 //TODO
-//    public boolean isContractExist(BlockchainConfig blockchainConfig) {
+//    public boolean isContractExist(BlockChainConfig blockchainConfig) {
 //        return !FastByteComparisons.equal(codeHash, EMPTY_DATA_HASH) ||
 //                !blockchainConfig.getConstants().getInitialNonce().equals(nonce);
 //    }

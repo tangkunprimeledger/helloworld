@@ -94,7 +94,7 @@ public class ProgramInvokeFactoryImpl implements ProgramInvokeFactory {
         /*** GASLIMIT op ***/
         byte[] gaslimit = null;//block.getGasLimit();
 
-        if (VM.DEBUG && logger.isInfoEnabled()) {
+        if ( logger.isInfoEnabled()) {
             logger.info("Top level call: \n" +
                             "tx.hash={}\n" +
                             "address={}\n" +
@@ -161,7 +161,7 @@ public class ProgramInvokeFactoryImpl implements ProgramInvokeFactory {
         DataWord difficulty = program.getDifficulty();
         DataWord gasLimit = program.getGasLimit();
 
-        if (VM.DEBUG && logger.isInfoEnabled()) {
+        if ( logger.isInfoEnabled()) {
             logger.info("Internal call: \n" +
                             "address={}\n" +
                             "origin={}\n" +

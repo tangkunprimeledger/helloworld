@@ -27,7 +27,7 @@ import com.higgs.trust.evmcontract.vm.program.Program;
  * <p>
  * Created by Anton Nashatyrev on 25.02.2016.
  */
-public interface BlockchainConfig {
+public interface BlockChainConfig {
 
     /**
      * Get blockchain constants

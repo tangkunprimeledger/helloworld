@@ -86,7 +86,7 @@ public class SystemProperties {
         return true;
     }
 
-    public BlockchainConfig getBlockchainConfig() {
+    public BlockChainConfig getBlockchainConfig() {
         return new ByzantiumConfig();
     }
 
