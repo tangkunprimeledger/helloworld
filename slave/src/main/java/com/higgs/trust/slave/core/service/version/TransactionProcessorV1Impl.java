@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.version;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -106,6 +107,10 @@ import java.util.*;
 
             //execute action
             actionHandler.process(transactionData.parseActionData());
+
+            // TODO 处理结果
+            //ContractExecutionResult.getCurrentResult()
+            //ContractExecutionResult.clearCurrentResult();
         }
     }
 
