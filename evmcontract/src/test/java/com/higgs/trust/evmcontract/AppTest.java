@@ -25,13 +25,25 @@ public class AppTest
     @Test
     public void testList() {
 
-        List list = new ArrayList<>();
+//        List list = new ArrayList<>();
+//
+//        list.add(BigInteger.valueOf(20L));
+//        list.add("1111");
+//
+//        list.add("2222".getBytes());
+//        System.out.println(list);
 
-        list.add(BigInteger.valueOf(20L));
-        list.add("1111");
+        String str = null;
+        StringBuilder sb = new StringBuilder();
+        method(str,sb);
 
-        list.add("2222".getBytes());
-        System.out.println(list);
+        System.out.println(str);
+        System.out.println("sb"+sb.toString());
+    }
 
+    public void method(String str,StringBuilder sb){
+        str += "xxxxxxxxxxx";
+        sb = new StringBuilder();
+        sb.append("xxxxxxxxxxx");
     }
 }

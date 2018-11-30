@@ -18,6 +18,9 @@ import java.util.Set;
  * @date 2018-11-15
  */
 public class ContractExecutionResult {
+
+    private static final ThreadLocal<ContractExecutionResult> currentResult = new ThreadLocal<>();
+
     /**
      * Address list of accounts participating in the contract execution.
      */
@@ -120,4 +123,28 @@ public class ContractExecutionResult {
     @Getter
     @Setter
     private long timeCost;
+
+
+    /**
+     * Set the result to ThreadLocal
+     * @param result
+     */
+    public static void setCurrentResult(ContractExecutionResult result) {
+        currentResult.set(result);
+    }
+
+    /**
+     * Get result from ThreadLocal
+     * @return
+     */
+    public static ContractExecutionResult getCurrentResult() {
+        return currentResult.get();
+    }
+
+    /**
+     * Clear result on ThreadLocal
+     */
+    public static void clearCurrentResult() {
+        currentResult.remove();
+    }
 }

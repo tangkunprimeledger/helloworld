@@ -17,7 +17,7 @@
  */
 package com.higgs.trust.evmcontract.vm;
 
-import com.higgs.trust.evmcontract.config.BlockchainConfig;
+import com.higgs.trust.evmcontract.config.BlockChainConfig;
 import com.higgs.trust.evmcontract.crypto.ECKey;
 import com.higgs.trust.evmcontract.crypto.HashUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -68,7 +68,7 @@ public class PrecompiledContracts {
         return addressList;
     }
 
-    public static PrecompiledContract getContractForAddress(DataWord address, BlockchainConfig config) {
+    public static PrecompiledContract getContractForAddress(DataWord address, BlockChainConfig config) {
 
         if (address == null) {
             return identity;

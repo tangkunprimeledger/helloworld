@@ -28,7 +28,7 @@ public interface BlockchainNetConfig {
     /**
      * Get the config for the specific block
      */
-    BlockchainConfig getConfigForBlock(long blockNumber);
+    BlockChainConfig getConfigForBlock(long blockNumber);
 
     /**
      * Returns the constants common for all the blocks in this blockchain

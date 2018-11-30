@@ -17,7 +17,7 @@
  */
 package com.higgs.trust.evmcontract.vm.program;
 
-import com.higgs.trust.evmcontract.config.BlockchainConfig;
+import com.higgs.trust.evmcontract.config.BlockChainConfig;
 import com.higgs.trust.evmcontract.config.SystemProperties;
 import com.higgs.trust.evmcontract.core.AccountState;
 import com.higgs.trust.evmcontract.core.Repository;
@@ -111,7 +111,7 @@ public class Program {
 
     private final SystemProperties config;
 
-    private final BlockchainConfig blockchainConfig;
+    private final BlockChainConfig blockchainConfig;
 
     public Program(byte[] ops, ProgramInvoke programInvoke) {
         this(ops, programInvoke, null);
@@ -382,7 +382,7 @@ public class Program {
         byte[] obtainer = obtainerAddress.getLast20Bytes();
         BigInteger balance = getStorage().getBalance(owner);
 
-        if (VM.DEBUG && logger.isInfoEnabled()) {
+        if ( logger.isInfoEnabled()) {
             logger.info("Transfer to: [{}] heritage: [{}]",
                     toHexString(obtainer),
                     balance);
@@ -424,7 +424,7 @@ public class Program {
         // [1] FETCH THE CODE FROM THE MEMORY
         byte[] programCode = memoryChunk(memStart.intValue(), memSize.intValue());
 
-        if (VM.DEBUG &&logger.isInfoEnabled()) {
+        if (logger.isInfoEnabled()) {
             logger.info("creating a new contract inside contract executeContract: [{}]", toHexString(senderAddress));
         }
 
@@ -538,7 +538,7 @@ public class Program {
         long refundGas = gasLimit.longValue() - result.getGasUsed();
         if (refundGas > 0) {
             refundGas(refundGas, "remain gas from the internal call");
-            if (VM.DEBUG && logger.isInfoEnabled()) {
+            if (logger.isInfoEnabled()) {
                 logger.info("The remaining gas is refunded, account: [{}], gas: [{}] ",
                         toHexString(getOwnerAddress().getLast20Bytes()),
                         refundGas);
@@ -571,7 +571,7 @@ public class Program {
         byte[] senderAddress = getOwnerAddress().getLast20Bytes();
         byte[] contextAddress = msg.getType().callIsStateless() ? senderAddress : codeAddress;
 
-        if (VM.DEBUG && logger.isInfoEnabled()) {
+        if ( logger.isInfoEnabled()) {
             logger.info(msg.getType().name() + " for existing contract: address: [{}], outDataOffs: [{}], outDataSize: [{}]  ",
                     toHexString(contextAddress), msg.getOutDataOffs().longValue(), msg.getOutDataSize().longValue());
         }
@@ -683,7 +683,7 @@ public class Program {
     }
 
     public void spendGas(long gasValue, String cause) {
-        if (VM.DEBUG && logger.isDebugEnabled()) {
+        if ( logger.isDebugEnabled()) {
             logger.debug("[{}] Spent for cause: [{}], gas: [{}]", invoke.hashCode(), cause, gasValue);
         }
 
@@ -818,7 +818,7 @@ public class Program {
         return invoke.getNumber().clone();
     }
 
-    public BlockchainConfig getBlockchainConfig() {
+    public BlockChainConfig getBlockchainConfig() {
         return blockchainConfig;
     }
 

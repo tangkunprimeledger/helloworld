@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @date 2018-09-08
  */
 @Component
-public class ByzantiumConfig implements BlockchainConfig {
+public class ByzantiumConfig implements BlockChainConfig {
 
     private static final GasCost GAS_COST = new GasCost();
 
