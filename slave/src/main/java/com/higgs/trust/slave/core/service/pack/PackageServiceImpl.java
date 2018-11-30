@@ -20,6 +20,7 @@ import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.repository.RsNodeRepository;
@@ -38,6 +39,7 @@ import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
+import com.netflix.discovery.converters.Auto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +73,7 @@ import java.util.stream.Collectors;
     @Autowired private PendingTxRepository pendingTxRepository;
     @Autowired private NodeState nodeState;
     @Autowired private InitConfig initConfig;
+    @Autowired private Blockchain blockchain;
 
     /**
      * create new package from pending transactions
@@ -246,6 +249,7 @@ import java.util.stream.Collectors;
         Profiler.start("[PackageService.process.monitor]size:" + txs.size());
         try {
             //snapshot transactions should be init
+            blockchain.startExecuteBlock();
             snapshotService.clear();
 
             Profiler.enter("[execute txs]");
@@ -293,6 +297,8 @@ import java.util.stream.Collectors;
             for (SignedTransaction signedTx : txs) {
                 AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
             }
+            blockchain.setLastBlockHeader(dbHeader);
+            blockchain.finishExecuteBlock();
         } catch (Throwable e) {
             //snapshot transactions should be destroy
             snapshotService.destroy();
@@ -323,6 +329,7 @@ import java.util.stream.Collectors;
         List<SignedTransaction> persistedDatas = new ArrayList<>();
         Map<String, TransactionReceipt> txReceipts = new HashMap<>(txs.size());
         //loop validate each transaction
+
         for (SignedTransaction tx : txs) {
             String title = new StringBuffer("[execute tx ").append(tx.getCoreTx().getTxId()).append("]").toString();
             Profiler.enter(title);
