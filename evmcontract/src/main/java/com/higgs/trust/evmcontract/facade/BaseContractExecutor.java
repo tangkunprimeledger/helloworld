@@ -135,7 +135,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
      * Check environment in which contract is executed. Throws exception
      * if any parameter is illegal or inappropriate.
      */
-    private void check() {
+    protected void check() {
         checkBlockRepository();
         checkTransactionRepository();
         checkContractRepository();
@@ -188,7 +188,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         }
     }
 
-    private void checkSenderAccount() {
+    protected void checkSenderAccount() {
         checkSenderAddress();
 
         if (Objects.isNull(contractRepository.getAccountState(senderAddress))) {
@@ -196,7 +196,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         }
     }
 
-    private void checkNonce() {
+    protected void checkNonce() {
         if (ArrayUtils.isEmpty(nonce)) {
             throw new ContractContextException("Nonce cannot be empty");
         }
