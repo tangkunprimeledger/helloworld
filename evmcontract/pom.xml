@@ -12,7 +12,19 @@
     <groupId>com.higgs.trust</groupId>
     <artifactId>evmcontract</artifactId>
 
+    <repositories>
+        <repository>
+            <id>ethereum.repository</id>
+            <url>https://dl.bintray.com/ethereum/maven/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>org.ethereum</groupId>
+            <artifactId>solcJ-all</artifactId>
+            <version>0.4.24</version>
+        </dependency>
 
         <!-- logger -->
         <dependency>

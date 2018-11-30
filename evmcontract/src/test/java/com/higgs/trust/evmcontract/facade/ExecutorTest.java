@@ -673,8 +673,8 @@ public class ExecutorTest {
         assertEquals("05792f204d45f061a5b68847534b428a127ae583", Hex.toHexString((byte[]) invocation.args[1]));
         assertEquals(56, ((BigInteger) invocation.args[2]).intValue());
 
-        assertEquals("6080604052600080fd00a165627a7a723058209adf98f1a08289b12e493333601cbc0318b7294e44b47b59ccba15ba" +
-                "0ffc0e140029", Hex.toHexString(result.getResult()));
+        assertEquals("6080604052600080fd00a165627a7a723058207ed1cf4ff17e07eb0fdbf21f0531f91a15a818de46ff9bd268058826" +
+                "1c02ed7d0029", Hex.toHexString(result.getResult()));
         assertEquals(0, result.getDeleteAccounts().size());
         assertEquals(0, result.getInternalTransactions().size());
         assertNull(result.getException());
@@ -904,7 +904,7 @@ public class ExecutorTest {
         return  (byte[]) list.get(0);
     }
 
-    @Test(timeout = 1000L)
+    @Test(timeout = 2000L)
     public void testExecute_CreateContract_011() throws IOException {
         deployCreateCreate();
         byte[] newContract = getNewContract();

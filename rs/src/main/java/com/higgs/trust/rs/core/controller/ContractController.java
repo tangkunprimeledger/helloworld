@@ -94,6 +94,12 @@ import org.springframework.web.bind.annotation.*;
         return ok(result);
     }
 
+    @PostMapping(path = "/inquire")
+    public RespData<Object> inquire(@RequestBody ContractQueryRequest request) {
+        Object result = contractService.query(request);
+        return ok(result);
+    }
+
     @GetMapping(path = "/list")
     public RespData<PageVO<ContractVO>> queryList(@RequestParam Long height, @RequestParam(required = false) String txId,
                                                   @RequestParam Integer pageIndex, @RequestParam Integer pageSize) {
