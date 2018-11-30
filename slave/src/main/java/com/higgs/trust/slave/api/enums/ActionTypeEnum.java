@@ -26,7 +26,11 @@ public enum ActionTypeEnum {
     CA_UPDATE("CA_UPDATE", "ca update"),
     NODE_JOIN("NODE_JOIN", "node join"),
     NODE_LEAVE("NODE_LEAVE", "node leave"),
-    RS_CANCEL("RS_CANCEL", "cancel rs"),;
+    RS_CANCEL("RS_CANCEL", "cancel rs"),
+    CONTRACT_CREATION("CONTRACT_CREATION", "creation contract"),
+    CONTRACT_INVOKED("CONTRACT_INVOKED", "invoked contract"),
+
+    ;
 
     String code;
     String desc;

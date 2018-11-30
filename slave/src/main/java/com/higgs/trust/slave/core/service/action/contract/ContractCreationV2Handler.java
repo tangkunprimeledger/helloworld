@@ -1,38 +1,27 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
-import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.evmcontract.db.BlockStore;
 import com.higgs.trust.evmcontract.facade.*;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
-import com.higgs.trust.slave.core.service.snapshot.agent.ContractSnapshotAgent;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
-import com.higgs.trust.slave.model.bo.contract.Contract;
-import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.util.Date;
 
 /**
  * create contract handler
  * @author tangkun
  */
 @Slf4j @Component public class ContractCreationV2Handler implements ActionHandler {
-
-    @Autowired private ContractSnapshotAgent snapshotAgent;
-    @Autowired private StandardSmartContract smartContract;
 
     private byte[] getHexHash(byte[] data) {
         if (null == data) {
@@ -78,9 +67,9 @@ import java.util.Date;
     }
 
     @Override public void verifyParams(Action action) throws SlaveException {
-        ContractCreationAction creationAction = (ContractCreationAction) action;
+        ContractCreationV2Action creationAction = (ContractCreationV2Action) action;
         if (creationAction == null) {
-            log.error("[ContractCreation] convert action to ContractCreationAction is error");
+            log.error("[ContractCreation] convert action to ContractCreationV2Action is error");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (StringUtils.isEmpty(creationAction.getCode())) {
@@ -93,10 +82,10 @@ import java.util.Date;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, "language is empty");
         }
 
-        if (!"javascript".equals(creationAction.getLanguage())) {
-            log.error("[ContractCreation] language is error: {}", creationAction.getLanguage());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("language is error: %s", creationAction.getLanguage()));
-        }
+//        if (!"javascript".equals(creationAction.getLanguage())) {
+//            log.error("[ContractCreation] language is error: {}", creationAction.getLanguage());
+//            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("language is error: %s", creationAction.getLanguage()));
+//        }
     }
 
     @Override public void process(ActionData actionData) {
