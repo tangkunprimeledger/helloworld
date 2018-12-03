@@ -10,6 +10,7 @@ IF NOT EXISTS `currency_info` (
 	`currency` VARCHAR (24) NOT NULL COMMENT 'currency',
 	`remark` VARCHAR (64) DEFAULT NULL COMMENT 'remark',
 	`homomorphicPk` TEXT DEFAULT NULL COMMENT 'homomorphicPk',
+	`contract_address` VARCHAR (64) DEFAULT NULL COMMENT 'contract address',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_currency` (`currency`)

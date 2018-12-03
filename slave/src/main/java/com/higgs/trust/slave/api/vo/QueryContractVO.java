@@ -18,7 +18,6 @@ public class QueryContractVO extends BaseBO {
     /**
      * block height
      */
-    @NotNull
     private Long height;
 
     /**

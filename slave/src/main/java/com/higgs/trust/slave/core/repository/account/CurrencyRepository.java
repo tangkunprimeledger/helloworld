@@ -70,12 +70,13 @@ import java.util.List;
      * @param remark
      * @return
      */
-    public CurrencyInfo buildCurrencyInfo(String currency, String remark,String homomorphicPk) {
+    public CurrencyInfo buildCurrencyInfo(String currency, String remark,String homomorphicPk, String contractAddress) {
         CurrencyInfo currencyInfo = new CurrencyInfo();
         currencyInfo.setCurrency(currency);
         currencyInfo.setRemark(remark);
         currencyInfo.setCreateTime(new Date());
         currencyInfo.setHomomorphicPk(homomorphicPk);
+        currencyInfo.setContractAddress(contractAddress);
         return currencyInfo;
     }
 
