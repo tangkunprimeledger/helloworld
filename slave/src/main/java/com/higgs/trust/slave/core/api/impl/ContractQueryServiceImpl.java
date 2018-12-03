@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author duhongming
@@ -19,7 +20,7 @@ import java.util.List;
 @Service
 public class ContractQueryServiceImpl implements ContractQueryService {
     private static final int CONTRACT_ADDRESS_LENGTH = 20;
-    private static final String CONTRACT_ADDRESS_PATTERN = "^0x[0-9a-zA-Z]{40}";
+    private static final Pattern PATTERN = Pattern.compile("^0x[0-9a-zA-Z]{40}$");
 
     @Autowired
     private StandardSmartContract standardSmartContract;
@@ -38,7 +39,7 @@ public class ContractQueryServiceImpl implements ContractQueryService {
                     String.format("Contract address length must be %d bytes", CONTRACT_ADDRESS_LENGTH));
         }
 
-        if (Hex.toHexString(contractAddress).matches(CONTRACT_ADDRESS_PATTERN)) {
+        if (PATTERN.matcher(Hex.toHexString(contractAddress)).matches()) {
             throw new IllegalArgumentException("Contract address is incorrect");
         }
 
