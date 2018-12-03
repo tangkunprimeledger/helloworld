@@ -42,14 +42,15 @@ public class RequestServiceImpl implements RequestService {
     /**
      * insert request
      * when return null is  inserted.
+     *
      * @param requestId
      * @param respCode
      * @param respMsg
      * @return
      */
     @Override
-    public RespData<?> insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg) {
-        return requestRepository.insertRequest(requestId, requestEnum, respCode, respMsg);
+    public void insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg) {
+        requestRepository.insertRequest(requestId, requestEnum, respCode, respMsg);
     }
 
     /**

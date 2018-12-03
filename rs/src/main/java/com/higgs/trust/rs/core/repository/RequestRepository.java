@@ -78,22 +78,20 @@ public class RequestRepository {
      *
      * @param
      */
-    public RespData<?> insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg) {
-        RespData<?> respData = null;
+    public void insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg) {
         RequestPO requestPO = buildRequestPO(requestId, requestEnum, respCode, respMsg);
         try {
             //for mysql
             if (rsConfig.isUseMySQL()) {
                 requestDao.add(requestPO);
-                return null;
+                return;
             }
             //for rocks DB
             requestRocksDao.save(requestPO);
         } catch (DuplicateKeyException e) {
             log.error("Request for requestId : {} is idempotent", requestId);
-            respData = requestIdempotent(requestId);
+            throw e;
         }
-        return respData;
     }
 
 

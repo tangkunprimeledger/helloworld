@@ -34,17 +34,16 @@ public interface RequestService {
      * @param respMsg
      * @return
      */
-    RespData<?> insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg);
+    void insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg);
 
     /**
-     *
      * @param requestId
      * @param respCode
      * @param respMsg
      */
-    void updateRespData(String requestId,String respCode, String respMsg);
+    void updateRespData(String requestId, String respCode, String respMsg);
+
     /**
-     *
      * @param requestId
      * @param fromStatus
      * @param toStatus
