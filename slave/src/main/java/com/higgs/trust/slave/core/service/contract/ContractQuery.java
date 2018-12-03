@@ -3,10 +3,12 @@ package com.higgs.trust.slave.core.service.contract;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.evmcontract.core.Repository;
+import com.higgs.trust.evmcontract.crypto.HashUtil;
 import com.higgs.trust.evmcontract.db.BlockStore;
 import com.higgs.trust.evmcontract.facade.*;
 import com.higgs.trust.evmcontract.facade.compile.ContractInvocation;
 import com.higgs.trust.evmcontract.vm.DataWord;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +23,7 @@ import java.util.List;
 @Service
 public class ContractQuery {
     @Autowired
-    BlockStore blockStore;
-    @Autowired
-    Repository blockRepository;
-    @Autowired
-    BlockService blockService;
+    Blockchain blockchain;
     @Autowired
     NodeState nodeState;
 
@@ -50,17 +48,20 @@ public class ContractQuery {
     private ContractExecutionContext buildContractExecutionContext(byte[] receiverAddress, byte[] data) {
         ContractTypeEnum contractType = ContractTypeEnum.CUSTOMER_CONTRACT_QUERYING;
         byte[] nonce = new DataWord(0).getData();
-        byte[] senderAddress = Hex.decode(nodeState.getNodeName());
-        byte[] transactionHash = Hex.decode("0x10000000" + nodeState.getNodeName() + System.currentTimeMillis());
+        // every one can query, even if no account exists.
+        byte[] senderAddress = null;
+        byte[] nodeNameBytes = nodeState.getNodeName().getBytes();
+        byte[] transactionHash = Hex.decode("0x10000000" + Hex.toHexString(nodeNameBytes) + System.currentTimeMillis());
         byte[] value = new DataWord(0).getData();
-        long number = blockService.getMaxHeight();
-        byte[] parentHash = Hex.decode(blockService.getHeader(number).getBlockHash());
-        byte[] minerAddress = Hex.decode(nodeState.getNodeName());
-        long timestamp = blockService.getHeader(number).getBlockTime();
+
+        long number = blockchain.getLastBlockHeader().getHeight();
+        byte[] parentHash = Hex.decode(blockchain.getLastBlockHeader().getPreviousHash());
+        byte[] minerAddress = HashUtil.calcNewAddr(nodeNameBytes, nonce);
+        long timestamp = blockchain.getLastBlockHeader().getBlockTime();
 
         return new ContractExecutionContext(contractType, transactionHash,nonce,
         senderAddress, receiverAddress, value, data,
         parentHash, minerAddress, timestamp, number,
-        blockStore, blockRepository);
+        blockchain.getBlockStore(), blockchain.getRepository());
     }
 }

@@ -33,6 +33,9 @@ public class CustomerContractQueryingExecutor extends BaseContractExecutor {
     }
 
     @Override
+    protected void checkSenderAddress() {}
+
+    @Override
     protected void checkSenderAccount() {}
 
     @Override

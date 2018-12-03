@@ -182,7 +182,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         }
     }
 
-    private void checkSenderAddress() {
+    protected void checkSenderAddress() {
         if (ArrayUtils.isEmpty(senderAddress)) {
             throw new ContractContextException("Sender address cannot be empty");
         }
