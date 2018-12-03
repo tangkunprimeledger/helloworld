@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
-import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author duhongming

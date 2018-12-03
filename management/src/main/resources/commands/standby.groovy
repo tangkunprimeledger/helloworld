@@ -3,11 +3,8 @@ package commands
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
 import com.higgs.trust.management.failover.service.StandbyService
-import com.higgs.trust.network.NetworkManage
 import lombok.extern.slf4j.Slf4j
-import org.crsh.cli.Argument
 import org.crsh.cli.Command
-import org.crsh.cli.Required
 import org.crsh.cli.Usage
 import org.crsh.command.InvocationContext
 import org.springframework.beans.factory.BeanFactory

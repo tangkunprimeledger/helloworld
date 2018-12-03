@@ -5,8 +5,6 @@ import com.higgs.trust.rs.common.enums.RequestEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
-
 /**
  * @description: com.higgs.trust.rs.core.api
  * @author: lingchao

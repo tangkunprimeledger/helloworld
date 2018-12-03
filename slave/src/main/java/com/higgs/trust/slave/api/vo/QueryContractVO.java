@@ -4,8 +4,6 @@ import com.higgs.trust.slave.model.bo.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * @author tangfashuang
  * @date 2018/05/12

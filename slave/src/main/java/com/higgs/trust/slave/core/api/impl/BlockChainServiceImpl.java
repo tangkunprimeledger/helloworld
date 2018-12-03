@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.api.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.constant.Constant;
-import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
@@ -27,8 +26,6 @@ import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.bo.action.Action;
-import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
 import com.higgs.trust.slave.model.bo.contract.ContractState;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;

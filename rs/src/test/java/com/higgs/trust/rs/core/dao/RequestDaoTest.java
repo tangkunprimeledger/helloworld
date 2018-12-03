@@ -6,8 +6,6 @@ import com.higgs.trust.rs.core.dao.po.RequestPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
-
 /**
  * @description: com.higgs.trust.rs.core.dao
  * @author: lingchao

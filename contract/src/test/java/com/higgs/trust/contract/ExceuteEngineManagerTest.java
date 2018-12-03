@@ -8,7 +8,6 @@ import com.higgs.trust.contract.mock.ShareContextSerivce;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 
 public class ExceuteEngineManagerTest extends BaseTest {
@@ -80,7 +79,7 @@ public class ExceuteEngineManagerTest extends BaseTest {
 
     @Test public void testAward() {
         ExecuteEngineManager manager = getExceuteEngineManager();
-        String code = loadCodeFromResourceFile("file:/Users/liuyu/IdeaProjects/trust-integration/trust-integration/src/main/resources/award.js");
+        String code = loadCodeFromResourceFile("file:/Users/liuyu/IdeaProjects/trust-gsp/trust-gsp/src/main/resources/award.js");
         ExecuteContextData contextData = newContextData().put("admin", new Person("zhangs", 30));
         ExecuteContext.newContext(contextData).setStateInstanceKey("0xddkdkadJAkdkdkkdkdd");
         ExecuteEngine engine =manager.getExecuteEngine(code, "javascript");
