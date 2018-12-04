@@ -28,6 +28,8 @@ public final class ContractExecutorFactory
                 return new ContractCreationExecutor(contractExecutionContext);
             case CUSTOMER_CONTRACT_INVOCATION:
                 return new CustomerContractInvocationExecutor(contractExecutionContext);
+            case CUSTOMER_CONTRACT_QUERYING:
+                return new CustomerContractQueryingExecutor(contractExecutionContext);
             case PRECOMPILED_CONTRACT_INVOCATION:
                 return new PrecompiledContractInvocationExecutor(contractExecutionContext);
             case ASSET_TRANSFER:

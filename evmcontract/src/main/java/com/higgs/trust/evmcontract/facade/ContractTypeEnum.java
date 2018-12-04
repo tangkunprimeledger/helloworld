@@ -19,6 +19,11 @@ public enum ContractTypeEnum {
     CUSTOMER_CONTRACT_INVOCATION,
 
     /**
+     * Customer contract invocation, for contract querying.
+     */
+    CUSTOMER_CONTRACT_QUERYING,
+
+    /**
      * Precompiled contract invocation.
      */
     PRECOMPILED_CONTRACT_INVOCATION,

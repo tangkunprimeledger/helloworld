@@ -5,6 +5,9 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.evmcontract.core.Repository;
+import com.higgs.trust.evmcontract.datasource.rocksdb.RocksDbDataSource;
+import com.higgs.trust.evmcontract.db.RepositoryRoot;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -219,5 +222,11 @@ public class InitConfig {
         return Redisson.create(config);
     }
 
+    @Bean
+    public Repository defaultRepository() {
+        RocksDbDataSource rocksDbDataSource = new RocksDbDataSource("StateDB");
+        rocksDbDataSource.init();
+        return new RepositoryRoot(rocksDbDataSource, null);
+    }
 
 }

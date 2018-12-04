@@ -18,12 +18,12 @@ public interface ContractQueryService {
     Object query(String address, String methodName, Object... args);
 
     /**
-     * 查询合约
+     * Queries contract.
      *
-     * @param contractAddress
-     * @param methodSignature
-     * @param args
-     * @return
+     * @param contractAddress contract address
+     * @param methodSignature method signature written with target language
+     * @param args            actual parameters
+     * @return result returned by contract invocation
      */
     List<?> query(byte[] contractAddress, String methodSignature, Object... args);
 }
