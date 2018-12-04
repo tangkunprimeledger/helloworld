@@ -75,8 +75,6 @@ public class ContractInvokeV2Handler implements ActionHandler {
         ContractInvokeV2Action invokeAction = (ContractInvokeV2Action) actionData.getCurrentAction();
         this.checkParams(invokeAction);
 
-        ExecutorFactory executorFactory = new ContractExecutorFactory();
-
         Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
         String parentBlockHash = actionData.getCurrentBlock().getBlockHeader().getPreviousHash();
         String senderAddress = actionData.getCurrentTransaction().getCoreTx().getSender();
@@ -102,6 +100,9 @@ public class ContractInvokeV2Handler implements ActionHandler {
                 new byte[]{},
                 timestamp,
                 blockHeight);
+
+        ContractExecutorFactory executorFactory = new ContractExecutorFactory();
+
         Executor<ContractExecutionResult> executor = executorFactory.createExecutor(contractExecutionContext);
         ContractExecutionResult result = executor.execute();
         ContractExecutionResult.setCurrentResult(result);
