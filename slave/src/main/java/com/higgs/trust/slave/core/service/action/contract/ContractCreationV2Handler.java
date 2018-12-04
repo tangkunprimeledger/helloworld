@@ -115,6 +115,7 @@ import java.security.MessageDigest;
         String address = generateAddress(blockHeight, sender, txId, creationAction);
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
         long number = actionData.getCurrentBlock().getBlockHeader().getHeight();
+
         ContractExecutionContext contractExecutionContext =new ContractExecutionContext(
                 ContractTypeEnum.CONTRACT_CREATION,
                 txId.getBytes(),
