@@ -13,10 +13,7 @@ import com.higgs.trust.slave.core.service.action.account.*;
 import com.higgs.trust.slave.core.service.action.ca.CaAuthHandler;
 import com.higgs.trust.slave.core.service.action.ca.CaCancelHandler;
 import com.higgs.trust.slave.core.service.action.ca.CaUpdateHandler;
-import com.higgs.trust.slave.core.service.action.contract.AccountContractBindingHandler;
-import com.higgs.trust.slave.core.service.action.contract.ContractCreationHandler;
-import com.higgs.trust.slave.core.service.action.contract.ContractInvokeHandler;
-import com.higgs.trust.slave.core.service.action.contract.ContractStateMigrationHandler;
+import com.higgs.trust.slave.core.service.action.contract.*;
 import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityActionHandler;
 import com.higgs.trust.slave.core.service.action.manage.CancelRsHandler;
 import com.higgs.trust.slave.core.service.action.manage.RegisterPolicyHandler;
@@ -34,8 +31,6 @@ import com.higgs.trust.slave.model.bo.account.AccountTradeInfo;
 import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
-import com.higgs.trust.slave.model.bo.context.CommonData;
-import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.TransactionData;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
@@ -53,40 +48,71 @@ import java.util.*;
  * @desc transaction processor V1
  * @date 2018/3/28 18:01
  */
-@Slf4j @Component public class TransactionProcessorV1Impl implements TransactionProcessor, InitializingBean {
+@Slf4j
+@Component
+public class TransactionProcessorV1Impl implements TransactionProcessor, InitializingBean {
 
-    @Autowired TxProcessorHolder txProcessorHolder;
+    @Autowired
+    TxProcessorHolder txProcessorHolder;
 
-    @Autowired private OpenAccountHandler openAccountHandler;
-    @Autowired private AccountOperationHandler accountOperationHandler;
-    @Autowired private AccountFreezeHandler accountFreezeHandler;
-    @Autowired private AccountUnFreezeHandler accountUnFreezeHandler;
-    @Autowired private UTXOActionHandler utxoActionHandler;
-    @Autowired private RegisterRsHandler registerRsHandler;
-    @Autowired private RegisterPolicyHandler registerPolicyHandler;
-    @Autowired private IssueCurrencyHandler issueCurrencyHandler;
-    @Autowired private DataIdentityActionHandler dataIdentityActionHandler;
-    @Autowired private ContractCreationHandler contractCreationHandler;
-    @Autowired private ContractInvokeHandler contractInvokeHandler;
-    @Autowired private ContractStateMigrationHandler contractStateMigrationHandler;
-    @Autowired private AccountContractBindingHandler accountContractBindingHandler;
-    @Autowired private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
-    @Autowired private StandardSmartContract standardSmartContract;
-    @Autowired private CaAuthHandler caAuthHandler;
-    @Autowired private CaCancelHandler caCancelHandler;
-    @Autowired private CaUpdateHandler caUpdateHandler;
-    @Autowired private CancelRsHandler cancelRsHandler;
-    @Autowired private NodeJoinHandler nodeJoinHandler;
-    @Autowired private NodeLeaveHandler nodeLeaveHandler;
+    @Autowired
+    private OpenAccountHandler openAccountHandler;
+    @Autowired
+    private AccountOperationHandler accountOperationHandler;
+    @Autowired
+    private AccountFreezeHandler accountFreezeHandler;
+    @Autowired
+    private AccountUnFreezeHandler accountUnFreezeHandler;
+    @Autowired
+    private UTXOActionHandler utxoActionHandler;
+    @Autowired
+    private RegisterRsHandler registerRsHandler;
+    @Autowired
+    private RegisterPolicyHandler registerPolicyHandler;
+    @Autowired
+    private IssueCurrencyHandler issueCurrencyHandler;
+    @Autowired
+    private DataIdentityActionHandler dataIdentityActionHandler;
+    @Autowired
+    private ContractCreationHandler contractCreationHandler;
+    @Autowired
+    private ContractInvokeHandler contractInvokeHandler;
+    @Autowired
+    private ContractStateMigrationHandler contractStateMigrationHandler;
+    @Autowired
+    private AccountContractBindingHandler accountContractBindingHandler;
+    @Autowired
+    private AccountContractBindingSnapshotAgent accountContractBindingSnapshotAgent;
+    @Autowired
+    private StandardSmartContract standardSmartContract;
+    @Autowired
+    private CaAuthHandler caAuthHandler;
+    @Autowired
+    private CaCancelHandler caCancelHandler;
+    @Autowired
+    private CaUpdateHandler caUpdateHandler;
+    @Autowired
+    private CancelRsHandler cancelRsHandler;
+    @Autowired
+    private NodeJoinHandler nodeJoinHandler;
+    @Autowired
+    private NodeLeaveHandler nodeLeaveHandler;
+    @Autowired
+    private ContractInvokeV2Handler contractInvokeV2Handler;
+    @Autowired
+    private ContractCreationV2Handler contractCreationV2Handler;
 
-    @Autowired private Blockchain blockchain;
+    @Autowired
+    private Blockchain blockchain;
 
 
-    @Override public void afterPropertiesSet() throws Exception {
+    @Override
+    public void afterPropertiesSet() throws Exception {
         txProcessorHolder.registVerisonProcessor(VersionEnum.V1, this);
     }
 
-    @Override public void process(TransactionData transactionData) {
+    @Override
+    public void process(TransactionData transactionData) {
         boolean hashEvmContract = false;
         CoreTransaction coreTx = transactionData.getCurrentTransaction().getCoreTx();
         log.debug("[process]coreTx:{}", coreTx);
@@ -96,7 +122,8 @@ import java.util.*;
         }
         //sort by index
         Collections.sort(actionList, new Comparator<Action>() {
-            @Override public int compare(Action o1, Action o2) {
+            @Override
+            public int compare(Action o1, Action o2) {
                 return o1.getIndex() > o2.getIndex() ? 1 : -1;
             }
         });
@@ -137,11 +164,12 @@ import java.util.*;
      * @param typeEnum
      * @return
      */
-    @Override public ActionHandler getHandlerByType(ActionTypeEnum typeEnum) {
+    @Override
+    public ActionHandler getHandlerByType(ActionTypeEnum typeEnum) {
         if (null == typeEnum) {
             log.error("[getHandlerByType] action type is null");
             throw new SlaveException(SlaveErrorEnum.SLAVE_ACTION_NOT_EXISTS_EXCEPTION,
-                "[getHandlerByType] action type is null");
+                    "[getHandlerByType] action type is null");
         }
         switch (typeEnum) {
             case OPEN_ACCOUNT:
@@ -182,26 +210,30 @@ import java.util.*;
                 return nodeJoinHandler;
             case NODE_LEAVE:
                 return nodeLeaveHandler;
+            case CONTRACT_INVOKED:
+                return contractInvokeV2Handler;
+            case CONTRACT_CREATION:
+                return contractCreationV2Handler;
             default:
         }
         log.error("[getHandlerByType] action type not exist exception, actionType={}", JSON.toJSONString(typeEnum));
         throw new SlaveException(SlaveErrorEnum.SLAVE_ACTION_NOT_EXISTS_EXCEPTION,
-            "[getHandlerByType] action type not exist exception");
+                "[getHandlerByType] action type not exist exception");
     }
 
     private void exeContract(Action action, ActionData actionData) {
         List<String> accountNos = new ArrayList<>();
         switch (action.getType()) {
             case FREEZE:
-                AccountFreeze accountFreeze = (AccountFreeze)action;
+                AccountFreeze accountFreeze = (AccountFreeze) action;
                 accountNos.add(accountFreeze.getAccountNo());
                 break;
             case UNFREEZE:
-                AccountUnFreeze accountUnFreeze = (AccountUnFreeze)action;
+                AccountUnFreeze accountUnFreeze = (AccountUnFreeze) action;
                 accountNos.add(accountUnFreeze.getAccountNo());
                 break;
             case ACCOUNTING:
-                AccountOperation accountOperation = (AccountOperation)action;
+                AccountOperation accountOperation = (AccountOperation) action;
                 List<AccountTradeInfo> debitTradeInfo = accountOperation.getDebitTradeInfo();
                 Map<String, Object> map = new HashMap<>();
                 if (!CollectionUtils.isEmpty(debitTradeInfo)) {

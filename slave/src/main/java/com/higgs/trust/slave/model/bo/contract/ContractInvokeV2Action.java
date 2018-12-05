@@ -27,7 +27,7 @@ public class ContractInvokeV2Action extends Action {
      */
     private BigDecimal value;
     /**
-     * 调用方法签名
+     * 调用方法签名(方法名+参数列表+返回值，例如：(uint) balanceOf(address))
      */
-    private String method;
+    private String methodSignature;
 }
