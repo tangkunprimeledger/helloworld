@@ -1,17 +1,15 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.contract.ExecuteContextData;
+import com.higgs.trust.evmcontract.db.BlockStore;
 import com.higgs.trust.evmcontract.facade.*;
-import com.higgs.trust.evmcontract.solidity.Abi;
+import com.higgs.trust.evmcontract.facade.compile.ContractInvocation;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
-import com.higgs.trust.slave.core.service.contract.StandardExecuteContextData;
-import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
-import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +25,12 @@ import java.math.BigDecimal;
 @Slf4j
 @Component
 public class ContractInvokeV2Handler implements ActionHandler {
+
+    @Autowired
+    private BlockStore blockStore;
+
+    @Autowired
+    private Repository blockRepository;
 
     private void processCustomerContractInvocation(ActionData actionData) {
         if (!(actionData.getCurrentAction() instanceof ContractInvokeV2Action)) {
@@ -44,10 +48,8 @@ public class ContractInvokeV2Handler implements ActionHandler {
         long nonce = invokeAction.getNonce();
         BigDecimal value = invokeAction.getValue();
 
-        //方法签名（包含返回类型，传入实参列表）
-        String callContract = invokeAction.getMethodSignature();
-        Abi.Function func = Abi.Function.of(callContract);
-        byte[] invokeFuncData = func.encode();
+        ContractInvocation contractInvocation = new ContractInvocation();
+        byte[] invokeFuncData = contractInvocation.getBytecodeForInvokeContract(invokeAction.getMethodSignature(), invokeAction.getArgs());
 
         ContractExecutionContext contractExecutionContext = buildContractExecutionContext(ContractTypeEnum.CUSTOMER_CONTRACT_INVOCATION,
                 txId.getBytes(),
@@ -73,12 +75,12 @@ public class ContractInvokeV2Handler implements ActionHandler {
             byte[] receiverAddress, byte[] value, byte[] data, byte[] parentHash, byte[] minerAddress,
             long timestamp, long number) {
         return new ContractExecutionContext(contractType, transactionHash, nonce, senderAddress, receiverAddress,
-                value, data, parentHash, minerAddress, timestamp, number, null, null);
+                value, data, parentHash, minerAddress, timestamp, number, blockStore, blockRepository);
     }
 
     @Override
     public void verifyParams(Action action) throws SlaveException {
-        ContractInvokeV2Action invokeAction = (ContractInvokeV2Action)action;
+        ContractInvokeV2Action invokeAction = (ContractInvokeV2Action) action;
         if (StringUtils.isEmpty(invokeAction.getAddress())) {
             log.error("invokeContract validate: address is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
@@ -88,7 +90,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        if (StringUtils.isEmpty(invokeAction.getMethodSignature())){
+        if (StringUtils.isEmpty(invokeAction.getMethodSignature())) {
             log.error("invokeContract validate: method is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
