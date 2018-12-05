@@ -37,6 +37,8 @@ public class SystemProperties {
         return CONFIG;
     }
 
+    private String databaseDir = null;
+
 
     public String vmTraceDir() {
 //        return System.getProperty("vm.structured.dir");
@@ -59,8 +61,13 @@ public class SystemProperties {
     }
 
     public String databaseDir() {
-//        return System.getProperty("database.dir");
-        return "db";
+        if (this.databaseDir != null) {
+            return this.databaseDir;
+        }
+
+        String dir = System.getProperty("database.dir");
+        this.databaseDir = StringUtils.isNotEmpty(dir) ? dir : "db";
+        return this.databaseDir ;
     }
 
     public boolean playVM() {

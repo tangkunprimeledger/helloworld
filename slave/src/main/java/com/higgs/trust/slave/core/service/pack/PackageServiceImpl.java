@@ -75,6 +75,8 @@ import java.util.stream.Collectors;
     @Autowired private InitConfig initConfig;
     @Autowired private Blockchain blockchain;
 
+    private boolean hashEvmContractTx;
+
     /**
      * create new package from pending transactions
      *
@@ -235,6 +237,7 @@ import java.util.stream.Collectors;
      * @param isBatchSync
      */
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
+        blockchain.init();
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (txs == null) {
@@ -257,6 +260,7 @@ import java.util.stream.Collectors;
             Map<String, TransactionReceipt> txReceiptMap = executeTransactions(packContext);
             Profiler.release();
 
+            blockchain.getRepositorySnapshot().commit();
             Profiler.enter("[build block header]");
             //build a new block hash from db datas
             BlockHeader dbHeader = blockService.buildHeader(packContext, txReceiptMap);
@@ -297,8 +301,7 @@ import java.util.stream.Collectors;
             for (SignedTransaction signedTx : txs) {
                 AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
             }
-            blockchain.setLastBlockHeader(dbHeader);
-            blockchain.finishExecuteBlock();
+            blockchain.finishExecuteBlock(dbHeader);
         } catch (Throwable e) {
             //snapshot transactions should be destroy
             snapshotService.destroy();

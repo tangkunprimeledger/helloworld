@@ -1,11 +1,13 @@
 package com.higgs.trust.slave.core.service.version;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.evmcontract.core.TransactionResultInfo;
 import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.action.account.*;
 import com.higgs.trust.slave.core.service.action.ca.CaAuthHandler;
@@ -32,8 +34,12 @@ import com.higgs.trust.slave.model.bo.account.AccountTradeInfo;
 import com.higgs.trust.slave.model.bo.account.AccountUnFreeze;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
+import com.higgs.trust.slave.model.bo.context.CommonData;
+import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.TransactionData;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
+import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
+import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -73,12 +79,15 @@ import java.util.*;
     @Autowired private NodeJoinHandler nodeJoinHandler;
     @Autowired private NodeLeaveHandler nodeLeaveHandler;
 
+    @Autowired private Blockchain blockchain;
+
 
     @Override public void afterPropertiesSet() throws Exception {
         txProcessorHolder.registVerisonProcessor(VersionEnum.V1, this);
     }
 
     @Override public void process(TransactionData transactionData) {
+        boolean hashEvmContract = false;
         CoreTransaction coreTx = transactionData.getCurrentTransaction().getCoreTx();
         log.debug("[process]coreTx:{}", coreTx);
         List<Action> actionList = coreTx.getActionList();
@@ -93,6 +102,9 @@ import java.util.*;
         });
         //for each
         for (Action action : actionList) {
+            if (action instanceof ContractCreationV2Action || action instanceof ContractInvokeV2Action) {
+                hashEvmContract = true;
+            }
             //set current action
             transactionData.setCurrentAction(action);
 
@@ -107,10 +119,15 @@ import java.util.*;
 
             //execute action
             actionHandler.process(transactionData.parseActionData());
+        }
 
-            // TODO 处理结果
-            //ContractExecutionResult.getCurrentResult()
-            //ContractExecutionResult.clearCurrentResult();
+        // TODO 处理结果
+        ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
+        ContractExecutionResult.clearCurrentResult();
+        if (executionResult != null) {
+            long height = transactionData.getCurrentPackage().getHeight();
+            blockchain.putResultInfo(new TransactionResultInfo(height, coreTx.getTxId().getBytes(), 1,
+                    executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult()));
         }
     }
 

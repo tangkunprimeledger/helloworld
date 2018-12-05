@@ -59,6 +59,11 @@ public class RocksDbDataSource implements DbSource<byte[]> {
         logger.debug("New RocksDbDataSource: " + name);
     }
 
+    public RocksDbDataSource(String name, SystemProperties config) {
+        this(name);
+        this.config = config;
+    }
+
     @Override
     public void setName(String name) {
         this.name = name;

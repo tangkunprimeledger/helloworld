@@ -2,12 +2,15 @@ package com.higgs.trust.slave.core.service.transaction;
 
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.contract.SmartContractException;
+import com.higgs.trust.evmcontract.core.Repository;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.MerkleException;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.version.TransactionProcessor;
 import com.higgs.trust.slave.core.service.version.TxProcessorHolder;
@@ -27,14 +30,20 @@ import java.util.Map;
  * @date 2018/3/27 14:54
  */
 @Slf4j @Component public class TransactionExecutorImpl implements TransactionExecutor {
+
+    private static final String CREATE_CONTRACT_CODE = TxTypeEnum.CREATECONTRACT.getCode();
+    private static final String INVOKE_CONTRACT_CODE = TxTypeEnum.INVOKECONTRACT.getCode();
+
     @Autowired TxProcessorHolder processorHolder;
     @Autowired TxCheckHandler txCheckHandler;
     @Autowired SnapshotService snapshot;
     @Autowired InitConfig initConfig;
+    @Autowired private Blockchain blockchain;
 
     @Override public TransactionReceipt process(TransactionData transactionData, Map<String, String> rsPubKeyMap) {
         log.debug("[TransactionExecutorImpl.persist] is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
+        Repository txTrack = blockchain.getRepositorySnapshot().startTracking();
 
         TransactionReceipt receipt = new TransactionReceipt();
         receipt.setTxId(tx.getCoreTx().getTxId());
@@ -44,11 +53,13 @@ import java.util.Map;
             //execute persist
             execute(transactionData, rsPubKeyMap);
             //snapshot transactions should be commit
+            txTrack.commit();
             snapshot.commit();
             receipt.setResult(true);
         } catch (SmartContractException e) {
             log.error("[TransactionExecutorImpl.persist] has SmartContractException", e);
             //snapshot transactions should be rollback
+            txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
         } catch (SnapshotException e) {
@@ -62,11 +73,13 @@ import java.util.Map;
         } catch (SlaveException e) {
             log.error("[TransactionExecutorImpl.persist] has error", e);
             //snapshot transactions should be rollback
+            txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(e.getCode().getCode());
         } catch (Throwable e) {
             log.error("[TransactionExecutorImpl.persist] has error", e);
             //snapshot transactions should be rollback
+            txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
         }
