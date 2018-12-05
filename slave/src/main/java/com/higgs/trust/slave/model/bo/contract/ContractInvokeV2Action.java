@@ -30,4 +30,7 @@ public class ContractInvokeV2Action extends Action {
      * 调用方法签名(方法名+参数列表+返回值，例如：(uint) balanceOf(address))
      */
     private String methodSignature;
+
+    /**智能合约调用传入参数列表*/
+    private Object[] args;
 }
