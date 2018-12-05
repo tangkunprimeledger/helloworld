@@ -5,12 +5,14 @@ import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -22,6 +24,9 @@ import java.security.MessageDigest;
  * @author tangkun
  */
 @Slf4j @Component public class ContractCreationV2Handler implements ActionHandler {
+
+    @Autowired
+    private Blockchain blockchain;
 
     private byte[] getHexHash(byte[] data) {
         if (null == data) {
@@ -90,22 +95,7 @@ import java.security.MessageDigest;
 
     @Override public void process(ActionData actionData) {
 
-
         ExecutorFactory executorFactory = new ContractExecutorFactory();
-//        public ContractExecutionContext(
-// ContractTypeEnum contractType,
-// byte[] transactionHash,
-// byte[] nonce,
-//        byte[] senderAddress,
-// byte[] receiverAddress,
-// byte[] value,
-// byte[] data,
-//        byte[] parentHash,
-// byte[] minerAddress,
-// long timestamp,
-// long number,
-//        BlockStore blockStore,
-// Repository blockRepository)
         ContractCreationV2Action creationAction = getAndCheckAction(actionData);
 
         Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
@@ -115,21 +105,27 @@ import java.security.MessageDigest;
         String address = generateAddress(blockHeight, sender, txId, creationAction);
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
         long number = actionData.getCurrentBlock().getBlockHeader().getHeight();
-
+        byte[] nonce = new BigInteger("0").toByteArray();
+        byte[] senderAddress = "".getBytes();
+        byte[] receiverAddress = new byte[]{};
+        byte[] value = new BigInteger("0").toByteArray();
+        byte[] data = creationAction.getCode().getBytes();
+        byte[] parentHash = parentBlockHash.getBytes();
+        byte[] minerAddress = new byte[]{};
         ContractExecutionContext contractExecutionContext =new ContractExecutionContext(
                 ContractTypeEnum.CONTRACT_CREATION,
                 txId.getBytes(),
-                new BigInteger("0").toByteArray(),
-                new byte[]{},
-                new byte[]{},
-                new byte[]{},
-                creationAction.getCode().getBytes(),
-                parentBlockHash.getBytes(),
-                new byte[]{},
+                nonce,
+                senderAddress,
+                receiverAddress,
+                value,
+                data,
+                parentHash,
+                minerAddress,
                 timestamp,
                 number,
-                null,
-                null
+                blockchain.getBlockStore(),
+                blockchain.getRepository()
                 );
         Executor<ContractExecutionResult> executor = executorFactory.createExecutor(contractExecutionContext);
         ContractExecutionResult result = executor.execute();
