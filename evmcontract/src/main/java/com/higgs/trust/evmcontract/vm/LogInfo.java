@@ -32,11 +32,15 @@ import static com.higgs.trust.evmcontract.datasource.MemSizeEstimator.ByteArrayE
 import static com.higgs.trust.evmcontract.util.ByteUtil.toHexString;
 
 /**
- * @author Roman Mandeleil
- * @since 19.11.2014
+ * @author tangkun
+ * @date 2018-12-05
  */
 public class LogInfo {
 
+    public static final MemSizeEstimator<LogInfo> MemEstimator = log ->
+            ByteArrayEstimator.estimateSize(log.address) +
+                    ByteArrayEstimator.estimateSize(log.data) +
+                    log.topics.size() * DataWord.MEM_SIZE + 16;
     byte[] address = new byte[]{};
     List<DataWord> topics = new ArrayList<>();
     byte[] data = new byte[]{};
@@ -77,7 +81,9 @@ public class LogInfo {
         return data;
     }
 
-    /*  [address, [topic, topic ...] data] */
+    /**
+     * [address, [topic, topic ...] data]
+     */
     public byte[] getEncoded() {
 
         byte[] addressEncoded = RLP.encodeElement(this.address);
@@ -125,9 +131,4 @@ public class LogInfo {
                 ", data=" + toHexString(data) +
                 '}';
     }
-
-    public static final MemSizeEstimator<LogInfo> MemEstimator = log ->
-            ByteArrayEstimator.estimateSize(log.address) +
-                    ByteArrayEstimator.estimateSize(log.data) +
-                    log.topics.size() * DataWord.MEM_SIZE + 16;
 }
