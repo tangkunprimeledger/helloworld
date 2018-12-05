@@ -28,52 +28,12 @@ import java.math.BigDecimal;
 @Component
 public class ContractInvokeV2Handler implements ActionHandler {
 
-    @Autowired
-    private StandardSmartContract smartContract;
-
-    private void check(ContractInvokeAction action) {
-        if (StringUtils.isEmpty(action.getAddress())) {
-            log.error("invokeContract validate: address is empty");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-        if (action.getAddress().length() > 64) {
-            log.error("invokeContract validate: address is too long");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-    }
-
-    private void checkParams(ContractInvokeV2Action action) {
-        if (StringUtils.isEmpty(action.getAddress())) {
-            log.error("invokeContract validate: address is empty");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-        if (action.getAddress().length() > 64) {
-            log.error("invokeContract validate: address is too long");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-
-        if (StringUtils.isEmpty(action.getMethod())){
-            log.error("invokeContract validate: method is empty");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
-        }
-    }
-
-    private void processInternal(ActionData actionData) {
-        if (!(actionData.getCurrentAction() instanceof ContractInvokeAction)) {
-            throw new IllegalArgumentException("action need a type of ContractInvokeAction");
-        }
-        ContractInvokeAction invokeAction = (ContractInvokeAction) actionData.getCurrentAction();
-        this.check(invokeAction);
-        ExecuteContextData data = new StandardExecuteContextData().setAction(actionData);
-        smartContract.execute(invokeAction.getAddress(), data, invokeAction.getArgs());
-    }
-
     private void processCustomerContractInvocation(ActionData actionData) {
         if (!(actionData.getCurrentAction() instanceof ContractInvokeV2Action)) {
             throw new IllegalArgumentException("action need a type of ContractInvokeV2Action");
         }
         ContractInvokeV2Action invokeAction = (ContractInvokeV2Action) actionData.getCurrentAction();
-        this.checkParams(invokeAction);
+        this.verifyParams(invokeAction);
 
         Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
         String parentBlockHash = actionData.getCurrentBlock().getBlockHeader().getPreviousHash();
@@ -118,8 +78,20 @@ public class ContractInvokeV2Handler implements ActionHandler {
 
     @Override
     public void verifyParams(Action action) throws SlaveException {
-        ContractInvokeAction invokeAction = (ContractInvokeAction) action;
-        check(invokeAction);
+        ContractInvokeV2Action invokeAction = (ContractInvokeV2Action)action;
+        if (StringUtils.isEmpty(invokeAction.getAddress())) {
+            log.error("invokeContract validate: address is empty");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if (invokeAction.getAddress().length() > 64) {
+            log.error("invokeContract validate: address is too long");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        if (StringUtils.isEmpty(invokeAction.getMethod())){
+            log.error("invokeContract validate: method is empty");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
     }
 
     @Override
