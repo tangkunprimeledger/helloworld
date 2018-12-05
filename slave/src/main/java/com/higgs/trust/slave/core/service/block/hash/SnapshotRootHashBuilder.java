@@ -3,12 +3,14 @@ package com.higgs.trust.slave.core.service.block.hash;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.model.bo.StateRootHash;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,7 @@ import java.util.Map;
 @Component @Slf4j public class SnapshotRootHashBuilder {
     @Autowired MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
     @Autowired TxRootHashBuilder txRootHashBuilder;
+    @Autowired Blockchain blockchain;
 
     /**
      * build root hash for block header
@@ -56,6 +59,7 @@ import java.util.Map;
         stateRootHash.setPolicyRootHash(policyRootHash);
         stateRootHash.setRsRootHash(rsRootHash);
         stateRootHash.setCaRootHash(caRootHash);
+        stateRootHash.setStateRoot(Hex.toHexString(blockchain.getRepositorySnapshot().getRoot()));
         return stateRootHash;
     }
 }

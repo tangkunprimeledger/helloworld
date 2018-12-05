@@ -6,6 +6,7 @@ import com.google.common.hash.Hashing;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.hash.SnapshotRootHashBuilder;
 import com.higgs.trust.slave.model.bo.Block;
@@ -29,6 +30,7 @@ import java.util.Map;
 @Slf4j @Component public class BlockServiceImpl implements BlockService {
     @Autowired private BlockRepository blockRepository;
     @Autowired SnapshotRootHashBuilder snapshotRootHashBuilder;
+    @Autowired private Blockchain blockchain;
 
     @Override public Long getMaxHeight() {
         return blockRepository.getMaxHeight();
@@ -183,6 +185,7 @@ import java.util.Map;
         builder.append(function.hashString(getSafety(stateRootHash.getPolicyRootHash()), Charsets.UTF_8));
         builder.append(function.hashString(getSafety(stateRootHash.getRsRootHash()), Charsets.UTF_8));
         builder.append(function.hashString(getSafety(stateRootHash.getCaRootHash()), Charsets.UTF_8));
+        builder.append(function.hashString(getSafety(stateRootHash.getStateRoot()), Charsets.UTF_8));
         String hash = function.hashString(builder.toString(), Charsets.UTF_8).toString();
         return hash;
     }

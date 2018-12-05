@@ -2,12 +2,14 @@ package com.higgs.trust.evmcontract.facade;
 
 import com.higgs.trust.evmcontract.core.Bloom;
 import com.higgs.trust.evmcontract.util.ByteArraySet;
+import com.higgs.trust.evmcontract.util.RLP;
 import com.higgs.trust.evmcontract.vm.DataWord;
 import com.higgs.trust.evmcontract.vm.LogInfo;
 import com.higgs.trust.evmcontract.vm.program.InternalTransaction;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -123,6 +125,24 @@ public class ContractExecutionResult {
     @Getter
     @Setter
     private long timeCost;
+
+    public byte[] getReceiptTrieEncoded() {
+        byte[] bloomRLP = RLP.encodeElement(this.bloomFilter.getData());
+        final byte[] logInfoListRLP;
+        if (logInfoList != null) {
+            byte[][] logInfoListE = new byte[logInfoList.size()][];
+
+            int i = 0;
+            for (LogInfo logInfo : logInfoList) {
+                logInfoListE[i] = logInfo.getEncoded();
+                ++i;
+            }
+            logInfoListRLP = RLP.encodeList(logInfoListE);
+        } else {
+            logInfoListRLP = RLP.encodeList();
+        }
+        return RLP.encodeList(RLP.encodeElement(value), bloomRLP, logInfoListRLP, RLP.encodeElement(result));
+    }
 
 
     /**

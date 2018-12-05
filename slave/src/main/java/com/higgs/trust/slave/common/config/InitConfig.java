@@ -5,7 +5,9 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.evmcontract.config.SystemProperties;
 import com.higgs.trust.evmcontract.core.Repository;
+import com.higgs.trust.evmcontract.datasource.DbSource;
 import com.higgs.trust.evmcontract.datasource.rocksdb.RocksDbDataSource;
 import com.higgs.trust.evmcontract.db.RepositoryRoot;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
@@ -62,6 +64,9 @@ public class InitConfig {
     private boolean mockRS;
     @Value("${trust.utxo.display:2}")
     private int DISPLAY;
+
+    @Value("${trust.rocksdb.file.root:/data/home/admin/trust/rocks/}")
+    private String dbFileRoot;
 
 
     @Bean(name = "txRequired")
@@ -223,10 +228,23 @@ public class InitConfig {
     }
 
     @Bean
-    public Repository defaultRepository() {
-        RocksDbDataSource rocksDbDataSource = new RocksDbDataSource("StateDB");
+    public DbSource<byte[]> defaultKeyValueDbSource() {
+        RocksDbDataSource rocksDbDataSource = new RocksDbDataSource("StateDB", defaultSystemProperties());
         rocksDbDataSource.init();
-        return new RepositoryRoot(rocksDbDataSource, null);
+        return rocksDbDataSource;
+    }
+
+    @Bean
+    public Repository defaultRepository() {
+        DbSource<byte[]> db = defaultKeyValueDbSource();
+        return new RepositoryRoot(db, null);
+    }
+
+    @Bean
+    public SystemProperties defaultSystemProperties() {
+        System.setProperty("database.dir", dbFileRoot);
+        SystemProperties properties = new SystemProperties();
+        return properties;
     }
 
 }

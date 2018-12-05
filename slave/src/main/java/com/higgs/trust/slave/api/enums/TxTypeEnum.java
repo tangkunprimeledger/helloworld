@@ -6,6 +6,7 @@ package com.higgs.trust.slave.api.enums;
  * @date 2018/09/04 17:26
  */
 public enum TxTypeEnum {
+
     DEFAULT("DEFAULT", "default type"),
     RS("RS", "rs register or cancel"),
     POLICY("POLICY", "policy register"),
@@ -13,6 +14,9 @@ public enum TxTypeEnum {
     NODE("NODE", "node join or leave"),
     UTXO("UTXO", "utxo issue or destroy"),
     CONTRACT("CONTRACT", "contract issue or destroy"),
+
+    CREATECONTRACT("CREATECONTRACT", "create contract"),
+    INVOKECONTRACT("INVOKECONTRACT", "InvokeContract")
     ;
 
     String code;
