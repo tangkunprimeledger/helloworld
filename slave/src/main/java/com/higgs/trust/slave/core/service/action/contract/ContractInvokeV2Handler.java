@@ -45,7 +45,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
         BigDecimal value = invokeAction.getValue();
 
         //方法签名（包含返回类型，传入实参列表）
-        String callContract = invokeAction.getMethod();
+        String callContract = invokeAction.getMethodSignature();
         Abi.Function func = Abi.Function.of(callContract);
         byte[] invokeFuncData = func.encode();
 
@@ -88,7 +88,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
 
-        if (StringUtils.isEmpty(invokeAction.getMethod())){
+        if (StringUtils.isEmpty(invokeAction.getMethodSignature())){
             log.error("invokeContract validate: method is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
