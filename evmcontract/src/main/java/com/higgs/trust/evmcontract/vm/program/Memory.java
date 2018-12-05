@@ -1,20 +1,3 @@
-/*
- * Copyright (c) [2016] [ <ether.camp> ]
- * This file is part of the ethereumJ library.
- *
- * The ethereumJ library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The ethereumJ library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with the ethereumJ library. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.higgs.trust.evmcontract.vm.program;
 
 import com.higgs.trust.evmcontract.util.ByteUtil;
@@ -29,6 +12,12 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 
+/**
+ * store the data of the memory operation code execution process
+ *
+ * @author tangkun
+ * @date 2018-12-05
+ */
 public class Memory implements ProgramListenerAware {
 
     private static final int CHUNK_SIZE = 1024;
@@ -153,7 +142,12 @@ public class Memory implements ProgramListenerAware {
         return new DataWord(read(address, 32));
     }
 
-    // just access expecting all data valid
+    /**
+     * just access expecting all data valid
+     *
+     * @param address memory offset
+     * @return read data
+     */
     public byte readByte(int address) {
 
         int chunkIndex = address / CHUNK_SIZE;
