@@ -30,6 +30,12 @@ import java.nio.ByteOrder;
 import static com.higgs.trust.evmcontract.util.ByteUtil.toHexString;
 import static org.apache.commons.lang3.ArrayUtils.*;
 
+/**
+ * when opcode is call
+ *
+ * @author tangkun
+ * @date 2018-12-05
+ */
 public class InternalTransaction extends Transaction {
 
     private byte[] parentHash;
@@ -59,10 +65,28 @@ public class InternalTransaction extends Transaction {
         return (gasPrice == null) ? ByteUtil.EMPTY_BYTE_ARRAY : gasPrice.getData();
     }
 
+    private static byte[] intToBytes(int value) {
+        return ByteBuffer.allocate(Integer.SIZE / Byte.SIZE)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(value)
+                .array();
+    }
+
+    private static int bytesToInt(byte[] bytes) {
+        return isEmpty(bytes) ? 0 : ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getInt();
+    }
+
+    private static byte[] encodeInt(int value) {
+        return RLP.encodeElement(intToBytes(value));
+    }
+
+    private static int decodeInt(byte[] encoded) {
+        return bytesToInt(encoded);
+    }
+
     public void reject() {
         this.rejected = true;
     }
-
 
     public int getDeep() {
         rlpParse();
@@ -148,26 +172,6 @@ public class InternalTransaction extends Transaction {
         this.rejected = decodeInt(transaction.get(11).getRLPData()) == 1;
 
         this.parsed = true;
-    }
-
-
-    private static byte[] intToBytes(int value) {
-        return ByteBuffer.allocate(Integer.SIZE / Byte.SIZE)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .putInt(value)
-                .array();
-    }
-
-    private static int bytesToInt(byte[] bytes) {
-        return isEmpty(bytes) ? 0 : ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getInt();
-    }
-
-    private static byte[] encodeInt(int value) {
-        return RLP.encodeElement(intToBytes(value));
-    }
-
-    private static int decodeInt(byte[] encoded) {
-        return bytesToInt(encoded);
     }
 
     @Override

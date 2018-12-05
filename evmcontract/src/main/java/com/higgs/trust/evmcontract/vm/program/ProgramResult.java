@@ -48,12 +48,18 @@ public class ProgramResult {
     private List<LogInfo> logInfoList;
     private long futureRefund = 0;
 
-    /*
+    /**
      * for testing runs ,
      * call/create is not executed
      * but dummy recorded
      */
     private List<CallCreate> callCreateList;
+
+    public static ProgramResult createEmpty() {
+        ProgramResult result = new ProgramResult();
+        result.setHReturn(EMPTY_BYTE_ARRAY);
+        return result;
+    }
 
     public void spendGas(long gas) {
         gasUsed += gas;
@@ -71,25 +77,25 @@ public class ProgramResult {
         gasUsed -= gas;
     }
 
+    public byte[] getHReturn() {
+        return hReturn;
+    }
+
     public void setHReturn(byte[] hReturn) {
         this.hReturn = hReturn;
 
-    }
-
-    public byte[] getHReturn() {
-        return hReturn;
     }
 
     public RuntimeException getException() {
         return exception;
     }
 
-    public long getGasUsed() {
-        return gasUsed;
-    }
-
     public void setException(RuntimeException exception) {
         this.exception = exception;
+    }
+
+    public long getGasUsed() {
+        return gasUsed;
     }
 
     public Set<DataWord> getDeleteAccounts() {
@@ -195,11 +201,5 @@ public class ProgramResult {
             addFutureRefund(another.getFutureRefund());
             addTouchAccounts(another.getTouchedAccounts());
         }
-    }
-
-    public static ProgramResult createEmpty() {
-        ProgramResult result = new ProgramResult();
-        result.setHReturn(EMPTY_BYTE_ARRAY);
-        return result;
     }
 }
