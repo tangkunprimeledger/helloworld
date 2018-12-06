@@ -32,6 +32,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * store the data of the contract  execution process
+ *
+ * @author tangkun
+ * @date 2018-12-05
+ */
 public class Storage implements Repository, ProgramListenerAware {
 
     private final Repository repository;

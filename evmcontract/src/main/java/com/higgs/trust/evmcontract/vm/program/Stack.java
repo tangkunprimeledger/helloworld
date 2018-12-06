@@ -21,6 +21,12 @@ import com.higgs.trust.evmcontract.vm.DataWord;
 import com.higgs.trust.evmcontract.vm.program.listener.ProgramListener;
 import com.higgs.trust.evmcontract.vm.program.listener.ProgramListenerAware;
 
+/**
+ * store the data of the operation code execution process
+ *
+ * @author tangkun
+ * @date 2018-12-05
+ */
 public class Stack extends java.util.Stack<DataWord> implements ProgramListenerAware {
 
     private ProgramListener programListener;
