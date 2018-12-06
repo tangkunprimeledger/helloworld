@@ -39,7 +39,6 @@ import com.higgs.trust.slave.model.bo.context.PackageData;
 import com.higgs.trust.slave.model.bo.manage.RsPubKey;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
-import com.netflix.discovery.converters.Auto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

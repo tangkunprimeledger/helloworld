@@ -40,6 +40,7 @@ import org.spongycastle.math.ec.FixedPointCombMultiplier;
 import org.spongycastle.math.ec.FixedPointUtil;
 import org.spongycastle.math.ec.custom.sec.SecP256K1Curve;
 import org.spongycastle.util.encoders.Base64;
+import org.spongycastle.util.encoders.Hex;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -623,7 +624,7 @@ import static com.google.common.base.Preconditions.*;
      * @return
      */
     public static boolean verify(String message, String signature, String pubkey) {
-        ECKey ecKey = ECKey.fromPublicOnly(Base64Util.decryptBASE64(pubkey));
+        ECKey ecKey = ECKey.fromPublicOnly(Hex.decode(pubkey));
         try {
             ecKey.verifyMessage(message, signature);
             return true;

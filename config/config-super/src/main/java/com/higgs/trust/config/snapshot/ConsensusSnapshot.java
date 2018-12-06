@@ -7,7 +7,6 @@ import com.higgs.trust.config.view.ClusterView;
 import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.config.view.LastPackage;
 import com.higgs.trust.consensus.core.IConsensusSnapshot;
-import com.netflix.discovery.converters.Auto;
 import io.atomix.utils.serializer.Namespace;
 import io.atomix.utils.serializer.Namespaces;
 import io.atomix.utils.serializer.Serializer;

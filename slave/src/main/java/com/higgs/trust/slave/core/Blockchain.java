@@ -18,6 +18,7 @@ import com.higgs.trust.evmcontract.vm.LogInfo;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
+import org.apache.commons.lang3.StringUtils;
 import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -97,8 +98,13 @@ public class Blockchain {
     }
 
     public synchronized void startExecuteBlock() {
+        String root = lastBlockHeader.getStateRootHash().getStateRoot();
         receipts = new ArrayList<>();
-        repositorySnapshot = repository.getSnapshotTo(Hex.decode(lastBlockHeader.getStateRootHash().getStateRoot()));
+        if (StringUtils.isNotEmpty(root)) {
+            repositorySnapshot = repository.getSnapshotTo(Hex.decode(lastBlockHeader.getStateRootHash().getStateRoot()));
+        } else {
+            repositorySnapshot = repository.getSnapshotTo(null);
+        }
     }
 
     public synchronized void finishExecuteBlock(BlockHeader blockHeader) {
