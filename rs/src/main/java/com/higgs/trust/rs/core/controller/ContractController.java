@@ -5,6 +5,7 @@ import com.higgs.trust.rs.core.bo.ContractCreateRequest;
 import com.higgs.trust.rs.core.bo.ContractInvokeRequest;
 import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
 import com.higgs.trust.rs.core.bo.ContractQueryRequest;
+import com.higgs.trust.slave.api.ContractQueryService;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author duhongming
@@ -21,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private ContractQueryService contractQueryService;
 
     private <T> RespData<T> ok(T data) {
         RespData<T> respData = new RespData<T>();
@@ -109,5 +114,12 @@ import org.springframework.web.bind.annotation.*;
         } catch (Exception ex) {
             return RespData.error("", ex.getMessage(), null);
         }
+    }
+
+    @RequestMapping(value = "/query", method = RequestMethod.GET)
+    List<?> query(@RequestParam(value = "contractAddress") byte[] contractAddress,
+                  @RequestParam(value = "methodSignature") String methodSignature,
+                  @RequestParam(value = "args") Object... args) {
+        return contractQueryService.query(contractAddress, methodSignature, args);
     }
 }
