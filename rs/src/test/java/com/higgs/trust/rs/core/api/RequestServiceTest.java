@@ -17,8 +17,8 @@ public class RequestServiceTest extends IntegrateBaseTest {
     @Test
     public void test() {
         String requestId = System.currentTimeMillis() + "";
-        System.out.println(requestService.insertRequest(requestId, RequestEnum.PROCESS, "000001", "msg"));
-        System.out.println(requestService.insertRequest(requestId, RequestEnum.PROCESS, "000001", "msg"));
+     //   System.out.println(requestService.insertRequest(requestId, RequestEnum.PROCESS, "000001", "msg"));
+     //   System.out.println(requestService.insertRequest(requestId, RequestEnum.PROCESS, "000001", "msg"));
         System.out.println(requestService.queryByRequestId(requestId));
         System.out.println(requestService.queryByRequestId(requestId+"11"));
         System.out.println(requestService.requestIdempotent(requestId));

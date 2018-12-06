@@ -17,7 +17,7 @@ public class RequestRepositoryTest extends IntegrateBaseTest {
     @Test
     public void test() {
         String requestId = System.currentTimeMillis() + "";
-        System.out.println("add:" + requestRepository.insertRequest(requestId, RequestEnum.PROCESS, "000001", "msg"));
+     //   System.out.println("add:" + requestRepository.insertRequest(requestId, RequestEnum.PROCESS, "000001", "msg"));
         System.out.println("query: " + requestRepository.queryByRequestId(requestId));
         System.out.println("requestIdempotent:" + requestRepository.requestIdempotent(requestId));
         System.out.println("query: " + requestRepository.queryByRequestId(requestId + "-"));
