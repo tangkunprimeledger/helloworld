@@ -1,28 +1,11 @@
 {
   "runMode": "prod",
-  "TRUST": {
-    "ribbon": {
-      "NFLoadBalancerRuleClassName": "com.higgs.trust.common.feign.RequestHeaderRoundRobinRule"
-    }
-  },
   "copycat": {
     "server": {
       "address": "127.0.0.1:8800",
       "cluster": "127.0.0.1:8800",
       "client": "127.0.0.1:8800",
       "logDir": "./data/copycat"
-    }
-  },
-  "eureka": {
-    "client": {
-      "enabled": true,
-      "registry-fetch-interval-seconds": 20,
-      "serviceUrl": {
-        "defaultZone": "http://localhost:8761/eureka/"
-      }
-    },
-    "instance": {
-      "preferIpAddress": true
     }
   },
   "higgs": {

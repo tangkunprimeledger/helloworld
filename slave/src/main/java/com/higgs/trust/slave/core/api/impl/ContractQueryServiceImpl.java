@@ -4,7 +4,7 @@ import com.higgs.trust.slave.api.ContractQueryService;
 import com.higgs.trust.slave.core.service.contract.ContractQuery;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

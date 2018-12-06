@@ -4,6 +4,7 @@ import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
 import com.higgs.trust.common.utils.Base64Util;
 import lombok.extern.slf4j.Slf4j;
+import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
 
@@ -69,7 +70,7 @@ import java.math.BigInteger;
     @Override public String sign(String message, String privateKey) {
         BigInteger priKey = null;
         try {
-            priKey = new BigInteger(Base64Util.decryptBASE64(privateKey));
+            priKey = new BigInteger(Hex.decode(privateKey));
         } catch (Exception e) {
             throw new RuntimeException("ECC sign, decode privateKey error", e);
         }
