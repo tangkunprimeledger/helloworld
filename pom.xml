@@ -310,11 +310,11 @@
                 <artifactId>concurrentlinkedhashmap-lru</artifactId>
                 <version>1.4.2</version>
             </dependency>
-            <dependency>
-                <groupId>org.rocksdb</groupId>
-                <artifactId>rocksdbjni</artifactId>
-                <version>5.14.2</version>
-            </dependency>
+            <!--<dependency>-->
+                <!--<groupId>org.rocksdb</groupId>-->
+                <!--<artifactId>rocksdbjni</artifactId>-->
+                <!--<version>5.14.2</version>-->
+            <!--</dependency>-->
 
             <!--seg-->
             <!--<dependency>-->

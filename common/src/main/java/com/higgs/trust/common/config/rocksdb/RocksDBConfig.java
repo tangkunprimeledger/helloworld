@@ -97,7 +97,8 @@ import java.util.stream.Collectors;
         final DBOptions dbOptions = new DBOptions().setDbPaths(dbPaths).setCreateIfMissing(true).setCreateMissingColumnFamilies(true);
 
         final TransactionDBOptions transactionDBOptions =
-            new TransactionDBOptions().setTransactionLockTimeout(LOCK_TIMEOUT);
+            new TransactionDBOptions();
+        transactionDBOptions.setTransactionLockTimeout(LOCK_TIMEOUT);
         List<ColumnFamilyHandle> columnFamilyHandleList = new ArrayList<>();
         TransactionDB rocksDB = TransactionDB.open(dbOptions, transactionDBOptions, dbFileRoot, columnFamilyDescriptors, columnFamilyHandleList);
 
