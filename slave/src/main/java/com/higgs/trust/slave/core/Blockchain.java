@@ -23,6 +23,7 @@ import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +82,7 @@ public class Blockchain {
         return blockStore;
     }
 
+    @PostConstruct
     public void init() {
         if (initialized) {
             return;
@@ -88,7 +90,7 @@ public class Blockchain {
         init0();
     }
 
-    public synchronized void init0() {
+    private synchronized void init0() {
         if (initialized) {
             return;
         }
