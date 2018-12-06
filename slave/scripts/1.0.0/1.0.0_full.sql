@@ -140,6 +140,7 @@ IF NOT EXISTS `block` (
 	`rs_root_hash` VARCHAR (64) NOT NULL COMMENT 'rs merkle tree root hash',
 	`tx_receipt_root_hash` VARCHAR (64) NOT NULL COMMENT 'tx receipt merkel tree root hash',
 	`ca_root_hash` VARCHAR (64) NOT NULL COMMENT 'ca merkel tree root hash',
+	`state_root_hash` VARCHAR (64)  COMMENT 'state root hash',
 	`block_time` datetime (3) NOT NULL COMMENT 'block time',
 	`tx_num` INT NOT NULL DEFAULT 0 COMMENT 'transaction num',
 	`total_tx_num` BIGINT (20) DEFAULT 0 COMMENT 'total transaction num',
