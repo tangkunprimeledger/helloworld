@@ -20,7 +20,11 @@ import java.util.List;
  * @author duhongming
  * @date 2018/5/14
  */
-@RestController @Slf4j @CrossOrigin @RequestMapping(path = "/contract") public class ContractController {
+@RestController
+@Slf4j
+@CrossOrigin
+@RequestMapping(path = "/contract")
+public class ContractController {
 
     @Autowired
     private ContractService contractService;

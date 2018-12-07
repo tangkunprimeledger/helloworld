@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
  * @desc TODO
  * @date 2018/6/5 17:37
  */
-@RestController @Slf4j public class NodeController {
+@RestController
+@Slf4j
+public class NodeController {
 
-    @Autowired private NodeConsensusService nodeConsensusService;
+    @Autowired
+    private NodeConsensusService nodeConsensusService;
 
     /**
      * auth ca transaction
@@ -25,8 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
      * @param vo
      * @return
      */
-    @RequestMapping(value = "/node/join", method = RequestMethod.POST) RespData<String> nodeJoin(
-        @RequestBody NodeOptVO vo) {
+    @RequestMapping(value = "/node/join", method = RequestMethod.POST)
+    RespData<String> nodeJoin(
+            @RequestBody NodeOptVO vo) {
         return nodeConsensusService.joinConsensusTx(vo);
     }
 

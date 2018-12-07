@@ -19,8 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2018/5/12
  */
 
-@RestController @Slf4j public class VotingController {
-    @Autowired private VoteService voteService;
+@RestController
+@Slf4j
+public class VotingController {
+    @Autowired
+    private VoteService voteService;
 
     /**
      * request voting
@@ -28,16 +31,19 @@ import org.springframework.web.bind.annotation.RestController;
      * @param votingRequest
      * @return
      */
-    @RequestMapping(value = "/voting") VoteReceipt acceptVoting(@RequestBody VotingRequest votingRequest) {
+    @RequestMapping(value = "/voting")
+    VoteReceipt acceptVoting(@RequestBody VotingRequest votingRequest) {
         return voteService.acceptVoting(votingRequest);
     }
+
     /**
      * request receipting
      *
      * @param receiptRequest
      * @return
      */
-    @RequestMapping(value = "/receipting") RespData<String> receiptVote(@RequestBody ReceiptRequest receiptRequest) {
+    @RequestMapping(value = "/receipting")
+    RespData<String> receiptVote(@RequestBody ReceiptRequest receiptRequest) {
         return voteService.acceptReceipt(receiptRequest);
     }
 
@@ -49,7 +55,8 @@ import org.springframework.web.bind.annotation.RestController;
      * @param agree
      * @return
      */
-    @RequestMapping(value = "/receiptVote")void receiptVote(String txId,boolean agree) {
-        voteService.receiptVote(txId,agree);
+    @RequestMapping(value = "/receiptVote")
+    void receiptVote(String txId, boolean agree) {
+        voteService.receiptVote(txId, agree);
     }
 }
