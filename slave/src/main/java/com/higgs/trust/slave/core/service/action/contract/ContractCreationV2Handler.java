@@ -11,7 +11,7 @@ import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Hex;
+import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -45,17 +45,7 @@ import java.security.MessageDigest;
         return null;
     }
 
-    private String getHash(String data) {
-        if (StringUtils.isEmpty(data)) {
-            return null;
-        }
-        return Hex.encodeHexString(getHexHash(data.getBytes()));
-    }
 
-    private String generateAddress(Long height, String sender, String txId, ContractCreationV2Action creationAction) {
-        String data = height.toString() + sender + txId + creationAction.getLanguage().toString() + creationAction.getCode();
-        return getHash(data);
-    }
 
     private void checkPolicy(ActionData actionData) {
         String policyId = actionData.getCurrentTransaction().getCoreTx().getPolicyId();
@@ -82,10 +72,6 @@ import java.security.MessageDigest;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, "code is empty");
         }
 
-        if(StringUtils.isEmpty(creationAction.getLanguage())) {
-            log.error("[ContractCreation] language is empty");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, "language is empty");
-        }
 
 //        if (!"javascript".equals(creationAction.getLanguage())) {
 //            log.error("[ContractCreation] language is error: {}", creationAction.getLanguage());
@@ -98,18 +84,15 @@ import java.security.MessageDigest;
         ExecutorFactory executorFactory = new ContractExecutorFactory();
         ContractCreationV2Action creationAction = getAndCheckAction(actionData);
 
-        Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
         String parentBlockHash = actionData.getCurrentBlock().getBlockHeader().getPreviousHash();
-        String sender = actionData.getCurrentTransaction().getCoreTx().getSender();
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
-        String address = generateAddress(blockHeight, sender, txId, creationAction);
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
         long number = actionData.getCurrentBlock().getBlockHeader().getHeight();
         byte[] nonce = new BigInteger("0").toByteArray();
         byte[] senderAddress = "".getBytes();
         byte[] receiverAddress = new byte[]{};
         byte[] value = new BigInteger("0").toByteArray();
-        byte[] data = creationAction.getCode().getBytes();
+        byte[] data = Hex.decode(creationAction.getCode());
         byte[] parentHash = parentBlockHash.getBytes();
         byte[] minerAddress = new byte[]{};
         ContractExecutionContext contractExecutionContext =new ContractExecutionContext(

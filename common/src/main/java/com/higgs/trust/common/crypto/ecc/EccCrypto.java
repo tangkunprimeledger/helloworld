@@ -2,7 +2,6 @@ package com.higgs.trust.common.crypto.ecc;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
-import com.higgs.trust.common.utils.Base64Util;
 import lombok.extern.slf4j.Slf4j;
 import org.spongycastle.util.encoders.Hex;
 

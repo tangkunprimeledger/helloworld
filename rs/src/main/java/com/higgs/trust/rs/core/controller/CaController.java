@@ -18,9 +18,12 @@ import java.util.List;
  * @desc TODO
  * @date 2018/6/5 17:37
  */
-@RestController @Slf4j public class CaController {
+@RestController
+@Slf4j
+public class CaController {
 
-    @Autowired private CaService caService;
+    @Autowired
+    private CaService caService;
 
     /**
      * auth ca transaction
@@ -28,7 +31,8 @@ import java.util.List;
      * @param list
      * @return
      */
-    @RequestMapping(value = "/ca/auth") RespData<String> caAuth(@RequestBody List<CaVO> list) {
+    @RequestMapping(value = "/ca/auth")
+    RespData<String> caAuth(@RequestBody List<CaVO> list) {
         return caService.authCaTx(list);
     }
 
@@ -38,7 +42,8 @@ import java.util.List;
      * @param caVO
      * @return
      */
-    @RequestMapping(value = "/ca/update") RespData<String> caUpdate(@RequestBody CaVO caVO) {
+    @RequestMapping(value = "/ca/update")
+    RespData<String> caUpdate(@RequestBody CaVO caVO) {
         return caService.updateCaTx(caVO);
     }
 
@@ -48,7 +53,8 @@ import java.util.List;
      * @param caVO
      * @return
      */
-    @RequestMapping(value = "/ca/cancel") RespData<String> caCancel(@RequestBody CaVO caVO) {
+    @RequestMapping(value = "/ca/cancel")
+    RespData<String> caCancel(@RequestBody CaVO caVO) {
         return caService.cancelCaTx(caVO);
     }
 
@@ -58,7 +64,8 @@ import java.util.List;
      * @param
      * @return
      */
-    @RequestMapping(value = "/ca/get") RespData<Ca> acquireCA(@RequestParam("user") String user) {
+    @RequestMapping(value = "/ca/get")
+    RespData<Ca> acquireCA(@RequestParam("user") String user) {
         return caService.acquireCA(user);
     }
 

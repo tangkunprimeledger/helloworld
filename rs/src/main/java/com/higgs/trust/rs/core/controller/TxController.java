@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
  * @description
  * @date 2018-06-22
  */
-@RestController public class TxController {
-    @Autowired private CoreTransactionService coreTransactionService;
+@RestController
+public class TxController {
+    @Autowired
+    private CoreTransactionService coreTransactionService;
 
-    @RequestMapping(value = "/submitTx") RespData submitTx(@RequestBody CoreTransaction coreTx) {
+    @RequestMapping(value = "/submitTx")
+    RespData submitTx(@RequestBody CoreTransaction coreTx) {
         coreTransactionService.submitTx(coreTx);
-        return coreTransactionService.syncWait(coreTx.getTxId(),true);
+        return coreTransactionService.syncWait(coreTx.getTxId(), true);
     }
 }
