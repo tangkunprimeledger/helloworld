@@ -236,6 +236,7 @@ import java.util.stream.Collectors;
      * @param isBatchSync
      */
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
+        blockchain.init();
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (txs == null) {
