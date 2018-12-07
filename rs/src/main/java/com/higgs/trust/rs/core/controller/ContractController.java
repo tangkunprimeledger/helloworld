@@ -121,9 +121,15 @@ public class ContractController {
     }
 
     @RequestMapping(value = "/query2", method = RequestMethod.GET)
-    List<?> query2(@RequestParam(value = "contractAddress") String contractAddress,
-                  @RequestParam(value = "methodSignature") String methodSignature,
-                  @RequestParam(value = "args") Object... args) {
-        return contractQueryService.query2(contractAddress, methodSignature, args);
+    RespData<List<?>> query2(@RequestParam(value = "contractAddress") String contractAddress,
+                             @RequestParam(value = "methodSignature") String methodSignature,
+                             @RequestParam(value = "methodArgs") Object... methodArgs) {
+        try {
+            List<?> resultList = contractQueryService.query2(contractAddress, methodSignature, methodArgs);
+            return RespData.success(resultList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RespData.error("556", e.getMessage(), null);
+        }
     }
 }
