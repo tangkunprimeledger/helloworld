@@ -11,8 +11,7 @@ import lombok.Setter;
  */
 @Getter @Setter public class ContractCreationV2Action extends Action {
 
-    private String language;
     private String version;
     private String code;
-    private Object[] initArgs;
+
 }
