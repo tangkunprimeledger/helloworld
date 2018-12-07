@@ -44,7 +44,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     protected final Repository contractRepository;
 
 
-    /*** bellow fields come from context ***/
+    /***
+     * bellow fields come from context
+     ***/
     protected final byte[] transactionHash;
     protected final byte[] data;
     protected final byte[] gasLimit;
@@ -155,8 +157,8 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         checkNonce();
         checkValue();
         checkBalance();
-        checkReceiverAddress();
-        checkReceiverAccount();
+        //checkReceiverAddress();
+        //checkReceiverAccount();
         checkCode();
     }
 
@@ -191,9 +193,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     protected void checkSenderAccount() {
         checkSenderAddress();
 
-        if (Objects.isNull(contractRepository.getAccountState(senderAddress))) {
-            throw new ContractContextException("Sender account does not exist");
-        }
+//        if (Objects.isNull(contractRepository.getAccountState(senderAddress))) {
+//            throw new ContractContextException("Sender account does not exist");
+//        }
     }
 
     protected void checkNonce() {

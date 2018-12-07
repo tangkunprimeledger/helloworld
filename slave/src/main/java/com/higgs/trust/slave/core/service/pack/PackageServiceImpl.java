@@ -57,22 +57,39 @@ import java.util.stream.Collectors;
  * @Description: package service
  * @author: pengdi
  **/
-@Service @Slf4j public class PackageServiceImpl implements PackageService {
-    @Autowired private TransactionTemplate txRequired;
-    @Autowired private PackageRepository packageRepository;
-    @Autowired private SystemPropertyRepository systemPropertyRepository;
-    @Autowired private BlockService blockService;
-    @Autowired private LogReplicateHandler logReplicateHandler;
-    @Autowired private TransactionExecutor transactionExecutor;
-    @Autowired private SnapshotService snapshotService;
-    @Autowired private TransactionRepository transactionRepository;
-    @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
-    @Autowired private P2pHandler p2pHandler;
-    @Autowired private RsNodeRepository rsNodeRepository;
-    @Autowired private PendingTxRepository pendingTxRepository;
-    @Autowired private NodeState nodeState;
-    @Autowired private InitConfig initConfig;
-    @Autowired private Blockchain blockchain;
+@Service
+@Slf4j
+public class PackageServiceImpl implements PackageService {
+    @Autowired
+    private TransactionTemplate txRequired;
+    @Autowired
+    private PackageRepository packageRepository;
+    @Autowired
+    private SystemPropertyRepository systemPropertyRepository;
+    @Autowired
+    private BlockService blockService;
+    @Autowired
+    private LogReplicateHandler logReplicateHandler;
+    @Autowired
+    private TransactionExecutor transactionExecutor;
+    @Autowired
+    private SnapshotService snapshotService;
+    @Autowired
+    private TransactionRepository transactionRepository;
+    @Autowired
+    private SlaveCallbackRegistor slaveCallbackRegistor;
+    @Autowired
+    private P2pHandler p2pHandler;
+    @Autowired
+    private RsNodeRepository rsNodeRepository;
+    @Autowired
+    private PendingTxRepository pendingTxRepository;
+    @Autowired
+    private NodeState nodeState;
+    @Autowired
+    private InitConfig initConfig;
+    @Autowired
+    private Blockchain blockchain;
 
     private boolean hashEvmContractTx;
 
@@ -81,7 +98,8 @@ import java.util.stream.Collectors;
      *
      * @return
      */
-    @Override public Package create(List<SignedTransaction> signedTransactions, Long currentPackageHeight) {
+    @Override
+    public Package create(List<SignedTransaction> signedTransactions, Long currentPackageHeight) {
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
             return null;
@@ -93,7 +111,8 @@ import java.util.stream.Collectors;
 
         // sort signedTransactions by txId asc
         Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
-            @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+            @Override
+            public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
                 return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
             }
         });
@@ -113,7 +132,8 @@ import java.util.stream.Collectors;
     }
 
 
-    @Override public void submitConsensus(PackageCommand command) {
+    @Override
+    public void submitConsensus(PackageCommand command) {
         logReplicateHandler.replicatePackage(command);
     }
 
@@ -122,7 +142,8 @@ import java.util.stream.Collectors;
      *
      * @param pack
      */
-    @Override public void receive(Package pack) {
+    @Override
+    public void receive(Package pack) {
         log.info("receive package from consensus, pack height: {}", pack.getHeight());
 
         if (null == pack || CollectionUtils.isEmpty(pack.getSignedTxList())) {
@@ -137,8 +158,8 @@ import java.util.stream.Collectors;
 
         //check block height
         Long maxBlockHeight = blockService.getMaxHeight();
-        if(maxBlockHeight!=null && maxBlockHeight.compareTo(pack.getHeight()) >= 0){
-            log.warn("package.height:{} is already done",pack.getHeight());
+        if (maxBlockHeight != null && maxBlockHeight.compareTo(pack.getHeight()) >= 0) {
+            log.warn("package.height:{} is already done", pack.getHeight());
             return;
         }
         Package packageBO = packageRepository.load(pack.getHeight());
@@ -157,7 +178,8 @@ import java.util.stream.Collectors;
         pack.setStatus(PackageStatusEnum.RECEIVED);
         if (initConfig.isUseMySQL()) {
             txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                     packageRepository.save(pack);
                     //save pendingTx to db
                     pendingTxRepository.batchInsert(pack.getSignedTxList(), PendingTxStatusEnum.PACKAGED, pack.getHeight());
@@ -203,7 +225,8 @@ import java.util.stream.Collectors;
      * @param pack
      * @return
      */
-    @Override public PackContext createPackContext(Package pack) {
+    @Override
+    public PackContext createPackContext(Package pack) {
         Block block = blockService.buildDummyBlock(pack.getHeight(), pack.getPackageTime());
 
         PackContext packContext = new PackContext(pack, block);
@@ -223,7 +246,7 @@ import java.util.stream.Collectors;
         if (CollectionUtils.isNotEmpty(rsPubKeyList)) {
             packContext.setRsPubKeyMap(
                     rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
-        }else{
+        } else {
             packContext.setRsPubKeyMap(Collections.emptyMap());
         }
     }
@@ -235,7 +258,8 @@ import java.util.stream.Collectors;
      * @param isFailover
      * @param isBatchSync
      */
-    @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
+    @Override
+    public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
         blockchain.init();
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
@@ -280,7 +304,7 @@ import java.util.stream.Collectors;
 
             //call back business
             Profiler.enter("[callbackRS]");
-            callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
+            //  callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
@@ -291,7 +315,7 @@ import java.util.stream.Collectors;
                     to = PackageStatusEnum.PERSISTED;
                 }
                 packageRepository.updateStatus(pack.getHeight(), from, to);
-                if(!isFailover){
+                if (!isFailover) {
                     p2pHandler.sendPersisting(dbHeader);
                 }
             }
@@ -304,7 +328,7 @@ import java.util.stream.Collectors;
         } catch (Throwable e) {
             //snapshot transactions should be destroy
             snapshotService.destroy();
-            log.error("[package.process]has unknown error");
+            log.error("[package.process]has unknown error:{}", e);
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_PERSISTING_ERROR, e);
         } finally {
@@ -380,7 +404,8 @@ import java.util.stream.Collectors;
      * @param header
      * @param isCompare
      */
-    @Override public void persisted(BlockHeader header,boolean isCompare) {
+    @Override
+    public void persisted(BlockHeader header, boolean isCompare) {
         //check status for package
         boolean isPackageStatus = packageRepository
                 .isPackageStatus(header.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
@@ -415,21 +440,22 @@ import java.util.stream.Collectors;
             try {
                 Profiler.enter("[cluster.persisted.queryTransactions]");
                 List<SignedTransaction> txs = null;
-                Map<String,TransactionReceipt> txReceiptMap = new HashMap<>();
+                Map<String, TransactionReceipt> txReceiptMap = new HashMap<>();
                 if (initConfig.isUseMySQL()) {
                     Object[] objs = transactionRepository.queryFinalTxsForMysql(header.getHeight());
-                    if(objs != null){
-                        txs = (List<SignedTransaction>)objs[0];
-                        txReceiptMap = (Map<String,TransactionReceipt>)objs[1];
+                    if (objs != null) {
+                        txs = (List<SignedTransaction>) objs[0];
+                        txReceiptMap = (Map<String, TransactionReceipt>) objs[1];
                     }
-                }else{
+                } else {
                     txs = transactionRepository.queryTransactions(header.getHeight());
                     txReceiptMap = transactionRepository.queryTxReceiptMapForRocksdb(txs);
                 }
                 if (!CollectionUtils.isEmpty(txs)) {
                     // sort signedTransactions by txId asc
                     Collections.sort(txs, new Comparator<SignedTransaction>() {
-                        @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+                        @Override
+                        public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
                             return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
                         }
                     });
@@ -437,11 +463,12 @@ import java.util.stream.Collectors;
                 Profiler.release();
 
                 List<SignedTransaction> finalTxs = txs;
-                Map<String,TransactionReceipt> finalTxReceiptMap = txReceiptMap;
+                Map<String, TransactionReceipt> finalTxReceiptMap = txReceiptMap;
 
                 if (initConfig.isUseMySQL()) {
                     txRequired.execute(new TransactionCallbackWithoutResult() {
-                        @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        @Override
+                        protected void doInTransactionWithoutResult(TransactionStatus status) {
                             //call back business
                             Profiler.enter("[callbackRSForClusterPersisted]");
                             callbackRS(finalTxs, finalTxReceiptMap, true, false, blockHeader);
@@ -471,7 +498,8 @@ import java.util.stream.Collectors;
 
                         RocksUtils.txCommit(tx);
                     } finally {
-                        ThreadLocalUtils.clearRocksTx();;
+                        ThreadLocalUtils.clearRocksTx();
+                        ;
                     }
                 }
             } catch (SlaveException e) {
@@ -480,7 +508,7 @@ import java.util.stream.Collectors;
                 log.error("[package.persisted]callback rs has error", e);
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_CALLBACK_ERROR, e);
             }
-        }finally {
+        } finally {
             Profiler.release();
             if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
                 Profiler.logDump();
@@ -494,7 +522,7 @@ import java.util.stream.Collectors;
     private void callbackRS(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap,
                             boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
         //TODO:liuyu
-        if(initConfig.isMockRS()){
+        if (initConfig.isMockRS()) {
             return;
         }
         if (log.isDebugEnabled()) {
@@ -579,7 +607,8 @@ import java.util.stream.Collectors;
      *
      * @param pack
      */
-    @Override public void remove(Package pack) {
+    @Override
+    public void remove(Package pack) {
         /** TODO
          * 1.判断package是否执行完成
          * 2.开启事务

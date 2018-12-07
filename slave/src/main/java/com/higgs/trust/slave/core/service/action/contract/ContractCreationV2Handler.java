@@ -1,5 +1,6 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
+import com.higgs.trust.evmcontract.crypto.HashUtil;
 import com.higgs.trust.evmcontract.facade.*;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -21,12 +22,17 @@ import java.security.MessageDigest;
 
 /**
  * create contract handler
+ *
  * @author tangkun
  */
-@Slf4j @Component public class ContractCreationV2Handler implements ActionHandler {
+@Slf4j
+@Component
+public class ContractCreationV2Handler implements ActionHandler {
 
     @Autowired
     private Blockchain blockchain;
+
+    private int nonceI = 0;
 
     private byte[] getHexHash(byte[] data) {
         if (null == data) {
@@ -46,7 +52,6 @@ import java.security.MessageDigest;
     }
 
 
-
     private void checkPolicy(ActionData actionData) {
         String policyId = actionData.getCurrentTransaction().getCoreTx().getPolicyId();
         if (InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId) != InitPolicyEnum.CONTRACT_ISSUE) {
@@ -61,7 +66,8 @@ import java.security.MessageDigest;
         return (ContractCreationV2Action) actionData.getCurrentAction();
     }
 
-    @Override public void verifyParams(Action action) throws SlaveException {
+    @Override
+    public void verifyParams(Action action) throws SlaveException {
         ContractCreationV2Action creationAction = (ContractCreationV2Action) action;
         if (creationAction == null) {
             log.error("[ContractCreation] convert action to ContractCreationV2Action is error");
@@ -79,23 +85,24 @@ import java.security.MessageDigest;
 //        }
     }
 
-    @Override public void process(ActionData actionData) {
+    @Override
+    public void process(ActionData actionData) {
 
         ExecutorFactory executorFactory = new ContractExecutorFactory();
         ContractCreationV2Action creationAction = getAndCheckAction(actionData);
 
-        String parentBlockHash = actionData.getCurrentBlock().getBlockHeader().getPreviousHash();
+        String parentBlockHash = blockchain.getLastBlockHeader().getBlockHash();
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
         long number = actionData.getCurrentBlock().getBlockHeader().getHeight();
-        byte[] nonce = new BigInteger("0").toByteArray();
-        byte[] senderAddress = "".getBytes();
-        byte[] receiverAddress = new byte[]{};
+        byte[] nonce = new BigInteger(String.valueOf(nonceI++)).toByteArray();
+        byte[] senderAddress = "095e7baea6a6c7c4c2dfeb977efac326af552d87".getBytes();
+        byte[] receiverAddress = HashUtil.calcNewAddr(senderAddress, nonce);
         byte[] value = new BigInteger("0").toByteArray();
         byte[] data = Hex.decode(creationAction.getCode());
         byte[] parentHash = parentBlockHash.getBytes();
         byte[] minerAddress = new byte[]{};
-        ContractExecutionContext contractExecutionContext =new ContractExecutionContext(
+        ContractExecutionContext contractExecutionContext = new ContractExecutionContext(
                 ContractTypeEnum.CONTRACT_CREATION,
                 txId.getBytes(),
                 nonce,
@@ -109,7 +116,7 @@ import java.security.MessageDigest;
                 number,
                 blockchain.getBlockStore(),
                 blockchain.getRepository()
-                );
+        );
         Executor<ContractExecutionResult> executor = executorFactory.createExecutor(contractExecutionContext);
         ContractExecutionResult result = executor.execute();
         ContractExecutionResult.setCurrentResult(result);
