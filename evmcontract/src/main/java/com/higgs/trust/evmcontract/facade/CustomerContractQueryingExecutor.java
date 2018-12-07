@@ -3,7 +3,6 @@ package com.higgs.trust.evmcontract.facade;
 import com.higgs.trust.evmcontract.core.Transaction;
 import com.higgs.trust.evmcontract.facade.exception.ContractContextException;
 import com.higgs.trust.evmcontract.util.ByteArraySet;
-import com.higgs.trust.evmcontract.vm.DataWord;
 import com.higgs.trust.evmcontract.vm.VM;
 import com.higgs.trust.evmcontract.vm.program.Program;
 import com.higgs.trust.evmcontract.vm.program.ProgramResult;
@@ -33,16 +32,20 @@ public class CustomerContractQueryingExecutor extends BaseContractExecutor {
     }
 
     @Override
-    protected void checkSenderAddress() {}
+    protected void checkSenderAddress() {
+    }
 
     @Override
-    protected void checkSenderAccount() {}
+    protected void checkSenderAccount() {
+    }
 
     @Override
-    protected void checkNonce() {}
+    protected void checkNonce() {
+    }
 
     @Override
-    protected void checkBalance() {}
+    protected void checkBalance() {
+    }
 
     @Override
     protected void checkReceiverAccount() {
