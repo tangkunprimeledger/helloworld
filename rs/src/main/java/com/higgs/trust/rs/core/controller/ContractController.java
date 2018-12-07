@@ -120,16 +120,25 @@ public class ContractController {
         }
     }
 
-    @RequestMapping(value = "/query2", method = RequestMethod.GET)
-    RespData<List<?>> query2(@RequestParam(value = "contractAddress") String contractAddress,
-                             @RequestParam(value = "methodSignature") String methodSignature,
-                             @RequestParam(value = "methodArgs") Object... methodArgs) {
+    /**
+     * Queries contract persisted in the format of EVM byte code.
+     *
+     * @param contractAddress contract address, hex string of 40 characters, e.g. 00a615668486da40f31fd050854fb137b317e056
+     * @param methodSignature method signature, e.g. (uint256) get(uint256)
+     * @param methodInputArgs method input arguments, e.g. 4
+     * @return result of querying, values are of java types.
+     */
+    @GetMapping(path = "/query2")
+    public RespData<List<?>> query2(
+            @RequestParam(value = "contractAddress") String contractAddress,
+            @RequestParam(value = "methodSignature") String methodSignature,
+            @RequestParam(value = "methodInputArgs") Object... methodInputArgs) {
         try {
-            List<?> resultList = contractQueryService.query2(contractAddress, methodSignature, methodArgs);
+            List<?> resultList = contractQueryService.query2(contractAddress, methodSignature, methodInputArgs);
             return RespData.success(resultList);
         } catch (Exception e) {
             e.printStackTrace();
-            return RespData.error("556", e.getMessage(), null);
+            return RespData.error("", e.getMessage(), null);
         }
     }
 }

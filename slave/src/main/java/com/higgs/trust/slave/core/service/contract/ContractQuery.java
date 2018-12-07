@@ -48,15 +48,15 @@ public class ContractQuery {
     private ContractExecutionContext buildContractExecutionContext(byte[] receiverAddress, byte[] data) {
         ContractTypeEnum contractType = ContractTypeEnum.CUSTOMER_CONTRACT_QUERYING;
         byte[] nonce = new DataWord(0).getData();
+        byte[] nodeNameBytes = HashUtil.sha256(nodeState.getNodeName().getBytes());
         // every one can query, even if no account exists.
-        byte[] senderAddress = null;
-        byte[] nodeNameBytes = nodeState.getNodeName().getBytes();
+        byte[] senderAddress = nodeNameBytes;
         byte[] transactionHash = HashUtil.sha256(("10000000" + Hex.toHexString(nodeNameBytes) + System.currentTimeMillis()).getBytes());
         byte[] value = new DataWord(0).getData();
 
         long number = blockchain.getLastBlockHeader().getHeight();
-        byte[] parentHash = Hex.decode(blockchain.getLastBlockHeader().getPreviousHash());
-        byte[] minerAddress = HashUtil.calcNewAddr(nodeNameBytes, nonce);
+        byte[] parentHash = HashUtil.sha256(blockchain.getLastBlockHeader().getPreviousHash().getBytes());
+        byte[] minerAddress = nodeNameBytes;
         long timestamp = blockchain.getLastBlockHeader().getBlockTime();
 
         return new ContractExecutionContext(contractType, transactionHash,nonce,

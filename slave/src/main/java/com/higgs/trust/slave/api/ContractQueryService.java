@@ -22,8 +22,8 @@ public interface ContractQueryService {
      *
      * @param contractAddress contract address
      * @param methodSignature method signature written with target language
-     * @param args            actual parameters
+     * @param methodInputArgs actual parameters
      * @return result returned by contract invocation
      */
-    List<?> query2(String contractAddress, String methodSignature, Object... args);
+    List<?> query2(String contractAddress, String methodSignature, Object... methodInputArgs);
 }
