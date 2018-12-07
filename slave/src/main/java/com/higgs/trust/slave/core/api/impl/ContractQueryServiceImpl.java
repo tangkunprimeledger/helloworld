@@ -33,7 +33,9 @@ public class ContractQueryServiceImpl implements ContractQueryService {
     }
 
     @Override
-    public List<?> query(byte[] contractAddress, String methodSignature, Object... args) {
+    public List<?> query2(String contractAddressAsString, String methodSignature, Object... args) {
+        byte[] contractAddress = Hex.decode(contractAddressAsString);
+
         if (contractAddress.length != CONTRACT_ADDRESS_LENGTH) {
             throw new IllegalArgumentException(
                     String.format("Contract address length must be %d bytes", CONTRACT_ADDRESS_LENGTH));

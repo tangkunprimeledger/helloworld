@@ -116,10 +116,10 @@ import java.util.List;
         }
     }
 
-    @RequestMapping(value = "/query", method = RequestMethod.GET)
-    List<?> query(@RequestParam(value = "contractAddress") byte[] contractAddress,
+    @RequestMapping(value = "/query2", method = RequestMethod.GET)
+    List<?> query2(@RequestParam(value = "contractAddress") String contractAddress,
                   @RequestParam(value = "methodSignature") String methodSignature,
                   @RequestParam(value = "args") Object... args) {
-        return contractQueryService.query(contractAddress, methodSignature, args);
+        return contractQueryService.query2(contractAddress, methodSignature, args);
     }
 }

@@ -51,7 +51,7 @@ public class ContractQuery {
         // every one can query, even if no account exists.
         byte[] senderAddress = null;
         byte[] nodeNameBytes = nodeState.getNodeName().getBytes();
-        byte[] transactionHash = Hex.decode("0x10000000" + Hex.toHexString(nodeNameBytes) + System.currentTimeMillis());
+        byte[] transactionHash = HashUtil.sha256(("10000000" + Hex.toHexString(nodeNameBytes) + System.currentTimeMillis()).getBytes());
         byte[] value = new DataWord(0).getData();
 
         long number = blockchain.getLastBlockHeader().getHeight();

@@ -25,5 +25,5 @@ public interface ContractQueryService {
      * @param args            actual parameters
      * @return result returned by contract invocation
      */
-    List<?> query(byte[] contractAddress, String methodSignature, Object... args);
+    List<?> query2(String contractAddress, String methodSignature, Object... args);
 }
