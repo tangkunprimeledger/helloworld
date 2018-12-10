@@ -94,6 +94,7 @@ public class PrecompiledContractInvocationExecutor extends BaseContractExecutor 
         contractExecutionResult.setResult(result);
         contractExecutionResult.setTransactionHash(transactionHash);
         contractExecutionResult.setValue(value);
+        contractExecutionResult.setReceiverAddress(receiverAddress);
         contractExecutionResult.setStateRoot(blockRepository.getRoot());
 
         return contractExecutionResult;
