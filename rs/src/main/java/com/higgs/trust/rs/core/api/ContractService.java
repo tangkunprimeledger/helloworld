@@ -7,6 +7,7 @@ import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.QueryContractVO;
 import com.higgs.trust.slave.api.vo.RespData;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -52,6 +53,18 @@ public interface ContractService {
      * @param args
      */
     RespData invoke(String txId, String address, Object... args);
+
+    /**
+     * invoke v2 contract
+     * @param txId
+     * @param address
+     * @param nonce
+     * @param value
+     * @param methodSignature
+     * @param args
+     * @return
+     */
+    RespData invokeV2(String txId, String address, Long nonce, BigDecimal value, String methodSignature, Object... args);
 
     /**
      * migration contract state

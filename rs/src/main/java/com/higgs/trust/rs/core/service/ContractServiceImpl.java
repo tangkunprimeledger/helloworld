@@ -24,11 +24,13 @@ import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationAction;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
+import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
 import com.higgs.trust.slave.model.bo.contract.ContractStateMigrationAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -99,6 +101,18 @@ public class ContractServiceImpl implements ContractService {
         return invokeAction;
     }
 
+    private ContractInvokeV2Action buildInvokeV2Action(String address, Long nonce, BigDecimal value, String methodSignature, Object... args) {
+        ContractInvokeV2Action invokeV2Action = new ContractInvokeV2Action();
+        invokeV2Action.setAddress(address);
+        invokeV2Action.setArgs(args);
+        invokeV2Action.setIndex(0);
+        invokeV2Action.setType(ActionTypeEnum.CONTRACT_INVOKED);
+        invokeV2Action.setValue(value);
+        invokeV2Action.setNonce(nonce);
+        invokeV2Action.setMethodSignature(methodSignature);
+        return invokeV2Action;
+    }
+
     private ContractStateMigrationAction buildMigrationAction(ContractMigrationRequest migrationRequest) {
         ContractStateMigrationAction action = new ContractStateMigrationAction();
         action.setFormInstanceAddress(migrationRequest.getFromAddress());
@@ -116,9 +130,9 @@ public class ContractServiceImpl implements ContractService {
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
-                if(rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS){
+                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
                     return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
-                }else{
+                } else {
                     return RespData.success(txId);
                 }
             }
@@ -165,9 +179,40 @@ public class ContractServiceImpl implements ContractService {
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
-                if(rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS){
+                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
                     return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
-                }else{
+                } else {
+                    return RespData.success(txId);
+                }
+            }
+        }
+        com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
+        return respData.isSuccess() ? RespData.success(respData.getData()) : RespData.error(respData.getRespCode(), respData.getMsg(), respData.getData());
+    }
+
+    /**
+     * invoke v2 contract
+     *
+     * @param txId
+     * @param address
+     * @param nonce
+     * @param value
+     * @param methodSignature
+     * @param args
+     * @return
+     */
+    @Override
+    public RespData invokeV2(String txId, String address, Long nonce, BigDecimal value, String methodSignature, Object... args) {
+        ContractInvokeV2Action action = buildInvokeV2Action(address, nonce, value, methodSignature, args);
+        CoreTransaction coreTx = buildCoreTx(txId, action);
+        try {
+            coreTransactionService.submitTx(coreTx);
+        } catch (RsCoreException e) {
+            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
+                RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
+                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
+                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
+                } else {
                     return RespData.success(txId);
                 }
             }
@@ -185,9 +230,9 @@ public class ContractServiceImpl implements ContractService {
         } catch (RsCoreException e) {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(migrationRequest.getTxId());
-                if(rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS){
+                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
                     return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), migrationRequest.getTxId());
-                }else{
+                } else {
                     return RespData.success(migrationRequest.getTxId());
                 }
             }
@@ -201,7 +246,8 @@ public class ContractServiceImpl implements ContractService {
         return smartContract.executeQuery(request.getAddress(), request.getMethodName(), request.getBizArgs());
     }
 
-    @Override public ContractVO queryByTxId(String txId, int actionIndex) {
-        return contractRepository.queryByTxId(txId,actionIndex);
+    @Override
+    public ContractVO queryByTxId(String txId, int actionIndex) {
+        return contractRepository.queryByTxId(txId, actionIndex);
     }
 }

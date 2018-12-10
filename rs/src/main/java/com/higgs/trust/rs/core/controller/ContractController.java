@@ -1,10 +1,7 @@
 package com.higgs.trust.rs.core.controller;
 
 import com.higgs.trust.rs.core.api.ContractService;
-import com.higgs.trust.rs.core.bo.ContractCreateRequest;
-import com.higgs.trust.rs.core.bo.ContractInvokeRequest;
-import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
-import com.higgs.trust.rs.core.bo.ContractQueryRequest;
+import com.higgs.trust.rs.core.bo.*;
 import com.higgs.trust.slave.api.ContractQueryService;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
@@ -77,6 +74,26 @@ public class ContractController {
         }
         String txId = "0x10000000" + invokeRequest.getAddress().hashCode() + System.currentTimeMillis();
         RespData result = contractService.invoke(txId, invokeRequest.getAddress(), invokeRequest.getBizArgs());
+        return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
+    }
+
+    @PostMapping(path = "/invokeV2")
+    public RespData<String> invokeV2(@RequestBody ContractInvokeV2Request invokeV2Request) {
+        if (invokeV2Request == null) {
+            return fail(null, "", "invalid invokeV2Request");
+        }
+        if (StringUtils.isEmpty(invokeV2Request.getAddress())) {
+            return fail(null, "", "address is empty");
+        }
+        if (StringUtils.isEmpty(invokeV2Request.getMethodSignature())) {
+            return fail(null, "", "method signature is empty");
+        }
+        String txId = "0x10000000" + invokeV2Request.getAddress().hashCode() + System.currentTimeMillis();
+        RespData result = contractService.invokeV2(txId, invokeV2Request.getAddress(),
+                invokeV2Request.getNonce(),
+                invokeV2Request.getValue(),
+                invokeV2Request.getMethodSignature(),
+                invokeV2Request.getArgs());
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
     }
 
