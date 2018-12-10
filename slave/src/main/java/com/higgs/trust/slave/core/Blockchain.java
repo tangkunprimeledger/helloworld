@@ -51,7 +51,6 @@ public class Blockchain {
     private final BlockStore blockStore;
 
     public Blockchain() {
-        this.transactionStore = new TransactionStore(dbSource);
         this.blockStore = createBlockStore();
     }
 
@@ -96,7 +95,10 @@ public class Blockchain {
         }
         Long maxHeight = blockRepository.getMaxHeight();
         lastBlockHeader = blockRepository.getBlockHeader(maxHeight);
-        initialized = true;
+        if (lastBlockHeader != null) {
+            initialized = true;
+            this.transactionStore = new TransactionStore(dbSource);
+        }
     }
 
     public synchronized void startExecuteBlock() {
