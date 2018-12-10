@@ -1,23 +1,23 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.evmcontract.db.BlockStore;
+import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.evmcontract.facade.*;
 import com.higgs.trust.evmcontract.facade.compile.ContractInvocation;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
 import lombok.extern.slf4j.Slf4j;
+import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * @author kongyu
@@ -41,23 +41,23 @@ public class ContractInvokeV2Handler implements ActionHandler {
         this.verifyParams(invokeAction);
 
         Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
-        String parentBlockHash = actionData.getCurrentBlock().getBlockHeader().getPreviousHash();
-        String senderAddress = actionData.getCurrentTransaction().getCoreTx().getSender();
+        String parentBlockHash = blockchain.getLastBlockHeader().getBlockHash();
+        byte[] senderAddress = Hex.decode(actionData.getCurrentTransaction().getCoreTx().getSender());
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
-        String receiverAddress = invokeAction.getAddress();
+        byte[] receiverAddress = Hex.decode(invokeAction.getAddress());
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
-        long nonce = invokeAction.getNonce();
-        BigDecimal value = invokeAction.getValue();
+        byte[] nonce = new BigInteger(invokeAction.getNonce() + "").toByteArray();
+        byte[] value = new BigInteger("0").toByteArray();
 
         ContractInvocation contractInvocation = new ContractInvocation();
         byte[] invokeFuncData = contractInvocation.getBytecodeForInvokeContract(invokeAction.getMethodSignature(), invokeAction.getArgs());
 
         ContractExecutionContext contractExecutionContext = buildContractExecutionContext(ContractTypeEnum.CUSTOMER_CONTRACT_INVOCATION,
                 txId.getBytes(),
-                String.valueOf(nonce).getBytes(),
-                senderAddress.getBytes(),
-                receiverAddress.getBytes(),
-                value.toString().getBytes(),
+                nonce,
+                senderAddress,
+                receiverAddress,
+                value,
                 invokeFuncData,
                 parentBlockHash.getBytes(),
                 new byte[]{},
