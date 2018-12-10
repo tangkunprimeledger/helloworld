@@ -904,7 +904,7 @@ public class ExecutorTest {
         return  (byte[]) list.get(0);
     }
 
-    @Test(timeout = 2000L)
+    @Test(timeout = 3000L)
     public void testExecute_CreateContract_011() throws IOException {
         deployCreateCreate();
         byte[] newContract = getNewContract();

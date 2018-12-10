@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author Chen Jiawei
@@ -23,6 +24,8 @@ public class ContractQuery {
     Blockchain blockchain;
     @Autowired
     NodeState nodeState;
+
+    private static final Pattern CONTRACT_ADDRESS_PATTERN = Pattern.compile("^[0-9a-zA-Z]{64}$");
 
     public List<?> executeQuery(byte[] contractAddress, String methodSignature, Object... args) {
         try {
@@ -53,7 +56,11 @@ public class ContractQuery {
         byte[] value = new DataWord(0).getData();
 
         long number = blockchain.getLastBlockHeader().getHeight();
-        byte[] parentHash = HashUtil.sha256(blockchain.getLastBlockHeader().getPreviousHash().getBytes());
+        String previousHash = blockchain.getLastBlockHeader().getPreviousHash();
+        if (!CONTRACT_ADDRESS_PATTERN.matcher(previousHash).matches()) {
+            throw new IllegalArgumentException("Block hash should be a hex string of 32 bytes");
+        }
+        byte[] parentHash = Hex.decode(previousHash);
         byte[] minerAddress = nodeNameBytes;
         // Trust use mills second and evm use second.
         long timestamp = blockchain.getLastBlockHeader().getBlockTime() / 1000;

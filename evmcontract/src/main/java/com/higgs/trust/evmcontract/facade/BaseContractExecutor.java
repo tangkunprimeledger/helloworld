@@ -53,7 +53,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     protected final byte[] senderAddress;
     protected final byte[] nonce;
     protected final byte[] value;
-    protected final byte[] receiverAddress;
+    protected byte[] receiverAddress;
     protected final byte[] gasPrice;
     protected final byte[] parentHash;
     protected final byte[] minerAddress;
@@ -317,6 +317,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         contractExecutionResult.setResult(programResult.getHReturn());
         contractExecutionResult.setDeleteAccounts(programResult.getDeleteAccounts());
         contractExecutionResult.setInternalTransactions(programResult.getInternalTransactions());
+        contractExecutionResult.setReceiverAddress(receiverAddress);
         contractExecutionResult.setStateRoot(blockRepository.getRoot());
 
         return contractExecutionResult;

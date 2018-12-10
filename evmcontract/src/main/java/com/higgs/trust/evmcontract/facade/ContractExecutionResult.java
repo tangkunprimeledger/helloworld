@@ -44,6 +44,13 @@ public class ContractExecutionResult {
     private byte[] value;
 
     /**
+     * Address of receiver.
+     */
+    @Getter
+    @Setter
+    private byte[] receiverAddress;
+
+    /**
      * Returned event records.
      */
     @Getter

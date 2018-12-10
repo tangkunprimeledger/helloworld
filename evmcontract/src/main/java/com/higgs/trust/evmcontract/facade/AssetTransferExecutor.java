@@ -68,6 +68,7 @@ public class AssetTransferExecutor extends BaseContractExecutor {
         contractExecutionResult.getTouchedAccountAddresses().addAll(touchedAccountAddresses);
         contractExecutionResult.setTransactionHash(transactionHash);
         contractExecutionResult.setValue(value);
+        contractExecutionResult.setReceiverAddress(receiverAddress);
         contractExecutionResult.setStateRoot(blockRepository.getRoot());
 
         return contractExecutionResult;

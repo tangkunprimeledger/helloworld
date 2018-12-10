@@ -25,7 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public class Application {
     //异常推t进任务定时器线程池
     public static final ScheduledExecutorService COMMON_THREAD_POOL = Executors
-        .newScheduledThreadPool(8, new BasicThreadFactory.Builder().namingPattern("issue-act-schedule-pool-%d").daemon(true).build());
+            .newScheduledThreadPool(8, new BasicThreadFactory.Builder().namingPattern("issue-act-schedule-pool-%d").daemon(true).build());
     public static final long INITIAL_DELAY = 60;//线程第一次运行初始间隔时间
     public static final long PERIOD = 30;//间隔时间
 
