@@ -163,6 +163,12 @@ public class Blockchain {
         return blockStore;
     }
 
+    public TransactionResultInfo getTransactionResultInfo(String txId) {
+        if (transactionStore == null) {
+            return null;
+        }
+        return transactionStore.get(txId.getBytes());
+    }
 
     private class MiniBlock {
         private long height;
@@ -212,9 +218,5 @@ public class Blockchain {
         public byte[] getReceiptsRoot() {
             return receiptsRoot;
         }
-    }
-
-    public static void main(String[] args) {
-        System.out.println("kdkd");
     }
 }

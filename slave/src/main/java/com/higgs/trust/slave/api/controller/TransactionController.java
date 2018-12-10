@@ -1,8 +1,10 @@
 package com.higgs.trust.slave.api.controller;
 
+import com.higgs.trust.evmcontract.core.TransactionResultInfo;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +21,11 @@ import java.util.List;
 @RequestMapping(value = "/transaction")
 @RestController
 @Slf4j
-public class TransactionController{
+public class TransactionController {
     @Autowired
     private BlockChainService blockChainService;
+    @Autowired
+    private Blockchain blockchain;
 
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     @ResponseBody
@@ -49,5 +53,11 @@ public class TransactionController{
             log.debug("master receive transactions, parameter :{}", transactions);
         }
         return blockChainService.submitToMaster(transactions);
+    }
+
+
+    @GetMapping("result/{txId}")
+    public TransactionResultInfo queryResult(@PathVariable("txId") String txId) {
+        return blockchain.getTransactionResultInfo(txId);
     }
 }
