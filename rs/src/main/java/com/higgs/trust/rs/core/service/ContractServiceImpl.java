@@ -103,12 +103,12 @@ public class ContractServiceImpl implements ContractService {
 
     private ContractInvokeV2Action buildInvokeV2Action(String address, Long nonce, BigDecimal value, String methodSignature, Object... args) {
         ContractInvokeV2Action invokeV2Action = new ContractInvokeV2Action();
-        invokeV2Action.setAddress(address);
+
         invokeV2Action.setArgs(args);
         invokeV2Action.setIndex(0);
         invokeV2Action.setType(ActionTypeEnum.CONTRACT_INVOKED);
         invokeV2Action.setValue(value);
-        invokeV2Action.setNonce(nonce);
+
         invokeV2Action.setMethodSignature(methodSignature);
         return invokeV2Action;
     }

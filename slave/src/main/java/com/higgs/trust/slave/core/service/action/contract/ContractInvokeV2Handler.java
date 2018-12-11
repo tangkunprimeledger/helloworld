@@ -43,7 +43,6 @@ public class ContractInvokeV2Handler implements ActionHandler {
         byte[] senderAddress = Hex.decode(invokeAction.getFrom());
         byte[] receiverAddress = Hex.decode(invokeAction.getTo());
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
-        byte[] nonce = new BigInteger(invokeAction.getNonce() + "").toByteArray();
         byte[] value = new BigInteger("0").toByteArray();
 
         ContractInvocation contractInvocation = new ContractInvocation();
@@ -51,7 +50,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
 
         ContractExecutionContext contractExecutionContext = buildContractExecutionContext(ContractTypeEnum.CUSTOMER_CONTRACT_INVOCATION,
                 txId.getBytes(),
-                nonce,
+                null,
                 senderAddress,
                 receiverAddress,
                 value,
@@ -80,11 +79,11 @@ public class ContractInvokeV2Handler implements ActionHandler {
     @Override
     public void verifyParams(Action action) throws SlaveException {
         ContractInvokeV2Action invokeAction = (ContractInvokeV2Action) action;
-        if (StringUtils.isEmpty(invokeAction.getAddress())) {
+        if (StringUtils.isEmpty(invokeAction.getTo())) {
             log.error("invokeContract validate: address is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
-        if (invokeAction.getAddress().length() > 64) {
+        if (invokeAction.getTo().length() > 64) {
             log.error("invokeContract validate: address is too long");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
