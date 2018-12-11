@@ -27,6 +27,7 @@ public class BlockConvert {
         stateRootHash.setPolicyRootHash(blockPO.getPolicyRootHash());
         stateRootHash.setRsRootHash(blockPO.getRsRootHash());
         stateRootHash.setCaRootHash(blockPO.getCaRootHash());
+        stateRootHash.setStateRoot(blockPO.getStateRootHash());
         header.setStateRootHash(stateRootHash);
         return header;
     }

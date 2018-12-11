@@ -114,6 +114,7 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
     @Override
     public void process(TransactionData transactionData) {
         boolean hashEvmContract = false;
+        boolean isCreateEvmContract = false;
         CoreTransaction coreTx = transactionData.getCurrentTransaction().getCoreTx();
         log.debug("[process]coreTx:{}", coreTx);
         List<Action> actionList = coreTx.getActionList();
@@ -130,6 +131,7 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
         //for each
         for (Action action : actionList) {
             if (action instanceof ContractCreationV2Action || action instanceof ContractInvokeV2Action) {
+                isCreateEvmContract = action instanceof ContractCreationV2Action;
                 hashEvmContract = true;
             }
             //set current action
@@ -149,12 +151,18 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
         }
 
         // TODO 处理结果
-        ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
-        ContractExecutionResult.clearCurrentResult();
-        if (executionResult != null) {
-            long height = transactionData.getCurrentPackage().getHeight();
-            blockchain.putResultInfo(new TransactionResultInfo(height, coreTx.getTxId().getBytes(), 1,
-                    executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult()));
+        if (hashEvmContract) {
+            ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
+            ContractExecutionResult.clearCurrentResult();
+            if (executionResult != null) {
+                long height = transactionData.getCurrentPackage().getHeight();
+                TransactionResultInfo resultInfo = new TransactionResultInfo(height, coreTx.getTxId().getBytes(), 1,
+                        executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult());
+                if (isCreateEvmContract) {
+                    resultInfo.setCreatedAddress(executionResult.getReceiverAddress());
+                }
+                blockchain.putResultInfo(resultInfo);
+            }
         }
     }
 
