@@ -41,4 +41,14 @@ public class ContractInvokeV2Action extends Action {
      * 智能合约调用传入参数列表
      */
     private Object[] args;
+
+    /**
+     * from address
+     */
+    private String from;
+
+    /**
+     * to address
+     */
+    private String to;
 }

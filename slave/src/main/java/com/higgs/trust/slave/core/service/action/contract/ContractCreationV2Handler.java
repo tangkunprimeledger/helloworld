@@ -1,6 +1,5 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
-import com.higgs.trust.evmcontract.crypto.HashUtil;
 import com.higgs.trust.evmcontract.facade.*;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -94,8 +93,8 @@ public class ContractCreationV2Handler implements ActionHandler {
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
         long number = actionData.getCurrentBlock().getBlockHeader().getHeight();
         byte[] nonce = new BigInteger(creationAction.getNonce() + "").toByteArray();
-        byte[] senderAddress = Hex.decode("095e7baea6a6c7c4c2dfeb977efac326af552d87");
-        byte[] receiverAddress = HashUtil.calcNewAddr(senderAddress, nonce);
+        byte[] senderAddress = Hex.decode(creationAction.getFrom());
+        byte[] receiverAddress = Hex.decode(creationAction.getTo());
         log.info("contract address:{}", Hex.toHexString(receiverAddress));
         byte[] value = new BigInteger("0").toByteArray();
         byte[] data = Hex.decode(creationAction.getCode());
