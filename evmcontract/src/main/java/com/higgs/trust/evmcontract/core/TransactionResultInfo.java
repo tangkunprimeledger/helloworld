@@ -42,7 +42,11 @@ public class TransactionResultInfo {
     }
 
     public TransactionResultInfo(final byte[] rlp) {
-        RLPList rlpList = RLP.unwrapList(rlp);
+        if (rlp.length == 0) {
+            return;
+        }
+
+        RLPList rlpList = (RLPList) RLP.decode2(rlp).get(0);
         blockHeight = RLP.decodeInt(rlpList.get(0).getRLPData(), 0);
         txHash = rlpList.get(1).getRLPData();
         index = RLP.decodeInt(rlpList.get(2).getRLPData(), 0);
