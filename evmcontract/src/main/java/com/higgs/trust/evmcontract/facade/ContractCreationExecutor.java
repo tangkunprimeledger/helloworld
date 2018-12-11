@@ -20,17 +20,6 @@ import org.apache.commons.lang3.ArrayUtils;
 public class ContractCreationExecutor extends BaseContractExecutor {
     ContractCreationExecutor(ContractExecutionContext contractExecutionContext) {
         super(contractExecutionContext);
-        receiverAddress = HashUtil.calcNewAddr(senderAddress, nonce);
-    }
-
-
-    @Override
-    protected void checkReceiverAddress() {
-        super.checkReceiverAddress();
-
-        if (ContractUtil.notEqual(receiverAddress, HashUtil.calcNewAddr(senderAddress, nonce))) {
-            throw new ContractContextException("Receiver address cannot be empty");
-        }
     }
 
 

@@ -84,7 +84,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         data = contractExecutionContext.getData();
         gasLimit = contractExecutionContext.getGasLimit();
         senderAddress = contractExecutionContext.getSenderAddress();
-        nonce = contractExecutionContext.getNonce();
+        nonce = transactionRepository.getNonce(senderAddress).toByteArray();
         value = contractExecutionContext.getValue();
         receiverAddress = contractExecutionContext.getReceiverAddress();
         gasPrice = contractExecutionContext.getGasPrice();
@@ -157,8 +157,8 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         checkNonce();
         checkValue();
         checkBalance();
-        //checkReceiverAddress();
-        //checkReceiverAccount();
+        checkReceiverAddress();
+        checkReceiverAccount();
         checkCode();
     }
 
