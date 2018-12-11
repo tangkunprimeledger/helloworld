@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.evmcontract.facade.*;
 import com.higgs.trust.evmcontract.facade.compile.ContractInvocation;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -29,9 +28,6 @@ public class ContractInvokeV2Handler implements ActionHandler {
 
     @Autowired
     private Blockchain blockchain;
-
-    @Autowired
-    private Repository blockRepository;
 
     private void processCustomerContractInvocation(ActionData actionData) {
         if (!(actionData.getCurrentAction() instanceof ContractInvokeV2Action)) {
@@ -76,7 +72,8 @@ public class ContractInvokeV2Handler implements ActionHandler {
             byte[] receiverAddress, byte[] value, byte[] data, byte[] parentHash, byte[] minerAddress,
             long timestamp, long number) {
         return new ContractExecutionContext(contractType, transactionHash, nonce, senderAddress, receiverAddress,
-                value, data, parentHash, minerAddress, timestamp, number, blockchain.getBlockStore(), blockRepository);
+                value, data, parentHash, minerAddress, timestamp, number, blockchain.getBlockStore(),
+                blockchain.getRepositorySnapshot());
     }
 
     @Override

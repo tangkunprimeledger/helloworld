@@ -32,8 +32,6 @@ public class ContractCreationV2Handler implements ActionHandler {
     @Autowired
     private Blockchain blockchain;
 
-    private int nonceI = 0;
-
     private byte[] getHexHash(byte[] data) {
         if (null == data) {
             return null;
@@ -98,10 +96,10 @@ public class ContractCreationV2Handler implements ActionHandler {
         byte[] nonce = new BigInteger(creationAction.getNonce() + "").toByteArray();
         byte[] senderAddress = Hex.decode("095e7baea6a6c7c4c2dfeb977efac326af552d87");
         byte[] receiverAddress = HashUtil.calcNewAddr(senderAddress, nonce);
-        log.info("contract address:{}", receiverAddress);
+        log.info("contract address:{}", Hex.toHexString(receiverAddress));
         byte[] value = new BigInteger("0").toByteArray();
         byte[] data = Hex.decode(creationAction.getCode());
-        byte[] parentHash = parentBlockHash.getBytes();
+        byte[] parentHash = Hex.decode(parentBlockHash);
         byte[] minerAddress = new byte[]{};
         ContractExecutionContext contractExecutionContext = new ContractExecutionContext(
                 ContractTypeEnum.CONTRACT_CREATION,
@@ -116,7 +114,7 @@ public class ContractCreationV2Handler implements ActionHandler {
                 timestamp,
                 number,
                 blockchain.getBlockStore(),
-                blockchain.getRepository()
+                blockchain.getRepositorySnapshot()
         );
         Executor<ContractExecutionResult> executor = executorFactory.createExecutor(contractExecutionContext);
         ContractExecutionResult result = executor.execute();
