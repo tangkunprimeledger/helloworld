@@ -32,8 +32,6 @@ public class ContractCreationV2Handler implements ActionHandler {
     @Autowired
     private Blockchain blockchain;
 
-    private int nonceI = 0;
-
     private byte[] getHexHash(byte[] data) {
         if (null == data) {
             return null;
@@ -95,9 +93,10 @@ public class ContractCreationV2Handler implements ActionHandler {
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
         long number = actionData.getCurrentBlock().getBlockHeader().getHeight();
-        byte[] nonce = new BigInteger(String.valueOf(nonceI++)).toByteArray();
+        byte[] nonce = new BigInteger(creationAction.getNonce() + "").toByteArray();
         byte[] senderAddress = Hex.decode("095e7baea6a6c7c4c2dfeb977efac326af552d87");
         byte[] receiverAddress = HashUtil.calcNewAddr(senderAddress, nonce);
+        log.info("contract address:{}", Hex.toHexString(receiverAddress));
         byte[] value = new BigInteger("0").toByteArray();
         byte[] data = Hex.decode(creationAction.getCode());
         byte[] parentHash = Hex.decode(parentBlockHash);

@@ -14,7 +14,6 @@ import com.higgs.trust.evmcontract.trie.TrieImpl;
 import com.higgs.trust.evmcontract.util.ByteUtil;
 import com.higgs.trust.evmcontract.util.RLP;
 import com.higgs.trust.evmcontract.util.RLPList;
-import com.higgs.trust.evmcontract.vm.LogInfo;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -35,20 +34,18 @@ import java.util.List;
 @Component
 public class Blockchain {
 
+    private final BlockStore blockStore;
     private boolean initialized;
     private TransactionStore transactionStore;
     private BlockHeader lastBlockHeader;
     private Repository repositorySnapshot;
     private List<TransactionResultInfo> receipts;
-
     @Autowired
     private BlockRepository blockRepository;
     @Autowired
     private DbSource<byte[]> dbSource;
     @Autowired
     private Repository repository;
-
-    private final BlockStore blockStore;
 
     public Blockchain() {
         this.blockStore = createBlockStore();
@@ -140,13 +137,15 @@ public class Blockchain {
         receipts.add(result);
     }
 
-    public synchronized void setLastBlockHeader(BlockHeader blockHeader) {
-        lastBlockHeader = blockHeader;
-        repository = repository.getSnapshotTo(Hex.decode(blockHeader.getStateRootHash().getStateRoot()));
-    }
-
     public BlockHeader getLastBlockHeader() {
         return lastBlockHeader;
+    }
+
+    public synchronized void setLastBlockHeader(BlockHeader blockHeader) {
+        lastBlockHeader = blockHeader;
+        if (blockHeader != null && blockHeader.getStateRootHash().getStateRoot() != null) {
+            repository = repository.getSnapshotTo(Hex.decode(blockHeader.getStateRootHash().getStateRoot()));
+        }
     }
 
     public Repository getRepository() {
