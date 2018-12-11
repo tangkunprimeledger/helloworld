@@ -10,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * transaction tx
@@ -57,7 +59,8 @@ public class TransactionController {
 
 
     @GetMapping("result/{txId}")
-    public TransactionResultInfo queryResult(@PathVariable("txId") String txId) {
-        return blockchain.getTransactionResultInfo(txId);
+    public Map<String, Object> queryResult(@PathVariable("txId") String txId) {
+        TransactionResultInfo resultInfo =  blockchain.getTransactionResultInfo(txId);
+        return resultInfo.toMap();
     }
 }

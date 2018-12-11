@@ -94,8 +94,9 @@ public class Blockchain {
             return;
         }
         Long maxHeight = blockRepository.getMaxHeight();
-        lastBlockHeader = blockRepository.getBlockHeader(maxHeight);
-        if (lastBlockHeader != null) {
+        BlockHeader blockHeader = blockRepository.getBlockHeader(maxHeight);
+        setLastBlockHeader(blockHeader);
+        if (blockHeader != null) {
             initialized = true;
             this.transactionStore = new TransactionStore(dbSource);
         }
@@ -127,6 +128,7 @@ public class Blockchain {
         MiniBlock miniBlock = new MiniBlock(height, logBloom.getData(), trie.getRootHash());
         dbSource.put(ByteUtil.longToBytes(height), miniBlock.getEncoded());
         transactionStore.flush();
+        repositorySnapshot.commit();
 
         receipts = null;
         repository = repositorySnapshot;
