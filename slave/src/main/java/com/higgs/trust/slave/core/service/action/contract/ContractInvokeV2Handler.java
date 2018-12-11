@@ -42,7 +42,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
 
         Long blockHeight = actionData.getCurrentBlock().getBlockHeader().getHeight();
         String parentBlockHash = blockchain.getLastBlockHeader().getBlockHash();
-        byte[] senderAddress = Hex.decode(actionData.getCurrentTransaction().getCoreTx().getSender());
+        byte[] senderAddress = Hex.decode("095e7baea6a6c7c4c2dfeb977efac326af552d87");
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
         byte[] receiverAddress = Hex.decode(invokeAction.getAddress());
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
@@ -59,7 +59,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
                 receiverAddress,
                 value,
                 invokeFuncData,
-                parentBlockHash.getBytes(),
+                Hex.decode(parentBlockHash),
                 new byte[]{},
                 timestamp,
                 blockHeight);
