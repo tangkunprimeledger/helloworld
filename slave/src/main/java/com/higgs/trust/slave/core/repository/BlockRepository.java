@@ -109,6 +109,7 @@ import java.util.*;
         rootHash.setContractRootHash(blockPO.getContractRootHash());
         rootHash.setAccountRootHash(blockPO.getAccountRootHash());
         rootHash.setCaRootHash(blockPO.getCaRootHash());
+        rootHash.setStateRoot(blockPO.getStateRootHash());
         blockHeader.setStateRootHash(rootHash);
         block.setBlockHeader(blockHeader);
         block.setSignedTxList(blockPO.getSignedTxs());
@@ -237,6 +238,7 @@ import java.util.*;
         blockPO.setPolicyRootHash(rootHash.getPolicyRootHash());
         blockPO.setRsRootHash(rootHash.getRsRootHash());
         blockPO.setCaRootHash(rootHash.getCaRootHash());
+        blockPO.setStateRootHash(rootHash.getStateRoot());
         List<SignedTransaction> txs = block.getSignedTxList();
 
         //add transaction number to block table
