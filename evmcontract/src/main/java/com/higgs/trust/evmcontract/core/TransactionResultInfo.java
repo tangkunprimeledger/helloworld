@@ -5,11 +5,15 @@ import com.higgs.trust.evmcontract.util.RLP;
 import com.higgs.trust.evmcontract.util.RLPElement;
 import com.higgs.trust.evmcontract.util.RLPList;
 import com.higgs.trust.evmcontract.vm.LogInfo;
+import org.apache.commons.lang3.StringUtils;
+import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author duhongming
@@ -23,6 +27,7 @@ public class TransactionResultInfo {
     private List<LogInfo> logInfoList;
     private byte[] executionResult = ByteUtil.EMPTY_BYTE_ARRAY;
     private String error = "";
+    private byte[] createdAddress = ByteUtil.EMPTY_BYTE_ARRAY;
 
     private byte[] rlpEncoded;
 
@@ -37,10 +42,9 @@ public class TransactionResultInfo {
     }
 
     public TransactionResultInfo(final byte[] rlp) {
-        RLPList rlpList = RLP.decode2(rlp);
+        RLPList rlpList = RLP.unwrapList(rlp);
         blockHeight = RLP.decodeInt(rlpList.get(0).getRLPData(), 0);
         txHash = rlpList.get(1).getRLPData();
-        //index = new BigInteger(1, rlpList.get(2).getRLPData()).intValue();
         index = RLP.decodeInt(rlpList.get(2).getRLPData(), 0);
         bloomFilter = new Bloom(rlpList.get(3).getRLPData());
 
@@ -52,6 +56,7 @@ public class TransactionResultInfo {
         logInfoList = logInfos;
 
         executionResult = rlpList.get(5).getRLPData();
+        createdAddress = rlpList.get(6).getRLPData();
         rlpEncoded = rlp;
     }
 
@@ -76,14 +81,14 @@ public class TransactionResultInfo {
 
 
         rlpEncoded = RLP.encodeList(
-                RLP.encodeInt((int)blockHeight),
+                RLP.encodeInt((int) blockHeight),
                 RLP.encodeElement(txHash),
                 RLP.encodeInt(index),
                 bloomFilterRLP,
                 logInfoListRLP,
-                RLP.encodeElement(executionResult)
+                RLP.encodeElement(executionResult),
+                RLP.encodeElement(createdAddress)
         );
-
         return rlpEncoded;
     }
 
@@ -144,11 +149,44 @@ public class TransactionResultInfo {
         this.error = error;
     }
 
+    public byte[] getCreatedAddress() {
+        return createdAddress;
+    }
+
+    public void setCreatedAddress(byte[] createdAddress) {
+        this.createdAddress = createdAddress;
+    }
+
     public byte[] getRlpEncoded() {
         return rlpEncoded;
     }
 
     public void setRlpEncoded(byte[] rlpEncoded) {
         this.rlpEncoded = rlpEncoded;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>(6);
+        map.put("txId", new String(txHash));
+        map.put("blockHeight", blockHeight);
+        map.put("result", StringUtils.isEmpty(error) ? "Success" : "Error");
+        map.put("error", error);
+        map.put("logInfoList", logInfoList);
+        if (createdAddress.length > 0) {
+            map.put("createdAddress", Hex.toHexString(createdAddress));
+        }
+        return map;
+    }
+
+    public static void main(String[] args) {
+        String s = new String(ByteUtil.EMPTY_BYTE_ARRAY);
+        byte[] data = RLP.encodeList( RLP.encodeInt(1), RLP.encodeInt(2));
+        byte[][] data2 = new byte[2][];
+        data2[0] = RLP.encodeInt(1);
+        data2[1] = RLP.encodeInt(2);
+        RLPList list = RLP.unwrapList(data);
+
+        RLPList list2 = RLP.unwrapList(RLP.encodeList(data2));
+        System.out.println(list);
     }
 }
