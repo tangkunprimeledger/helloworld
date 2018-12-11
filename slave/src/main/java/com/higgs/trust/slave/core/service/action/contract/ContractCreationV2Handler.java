@@ -92,7 +92,6 @@ public class ContractCreationV2Handler implements ActionHandler {
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
         long number = actionData.getCurrentBlock().getBlockHeader().getHeight();
-        byte[] nonce = new BigInteger(creationAction.getNonce() + "").toByteArray();
         byte[] senderAddress = Hex.decode(creationAction.getFrom());
         byte[] receiverAddress = Hex.decode(creationAction.getTo());
         log.info("contract address:{}", Hex.toHexString(receiverAddress));
@@ -103,7 +102,7 @@ public class ContractCreationV2Handler implements ActionHandler {
         ContractExecutionContext contractExecutionContext = new ContractExecutionContext(
                 ContractTypeEnum.CONTRACT_CREATION,
                 txId.getBytes(),
-                nonce,
+                null,
                 senderAddress,
                 receiverAddress,
                 value,

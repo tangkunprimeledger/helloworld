@@ -16,16 +16,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class ContractInvokeV2Action extends Action {
-    /**
-     * contract address
-     */
-    @NotNull
-    @NotBlank
-    private String address;
-    /**
-     * if transfer，which is tx's nonce
-     */
-    private Long nonce;
+
     /**
      * if transfer，which is transfering amount
      */

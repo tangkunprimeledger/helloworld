@@ -14,12 +14,8 @@ import lombok.Setter;
 public class ContractCreationV2Action extends Action {
 
     private String version;
-    private String code;
 
-    /**
-     * if transfer，which is tx's nonce
-     */
-    private Long nonce;
+    private String code;
 
     /**
      * from address
