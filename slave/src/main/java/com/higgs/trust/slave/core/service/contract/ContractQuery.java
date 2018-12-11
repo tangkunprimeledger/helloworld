@@ -25,7 +25,7 @@ public class ContractQuery {
     @Autowired
     NodeState nodeState;
 
-    private static final Pattern CONTRACT_ADDRESS_PATTERN = Pattern.compile("^[0-9a-zA-Z]{64}$");
+    private static final Pattern BLOCK_HASH_PATTERN = Pattern.compile("^[0-9a-zA-Z]{64}$");
 
     public List<?> executeQuery(byte[] contractAddress, String methodSignature, Object... args) {
         try {
@@ -57,7 +57,7 @@ public class ContractQuery {
 
         long number = blockchain.getLastBlockHeader().getHeight();
         String previousHash = blockchain.getLastBlockHeader().getPreviousHash();
-        if (!CONTRACT_ADDRESS_PATTERN.matcher(previousHash).matches()) {
+        if (!BLOCK_HASH_PATTERN.matcher(previousHash).matches()) {
             throw new IllegalArgumentException("Block hash should be a hex string of 32 bytes");
         }
         byte[] parentHash = Hex.decode(previousHash);
