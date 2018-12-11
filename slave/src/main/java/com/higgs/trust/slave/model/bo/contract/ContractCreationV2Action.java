@@ -21,4 +21,14 @@ public class ContractCreationV2Action extends Action {
      */
     private Long nonce;
 
+    /**
+     * from address
+     */
+    private String from;
+
+    /**
+     * to address
+     */
+    private String to;
+
 }
