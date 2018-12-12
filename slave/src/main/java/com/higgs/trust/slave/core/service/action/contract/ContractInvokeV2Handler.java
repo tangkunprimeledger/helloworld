@@ -47,7 +47,8 @@ public class ContractInvokeV2Handler implements ActionHandler {
 
         ContractInvocation contractInvocation = new ContractInvocation();
         byte[] invokeFuncData = contractInvocation.getBytecodeForInvokeContract(invokeAction.getMethodSignature(), invokeAction.getArgs());
-
+        //TODO tangKun address just for test ? 2018-12-12
+        byte[] minerAddress = Hex.decode("095e7baea6a6c7c4c2dfeb977efac326af552d87");
         ContractExecutionContext contractExecutionContext = buildContractExecutionContext(ContractTypeEnum.CUSTOMER_CONTRACT_INVOCATION,
                 txId.getBytes(),
                 null,
@@ -56,7 +57,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
                 value,
                 invokeFuncData,
                 Hex.decode(parentBlockHash),
-                new byte[]{},
+                minerAddress,
                 timestamp,
                 blockHeight);
 
