@@ -101,14 +101,14 @@ public class ContractServiceImpl implements ContractService {
         return invokeAction;
     }
 
-    private ContractInvokeV2Action buildInvokeV2Action(String address, Long nonce, BigDecimal value, String methodSignature, Object... args) {
+    private ContractInvokeV2Action buildInvokeV2Action(String from, String to, BigDecimal value, String methodSignature, Object... args) {
         ContractInvokeV2Action invokeV2Action = new ContractInvokeV2Action();
-
+        invokeV2Action.setFrom(from);
+        invokeV2Action.setTo(to);
         invokeV2Action.setArgs(args);
         invokeV2Action.setIndex(0);
         invokeV2Action.setType(ActionTypeEnum.CONTRACT_INVOKED);
         invokeV2Action.setValue(value);
-
         invokeV2Action.setMethodSignature(methodSignature);
         return invokeV2Action;
     }
@@ -202,8 +202,8 @@ public class ContractServiceImpl implements ContractService {
      * @return
      */
     @Override
-    public RespData invokeV2(String txId, String address, Long nonce, BigDecimal value, String methodSignature, Object... args) {
-        ContractInvokeV2Action action = buildInvokeV2Action(address, nonce, value, methodSignature, args);
+    public RespData invokeV2(String txId, String from, String to, BigDecimal value, String methodSignature, Object... args) {
+        ContractInvokeV2Action action = buildInvokeV2Action(from, to, value, methodSignature, args);
         CoreTransaction coreTx = buildCoreTx(txId, action);
         try {
             coreTransactionService.submitTx(coreTx);

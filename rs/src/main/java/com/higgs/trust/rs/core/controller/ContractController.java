@@ -82,15 +82,18 @@ public class ContractController {
         if (invokeV2Request == null) {
             return fail(null, "", "invalid invokeV2Request");
         }
-        if (StringUtils.isEmpty(invokeV2Request.getAddress())) {
-            return fail(null, "", "address is empty");
+        if (StringUtils.isEmpty(invokeV2Request.getFrom())) {
+            return fail(null, "", "from address is empty");
+        }
+        if (StringUtils.isEmpty(invokeV2Request.getTo())) {
+            return fail(null, "", "to address is empty");
         }
         if (StringUtils.isEmpty(invokeV2Request.getMethodSignature())) {
             return fail(null, "", "method signature is empty");
         }
-        String txId = "0x10000000" + invokeV2Request.getAddress().hashCode() + System.currentTimeMillis();
-        RespData result = contractService.invokeV2(txId, invokeV2Request.getAddress(),
-                invokeV2Request.getNonce(),
+        String txId = "0x10000000" + invokeV2Request.getFrom().hashCode() + System.currentTimeMillis();
+        RespData result = contractService.invokeV2(txId, invokeV2Request.getFrom(),
+                invokeV2Request.getTo(),
                 invokeV2Request.getValue(),
                 invokeV2Request.getMethodSignature(),
                 invokeV2Request.getArgs());

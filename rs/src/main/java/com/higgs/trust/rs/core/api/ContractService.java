@@ -57,14 +57,14 @@ public interface ContractService {
     /**
      * invoke v2 contract
      * @param txId
-     * @param address
-     * @param nonce
+     * @param from
+     * @param to
      * @param value
      * @param methodSignature
      * @param args
      * @return
      */
-    RespData invokeV2(String txId, String address, Long nonce, BigDecimal value, String methodSignature, Object... args);
+    RespData invokeV2(String txId, String from, String to, BigDecimal value, String methodSignature, Object... args);
 
     /**
      * migration contract state

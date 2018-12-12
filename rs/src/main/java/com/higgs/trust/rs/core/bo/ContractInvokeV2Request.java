@@ -14,17 +14,10 @@ import java.math.BigDecimal;
 @Setter
 public class ContractInvokeV2Request extends BaseBO {
     /**
-     * contract address
-     */
-    private String address;
-    /**
-     * if transfer，which is tx's nonce
-     */
-    private Long nonce;
-    /**
      * if transfer，which is transfering amount
      */
     private BigDecimal value;
+
     /**
      * 调用方法签名(方法名+参数列表+返回值，例如：(uint) balanceOf(address))
      */
@@ -34,4 +27,14 @@ public class ContractInvokeV2Request extends BaseBO {
      * 智能合约调用传入参数列表
      */
     private Object[] args;
+
+    /**
+     * from address
+     */
+    private String from;
+
+    /**
+     * to address
+     */
+    private String to;
 }
