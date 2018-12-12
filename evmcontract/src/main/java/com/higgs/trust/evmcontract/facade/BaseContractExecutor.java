@@ -7,13 +7,17 @@ import com.higgs.trust.evmcontract.facade.constant.Constant;
 import com.higgs.trust.evmcontract.facade.exception.ContractContextException;
 import com.higgs.trust.evmcontract.facade.exception.ContractExecutionException;
 import com.higgs.trust.evmcontract.facade.util.ContractUtil;
+import com.higgs.trust.evmcontract.solidity.Abi;
 import com.higgs.trust.evmcontract.util.ByteArraySet;
 import com.higgs.trust.evmcontract.vm.program.ProgramResult;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvoke;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvokeImpl;
 import org.apache.commons.lang3.ArrayUtils;
+import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -25,6 +29,7 @@ import java.util.Objects;
 public abstract class BaseContractExecutor implements Executor<ContractExecutionResult> {
     private static final int BLOCK_HASH_LENGTH = 32;
     private static final int ADDRESS_LENGTH = 20;
+    private static final String ERROR_SIGNATURE = "08c379a0";
 
     /**
      * Contract context.
@@ -327,7 +332,15 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
 
         if (programResult.isRevert()) {
             contractExecutionResult.setRevert(true);
-            contractExecutionResult.setErrorMessage("REVERT opcode executed");
+
+            String errorMessage;
+            try {
+                errorMessage = parseRevertInformation(programResult.getHReturn());
+                contractExecutionResult.setErrorMessage(errorMessage);
+            } catch (ContractExecutionException e) {
+                contractExecutionResult.setErrorMessage("REVERT opcode executed");
+                contractExecutionResult.setException(e);
+            }
         }
 
         contractExecutionResult.getTouchedAccountAddresses().addAll(touchedAccountAddresses);
@@ -341,5 +354,21 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         contractExecutionResult.setStateRoot(blockRepository.getRoot());
 
         return contractExecutionResult;
+    }
+
+    private String parseRevertInformation(byte[] hReturn) {
+        if (!Hex.toHexString(hReturn).startsWith(ERROR_SIGNATURE)) {
+            throw new ContractExecutionException("It is not revert message");
+        }
+
+        byte[] abiData = Arrays.copyOfRange(hReturn, ERROR_SIGNATURE.length(), hReturn.length);
+        Abi.Function function = Abi.Function.of("(string) error(string)");
+        List<?> list = function.decodeResult(abiData, false);
+
+        if (list.size() != 1 || !(list.get(0) instanceof String)) {
+            throw new ContractExecutionException("Parsing revert message fail");
+        }
+
+        return (String) list.get(0);
     }
 }
