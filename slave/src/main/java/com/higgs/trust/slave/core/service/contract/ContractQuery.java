@@ -20,12 +20,11 @@ import java.util.regex.Pattern;
  */
 @Service
 public class ContractQuery {
+    private static final Pattern BLOCK_HASH_PATTERN = Pattern.compile("^[0-9a-fA-F]{64}$");
     @Autowired
     Blockchain blockchain;
     @Autowired
     NodeState nodeState;
-
-    private static final Pattern BLOCK_HASH_PATTERN = Pattern.compile("^[0-9a-fA-F]{64}$");
 
     public List<?> executeQuery(byte[] contractAddress, String methodSignature, Object... args) {
         try {
@@ -47,7 +46,7 @@ public class ContractQuery {
 
     private ContractExecutionContext buildContractExecutionContext(byte[] receiverAddress, byte[] data) {
         ContractTypeEnum contractType = ContractTypeEnum.CUSTOMER_CONTRACT_QUERYING;
-        byte[] nodeNameBytes = HashUtil.sha256(nodeState.getNodeName().getBytes());
+        byte[] nodeNameBytes = HashUtil.sha3omit12(nodeState.getNodeName().getBytes());
         // every one can query, even if no account exists.
         byte[] senderAddress = nodeNameBytes;
         byte[] nonce = blockchain.getRepository().getNonce(senderAddress).toByteArray();
@@ -67,6 +66,6 @@ public class ContractQuery {
 
         return new ContractExecutionContext(contractType, transactionHash, nonce, senderAddress, receiverAddress,
                 value, data, parentHash, minerAddress, timestamp, number,
-                blockchain.getBlockStore(), blockchain.getRepositorySnapshot());
+                blockchain.getBlockStore(), blockchain.getRepository());
     }
 }
