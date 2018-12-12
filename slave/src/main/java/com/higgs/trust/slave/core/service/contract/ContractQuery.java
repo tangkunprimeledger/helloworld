@@ -5,6 +5,7 @@ import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.evmcontract.crypto.HashUtil;
 import com.higgs.trust.evmcontract.facade.*;
 import com.higgs.trust.evmcontract.facade.compile.ContractInvocation;
+import com.higgs.trust.evmcontract.facade.exception.ContractExecutionException;
 import com.higgs.trust.evmcontract.vm.DataWord;
 import com.higgs.trust.slave.core.Blockchain;
 import org.spongycastle.util.encoders.Hex;
@@ -38,6 +39,14 @@ public class ContractQuery {
             ExecutorFactory<ContractExecutionContext, ContractExecutionResult> factory = new ContractExecutorFactory();
             Executor<ContractExecutionResult> executor = factory.createExecutor(context);
             ContractExecutionResult result = executor.execute();
+
+            if (result.getRevert()) {
+                throw new ContractExecutionException(result.getErrorMessage());
+            }
+
+            if (result.getException() != null) {
+                throw result.getException();
+            }
 
             return contractInvocation.decodeResult(result.getResult());
         } finally {

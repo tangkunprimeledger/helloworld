@@ -338,8 +338,8 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
                 errorMessage = parseRevertInformation(programResult.getHReturn());
                 contractExecutionResult.setErrorMessage(errorMessage);
             } catch (ContractExecutionException e) {
-                contractExecutionResult.setErrorMessage("REVERT opcode executed");
                 contractExecutionResult.setException(e);
+                contractExecutionResult.setErrorMessage("REVERT opcode executed, but: " + e.getMessage());
             }
         }
 
@@ -358,7 +358,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
 
     private String parseRevertInformation(byte[] hReturn) {
         if (!Hex.toHexString(hReturn).startsWith(ERROR_SIGNATURE)) {
-            throw new ContractExecutionException("It is not revert message");
+            throw new ContractExecutionException("return is not revert message");
         }
 
         byte[] abiData = Arrays.copyOfRange(hReturn, ERROR_SIGNATURE.length(), hReturn.length);
@@ -366,7 +366,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         List<?> list = function.decodeResult(abiData, false);
 
         if (list.size() != 1 || !(list.get(0) instanceof String)) {
-            throw new ContractExecutionException("Parsing revert message fail");
+            throw new ContractExecutionException("parsing revert message fail");
         }
 
         return (String) list.get(0);
