@@ -13,7 +13,7 @@ public class ContractQueryRequestV2 {
     /**
      * Contract address, hex string of 40 characters, e.g. 00a615668486da40f31fd050854fb137b317e056.
      */
-    private String contractAddress;
+    private String address;
     /**
      * Method signature, e.g. (uint256) get(uint256).
      */
@@ -21,5 +21,5 @@ public class ContractQueryRequestV2 {
     /**
      * Method input arguments, e.g. 4.
      */
-    private Object[] methodInputArgs;
+    private Object[] parameters;
 }

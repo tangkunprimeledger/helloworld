@@ -23,6 +23,9 @@ import java.util.Objects;
  * @date 2018-11-15
  */
 public abstract class BaseContractExecutor implements Executor<ContractExecutionResult> {
+    private static final int BLOCK_HASH_LENGTH = 32;
+    private static final int ADDRESS_LENGTH = 20;
+
     /**
      * Contract context.
      */
@@ -96,6 +99,23 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         gasLimitBlock = contractExecutionContext.getGasLimitBlock();
         blockStore = contractExecutionContext.getBlockStore();
         systemProperties = contractExecutionContext.getSystemProperties();
+
+        checkFormat();
+    }
+
+    private void checkFormat() {
+        if (senderAddress.length != ADDRESS_LENGTH) {
+            throw new ContractContextException(String.format("Sender address is not of %d bytes", ADDRESS_LENGTH));
+        }
+        if (receiverAddress.length != ADDRESS_LENGTH) {
+            throw new ContractContextException(String.format("Receiver address is not of %d bytes", ADDRESS_LENGTH));
+        }
+        if (minerAddress.length != ADDRESS_LENGTH) {
+            throw new ContractContextException(String.format("Miner address is not of %d bytes", ADDRESS_LENGTH));
+        }
+        if (parentHash.length != BLOCK_HASH_LENGTH) {
+            throw new ContractContextException(String.format("Parent hash is not of %d bytes", BLOCK_HASH_LENGTH));
+        }
     }
 
     private void checkBlockRepository() {

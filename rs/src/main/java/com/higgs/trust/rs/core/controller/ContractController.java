@@ -147,7 +147,7 @@ public class ContractController {
     public RespData<List<?>> query2(@RequestBody ContractQueryRequestV2 request) {
         try {
             List<?> resultList = contractQueryService.query2(
-                    request.getContractAddress(), request.getMethodSignature(), request.getMethodInputArgs());
+                    request.getAddress(), request.getMethodSignature(), request.getParameters());
             return RespData.success(resultList);
         } catch (Exception e) {
             e.printStackTrace();

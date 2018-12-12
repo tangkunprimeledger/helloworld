@@ -25,7 +25,7 @@ public class ContractQuery {
     @Autowired
     NodeState nodeState;
 
-    private static final Pattern BLOCK_HASH_PATTERN = Pattern.compile("^[0-9a-zA-Z]{64}$");
+    private static final Pattern BLOCK_HASH_PATTERN = Pattern.compile("^[0-9a-fA-F]{64}$");
 
     public List<?> executeQuery(byte[] contractAddress, String methodSignature, Object... args) {
         try {
