@@ -17,8 +17,8 @@ public class ContractInvocation {
         return function.encode(args);
     }
 
-    public List<?> decodeResult(byte[] result) {
-        return function == null ? null : function.decodeResult(result, false);
+    public List<?> decodeResult(byte[] result, boolean humanReadable) {
+        return function == null ? null : function.decodeResult(result, humanReadable);
     }
 
     public byte[] getBytecodeForInvokeContract(String methodSignature, Object... args) {

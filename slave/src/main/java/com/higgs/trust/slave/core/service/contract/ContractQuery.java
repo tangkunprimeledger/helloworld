@@ -47,7 +47,7 @@ public class ContractQuery {
                 throw result.getException();
             }
 
-            return contractInvocation.decodeResult(result.getResult());
+            return contractInvocation.decodeResult(result.getResult(), true);
         } finally {
             Profiler.release();
         }
