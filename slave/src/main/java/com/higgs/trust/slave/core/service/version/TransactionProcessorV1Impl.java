@@ -161,6 +161,7 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
                 if (isCreateEvmContract) {
                     resultInfo.setCreatedAddress(executionResult.getReceiverAddress());
                 }
+                resultInfo.setError(executionResult.getErrorMessage());
                 blockchain.putResultInfo(resultInfo);
             }
         }
