@@ -361,7 +361,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
             throw new ContractExecutionException("return is not revert message");
         }
 
-        byte[] abiData = Arrays.copyOfRange(hReturn, ERROR_SIGNATURE.length(), hReturn.length);
+        byte[] abiData = Arrays.copyOfRange(hReturn, ERROR_SIGNATURE.length() / 2, hReturn.length);
         Abi.Function function = Abi.Function.of("(string) error(string)");
         List<?> list = function.decodeResult(abiData, false);
 
