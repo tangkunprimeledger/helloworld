@@ -18,9 +18,9 @@ contract Test {
         }
     }
 
-    function putVal(uint key, uint val) public {
+    function putVal(uint key, uint val) public returns (uint, uint) {
         data[key] = val;
-        return;
+        return (key, val);
     }
 
     function balanceOf(address account) public view returns (uint) {

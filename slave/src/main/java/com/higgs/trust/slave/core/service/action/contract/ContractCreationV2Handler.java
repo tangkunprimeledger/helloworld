@@ -117,6 +117,7 @@ public class ContractCreationV2Handler implements ActionHandler {
         );
         Executor<ContractExecutionResult> executor = executorFactory.createExecutor(contractExecutionContext);
         ContractExecutionResult result = executor.execute();
+        result.setResult(null);
         ContractExecutionResult.setCurrentResult(result);
 
     }

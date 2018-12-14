@@ -249,6 +249,8 @@ public class Abi extends ArrayList<Abi.Entry> {
                     if (humanReadable) {
                         if (param.type instanceof SolidityType.StringType) {
                             result.add(decoded);
+                        } else if(param.type instanceof SolidityType.AddressType){
+                            result.add(Hex.toHexString((byte[]) decoded));
                         } else if (param.type.isDynamicType()) {
                             List dynResult = new ArrayList<>();
                             Object[] arr = (Object[]) decoded;
@@ -271,7 +273,7 @@ public class Abi extends ArrayList<Abi.Entry> {
 
             private static void convertAndAdd(List<Object> result, Object value) {
                 if ((value instanceof byte[])) {
-                    result.add(new ByteArrayWrapper((byte[]) value));
+                    result.add(Hex.toHexString((byte[]) value));
                 } else {
                     result.add(value);
                 }

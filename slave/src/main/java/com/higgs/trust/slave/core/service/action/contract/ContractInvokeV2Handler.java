@@ -65,6 +65,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
 
         Executor<ContractExecutionResult> executor = executorFactory.createExecutor(contractExecutionContext);
         ContractExecutionResult result = executor.execute();
+        result.setMethod(invokeAction.getMethodSignature());
         ContractExecutionResult.setCurrentResult(result);
     }
 
