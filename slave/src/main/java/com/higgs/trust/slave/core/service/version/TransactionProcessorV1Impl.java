@@ -156,6 +156,7 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
             ContractExecutionResult.clearCurrentResult();
             if (executionResult != null) {
                 long height = transactionData.getCurrentPackage().getHeight();
+
                 TransactionResultInfo resultInfo = new TransactionResultInfo(height, coreTx.getTxId().getBytes(), 1,
                         executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult());
                 if (isCreateEvmContract) {
