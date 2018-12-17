@@ -436,7 +436,7 @@ public class Abi extends ArrayList<Abi.Entry> {
                     param.type = SolidityType.getType(paramPart[0]);
                     param.indexed = false;
                     indexedOver = true;
-                } else if (paramPart.length == 2 && !indexedOver) {
+                } else if (paramPart.length == 2 && "indexed".equals(paramPart[1]) && !indexedOver) {
                     param.type = SolidityType.getType(paramPart[0]);
                     param.indexed = true;
                 } else {
