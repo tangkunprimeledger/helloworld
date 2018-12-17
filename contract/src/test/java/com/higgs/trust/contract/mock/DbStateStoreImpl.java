@@ -3,7 +3,6 @@ package com.higgs.trust.contract.mock;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.contract.ContractStateStore;
-import com.higgs.trust.contract.StateManager;
 
 import java.util.HashMap;
 import java.util.Map;

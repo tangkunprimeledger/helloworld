@@ -92,7 +92,6 @@ CREATE TABLE IF NOT EXISTS `biz_type` (
 CREATE TABLE IF NOT EXISTS `request` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`request_id` VARCHAR (64) NOT NULL COMMENT 'request id',
-	`data` varchar(12288) NULL COMMENT 'the request data',
 	`status` VARCHAR(32) NOT NULL COMMENT 'request status',
 	`resp_code` VARCHAR(10) DEFAULT NULL COMMENT 'response code',
 	`resp_msg` varchar(2048) DEFAULT NULL COMMENT 'response msg',

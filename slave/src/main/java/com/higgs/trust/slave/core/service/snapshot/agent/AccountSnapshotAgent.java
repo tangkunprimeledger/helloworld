@@ -106,7 +106,7 @@ public class AccountSnapshotAgent implements CacheLoader {
      * @param bo
      */
     public void issueCurrency(IssueCurrency bo) {
-        CurrencyInfo currencyInfo = currencyRepository.buildCurrencyInfo(bo.getCurrencyName(), bo.getRemark(),bo.getHomomorphicPk());
+        CurrencyInfo currencyInfo = currencyRepository.buildCurrencyInfo(bo.getCurrencyName(), bo.getRemark(),bo.getHomomorphicPk(), bo.getContractAddress());
         insert(new CurrencyInfoCacheKey(bo.getCurrencyName()), currencyInfo);
     }
 

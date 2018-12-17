@@ -129,8 +129,8 @@ import java.util.List;
      */
     public int batchInsertCurrency(List<CurrencyInfo> currencyInfos) {
         StringBuilder sql =
-            new StringBuilder("INSERT INTO CURRENCY_INFO" + "  (id,currency,remark,homomorphicPk,create_time) " + "  VALUES");
-        String template = "(:c[${i}].id,:c[${i}].currency,:c[${i}].remark,:c[${i}].homomorphicPk,now(3)),";
+            new StringBuilder("INSERT INTO CURRENCY_INFO" + "  (id,currency,remark,homomorphicPk,contract_address, create_time) " + "  VALUES");
+        String template = "(:c[${i}].id,:c[${i}].currency,:c[${i}].remark,:c[${i}].homomorphicPk,:c[${i}].contractAddress, now(3)),";
         int size = currencyInfos.size();
         for (int i = 0; i < size; i++) {
             sql.append(template.replaceAll("\\$\\{i\\}", String.valueOf(i)));

@@ -135,13 +135,14 @@ public class CoreTransactionConvertor {
      * @param remark
      * @return
      */
-    public IssueCurrency buildIssueCurrencyAction(String currency, int index, String remark,String homomorphicPk) {
+    public IssueCurrency buildIssueCurrencyAction(String currency, int index, String contractAddress, String homomorphicPk, String remark) {
         IssueCurrency currencyAction = new IssueCurrency();
         currencyAction.setCurrencyName(currency);
+        currencyAction.setIndex(index);
+        currencyAction.setContractAddress(contractAddress);
+        currencyAction.setHomomorphicPk(homomorphicPk);
         currencyAction.setRemark(remark);
         currencyAction.setType(ActionTypeEnum.ISSUE_CURRENCY);
-        currencyAction.setIndex(index);
-        currencyAction.setHomomorphicPk(homomorphicPk);
         return currencyAction;
     }
 
