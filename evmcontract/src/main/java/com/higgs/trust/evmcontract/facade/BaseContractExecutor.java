@@ -13,6 +13,7 @@ import com.higgs.trust.evmcontract.vm.program.ProgramResult;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvoke;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvokeImpl;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
@@ -357,6 +358,10 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     }
 
     private String parseRevertInformation(byte[] hReturn) {
+        if (ArrayUtils.isEmpty(hReturn)) {
+            return "";
+        }
+
         if (!Hex.toHexString(hReturn).startsWith(ERROR_SIGNATURE)) {
             throw new ContractExecutionException("return is not revert message");
         }

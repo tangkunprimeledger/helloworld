@@ -215,7 +215,7 @@ public class ExecutorTest {
         assertNull(result.getException());
         assertNotEquals(Hex.toHexString(root), Hex.toHexString(result.getStateRoot()));
         assertTrue(result.getRevert());
-        assertEquals("REVERT opcode executed", result.getErrorMessage());
+        assertEquals("", result.getErrorMessage());
 
         assertEquals(ContractUtil.toBigInteger(new DataWord(1).getData()), blockRepository.getNonce(senderAddress));
         assertNull(blockRepository.getAccountState(receiverAddress));
@@ -486,7 +486,7 @@ public class ExecutorTest {
         byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
         byte[] nonce = new DataWord(0).getData();
         byte[] senderAddress = Hex.decode("05792f204d45f061a5b68847534b428a127ae583");
-        byte[] receiverAddress = Hex.decode("0000000000000000000000000000000000000000000000000000000000000002");
+        byte[] receiverAddress = Hex.decode("0000000000000000000000000000000000000002");
         byte[] value = null;
         byte[] data = Hex.decode("405234801561001057600080fd00396000f30060806040526004361069763520");
         byte[] parentHash = Hex.decode("098765467d45f061a5b68847534b428a1277652677b6467f2d1f3381ae683910");
@@ -643,84 +643,6 @@ public class ExecutorTest {
 
         ContractExecutionContext context = buildContractExecutionContext(contractType, transactionHash,
                 nonce, senderAddress, receiverAddress, value, data, parentHash, minerAddress, timestamp, number);
-        Executor<ContractExecutionResult> executor = factory.createExecutor(context);
-        ContractExecutionResult result = executor.execute();
-
-
-        assertNotNull(result);
-        assertEquals(1, result.getTouchedAccountAddresses().size());
-        assertTrue(result.getTouchedAccountAddresses().contains(receiverAddress));
-        assertEquals(Hex.toHexString(transactionHash), Hex.toHexString(result.getTransactionHash()));
-        assertEquals(Hex.toHexString(value), Hex.toHexString(result.getValue()));
-        assertEquals(1, result.getLogInfoList().size());
-        assertEquals("00a615668486da40f31fd050854fb137b317e056",
-                Hex.toHexString(result.getLogInfoList().get(0).getAddress()));
-        assertEquals("00000000000000000000000005792f204d45f061a5b68847534b428a127ae583" +
-                        "0000000000000000000000000000000000000000000000000000000000000038",
-                Hex.toHexString(result.getLogInfoList().get(0).getData()));
-        assertEquals("0000000000000000000000000000000000000000000000000000000000000019",
-                Hex.toHexString(result.getLogInfoList().get(0).getTopics().get(1).getData()));
-
-        CompilationResult.ContractMetadata metadata = getContractMetadata("ExecutorTest009.sol", "ExecutorTest009");
-        CallTransaction.Contract contract = new CallTransaction.Contract(metadata.abi);
-        CallTransaction.Function event = contract.getByName("Sent");
-        byte[] eventSignatrue = event.encodeSignatureLong();
-        //"2e0c9b7721d4bcc1b5781e2248e010b07b94a614f855a3406b43d03aad9ad4d2"
-        assertEquals(Hex.toHexString(eventSignatrue),
-                Hex.toHexString(result.getLogInfoList().get(0).getTopics().get(0).getData()));
-
-        CallTransaction.Invocation invocation = contract.parseEvent(result.getLogInfoList().get(0));
-        assertEquals(25, ((BigInteger) invocation.args[0]).intValue());
-        assertEquals("05792f204d45f061a5b68847534b428a127ae583", Hex.toHexString((byte[]) invocation.args[1]));
-        assertEquals(56, ((BigInteger) invocation.args[2]).intValue());
-
-        assertEquals("6080604052600080fd00a165627a7a723058207ed1cf4ff17e07eb0fdbf21f0531f91a15a818de46ff9bd268058826" +
-                "1c02ed7d0029", Hex.toHexString(result.getResult()));
-        assertEquals(0, result.getDeleteAccounts().size());
-        assertEquals(0, result.getInternalTransactions().size());
-        assertNull(result.getException());
-        assertNotNull(result.getStateRoot());
-        assertFalse(result.getRevert());
-        assertNull(result.getErrorMessage());
-
-        assertEquals(ContractUtil.toBigInteger(new DataWord(1).getData()), blockRepository.getNonce(senderAddress));
-        assertNotNull(blockRepository.getAccountState(receiverAddress));
-        assertArrayEquals(result.getResult(), blockRepository.getCode(receiverAddress));
-
-        blockRepository.commit();
-        Repository repository = blockRepository.getSnapshotTo(result.getStateRoot());
-        assertEquals(ContractUtil.toBigInteger(new DataWord(1).getData()), repository.getNonce(senderAddress));
-        assertNotNull(repository.getAccountState(receiverAddress));
-        assertArrayEquals(result.getResult(), repository.getCode(receiverAddress));
-    }
-
-    @Ignore
-    @Test
-    public void testEventDemo() throws IOException {
-        ContractTypeEnum contractType = ContractTypeEnum.CONTRACT_CREATION;
-        byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
-        byte[] nonce = new DataWord(0).getData();
-        byte[] senderAddress = Hex.decode("05792f204d45f061a5b68847534b428a127ae583");
-        byte[] receiverAddress = Hex.decode("00a615668486da40f31fd050854fb137b317e056");
-        byte[] value = new DataWord(0).getData();
-        // 6080604052348015600f57600080fd5b5060197f2e0c9b7721d4bcc1b5781e2248e010b07b94a614f855a3406b43d03aad9ad4d233
-        // 6038604051808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152
-        // 6020018281526020019250505060405180910390a2603580608b6000396000f3006080604052600080fd00a165627a7a723058209a
-        // df98f1a08289b12e493333601cbc0318b7294e44b47b59ccba15ba0ffc0e140029
-        byte[] data = compile("ExecutorTest009.sol", "ExecutorTest009", "ExecutorTest009()");
-        byte[] parentHash = Hex.decode("098765467d45f061a5b68847534b428a1277652677b6467f2d1f3381ae683910");
-        byte[] minerAddress = Hex.decode("5f061a5b68847534b428a1277652677b6467f2d1");
-        long timestamp = 3785872384L;
-        long number = 12;
-
-        blockRepository.createAccount(senderAddress);
-        blockRepository.addBalance(senderAddress, ContractUtil.toBigInteger(value));
-        blockRepository.commit();
-        assertEquals(Hex.toHexString(receiverAddress), Hex.toHexString(HashUtil.calcNewAddr(senderAddress, nonce)));
-
-
-        ContractExecutionContext context = buildContractExecutionContext(contractType, transactionHash,
-                nonce, senderAddress, receiverAddress, value, Hex.decode("6080604052348015600f57600080fd5b50604080513381526038602082015281516019927f2e0c9b7721d4bcc1b5781e2248e010b07b94a614f855a3406b43d03aad9ad4d2928290030190a260358060586000396000f3006080604052600080fd00a165627a7a72305820a916c71db2597b4b3d7c2a8311ac8bc79e96edb3187542cd0d464813a12dd2600029"), parentHash, minerAddress, timestamp, number);
         Executor<ContractExecutionResult> executor = factory.createExecutor(context);
         ContractExecutionResult result = executor.execute();
 
@@ -1062,6 +984,4 @@ public class ExecutorTest {
         List<?> parameters = event.decode(logInfo.getData(), topics);
         assertEquals(3, parameters.size());
     }
-
-
 }
