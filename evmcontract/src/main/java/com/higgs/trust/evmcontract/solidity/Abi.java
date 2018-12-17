@@ -23,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.higgs.trust.evmcontract.db.ByteArrayWrapper;
 import com.higgs.trust.evmcontract.util.ByteUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
@@ -405,12 +404,6 @@ public class Abi extends ArrayList<Abi.Entry> {
         private static final String PARAMETER_TYPE_SEPARATOR = ",";
         private static final String INDEXED_SEPARATOR = " ";
 
-        /**
-         * Add parsing event form signature.
-         *
-         * @param signature event signature
-         * @return Event instance
-         */
         public static Event fromSignature(String signature) {
             Matcher matcher = EVENT_SIGNATURE.matcher(signature);
             if (!matcher.find()) {
@@ -429,6 +422,7 @@ public class Abi extends ArrayList<Abi.Entry> {
             String eventName = matcher.group(1).trim();
             List<Param> eventInputs = new ArrayList<>();
             boolean indexedOver = false;
+            int indexedCount = 0;
             for (String paramType : params.split(PARAMETER_TYPE_SEPARATOR)) {
                 String[] paramPart = paramType.split(INDEXED_SEPARATOR);
                 Param param = new Param();
@@ -436,9 +430,11 @@ public class Abi extends ArrayList<Abi.Entry> {
                     param.type = SolidityType.getType(paramPart[0]);
                     param.indexed = false;
                     indexedOver = true;
-                } else if (paramPart.length == 2 && "indexed".equals(paramPart[1]) && !indexedOver) {
+                } else if (paramPart.length == 2
+                        && "indexed".equals(paramPart[1]) && !indexedOver && indexedCount < 3) {
                     param.type = SolidityType.getType(paramPart[0]);
                     param.indexed = true;
+                    indexedCount++;
                 } else {
                     throw new IllegalArgumentException(
                             String.format("Event parameter \"%s\" is illegal", paramType));
