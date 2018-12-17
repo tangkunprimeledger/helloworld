@@ -5,8 +5,6 @@ import com.higgs.trust.slave.core.repository.contract.ContractStateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
 /**
  * @author duhongming
  * @date 2018/05/07

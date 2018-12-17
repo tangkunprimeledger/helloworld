@@ -8,10 +8,11 @@
         <result column="remark" property="remark"/>
         <result column="create_time" property="createTime"/>
         <result column="homomorphicPk" property="homomorphicPk"/>
+        <result column="contract_address" property="contractAddress"/>
     </resultMap>
     <!-- currency_info table all fields -->
     <sql id="baseColumnList">
-		id,currency,remark,create_time,homomorphicPk
+		id,currency,remark,create_time,homomorphicPk,contract_address
 	</sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">
@@ -29,13 +30,19 @@
             <if test="createTime != null">
                 and create_time=#{createTime}
             </if>
+            <if test="homomorphicPk != null and homomorphicPk != ''">
+                and homomorphicPk=#{homomorphicPk}
+            </if>
+            <if test="contractAddress != null and contractAddress != ''">
+                and contract_address=#{contractAddress}
+            </if>
         </trim>
     </sql>
     <!-- 插入记录 -->
     <insert id="add" parameterType="Object">
 		insert into
-		currency_info(id,currency,remark,create_time,homomorphicPk)
-		values(#{id},#{currency},#{remark},now(),#{homomorphicPk})
+		currency_info(id,currency,remark,create_time,homomorphicPk,contract_address)
+		values(#{id},#{currency},#{remark},now(),#{homomorphicPk},#{contractAddress})
 	</insert>
     <!-- 删除记录 -->
     <delete id="delete" parameterType="Object">
@@ -74,10 +81,10 @@
     <!--batch insert-->
     <insert id ="batchInsert" parameterType="java.util.List" >
         insert into
-        currency_info(id,currency,remark,homomorphicPk,create_time)
+        currency_info(id,currency,remark,homomorphicPk, contract_address,create_time)
         values
         <foreach collection ="list" item="item" index= "index" separator =",">
-            (#{item.id},#{item.currency},#{item.remark},#{homomorphicPk},now(3))
+            (#{item.id},#{item.currency},#{item.remark},#{homomorphicPk},#{contractAddress},now(3))
         </foreach>
     </insert>
 </mapper>

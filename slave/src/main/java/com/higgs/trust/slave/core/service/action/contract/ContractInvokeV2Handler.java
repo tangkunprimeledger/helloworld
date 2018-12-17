@@ -42,7 +42,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
         byte[] senderAddress = Hex.decode(invokeAction.getFrom());
         byte[] receiverAddress = Hex.decode(invokeAction.getTo());
-        long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime();
+        long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime() / 1000;
         byte[] value = new BigInteger("0").toByteArray();
 
         ContractInvocation contractInvocation = new ContractInvocation();
@@ -65,6 +65,7 @@ public class ContractInvokeV2Handler implements ActionHandler {
 
         Executor<ContractExecutionResult> executor = executorFactory.createExecutor(contractExecutionContext);
         ContractExecutionResult result = executor.execute();
+        result.setMethod(invokeAction.getMethodSignature());
         ContractExecutionResult.setCurrentResult(result);
     }
 

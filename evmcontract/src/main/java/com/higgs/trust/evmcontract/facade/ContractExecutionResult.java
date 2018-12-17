@@ -23,6 +23,10 @@ public class ContractExecutionResult {
 
     private static final ThreadLocal<ContractExecutionResult> currentResult = new ThreadLocal<>();
 
+    @Getter
+    @Setter
+    private String method;
+
     /**
      * Address list of accounts participating in the contract execution.
      */
@@ -132,24 +136,6 @@ public class ContractExecutionResult {
     @Getter
     @Setter
     private long timeCost;
-
-    public byte[] getReceiptTrieEncoded() {
-        byte[] bloomRLP = RLP.encodeElement(this.bloomFilter.getData());
-        final byte[] logInfoListRLP;
-        if (logInfoList != null) {
-            byte[][] logInfoListE = new byte[logInfoList.size()][];
-
-            int i = 0;
-            for (LogInfo logInfo : logInfoList) {
-                logInfoListE[i] = logInfo.getEncoded();
-                ++i;
-            }
-            logInfoListRLP = RLP.encodeList(logInfoListE);
-        } else {
-            logInfoListRLP = RLP.encodeList();
-        }
-        return RLP.encodeList(RLP.encodeElement(value), bloomRLP, logInfoListRLP, RLP.encodeElement(result));
-    }
 
 
     /**

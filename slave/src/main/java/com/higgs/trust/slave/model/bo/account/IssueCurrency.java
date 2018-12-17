@@ -18,4 +18,8 @@ import javax.validation.constraints.NotNull;
     private String remark;
 
     private String HomomorphicPk;
+    /**
+     * contract address
+     */
+    private String contractAddress;
 }

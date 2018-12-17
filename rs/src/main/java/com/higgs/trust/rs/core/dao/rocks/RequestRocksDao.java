@@ -10,6 +10,7 @@ import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.rocksdb.Transaction;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -30,7 +31,7 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
         String key = requestPO.getRequestId();
         if (keyMayExist(key) && null != get(key)) {
             log.error("[RequestRocksDao.save] request is exist, requestId={}", key);
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_ALREADY_EXIST);
+            throw new DuplicateKeyException("[RequestRocksDao.save] request is exist, requestId = " + requestPO.getRequestId());
         }
         requestPO.setCreateTime(new Date());
         put(key, requestPO);
@@ -58,12 +59,13 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_KEY_IS_NOT_EXIST);
         }
 
-        if (!StringUtils.equals(fromStatus, requestPO.getStatus())) {
+        if (!StringUtils.isEmpty(fromStatus) && !StringUtils.equals(fromStatus, requestPO.getStatus())) {
             log.error("[RequestRocksDao.updateStatus] request status is invalid, requestId={}, currentStatus={}, status", requestId, requestPO.getStatus(), fromStatus);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_REQUEST_UPDATE_STATUS_FAILED);
         }
-
-        requestPO.setStatus(toStatus);
+        if (!StringUtils.isEmpty(toStatus)){
+            requestPO.setStatus(toStatus);
+        }
         requestPO.setRespCode(respCode);
         requestPO.setRespMsg(respMsg);
         requestPO.setUpdateTime(new Date());

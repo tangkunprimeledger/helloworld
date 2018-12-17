@@ -64,6 +64,14 @@ public class RocksUtils {
         }
     }
 
+    public static void txRollback(Transaction tx) {
+        try {
+            tx.rollback();
+        } catch (RocksDBException e){
+            log.error("transaction rollback exception. ", e);
+            throw new RuntimeException(e);
+        }
+    }
     @Autowired
     public void setRocksDBWrapper(RocksDBWrapper rocksDBWrapper) {
         RocksUtils.rocksDBWrapper = rocksDBWrapper;

@@ -51,19 +51,6 @@ public class Blockchain {
         this.blockStore = createBlockStore();
     }
 
-    public static byte[] calcReceiptsTrie(List<ContractExecutionResult> receipts) {
-        Trie receiptsTrie = new TrieImpl();
-
-        if (receipts == null || receipts.isEmpty()) {
-            return HashUtil.EMPTY_TRIE_HASH;
-        }
-
-        for (int i = 0; i < receipts.size(); i++) {
-            receiptsTrie.put(RLP.encodeInt(i), receipts.get(i).getReceiptTrieEncoded());
-        }
-        return receiptsTrie.getRootHash();
-    }
-
     private BlockStore createBlockStore() {
         BlockStore blockStore = new BlockStoreAdapter() {
             @Override

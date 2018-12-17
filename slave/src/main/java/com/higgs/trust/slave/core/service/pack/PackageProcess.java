@@ -113,6 +113,7 @@ public class PackageProcess implements InitializingBean {
                 RocksUtils.txCommit(tx);
                 result = true;
             } catch (Throwable e) {
+                RocksUtils.txRollback(tx);
                 result = false;
                 log.error("package process exception. ", e);
             } finally {
