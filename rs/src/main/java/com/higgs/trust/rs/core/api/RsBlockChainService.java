@@ -71,6 +71,12 @@ public interface RsBlockChainService {
     boolean isExistedCurrency(String currency);
 
     /**
+     * query contract address by currency
+     * @return
+     */
+    String queryContractAddressByCurrency(String currency);
+
+    /**
      * check whether the contract address is existed
      *
      * @param address
