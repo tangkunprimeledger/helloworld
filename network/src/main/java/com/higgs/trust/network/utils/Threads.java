@@ -17,4 +17,11 @@ public class Threads {
                 .setUncaughtExceptionHandler((t, e) -> log.error("Uncaught exception on " + t.getName(), e))
                 .build();
     }
+
+    public static ThreadFactory namedThreads(String pattern) {
+        return new ThreadFactoryBuilder()
+                .setNameFormat(pattern)
+                .setThreadFactory(r -> new Thread(r))
+                .build();
+    }
 }
