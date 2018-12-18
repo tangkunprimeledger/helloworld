@@ -20,10 +20,11 @@ public interface ContractQueryService {
     /**
      * Queries contract.
      *
+     * @param blockHeight block height
      * @param contractAddress contract address
      * @param methodSignature method signature written with target language
      * @param methodInputArgs actual parameters
      * @return result returned by contract invocation
      */
-    List<?> query2(String contractAddress, String methodSignature, Object... methodInputArgs);
+    List<?> query2(int blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs);
 }

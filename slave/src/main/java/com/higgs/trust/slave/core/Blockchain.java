@@ -3,36 +3,40 @@ package com.higgs.trust.slave.core;
 import com.higgs.trust.evmcontract.core.Bloom;
 import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.evmcontract.core.TransactionResultInfo;
-import com.higgs.trust.evmcontract.crypto.HashUtil;
 import com.higgs.trust.evmcontract.datasource.DbSource;
 import com.higgs.trust.evmcontract.db.BlockStore;
 import com.higgs.trust.evmcontract.db.TransactionStore;
 import com.higgs.trust.evmcontract.facade.BlockStoreAdapter;
-import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
-import com.higgs.trust.evmcontract.trie.Trie;
 import com.higgs.trust.evmcontract.trie.TrieImpl;
 import com.higgs.trust.evmcontract.util.ByteUtil;
 import com.higgs.trust.evmcontract.util.RLP;
 import com.higgs.trust.evmcontract.util.RLPList;
+import com.higgs.trust.slave.common.listener.CompositeTrustListener;
+import com.higgs.trust.slave.common.listener.TrustListener;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.spongycastle.util.encoders.Hex;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author duhongming
  * @date 2018/11/30
  */
 @Component
-public class Blockchain {
+@Slf4j
+public class Blockchain implements TrustListener, InitializingBean {
 
     private final BlockStore blockStore;
     private boolean initialized;
@@ -41,14 +45,19 @@ public class Blockchain {
     private Repository repositorySnapshot;
     private List<TransactionResultInfo> receipts;
     @Autowired
+    private ApplicationContext applicationContext;
+    @Autowired
     private BlockRepository blockRepository;
     @Autowired
     private DbSource<byte[]> dbSource;
     @Autowired
     private Repository repository;
 
+    private CompositeTrustListener listeners;
+
     public Blockchain() {
         this.blockStore = createBlockStore();
+        this.listeners = new CompositeTrustListener();
     }
 
     private BlockStore createBlockStore() {
@@ -86,6 +95,22 @@ public class Blockchain {
         }
     }
 
+    @Override
+    public void afterPropertiesSet() {
+        registerListener();
+    }
+
+    public void addListener(TrustListener listener) {
+        if (listener instanceof Blockchain || listener instanceof CompositeTrustListener) {
+            return;
+        }
+        listeners.addListener(listener);
+    }
+
+    public void removeListener(TrustListener listener) {
+        listeners.removeListener(listener);
+    }
+
     public synchronized void startExecuteBlock() {
         String root = lastBlockHeader.getStateRootHash().getStateRoot();
         receipts = new ArrayList<>();
@@ -114,10 +139,16 @@ public class Blockchain {
         transactionStore.flush();
         repositorySnapshot.commit();
 
-        receipts = null;
         repository = repositorySnapshot;
         repositorySnapshot = null;
         lastBlockHeader = blockHeader;
+
+        onBlock(blockHeader);
+
+        for (TransactionResultInfo result : receipts) {
+            onTransactionExecuted(result);
+        }
+        receipts = null;
     }
 
     public void putResultInfo(TransactionResultInfo result) {
@@ -147,6 +178,15 @@ public class Blockchain {
         return repository.getSnapshotTo(root);
     }
 
+    public Repository getRepositorySnapshot(long blockHeight) {
+        if (blockHeight > lastBlockHeader.getHeight()) {
+            log.warn("Target blockHeight mast less than last block height");
+            throw new IllegalArgumentException("Target blockHeight mast less than last block height");
+        }
+        BlockHeader blockHeader = blockRepository.getBlockHeader(blockHeight);
+        return repository.getSnapshotTo(Hex.decode(blockHeader.getStateRootHash().getStateRoot()));
+    }
+
     public BlockStore getBlockStore() {
         return blockStore;
     }
@@ -156,6 +196,23 @@ public class Blockchain {
             return null;
         }
         return transactionStore.get(txId.getBytes());
+    }
+
+    @Override
+    public void onBlock(BlockHeader header) {
+        listeners.onBlock(header);
+    }
+
+    @Override
+    public void onTransactionExecuted(TransactionResultInfo resultInfo) {
+        listeners.onTransactionExecuted(resultInfo);
+    }
+
+    private void registerListener() {
+        Map<String, TrustListener> map = applicationContext.getBeansOfType(TrustListener.class);
+        map.forEach((key,value) -> {
+            addListener(value);
+        });
     }
 
     private class MiniBlock {
