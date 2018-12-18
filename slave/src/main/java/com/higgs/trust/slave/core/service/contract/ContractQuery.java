@@ -77,10 +77,8 @@ public class ContractQuery {
         byte[] minerAddress = nodeNameBytes;
         // Trust use mills second and evm use second.
         long timestamp = blockchain.getLastBlockHeader().getBlockTime() / 1000;
-
-        byte[] stateRoot = Hex.decode(
-                blockRepository.getBlockHeader((long) blockHeight).getStateRootHash().getStateRoot());
-        Repository repository = blockchain.getRepositorySnapshot(stateRoot);
+        Repository repository =
+                blockHeight <= 1 ? blockchain.getRepository() : blockchain.getRepositorySnapshot(blockHeight);
 
         return new ContractExecutionContext(contractType, transactionHash, nonce, senderAddress, receiverAddress,
                 value, data, parentHash, minerAddress, timestamp, number,
