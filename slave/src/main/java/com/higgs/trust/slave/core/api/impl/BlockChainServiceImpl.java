@@ -26,6 +26,7 @@ import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
 import com.higgs.trust.slave.model.bo.contract.ContractState;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
@@ -411,6 +412,21 @@ public class BlockChainServiceImpl implements BlockChainService, InitializingBea
     }
 
     /**
+     * query contract address by currency
+     *
+     * @return
+     */
+    @Override
+    public String queryContractAddressByCurrency(String currency) {
+        CurrencyInfo currencyInfo = currencyRepository.queryByCurrency(currency);
+        if (null != currencyInfo) {
+            return currencyInfo.getContractAddress();
+        }
+        return null;
+    }
+
+
+    /**
      * check whether the contract address is existed
      *
      * @param address
@@ -571,7 +587,7 @@ public class BlockChainServiceImpl implements BlockChainService, InitializingBea
     @Override
     public CoreTransactionVO queryTxById(String txId) {
         CoreTransactionVO vo = transactionRepository.queryTxById(txId);
-        if(vo != null) {
+        if (vo != null) {
             Object contractState = getContractState(txId, vo);
             vo.setContractState(contractState);
         }
@@ -590,39 +606,39 @@ public class BlockChainServiceImpl implements BlockChainService, InitializingBea
      * @param vo
      * @return
      */
-    private Object getContractState(String txId,CoreTransactionVO vo) {
+    private Object getContractState(String txId, CoreTransactionVO vo) {
         InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(vo.getPolicyId());
         if (initPolicyEnum != InitPolicyEnum.CONTRACT_ISSUE && initPolicyEnum != InitPolicyEnum.CONTRACT_INVOKE) {
             return null;
         }
         String address = null;
-        if(initPolicyEnum == InitPolicyEnum.CONTRACT_ISSUE){
+        if (initPolicyEnum == InitPolicyEnum.CONTRACT_ISSUE) {
             //query contract by txId and action index
             ContractVO contractVO = contractRepository.queryByTxId(txId, 0);
             if (contractVO == null) {
-                log.info("[getContractState] get contract by txId:{} is null",txId);
+                log.info("[getContractState] get contract by txId:{} is null", txId);
                 return null;
             }
             address = contractVO.getAddress();
-        }else{
+        } else {
             String actionDatas = vo.getActionDatas();
-            if(StringUtils.isEmpty(actionDatas)){
-                log.info("[getContractState] vo.getActionDatas is empty txId:{} ",txId);
+            if (StringUtils.isEmpty(actionDatas)) {
+                log.info("[getContractState] vo.getActionDatas is empty txId:{} ", txId);
                 return null;
             }
-            List<ContractInvokeAction> actions = JSON.parseArray(actionDatas,ContractInvokeAction.class);
-            if(CollectionUtils.isEmpty(actions)){
-                log.info("[getContractState] parse actionDatas is empty txId:{} ",txId);
+            List<ContractInvokeAction> actions = JSON.parseArray(actionDatas, ContractInvokeAction.class);
+            if (CollectionUtils.isEmpty(actions)) {
+                log.info("[getContractState] parse actionDatas is empty txId:{} ", txId);
                 return null;
             }
             ContractInvokeAction action = actions.get(0);
-            if(action == null){
-                log.info("[getContractState] get ContractInvokeAction is null txId:{} ",txId);
+            if (action == null) {
+                log.info("[getContractState] get ContractInvokeAction is null txId:{} ", txId);
                 return null;
             }
             address = action.getAddress();
         }
-        if(StringUtils.isEmpty(address)){
+        if (StringUtils.isEmpty(address)) {
             log.info("[getContractState] get contract address is null");
             return null;
         }

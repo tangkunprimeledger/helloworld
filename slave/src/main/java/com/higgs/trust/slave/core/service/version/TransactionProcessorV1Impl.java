@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.version;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.common.exception.TrustException;
 import com.higgs.trust.evmcontract.core.TransactionResultInfo;
 import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -131,7 +132,10 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
         //for each
         for (Action action : actionList) {
             if (action instanceof ContractCreationV2Action || action instanceof ContractInvokeV2Action) {
-                isCreateEvmContract = action instanceof ContractCreationV2Action;
+                if (hashEvmContract) {
+                    log.error("One transaction only contain one contract operation");
+                    throw new SlaveException(SlaveErrorEnum.SLAVE_TX_NOT_ONLY_ONE_CONTRACT_ACTION_EXCEPTION);
+                }
                 hashEvmContract = true;
             }
             //set current action
@@ -148,26 +152,8 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
 
             //execute action
             actionHandler.process(transactionData.parseActionData());
-        }
-
-        // TODO 处理结果
-        if (hashEvmContract) {
-            ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
-            ContractExecutionResult.clearCurrentResult();
-            if (executionResult != null) {
-                if (executionResult.getException() != null) {
-                    log.warn(executionResult.getException().getMessage());
-                }
-                long height = transactionData.getCurrentPackage().getHeight();
-
-                TransactionResultInfo resultInfo = new TransactionResultInfo(height, coreTx.getTxId().getBytes(), 1,
-                        executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult());
-                if (isCreateEvmContract) {
-                    resultInfo.setCreatedAddress(executionResult.getReceiverAddress());
-                }
-                resultInfo.setError(executionResult.getErrorMessage());
-                resultInfo.setInvokeMethod(executionResult.getMethod());
-                blockchain.putResultInfo(resultInfo);
+            if (hashEvmContract) {
+                processEvmContractResult(transactionData.getCurrentPackage().getHeight(), coreTx, action);
             }
         }
     }
@@ -234,6 +220,27 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
         throw new SlaveException(SlaveErrorEnum.SLAVE_ACTION_NOT_EXISTS_EXCEPTION,
                 "[getHandlerByType] action type not exist exception");
     }
+
+
+    private void processEvmContractResult(long blockHeight, CoreTransaction tx, Action action) {
+        ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
+        ContractExecutionResult.clearCurrentResult();
+        if (executionResult != null) {
+            if (executionResult.getException() != null) {
+                log.warn(executionResult.getException().getMessage());
+            }
+
+            TransactionResultInfo resultInfo = new TransactionResultInfo(blockHeight, tx.getTxId().getBytes(), 1,
+                    executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult());
+            if (action instanceof ContractCreationV2Action) {
+                resultInfo.setCreatedAddress(executionResult.getReceiverAddress());
+            }
+            resultInfo.setError(executionResult.getErrorMessage());
+            resultInfo.setInvokeMethod(executionResult.getMethod());
+            blockchain.putResultInfo(resultInfo);
+        }
+    }
+
 
     private void exeContract(Action action, ActionData actionData) {
         List<String> accountNos = new ArrayList<>();

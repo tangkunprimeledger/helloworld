@@ -23,6 +23,10 @@
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
+            <artifactId>evmcontract</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
             <artifactId>slave</artifactId>
         </dependency>
         <dependency>
