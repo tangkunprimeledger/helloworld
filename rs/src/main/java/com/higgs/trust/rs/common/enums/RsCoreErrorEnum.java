@@ -47,6 +47,8 @@ public enum RsCoreErrorEnum {
     RS_CORE_WAIT_ASYNC_TIMEOUT_EXCEPTION("223", "rs core wait async timeout exception", false),
     RS_CORE_TX_NOT_EXISTS_FAILED("224", "the core transaction not exists failed", false),
     RS_CORE_TX_EXISTS_FAILED("225", "the core transaction already exists failed", false),
+    RS_CORE_CONTRACT_READ_ERROR("226", "contract read  error", false),
+    RS_CORE_CONTRACT_BUILD_ERROR("227", "contract build  error", false),
 
     RS_CORE_GENERATE_KEY_ERROR("301", "rs core generate key error", false),
     RS_CORE_CA_CANCEL_ERROR("302", "rs core ca cancel error", false),

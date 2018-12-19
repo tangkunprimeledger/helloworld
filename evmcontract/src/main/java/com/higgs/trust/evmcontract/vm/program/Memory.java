@@ -20,7 +20,11 @@ import static java.lang.String.format;
  */
 public class Memory implements ProgramListenerAware {
 
+    /**
+     * a CHUNK_SIZE = 32 DataWord
+     */
     private static final int CHUNK_SIZE = 1024;
+
     private static final int WORD_SIZE = 32;
 
     private List<byte[]> chunks = new LinkedList<>();

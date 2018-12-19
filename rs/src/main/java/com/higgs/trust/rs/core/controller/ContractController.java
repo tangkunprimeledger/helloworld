@@ -17,16 +17,10 @@ import java.util.List;
  * @author duhongming
  * @date 2018/5/14
  */
-@RestController
-@Slf4j
-@CrossOrigin
-@RequestMapping(path = "/contract")
-public class ContractController {
+@RestController @Slf4j @CrossOrigin @RequestMapping(path = "/contract") public class ContractController {
 
-    @Autowired
-    private ContractService contractService;
-    @Autowired
-    private ContractQueryService contractQueryService;
+    @Autowired private ContractService contractService;
+    @Autowired private ContractQueryService contractQueryService;
 
     private <T> RespData<T> ok(T data) {
         RespData<T> respData = new RespData<T>();
@@ -43,8 +37,7 @@ public class ContractController {
         return respData;
     }
 
-    @PutMapping
-    public RespData<String> deploy(@RequestBody String code) {
+    @PutMapping public RespData<String> deploy(@RequestBody String code) {
         if (StringUtils.isEmpty(code)) {
             return fail(null, "", "code is empty");
         }
@@ -53,8 +46,7 @@ public class ContractController {
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
     }
 
-    @PutMapping(path = "deploy2")
-    public RespData<String> deploy2(@RequestBody ContractCreateRequest request) {
+    @PutMapping(path = "deploy2") public RespData<String> deploy2(@RequestBody ContractCreateRequest request) {
         String code = request.getCode();
         if (StringUtils.isEmpty(code)) {
             return fail(null, "", "code is empty");
@@ -64,8 +56,17 @@ public class ContractController {
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
     }
 
-    @PostMapping(path = "/invoke")
-    public RespData<String> invoke(@RequestBody ContractInvokeRequest invokeRequest) {
+    @PutMapping(path = "deployV2") public RespData<String> deployV2(@RequestBody ContractCreateV2Request request) {
+        String code = request.getSourceCode();
+        if (StringUtils.isEmpty(code)) {
+            return fail(null, "", "code is empty");
+        }
+        String txId = "0x00000000" + code.hashCode() + System.currentTimeMillis();
+        RespData result = contractService.deployV2(txId, request);
+        return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
+    }
+
+    @PostMapping(path = "/invoke") public RespData<String> invoke(@RequestBody ContractInvokeRequest invokeRequest) {
         if (invokeRequest == null) {
             return fail(null, "", "invalid invokeRequest");
         }
@@ -92,11 +93,9 @@ public class ContractController {
             return fail(null, "", "method signature is empty");
         }
         String txId = "0x10000000" + invokeV2Request.getFrom().hashCode() + System.currentTimeMillis();
-        RespData result = contractService.invokeV2(txId, invokeV2Request.getFrom(),
-                invokeV2Request.getTo(),
-                invokeV2Request.getValue(),
-                invokeV2Request.getMethodSignature(),
-                invokeV2Request.getArgs());
+        RespData result = contractService
+            .invokeV2(txId, invokeV2Request.getFrom(), invokeV2Request.getTo(), invokeV2Request.getValue(),
+                invokeV2Request.getMethodSignature(), invokeV2Request.getArgs());
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
     }
 
@@ -114,24 +113,22 @@ public class ContractController {
         }
 
         RespData result = contractService.migration(migrationRequest);
-        return result.isSuccess() ? ok(migrationRequest.getTxId()) : fail(migrationRequest.getTxId(), result.getRespCode(), result.getMsg());
+        return result.isSuccess() ? ok(migrationRequest.getTxId()) :
+            fail(migrationRequest.getTxId(), result.getRespCode(), result.getMsg());
     }
 
-    @PostMapping(path = "/query")
-    public RespData<Object> query(@RequestBody ContractQueryRequest request) {
+    @PostMapping(path = "/query") public RespData<Object> query(@RequestBody ContractQueryRequest request) {
         Object result = contractService.query(request);
         return ok(result);
     }
 
-    @PostMapping(path = "/inquire")
-    public RespData<Object> inquire(@RequestBody ContractQueryRequest request) {
+    @PostMapping(path = "/inquire") public RespData<Object> inquire(@RequestBody ContractQueryRequest request) {
         Object result = contractService.query(request);
         return ok(result);
     }
 
-    @GetMapping(path = "/list")
-    public RespData<PageVO<ContractVO>> queryList(@RequestParam Long height, @RequestParam(required = false) String txId,
-                                                  @RequestParam Integer pageIndex, @RequestParam Integer pageSize) {
+    @GetMapping(path = "/list") public RespData<PageVO<ContractVO>> queryList(@RequestParam Long height,
+        @RequestParam(required = false) String txId, @RequestParam Integer pageIndex, @RequestParam Integer pageSize) {
         try {
             PageVO<ContractVO> result = contractService.queryList(height, txId, pageIndex, pageSize);
             return RespData.success(result);
@@ -146,11 +143,11 @@ public class ContractController {
      * @param request request body
      * @return result of querying, values are of java types.
      */
-    @PostMapping(path = "/query2")
-    public RespData<List<?>> query2(@RequestBody ContractQueryRequestV2 request) {
+    @PostMapping(path = "/query2") public RespData<List<?>> query2(@RequestBody ContractQueryRequestV2 request) {
         try {
-            List<?> resultList = contractQueryService.query2(
-                    request.getBlockHeight(), request.getAddress(), request.getMethodSignature(), request.getParameters());
+            List<?> resultList = contractQueryService
+                .query2(request.getBlockHeight(), request.getAddress(), request.getMethodSignature(),
+                    request.getParameters());
             return RespData.success(resultList);
         } catch (Exception e) {
             e.printStackTrace();
