@@ -1,10 +1,7 @@
 package com.higgs.trust.evmcontract.facade;
 
 import com.higgs.trust.evmcontract.core.Transaction;
-import com.higgs.trust.evmcontract.crypto.HashUtil;
-import com.higgs.trust.evmcontract.facade.exception.ContractContextException;
 import com.higgs.trust.evmcontract.facade.exception.ContractExecutionException;
-import com.higgs.trust.evmcontract.facade.util.ContractUtil;
 import com.higgs.trust.evmcontract.util.ByteArraySet;
 import com.higgs.trust.evmcontract.vm.DataWord;
 import com.higgs.trust.evmcontract.vm.VM;
@@ -20,7 +17,6 @@ import org.apache.commons.lang3.ArrayUtils;
 public class ContractCreationExecutor extends BaseContractExecutor {
     ContractCreationExecutor(ContractExecutionContext contractExecutionContext) {
         super(contractExecutionContext);
-        receiverAddress = HashUtil.calcNewAddr(senderAddress, nonce);
     }
 
 
