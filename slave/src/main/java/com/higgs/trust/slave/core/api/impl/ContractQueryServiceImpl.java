@@ -34,7 +34,7 @@ public class ContractQueryServiceImpl implements ContractQueryService {
     }
 
     @Override
-    public List<?> query2(int blockHeight, String contractAddressAsString, String methodSignature, Object... methodInputArgs) {
+    public List<?> query2(long blockHeight, String contractAddressAsString, String methodSignature, Object... methodInputArgs) {
         if (!CONTRACT_ADDRESS_PATTERN.matcher(contractAddressAsString).matches()) {
             throw new IllegalArgumentException("Contract address must be hex string of 40 characters");
         }

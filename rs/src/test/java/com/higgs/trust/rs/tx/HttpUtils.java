@@ -5,6 +5,7 @@ import com.higgs.trust.slave.model.bo.SignedTransaction;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * @author tangkun
@@ -23,6 +24,27 @@ public class HttpUtils {
                 .post(body)
                 .build();
         return execute(request);
+    }
+
+    public static <T> T get(String url, Type resultType) {
+        Request request = new Request.Builder().url(url).build();
+        return execute(request, resultType);
+    }
+
+    private static <T> T execute(Request request, Type resultType) {
+        try {
+            httpClient = new OkHttpClient.Builder().build();
+            Call call = httpClient.newCall(request);
+            Response response = call.execute();
+            String jsonText = response.body().string();
+
+            if (!response.isSuccessful()) {
+                throw new RuntimeException(jsonText);
+            }
+            return JSON.<T>parseObject(jsonText, resultType);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String execute(Request request) {
