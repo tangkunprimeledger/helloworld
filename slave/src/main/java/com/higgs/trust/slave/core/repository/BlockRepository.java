@@ -186,6 +186,7 @@ import java.util.*;
             rootHash.setContractRootHash(blockPO.getContractRootHash());
             rootHash.setAccountRootHash(blockPO.getAccountRootHash());
             rootHash.setCaRootHash(blockPO.getCaRootHash());
+            rootHash.setStateRoot(blockPO.getStateRootHash());
             blockHeader.setStateRootHash(rootHash);
             headers.add(blockHeader);
         });
