@@ -6,6 +6,8 @@ import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.evmcontract.solidity.Abi;
 import com.higgs.trust.evmcontract.solidity.compiler.CompilationResult;
 import com.higgs.trust.evmcontract.solidity.compiler.SolidityCompiler;
+import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
+import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -19,12 +21,13 @@ import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.TxOut;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -36,13 +39,9 @@ import static com.higgs.trust.evmcontract.solidity.compiler.SolidityCompiler.Opt
  * @author lingchao
  * @create 2018年06月27日22:58
  */
-@Slf4j
-@Service
-public class CoreTransactionConvertor {
-    @Autowired
-    private NodeState nodeState;
-    @Autowired
-    private RsBlockChainService rsBlockChainService;
+@Slf4j @Service public class CoreTransactionConvertor {
+    @Autowired private NodeState nodeState;
+    @Autowired private RsBlockChainService rsBlockChainService;
 
     /**
      * build core transaction
@@ -51,7 +50,8 @@ public class CoreTransactionConvertor {
      * @param actionList
      * @return
      */
-    public CoreTransaction buildCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList, String policyId) {
+    public CoreTransaction buildCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList,
+        String policyId) {
         CoreTransaction coreTransaction = new CoreTransaction();
         coreTransaction.setTxId(txId);
         coreTransaction.setBizModel(bizModel);
@@ -62,7 +62,6 @@ public class CoreTransactionConvertor {
         coreTransaction.setPolicyId(policyId);
         return coreTransaction;
     }
-
 
     /**
      * build txIn
@@ -79,7 +78,6 @@ public class CoreTransactionConvertor {
         txIn.setIndex(index);
         return txIn;
     }
-
 
     /**
      * build txOut
@@ -127,7 +125,8 @@ public class CoreTransactionConvertor {
      * @param txOutList
      * @return
      */
-    public UTXOAction buildUTXOAction(UTXOActionTypeEnum utxoActionTypeEnum, String contractAddress, String stateClass, int index, List<TxIn> inputList, List<TxOut> txOutList) {
+    public UTXOAction buildUTXOAction(UTXOActionTypeEnum utxoActionTypeEnum, String contractAddress, String stateClass,
+        int index, List<TxIn> inputList, List<TxOut> txOutList) {
         UTXOAction utxoAction = new UTXOAction();
         utxoAction.setInputList(inputList);
         utxoAction.setOutputList(txOutList);
@@ -147,7 +146,8 @@ public class CoreTransactionConvertor {
      * @param remark
      * @return
      */
-    public IssueCurrency buildIssueCurrencyAction(String currency, int index, String contractAddress, String homomorphicPk, String remark) {
+    public IssueCurrency buildIssueCurrencyAction(String currency, int index, String contractAddress,
+        String homomorphicPk, String remark) {
         IssueCurrency currencyAction = new IssueCurrency();
         currencyAction.setCurrencyName(currency);
         currencyAction.setIndex(index);
@@ -175,7 +175,6 @@ public class CoreTransactionConvertor {
         return currencyAction;
     }
 
-
     /**
      * build contract create v2 action
      *
@@ -185,7 +184,8 @@ public class CoreTransactionConvertor {
      * @param actionIndex
      * @return
      */
-    public ContractCreationV2Action buildContractCreationV2Action(String fromAddress, String contractAddress, String contractHexCode, int actionIndex) {
+    public ContractCreationV2Action buildContractCreationV2Action(String fromAddress, String contractAddress,
+        String contractHexCode, int actionIndex) {
         ContractCreationV2Action contractCreationV2Action = new ContractCreationV2Action();
         contractCreationV2Action.setFrom(fromAddress);
         contractCreationV2Action.setTo(contractAddress);
@@ -196,28 +196,26 @@ public class CoreTransactionConvertor {
         return contractCreationV2Action;
     }
 
-
-    /**
-     * @param pathname         like "/dApp/contract/Game.sol"
-     * @param contractName     Game
-     * @param contractor       Game()
-     * @param contractInitArgs
-     * @return
-     */
-    public String buildContractCode(String pathname, String contractName, String contractor, Object... contractInitArgs) {
-        String code = null;
+    public String buildContractCode(InputStream in, String contractor, Object... contractInitArgs) {
         try {
-            File file = new File(pathname);
-            String sourceCode = FileUtils.readFileToString(file, Charsets.UTF_8);
-            SolidityCompiler.Result res = SolidityCompiler.compile(sourceCode.getBytes(), true, ABI, BIN, INTERFACE, METADATA);
-            CompilationResult result = CompilationResult.parse(res.output);
-            CompilationResult.ContractMetadata metadata = result.getContract(contractName);
-            byte[] codeBytes = Abi.Constructor.of(contractor, Hex.decode(metadata.bin), contractInitArgs);
-            code = Hex.toHexString(codeBytes);
-        } catch (Throwable e) {
-            log.error("build contractCode error for contractName :{}", contractName, e);
+            String sourceCode = IOUtils.toString(in, Charsets.UTF_8);
+            return buildContractCode(sourceCode, contractor, contractInitArgs);
+        } catch (IOException e) {
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONTRACT_READ_ERROR, e);
         }
-        return code;
+    }
+
+    public String buildContractCode(String sourceCode, String contractor, Object... contractInitArgs) {
+        try {
+            SolidityCompiler.Result res =
+                SolidityCompiler.compile(sourceCode.getBytes(), true, ABI, BIN, INTERFACE, METADATA);
+            CompilationResult result = CompilationResult.parse(res.output);
+            CompilationResult.ContractMetadata metadata = result.getContract(Abi.Function.of(contractor).name);
+            byte[] codeBytes = Abi.Constructor.of(contractor, Hex.decode(metadata.bin), contractInitArgs);
+            return Hex.toHexString(codeBytes);
+        } catch (Throwable e) {
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CONTRACT_BUILD_ERROR, e);
+        }
     }
 
 }
