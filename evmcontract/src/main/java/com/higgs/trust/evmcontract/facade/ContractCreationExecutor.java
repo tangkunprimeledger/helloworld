@@ -20,6 +20,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class ContractCreationExecutor extends BaseContractExecutor {
     ContractCreationExecutor(ContractExecutionContext contractExecutionContext) {
         super(contractExecutionContext);
+        receiverAddress = HashUtil.calcNewAddr(senderAddress, nonce);
     }
 
 
