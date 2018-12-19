@@ -26,5 +26,5 @@ public interface ContractQueryService {
      * @param methodInputArgs actual parameters
      * @return result returned by contract invocation
      */
-    List<?> query2(int blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs);
+    List<?> query2(long blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs);
 }

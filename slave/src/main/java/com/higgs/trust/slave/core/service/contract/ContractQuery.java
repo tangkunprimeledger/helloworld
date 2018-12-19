@@ -31,7 +31,7 @@ public class ContractQuery {
     @Autowired
     private BlockRepository blockRepository;
 
-    public List<?> executeQuery(int blockHeight, byte[] contractAddress, String methodSignature, Object... args) {
+    public List<?> executeQuery(long blockHeight, byte[] contractAddress, String methodSignature, Object... args) {
         try {
             Profiler.enter(String.format("query contract at %s", Hex.toHexString(contractAddress)));
 
@@ -58,7 +58,7 @@ public class ContractQuery {
     }
 
     private ContractExecutionContext buildContractExecutionContext(
-            int blockHeight, byte[] receiverAddress, byte[] data) {
+            long blockHeight, byte[] receiverAddress, byte[] data) {
         ContractTypeEnum contractType = ContractTypeEnum.CUSTOMER_CONTRACT_QUERYING;
         byte[] nodeNameBytes = HashUtil.sha3omit12(nodeState.getNodeName().getBytes());
         // every one can query, even if no account exists.
