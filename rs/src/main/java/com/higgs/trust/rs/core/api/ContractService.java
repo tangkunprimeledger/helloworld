@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.rs.core.bo.ContractCreateV2Request;
 import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
 import com.higgs.trust.rs.core.bo.ContractQueryRequest;
 import com.higgs.trust.slave.api.vo.ContractVO;
@@ -23,6 +24,13 @@ public interface ContractService {
      * @return
      */
     RespData deploy(String txId, String code, Object... initArgs);
+
+    /**
+     * deploy contract
+     *
+     * @return
+     */
+    RespData deployV2(ContractCreateV2Request request);
 
     /**
      * query contract list
