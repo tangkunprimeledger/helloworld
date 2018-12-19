@@ -28,10 +28,9 @@ public interface ContractService {
     /**
      * deploy contract
      *
-     * @param txId
      * @return
      */
-    RespData deployV2(String txId, ContractCreateV2Request request);
+    RespData deployV2(ContractCreateV2Request request);
 
     /**
      * query contract list

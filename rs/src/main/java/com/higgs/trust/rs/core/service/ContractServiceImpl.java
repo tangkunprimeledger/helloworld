@@ -140,7 +140,8 @@ import java.util.List;
     }
 
     @Override
-    public RespData<?> deployV2(String txId, ContractCreateV2Request request) {
+    public RespData<?> deployV2(ContractCreateV2Request request) {
+        String txId = request.getTxId();
         try {
             if (StringUtils.isEmpty(request.getContractAddress())) {
                 ECKey ecKey = new ECKey();

@@ -7,9 +7,9 @@ import lombok.Setter;
  * @author duhongming
  * @date 2018/6/24
  */
-@Getter
-@Setter
-public class ContractCreateV2Request {
+@Getter @Setter public class ContractCreateV2Request {
+    private String txId;
+
     private String fromAddr;
     /**
      * 合约地址

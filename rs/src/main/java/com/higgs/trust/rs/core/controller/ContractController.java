@@ -61,8 +61,8 @@ import java.util.List;
         if (StringUtils.isEmpty(code)) {
             return fail(null, "", "code is empty");
         }
-        String txId = "0x00000000" + code.hashCode() + System.currentTimeMillis();
-        RespData result = contractService.deployV2(txId, request);
+        String txId = request.getTxId();
+        RespData result = contractService.deployV2(request);
         return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
     }
 
