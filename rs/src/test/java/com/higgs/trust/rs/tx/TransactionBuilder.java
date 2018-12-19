@@ -60,8 +60,7 @@ public class TransactionBuilder {
     private String privateKey;
 
     public TransactionBuilder() {
-        coreTx = buildCoreTransaction();
-        privateKey = PRIVATE_KEY;
+
     }
 
     private static void configJsonSerializer() {
@@ -93,8 +92,9 @@ public class TransactionBuilder {
 
         Action action = builder.buildFrozeContractAction(CONTRACT_NAME_OF_FROZE, frozeAddress);
         SignedTransaction signedTx = builder.withAction(action).withPrivateKey(PRIVATE_KEY).build();
-        HttpUtils.postJson(SERVICE_URL, signedTx);
         log.info("froze contract deploy request:{}", JSON.toJSONString(signedTx, true));
+        HttpUtils.postJson(SERVICE_URL, signedTx);
+
 
         //验证结果
         TimeUnit.SECONDS.sleep(3);
@@ -104,7 +104,7 @@ public class TransactionBuilder {
         Assert.assertEquals(true, (Boolean) queryResult.get("success"));
         Assert.assertEquals(frozeAddress, queryResult.get("createdAddress"));
         //******************批量部署STO合约**********************/
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             //deploy currency contract
             String currencyFrom = generationAddress();
             String currencyTo = generationAddress();
@@ -222,9 +222,9 @@ public class TransactionBuilder {
     }
 
     public TransactionBuilder withAction(Action action) {
-        coreTx.getActionList().clear();
+        coreTx = buildCoreTransaction();
+        privateKey = PRIVATE_KEY;
         coreTx.getActionList().add(action);
-        coreTx.setTxId(Hex.toHexString(HashUtil.randomHash()));
         return this;
     }
 
