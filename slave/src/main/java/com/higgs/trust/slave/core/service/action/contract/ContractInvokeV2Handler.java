@@ -81,8 +81,12 @@ public class ContractInvokeV2Handler implements ActionHandler {
     @Override
     public void verifyParams(Action action) throws SlaveException {
         ContractInvokeV2Action invokeAction = (ContractInvokeV2Action) action;
+        if (StringUtils.isEmpty(invokeAction.getFrom())){
+            log.error("invokeContract validate: from address is empty");
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
         if (StringUtils.isEmpty(invokeAction.getTo())) {
-            log.error("invokeContract validate: address is empty");
+            log.error("invokeContract validate: to address is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
         }
         if (invokeAction.getTo().length() > 64) {
