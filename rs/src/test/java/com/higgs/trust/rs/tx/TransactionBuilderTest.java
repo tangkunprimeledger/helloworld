@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.tx;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.common.crypto.ecc.EccCrypto;
@@ -19,7 +20,10 @@ import org.junit.Assert;
 import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -77,19 +81,24 @@ public class TransactionBuilderTest {
         //验证结果
         TimeUnit.SECONDS.sleep(3);
 
-        String requestMethod = "(uint) getBalance(address)";
+        String requestMethod = "(uint,uint) balanceOf(address)";
         Object[] parameters = {transTo};
         ContractQueryRequestV2 contractQueryRequestV2 = new ContractQueryRequestV2();
         contractQueryRequestV2.setBlockHeight(-1);
         contractQueryRequestV2.setAddress(to);
         contractQueryRequestV2.setMethodSignature(requestMethod);
         contractQueryRequestV2.setParameters(parameters);
-        log.info("验证请求结果：{}", HttpUtils.postJson(QUERY_SERVICE_URL, contractQueryRequestV2));
+        //log.info("验证请求参数:{}", );
+        String jsonResult = HttpUtils.postJson(QUERY_SERVICE_URL, contractQueryRequestV2);
+        JSONObject result = JSONObject.parseObject(jsonResult);
+        Assert.assertEquals(true, result.getBoolean("success"));
+        Assert.assertEquals(amount, ((List) result.get("data")).get(0));
 
-        Map queryResult = HttpUtils.get(String.format(RESULT_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
-        log.info("froze contract deploy result:{}", queryResult);
-        Assert.assertNotNull(queryResult);
-        Assert.assertEquals(true, (Boolean) queryResult.get("success"));
+
+//        Map queryResult = HttpUtils.get(String.format(RESULT_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
+//        log.info("froze contract deploy result:{}", queryResult);
+//        Assert.assertNotNull(queryResult);
+//        Assert.assertEquals(true, (Boolean) queryResult.get("success"));
 
 
         //  action.setMethodSignature("(bool) transferFrom(address, address, uint256)");
