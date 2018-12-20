@@ -68,7 +68,7 @@ public class ContractQueryServiceImpl implements ContractQueryService {
             int count = inputParams.split(",").length;
             boolean paramAdapted = StringUtils.isEmpty(inputParams) && methodInputArgs.length == 0 || methodInputArgs.length == count;
             if (!paramAdapted) {
-                throw new IllegalArgumentException("Input parameter is not equal to method signature");
+                throw new IllegalArgumentException("Number of input parameters is not adapted to method signature");
             }
         }
 
