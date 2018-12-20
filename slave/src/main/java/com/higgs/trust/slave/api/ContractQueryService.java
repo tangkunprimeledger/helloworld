@@ -8,7 +8,7 @@ import java.util.List;
  */
 public interface ContractQueryService {
     /**
-     * 查询合约
+     * Queries contract state.
      *
      * @param address
      * @param methodName
@@ -18,7 +18,7 @@ public interface ContractQueryService {
     Object query(String address, String methodName, Object... args);
 
     /**
-     * Queries contract.
+     * Queries contract state.
      *
      * @param blockHeight block height
      * @param contractAddress contract address

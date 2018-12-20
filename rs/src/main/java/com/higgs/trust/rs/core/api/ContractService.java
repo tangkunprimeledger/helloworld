@@ -97,4 +97,15 @@ public interface ContractService {
      * @return
      */
     ContractVO queryByTxId(String txId,int actionIndex);
+
+    /**
+     * Queries contract.
+     *
+     * @param blockHeight block height
+     * @param contractAddress contract address
+     * @param methodSignature method signature written with target language
+     * @param methodInputArgs actual parameters
+     * @return result returned by contract invocation
+     */
+    List<?> query2(Long blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs);
 }
