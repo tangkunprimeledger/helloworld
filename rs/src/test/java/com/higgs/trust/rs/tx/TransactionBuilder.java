@@ -16,13 +16,18 @@ import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
+import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.higgs.trust.evmcontract.solidity.compiler.SolidityCompiler.Options.*;
 
@@ -31,7 +36,7 @@ import static com.higgs.trust.evmcontract.solidity.compiler.SolidityCompiler.Opt
  * @date 2018/12/6
  */
 @Slf4j
-public class TransactionBuilder {
+public class TransactionBuilder extends AutoTestContext {
 
 
     public static final String STANDARD_TOKEN_CONTRACT_ADDRESS = "095e7baea6a6c7c4c2dfeb977efac316af552989";
@@ -46,13 +51,13 @@ public class TransactionBuilder {
     //STO合约名称
     private final static String CONTRACT_NAME_OF_STANDARD_STO = "StandardSTO";
     //服务地址
-    private final static String SERVICE_URL = "http://localhost:7071/transaction/post";
+    private final static String SERVICE_URL = "http://10.0.1.186:7070/transaction/post";
 
     private final static String QUERY_SERVICE_URL = "http://localhost:7070/transaction/result/%s";
     //批次计数器
     public static int count = 1;
     //
-    private String frozeOfferFromAddress = "7f03989fbc86c7c0bf93deb35a27a5cf22848f93";
+    private static String frozeOfferFromAddress = "7f03989fbc86c7c0bf93deb35a27a5cf22848f93";
 
     private CoreTransaction coreTx;
     private String privateKey;
@@ -74,9 +79,26 @@ public class TransactionBuilder {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
     }
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * generation  contract address
+     *
+     * @return contract address
+     */
+    public static String generationAddress() {
+        int length = 40;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            Integer rand = new Random().nextInt(16);
+            sb.append(Integer.toHexString(rand));
+        }
+        log.info("contract address:{}", sb.toString());
+        return sb.toString();
+    }
 
-        // while (true) {
+    @Test
+    public void deploy() throws Exception {
+
+
         configJsonSerializer();
 
         TransactionBuilder builder = new TransactionBuilder();
@@ -87,6 +109,8 @@ public class TransactionBuilder {
          */
         //******************部署冻结合约**********************/
         String frozeAddress = generationAddress();
+        Froze froze = new Froze(frozeOfferFromAddress, frozeAddress);
+        setFroze(froze);
         log.info("frozeAddress is:{}", frozeAddress);
 
         Action action = builder.buildFrozeContractAction(CONTRACT_NAME_OF_FROZE, frozeAddress);
@@ -103,61 +127,68 @@ public class TransactionBuilder {
 //        Assert.assertEquals(true, (Boolean) queryResult.get("success"));
 //        Assert.assertEquals(frozeAddress, queryResult.get("createdAddress"));
         //******************批量部署STO合约**********************/
-        for (int i = 0; i < 1; i++) {
-            //deploy currency contract
-            String currencyFrom = generationAddress();
-            String currencyTo = generationAddress();
-            log.info("currencyFrom is:{},  currencyTo:{}", currencyFrom, currencyTo);
-            action = builder.buildCreateContractAction(CONTRACT_NAME_OF_STANDARD_CURRENCY, frozeAddress, null, currencyFrom, currencyTo);
-            signedTx = builder.withAction(action).withPrivateKey(PRIVATE_KEY).build();
-            log.info("standCurrency contract deploy request:{}", JSON.toJSONString(signedTx, true));
-            HttpUtils.postJson(SERVICE_URL, signedTx);
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        for (int i = 0; i < getDeployNum(); i++) {
+            executorService.submit((Runnable) () -> {
+                //deploy currency contract
+                String currencyFrom = generationAddress();
+                String currencyTo = generationAddress();
+                log.info("currencyFrom is:{},  currencyTo:{}", currencyFrom, currencyTo);
+                Action action2 = builder.buildCreateContractAction(CONTRACT_NAME_OF_STANDARD_CURRENCY, frozeAddress, null, currencyFrom, currencyTo);
+                SignedTransaction signedTx2 = builder.withAction(action2).withPrivateKey(PRIVATE_KEY).build();
+                //log.info("standCurrency contract deploy request:{}", JSON.toJSONString(signedTx2, true));
+                HttpUtils.postJson(SERVICE_URL, signedTx2);
+                Currency cu = new Currency(currencyFrom, currencyTo, new Random().nextInt(100000) + 10000);
 
+                //deploy sto contract
+                String stoFrom = generationAddress();
+                String stoTo = generationAddress();
+                log.info("stoFrom is:{},  stoTo:{}", stoFrom, stoTo);
+                action2 = builder.buildCreateContractAction(CONTRACT_NAME_OF_STANDARD_STO, frozeAddress, currencyTo, stoFrom, stoTo);
+                signedTx2 = builder.withAction(action2).withPrivateKey(PRIVATE_KEY).build();
+                HttpUtils.postJson(SERVICE_URL, signedTx2);
+                //  log.info("sto contract deploy result:{}", JSON.toJSONString(signedTx2, true));
 
-            //验证结果
-//            TimeUnit.SECONDS.sleep(3);
-//            queryResult = HttpUtils.get(String.format(QUERY_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
-//            log.info(" deploy result:{}", queryResult);
-//            Assert.assertNotNull(queryResult);
-//            Assert.assertEquals(true, (Boolean) queryResult.get("success"));
-//            Assert.assertEquals(currencyTo, queryResult.get("createdAddress"));
+                STO sto = new STO(stoFrom, stoTo, new Random().nextInt(10000000) + 10000);
+                cu.setSto(sto);
+                froze.getCurrencyList().add(cu);
 
-            //deploy sto contract
-            String stoFrom = generationAddress();
-            String stoTo = generationAddress();
-            log.info("stoFrom is:{},  stoTo:{}", stoFrom, stoTo);
-            action = builder.buildCreateContractAction(CONTRACT_NAME_OF_STANDARD_STO, frozeAddress, currencyTo, stoFrom, stoTo);
-            signedTx = builder.withAction(action).withPrivateKey(PRIVATE_KEY).build();
-            HttpUtils.postJson(SERVICE_URL, signedTx);
-            log.info("sto contract deploy result:{}", JSON.toJSONString(signedTx, true));
-
-            //验证结果
-//            TimeUnit.SECONDS.sleep(3);
-//            queryResult = HttpUtils.get(String.format(QUERY_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
-//            log.info(" deploy result:{}", queryResult);
-//            Assert.assertNotNull(queryResult);
-//            Assert.assertEquals(true, (Boolean) queryResult.get("success"));
-//            Assert.assertEquals(stoTo, queryResult.get("createdAddress"));
-
-            count++;
+                count++;
+            });
         }
-        // }
+
+        //执行转账操作
+//        List<Currency> cuList = froze.getCurrencyList();
+//        for (Currency c : cuList) {
+//            String from = "81dac5ede88d38dfef6abb481449e5f9e84ce4db";
+//            String to = "16792c325e746d5dd2e4e64f076e1ac11c3cb092";
+//            String method = "(bool) transferFrom(address, address, uint256)";
+//            String transTo = generationAddress();
+//            int amount = 1;
+//            Object[] argsObj = {from, transTo, amount};
+//            Action action3 = builder.buildContractInvokeV2Action(from, to, method, argsObj);
+//            SignedTransaction signedTx3 = builder.withAction(action).withPrivateKey(PRIVATE_KEY).build();
+//            HttpUtils.postJson(SERVICE_URL, signedTx);
+//
+//            System.out.println(JSON.toJSONString(signedTx, true));
+//        }
+
+        while (!executorService.isShutdown()) {
+        }
     }
 
-    /**
-     * generation  contract address
-     *
-     * @return contract address
-     */
-    public static String generationAddress() {
-        int length = 40;
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            Integer rand = new Random().nextInt(16);
-            sb.append(Integer.toHexString(rand));
-        }
-        log.info("contract address:{}", sb.toString());
-        return sb.toString();
+    private Action buildContractInvokeV2Action(String from, String to, String method, Object[] args) {
+        coreTx = buildCoreTransaction();
+        privateKey = PRIVATE_KEY;
+        ContractInvokeV2Action action = new ContractInvokeV2Action();
+        action.setIndex(0);
+        action.setType(ActionTypeEnum.CONTRACT_INVOKED);
+        action.setFrom(from);
+        action.setTo(to);
+        action.setMethodSignature(method);
+        action.setArgs(args);
+        action.setValue(new BigDecimal("0"));
+        return action;
     }
 
     private String getCode(String contractName, String frozeAddress, String standardCurrencyAddress, String from) {

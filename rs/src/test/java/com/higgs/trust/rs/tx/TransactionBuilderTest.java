@@ -1,12 +1,10 @@
 package com.higgs.trust.rs.tx;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.common.crypto.ecc.EccCrypto;
 import com.higgs.trust.evmcontract.crypto.HashUtil;
-import com.higgs.trust.rs.core.bo.ContractQueryRequestV2;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -16,7 +14,6 @@ import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigDecimal;
@@ -24,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author kongyu
@@ -32,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @desc
  */
 @Slf4j
-public class TransactionBuilderTest {
+public class TransactionBuilderTest extends AutoTestContext {
 
     //服务地址
     private final static String SERVICE_URL = "http://localhost:7070/transaction/post";
@@ -65,34 +61,34 @@ public class TransactionBuilderTest {
 
     public static void main(String[] args) throws Exception {
         configJsonSerializer();
+        while (true) {
+            TransactionBuilderTest builder = new TransactionBuilderTest();
+            String from = "81dac5ede88d38dfef6abb481449e5f9e84ce4db";
+            String to = "16792c325e746d5dd2e4e64f076e1ac11c3cb092";
+            String method = "(bool) transferFrom(address, address, uint256)";
+            String transTo = generationAddress();
+            int amount = 1;
+            Object[] argsObj = {from, transTo, amount};
+            Action action = builder.buildContractInvokeV2Action(from, to, method, argsObj);
+            SignedTransaction signedTx = builder.withAction(action).withPrivateKey(PRIVATE_KEY).build();
+            HttpUtils.postJson(SERVICE_URL, signedTx);
 
-        TransactionBuilderTest builder = new TransactionBuilderTest();
-        String from = "81dac5ede88d38dfef6abb481449e5f9e84ce4db";
-        String to = "16792c325e746d5dd2e4e64f076e1ac11c3cb092";
-        String method = "(bool) transferFrom(address, address, uint256)";
-        String transTo = generationAddress();
-        int amount = 10;
-        Object[] argsObj = {from, transTo, amount};
-        Action action = builder.buildContractInvokeV2Action(from, to, method, argsObj);
-        SignedTransaction signedTx = builder.withAction(action).withPrivateKey(PRIVATE_KEY).build();
-        HttpUtils.postJson(SERVICE_URL, signedTx);
+            System.out.println(JSON.toJSONString(signedTx, true));
+            //验证结果
+            // TimeUnit.SECONDS.sleep(3);
 
-        System.out.println(JSON.toJSONString(signedTx, true));
-        //验证结果
-        TimeUnit.SECONDS.sleep(3);
-
-        String requestMethod = "(uint,uint) balanceOf(address)";
-        Object[] parameters = {transTo};
-        ContractQueryRequestV2 contractQueryRequestV2 = new ContractQueryRequestV2();
-        contractQueryRequestV2.setBlockHeight(-1);
-        contractQueryRequestV2.setAddress(to);
-        contractQueryRequestV2.setMethodSignature(requestMethod);
-        contractQueryRequestV2.setParameters(parameters);
-        //log.info("验证请求参数:{}", );
-        String jsonResult = HttpUtils.postJson(QUERY_SERVICE_URL, contractQueryRequestV2);
-        JSONObject result = JSONObject.parseObject(jsonResult);
-        Assert.assertEquals(true, result.getBoolean("success"));
-        Assert.assertEquals(amount, ((List) result.get("data")).get(0));
+//        String requestMethod = "(uint,uint) balanceOf(address)";
+//        Object[] parameters = {transTo};
+//        ContractQueryRequestV2 contractQueryRequestV2 = new ContractQueryRequestV2();
+//        contractQueryRequestV2.setBlockHeight(-1);
+//        contractQueryRequestV2.setAddress(to);
+//        contractQueryRequestV2.setMethodSignature(requestMethod);
+//        contractQueryRequestV2.setParameters(parameters);
+//        //log.info("验证请求参数:{}", );
+//        String jsonResult = HttpUtils.postJson(QUERY_SERVICE_URL, contractQueryRequestV2);
+//        JSONObject result = JSONObject.parseObject(jsonResult);
+//        Assert.assertEquals(true, result.getBoolean("success"));
+//        Assert.assertEquals(amount, ((List) result.get("data")).get(0));
 
 
 //        Map queryResult = HttpUtils.get(String.format(RESULT_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
@@ -101,10 +97,10 @@ public class TransactionBuilderTest {
 //        Assert.assertEquals(true, (Boolean) queryResult.get("success"));
 
 
-        //  action.setMethodSignature("(bool) transferFrom(address, address, uint256)");
-        //  action.setMethodSignature("(uint) getBalance(address)");
+            //  action.setMethodSignature("(bool) transferFrom(address, address, uint256)");
+            //  action.setMethodSignature("(uint) getBalance(address)");
 
-        // action.setMethodSignature("(bool) transferToContract(address, uint, uint)");
+            // action.setMethodSignature("(bool) transferToContract(address, uint, uint)");
 //        action.setMethodSignature("(bool) transfer(address,uint)");
 //        action.setMethodSignature("(bool) freeze(address,uint)");
 //        action.setMethodSignature("(bool) unfreeze(address,uint)");
@@ -114,14 +110,15 @@ public class TransactionBuilderTest {
 //        action.setMethodSignature("(bool) addAllowedAddr(address[])");
 //        action.setMethodSignature("(address[], uint[], string, uint) getUserInfo()");
 //        action.setMethodSignature("(address[], uint[], string, uint) getUserInfo()");
-        //
+            //
 //        action.setArgs(transferToContractArgs());
 //        action.setArgs(addAllowedAddr());
-        // action.setArgs(new Object[]{"397b2a371e6d98a120e5f139420832af33369aec", "ba1172564007825d0777f740da2efeab3cc78aee", 1});
-        //action.setArgs(new Object[]{STO_CONTRACT_ADDRESS, 1000, 10});
+            // action.setArgs(new Object[]{"397b2a371e6d98a120e5f139420832af33369aec", "ba1172564007825d0777f740da2efeab3cc78aee", 1});
+            //action.setArgs(new Object[]{STO_CONTRACT_ADDRESS, 1000, 10});
 //        action.setArgs(new Object[]{"6c218d6856e5182d33e00813d9e861255f527da2",3,1644839806});
+        }
     }
-    
+
     /**
      * generation  contract address
      *
