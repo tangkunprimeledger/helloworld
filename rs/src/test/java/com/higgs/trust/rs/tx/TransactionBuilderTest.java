@@ -67,12 +67,12 @@ public class TransactionBuilderTest {
         configJsonSerializer();
 
         TransactionBuilderTest builder = new TransactionBuilderTest();
-        String from = "b5cee9730b6c718334f86fff65bde339d09742b2";
-        String to = "cb2882a871c584071eb380e92c7edc520bbeae4f";
+        String from = "81dac5ede88d38dfef6abb481449e5f9e84ce4db";
+        String to = "16792c325e746d5dd2e4e64f076e1ac11c3cb092";
         String method = "(bool) transferFrom(address, address, uint256)";
         String transTo = generationAddress();
         int amount = 10;
-        Object[] argsObj = {"b5cee9730b6c718334f86fff65bde339d09742b2", transTo, amount};
+        Object[] argsObj = {from, transTo, amount};
         Action action = builder.buildContractInvokeV2Action(from, to, method, argsObj);
         SignedTransaction signedTx = builder.withAction(action).withPrivateKey(PRIVATE_KEY).build();
         HttpUtils.postJson(SERVICE_URL, signedTx);
@@ -121,7 +121,7 @@ public class TransactionBuilderTest {
         //action.setArgs(new Object[]{STO_CONTRACT_ADDRESS, 1000, 10});
 //        action.setArgs(new Object[]{"6c218d6856e5182d33e00813d9e861255f527da2",3,1644839806});
     }
-
+    
     /**
      * generation  contract address
      *
