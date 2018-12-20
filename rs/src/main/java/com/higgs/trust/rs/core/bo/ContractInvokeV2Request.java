@@ -3,6 +3,8 @@ package com.higgs.trust.rs.core.bo;
 import com.higgs.trust.rs.common.BaseBO;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
 
 import java.math.BigDecimal;
 
@@ -14,6 +16,12 @@ import java.math.BigDecimal;
 @Setter
 public class ContractInvokeV2Request extends BaseBO {
     /**
+     * txId
+     */
+    @NotBlank
+    @Length(max = 64)
+    private String txId;
+    /**
      * if transfer，which is transfering amount
      */
     private BigDecimal value;
@@ -21,6 +29,7 @@ public class ContractInvokeV2Request extends BaseBO {
     /**
      * 调用方法签名(方法名+参数列表+返回值，例如：(uint) balanceOf(address))
      */
+    @NotBlank
     private String methodSignature;
 
     /**
@@ -29,12 +38,16 @@ public class ContractInvokeV2Request extends BaseBO {
     private Object[] args;
 
     /**
-     * from address
+     * tx create address
      */
+    @NotBlank
+    @Length(max = 64)
     private String from;
 
     /**
-     * to address
+     * contract address
      */
+    @NotBlank
+    @Length(max = 64)
     private String to;
 }

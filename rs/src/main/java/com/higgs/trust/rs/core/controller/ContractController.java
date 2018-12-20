@@ -93,6 +93,9 @@ public class ContractController {
         if (invokeV2Request == null) {
             return fail(null, "", "invalid invokeV2Request");
         }
+        if (StringUtils.isEmpty(invokeV2Request.getTxId())) {
+            return fail(null, "", "txId is empty");
+        }
         if (StringUtils.isEmpty(invokeV2Request.getFrom())) {
             return fail(null, "", "from address is empty");
         }
@@ -102,14 +105,8 @@ public class ContractController {
         if (StringUtils.isEmpty(invokeV2Request.getMethodSignature())) {
             return fail(null, "", "method signature is empty");
         }
-        String txId = "0x10000000" + invokeV2Request.getFrom().hashCode() + System.currentTimeMillis();
-        RespData result = contractService.invokeV2(txId
-                , invokeV2Request.getFrom()
-                , invokeV2Request.getTo()
-                , invokeV2Request.getValue()
-                , invokeV2Request.getMethodSignature()
-                , invokeV2Request.getArgs());
-        return result.isSuccess() ? ok(txId) : fail(txId, result.getRespCode(), result.getMsg());
+        RespData result = contractService.invokeV2(invokeV2Request.getTxId(), invokeV2Request.getFrom(), invokeV2Request.getTo(), invokeV2Request.getValue(), invokeV2Request.getMethodSignature(), invokeV2Request.getArgs());
+        return result.isSuccess() ? ok(invokeV2Request.getTxId()) : fail(invokeV2Request.getTxId(), result.getRespCode(), result.getMsg());
     }
 
     @PostMapping(path = "/migration")
@@ -143,8 +140,7 @@ public class ContractController {
     }
 
     @GetMapping(path = "/list")
-    public RespData<PageVO<ContractVO>> queryList(@RequestParam Long height,
-                                                  @RequestParam(required = false) String txId, @RequestParam Integer pageIndex, @RequestParam Integer pageSize) {
+    public RespData<PageVO<ContractVO>> queryList(@RequestParam Long height, @RequestParam(required = false) String txId, @RequestParam Integer pageIndex, @RequestParam Integer pageSize) {
         try {
             PageVO<ContractVO> result = contractService.queryList(height, txId, pageIndex, pageSize);
             return RespData.success(result);
@@ -162,12 +158,9 @@ public class ContractController {
     @PostMapping(path = "/query2")
     public RespData<List<?>> query2(@RequestBody ContractQueryRequestV2 request) {
         try {
-            List<?> resultList = contractQueryService
-                    .query2(request.getBlockHeight(), request.getAddress(), request.getMethodSignature(),
-                            request.getParameters());
+            List<?> resultList = contractQueryService.query2(request.getBlockHeight(), request.getAddress(), request.getMethodSignature(), request.getParameters());
             return RespData.success(resultList);
         } catch (Exception e) {
-            e.printStackTrace();
             return RespData.error("", e.getMessage(), null);
         }
     }

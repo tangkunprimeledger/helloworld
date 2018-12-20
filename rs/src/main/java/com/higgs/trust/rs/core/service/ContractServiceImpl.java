@@ -41,13 +41,20 @@ import java.util.List;
  * @author duhongming
  * @date 2018/5/14
  */
-@Service @Slf4j public class ContractServiceImpl implements ContractService {
+@Service
+@Slf4j
+public class ContractServiceImpl implements ContractService {
 
-    @Autowired private NodeState nodeState;
-    @Autowired private CoreTransactionService coreTransactionService;
-    @Autowired private ContractRepository contractRepository;
-    @Autowired private StandardSmartContract smartContract;
-    @Autowired private CoreTransactionConvertor convertor;
+    @Autowired
+    private NodeState nodeState;
+    @Autowired
+    private CoreTransactionService coreTransactionService;
+    @Autowired
+    private ContractRepository contractRepository;
+    @Autowired
+    private StandardSmartContract smartContract;
+    @Autowired
+    private CoreTransactionConvertor convertor;
 
     private CoreTransaction buildCoreTx(String txId, String code, Object... initArgs) {
         List<Action> actionList = new ArrayList<>(1);
@@ -99,7 +106,7 @@ import java.util.List;
     }
 
     private ContractInvokeV2Action buildInvokeV2Action(String from, String to, BigDecimal value, String methodSignature,
-        Object... args) {
+                                                       Object... args) {
         ContractInvokeV2Action invokeV2Action = new ContractInvokeV2Action();
         invokeV2Action.setFrom(from);
         invokeV2Action.setTo(to);
@@ -120,66 +127,47 @@ import java.util.List;
         return action;
     }
 
-    @Override public RespData<?> deploy(String txId, String code, Object... initArgs) {
+    @Override
+    public RespData<?> deploy(String txId, String code, Object... initArgs) {
         CoreTransaction coreTx = buildCoreTx(txId, code, initArgs);
-        try {
-            coreTransactionService.submitTx(coreTx);
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
-                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
-                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
-                } else {
-                    return RespData.success(txId);
-                }
-            }
+        RespData respData = submit(coreTx);
+        if (null != respData) {
+            return respData;
         }
-        com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
-        return respData.isSuccess() ? RespData.success(respData.getData()) :
-            RespData.error(respData.getRespCode(), respData.getMsg(), respData.getData());
+        respData = coreTransactionService.syncWait(txId, true);
+        return respData;
     }
 
     @Override
     public RespData<?> deployV2(ContractCreateV2Request request) {
         String txId = request.getTxId();
-        try {
-            if (StringUtils.isEmpty(request.getContractAddress())) {
-                ECKey ecKey = new ECKey();
-                String address = Hex.toHexString(ecKey.getAddress());
-                request.setContractAddress(address);
-            }
-            String hexCode = convertor
-                .buildContractCode(request.getSourceCode(), request.getContractor(),
-                    request.getInitArgs());
-            ContractCreationV2Action createAction = convertor
-                .buildContractCreationV2Action(request.getFromAddr(), request.getContractAddress(), hexCode, 0);
-            CoreTransaction coreTx = buildCoreTx(txId, createAction);
-            coreTransactionService.submitTx(coreTx);
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
-                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
-                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
-                } else {
-                    return RespData.success(txId);
-                }
-            }
+        if (StringUtils.isBlank(request.getContractAddress())) {
+            String address = Hex.toHexString(new ECKey().getAddress());
+            request.setContractAddress(address);
         }
-        com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
-        return respData.isSuccess() ? RespData.success(respData.getData()) :
-            RespData.error(respData.getRespCode(), respData.getMsg(), respData.getData());
+        String hexCode = convertor.buildContractCode(request.getSourceCode(), request.getContractor(), request.getInitArgs());
+        ContractCreationV2Action createAction = convertor.buildContractCreationV2Action(request.getFromAddr(), request.getContractAddress(), hexCode, 0);
+        CoreTransaction coreTx = buildCoreTx(txId, createAction);
+        RespData respData = submit(coreTx);
+        if (null != respData) {
+            return respData;
+        }
+        respData = coreTransactionService.syncWait(txId, true);
+        return respData;
     }
 
-    @Override public PageVO<ContractVO> queryList(Long height, String txId, Integer pageIndex, Integer pageSize) {
+    @Override
+    public PageVO<ContractVO> queryList(Long height, String txId, Integer pageIndex, Integer pageSize) {
         PageVO<ContractVO> result = new PageVO();
         result.setTotal(contractRepository.queryCount(height, txId));
         List<com.higgs.trust.slave.model.bo.contract.Contract> list =
-            contractRepository.query(height, txId, pageIndex, pageSize);
+                contractRepository.query(height, txId, pageIndex, pageSize);
         result.setData(BeanConvertor.convertList(list, ContractVO.class));
         return result;
     }
 
-    @Override public List<ContractVO> queryContractsByPage(QueryContractVO req) {
+    @Override
+    public List<ContractVO> queryContractsByPage(QueryContractVO req) {
         if (null == req) {
             return null;
         }
@@ -194,90 +182,88 @@ import java.util.List;
             req.setPageSize(20);
         }
         List<com.higgs.trust.slave.model.bo.contract.Contract> list =
-            contractRepository.query(req.getHeight(), req.getTxId(), req.getPageNo(), req.getPageSize());
+                contractRepository.query(req.getHeight(), req.getTxId(), req.getPageNo(), req.getPageSize());
         List<ContractVO> result = BeanConvertor.convertList(list, ContractVO.class);
         return result;
     }
 
-    @Override public RespData invoke(String txId, String address, Object... args) {
+    @Override
+    public RespData invoke(String txId, String address, Object... args) {
         ContractInvokeAction action = buildInvokeAction(address, args);
         CoreTransaction coreTx = buildCoreTx(txId, action);
-        try {
-            coreTransactionService.submitTx(coreTx);
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
-                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
-                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
-                } else {
-                    return RespData.success(txId);
-                }
-            }
+        RespData respData = submit(coreTx);
+        if (null != respData) {
+            return respData;
         }
-        com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
-        return respData.isSuccess() ? RespData.success(respData.getData()) :
-            RespData.error(respData.getRespCode(), respData.getMsg(), respData.getData());
+        respData = coreTransactionService.syncWait(txId, true);
+        return respData;
     }
 
     /**
-     * invoke v2 contract
+     * invoke V2 contract
      *
      * @param txId
-     * @param address
-     * @param nonce
+     * @param from
+     * @param to
      * @param value
      * @param methodSignature
      * @param args
      * @return
      */
-    @Override public RespData invokeV2(String txId, String from, String to, BigDecimal value, String methodSignature,
-        Object... args) {
+    @Override
+    public RespData invokeV2(String txId, String from, String to, BigDecimal value, String methodSignature, Object... args) {
         ContractInvokeV2Action action = buildInvokeV2Action(from, to, value, methodSignature, args);
         CoreTransaction coreTx = buildCoreTx(txId, action);
-        try {
-            coreTransactionService.submitTx(coreTx);
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(txId);
-                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
-                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), txId);
-                } else {
-                    return RespData.success(txId);
-                }
-            }
+        RespData respData = submit(coreTx);
+        if (null != respData) {
+            return respData;
         }
-        com.higgs.trust.slave.api.vo.RespData respData = coreTransactionService.syncWait(txId, true);
-        return respData.isSuccess() ? RespData.success(respData.getData()) :
-            RespData.error(respData.getRespCode(), respData.getMsg(), respData.getData());
+        respData = coreTransactionService.syncWait(txId, true);
+        return respData;
     }
 
-    @Override public RespData migration(ContractMigrationRequest migrationRequest) {
+    @Override
+    public RespData migration(ContractMigrationRequest migrationRequest) {
         ContractStateMigrationAction action = buildMigrationAction(migrationRequest);
         CoreTransaction coreTx = buildCoreTx(migrationRequest.getTxId(), action);
-        try {
-            coreTransactionService.submitTx(coreTx);
-        } catch (RsCoreException e) {
-            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
-                RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(migrationRequest.getTxId());
-                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
-                    return RespData
-                        .error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), migrationRequest.getTxId());
-                } else {
-                    return RespData.success(migrationRequest.getTxId());
-                }
-            }
+        RespData respData = submit(coreTx);
+        if (null != respData) {
+            return respData;
         }
-        com.higgs.trust.slave.api.vo.RespData respData =
-            coreTransactionService.syncWait(migrationRequest.getTxId(), true);
-        return respData.isSuccess() ? RespData.success(respData.getData()) :
-            RespData.error(respData.getRespCode(), respData.getMsg(), respData.getData());
+        respData = coreTransactionService.syncWait(migrationRequest.getTxId(), true);
+        return respData;
     }
 
-    @Override public Object query(ContractQueryRequest request) {
+    @Override
+    public Object query(ContractQueryRequest request) {
         return smartContract.executeQuery(request.getAddress(), request.getMethodName(), request.getBizArgs());
     }
 
-    @Override public ContractVO queryByTxId(String txId, int actionIndex) {
+    @Override
+    public ContractVO queryByTxId(String txId, int actionIndex) {
         return contractRepository.queryByTxId(txId, actionIndex);
     }
+
+    /**
+     * commin submit to slave
+     *
+     * @param coreTransaction
+     * @return
+     */
+    private RespData<?> submit(CoreTransaction coreTransaction) {
+        try {
+            coreTransactionService.submitTx(coreTransaction);
+        } catch (RsCoreException e) {
+            if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
+                RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(coreTransaction.getTxId());
+                if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
+                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), coreTransaction.getTxId());
+                }
+                return RespData.success(coreTransaction.getTxId());
+            }
+        }
+        return null;
+    }
+
+
 }

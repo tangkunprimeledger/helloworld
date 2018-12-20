@@ -18,12 +18,12 @@ public class ContractCreationV2Action extends Action {
     private String code;
 
     /**
-     * from address
+     * tx create address
      */
     private String from;
 
     /**
-     * to address
+     * contract address
      */
     private String to;
 
