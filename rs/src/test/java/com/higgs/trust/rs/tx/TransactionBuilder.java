@@ -17,14 +17,12 @@ import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static com.higgs.trust.evmcontract.solidity.compiler.SolidityCompiler.Options.*;
 
@@ -40,7 +38,7 @@ public class TransactionBuilder {
 
     private static final String PRIVATE_KEY = "78d4646b8baa8cfbe4c02b9d245e4ee2406af092955d705d91e83238e012b707";
     //合约目录
-    private static final String BASE_PATH = "D:\\data\\contract\\c%s";
+    private static final String BASE_PATH = "D:\\data\\contract\\c\\";
     //冻结合约名称
     private final static String CONTRACT_NAME_OF_FROZE = "Froze";
     //标准币合约名称
@@ -48,7 +46,7 @@ public class TransactionBuilder {
     //STO合约名称
     private final static String CONTRACT_NAME_OF_STANDARD_STO = "StandardSTO";
     //服务地址
-    private final static String SERVICE_URL = "http://localhost:7070/transaction/post";
+    private final static String SERVICE_URL = "http://localhost:7071/transaction/post";
 
     private final static String QUERY_SERVICE_URL = "http://localhost:7070/transaction/result/%s";
     //批次计数器
@@ -60,8 +58,7 @@ public class TransactionBuilder {
     private String privateKey;
 
     public TransactionBuilder() {
-        coreTx = buildCoreTransaction();
-        privateKey = PRIVATE_KEY;
+
     }
 
     private static void configJsonSerializer() {
@@ -79,6 +76,7 @@ public class TransactionBuilder {
 
     public static void main(String[] args) throws Exception {
 
+        // while (true) {
         configJsonSerializer();
 
         TransactionBuilder builder = new TransactionBuilder();
@@ -93,18 +91,19 @@ public class TransactionBuilder {
 
         Action action = builder.buildFrozeContractAction(CONTRACT_NAME_OF_FROZE, frozeAddress);
         SignedTransaction signedTx = builder.withAction(action).withPrivateKey(PRIVATE_KEY).build();
-        HttpUtils.postJson(SERVICE_URL, signedTx);
         log.info("froze contract deploy request:{}", JSON.toJSONString(signedTx, true));
+        HttpUtils.postJson(SERVICE_URL, signedTx);
+
 
         //验证结果
-        TimeUnit.SECONDS.sleep(3);
-        Map queryResult = HttpUtils.get(String.format(QUERY_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
-        log.info("froze contract deploy result:{}", queryResult);
-        Assert.assertNotNull(queryResult);
-        Assert.assertEquals(true, (Boolean) queryResult.get("success"));
-        Assert.assertEquals(frozeAddress, queryResult.get("createdAddress"));
+//        TimeUnit.SECONDS.sleep(3);
+//        Map queryResult = HttpUtils.get(String.format(QUERY_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
+//        log.info("froze contract deploy result:{}", queryResult);
+//        Assert.assertNotNull(queryResult);
+//        Assert.assertEquals(true, (Boolean) queryResult.get("success"));
+//        Assert.assertEquals(frozeAddress, queryResult.get("createdAddress"));
         //******************批量部署STO合约**********************/
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             //deploy currency contract
             String currencyFrom = generationAddress();
             String currencyTo = generationAddress();
@@ -116,12 +115,12 @@ public class TransactionBuilder {
 
 
             //验证结果
-            TimeUnit.SECONDS.sleep(3);
-            queryResult = HttpUtils.get(String.format(QUERY_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
-            log.info(" deploy result:{}", queryResult);
-            Assert.assertNotNull(queryResult);
-            Assert.assertEquals(true, (Boolean) queryResult.get("success"));
-            Assert.assertEquals(currencyTo, queryResult.get("createdAddress"));
+//            TimeUnit.SECONDS.sleep(3);
+//            queryResult = HttpUtils.get(String.format(QUERY_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
+//            log.info(" deploy result:{}", queryResult);
+//            Assert.assertNotNull(queryResult);
+//            Assert.assertEquals(true, (Boolean) queryResult.get("success"));
+//            Assert.assertEquals(currencyTo, queryResult.get("createdAddress"));
 
             //deploy sto contract
             String stoFrom = generationAddress();
@@ -133,15 +132,16 @@ public class TransactionBuilder {
             log.info("sto contract deploy result:{}", JSON.toJSONString(signedTx, true));
 
             //验证结果
-            TimeUnit.SECONDS.sleep(3);
-            queryResult = HttpUtils.get(String.format(QUERY_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
-            log.info(" deploy result:{}", queryResult);
-            Assert.assertNotNull(queryResult);
-            Assert.assertEquals(true, (Boolean) queryResult.get("success"));
-            Assert.assertEquals(stoTo, queryResult.get("createdAddress"));
+//            TimeUnit.SECONDS.sleep(3);
+//            queryResult = HttpUtils.get(String.format(QUERY_SERVICE_URL, signedTx.getCoreTx().getTxId()), Map.class);
+//            log.info(" deploy result:{}", queryResult);
+//            Assert.assertNotNull(queryResult);
+//            Assert.assertEquals(true, (Boolean) queryResult.get("success"));
+//            Assert.assertEquals(stoTo, queryResult.get("createdAddress"));
 
             count++;
         }
+        // }
     }
 
     /**
@@ -164,7 +164,7 @@ public class TransactionBuilder {
 
 
         try {
-            Path source = Paths.get(String.format(BASE_PATH, count), contractName + ".sol");
+            Path source = Paths.get(BASE_PATH + contractName + ".sol");
             SolidityCompiler.Option allowPathsOption = new SolidityCompiler.Options.AllowPaths(Collections.singletonList(source.getParent().getParent()));
             SolidityCompiler.Result res = SolidityCompiler.compile(source.toFile(), true, ABI, BIN, INTERFACE, METADATA, allowPathsOption);
             CompilationResult result = CompilationResult.parse(res.output);
@@ -222,9 +222,9 @@ public class TransactionBuilder {
     }
 
     public TransactionBuilder withAction(Action action) {
-        coreTx.getActionList().clear();
+        coreTx = buildCoreTransaction();
+        privateKey = PRIVATE_KEY;
         coreTx.getActionList().add(action);
-        coreTx.setTxId(Hex.toHexString(HashUtil.randomHash()));
         return this;
     }
 
@@ -276,21 +276,23 @@ public class TransactionBuilder {
         String tokenSymbol = "STA";
         int initNum = 1000;
         int decimals = 8;
+
         bytes = Abi.Constructor.of(contractName, code,
-                standardOfferAddress, tokenName, tokenSymbol, initNum, decimals, FROZEN_CONTRACT_ADDRESS);
+                standardOfferAddress, tokenName, tokenSymbol, decimals, initNum, FROZEN_CONTRACT_ADDRESS);
         return bytes;
     }
 
     private byte[] getSTOCode(byte[] code, String STANDARD_TOKEN_CONTRACT_ADDRESS, String FROZEN_CONTRACT_ADDRESS, String from) {
         byte[] bytes = null;
         String contractName = "StandardSTO(address,string,string,uint8,uint," +
-                "string,uint32,uint32,uint,uint,uint32,uint32,uint16,address,address)";
+                "string,uint32,uint8,uint32,uint,uint,uint32,uint32,uint16,address,address)";
         String tokenName = "security_token";
         String tokenSymbol = "STO_1";
         int decimals = 0;
         int totalSupply = 100000;
         String standardCurrencySymbol = "STA";
         int exchangeRatio = 100;
+        int exchangeRateDecimals = 8;
         int lowestShareNum = 10;
         int maxShareNum = 100;
         int totalSubscribedNum = 80000;
@@ -300,10 +302,10 @@ public class TransactionBuilder {
         long subScriptionEndDate = 1544776200;
         int lockupPeriodDay = 2;
         bytes = Abi.Constructor.of(contractName, code,
-                from, tokenName, tokenSymbol, decimals, totalSupply,
-                standardCurrencySymbol, exchangeRatio, lowestShareNum, maxShareNum, totalSubscribedNum,
-                subScriptionStartDate, subScriptionEndDate, lockupPeriodDay,
-                STANDARD_TOKEN_CONTRACT_ADDRESS, FROZEN_CONTRACT_ADDRESS);
+                from, tokenName, tokenSymbol, decimals,
+                totalSupply, standardCurrencySymbol, exchangeRatio, exchangeRateDecimals,
+                lowestShareNum, maxShareNum, totalSubscribedNum, subScriptionStartDate,
+                subScriptionEndDate, lockupPeriodDay, STANDARD_TOKEN_CONTRACT_ADDRESS, FROZEN_CONTRACT_ADDRESS);
         return bytes;
     }
 }

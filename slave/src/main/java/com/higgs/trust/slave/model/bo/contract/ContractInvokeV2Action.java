@@ -24,8 +24,6 @@ public class ContractInvokeV2Action extends Action {
     /**
      * 调用方法(返回值类型+方法名+参数类型，例如：(uint) balanceOf(address))
      */
-    @NotNull
-    @NotBlank
     private String methodSignature;
 
     /**
