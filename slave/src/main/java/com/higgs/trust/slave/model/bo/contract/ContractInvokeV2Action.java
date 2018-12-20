@@ -22,7 +22,7 @@ public class ContractInvokeV2Action extends Action {
      */
     private BigDecimal value;
     /**
-     * 调用方法签名(方法名+参数列表+返回值，例如：(uint) balanceOf(address))
+     * 调用方法(返回值类型+方法名+参数类型，例如：(uint) balanceOf(address))
      */
     @NotNull
     @NotBlank
@@ -34,12 +34,12 @@ public class ContractInvokeV2Action extends Action {
     private Object[] args;
 
     /**
-     * from address
+     * tx create address
      */
     private String from;
 
     /**
-     * to address
+     * contract address
      */
     private String to;
 }

@@ -2,6 +2,7 @@ package com.higgs.trust.rs.core.bo;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * @author Chen Jiawei
@@ -17,10 +18,12 @@ public class ContractQueryRequestV2 {
     /**
      * Contract address, hex string of 40 characters, e.g. 00a615668486da40f31fd050854fb137b317e056.
      */
+    @NotBlank
     private String address;
     /**
      * Method signature, e.g. (uint256) get(uint256).
      */
+    @NotBlank
     private String methodSignature;
     /**
      * Method input arguments, e.g. 4.
