@@ -10,6 +10,7 @@ import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
@@ -52,7 +53,7 @@ import static com.higgs.trust.evmcontract.solidity.compiler.SolidityCompiler.Opt
      */
     public CoreTransaction buildCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList,
         String policyId) {
-        return buildCoreTransaction(txId, bizModel, actionList, policyId, null);
+        return buildCoreTransaction(txId, bizModel, actionList, policyId, TxTypeEnum.DEFAULT.getCode());
     }
 
     /**
