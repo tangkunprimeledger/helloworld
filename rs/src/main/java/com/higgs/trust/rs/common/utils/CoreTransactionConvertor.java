@@ -52,6 +52,18 @@ import static com.higgs.trust.evmcontract.solidity.compiler.SolidityCompiler.Opt
      */
     public CoreTransaction buildCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList,
         String policyId) {
+        return buildCoreTransaction(txId, bizModel, actionList, policyId, null);
+    }
+
+    /**
+     * build core transaction
+     *
+     * @param txId
+     * @param actionList
+     * @return
+     */
+    public CoreTransaction buildCoreTransaction(String txId, JSONObject bizModel, List<Action> actionList,
+        String policyId, String txType) {
         CoreTransaction coreTransaction = new CoreTransaction();
         coreTransaction.setTxId(txId);
         coreTransaction.setBizModel(bizModel);
@@ -60,6 +72,7 @@ import static com.higgs.trust.evmcontract.solidity.compiler.SolidityCompiler.Opt
         coreTransaction.setSender(nodeState.getNodeName());
         coreTransaction.setSendTime(new Date());
         coreTransaction.setPolicyId(policyId);
+        coreTransaction.setTxType(txType);
         return coreTransaction;
     }
 

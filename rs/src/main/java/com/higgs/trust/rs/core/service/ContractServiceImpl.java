@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -42,22 +43,14 @@ import java.util.List;
  * @author duhongming
  * @date 2018/5/14
  */
-@Service
-@Slf4j
-public class ContractServiceImpl implements ContractService {
+@Service @Slf4j public class ContractServiceImpl implements ContractService {
 
-    @Autowired
-    private NodeState nodeState;
-    @Autowired
-    private CoreTransactionService coreTransactionService;
-    @Autowired
-    private ContractRepository contractRepository;
-    @Autowired
-    private StandardSmartContract smartContract;
-    @Autowired
-    private CoreTransactionConvertor convertor;
-    @Autowired
-    private ContractQueryService contractQueryService;
+    @Autowired private NodeState nodeState;
+    @Autowired private CoreTransactionService coreTransactionService;
+    @Autowired private ContractRepository contractRepository;
+    @Autowired private StandardSmartContract smartContract;
+    @Autowired private CoreTransactionConvertor convertor;
+    @Autowired private ContractQueryService contractQueryService;
 
     private CoreTransaction buildCoreTx(String txId, String code, Object... initArgs) {
         List<Action> actionList = new ArrayList<>(1);
@@ -89,6 +82,15 @@ public class ContractServiceImpl implements ContractService {
         return coreTx;
     }
 
+    private CoreTransaction buildCreateContractCoreTx(ContractCreateV2Request request) {
+        String hexCode =
+            convertor.buildContractCode(request.getSourceCode(), request.getContractor(), request.getInitArgs());
+        ContractCreationV2Action createAction =
+            convertor.buildContractCreationV2Action(request.getFromAddr(), request.getContractAddress(), hexCode, 0);
+        return convertor.buildCoreTransaction(request.getTxId(), null, Collections.singletonList(createAction),
+            InitPolicyEnum.CONTRACT_ISSUE.getPolicyId(), TxTypeEnum.CONTRACT.getCode());
+    }
+
     private ContractCreationAction buildAction(String code, Object... initArgs) {
         ContractCreationAction creationAction = new ContractCreationAction();
         creationAction.setCode(code);
@@ -109,7 +111,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private ContractInvokeV2Action buildInvokeV2Action(String from, String to, BigDecimal value, String methodSignature,
-                                                       Object... args) {
+        Object... args) {
         ContractInvokeV2Action invokeV2Action = new ContractInvokeV2Action();
         invokeV2Action.setFrom(from);
         invokeV2Action.setTo(to);
@@ -130,8 +132,7 @@ public class ContractServiceImpl implements ContractService {
         return action;
     }
 
-    @Override
-    public RespData<?> deploy(String txId, String code, Object... initArgs) {
+    @Override public RespData<?> deploy(String txId, String code, Object... initArgs) {
         CoreTransaction coreTx = buildCoreTx(txId, code, initArgs);
         RespData respData = submit(coreTx);
         if (null != respData) {
@@ -141,16 +142,13 @@ public class ContractServiceImpl implements ContractService {
         return respData;
     }
 
-    @Override
-    public RespData<?> deployV2(ContractCreateV2Request request) {
+    @Override public RespData<?> deployV2(ContractCreateV2Request request) {
         String txId = request.getTxId();
         if (StringUtils.isBlank(request.getContractAddress())) {
             String address = Hex.toHexString(new ECKey().getAddress());
             request.setContractAddress(address);
         }
-        String hexCode = convertor.buildContractCode(request.getSourceCode(), request.getContractor(), request.getInitArgs());
-        ContractCreationV2Action createAction = convertor.buildContractCreationV2Action(request.getFromAddr(), request.getContractAddress(), hexCode, 0);
-        CoreTransaction coreTx = buildCoreTx(txId, createAction);
+        CoreTransaction coreTx = buildCreateContractCoreTx(request);
         RespData respData = submit(coreTx);
         if (null != respData) {
             return respData;
@@ -159,18 +157,16 @@ public class ContractServiceImpl implements ContractService {
         return respData;
     }
 
-    @Override
-    public PageVO<ContractVO> queryList(Long height, String txId, Integer pageIndex, Integer pageSize) {
+    @Override public PageVO<ContractVO> queryList(Long height, String txId, Integer pageIndex, Integer pageSize) {
         PageVO<ContractVO> result = new PageVO();
         result.setTotal(contractRepository.queryCount(height, txId));
         List<com.higgs.trust.slave.model.bo.contract.Contract> list =
-                contractRepository.query(height, txId, pageIndex, pageSize);
+            contractRepository.query(height, txId, pageIndex, pageSize);
         result.setData(BeanConvertor.convertList(list, ContractVO.class));
         return result;
     }
 
-    @Override
-    public List<ContractVO> queryContractsByPage(QueryContractVO req) {
+    @Override public List<ContractVO> queryContractsByPage(QueryContractVO req) {
         if (null == req) {
             return null;
         }
@@ -185,13 +181,12 @@ public class ContractServiceImpl implements ContractService {
             req.setPageSize(20);
         }
         List<com.higgs.trust.slave.model.bo.contract.Contract> list =
-                contractRepository.query(req.getHeight(), req.getTxId(), req.getPageNo(), req.getPageSize());
+            contractRepository.query(req.getHeight(), req.getTxId(), req.getPageNo(), req.getPageSize());
         List<ContractVO> result = BeanConvertor.convertList(list, ContractVO.class);
         return result;
     }
 
-    @Override
-    public RespData invoke(String txId, String address, Object... args) {
+    @Override public RespData invoke(String txId, String address, Object... args) {
         ContractInvokeAction action = buildInvokeAction(address, args);
         CoreTransaction coreTx = buildCoreTx(txId, action);
         RespData respData = submit(coreTx);
@@ -213,8 +208,8 @@ public class ContractServiceImpl implements ContractService {
      * @param args
      * @return
      */
-    @Override
-    public RespData invokeV2(String txId, String from, String to, BigDecimal value, String methodSignature, Object... args) {
+    @Override public RespData invokeV2(String txId, String from, String to, BigDecimal value, String methodSignature,
+        Object... args) {
         ContractInvokeV2Action action = buildInvokeV2Action(from, to, value, methodSignature, args);
         CoreTransaction coreTx = buildCoreTx(txId, action);
         RespData respData = submit(coreTx);
@@ -225,8 +220,7 @@ public class ContractServiceImpl implements ContractService {
         return respData;
     }
 
-    @Override
-    public RespData migration(ContractMigrationRequest migrationRequest) {
+    @Override public RespData migration(ContractMigrationRequest migrationRequest) {
         ContractStateMigrationAction action = buildMigrationAction(migrationRequest);
         CoreTransaction coreTx = buildCoreTx(migrationRequest.getTxId(), action);
         RespData respData = submit(coreTx);
@@ -237,11 +231,9 @@ public class ContractServiceImpl implements ContractService {
         return respData;
     }
 
-    @Override
-    public Object query(ContractQueryRequest request) {
+    @Override public Object query(ContractQueryRequest request) {
         return smartContract.executeQuery(request.getAddress(), request.getMethodName(), request.getBizArgs());
     }
-
 
     /**
      * Queries contract.
@@ -252,14 +244,12 @@ public class ContractServiceImpl implements ContractService {
      * @param methodInputArgs actual parameters
      * @return result returned by contract invocation
      */
-    @Override
-    public List<?> query2(Long blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs) {
+    @Override public List<?> query2(Long blockHeight, String contractAddress, String methodSignature,
+        Object... methodInputArgs) {
         return contractQueryService.query2(blockHeight, contractAddress, methodSignature, methodInputArgs);
     }
 
-
-    @Override
-    public ContractVO queryByTxId(String txId, int actionIndex) {
+    @Override public ContractVO queryByTxId(String txId, int actionIndex) {
         return contractRepository.queryByTxId(txId, actionIndex);
     }
 
@@ -276,7 +266,8 @@ public class ContractServiceImpl implements ContractService {
             if (e.getCode() == RsCoreErrorEnum.RS_CORE_IDEMPOTENT) {
                 RsCoreTxVO rsCoreTxVO = coreTransactionService.queryCoreTx(coreTransaction.getTxId());
                 if (rsCoreTxVO.getExecuteResult() != CoreTxResultEnum.SUCCESS) {
-                    return RespData.error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), coreTransaction.getTxId());
+                    return RespData
+                        .error(rsCoreTxVO.getErrorCode(), rsCoreTxVO.getErrorMsg(), coreTransaction.getTxId());
                 }
                 return RespData.success(coreTransaction.getTxId());
             }
@@ -284,6 +275,5 @@ public class ContractServiceImpl implements ContractService {
         }
         return null;
     }
-
 
 }
