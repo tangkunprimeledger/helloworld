@@ -246,14 +246,14 @@ public class ContractServiceImpl implements ContractService {
     /**
      * Queries contract.
      *
-     * @param blockHeight block height
+     * @param blockHeight     block height
      * @param contractAddress contract address
      * @param methodSignature method signature written with target language
      * @param methodInputArgs actual parameters
      * @return result returned by contract invocation
      */
     @Override
-    public List<?> query2(Long blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs){
+    public List<?> query2(Long blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs) {
         return contractQueryService.query2(blockHeight, contractAddress, methodSignature, methodInputArgs);
     }
 
@@ -280,6 +280,7 @@ public class ContractServiceImpl implements ContractService {
                 }
                 return RespData.success(coreTransaction.getTxId());
             }
+            log.error("Submit to RS error", e);
         }
         return null;
     }
