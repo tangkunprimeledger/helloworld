@@ -39,9 +39,10 @@ public interface ContractQueryService {
      */
     default List<?> query2(Long blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs) {
         long height = -1;
-        if (blockHeight > 0) {
+        if (blockHeight != null) {
             height = blockHeight;
         }
+        
         return query2(height, contractAddress, methodSignature, methodInputArgs);
     }
 
