@@ -1,4 +1,4 @@
-package com.higgs.trust.slave;
+package com.higgs.trust.rs.tx;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
@@ -32,6 +32,7 @@ import retrofit2.http.POST;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -104,13 +105,13 @@ public class BatchTransactionSenderTest {
     @Test
     public void testSendTransactions() {
         sendTransactionsWithContractCreation();
-        sendTransactionsWithContractInvocation();
+//        sendTransactionsWithContractInvocation();
     }
 
     private void sendTransactionsWithContractCreation() {
         String contractSenderAddress = "44140ed117f968181823ca021394152800b51214";
         String transactionSenderId = "TRUST-TEST0";
-        String contractFileAbsolutePath = "C:\\MyDesktop\\code\\trust\\slave\\src\\test\\resources\\contracts\\STO.sol";
+        String contractFileAbsolutePath = Paths.get("src/test/resources/contracts/Froze.sol").toFile().getAbsolutePath();
         String contractName = "STO";
         String constructorSignature = "STO()";
         Object[] constructorArgs = new Object[0];
