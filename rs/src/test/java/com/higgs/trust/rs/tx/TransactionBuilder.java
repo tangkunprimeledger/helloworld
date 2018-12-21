@@ -43,7 +43,7 @@ public class TransactionBuilder extends AutoTestContext {
 
     private static final String PRIVATE_KEY = "78d4646b8baa8cfbe4c02b9d245e4ee2406af092955d705d91e83238e012b707";
     //合约目录
-    private static final String BASE_PATH = "D:\\data\\contract\\c\\";
+    private static final String BASE_PATH = Paths.get("src/test/resources/contracts").toFile().getAbsolutePath();
     //冻结合约名称
     private final static String CONTRACT_NAME_OF_FROZE = "Froze";
     //标准币合约名称
@@ -51,7 +51,7 @@ public class TransactionBuilder extends AutoTestContext {
     //STO合约名称
     private final static String CONTRACT_NAME_OF_STANDARD_STO = "StandardSTO";
     //服务地址
-    private final static String SERVICE_URL = "http://10.0.1.186:7070/transaction/post";
+    private final static String SERVICE_URL = "http://localhost:7070/transaction/post";
 
     private final static String QUERY_SERVICE_URL = "http://localhost:7070/transaction/result/%s";
     //批次计数器
