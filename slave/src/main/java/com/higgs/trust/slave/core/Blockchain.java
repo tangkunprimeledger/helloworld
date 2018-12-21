@@ -115,7 +115,7 @@ public class Blockchain implements TrustListener, InitializingBean {
         String root = lastBlockHeader.getStateRootHash().getStateRoot();
         receipts = new ArrayList<>();
         if (StringUtils.isNotEmpty(root)) {
-            repositorySnapshot = repository.getSnapshotTo(Hex.decode(lastBlockHeader.getStateRootHash().getStateRoot()));
+            repositorySnapshot = repository.getSnapshotTo(Hex.decode(root));
         } else {
             repositorySnapshot = repository.getSnapshotTo(null);
         }

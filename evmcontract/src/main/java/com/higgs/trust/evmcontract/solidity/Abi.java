@@ -292,6 +292,9 @@ public class Abi extends ArrayList<Abi.Entry> {
         }
 
         public static byte[] of(String constructor, byte[] code, Object... args) {
+            if (args == null) {
+                args = new Object[0];
+            }
             List<Abi.Entry.Param> inputs = new ArrayList<>();
             List<String> names = extractWords(constructor);
             for (int i = 1; i < names.size(); i++) {

@@ -145,8 +145,8 @@ import static com.google.common.base.Preconditions.*;
     // The two parts of the key. If "priv" is set, "pub" can always be
     // calculated. If "pub" is set but not "priv", we
     // can only verify signatures not make them.
-    protected static BigInteger priv; // A field element.
-    protected static LazyECPoint pub;
+    protected BigInteger priv; // A field element.
+    protected LazyECPoint pub;
     // Creation time of the key in seconds since the epoch, or zero if the key
     // was deserialized from a version that did
     // not have this field.
@@ -192,12 +192,12 @@ import static com.google.common.base.Preconditions.*;
         AsymmetricCipherKeyPair keypair = generator.generateKeyPair();
         ECPrivateKeyParameters privParams = (ECPrivateKeyParameters)keypair.getPrivate();
         ECPublicKeyParameters pubParams = (ECPublicKeyParameters)keypair.getPublic();
-        priv = privParams.getD();
-        pub = new LazyECPoint(CURVE.getCurve(), pubParams.getQ().getEncoded(false));
+        BigInteger priv = privParams.getD();
+        LazyECPoint pub = new LazyECPoint(CURVE.getCurve(), pubParams.getQ().getEncoded(false));
         creationTimeSeconds = CryptoUtils.currentTimeSeconds();
 
-        String pubKey = Base64Util.encryptBASE64(ECKey.getPubKey());
-        String priKey = Base64Util.encryptBASE64(ECKey.getPrivKeyBytes());
+        String pubKey = Hex.toHexString(pub.getEncoded());
+        String priKey =Hex.toHexString(CryptoUtils.bigIntegerToBytes(priv, 32));
 
         return new KeyPair(pubKey, priKey);
     }
@@ -650,7 +650,7 @@ import static com.google.common.base.Preconditions.*;
      * Gets the raw public key value. This appears in trade scriptSigs.
      * Note that this is <b>not</b> the same as the pubKeyHash/address.
      */
-    public static byte[] getPubKey() {
+    public byte[] getPubKey() {
         return pub.getEncoded();
     }
 
@@ -661,7 +661,7 @@ import static com.google.common.base.Preconditions.*;
      *
      * @throws IllegalStateException if the private key bytes are not available.
      */
-    public static BigInteger getPrivKey() {
+    public BigInteger getPrivKey() {
         if (priv == null)
             throw new MissingPrivateKeyException();
         return priv;
@@ -819,7 +819,7 @@ import static com.google.common.base.Preconditions.*;
      *
      * @throws ECKey.MissingPrivateKeyException if the private key bytes are missing/encrypted.
      */
-    public static byte[] getPrivKeyBytes() {
+    public byte[] getPrivKeyBytes() {
         return CryptoUtils.bigIntegerToBytes(getPrivKey(), 32);
     }
 
@@ -1065,7 +1065,7 @@ import static com.google.common.base.Preconditions.*;
 
         String M = "hello world";
         log.info("原始信息:{}", M);
-        ECKey newEcKey = ECKey.fromPrivate(new BigInteger(Base64Util.decryptBASE64(keyPair.getPriKey())), false);
+        ECKey newEcKey = ECKey.fromPrivate(new BigInteger(Hex.decode(keyPair.getPriKey())), false);
         String sign = newEcKey.signMessage(M);
         log.info("签名信息:{}", sign);
         Boolean result = verify(M, sign, keyPair.getPubKey());
