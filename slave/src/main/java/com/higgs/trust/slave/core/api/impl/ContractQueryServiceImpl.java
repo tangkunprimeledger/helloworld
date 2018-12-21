@@ -34,7 +34,12 @@ public class ContractQueryServiceImpl implements ContractQueryService {
     }
 
     @Override
-    public List<?> query2(long blockHeight, String contractAddressAsString, String methodSignature, Object... methodInputArgs) {
+    public List<?> query2(Long blockHeight, String contractAddressAsString, String methodSignature, Object... methodInputArgs) {
+        long height = -1;
+        if (blockHeight != null) {
+            height = blockHeight;
+        }
+
         if (!CONTRACT_ADDRESS_PATTERN.matcher(contractAddressAsString).matches()) {
             throw new IllegalArgumentException("Contract address must be hex string of 40 characters");
         }
@@ -49,7 +54,7 @@ public class ContractQueryServiceImpl implements ContractQueryService {
                 new ParameterChecker().withMethodSignature(methodSignature).withMethodInputArgs(methodInputArgs);
         parameterChecker.check();
 
-        return contractQuery.executeQuery(blockHeight, contractAddress, methodSignature, methodInputArgs);
+        return contractQuery.executeQuery(height, contractAddress, methodSignature, methodInputArgs);
     }
 
     private static class ParameterChecker {

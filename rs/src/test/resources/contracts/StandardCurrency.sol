@@ -107,7 +107,7 @@ contract StandardCurrency is StandardToken {
     // rollback of transfer when failure
     function rollbackTransfer(address _from, address _to, uint _value) private {
         balance[_to] -= _value;
-        balance[_to] += _value;
+        balance[_from] += _value;
         emit RollbackTransfer(_to, _from, _value);
     }
 

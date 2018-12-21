@@ -45,6 +45,10 @@ import java.util.regex.Pattern;
  * @date 2018-12-18
  */
 public class BatchTransactionSenderTest {
+    private static final String SERVER_IP = "127.0.0.1";
+    private static final int SERVER_PORT = 7070;
+    private static final long SERVER_TIMEOUT_IN_SECOND = 60L;
+
     private static EccCrypto crypto;
     private static Pattern addressPattern;
     private static Retrofit retrofit;
@@ -56,16 +60,16 @@ public class BatchTransactionSenderTest {
 
         crypto = EccCrypto.getSingletonInstance();
         addressPattern = Pattern.compile("^[0-9a-fA-F]{40}$");
-        retrofit = HttpClient.getRetrofit("127.0.0.1", 7000);
+        retrofit = HttpClient.getRetrofit(SERVER_IP, SERVER_PORT);
         signedTransactionSender = retrofit.create(IPostSignedTransaction.class);
     }
 
     private static class HttpClient {
         private static Retrofit getRetrofit(String serverIp, int serverPort) {
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                    .connectTimeout(60L, TimeUnit.SECONDS)
-                    .writeTimeout(60L, TimeUnit.SECONDS)
-                    .readTimeout(60L, TimeUnit.SECONDS)
+                    .connectTimeout(SERVER_TIMEOUT_IN_SECOND, TimeUnit.SECONDS)
+                    .writeTimeout(SERVER_TIMEOUT_IN_SECOND, TimeUnit.SECONDS)
+                    .readTimeout(SERVER_TIMEOUT_IN_SECOND, TimeUnit.SECONDS)
                     .build();
 
             return new Retrofit.Builder()
@@ -104,25 +108,25 @@ public class BatchTransactionSenderTest {
 
     @Test
     public void testSendTransactions() {
-        sendTransactionsWithContractCreation();
+        sendTransactionsWithContractCreation01();
 //        sendTransactionsWithContractInvocation();
     }
 
-    private void sendTransactionsWithContractCreation() {
+
+    private void sendTransactionsWithContractCreation01() {
         String contractSenderAddress = "44140ed117f968181823ca021394152800b51214";
         String transactionSenderId = "TRUST-TEST0";
         String contractFileAbsolutePath = Paths.get("src/test/resources/contracts/Froze.sol").toFile().getAbsolutePath();
-        String contractName = "STO";
-        String constructorSignature = "STO()";
+        String contractName = "Froze";
+        String constructorSignature = "Froze()";
         Object[] constructorArgs = new Object[0];
 
-        SignedTransaction signedTransaction = generateSignedTransactionWithContractCreation(
-                contractSenderAddress, transactionSenderId, contractFileAbsolutePath,
-                contractName, constructorSignature, constructorArgs);
-
         try {
-            System.out.println(JSON.toJSONString(signedTransaction, true));
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 1000; i++) {
+                SignedTransaction signedTransaction = generateSignedTransactionWithContractCreation(
+                        contractSenderAddress, transactionSenderId, contractFileAbsolutePath,
+                        contractName, constructorSignature, constructorArgs);
+                System.out.println(JSON.toJSONString(signedTransaction, true));
                 RespData respData = signedTransactionSender.post(signedTransaction).execute().body();
                 System.out.println(respData.toString());
             }
@@ -309,8 +313,8 @@ public class BatchTransactionSenderTest {
 
     private String generatePrivateKey() {
         KeyPair keyPair = crypto.generateKeyPair();
-        String privateKey = base64ToHex(keyPair.getPriKey());
-        String publicKey = base64ToHex(keyPair.getPubKey());
+        String privateKey = keyPair.getPriKey();
+        String publicKey = keyPair.getPubKey();
         System.out.println("KeyPair [privateKey=" + privateKey + ", publicKey" + publicKey + "]");
         return privateKey;
     }
