@@ -13,6 +13,7 @@ import com.higgs.trust.rs.core.bo.ContractCreateV2Request;
 import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
 import com.higgs.trust.rs.core.bo.ContractQueryRequest;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
+import com.higgs.trust.slave.api.ContractQueryService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
@@ -55,6 +56,8 @@ public class ContractServiceImpl implements ContractService {
     private StandardSmartContract smartContract;
     @Autowired
     private CoreTransactionConvertor convertor;
+    @Autowired
+    private ContractQueryService contractQueryService;
 
     private CoreTransaction buildCoreTx(String txId, String code, Object... initArgs) {
         List<Action> actionList = new ArrayList<>(1);
@@ -239,6 +242,22 @@ public class ContractServiceImpl implements ContractService {
         return smartContract.executeQuery(request.getAddress(), request.getMethodName(), request.getBizArgs());
     }
 
+
+    /**
+     * Queries contract.
+     *
+     * @param blockHeight     block height
+     * @param contractAddress contract address
+     * @param methodSignature method signature written with target language
+     * @param methodInputArgs actual parameters
+     * @return result returned by contract invocation
+     */
+    @Override
+    public List<?> query2(Long blockHeight, String contractAddress, String methodSignature, Object... methodInputArgs) {
+        return contractQueryService.query2(blockHeight, contractAddress, methodSignature, methodInputArgs);
+    }
+
+
     @Override
     public ContractVO queryByTxId(String txId, int actionIndex) {
         return contractRepository.queryByTxId(txId, actionIndex);
@@ -261,6 +280,7 @@ public class ContractServiceImpl implements ContractService {
                 }
                 return RespData.success(coreTransaction.getTxId());
             }
+            log.error("Submit to RS error", e);
         }
         return null;
     }
