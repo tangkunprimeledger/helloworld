@@ -67,13 +67,7 @@ import java.math.BigInteger;
      * @desc sign message   Base64 Encoded
      */
     @Override public String sign(String message, String privateKey) {
-        BigInteger priKey = null;
-        try {
-            priKey = new BigInteger(Hex.decode(privateKey));
-        } catch (Exception e) {
-            throw new RuntimeException("ECC sign, decode privateKey error", e);
-        }
-        ECKey newEcKey = ECKey.fromPrivate(priKey, false);
+        ECKey newEcKey = ECKey.fromPrivate(Hex.decode(privateKey));
         return newEcKey.signMessage(message);
     }
 

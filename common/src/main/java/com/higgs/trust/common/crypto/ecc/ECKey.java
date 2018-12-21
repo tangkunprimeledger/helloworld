@@ -150,7 +150,7 @@ import static com.google.common.base.Preconditions.*;
     // Creation time of the key in seconds since the epoch, or zero if the key
     // was deserialized from a version that did
     // not have this field.
-    protected static long creationTimeSeconds;
+    protected long creationTimeSeconds;
     protected KeyCrypter keyCrypter;
     protected EncryptedData encryptedPrivateKey;
 
@@ -183,21 +183,12 @@ import static com.google.common.base.Preconditions.*;
     /**
      * @param
      * @return
-     * @desc generate pub/priKey pair, BASE64 encoded
+     * @desc generate pub/priKey pair, HEX encoded
      */
     public static KeyPair generateEncodedKeyPair() {
-        ECKeyPairGenerator generator = new ECKeyPairGenerator();
-        ECKeyGenerationParameters keygenParams = new ECKeyGenerationParameters(CURVE, secureRandom);
-        generator.init(keygenParams);
-        AsymmetricCipherKeyPair keypair = generator.generateKeyPair();
-        ECPrivateKeyParameters privParams = (ECPrivateKeyParameters)keypair.getPrivate();
-        ECPublicKeyParameters pubParams = (ECPublicKeyParameters)keypair.getPublic();
-        BigInteger priv = privParams.getD();
-        LazyECPoint pub = new LazyECPoint(CURVE.getCurve(), pubParams.getQ().getEncoded(false));
-        creationTimeSeconds = CryptoUtils.currentTimeSeconds();
-
-        String pubKey = Hex.toHexString(pub.getEncoded());
-        String priKey =Hex.toHexString(CryptoUtils.bigIntegerToBytes(priv, 32));
+        ECKey key = new ECKey();
+        String pubKey = Hex.toHexString(key.getPubKey());
+        String priKey =Hex.toHexString(key.getPrivKeyBytes());
 
         return new KeyPair(pubKey, priKey);
     }
