@@ -237,20 +237,10 @@ public class BlockChainServiceImpl implements BlockChainService, InitializingBea
         }
 
         AppContext.PENDING_TO_SUBMIT_QUEUE.offer(tx);
-        try {
-            respData = AppContext.TX_HANDLE_RESULT_MAP.poll(tx.getCoreTx().getTxId(), 1000);
-        } catch (InterruptedException e) {
-            log.error("tx handle exception. ", e);
-            respData = new RespData();
-            respData.setCode(RespCodeEnum.SYS_FAIL.getRespCode());
-            respData.setMsg("handle transaction exception.");
-        }
 
-        if (null == respData) {
-            respData = new RespData();
-            respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
-            respData.setMsg("tx handle timeout");
-        }
+        respData = new RespData();
+        respData.setCode(RespCodeEnum.SUCCESS.getRespCode());
+        respData.setMsg("submitted, have " + AppContext.PENDING_TO_SUBMIT_QUEUE.size() + " transactions waiting to process ..." );
         return respData;
     }
 

@@ -373,6 +373,7 @@ public class MessagingService {
                             newPeer.setHttpPort(request.getHttpPort());
                             newPeer.setSlave(request.isBackupNode());
                             if (!config.authentication().validate(newPeer, request.getSignature())) {
+                                log.warn("authentication fail: {}", newPeer);
                                 ctx.writeAndFlush(new NetworkResponse(message.id(), NetworkResponse.Status.UNAUTHORIZED, EMPTY_PAYLOAD))
                                         .addListener(ChannelFutureListener.CLOSE);
                                 return;

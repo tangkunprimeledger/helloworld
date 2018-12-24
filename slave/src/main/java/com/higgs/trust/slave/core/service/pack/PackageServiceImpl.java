@@ -297,10 +297,6 @@ import java.util.stream.Collectors;
                 }
             }
 
-            //TODO:fashuang for test
-            for (SignedTransaction signedTx : txs) {
-                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
-            }
             blockchain.finishExecuteBlock(dbHeader);
         } catch (Throwable e) {
             //snapshot transactions should be destroy
