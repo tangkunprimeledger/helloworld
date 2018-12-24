@@ -9,6 +9,7 @@ import com.higgs.trust.evmcontract.crypto.HashUtil;
 import com.higgs.trust.evmcontract.facade.compile.CompileManager;
 import com.higgs.trust.evmcontract.solidity.Abi;
 import com.higgs.trust.evmcontract.solidity.compiler.CompilationResult;
+import com.higgs.trust.rs.core.bo.ContractQueryRequestV2;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -83,6 +84,8 @@ public class BatchTransactionSenderTest {
     private interface IPostSignedTransaction {
         @POST("/transaction/post")
         Call<RespData> post(@Body SignedTransaction signedTransaction);
+        @POST("/contract/query2")
+        Call<RespData> post(@Body ContractQueryRequestV2 contractQueryRequestV2);
     }
 
     private static void configJsonSerializer() {
@@ -107,8 +110,18 @@ public class BatchTransactionSenderTest {
     }
 
     @Test
-    public void testSendTransactions() {
-        sendTransactionsWithContractCreation01();
+    public void testSendTransactions() throws IOException {
+        ContractQueryRequestV2 contractQueryRequestV2 = new ContractQueryRequestV2();
+        contractQueryRequestV2.setAddress("44140ed117f968181823ca021394152800b51214");
+        contractQueryRequestV2.setBlockHeight(-1L);
+
+        String contractMethodSignature = "(uint) update(address, uint)";
+        Object[] methodArgs = new Object[]{"02ed117f90021416818ca415b594411281823340", 54};
+        contractQueryRequestV2.setMethodSignature(contractMethodSignature);
+        contractQueryRequestV2.setParameters(methodArgs);
+        RespData respData = signedTransactionSender.post(contractQueryRequestV2).execute().body();
+
+//        sendTransactionsWithContractCreation01();
 //        sendTransactionsWithContractInvocation();
     }
 
@@ -219,7 +232,7 @@ public class BatchTransactionSenderTest {
         contractCreationV2Action.setCode(Hex.toHexString(generateDeployByteCode(
                 contractFileAbsolutePath, contractName, constructorSignature, constructorArgs)));
         contractCreationV2Action.setFrom(getContractSenderAddress(contractSenderAddress));
-        contractCreationV2Action.setTo(null);
+        contractCreationV2Action.setTo(getReceiverAddress());
 
 
         CoreTransaction coreTransaction = new CoreTransaction();
@@ -248,6 +261,13 @@ public class BatchTransactionSenderTest {
 
 
         return signedTransaction;
+    }
+
+    private String getReceiverAddress() {
+        byte[] bytes = HashUtil.randomHash();
+        String receiverAddress = Hex.toHexString(HashUtil.calcNewAddr(bytes, bytes));
+        System.out.println("ReceiverAddress: " + receiverAddress);
+        return receiverAddress;
     }
 
     private String getSignOwner(String signOwner) {
