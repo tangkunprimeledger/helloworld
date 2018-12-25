@@ -14,7 +14,7 @@ public class ContractQueryRequestV2 {
     /**
      * Height of block.
      */
-    private long blockHeight;
+    private Long blockHeight;
     /**
      * Contract address, hex string of 40 characters, e.g. 00a615668486da40f31fd050854fb137b317e056.
      */

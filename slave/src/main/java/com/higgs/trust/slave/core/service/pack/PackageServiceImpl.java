@@ -31,8 +31,8 @@ import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandler;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.transaction.TransactionExecutor;
-import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.Package;
+import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.bo.context.PackageData;
@@ -57,39 +57,22 @@ import java.util.stream.Collectors;
  * @Description: package service
  * @author: pengdi
  **/
-@Service
-@Slf4j
-public class PackageServiceImpl implements PackageService {
-    @Autowired
-    private TransactionTemplate txRequired;
-    @Autowired
-    private PackageRepository packageRepository;
-    @Autowired
-    private SystemPropertyRepository systemPropertyRepository;
-    @Autowired
-    private BlockService blockService;
-    @Autowired
-    private LogReplicateHandler logReplicateHandler;
-    @Autowired
-    private TransactionExecutor transactionExecutor;
-    @Autowired
-    private SnapshotService snapshotService;
-    @Autowired
-    private TransactionRepository transactionRepository;
-    @Autowired
-    private SlaveCallbackRegistor slaveCallbackRegistor;
-    @Autowired
-    private P2pHandler p2pHandler;
-    @Autowired
-    private RsNodeRepository rsNodeRepository;
-    @Autowired
-    private PendingTxRepository pendingTxRepository;
-    @Autowired
-    private NodeState nodeState;
-    @Autowired
-    private InitConfig initConfig;
-    @Autowired
-    private Blockchain blockchain;
+@Service @Slf4j public class PackageServiceImpl implements PackageService {
+    @Autowired private TransactionTemplate txRequired;
+    @Autowired private PackageRepository packageRepository;
+    @Autowired private SystemPropertyRepository systemPropertyRepository;
+    @Autowired private BlockService blockService;
+    @Autowired private LogReplicateHandler logReplicateHandler;
+    @Autowired private TransactionExecutor transactionExecutor;
+    @Autowired private SnapshotService snapshotService;
+    @Autowired private TransactionRepository transactionRepository;
+    @Autowired private SlaveCallbackRegistor slaveCallbackRegistor;
+    @Autowired private P2pHandler p2pHandler;
+    @Autowired private RsNodeRepository rsNodeRepository;
+    @Autowired private PendingTxRepository pendingTxRepository;
+    @Autowired private NodeState nodeState;
+    @Autowired private InitConfig initConfig;
+    @Autowired private Blockchain blockchain;
 
     private boolean hashEvmContractTx;
 
@@ -98,8 +81,7 @@ public class PackageServiceImpl implements PackageService {
      *
      * @return
      */
-    @Override
-    public Package create(List<SignedTransaction> signedTransactions, Long currentPackageHeight) {
+    @Override public Package create(List<SignedTransaction> signedTransactions, Long currentPackageHeight) {
 
         if (CollectionUtils.isEmpty(signedTransactions)) {
             return null;
@@ -111,14 +93,13 @@ public class PackageServiceImpl implements PackageService {
 
         // sort signedTransactions by txId asc
         Collections.sort(signedTransactions, new Comparator<SignedTransaction>() {
-            @Override
-            public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+            @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
                 return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
             }
         });
 
         log.info("[PackageServiceImpl.createPackage] start create package, txSize: {}, package.height: {}",
-                signedTransactions.size(), currentPackageHeight + 1);
+            signedTransactions.size(), currentPackageHeight + 1);
 
         /**
          * initial package
@@ -131,9 +112,7 @@ public class PackageServiceImpl implements PackageService {
         return pack;
     }
 
-
-    @Override
-    public void submitConsensus(PackageCommand command) {
+    @Override public void submitConsensus(PackageCommand command) {
         logReplicateHandler.replicatePackage(command);
     }
 
@@ -142,8 +121,7 @@ public class PackageServiceImpl implements PackageService {
      *
      * @param pack
      */
-    @Override
-    public void receive(Package pack) {
+    @Override public void receive(Package pack) {
         log.info("receive package from consensus, pack height: {}", pack.getHeight());
 
         if (null == pack || CollectionUtils.isEmpty(pack.getSignedTxList())) {
@@ -178,11 +156,11 @@ public class PackageServiceImpl implements PackageService {
         pack.setStatus(PackageStatusEnum.RECEIVED);
         if (initConfig.isUseMySQL()) {
             txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override
-                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                     packageRepository.save(pack);
                     //save pendingTx to db
-                    pendingTxRepository.batchInsert(pack.getSignedTxList(), PendingTxStatusEnum.PACKAGED, pack.getHeight());
+                    pendingTxRepository
+                        .batchInsert(pack.getSignedTxList(), PendingTxStatusEnum.PACKAGED, pack.getHeight());
                 }
             });
         } else {
@@ -193,7 +171,8 @@ public class PackageServiceImpl implements PackageService {
                 packageRepository.save(pack);
                 pendingTxRepository.batchInsertToRocks(pack.getSignedTxList(), pack.getHeight());
 
-                systemPropertyRepository.saveWithTransaction(Constant.MAX_PACK_HEIGHT, String.valueOf(pack.getHeight()), "max package height");
+                systemPropertyRepository.saveWithTransaction(Constant.MAX_PACK_HEIGHT, String.valueOf(pack.getHeight()),
+                    "max package height");
                 RocksUtils.txCommit(tx);
             } finally {
                 ThreadLocalUtils.clearRocksTx();
@@ -225,8 +204,7 @@ public class PackageServiceImpl implements PackageService {
      * @param pack
      * @return
      */
-    @Override
-    public PackContext createPackContext(Package pack) {
+    @Override public PackContext createPackContext(Package pack) {
         Block block = blockService.buildDummyBlock(pack.getHeight(), pack.getPackageTime());
 
         PackContext packContext = new PackContext(pack, block);
@@ -245,7 +223,7 @@ public class PackageServiceImpl implements PackageService {
         List<RsPubKey> rsPubKeyList = rsNodeRepository.queryRsAndPubKey();
         if (CollectionUtils.isNotEmpty(rsPubKeyList)) {
             packContext.setRsPubKeyMap(
-                    rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
+                rsPubKeyList.stream().collect(Collectors.toMap(RsPubKey::getRsId, RsPubKey::getPubKey)));
         } else {
             packContext.setRsPubKeyMap(Collections.emptyMap());
         }
@@ -258,8 +236,7 @@ public class PackageServiceImpl implements PackageService {
      * @param isFailover
      * @param isBatchSync
      */
-    @Override
-    public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
+    @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
         blockchain.init();
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
@@ -320,10 +297,6 @@ public class PackageServiceImpl implements PackageService {
                 }
             }
 
-            //TODO:fashuang for test
-            for (SignedTransaction signedTx : txs) {
-                AppContext.TX_HANDLE_RESULT_MAP.put(signedTx.getCoreTx().getTxId(), new RespData());
-            }
             blockchain.finishExecuteBlock(dbHeader);
         } catch (Throwable e) {
             //snapshot transactions should be destroy
@@ -368,7 +341,7 @@ public class PackageServiceImpl implements PackageService {
                 //set current transaction and execute
                 packageData.setCurrentTransaction(tx);
                 TransactionReceipt receipt =
-                        transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
+                    transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
                 persistedDatas.add(tx);
                 txReceipts.put(receipt.getTxId(), receipt);
             } finally {
@@ -404,14 +377,13 @@ public class PackageServiceImpl implements PackageService {
      * @param header
      * @param isCompare
      */
-    @Override
-    public void persisted(BlockHeader header, boolean isCompare) {
+    @Override public void persisted(BlockHeader header, boolean isCompare) {
         //check status for package
-        boolean isPackageStatus = packageRepository
-                .isPackageStatus(header.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
+        boolean isPackageStatus =
+            packageRepository.isPackageStatus(header.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS);
         if (!isPackageStatus) {
             log.warn("[package.persisted]package status is not WAIT_PERSIST_CONSENSUS blockHeight:{}",
-                    header.getHeight());
+                header.getHeight());
             return;
         }
         try {
@@ -429,9 +401,10 @@ public class PackageServiceImpl implements PackageService {
                 //compare
                 boolean r = blockService.compareBlockHeader(blockHeader, header);
                 if (!r) {
-                    log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}", header.getHeight());
+                    log.error("[package.persisted] consensus header unequal tempHeader,blockHeight:{}",
+                        header.getHeight());
                     MonitorLogUtils
-                            .logIntMonitorInfo(MonitorTargetEnum.SLAVE_BLOCK_HEADER_NOT_EQUAL.getMonitorTarget(), 1);
+                        .logIntMonitorInfo(MonitorTargetEnum.SLAVE_BLOCK_HEADER_NOT_EQUAL.getMonitorTarget(), 1);
                     //change state to offline
                     nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
                     throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR);
@@ -444,8 +417,8 @@ public class PackageServiceImpl implements PackageService {
                 if (initConfig.isUseMySQL()) {
                     Object[] objs = transactionRepository.queryFinalTxsForMysql(header.getHeight());
                     if (objs != null) {
-                        txs = (List<SignedTransaction>) objs[0];
-                        txReceiptMap = (Map<String, TransactionReceipt>) objs[1];
+                        txs = (List<SignedTransaction>)objs[0];
+                        txReceiptMap = (Map<String, TransactionReceipt>)objs[1];
                     }
                 } else {
                     txs = transactionRepository.queryTransactions(header.getHeight());
@@ -454,8 +427,7 @@ public class PackageServiceImpl implements PackageService {
                 if (!CollectionUtils.isEmpty(txs)) {
                     // sort signedTransactions by txId asc
                     Collections.sort(txs, new Comparator<SignedTransaction>() {
-                        @Override
-                        public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
+                        @Override public int compare(SignedTransaction signedTx1, SignedTransaction signedTx2) {
                             return signedTx1.getCoreTx().getTxId().compareTo(signedTx2.getCoreTx().getTxId());
                         }
                     });
@@ -467,8 +439,7 @@ public class PackageServiceImpl implements PackageService {
 
                 if (initConfig.isUseMySQL()) {
                     txRequired.execute(new TransactionCallbackWithoutResult() {
-                        @Override
-                        protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                             //call back business
                             Profiler.enter("[callbackRSForClusterPersisted]");
                             callbackRS(finalTxs, finalTxReceiptMap, true, false, blockHeader);
@@ -476,7 +447,8 @@ public class PackageServiceImpl implements PackageService {
 
                             //update package status ---- PERSISTED
                             Profiler.enter("[updatePackStatus]");
-                            packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
+                            packageRepository
+                                .updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
                                     PackageStatusEnum.PERSISTED);
                             Profiler.release();
                         }
@@ -492,7 +464,8 @@ public class PackageServiceImpl implements PackageService {
 
                         //update package status ---- PERSISTED
                         Profiler.enter("[updatePackStatus]");
-                        packageRepository.updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
+                        packageRepository
+                            .updateStatus(blockHeader.getHeight(), PackageStatusEnum.WAIT_PERSIST_CONSENSUS,
                                 PackageStatusEnum.PERSISTED);
                         Profiler.release();
 
@@ -520,7 +493,7 @@ public class PackageServiceImpl implements PackageService {
      * call back business
      */
     private void callbackRS(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceiptMap,
-                            boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
+        boolean isClusterPersisted, boolean isFailover, BlockHeader blockHeader) {
         //TODO:liuyu
         if (initConfig.isMockRS()) {
             return;
@@ -607,8 +580,7 @@ public class PackageServiceImpl implements PackageService {
      *
      * @param pack
      */
-    @Override
-    public void remove(Package pack) {
+    @Override public void remove(Package pack) {
         /** TODO
          * 1.判断package是否执行完成
          * 2.开启事务

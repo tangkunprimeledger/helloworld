@@ -63,8 +63,9 @@ import java.util.Map;
         if (count > 1000) {
             count = 1000;
         }
-        return queryByPrefix(null,count, order);
+        return queryByPrefix(null, count, order);
     }
+
     /**
      * count by
      *
@@ -72,7 +73,7 @@ import java.util.Map;
      * @param prefix
      * @return
      */
-    public long countBy(String tableName,String prefix) {
+    public long countBy(String tableName, String prefix) {
         setTableName(tableName);
         return count(prefix);
     }
@@ -108,19 +109,19 @@ import java.util.Map;
         if (CollectionUtils.isEmpty(tableNames)) {
             return false;
         }
-        Map<String,String> ignoredMap = new HashMap<>();
-        if(!ArrayUtils.isEmpty(ignoreTables)) {
+        Map<String, String> ignoredMap = new HashMap<>();
+        if (!ArrayUtils.isEmpty(ignoreTables)) {
             for (String ignored : ignoreTables) {
                 ignoredMap.put(ignored, ignored);
             }
         }
         List<String> list = new ArrayList<>();
-        for(String name : tableNames){
-            if(!ignoredMap.containsKey(name)){
+        for (String name : tableNames) {
+            if (!ignoredMap.containsKey(name)) {
                 list.add(name);
             }
         }
-        clear(list.toArray(new String[]{}));
+        clear(list.toArray(new String[] {}));
         return true;
     }
 
@@ -134,5 +135,13 @@ import java.util.Map;
             throw new RuntimeException("table name is null");
         }
         this.tableName = tableName.trim();
+    }
+
+    /**
+     * put value
+     */
+    public void put(String tableName, String key, Object value) {
+        setTableName(tableName);
+        put(key, value);
     }
 }

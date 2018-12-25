@@ -132,4 +132,16 @@ class rocksdb {
         }
     }
 
+    @Usage('put the value')
+    @Command
+    def put(InvocationContext context,
+            @Usage("tableName") @Required @Argument String tableName,
+            @Usage("key") @Required @Argument String keyName,
+            @Usage("value") @Required @Argument String jsonStr, @Usage("the class of value")@Required @Argument String clazzName) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def helper = beans.getBean(RocksDBHelper.class)
+        def value = JSON.parseObject(jsonStr, Class.forName(clazzName))
+        helper.put(tableName, keyName, value)
+    }
+
 }
