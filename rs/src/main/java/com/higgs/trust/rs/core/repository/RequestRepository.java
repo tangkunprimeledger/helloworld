@@ -12,6 +12,7 @@ import com.higgs.trust.rs.core.vo.RequestVO;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -79,6 +80,9 @@ public class RequestRepository {
      * @param
      */
     public void insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg) {
+        if (StringUtils.isBlank(requestId) || null == requestEnum) {
+            throw new NullPointerException("RequestId or requestEnum is null error!");
+        }
         RequestPO requestPO = buildRequestPO(requestId, requestEnum, respCode, respMsg);
         try {
             //for mysql

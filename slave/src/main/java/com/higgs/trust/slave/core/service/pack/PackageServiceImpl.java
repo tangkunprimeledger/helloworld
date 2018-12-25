@@ -304,7 +304,7 @@ public class PackageServiceImpl implements PackageService {
 
             //call back business
             Profiler.enter("[callbackRS]");
-            //  callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
+            callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
