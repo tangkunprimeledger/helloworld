@@ -16,7 +16,6 @@
         <module>contract</module>
         <module>evmcontract</module>
         <module>tester</module>
-        <module>registry</module>
         <module>config</module>
         <module>management</module>
         <module>network</module>
