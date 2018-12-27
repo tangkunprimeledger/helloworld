@@ -28,7 +28,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -72,7 +72,7 @@ import java.util.List;
 
     @StateChangeListener(value = NodeStateEnum.Initialize, before = true)
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public void init() throws FileNotFoundException, InterruptedException {
+    public void init() throws IOException, InterruptedException {
         if (needInit()) {
             // 1、生成公私钥,存入db
             // 2、获取其他节点的公钥,公钥写入配置文件给共识层使用

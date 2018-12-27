@@ -1,6 +1,6 @@
 package com.higgs.trust.slave.core.service.ca;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @author WangQuanzhou
@@ -9,6 +9,6 @@ import java.io.FileNotFoundException;
  */
 public interface CaInitService {
 
-    void initKeyPair() throws FileNotFoundException;
+    void initKeyPair() throws IOException;
 
 }
