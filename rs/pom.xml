@@ -155,6 +155,7 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>test-framwork</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
@@ -181,7 +182,7 @@
             <artifactId>consensus-api</artifactId>
         </dependency>
     </dependencies>
-   <!-- <build>
+    <build>
          <finalName>rs</finalName>
          <plugins>
              <plugin>
@@ -215,7 +216,7 @@
                  </executions>
              </plugin>
          </plugins>
-     </build>-->
+     </build>
 
     <distributionManagement>
         <repository>
