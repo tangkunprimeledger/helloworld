@@ -23,11 +23,6 @@ import org.springframework.context.annotation.Configuration;
     private int startupRetryTime = 100;
 
     /**
-     * the private key of node
-     */
-    private String privateKey;
-
-    /**
      * the node name prefix
      */
     private String prefix;
