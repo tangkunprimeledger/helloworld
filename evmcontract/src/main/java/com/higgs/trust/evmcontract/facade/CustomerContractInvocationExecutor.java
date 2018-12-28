@@ -37,7 +37,7 @@ public class CustomerContractInvocationExecutor extends BaseContractExecutor {
 
         byte[] code = transactionRepository.getCode(receiverAddress);
         if (ArrayUtils.isEmpty(code)) {
-            throw new ContractContextException("Contract code cannot be empty");
+            throw new ContractContextException("Contract code is empty");
         }
     }
 

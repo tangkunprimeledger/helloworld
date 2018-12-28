@@ -9,11 +9,11 @@ import com.higgs.trust.evmcontract.facade.exception.ContractExecutionException;
 import com.higgs.trust.evmcontract.facade.util.ContractUtil;
 import com.higgs.trust.evmcontract.solidity.Abi;
 import com.higgs.trust.evmcontract.util.ByteArraySet;
+import com.higgs.trust.evmcontract.util.FastByteComparisons;
 import com.higgs.trust.evmcontract.vm.program.ProgramResult;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvoke;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvokeImpl;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
@@ -28,14 +28,15 @@ import java.util.Objects;
  * @date 2018-11-15
  */
 public abstract class BaseContractExecutor implements Executor<ContractExecutionResult> {
-    private static final int BLOCK_HASH_LENGTH = 32;
     private static final int ADDRESS_LENGTH = 20;
+    private static final int BLOCK_HASH_LENGTH = 32;
     private static final String ERROR_SIGNATURE = "08c379a0";
+
 
     /**
      * Contract context.
      */
-    protected final ContractExecutionContext contractExecutionContext;
+    private final ContractExecutionContext contractExecutionContext;
 
     /**
      * Block-level snapshot.
@@ -53,9 +54,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     protected final Repository contractRepository;
 
 
-    /***
-     * bellow fields come from context
-     ***/
+    /*** bellow fields come from context ***/
     protected final byte[] transactionHash;
     protected final byte[] data;
     protected final byte[] gasLimit;
@@ -64,13 +63,13 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     protected final byte[] value;
     protected byte[] receiverAddress;
     protected final byte[] gasPrice;
-    protected final byte[] parentHash;
-    protected final byte[] minerAddress;
+    private final byte[] parentHash;
+    private final byte[] minerAddress;
     protected final long timestamp;
     protected final long number;
-    protected final byte[] difficulty;
-    protected final byte[] gasLimitBlock;
-    protected final BlockStore blockStore;
+    private final byte[] difficulty;
+    private final byte[] gasLimitBlock;
+    private final BlockStore blockStore;
     protected final SystemProperties systemProperties;
 
 
@@ -81,7 +80,11 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
      */
     BaseContractExecutor(ContractExecutionContext contractExecutionContext) {
         this.contractExecutionContext = contractExecutionContext;
+        checkContractExecutionContext();
 
+        // The block-level snapshot will be used to generate global state
+        // root after the contract is executed. This provide support for
+        // querying global state at the transaction level.
         this.blockRepository = contractExecutionContext.getBlockRepository();
         checkBlockRepository();
         this.transactionRepository = blockRepository.startTracking();
@@ -92,9 +95,19 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         transactionHash = contractExecutionContext.getTransactionHash();
         data = contractExecutionContext.getData();
         gasLimit = contractExecutionContext.getGasLimit();
+        // In this project, sender is not required to be in repository,
+        // because accounts used in the solidity code, not on this
+        // platform.
         senderAddress = contractExecutionContext.getSenderAddress();
-        nonce = transactionRepository.getNonce(senderAddress).toByteArray();
+        // Nonce is used for avoiding replay attack before. In this
+        // project, it is responsibility of trust business logic layer.
+        // But nonce is reserved for simple processing and possible
+        // rollback in future.
+        nonce = calculateNonce();
+        // For this project, value is always be zero.
         value = contractExecutionContext.getValue();
+        // For this project, receiver address is always prepared outside,
+        // including contract creation.
         receiverAddress = contractExecutionContext.getReceiverAddress();
         gasPrice = contractExecutionContext.getGasPrice();
         parentHash = contractExecutionContext.getParentHash();
@@ -105,22 +118,11 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         gasLimitBlock = contractExecutionContext.getGasLimitBlock();
         blockStore = contractExecutionContext.getBlockStore();
         systemProperties = contractExecutionContext.getSystemProperties();
-
-        checkFormat();
     }
 
-    private void checkFormat() {
-        if (senderAddress.length != ADDRESS_LENGTH) {
-            throw new ContractContextException(String.format("Sender address is not of %d bytes", ADDRESS_LENGTH));
-        }
-        if (receiverAddress.length != ADDRESS_LENGTH) {
-            throw new ContractContextException(String.format("Receiver address is not of %d bytes", ADDRESS_LENGTH));
-        }
-        if (minerAddress.length != ADDRESS_LENGTH) {
-            throw new ContractContextException(String.format("Miner address is not of %d bytes", ADDRESS_LENGTH));
-        }
-        if (parentHash.length != BLOCK_HASH_LENGTH) {
-            throw new ContractContextException(String.format("Parent hash is not of %d bytes", BLOCK_HASH_LENGTH));
+    private void checkContractExecutionContext() {
+        if (Objects.isNull(contractExecutionContext)) {
+            throw new ContractContextException("Context cannot be null");
         }
     }
 
@@ -142,6 +144,21 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         }
     }
 
+    protected byte[] calculateNonce() {
+        checkSenderAddress();
+        return transactionRepository.getNonce(senderAddress).toByteArray();
+    }
+
+    protected void checkSenderAddress() {
+        if (ArrayUtils.isEmpty(senderAddress)) {
+            throw new ContractContextException("Sender address cannot be empty");
+        }
+
+        if (senderAddress.length != ADDRESS_LENGTH) {
+            throw new ContractContextException(String.format("Sender address is not of %d bytes", ADDRESS_LENGTH));
+        }
+    }
+
 
     /**
      * For caller, once a {@link ContractContextException} instance is
@@ -151,9 +168,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     public ContractExecutionResult execute() {
         check();
 
-        long time = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         ContractExecutionResult contractExecutionResult = executeContract();
-        contractExecutionResult.setTimeCost(System.currentTimeMillis() - time);
+        contractExecutionResult.setTimeCost(System.currentTimeMillis() - startTime);
 
         return contractExecutionResult;
     }
@@ -163,7 +180,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
      * Check environment in which contract is executed. Throws exception
      * if any parameter is illegal or inappropriate.
      */
-    protected void check() {
+    private void check() {
+        checkContractExecutionContext();
+
         checkBlockRepository();
         checkTransactionRepository();
         checkContractRepository();
@@ -172,20 +191,17 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     }
 
     private void checkContext() {
-        if (Objects.isNull(contractExecutionContext)) {
-            throw new ContractContextException("Context is not provided");
-        }
-
         checkData();
         checkGasLimit();
         checkSenderAddress();
-        checkSenderAccount();
         checkNonce();
         checkValue();
         checkBalance();
         checkReceiverAddress();
         checkReceiverAccount();
         checkCode();
+        checkMinerAddress();
+        checkParentHash();
     }
 
     protected void checkData() {
@@ -195,7 +211,8 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
 
         if (ArrayUtils.getLength(data) > Constant.TRANSACTION_DATA_SIZE_LIMIT) {
             throw new ContractContextException(
-                    String.format("Payload size exceed the limitation: %d", Constant.TRANSACTION_DATA_SIZE_LIMIT));
+                    String.format("Payload size exceed the limitation: %d bytes",
+                            Constant.TRANSACTION_DATA_SIZE_LIMIT));
         }
     }
 
@@ -205,34 +222,20 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         }
 
         if (ContractUtil.moreThan(gasLimit, Constant.TRANSACTION_GAS_LIMIT)) {
-            throw new ContractContextException(String.format("Gas limit for contract exceed the limitation: %d",
-                    ContractUtil.toBigInteger(Constant.TRANSACTION_GAS_LIMIT)));
+            throw new ContractContextException(
+                    String.format("Gas limit for contract exceed the limitation: %d",
+                            ContractUtil.toBigInteger(Constant.TRANSACTION_GAS_LIMIT)));
         }
-    }
-
-    protected void checkSenderAddress() {
-        if (ArrayUtils.isEmpty(senderAddress)) {
-            throw new ContractContextException("Sender address cannot be empty");
-        }
-    }
-
-    protected void checkSenderAccount() {
-        checkSenderAddress();
-
-//        if (Objects.isNull(contractRepository.getAccountState(senderAddress))) {
-//            throw new ContractContextException("Sender account does not exist");
-//        }
     }
 
     protected void checkNonce() {
         if (ArrayUtils.isEmpty(nonce)) {
             throw new ContractContextException("Nonce cannot be empty");
         }
-        checkSenderAddress();
 
-        BigInteger currentNonce = ContractUtil.toBigInteger(nonce);
-        BigInteger nonceInRepository = transactionRepository.getNonce(senderAddress);
-        if (ContractUtil.notEqual(currentNonce, nonceInRepository)) {
+        checkSenderAddress();
+        byte[] nonceInRepository = transactionRepository.getNonce(senderAddress).toByteArray();
+        if (!FastByteComparisons.equal(nonce, nonceInRepository)) {
             throw new ContractContextException("Nonce is incorrect");
         }
     }
@@ -245,10 +248,11 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
 
     protected void checkBalance() {
         checkValue();
-        checkSenderAddress();
-
         BigInteger currentValue = ContractUtil.toBigInteger(value);
+
+        checkSenderAddress();
         BigInteger balanceInRepository = transactionRepository.getBalance(senderAddress);
+
         if (ContractUtil.moreThan(currentValue, balanceInRepository)) {
             throw new ContractContextException("Balance of sender in repository is not enough to pay for value");
         }
@@ -257,6 +261,10 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     protected void checkReceiverAddress() {
         if (ArrayUtils.isEmpty(receiverAddress)) {
             throw new ContractContextException("Receiver address cannot be empty");
+        }
+
+        if (receiverAddress.length != ADDRESS_LENGTH) {
+            throw new ContractContextException(String.format("Receiver address is not of %d bytes", ADDRESS_LENGTH));
         }
     }
 
@@ -274,6 +282,18 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         byte[] code = transactionRepository.getCode(receiverAddress);
         if (ArrayUtils.isNotEmpty(code)) {
             throw new ContractContextException("Contract code is not empty");
+        }
+    }
+
+    private void checkMinerAddress() {
+        if (minerAddress.length != ADDRESS_LENGTH) {
+            throw new ContractContextException(String.format("Miner address is not of %d bytes", ADDRESS_LENGTH));
+        }
+    }
+
+    private void checkParentHash() {
+        if (parentHash.length != BLOCK_HASH_LENGTH) {
+            throw new ContractContextException(String.format("Parent hash is not of %d bytes", BLOCK_HASH_LENGTH));
         }
     }
 
@@ -358,12 +378,16 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     }
 
     private String parseRevertInformation(byte[] hReturn) {
+        // In solidity code, revert has no message.
         if (ArrayUtils.isEmpty(hReturn)) {
             return "";
         }
 
+        // According to solidity design, revert message must start
+        // with "08c379a0", which is the abi coding for method
+        // signature "(string) error(string)".
         if (!Hex.toHexString(hReturn).startsWith(ERROR_SIGNATURE)) {
-            throw new ContractExecutionException("return is not revert message");
+            throw new ContractExecutionException("return is not a standard revert message");
         }
 
         byte[] abiData = Arrays.copyOfRange(hReturn, ERROR_SIGNATURE.length() / 2, hReturn.length);

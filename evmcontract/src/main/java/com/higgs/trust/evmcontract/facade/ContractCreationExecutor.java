@@ -59,6 +59,7 @@ public class ContractCreationExecutor extends BaseContractExecutor {
     protected void processProgramResult(final ProgramResult programResult,
                                         final ByteArraySet touchedAccountAddresses) {
         if (!programResult.isRevert()) {
+            // The stored code must has size not more than the size of the data.
             if (programResult.getHReturn().length > ArrayUtils.getLength(data)) {
                 programResult.setException(new ContractExecutionException(
                         String.format("Stored contract larger than data: %d", programResult.getHReturn().length)));
