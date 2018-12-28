@@ -1,8 +1,8 @@
 package com.higgs.trust.slave.core.service.ca;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -11,15 +11,15 @@ import com.higgs.trust.slave.core.managment.ClusterInitHandler;
 import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -42,7 +42,7 @@ import java.util.List;
      * @return
      * @desc
      */
-    @Override public void initKeyPair() throws FileNotFoundException {
+    @Override public void initKeyPair() throws IOException {
 
         List<Action> caActionList = acquirePubKeys();
 
@@ -73,30 +73,30 @@ import java.util.List;
 
     }
 
-    private List<Action> acquirePubKeys() throws FileNotFoundException {
-        JsonParser parser = new JsonParser();
-        JsonObject object = null;
+    private List<Action> acquirePubKeys() throws IOException {
+        JSONObject geniusBlock;
         if (StringUtils.isBlank(geniusPath)) {
             InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("geniusBlock.json");
-            object = (JsonObject)parser.parse(new InputStreamReader(inputStream));
+            String jsonText = IOUtils.toString(inputStream, "UTF-8");
+            geniusBlock = JSON.parseObject(jsonText);
         } else {
-            object = (JsonObject)parser.parse(new FileReader(geniusPath));
+            String jsonText = IOUtils.toString(new FileInputStream(geniusPath), "UTF-8");
+            geniusBlock = JSON.parseObject(jsonText);
         }
 
-        JsonArray array = object.get("transactions").getAsJsonArray();
-
-        JsonArray actions = (array.get(0).getAsJsonObject()).get("actions").getAsJsonArray();
+        JSONArray transactions = geniusBlock.getJSONArray("transactions");
+        JSONArray actions = transactions.getJSONObject(0).getJSONArray("actions");
 
         List<Action> caActionList = new LinkedList<>();
 
         for (int k = 0; k < actions.size(); k++) {
-            JsonObject node = actions.get(k).getAsJsonObject();
-            String nodeName = node.get("nodeName").getAsString();
-            JsonArray pubKeys = node.get("keys").getAsJsonArray();
+            JSONObject node = actions.getJSONObject(k);
+            String nodeName = node.getString("nodeName");
+            JSONArray pubKeys = node.getJSONArray("keys");
             for (int i = 0; i < pubKeys.size(); i++) {
                 CaAction caAction = new CaAction();
-                String pubKey = pubKeys.get(i).getAsJsonObject().get("publicKey").getAsString();
-                String type = pubKeys.get(i).getAsJsonObject().get("type").getAsString();
+                String pubKey = pubKeys.getJSONObject(i).getString("publicKey");
+                String type = pubKeys.getJSONObject(i).getString("type");
 
                 caAction.setType(ActionTypeEnum.CA_INIT);
                 caAction.setUser(nodeName);

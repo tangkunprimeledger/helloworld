@@ -195,7 +195,7 @@ public class TransactionResultInfo {
                 map.put("result", Hex.toHexString(result));
             }
         }
-        if (createdAddress.length > 0) {
+        if (createdAddress != null && createdAddress.length > 0) {
             map.put("createdAddress", Hex.toHexString(createdAddress));
         }
         if (StringUtils.isNotEmpty(invokeMethod)) {

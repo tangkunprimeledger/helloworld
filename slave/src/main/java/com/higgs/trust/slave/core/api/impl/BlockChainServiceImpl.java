@@ -53,7 +53,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
  */
 @Slf4j
 @Service
-public class BlockChainServiceImpl implements BlockChainService, InitializingBean {
+public class BlockChainServiceImpl implements BlockChainService {
 
     @Autowired
     private PendingStateImpl pendingState;
@@ -103,9 +103,6 @@ public class BlockChainServiceImpl implements BlockChainService, InitializingBea
 
     @Value("${trust.batch.tx.limit:200}")
     private int TX_PENDING_COUNT;
-
-    @Value("${trust.sleep.submitToMaster:50}")
-    private int SLEEP_FOR_SUBMIT_TO_MASTER;
 
     @Override
     public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
@@ -469,60 +466,6 @@ public class BlockChainServiceImpl implements BlockChainService, InitializingBea
     @Override
     public BlockHeader getMaxBlockHeader() {
         return blockRepository.getBlockHeader(blockRepository.getMaxHeight());
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        txConsumerExecutor.execute(new ConsumerTx());
-    }
-
-    /**
-     * for test
-     */
-    private class ConsumerTx implements Runnable {
-
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    Thread.sleep(SLEEP_FOR_SUBMIT_TO_MASTER);
-
-                    if (null == AppContext.PENDING_TO_SUBMIT_QUEUE.peek()) {
-                        log.trace("queue is empty");
-                        continue;
-                    } else {
-                        submit();
-                    }
-                } catch (InterruptedException e) {
-                    log.error("Consumer tx thread InterruptedException");
-                } catch (Throwable e) {
-                    log.error("Consumer tx thread handle exception, ", e);
-                }
-            }
-        }
-
-        private void submit() {
-            int i = 0;
-            List<SignedTransaction> signedTxList = new ArrayList<>();
-            log.info("pending transaction to submit, size={}", AppContext.PENDING_TO_SUBMIT_QUEUE.size());
-            Profiler.start("start submit transactions");
-            Profiler.enter("build transactionList");
-            while (i++ < TX_PENDING_COUNT && (null != AppContext.PENDING_TO_SUBMIT_QUEUE.peek())) {
-                signedTxList.add(AppContext.PENDING_TO_SUBMIT_QUEUE.poll());
-            }
-            Profiler.release();
-
-            log.info("submit transactions, size={}", signedTxList.size());
-            Profiler.enter("submit transactions");
-            submitTransactions(signedTxList);
-            Profiler.release();
-
-            Profiler.release();
-
-            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
-                Profiler.logDump();
-            }
-        }
     }
 
     @Override
