@@ -319,6 +319,9 @@ public class Abi extends ArrayList<Abi.Entry> {
     }
 
     public static class Function extends Entry {
+        public static Function of(String signature) {
+            return FunctionParser.getInstance().parse(signature);
+        }
 
         private static final int ENCODED_SIGN_LENGTH = 4;
 
@@ -326,7 +329,8 @@ public class Abi extends ArrayList<Abi.Entry> {
             super(null, constant, name, inputs, outputs, Type.function, payable);
         }
 
-        public static Function of(String func) {
+        @Deprecated
+        public static Function ofWithStrict(String func) {
             Pattern pattern = Pattern.compile(RESULT_PATTERN);
             List<Abi.Entry.Param> inputs = new ArrayList<>();
             List<Abi.Entry.Param> outputs = new ArrayList<>();
