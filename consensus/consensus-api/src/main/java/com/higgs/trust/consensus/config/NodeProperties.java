@@ -37,7 +37,10 @@ import org.springframework.context.annotation.Configuration;
      */
     private boolean standby = false;
 
-
+    /**
+     *
+     */
+    private boolean isSlave = true;
 
     /**
      * trust path
