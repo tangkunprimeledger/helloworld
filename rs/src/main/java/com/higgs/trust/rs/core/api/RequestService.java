@@ -1,8 +1,12 @@
 package com.higgs.trust.rs.core.api;
 
 import com.higgs.trust.rs.common.enums.RequestEnum;
+import com.higgs.trust.rs.core.dao.po.RequestPO;
 import com.higgs.trust.rs.core.vo.RequestVO;
+import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
+
+import java.util.List;
 
 /**
  * @description: RequestService
@@ -37,6 +41,13 @@ public interface RequestService {
     void insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg);
 
     /**
+     * batch insert
+     * @param requestPOList
+     */
+    void batchInsert(List<RequestPO> requestPOList);
+
+
+    /**
      * @param requestId
      * @param respCode
      * @param respMsg
@@ -51,4 +62,12 @@ public interface RequestService {
      * @param respMsg
      */
     void updateStatusAndRespData(String requestId, RequestEnum fromStatus, RequestEnum toStatus, String respCode, String respMsg);
+
+    /**
+     * batch update
+     * @param rsCoreTxVOS
+     * @param from
+     * @param to
+     */
+    void batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to);
 }

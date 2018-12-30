@@ -38,6 +38,17 @@
 		request(request_id,status,resp_code,resp_msg,create_time,update_time)
 		values(#{requestId},#{status},#{respCode},#{respMsg},now(),now())
 	</insert>
+
+	<!-- batch insert -->
+	<insert id="batchInsert" parameterType="java.util.List">
+		INSERT INTO
+		request(request_id,status,resp_code,resp_msg,create_time,update_time)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.requestId},#{item.status},#{item.respCode},#{item.respMsg},now(),now())
+		</foreach>
+	</insert>
+
 	<!-- 根据请求ID 查询 -->
 	<select id="queryByRequestId" resultMap="baseResultMap"
 			parameterType="java.lang.String">

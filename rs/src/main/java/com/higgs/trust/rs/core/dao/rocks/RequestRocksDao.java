@@ -23,7 +23,8 @@ import java.util.List;
 @Service
 @Slf4j
 public class RequestRocksDao extends RocksBaseDao<RequestPO> {
-    @Override protected String getColumnFamilyName() {
+    @Override
+    protected String getColumnFamilyName() {
         return "request";
     }
 
@@ -38,7 +39,30 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
     }
 
     /**
-     * slave-callback
+     * batchInsert
+     *
+     * @param requestPOList
+     */
+    public void batchInsert(List<RequestPO> requestPOList) {
+        Transaction tx = ThreadLocalUtils.getRocksTx();
+        if (null == tx) {
+            log.error("[RequestRocksDao.batchInsert] transaction is null");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_ROCKS_TRANSACTION_IS_NULL);
+        }
+        for (RequestPO requestPO : requestPOList) {
+            String key = requestPO.getRequestId();
+            if (keyMayExist(key) && null != get(key)) {
+                log.error("[RequestRocksDao.save] request is exist, requestId={}", key);
+                throw new DuplicateKeyException("[RequestRocksDao.save] request is exist, requestId = " + requestPO.getRequestId());
+            }
+            requestPO.setCreateTime(new Date());
+            txPut(tx, key, requestPO);
+        }
+    }
+
+    /**
+     * slave-callback update
+     *
      * @param requestId
      * @param fromStatus
      * @param toStatus
@@ -63,7 +87,7 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
             log.error("[RequestRocksDao.updateStatus] request status is invalid, requestId={}, currentStatus={}, status", requestId, requestPO.getStatus(), fromStatus);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_REQUEST_UPDATE_STATUS_FAILED);
         }
-        if (!StringUtils.isEmpty(toStatus)){
+        if (!StringUtils.isEmpty(toStatus)) {
             requestPO.setStatus(toStatus);
         }
         requestPO.setRespCode(respCode);
@@ -72,6 +96,8 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
 
         txPut(tx, requestId, requestPO);
     }
+
+
 
     public void batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
         Transaction tx = ThreadLocalUtils.getRocksTx();
