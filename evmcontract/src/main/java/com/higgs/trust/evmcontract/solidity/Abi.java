@@ -168,6 +168,7 @@ public class Abi extends ArrayList<Abi.Entry> {
         public final List<Param> outputs;
         public final Type type;
         public final Boolean payable;
+
         public Entry(Boolean anonymous, Boolean constant, String name, List<Param> inputs, List<Param> outputs, Type type, Boolean payable) {
             this.anonymous = anonymous;
             this.constant = constant;
@@ -248,7 +249,7 @@ public class Abi extends ArrayList<Abi.Entry> {
                     if (humanReadable) {
                         if (param.type instanceof SolidityType.StringType) {
                             result.add(decoded);
-                        } else if(param.type instanceof SolidityType.AddressType){
+                        } else if (param.type instanceof SolidityType.AddressType) {
                             result.add(Hex.toHexString((byte[]) decoded));
                         } else if (param.type.isDynamicType()) {
                             List dynResult = new ArrayList<>();
@@ -407,49 +408,8 @@ public class Abi extends ArrayList<Abi.Entry> {
     }
 
     public static class Event extends Entry {
-        private static final Pattern EVENT_SIGNATURE = Pattern.compile("^(\\w+?)\\((.+?)\\)$");
-        private static final String PARAMETER_TYPE_SEPARATOR = ",";
-        private static final String INDEXED_SEPARATOR = " ";
-
         public static Event fromSignature(String signature) {
-            Matcher matcher = EVENT_SIGNATURE.matcher(signature);
-            if (!matcher.find()) {
-                throw new IllegalArgumentException("Event signature is illegal");
-            }
-
-            String params = matcher.group(2).trim();
-            if (StringUtils.isEmpty(params)) {
-                throw new IllegalArgumentException("Event parameter list cannot be empty");
-            }
-            if (params.startsWith(PARAMETER_TYPE_SEPARATOR) || params.endsWith(PARAMETER_TYPE_SEPARATOR)) {
-                throw new IllegalArgumentException(
-                        String.format("Event signature can not begin or end with %s", PARAMETER_TYPE_SEPARATOR));
-            }
-
-            String eventName = matcher.group(1).trim();
-            List<Param> eventInputs = new ArrayList<>();
-            boolean indexedOver = false;
-            int indexedCount = 0;
-            for (String paramType : params.split(PARAMETER_TYPE_SEPARATOR)) {
-                String[] paramPart = paramType.split(INDEXED_SEPARATOR);
-                Param param = new Param();
-                if (paramPart.length == 1) {
-                    param.type = SolidityType.getType(paramPart[0]);
-                    param.indexed = false;
-                    indexedOver = true;
-                } else if (paramPart.length == 2
-                        && "indexed".equals(paramPart[1]) && !indexedOver && indexedCount < 3) {
-                    param.type = SolidityType.getType(paramPart[0]);
-                    param.indexed = true;
-                    indexedCount++;
-                } else {
-                    throw new IllegalArgumentException(
-                            String.format("Event parameter \"%s\" is illegal", paramType));
-                }
-                eventInputs.add(param);
-            }
-
-            return new Event(false, eventName, eventInputs, null);
+            return EventParser.getInstance().parse(signature);
         }
 
         public Event(boolean anonymous, String name, List<Param> inputs, List<Param> outputs) {
