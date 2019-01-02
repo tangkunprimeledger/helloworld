@@ -223,9 +223,6 @@ public class BlockChainServiceImpl implements BlockChainService {
      */
     @Override
     public RespData<List<TransactionVO>> submitTransaction(SignedTransaction tx) {
-        //TODO for load test
-        log.info("accept tx with thread: " + Thread.currentThread().getName());
-
         RespData<List<TransactionVO>> respData;
         //TODO 放到消费队列里面
         if (AppContext.PENDING_TO_SUBMIT_QUEUE.size() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {

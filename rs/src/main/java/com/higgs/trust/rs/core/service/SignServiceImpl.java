@@ -57,7 +57,7 @@ public class SignServiceImpl implements SignService {
     @Override
     public String sign(String signValue, SignInfo.SignTypeEnum signTypeEnum) {
         //if biz or consensus key is null reload private keys
-        if (StringUtils.isEmpty(nodeState.getConsensusPrivateKey()) || StringUtils.isEmpty(nodeState.getPrivateKey())) {
+        if (StringUtils.isBlank(nodeState.getConsensusPrivateKey()) || StringUtils.isBlank(nodeState.getPrivateKey())) {
             reloadPrivateKeys();
         }
         if (signTypeEnum == SignInfo.SignTypeEnum.CONSENSUS) {
@@ -86,7 +86,7 @@ public class SignServiceImpl implements SignService {
             }
         }
         //check again
-        if (StringUtils.isEmpty(nodeState.getConsensusPrivateKey()) || StringUtils.isEmpty(nodeState.getPrivateKey())) {
+        if (StringUtils.isBlank(nodeState.getConsensusPrivateKey()) || StringUtils.isBlank(nodeState.getPrivateKey())) {
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_PRIVATE_KEY_NULL_ERROR);
         }
     }
