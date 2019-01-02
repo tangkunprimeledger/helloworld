@@ -116,7 +116,7 @@ public class RequestRepository {
      * @param requestPOList
      */
     public void batchInsert(List<RequestPO> requestPOList) {
-        if (CollectionUtils.isNotEmpty(requestPOList)) {
+        if (CollectionUtils.isEmpty(requestPOList)) {
             throw new NullPointerException("requestPOList is null error!");
         }
         try {
