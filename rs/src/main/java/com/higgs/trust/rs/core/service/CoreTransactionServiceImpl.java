@@ -11,10 +11,7 @@ import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
-import com.higgs.trust.rs.core.api.BizTypeService;
-import com.higgs.trust.rs.core.api.CoreTransactionService;
-import com.higgs.trust.rs.core.api.DistributeCallbackNotifyService;
-import com.higgs.trust.rs.core.api.VoteService;
+import com.higgs.trust.rs.core.api.*;
 import com.higgs.trust.rs.core.api.enums.*;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
@@ -94,7 +91,7 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
     @Autowired
     private RsCoreBatchCallbackProcessor rsCoreBatchCallbackProcessor;
     @Autowired
-    private SignServiceImpl signService;
+    private SignService signService;
     @Autowired
     private RedissonClient redissonClient;
     @Autowired

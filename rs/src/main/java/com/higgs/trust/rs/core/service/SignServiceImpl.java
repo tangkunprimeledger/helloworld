@@ -42,6 +42,10 @@ public class SignServiceImpl implements SignService {
         if (log.isDebugEnabled()) {
             log.debug("[signTx]txId:{},coreTxJSON:{}", coreTx.getTxId(), coreTxJSON);
         }
+        //if biz or consensus key is null reload private keys， do it for distributed RS
+        if (StringUtils.isBlank(nodeState.getConsensusPrivateKey()) || StringUtils.isBlank(nodeState.getPrivateKey())) {
+            reloadPrivateKeys();
+        }
         SignInfo signInfo = new SignInfo();
         signInfo.setOwner(rsConfig.getRsName());
         //check tx type for consensus
@@ -56,7 +60,7 @@ public class SignServiceImpl implements SignService {
 
     @Override
     public String sign(String signValue, SignInfo.SignTypeEnum signTypeEnum) {
-        //if biz or consensus key is null reload private keys
+        //if biz or consensus key is null reload private keys， do it for distributed RS
         if (StringUtils.isBlank(nodeState.getConsensusPrivateKey()) || StringUtils.isBlank(nodeState.getPrivateKey())) {
             reloadPrivateKeys();
         }
