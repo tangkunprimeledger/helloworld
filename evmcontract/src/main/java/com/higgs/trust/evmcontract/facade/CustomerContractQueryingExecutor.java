@@ -20,23 +20,9 @@ public class CustomerContractQueryingExecutor extends BaseContractExecutor {
         super(contractExecutionContext);
     }
 
-    @Override
-    public ContractExecutionResult execute() {
-        check();
-
-        long time = System.currentTimeMillis();
-        ContractExecutionResult contractExecutionResult = executeContract();
-        contractExecutionResult.setTimeCost(System.currentTimeMillis() - time);
-
-        return contractExecutionResult;
-    }
 
     @Override
     protected void checkSenderAddress() {
-    }
-
-    @Override
-    protected void checkSenderAccount() {
     }
 
     @Override
@@ -62,9 +48,10 @@ public class CustomerContractQueryingExecutor extends BaseContractExecutor {
 
         byte[] code = transactionRepository.getCode(receiverAddress);
         if (ArrayUtils.isEmpty(code)) {
-            throw new ContractContextException("Contract code cannot be empty");
+            throw new ContractContextException("Contract code is empty");
         }
     }
+
 
     @Override
     protected ContractExecutionResult executeContract() {

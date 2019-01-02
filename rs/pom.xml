@@ -182,7 +182,7 @@
             <artifactId>consensus-api</artifactId>
         </dependency>
     </dependencies>
-    <!--<build>
+   <!-- <build>
          <finalName>rs</finalName>
          <plugins>
              <plugin>

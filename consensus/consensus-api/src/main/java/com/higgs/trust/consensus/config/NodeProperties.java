@@ -12,8 +12,6 @@ import org.springframework.context.annotation.Configuration;
      */
     private static final String DEFAULT_NODE_NAME = "DefaultNode";
 
-    private String runMode = "Normal";
-
     /**
      * the name of current node
      */
@@ -23,11 +21,6 @@ import org.springframework.context.annotation.Configuration;
      * the try times at start up
      */
     private int startupRetryTime = 100;
-
-    /**
-     * the private key of node
-     */
-    private String privateKey;
 
     /**
      * the node name prefix
@@ -44,15 +37,14 @@ import org.springframework.context.annotation.Configuration;
      */
     private boolean standby = false;
 
-
+    /**
+     *
+     */
+    private boolean isSlave = true;
 
     /**
      * trust path
      */
     private String path;
-
-    public boolean isMock() {
-        return "Mock".equalsIgnoreCase(runMode);
-    }
 
 }

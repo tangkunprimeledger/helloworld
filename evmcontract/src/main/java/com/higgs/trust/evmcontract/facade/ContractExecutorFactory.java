@@ -15,12 +15,12 @@ public final class ContractExecutorFactory
     @Override
     public BaseContractExecutor createExecutor(ContractExecutionContext contractExecutionContext) {
         if (Objects.isNull(contractExecutionContext)) {
-            throw new ContractContextException("An context is necessary for executor creation");
+            throw new ContractContextException("The context cannot be null when creating executor");
         }
 
         ContractTypeEnum contractType = contractExecutionContext.getContractType();
         if (Objects.isNull(contractType)) {
-            throw new ContractContextException("Contract type shall be given for executor creation");
+            throw new ContractContextException("The contract type must be specified when creating executor");
         }
 
         switch (contractType) {
