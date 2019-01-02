@@ -76,7 +76,7 @@ public class SignServiceImpl implements SignService {
      * reload private keys
      */
     private void reloadPrivateKeys() {
-        List<Config> configList = configRepository.getConfig(new Config(nodeState.getNodeName(), UsageEnum.BIZ.getCode()));
+        List<Config> configList = configRepository.getConfig(new Config(nodeState.getNodeName()));
         if (CollectionUtils.isEmpty(configList) || configList.size() < 2) {
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_PRIVATE_KEY_NULL_ERROR);
         }
