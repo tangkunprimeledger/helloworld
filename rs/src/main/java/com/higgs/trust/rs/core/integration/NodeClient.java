@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
  * @date 2018/6/5 16:59
  */
 //@FeignClient("${higgs.trust.prefix}")

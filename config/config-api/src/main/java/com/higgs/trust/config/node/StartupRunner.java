@@ -40,7 +40,7 @@ public class StartupRunner implements CommandLineRunner {
                 nodeState.changeState(NodeStateEnum.Initialize, NodeStateEnum.SelfChecking);
                 nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
                 nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Standby);
-                return;
+                 return;
             }
             nodeState.changeState(NodeStateEnum.Initialize, NodeStateEnum.StartingConsensus);
             nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.SelfChecking);

@@ -231,11 +231,8 @@ public class CoreTransactionServiceImpl implements CoreTransactionService, Initi
                 ThreadLocalUtils.clearRocksTx();
             }
         }
-        //TODO:liuyu for test
-        //put into queue
-        txIdProducer.put(new TxIdBO(coreTx.getTxId(), CoreTxStatusEnum.INIT));
         //send redis msg for slave
-        //        asyncProcessInitTx(coreTx.getTxId());
+        asyncProcessInitTx(coreTx.getTxId());
     }
 
     /**

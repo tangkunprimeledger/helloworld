@@ -47,8 +47,6 @@ public class TxSubmitSlaveSchedule {
         coreTransactionPOList.forEach(entry -> {
             boList.add(coreTxRepository.convertTxBO(entry));
         });
-        //TODO:for press test
-        log.info("submit.size:{}", size);
         coreTransactionService.submitToSlave(boList);
         pageNo++;
     }
