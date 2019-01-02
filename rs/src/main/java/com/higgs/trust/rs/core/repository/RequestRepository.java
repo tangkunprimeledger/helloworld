@@ -12,6 +12,8 @@ import com.higgs.trust.rs.core.vo.RequestVO;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -45,12 +47,7 @@ public class RequestRepository {
      */
     public RespData<?> requestIdempotent(String requestId) {
         RespData<?> respData = null;
-        RequestPO requestPO;
-        if (rsConfig.isUseMySQL()) {
-            requestPO = requestDao.queryByRequestId(requestId);
-        } else {
-            requestPO = requestRocksDao.get(requestId);
-        }
+        RequestPO requestPO = queryRequestPO(requestId);
         if (null != requestPO) {
             respData = new RespData<>(requestPO.getRespCode(), requestPO.getRespMsg());
         }
@@ -64,7 +61,7 @@ public class RequestRepository {
      * @return
      */
     public RequestVO queryByRequestId(String requestId) {
-        RequestPO requestPO = requestDao.queryByRequestId(requestId);
+        RequestPO requestPO = queryRequestPO(requestId);
         if (null == requestPO) {
             return null;
         }
@@ -74,11 +71,29 @@ public class RequestRepository {
     }
 
     /**
+     * query by requestId
+     *
+     * @param requestId
+     * @return
+     */
+    private RequestPO queryRequestPO(String requestId) {
+        // for mysql
+        if (rsConfig.isUseMySQL()) {
+            return requestDao.queryByRequestId(requestId);
+        }
+        //for rocks DB
+        return requestRocksDao.get(requestId);
+    }
+
+    /**
      * request insert db
      *
      * @param
      */
     public void insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg) {
+        if (StringUtils.isBlank(requestId) || null == requestEnum) {
+            throw new NullPointerException("RequestId or requestEnum is null error!");
+        }
         RequestPO requestPO = buildRequestPO(requestId, requestEnum, respCode, respMsg);
         try {
             //for mysql
@@ -90,6 +105,34 @@ public class RequestRepository {
             requestRocksDao.save(requestPO);
         } catch (DuplicateKeyException e) {
             log.error("Request for requestId : {} is idempotent", requestId);
+            throw e;
+        }
+    }
+
+
+    /**
+     * batch insert
+     *
+     * @param requestPOList
+     */
+    public void batchInsert(List<RequestPO> requestPOList) {
+        if (CollectionUtils.isNotEmpty(requestPOList)) {
+            throw new NullPointerException("requestPOList is null error!");
+        }
+        try {
+            //for mysql
+            if (rsConfig.isUseMySQL()) {
+                int insertRows = requestDao.batchInsert(requestPOList);
+                if (insertRows != requestPOList.size()) {
+                    log.error("Batch insert request failed for insert rows:{}, need to insert size is :{}", insertRows, requestPOList.size());
+                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_REQUEST_ADD_FAILED);
+                }
+                return;
+            }
+            //for rocks DB
+            requestRocksDao.batchInsert(requestPOList);
+        } catch (DuplicateKeyException e) {
+            log.error("Request for requestPOList : {} is idempotent", requestPOList);
             throw e;
         }
     }
@@ -141,7 +184,6 @@ public class RequestRepository {
             }
             return;
         }
-
         //for rockDB
         requestRocksDao.updateStatus(requestId, fromStatusCode, toStatusCode, respCode, respMsg);
     }
@@ -155,11 +197,18 @@ public class RequestRepository {
         return requestPO;
     }
 
+    /**
+     * batch update
+     *
+     * @param rsCoreTxVOS
+     * @param from
+     * @param to
+     */
     public void batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
-        if (rsConfig.isUseMySQL()) {
+       if (rsConfig.isUseMySQL()) {
             requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, from, to);
-        } else {
-            requestRocksDao.batchUpdateStatus(rsCoreTxVOS, from, to);
+            return;
         }
+        requestRocksDao.batchUpdateStatus(rsCoreTxVOS, from, to);
     }
 }

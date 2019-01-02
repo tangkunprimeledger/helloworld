@@ -107,9 +107,6 @@ public class MasterPackageCache implements MasterChangeListener {
         if (null == pendingTxQueue.peekFirst()) {
             return null;
         }
-
-        //TODO 压测分析日志
-        log.info("pendingTxQueue.size={}", pendingTxQueue.size());
         Object[] objs = new Object[2];
         int num = 0;
         List<SignedTransaction> list = new ArrayList<>();

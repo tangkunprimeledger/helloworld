@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
  * @date 2018/6/5 17:37
  */
 @RestController

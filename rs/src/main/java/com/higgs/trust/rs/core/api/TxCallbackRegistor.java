@@ -1,5 +1,7 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
+import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.callback.TxBatchCallbackHandler;
 import com.higgs.trust.rs.core.callback.TxCallbackHandler;
 import com.higgs.trust.rs.core.vo.VotingRequest;
@@ -11,7 +13,9 @@ import org.springframework.stereotype.Repository;
  * @description
  * @date 2018-05-12
  */
-@Repository @Slf4j public class TxCallbackRegistor {
+@Repository
+@Slf4j
+public class TxCallbackRegistor {
     private TxCallbackHandler coreTxCallback;
     private TxBatchCallbackHandler txBatchCallbackHandler;
 
@@ -42,9 +46,8 @@ import org.springframework.stereotype.Repository;
         } else if (txBatchCallbackHandler != null) {
             txBatchCallbackHandler.onVote(votingRequest);
         } else {
-            //TODO:liuyu for press-test
-//            log.error("[onVote] callback handler is not register");
-//            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
+            log.error("[onVote] callback handler is not register");
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_TX_CORE_TX_CALLBACK_NOT_SET);
         }
     }
 }

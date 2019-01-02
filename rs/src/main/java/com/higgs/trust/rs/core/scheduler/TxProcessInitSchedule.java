@@ -38,10 +38,6 @@ public class TxProcessInitSchedule {
             lastPreKey = null;
             return;
         }
-        int size = list.size();
-        //TODO:for press test
-        log.info("process initDB.size:{},queueInitSize:{},queueWaitSize:{}", size, txIdProducer.initSize(),
-            txIdProducer.waitSize());
         list.forEach(entry -> {
             txIdProducer.put(new TxIdBO(entry.getTxId(), CoreTxStatusEnum.INIT));
         });

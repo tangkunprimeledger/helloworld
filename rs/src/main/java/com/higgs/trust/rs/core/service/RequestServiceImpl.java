@@ -2,11 +2,15 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.core.api.RequestService;
+import com.higgs.trust.rs.core.dao.po.RequestPO;
 import com.higgs.trust.rs.core.repository.RequestRepository;
 import com.higgs.trust.rs.core.vo.RequestVO;
+import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @description: com.higgs.trust.rs.core.service
@@ -41,7 +45,7 @@ public class RequestServiceImpl implements RequestService {
 
     /**
      * insert request
-     * when return null is  inserted.
+     * when return null is inserted
      *
      * @param requestId
      * @param respCode
@@ -51,6 +55,17 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public void insertRequest(String requestId, RequestEnum requestEnum, String respCode, String respMsg) {
         requestRepository.insertRequest(requestId, requestEnum, respCode, respMsg);
+    }
+
+
+    /**
+     * batch insert
+     *
+     * @param requestPOList
+     */
+    @Override
+    public void batchInsert(List<RequestPO> requestPOList) {
+        requestRepository.batchInsert(requestPOList);
     }
 
     /**
@@ -73,5 +88,17 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public void updateStatusAndRespData(String requestId, RequestEnum fromStatus, RequestEnum toStatus, String respCode, String respMsg) {
         requestRepository.updateStatusAndCode(requestId, fromStatus, toStatus, respCode, respMsg);
+    }
+
+    /**
+     * batch update
+     *
+     * @param rsCoreTxVOS
+     * @param from
+     * @param to
+     */
+    @Override
+    public void batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
+        requestRepository.batchUpdateStatus(rsCoreTxVOS, from, to);
     }
 }

@@ -13,7 +13,6 @@ import java.util.Map;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
  * @date 2018/6/5 16:59
  */
 //@FeignClient("${higgs.trust.prefix}")

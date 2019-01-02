@@ -19,24 +19,28 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/6/13
  */
-@ConditionalOnProperty(prefix = "higgs.trust", name = "autoRunning", havingValue = "true", matchIfMissing = true) @Order
-@Component @Slf4j public class StartupRunner implements CommandLineRunner {
+@ConditionalOnProperty(prefix = "higgs.trust", name = {"isSlave", "autoRunning"}, havingValue = "true", matchIfMissing = true)
+@Order
+@Component
+@Slf4j
+public class StartupRunner implements CommandLineRunner {
 
-    @Autowired NodeState nodeState;
 
-    @Autowired private NodeProperties nodeProperties;
+    @Autowired
+    NodeState nodeState;
 
-    @Override public void run(String... args) {
+    @Autowired
+    private NodeProperties nodeProperties;
+
+    @Override
+    public void run(String... args) {
         try {
             nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.Initialize);
-            if (!nodeProperties.isSlave()) {
-                return;
-            }
             if (nodeProperties.isStandby()) {
                 nodeState.changeState(NodeStateEnum.Initialize, NodeStateEnum.SelfChecking);
                 nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
                 nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Standby);
-                return;
+                 return;
             }
             nodeState.changeState(NodeStateEnum.Initialize, NodeStateEnum.StartingConsensus);
             nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.SelfChecking);
