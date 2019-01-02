@@ -11,9 +11,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component @Slf4j public class RequestJDBCDao {
-    @Autowired private NamedParameterJdbcTemplate jdbc;
-    @Autowired private JdbcTemplate jdbcTemplate;
+@Component
+@Slf4j
+public class RequestJDBCDao {
+    @Autowired
+    private NamedParameterJdbcTemplate jdbc;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     /**
      * batch update status
@@ -22,7 +26,7 @@ import java.util.List;
      * @param from
      * @param to
      */
-    public void batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
+    public int batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
         String sql = "UPDATE request SET ";
         String errorCodeConditionSql = " `resp_code`= CASE `request_id`";
         String errorMsgConditionSql = ",`resp_msg`= CASE `request_id`";
@@ -55,6 +59,6 @@ import java.util.List;
         params.addAll(errorCodeList);
         params.addAll(errorMsgList);
         params.addAll(txIdList);
-        jdbcTemplate.update(sql, params.toArray());
+        return jdbcTemplate.update(sql, params.toArray());
     }
 }

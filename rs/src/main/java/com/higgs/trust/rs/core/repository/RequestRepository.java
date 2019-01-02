@@ -204,11 +204,16 @@ public class RequestRepository {
      * @param from
      * @param to
      */
-    public void batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
-       if (rsConfig.isUseMySQL()) {
-            requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, from, to);
-            return;
+    public boolean batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
+        if (rsConfig.isUseMySQL()) {
+            return rsCoreTxVOS.size() == requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, from, to);
         }
-        requestRocksDao.batchUpdateStatus(rsCoreTxVOS, from, to);
+        try {
+            requestRocksDao.batchUpdateStatus(rsCoreTxVOS, from, to);
+        } catch (Throwable e) {
+            log.error("BatchUpdate request status failed!", e);
+            return false;
+        }
+        return true;
     }
 }
