@@ -48,17 +48,7 @@ public class ContractCreationV2Handler implements ActionHandler {
         return null;
     }
 
-
-    private void checkPolicy(ActionData actionData) {
-        String policyId = actionData.getCurrentTransaction().getCoreTx().getPolicyId();
-        if (InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId) != InitPolicyEnum.CONTRACT_ISSUE) {
-            log.error("policyId error: {}", policyId);
-            throw new ContractException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR, String.format("policyId error: %s", policyId));
-        }
-    }
-
     private ContractCreationV2Action getAndCheckAction(ActionData actionData) {
-        checkPolicy(actionData);
         verifyParams(actionData.getCurrentAction());
         return (ContractCreationV2Action) actionData.getCurrentAction();
     }
