@@ -27,6 +27,7 @@ public class NetworkManage {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     protected static NetworkManage instance;
+    private static TrafficReporter trafficReporter = TrafficReporter.Default;
 
     private final Peers peers = new Peers();
     private final NetworkConfig config;
@@ -66,6 +67,14 @@ public class NetworkManage {
      */
     public static NetworkManage getInstance() {
         return instance;
+    }
+
+    public static void installTrafficReporter(TrafficReporter trafficReporter) {
+        NetworkManage.trafficReporter = trafficReporter;
+    }
+
+    public static TrafficReporter getTrafficReporter() {
+        return trafficReporter;
     }
 
     private void initDefaultListener() {

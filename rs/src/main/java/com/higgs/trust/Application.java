@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.slave.common.json.ActionJsonDeserializer;
+import com.higgs.trust.slave.metrics.TrustMetrics;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -48,6 +49,7 @@ public class Application {
         ParserConfig.getGlobalInstance().putDeserializer(Action.class, new ActionJsonDeserializer());
 
         SpringApplication.run(Application.class, args);
+        TrustMetrics.getDefault().startReport();
         log.info("higgs.trust rs is running...");
     }
 }

@@ -1,8 +1,10 @@
 package com.higgs.trust.slave.core.service.transaction;
 
+import com.codahale.metrics.Timer;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.contract.SmartContractException;
 import com.higgs.trust.evmcontract.core.Repository;
+import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.config.InitConfig;
@@ -14,6 +16,7 @@ import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.version.TransactionProcessor;
 import com.higgs.trust.slave.core.service.version.TxProcessorHolder;
+import com.higgs.trust.slave.metrics.TrustMetrics;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
@@ -30,9 +33,6 @@ import java.util.Map;
  * @date 2018/3/27 14:54
  */
 @Slf4j @Component public class TransactionExecutorImpl implements TransactionExecutor {
-
-    private static final String CREATE_CONTRACT_CODE = TxTypeEnum.CREATECONTRACT.getCode();
-    private static final String INVOKE_CONTRACT_CODE = TxTypeEnum.INVOKECONTRACT.getCode();
 
     @Autowired TxProcessorHolder processorHolder;
     @Autowired TxCheckHandler txCheckHandler;
@@ -82,6 +82,13 @@ import java.util.Map;
             txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
+        } finally {
+            ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
+            if (executionResult != null && executionResult.getRevert()) {
+                receipt.setResult(false);
+                receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
+                ContractExecutionResult.clearCurrentResult();
+            }
         }
 
         log.debug("[TransactionExecutorImpl.persist] is end");

@@ -1,6 +1,7 @@
 package com.higgs.trust.network.codec;
 
 import com.higgs.trust.network.Address;
+import com.higgs.trust.network.NetworkManage;
 import com.higgs.trust.network.message.NetworkMessage;
 import com.higgs.trust.network.message.NetworkRequest;
 import com.higgs.trust.network.message.NetworkResponse;
@@ -103,6 +104,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
                     return;
                 }
                 contentLength = buffer.readInt();
+                NetworkManage.getTrafficReporter().inbound(contentLength + 30);
                 log.trace("contentLength: {}", contentLength);
                 decoderStatus = DecoderStatus.READ_CONTENT;
             case READ_CONTENT:

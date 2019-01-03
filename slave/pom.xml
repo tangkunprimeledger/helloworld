@@ -173,6 +173,13 @@
             <artifactId>redisson</artifactId>
         </dependency>
 
+        <!-- metrics -->
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

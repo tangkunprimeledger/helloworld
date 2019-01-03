@@ -224,7 +224,6 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
 
     private void processEvmContractResult(long blockHeight, CoreTransaction tx, Action action) {
         ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
-        ContractExecutionResult.clearCurrentResult();
         if (executionResult != null) {
             if (executionResult.getException() != null) {
                 log.warn(executionResult.getException().getMessage());

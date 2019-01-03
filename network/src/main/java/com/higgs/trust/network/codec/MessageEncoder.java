@@ -1,6 +1,7 @@
 package com.higgs.trust.network.codec;
 
 import com.higgs.trust.network.Address;
+import com.higgs.trust.network.NetworkManage;
 import com.higgs.trust.network.message.NetworkMessage;
 import com.higgs.trust.network.message.NetworkRequest;
 import io.netty.buffer.ByteBuf;
@@ -49,6 +50,7 @@ public class MessageEncoder extends MessageToByteEncoder<NetworkMessage> {
         final byte[] payload = rawMessage.payload();
         out.writeInt(payload.length);
         out.writeBytes(payload);
+        NetworkManage.getTrafficReporter().outbound(payload.length + 30);
     }
 
     @Override
