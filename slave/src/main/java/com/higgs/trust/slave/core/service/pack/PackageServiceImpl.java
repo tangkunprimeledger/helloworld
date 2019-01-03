@@ -1,6 +1,7 @@
 package com.higgs.trust.slave.core.service.pack;
 
 import com.alibaba.fastjson.JSON;
+import com.codahale.metrics.Timer;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -31,6 +32,7 @@ import com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandler;
 import com.higgs.trust.slave.core.service.consensus.p2p.P2pHandler;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.transaction.TransactionExecutor;
+import com.higgs.trust.slave.metrics.TrustMetrics;
 import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.*;
 import com.higgs.trust.slave.model.bo.consensus.PackageCommand;
@@ -238,6 +240,7 @@ import java.util.stream.Collectors;
      */
     @Override public void process(PackContext packContext, boolean isFailover, boolean isBatchSync) {
         blockchain.init();
+        Timer.Context blockTimer = TrustMetrics.getDefault().block().time();
         Package pack = packContext.getCurrentPackage();
         List<SignedTransaction> txs = pack.getSignedTxList();
         if (txs == null) {
@@ -246,6 +249,7 @@ import java.util.stream.Collectors;
         }
         if (CollectionUtils.isEmpty(txs) && !isFailover) {
             log.error("[package.process]the transactions in the package is empty");
+            blockTimer.stop();
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_TXS_IS_EMPTY_ERROR);
         }
         log.info("process package start, height:{},tx size:{}", pack.getHeight(), txs.size());
@@ -281,7 +285,7 @@ import java.util.stream.Collectors;
 
             //call back business
             Profiler.enter("[callbackRS]");
-            callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
+            //callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
@@ -310,6 +314,7 @@ import java.util.stream.Collectors;
             if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
                 Profiler.logDump();
             }
+            blockTimer.stop();
         }
         log.info("process package finish");
     }
@@ -332,6 +337,7 @@ import java.util.stream.Collectors;
         for (SignedTransaction tx : txs) {
             String title = new StringBuffer("[execute tx ").append(tx.getCoreTx().getTxId()).append("]").toString();
             Profiler.enter(title);
+            Timer.Context txTimer = TrustMetrics.getDefault().transactions().time();
             try {
                 //ignore idempotent transaction
                 if (hasTx(dbTxs, tx.getCoreTx().getTxId())) {
@@ -341,11 +347,12 @@ import java.util.stream.Collectors;
                 //set current transaction and execute
                 packageData.setCurrentTransaction(tx);
                 TransactionReceipt receipt =
-                    transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
+                        transactionExecutor.process(packageData.parseTransactionData(), packageData.getRsPubKeyMap());
                 persistedDatas.add(tx);
                 txReceipts.put(receipt.getTxId(), receipt);
             } finally {
                 Profiler.release();
+                txTimer.stop();
             }
         }
         packageData.getCurrentBlock().setSignedTxList(persistedDatas);

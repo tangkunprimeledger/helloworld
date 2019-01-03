@@ -167,4 +167,22 @@ public class FunctionParserTest {
         String functionSignature = "(uint, address,, uint) run(address, bytes32)";
         functionParser.parse(functionSignature);
     }
+
+    @Test
+    public void testParse_18() {
+        String functionSignature = "(address[], uint[], uint) run(uint, uint16)";
+        Abi.Function function = functionParser.parse(functionSignature);
+
+        assertEquals(Abi.Entry.Type.function, function.type);
+        assertEquals("run", function.name);
+        assertEquals(2, function.inputs.size());
+        assertEquals("uint", function.inputs.get(0).type.getName());
+        assertEquals("uint16", function.inputs.get(1).type.getName());
+        assertEquals(3, function.outputs.size());
+        assertEquals("address[]", function.outputs.get(0).type.getName());
+        assertEquals("uint[]", function.outputs.get(1).type.getName());
+        assertEquals("uint", function.outputs.get(2).type.getName());
+    }
+
+
 }
