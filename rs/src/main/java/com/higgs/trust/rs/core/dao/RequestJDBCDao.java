@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.higgs.trust.rs.common.enums.RequestEnum;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -45,7 +46,7 @@ public class RequestJDBCDao {
 
             errorCodeConditionSql += conditionSql;
             errorCodeList.add(txId);
-            errorCodeList.add(vo.getErrorCode());
+            errorCodeList.add(StringUtils.isBlank(vo.getErrorCode()) ? "000000" : vo.getErrorCode());
 
             errorMsgConditionSql += conditionSql;
             errorMsgList.add(txId);

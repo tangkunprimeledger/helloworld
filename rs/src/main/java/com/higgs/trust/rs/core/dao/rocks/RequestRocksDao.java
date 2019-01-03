@@ -98,7 +98,6 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
     }
 
 
-
     public void batchUpdateStatus(List<RsCoreTxVO> rsCoreTxVOS, RequestEnum from, RequestEnum to) {
         Transaction tx = ThreadLocalUtils.getRocksTx();
         if (null == tx) {
@@ -121,7 +120,7 @@ public class RequestRocksDao extends RocksBaseDao<RequestPO> {
 
             po.setStatus(to.getCode());
             po.setRespMsg(vo.getErrorMsg());
-            po.setRespCode(vo.getErrorMsg());
+            po.setRespCode(StringUtils.isBlank(vo.getErrorCode()) ? "000000" : vo.getErrorCode());
             po.setUpdateTime(new Date());
 
             txPut(tx, key, po);
