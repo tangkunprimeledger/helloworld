@@ -30,7 +30,7 @@ public class FunctionParser implements MemberParser<String, Abi.Function> {
             "([returnType1[, returnType2[...]]) functionName([parameterType1[, parameterType2[...]])";
 
     private static final Pattern TYPE_LIST_SIGNATURE =
-            Pattern.compile("^\\s*$|^\\s*\\w+\\s*$|^(\\s*\\w+\\s*,)+\\s*\\w+\\s*$");
+            Pattern.compile("^\\s*$|^\\s*[a-zA-Z0-9\\[\\]]+\\s*$|^(\\s*[a-zA-Z0-9\\[\\]]+\\s*,)+\\s*[a-zA-Z0-9\\[\\]]+\\s*$");
 
     private static final Pattern REPLACE_SOURCE = Pattern.compile("\\s");
     private static final String EMPTY_STRING = "";
