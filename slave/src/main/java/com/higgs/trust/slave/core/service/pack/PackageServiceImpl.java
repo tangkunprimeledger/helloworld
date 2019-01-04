@@ -18,7 +18,6 @@ import com.higgs.trust.slave.api.SlaveCallbackHandler;
 import com.higgs.trust.slave.api.SlaveCallbackRegistor;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.config.InitConfig;
-import com.higgs.trust.slave.common.context.AppContext;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.Blockchain;
@@ -285,7 +284,7 @@ import java.util.stream.Collectors;
 
             //call back business
             Profiler.enter("[callbackRS]");
-            //callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
+            callbackRS(block.getSignedTxList(), txReceiptMap, false, isFailover, dbHeader);
             Profiler.release();
 
             if (!isBatchSync) {
