@@ -9,6 +9,7 @@ import com.higgs.trust.evmcontract.vm.program.Program;
 import com.higgs.trust.evmcontract.vm.program.ProgramResult;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvoke;
 import org.apache.commons.lang3.ArrayUtils;
+import org.spongycastle.util.encoders.Hex;
 
 import java.util.Objects;
 
@@ -27,7 +28,8 @@ public class CustomerContractInvocationExecutor extends BaseContractExecutor {
         checkReceiverAddress();
 
         if (Objects.isNull(contractRepository.getAccountState(receiverAddress))) {
-            throw new ContractContextException("Account with receiver address does not exist");
+            throw new ContractContextException(
+                    "Account with receiver address does not exist, receiverAddress: " + Hex.toHexString(receiverAddress));
         }
     }
 

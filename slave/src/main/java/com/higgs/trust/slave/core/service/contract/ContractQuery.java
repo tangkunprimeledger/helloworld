@@ -32,29 +32,23 @@ public class ContractQuery {
     private BlockRepository blockRepository;
 
     public List<?> executeQuery(long blockHeight, byte[] contractAddress, String methodSignature, Object... args) {
-        try {
-            Profiler.enter(String.format("query contract at %s", Hex.toHexString(contractAddress)));
+        ContractInvocation contractInvocation = new ContractInvocation();
+        byte[] data = contractInvocation.getBytecodeForInvokeContract(methodSignature, args);
 
-            ContractInvocation contractInvocation = new ContractInvocation();
-            byte[] data = contractInvocation.getBytecodeForInvokeContract(methodSignature, args);
+        ContractExecutionContext context = buildContractExecutionContext(blockHeight, contractAddress, data);
+        ExecutorFactory<ContractExecutionContext, ContractExecutionResult> factory = new ContractExecutorFactory();
+        Executor<ContractExecutionResult> executor = factory.createExecutor(context);
+        ContractExecutionResult result = executor.execute();
 
-            ContractExecutionContext context = buildContractExecutionContext(blockHeight, contractAddress, data);
-            ExecutorFactory<ContractExecutionContext, ContractExecutionResult> factory = new ContractExecutorFactory();
-            Executor<ContractExecutionResult> executor = factory.createExecutor(context);
-            ContractExecutionResult result = executor.execute();
-
-            if (result.getRevert()) {
-                throw new ContractExecutionException(result.getErrorMessage());
-            }
-
-            if (result.getException() != null) {
-                throw result.getException();
-            }
-
-            return contractInvocation.decodeResult(result.getResult(), true);
-        } finally {
-            Profiler.release();
+        if (result.getRevert()) {
+            throw new ContractExecutionException(result.getErrorMessage());
         }
+
+        if (result.getException() != null) {
+            throw result.getException();
+        }
+
+        return contractInvocation.decodeResult(result.getResult(), true);
     }
 
     private ContractExecutionContext buildContractExecutionContext(

@@ -183,6 +183,4 @@ public class FunctionParserTest {
         assertEquals("uint[]", function.outputs.get(1).type.getName());
         assertEquals("uint", function.outputs.get(2).type.getName());
     }
-
-
 }

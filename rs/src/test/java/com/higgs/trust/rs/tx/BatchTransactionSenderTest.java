@@ -129,7 +129,7 @@ public class BatchTransactionSenderTest {
     private void sendTransactionsWithContractCreation01() {
         String contractSenderAddress = "44140ed117f968181823ca021394152800b51214";
         String transactionSenderId = "TRUST-TEST0";
-        String contractFileAbsolutePath = Paths.get("src/test/resources/contracts/Froze.sol").toFile().getAbsolutePath();
+        String contractFileAbsolutePath = Paths.get("rs/src/test/resources/contracts/Froze.sol").toFile().getAbsolutePath();
         String contractName = "Froze";
         String constructorSignature = "Froze()";
         Object[] constructorArgs = new Object[0];
@@ -337,15 +337,5 @@ public class BatchTransactionSenderTest {
         String publicKey = keyPair.getPubKey();
         System.out.println("KeyPair [privateKey=" + privateKey + ", publicKey" + publicKey + "]");
         return privateKey;
-    }
-
-    private String base64ToHex(String base64) {
-        String hex = null;
-        try {
-            hex = Hex.toHexString(Base64.decode(base64));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return hex;
     }
 }
