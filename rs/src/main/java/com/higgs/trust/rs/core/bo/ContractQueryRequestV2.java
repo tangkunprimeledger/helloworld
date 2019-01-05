@@ -1,15 +1,15 @@
 package com.higgs.trust.rs.core.bo;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * @author Chen Jiawei
  * @date 2018-12-12
  */
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ContractQueryRequestV2 {
     /**
      * Height of block.

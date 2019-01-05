@@ -33,18 +33,12 @@ public class SignServiceImpl implements SignService {
     private RsConfig rsConfig;
     @Autowired
     private NodeState nodeState;
-    @Autowired
-    private ConfigRepository configRepository;
 
     @Override
     public SignInfo signTx(CoreTransaction coreTx) {
         String coreTxJSON = JSON.toJSONString(coreTx);
         if (log.isDebugEnabled()) {
             log.debug("[signTx]txId:{},coreTxJSON:{}", coreTx.getTxId(), coreTxJSON);
-        }
-        //if biz or consensus key is null reload private keys， do it for distributed RS
-        if (StringUtils.isBlank(nodeState.getConsensusPrivateKey()) || StringUtils.isBlank(nodeState.getPrivateKey())) {
-            reloadPrivateKeys();
         }
         SignInfo signInfo = new SignInfo();
         signInfo.setOwner(rsConfig.getRsName());
@@ -60,39 +54,10 @@ public class SignServiceImpl implements SignService {
 
     @Override
     public String sign(String signValue, SignInfo.SignTypeEnum signTypeEnum) {
-        //if biz or consensus key is null reload private keys， do it for distributed RS
-        if (StringUtils.isBlank(nodeState.getConsensusPrivateKey()) || StringUtils.isBlank(nodeState.getPrivateKey())) {
-            reloadPrivateKeys();
-        }
         if (signTypeEnum == SignInfo.SignTypeEnum.CONSENSUS) {
             return CryptoUtil.getProtocolCrypto().sign(signValue, nodeState.getConsensusPrivateKey());
         } else {
             return CryptoUtil.getBizCrypto(null).sign(signValue, nodeState.getPrivateKey());
         }
     }
-
-
-    /**
-     * reload private keys
-     */
-    private void reloadPrivateKeys() {
-        List<Config> configList = configRepository.getConfig(new Config(nodeState.getNodeName()));
-        if (CollectionUtils.isEmpty(configList) || configList.size() < 2) {
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_PRIVATE_KEY_NULL_ERROR);
-        }
-
-        for (Config config : configList) {
-            if (StringUtils.equals(UsageEnum.BIZ.getCode(), config.getUsage())) {
-                nodeState.setPrivateKey(config.getPriKey());
-            }
-            if (StringUtils.equals(UsageEnum.CONSENSUS.getCode(), config.getUsage())) {
-                nodeState.setConsensusPrivateKey(config.getPriKey());
-            }
-        }
-        //check again
-        if (StringUtils.isBlank(nodeState.getConsensusPrivateKey()) || StringUtils.isBlank(nodeState.getPrivateKey())) {
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_GET_PRIVATE_KEY_NULL_ERROR);
-        }
-    }
-
 }

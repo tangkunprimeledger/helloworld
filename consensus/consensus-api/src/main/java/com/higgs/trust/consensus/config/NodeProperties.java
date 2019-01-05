@@ -38,6 +38,11 @@ import org.springframework.context.annotation.Configuration;
     private boolean standby = false;
 
     /**
+     * mark whether the trust is slave or rs
+     */
+    private boolean slave = true;
+
+    /**
      * trust path
      */
     private String path;

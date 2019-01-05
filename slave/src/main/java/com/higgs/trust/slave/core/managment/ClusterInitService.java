@@ -86,6 +86,8 @@ import java.util.List;
 
         List<Config> configList = configRepository.getConfig(new Config(nodeState.getNodeName(), UsageEnum.CONSENSUS.getCode()));
         nodeState.setConsensusPrivateKey(null != configList ? configList.get(0).getPriKey() : null);
+
+        //if the node is slave need to do it
         clusterViewService.initClusterViewFromDB(false);
 
         //start network
@@ -99,7 +101,7 @@ import java.util.List;
      * initClusterViewFromCluster  and retry 20 times if not success
      */
     private void initClusterViewFromCluster() throws InterruptedException {
-        if (!nodeProperties.isStandby()) {
+        if (!nodeProperties.isStandby() || !nodeProperties.isSlave()) {
            return;
         }
         boolean retry = false;
@@ -116,6 +118,10 @@ import java.util.List;
     }
 
     private boolean needInit() {
+        //when it is RS node and  use rocks DB，need to generateKeyPair
+        if (initConfig.isUseMySQL() && !nodeProperties.isSlave() ){
+            return false;
+        }
         // 1、 本地没有创世块，集群也没有创世块时（即集群初始启动），需要生成公私钥，以及创世块
         // 2、 本地没有创世块，集群有创世块时（即动态单节点加入），需要进行failover得到创世块
         Long maxHeight = blockRepository.getMaxHeight();

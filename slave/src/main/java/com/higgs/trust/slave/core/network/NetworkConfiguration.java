@@ -115,7 +115,7 @@ public class NetworkConfiguration {
                 .timeout(timeout)
                 .clientThreadNum(clientThreadNum)
                 .singleton()
-                .backupNode(nodeProperties.isStandby())
+                .backupNode(nodeProperties.isStandby() || !nodeProperties.isSlave())
                 .build();
         NetworkManage networkManage = new NetworkManage(networkConfig);
         return networkManage;

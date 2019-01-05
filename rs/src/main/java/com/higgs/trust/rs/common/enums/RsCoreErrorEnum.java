@@ -20,6 +20,7 @@ public enum RsCoreErrorEnum {
     RS_CORE_PARAM_VALIDATE_ERROR("100", "param validate error", false),
     RS_CORE_IDEMPOTENT("101", "request idempotent", false),
     RS_CORE_TX_VERIFY_SIGNATURE_FAILED("102", "transaction verify signature failed", false),
+    RS_CORE_PARAM_ERROR("103", "param  error", false),
 
     RS_CORE_TX_POLICY_NOT_EXISTS_FAILED("201", "the transaction policy is not exists failed", false),
     RS_CORE_TX_UPDATE_STATUS_FAILED("202", "update transaction status failed", false),
@@ -62,7 +63,6 @@ public enum RsCoreErrorEnum {
     RS_CORE_ROCKS_KEY_IS_NOT_EXIST("310", "rocks key is not exist", false),
     RS_CORE_ROCKS_TRANSACTION_IS_NULL("311", "rocks transaction is null", false),
     RS_CORE_REQUEST_ADD_FAILED("312", "insert request failed", false),
-    RS_CORE_GET_PRIVATE_KEY_NULL_ERROR("313", "rs get private key null error", false),
     ;
     //@formatter:on
 

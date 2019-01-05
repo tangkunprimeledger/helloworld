@@ -55,6 +55,10 @@ import java.util.Map;
     @Autowired private PackageRepository packageRepository;
 
     public void initClusterViewFromDB(boolean useCurrentHeight) {
+        //RS node do not to initClusterView
+        if (!nodeProperties.isSlave()) {
+            return;
+        }
         List<Ca> list = caRepository.getAllCa();
         Map<String, String> consensusNodeMap = new HashMap<>();
         list.stream().filter(ca -> ca.getUsage().equals(UsageEnum.CONSENSUS.getCode()))

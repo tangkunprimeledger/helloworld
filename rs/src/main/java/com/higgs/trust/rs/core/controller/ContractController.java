@@ -2,13 +2,13 @@ package com.higgs.trust.rs.core.controller;
 
 import com.higgs.trust.rs.core.api.ContractService;
 import com.higgs.trust.rs.core.bo.*;
-import com.higgs.trust.slave.api.ContractQueryService;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,8 +25,6 @@ public class ContractController {
 
     @Autowired
     private ContractService contractService;
-    @Autowired
-    private ContractQueryService contractQueryService;
 
     private <T> RespData<T> ok(T data) {
         RespData<T> respData = new RespData<T>();
@@ -156,9 +154,9 @@ public class ContractController {
      * @return result of querying, values are of java types.
      */
     @PostMapping(path = "/query2")
-    public RespData<List<?>> query2(@RequestBody ContractQueryRequestV2 request) {
+    public RespData<List<?>> query2(@RequestBody @Validated ContractQueryRequestV2 request) {
         try {
-            List<?> resultList = contractQueryService.query2(request.getBlockHeight(), request.getAddress(), request.getMethodSignature(), request.getParameters());
+            List<?> resultList = contractService.query2(request.getBlockHeight(), request.getAddress(), request.getMethodSignature(), request.getParameters());
             return RespData.success(resultList);
         } catch (Exception e) {
             return RespData.error("", e.getMessage(), null);
