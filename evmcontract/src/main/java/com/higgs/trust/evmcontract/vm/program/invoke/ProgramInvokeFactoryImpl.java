@@ -23,7 +23,6 @@ import com.higgs.trust.evmcontract.core.Transaction;
 import com.higgs.trust.evmcontract.db.BlockStore;
 import com.higgs.trust.evmcontract.util.ByteUtil;
 import com.higgs.trust.evmcontract.vm.DataWord;
-import com.higgs.trust.evmcontract.vm.VM;
 import com.higgs.trust.evmcontract.vm.program.Program;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

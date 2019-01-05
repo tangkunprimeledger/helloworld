@@ -1,7 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
 import com.higgs.trust.IntegrateBaseTest;
-import com.higgs.trust.rs.common.enums.RequestEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 

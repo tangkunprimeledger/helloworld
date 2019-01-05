@@ -19,7 +19,6 @@ import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
-import it.unisa.dia.gas.plaf.jpbc.util.io.Base64;
 import okhttp3.OkHttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

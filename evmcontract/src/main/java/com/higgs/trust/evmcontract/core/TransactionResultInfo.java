@@ -1,6 +1,5 @@
 package com.higgs.trust.evmcontract.core;
 
-import com.higgs.trust.evmcontract.crypto.HashUtil;
 import com.higgs.trust.evmcontract.solidity.Abi;
 import com.higgs.trust.evmcontract.util.ByteUtil;
 import com.higgs.trust.evmcontract.util.RLP;

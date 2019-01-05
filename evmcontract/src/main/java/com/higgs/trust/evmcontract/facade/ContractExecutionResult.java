@@ -2,14 +2,12 @@ package com.higgs.trust.evmcontract.facade;
 
 import com.higgs.trust.evmcontract.core.Bloom;
 import com.higgs.trust.evmcontract.util.ByteArraySet;
-import com.higgs.trust.evmcontract.util.RLP;
 import com.higgs.trust.evmcontract.vm.DataWord;
 import com.higgs.trust.evmcontract.vm.LogInfo;
 import com.higgs.trust.evmcontract.vm.program.InternalTransaction;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 

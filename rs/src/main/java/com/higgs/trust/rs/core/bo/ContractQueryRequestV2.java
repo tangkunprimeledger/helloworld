@@ -1,6 +1,8 @@
 package com.higgs.trust.rs.core.bo;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**

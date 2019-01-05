@@ -2,10 +2,6 @@ package com.higgs.trust.evmcontract;
 
 import org.junit.Test;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.Assert.assertTrue;
 
 /**

@@ -22,7 +22,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.higgs.trust.common.crypto.KeyPair;
-import com.higgs.trust.common.utils.Base64Util;
 import lombok.extern.slf4j.Slf4j;
 import org.spongycastle.asn1.*;
 import org.spongycastle.asn1.x9.X9ECParameters;

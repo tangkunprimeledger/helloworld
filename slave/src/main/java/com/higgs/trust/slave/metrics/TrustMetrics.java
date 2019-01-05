@@ -4,7 +4,6 @@ package com.higgs.trust.slave.metrics;
 import com.codahale.metrics.*;
 import com.higgs.trust.network.NetworkManage;
 import com.higgs.trust.slave.metrics.jvm.CpuUsageGaugeSet;
-import com.higgs.trust.slave.metrics.jvm.JmxAttributeGauge;
 import com.higgs.trust.slave.metrics.jvm.MemoryUsageGaugeSet;
 import com.higgs.trust.slave.metrics.jvm.ThreadStatesGaugeSet;
 

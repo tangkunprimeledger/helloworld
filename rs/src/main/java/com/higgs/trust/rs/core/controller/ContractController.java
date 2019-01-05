@@ -8,9 +8,9 @@ import com.higgs.trust.slave.api.vo.RespData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -154,7 +154,7 @@ public class ContractController {
      * @return result of querying, values are of java types.
      */
     @PostMapping(path = "/query2")
-    public RespData<List<?>> query2(@RequestBody @Validated ContractQueryRequestV2 request) {
+    public RespData<List<?>> query2(@RequestBody @Valid ContractQueryRequestV2 request) {
         try {
             List<?> resultList = contractService.query2(request.getBlockHeight(), request.getAddress(), request.getMethodSignature(), request.getParameters());
             return RespData.success(resultList);

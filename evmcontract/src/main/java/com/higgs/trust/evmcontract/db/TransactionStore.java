@@ -1,16 +1,12 @@
 package com.higgs.trust.evmcontract.db;
 
 
-
 import com.higgs.trust.evmcontract.core.TransactionResultInfo;
 import com.higgs.trust.evmcontract.datasource.ObjectDataSource;
 import com.higgs.trust.evmcontract.datasource.Serializer;
 import com.higgs.trust.evmcontract.datasource.Source;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author duhongming

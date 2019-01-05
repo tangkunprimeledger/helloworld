@@ -3,9 +3,7 @@ package com.higgs.trust.slave.model.bo.contract;
 import com.higgs.trust.slave.model.bo.action.Action;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotBlank;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**

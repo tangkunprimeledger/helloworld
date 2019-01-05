@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.core.service.version;
 
 import com.alibaba.fastjson.JSON;
-import com.higgs.trust.common.exception.TrustException;
 import com.higgs.trust.evmcontract.core.TransactionResultInfo;
 import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
 import com.higgs.trust.evmcontract.facade.exception.ContractExecutionException;

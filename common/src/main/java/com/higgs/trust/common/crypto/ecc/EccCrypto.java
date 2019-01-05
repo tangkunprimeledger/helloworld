@@ -5,8 +5,6 @@ import com.higgs.trust.common.crypto.KeyPair;
 import lombok.extern.slf4j.Slf4j;
 import org.spongycastle.util.encoders.Hex;
 
-import java.math.BigInteger;
-
 /**  
  * @desc class for ecc crypto and sign
  * @author WangQuanzhou

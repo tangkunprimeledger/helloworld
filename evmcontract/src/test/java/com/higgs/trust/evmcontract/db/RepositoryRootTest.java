@@ -1,8 +1,8 @@
 package com.higgs.trust.evmcontract.db;
 
-import com.higgs.trust.evmcontract.vm.DataWord;
 import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.evmcontract.datasource.inmem.HashMapDB;
+import com.higgs.trust.evmcontract.vm.DataWord;
 import org.junit.Test;
 import org.spongycastle.util.encoders.Hex;
 

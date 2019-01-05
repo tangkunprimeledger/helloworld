@@ -1,9 +1,7 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
 import com.higgs.trust.evmcontract.facade.*;
-import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.ContractException;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.action.ActionHandler;

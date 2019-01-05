@@ -1,11 +1,9 @@
 package com.higgs.trust.slave.core.service.transaction;
 
-import com.codahale.metrics.Timer;
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.contract.SmartContractException;
 import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
-import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -16,7 +14,6 @@ import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.version.TransactionProcessor;
 import com.higgs.trust.slave.core.service.version.TxProcessorHolder;
-import com.higgs.trust.slave.metrics.TrustMetrics;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
