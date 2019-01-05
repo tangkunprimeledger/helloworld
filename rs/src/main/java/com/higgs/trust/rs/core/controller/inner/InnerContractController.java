@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping(path = "/contract")
-public class ContractController {
+public class InnerContractController {
     @Autowired
     private ContractService contractService;
 
