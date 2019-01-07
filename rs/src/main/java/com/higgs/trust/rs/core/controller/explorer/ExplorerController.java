@@ -36,7 +36,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryBlocksByPage", method = RequestMethod.POST)
-    public RespData<List<BlockVO>> queryBlocksByPage(@RequestBody QueryBlockVO req) {
+    public RespData<List<BlockVO>> queryBlocksByPage(@RequestBody @Valid QueryBlockVO req) {
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryBlocksByPage", req);
 
         RespData<List<BlockVO>> respData = explorerCache.get(key, RespData.class);
@@ -59,7 +59,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryTxsByPage", method = RequestMethod.POST)
-    public RespData<List<CoreTransactionVO>> queryTxsByPage(@RequestBody QueryTransactionVO req) {
+    public RespData<List<CoreTransactionVO>> queryTxsByPage(@RequestBody @Valid QueryTransactionVO req) {
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryTxsByPage", req);
         RespData<List<CoreTransactionVO>> respData = explorerCache.get(key, RespData.class);
         if (respData != null) {
