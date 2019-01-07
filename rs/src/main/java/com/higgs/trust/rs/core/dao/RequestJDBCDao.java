@@ -50,7 +50,7 @@ public class RequestJDBCDao {
 
             errorMsgConditionSql += conditionSql;
             errorMsgList.add(txId);
-            errorMsgList.add(vo.getErrorMsg());
+            errorMsgList.add(StringUtils.isBlank(vo.getErrorMsg()) ? "success" : vo.getErrorMsg());
         }
         errorCodeConditionSql += " ELSE `resp_code` END";
         errorMsgConditionSql += " ELSE `resp_msg` END";
