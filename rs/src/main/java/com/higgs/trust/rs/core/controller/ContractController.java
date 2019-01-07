@@ -1,6 +1,7 @@
 package com.higgs.trust.rs.core.controller;
 
 import com.higgs.trust.rs.core.api.ContractService;
+import com.higgs.trust.rs.core.api.ContractV2QueryService;
 import com.higgs.trust.rs.core.bo.*;
 import com.higgs.trust.slave.api.vo.ContractVO;
 import com.higgs.trust.slave.api.vo.PageVO;
@@ -25,6 +26,8 @@ public class ContractController {
 
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private ContractV2QueryService contractV2QueryService;
 
     private <T> RespData<T> ok(T data) {
         RespData<T> respData = new RespData<T>();
@@ -156,7 +159,7 @@ public class ContractController {
     @PostMapping(path = "/query2")
     public RespData<List<?>> query2(@RequestBody @Valid ContractQueryRequestV2 request) {
         try {
-            List<?> resultList = contractService.query2(request.getBlockHeight(), request.getAddress(), request.getMethodSignature(), request.getParameters());
+            List<?> resultList = contractV2QueryService.query(request.getBlockHeight(), request.getAddress(), request.getMethodSignature(), request.getParameters());
             return RespData.success(resultList);
         } catch (Exception e) {
             return RespData.error("", e.getMessage(), null);
