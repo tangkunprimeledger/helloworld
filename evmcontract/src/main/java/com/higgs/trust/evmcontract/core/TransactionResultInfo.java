@@ -9,6 +9,7 @@ import com.higgs.trust.evmcontract.vm.LogInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.spongycastle.util.encoders.Hex;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,17 +29,19 @@ public class TransactionResultInfo {
     private String error = "";
     private byte[] createdAddress = ByteUtil.EMPTY_BYTE_ARRAY;
     private String invokeMethod = "";
-
+    private String time;
     private byte[] rlpEncoded;
 
 
-    public TransactionResultInfo(long blockHeight, byte[] txHash, int index, Bloom bloomFilter, List<LogInfo> logInfoList, byte[] result) {
+    public TransactionResultInfo(long blockHeight, byte[] txHash, int index, Bloom bloomFilter,
+                                 List<LogInfo> logInfoList, byte[] result, String time) {
         this.blockHeight = blockHeight;
         this.txHash = txHash;
         this.index = index;
         this.bloomFilter = bloomFilter;
         this.logInfoList = logInfoList;
         this.result = result == null ? ByteUtil.EMPTY_BYTE_ARRAY : result;
+        this.time = time;
     }
 
     public TransactionResultInfo(final byte[] rlp) {
@@ -47,9 +50,11 @@ public class TransactionResultInfo {
         }
 
         RLPList rlpList = (RLPList) RLP.decode2(rlp).get(0);
-        blockHeight = RLP.decodeInt(rlpList.get(0).getRLPData(), 0);
+        BigInteger integer = RLP.decodeBigInteger(rlpList.get(0).getRLPData(), 0);
+        blockHeight = integer.longValue();
         txHash = rlpList.get(1).getRLPData();
-        index = RLP.decodeInt(rlpList.get(2).getRLPData(), 0);
+        BigInteger index_integer = RLP.decodeBigInteger(rlpList.get(2).getRLPData(), 0);
+        index = index_integer.intValue();
         bloomFilter = new Bloom(rlpList.get(3).getRLPData());
 
         List<LogInfo> logInfos = new ArrayList<>();
@@ -63,6 +68,7 @@ public class TransactionResultInfo {
         createdAddress = rlpList.get(6).getRLPData();
         error = decodeString(rlpList.get(7).getRLPData());
         invokeMethod = decodeString(rlpList.get(8).getRLPData());
+        time = decodeString(rlpList.get(9).getRLPData());
         rlpEncoded = rlp;
     }
 
@@ -94,9 +100,9 @@ public class TransactionResultInfo {
 
 
         rlpEncoded = RLP.encodeList(
-                RLP.encodeInt((int) blockHeight),
+                RLP.encodeElement(RLP.encodeBigInteger(BigInteger.valueOf(blockHeight))),
                 RLP.encodeElement(txHash),
-                RLP.encodeInt(index),
+                RLP.encodeElement(RLP.encodeBigInteger(BigInteger.valueOf(index))),
                 bloomFilterRLP,
                 logInfoListRLP,
                 RLP.encodeElement(result),

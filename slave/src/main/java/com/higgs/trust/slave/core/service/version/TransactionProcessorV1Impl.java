@@ -230,7 +230,8 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
             }
 
             TransactionResultInfo resultInfo = new TransactionResultInfo(blockHeight, tx.getTxId().getBytes(), 1,
-                    executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult());
+                    executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult(),
+                    String.valueOf(System.currentTimeMillis()));
             if (action instanceof ContractCreationV2Action) {
                 resultInfo.setCreatedAddress(executionResult.getReceiverAddress());
             }

@@ -244,7 +244,7 @@ public class Blockchain implements TrustListener, InitializingBean {
             }
 
             rlpEncoded = RLP.encodeList(
-                    RLP.encodeBigInteger(BigInteger.valueOf(height)),
+                    RLP.encodeElement(RLP.encodeBigInteger(BigInteger.valueOf(height))),
                     RLP.encodeElement(logsBloom),
                     RLP.encodeElement(receiptsRoot)
             );
