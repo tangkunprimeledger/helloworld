@@ -229,7 +229,11 @@ public class InitConfig {
 
     @Bean
     public DbSource<byte[]> defaultKeyValueDbSource() {
-        RocksDbDataSource rocksDbDataSource = new RocksDbDataSource("StateDB", defaultSystemProperties());
+        RocksDbDataSource rocksDbDataSource = new RocksDbDataSource("StateDB", defaultSystemProperties()) {
+            @Override
+            public void delete(byte[] key) {
+            }
+        };
         rocksDbDataSource.init();
         return rocksDbDataSource;
     }
