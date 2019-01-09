@@ -13,6 +13,7 @@ import com.higgs.trust.evmcontract.util.FastByteComparisons;
 import com.higgs.trust.evmcontract.vm.program.ProgramResult;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvoke;
 import com.higgs.trust.evmcontract.vm.program.invoke.ProgramInvokeImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.spongycastle.util.encoders.Hex;
 
@@ -27,6 +28,7 @@ import java.util.Objects;
  * @author Chen Jiawei
  * @date 2018-11-15
  */
+@Slf4j
 public abstract class BaseContractExecutor implements Executor<ContractExecutionResult> {
     private static final int ADDRESS_LENGTH = 20;
     private static final int BLOCK_HASH_LENGTH = 32;
@@ -74,13 +76,14 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
 
 
     /**
-     * Executor is created according to context.
+     * Creates an executor according to the specified context.
      *
-     * @param contractExecutionContext null is not allowed
+     * @param contractExecutionContext null is not allowed, and its fields must be prepared completely by invoker
      */
     BaseContractExecutor(ContractExecutionContext contractExecutionContext) {
         this.contractExecutionContext = contractExecutionContext;
         checkContractExecutionContext();
+        log.info("Starts to create executor: " + contractExecutionContext.toString());
 
         // The block-level snapshot will be used to generate global state
         // root after the contract is executed. This provide support for
@@ -96,7 +99,7 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         data = contractExecutionContext.getData();
         gasLimit = contractExecutionContext.getGasLimit();
         // In this project, sender is not required to be in repository,
-        // because accounts used in the solidity code, not on this
+        // because accounts exist in the solidity code, not on this
         // platform.
         senderAddress = contractExecutionContext.getSenderAddress();
         // Nonce is used for avoiding replay attack before. In this
@@ -155,7 +158,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         }
 
         if (senderAddress.length != ADDRESS_LENGTH) {
-            throw new ContractContextException(String.format("Sender address is not of %d bytes", ADDRESS_LENGTH));
+            throw new ContractContextException(
+                    String.format("Sender address %s is not of %d bytes",
+                            Hex.toHexString(senderAddress), ADDRESS_LENGTH));
         }
     }
 
@@ -168,13 +173,13 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     public ContractExecutionResult execute() {
         check();
 
+        log.info("Starts to execute contract: " + contractExecutionContext.toString());
         long startTime = System.currentTimeMillis();
         ContractExecutionResult contractExecutionResult = executeContract();
         contractExecutionResult.setTimeCost(System.currentTimeMillis() - startTime);
 
         return contractExecutionResult;
     }
-
 
     /**
      * Check environment in which contract is executed. Throws exception
@@ -236,7 +241,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         checkSenderAddress();
         byte[] nonceInRepository = transactionRepository.getNonce(senderAddress).toByteArray();
         if (!FastByteComparisons.equal(nonce, nonceInRepository)) {
-            throw new ContractContextException("Nonce is incorrect");
+            throw new ContractContextException(
+                    String.format("Nonce %s is not same as %s in repository",
+                            Hex.toHexString(nonce), Hex.toHexString(nonceInRepository)));
         }
     }
 
@@ -264,7 +271,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         }
 
         if (receiverAddress.length != ADDRESS_LENGTH) {
-            throw new ContractContextException(String.format("Receiver address is not of %d bytes", ADDRESS_LENGTH));
+            throw new ContractContextException(
+                    String.format("Receiver address %s is not of %d bytes",
+                            Hex.toHexString(receiverAddress), ADDRESS_LENGTH));
         }
     }
 
@@ -272,7 +281,8 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
         checkReceiverAddress();
 
         if (Objects.nonNull(contractRepository.getAccountState(receiverAddress))) {
-            throw new ContractContextException("Account with new address exists");
+            throw new ContractContextException(
+                    String.format("Account with new address %s exists", Hex.toHexString(receiverAddress)));
         }
     }
 
@@ -281,19 +291,23 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
 
         byte[] code = transactionRepository.getCode(receiverAddress);
         if (ArrayUtils.isNotEmpty(code)) {
-            throw new ContractContextException("Contract code is not empty");
+            throw new ContractContextException(
+                    String.format("Contract code is not empty, receiverAddress=%s, code=%s",
+                            Hex.toHexString(receiverAddress), Hex.toHexString(code)));
         }
     }
 
     private void checkMinerAddress() {
         if (minerAddress.length != ADDRESS_LENGTH) {
-            throw new ContractContextException(String.format("Miner address is not of %d bytes", ADDRESS_LENGTH));
+            throw new ContractContextException(
+                    String.format("Miner address %s is not of %d bytes", Hex.toHexString(minerAddress), ADDRESS_LENGTH));
         }
     }
 
     private void checkParentHash() {
         if (parentHash.length != BLOCK_HASH_LENGTH) {
-            throw new ContractContextException(String.format("Parent hash is not of %d bytes", BLOCK_HASH_LENGTH));
+            throw new ContractContextException(
+                    String.format("Parent hash %s is not of %d bytes", Hex.toHexString(parentHash), BLOCK_HASH_LENGTH));
         }
     }
 

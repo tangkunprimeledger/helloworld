@@ -5,6 +5,7 @@ import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.evmcontract.db.BlockStore;
 import com.higgs.trust.evmcontract.facade.constant.Constant;
 import lombok.Getter;
+import org.spongycastle.util.encoders.Hex;
 
 /**
  * Context for contract execution. All fields should be filled when an instance
@@ -155,5 +156,22 @@ public class ContractExecutionContext {
         this.number = number;
         this.blockStore = blockStore;
         this.blockRepository = blockRepository;
+    }
+
+    @Override
+    public String toString() {
+        return "ContractExecutionContext [transactionHash=" + defaultNull(transactionHash) +
+                ", contractType=" + contractType +
+                ", data=" + defaultNull(data) +
+                ", senderAddress=" + defaultNull(senderAddress) +
+                ", receiverAddress=" + defaultNull(receiverAddress) +
+                ", parentHash=" + defaultNull(parentHash) +
+                ", timestamp=" + timestamp +
+                ", number=" + number +
+                ", difficulty=" + defaultNull(difficulty) + "]";
+    }
+
+    private String defaultNull(byte[] bytes) {
+        return (bytes != null ? Hex.toHexString(bytes) : null);
     }
 }
