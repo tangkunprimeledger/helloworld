@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.tx.multinodes;
+package com.higgs.trust.rs.tx.sender;
 
 import com.higgs.trust.rs.core.bo.ContractQueryRequestV2;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -11,7 +11,7 @@ import retrofit2.http.POST;
  * @author Chen Jiawei
  * @date 2019-01-03
  */
-public interface ISignedTransactionPoster {
+public interface ITransactionSender {
     @POST("/transaction/post")
     Call<RespData> post(@Body SignedTransaction signedTransaction);
 

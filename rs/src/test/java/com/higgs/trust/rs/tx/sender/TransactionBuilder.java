@@ -1,4 +1,4 @@
-package com.higgs.trust.rs.tx.multinodes;
+package com.higgs.trust.rs.tx.sender;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
@@ -9,6 +9,7 @@ import com.higgs.trust.evmcontract.crypto.HashUtil;
 import com.higgs.trust.evmcontract.facade.compile.CompileManager;
 import com.higgs.trust.evmcontract.solidity.Abi;
 import com.higgs.trust.evmcontract.solidity.compiler.CompilationResult;
+import com.higgs.trust.rs.core.bo.ContractQueryRequestV2;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
@@ -17,6 +18,7 @@ import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
+import lombok.extern.slf4j.Slf4j;
 import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
@@ -31,9 +33,10 @@ import java.util.regex.Pattern;
  * @author Chen Jiawei
  * @date 2019-01-03
  */
+@Slf4j
 public class TransactionBuilder {
-    private static EccCrypto crypto;
-    private static Pattern addressPattern;
+    private static final EccCrypto CRYPTO = EccCrypto.getSingletonInstance();
+    private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[0-9a-fA-F]{40}$");
 
     static {
         //JSON auto detect class type
@@ -48,16 +51,24 @@ public class TransactionBuilder {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
     }
 
-    public TransactionBuilder() {
-        crypto = EccCrypto.getSingletonInstance();
-        addressPattern = Pattern.compile("^[0-9a-fA-F]{40}$");
+
+    public static ContractQueryRequestV2 generateContractQueryRequestV2(long height, String methodSignature, Object[] parameters, String receiverAddress) {
+        ContractQueryRequestV2 contractQueryRequestV2 = new ContractQueryRequestV2();
+
+        contractQueryRequestV2.setBlockHeight(height);
+        contractQueryRequestV2.setMethodSignature(methodSignature);
+        contractQueryRequestV2.setParameters(parameters);
+        contractQueryRequestV2.setAddress(receiverAddress);
+
+        return contractQueryRequestV2;
     }
 
-    public SignedTransaction generateSignedTransactionWithContractInvocation(
+    public static SignedTransaction generateSignedTransactionWithContractInvocation(
             String contractSenderAddress,
             String contractReceiverAddress,
             String transactionSenderId,
             String contractMethodSignature,
+            String privateKey,
             Object... methodArgs) {
         ContractInvokeV2Action contractInvokeV2Action = new ContractInvokeV2Action();
         contractInvokeV2Action.setType(ActionTypeEnum.CONTRACT_INVOKED);
@@ -83,7 +94,7 @@ public class TransactionBuilder {
 
         SignInfo signInfo = new SignInfo();
         signInfo.setOwner(getSignOwner(transactionSenderId));
-        signInfo.setSign(crypto.sign(JSON.toJSONString(coreTransaction), generatePrivateKey()));
+        signInfo.setSign(CRYPTO.sign(JSON.toJSONString(coreTransaction), getPrivateKey(privateKey)));
         signInfo.setSignType(SignInfo.SignTypeEnum.CONSENSUS);
 
         List<SignInfo> signInfoList = new ArrayList<>();
@@ -97,17 +108,13 @@ public class TransactionBuilder {
         return signedTransaction;
     }
 
-    private String getContractMethodSignature(String contractMethodSignature) {
-        System.out.println("contractMethodSignature" + contractMethodSignature);
-        return contractMethodSignature;
-    }
-
-    public SignedTransaction generateSignedTransactionWithContractCreation(
+    public static SignedTransaction generateSignedTransactionWithContractCreation(
             String contractSenderAddress,
             String transactionSenderId,
             String contractFileAbsolutePath,
             String contractName,
             String constructorSignature,
+            String privateKey,
             Object... constructorArgs) {
         ContractCreationV2Action contractCreationV2Action = new ContractCreationV2Action();
         contractCreationV2Action.setType(ActionTypeEnum.CONTRACT_CREATION);
@@ -133,7 +140,7 @@ public class TransactionBuilder {
 
         SignInfo signInfo = new SignInfo();
         signInfo.setOwner(getSignOwner(transactionSenderId));
-        signInfo.setSign(crypto.sign(JSON.toJSONString(coreTransaction), generatePrivateKey()));
+        signInfo.setSign(CRYPTO.sign(JSON.toJSONString(coreTransaction), getPrivateKey(privateKey)));
         signInfo.setSignType(SignInfo.SignTypeEnum.CONSENSUS);
 
         List<SignInfo> signInfoList = new ArrayList<>();
@@ -147,54 +154,60 @@ public class TransactionBuilder {
         return signedTransaction;
     }
 
-    private String getReceiverAddress() {
+
+    private static String getContractMethodSignature(String contractMethodSignature) {
+        log.info("contractMethodSignature: " + contractMethodSignature);
+        return contractMethodSignature;
+    }
+
+    private static String getReceiverAddress() {
         byte[] bytes = HashUtil.randomHash();
         String receiverAddress = Hex.toHexString(HashUtil.calcNewAddr(bytes, bytes));
-        System.out.println("ReceiverAddress: " + receiverAddress);
+        log.info("ReceiverAddress: " + receiverAddress);
         return receiverAddress;
     }
 
-    private String getSignOwner(String signOwner) {
-        System.out.println("SignOwner: " + signOwner);
+    private static String getSignOwner(String signOwner) {
+        log.info("SignOwner: " + signOwner);
         return signOwner;
     }
 
-    private String getTransactionSenderId(String transactionSenderId) {
-        System.out.println("TransactionSenderId: " + transactionSenderId);
+    private static String getTransactionSenderId(String transactionSenderId) {
+        log.info("TransactionSenderId: " + transactionSenderId);
         return transactionSenderId;
     }
 
-    private String getContractReceiverAddress(String contractReceiverAddress) {
-        if (!addressPattern.matcher(contractReceiverAddress).matches()) {
+    private static String getContractReceiverAddress(String contractReceiverAddress) {
+        if (!ADDRESS_PATTERN.matcher(contractReceiverAddress).matches()) {
             throw new IllegalArgumentException("Contract address must be hex string of 40 characters");
         }
 
-        System.out.println("ContractReceiverAddress: " + contractReceiverAddress);
+        log.info("ContractReceiverAddress: " + contractReceiverAddress);
         return contractReceiverAddress;
     }
 
-    private String getContractSenderAddress(String contractSenderAddress) {
-        if (!addressPattern.matcher(contractSenderAddress).matches()) {
+    private static String getContractSenderAddress(String contractSenderAddress) {
+        if (!ADDRESS_PATTERN.matcher(contractSenderAddress).matches()) {
             throw new IllegalArgumentException("Contract sender address must be hex string of 40 characters");
         }
 
-        System.out.println("ContractSenderAddress: " + contractSenderAddress);
+        log.info("ContractSenderAddress: " + contractSenderAddress);
         return contractSenderAddress;
     }
 
-    private byte[] generateTransactionId() {
+    private static byte[] generateTransactionId() {
         byte[] transactionId = HashUtil.randomHash();
-        System.out.println("TransactionId: " + Hex.toHexString(transactionId));
+        log.info("TransactionId: " + Hex.toHexString(transactionId));
 
         return transactionId;
     }
 
-    private byte[] generateDeployByteCode(String contractFileAbsolutePath,
-                                          String contractName, String constructorSignature, Object... constructorArgs) {
-        System.out.println("ContractFileAbsolutePath: " + contractFileAbsolutePath);
-        System.out.println("ContractName: " + contractName);
-        System.out.println("ConstructorSignature: " + constructorSignature);
-        System.out.println("ConstructorArgs: " + Arrays.asList(constructorArgs));
+    private static byte[] generateDeployByteCode(String contractFileAbsolutePath,
+                                                 String contractName, String constructorSignature, Object... constructorArgs) {
+        log.info("ContractFileAbsolutePath: " + contractFileAbsolutePath);
+        log.info("ContractName: " + contractName);
+        log.info("ConstructorSignature: " + constructorSignature);
+        log.info("ConstructorArgs: " + Arrays.asList(constructorArgs));
 
         CompilationResult compilationResult = null;
         try {
@@ -209,17 +222,13 @@ public class TransactionBuilder {
 
         CompilationResult.ContractMetadata metadata = compilationResult.getContract(contractName);
         byte[] byteCode = Abi.Constructor.of(constructorSignature, Hex.decode(metadata.bin), constructorArgs);
-        System.out.println("ByteCode: " + Hex.toHexString(byteCode));
+        log.info("ByteCode: " + Hex.toHexString(byteCode));
 
         return byteCode;
-
     }
 
-    private String generatePrivateKey() {
-        KeyPair keyPair = crypto.generateKeyPair();
-        String privateKey = keyPair.getPriKey();
-        String publicKey = keyPair.getPubKey();
-        System.out.println("KeyPair [privateKey=" + privateKey + ", publicKey" + publicKey + "]");
+    private static String getPrivateKey(String privateKey) {
+        log.info("PrivateKey: " + privateKey);
         return privateKey;
     }
 }
