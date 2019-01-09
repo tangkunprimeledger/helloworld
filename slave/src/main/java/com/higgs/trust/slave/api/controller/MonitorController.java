@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2018/12/27
  */
 @RestController
-@RequestMapping("/metrics")
-public class MetricsController {
+@RequestMapping("/monitor")
+public class MonitorController {
 
-    @GetMapping("/")
+    @GetMapping("/metrics")
     public Object getMetrics() {
         return TrustMetrics.getDefault().getReportedMetrics();
     }
