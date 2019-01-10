@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,7 +35,13 @@ public class ContractV2QueryServer implements InitializingBean {
             log.error("address :{} or method :{} can not be null!", contractQueryStateV2BO.getAddress(), contractQueryStateV2BO.getMethod());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_PARAM_ERROR);
         }
-        return contractQueryService.query2(contractQueryStateV2BO.getBlockHeight(), contractQueryStateV2BO.getAddress(), contractQueryStateV2BO.getMethod(), contractQueryStateV2BO.getParameters());
+        List<?> list = new ArrayList<>();
+        try {
+            list = contractQueryService.query2(contractQueryStateV2BO.getBlockHeight(), contractQueryStateV2BO.getAddress(), contractQueryStateV2BO.getMethod(), contractQueryStateV2BO.getParameters());
+        } catch (Throwable e) {
+            log.error("query error for contractQueryStateV2BO:{}", contractQueryStateV2BO);
+        }
+        return list;
     }
 
     @Override
