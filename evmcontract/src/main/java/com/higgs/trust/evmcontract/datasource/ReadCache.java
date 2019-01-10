@@ -105,12 +105,6 @@ public class ReadCache<Key, Value> extends AbstractCachedSource<Key, Value> {
     public Value get(Key key) {
         checkByteArrKey(key);
 
-        cache.entrySet().forEach(item -> {
-            if (item.getKey() instanceof byte[]) {
-                // System.out.println("get key:" + Hex.toHexString((byte[]) item.getKey()) + " value:" + item.getValue());
-                // System.out.println(NULL);
-            }
-        });
         Value ret = cache.get(key);
         if (ret == NULL) {
             return null;
