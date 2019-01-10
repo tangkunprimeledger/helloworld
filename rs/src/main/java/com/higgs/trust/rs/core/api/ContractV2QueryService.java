@@ -1,7 +1,5 @@
 package com.higgs.trust.rs.core.api;
 
-import com.higgs.trust.rs.core.bo.ContractQueryStateV2BO;
-
 import java.util.List;
 
 /**
