@@ -83,7 +83,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     BaseContractExecutor(ContractExecutionContext contractExecutionContext) {
         this.contractExecutionContext = contractExecutionContext;
         checkContractExecutionContext();
-        log.info("Starts to create executor: " + contractExecutionContext.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("Starts to create executor: " + contractExecutionContext.toString());
+        }
 
         // The block-level snapshot will be used to generate global state
         // root after the contract is executed. This provide support for
@@ -173,7 +175,9 @@ public abstract class BaseContractExecutor implements Executor<ContractExecution
     public ContractExecutionResult execute() {
         check();
 
-        log.info("Starts to execute contract: " + contractExecutionContext.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("Starts to execute contract: " + contractExecutionContext.toString());
+        }
         long startTime = System.currentTimeMillis();
         ContractExecutionResult contractExecutionResult = executeContract();
         contractExecutionResult.setTimeCost(System.currentTimeMillis() - startTime);

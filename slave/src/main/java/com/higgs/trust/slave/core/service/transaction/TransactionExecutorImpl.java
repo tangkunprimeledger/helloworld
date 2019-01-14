@@ -4,6 +4,7 @@ import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.contract.SmartContractException;
 import com.higgs.trust.evmcontract.core.Repository;
 import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
+import com.higgs.trust.evmcontract.facade.exception.ContractExecutionException;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
@@ -59,6 +60,11 @@ import java.util.Map;
             txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
+        } catch (ContractExecutionException e) {
+            log.error("[TransactionExecutorImpl.persist] has ContractExecutionException", e);
+            txTrack.rollback();
+            snapshot.rollback();
+            receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
         } catch (SnapshotException e) {
             log.error("[TransactionExecutorImpl.persist] has SnapshotException");
             //should retry package process
@@ -79,13 +85,6 @@ import java.util.Map;
             txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
-        } finally {
-            ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
-            if (executionResult != null && executionResult.getRevert()) {
-                receipt.setResult(false);
-                receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
-                ContractExecutionResult.clearCurrentResult();
-            }
         }
 
         log.debug("[TransactionExecutorImpl.persist] is end");

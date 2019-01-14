@@ -160,18 +160,24 @@ public class ContractExecutionContext {
 
     @Override
     public String toString() {
-        return "ContractExecutionContext [transactionHash=" + defaultNull(transactionHash) +
+        return "ContractExecutionContext [transactionHash=" + defaultNullAndPrune(transactionHash) +
                 ", contractType=" + contractType +
-                ", data=" + defaultNull(data) +
-                ", senderAddress=" + defaultNull(senderAddress) +
-                ", receiverAddress=" + defaultNull(receiverAddress) +
-                ", parentHash=" + defaultNull(parentHash) +
+                ", data=" + defaultNullAndPrune(data) +
+                ", senderAddress=" + defaultNullAndPrune(senderAddress) +
+                ", receiverAddress=" + defaultNullAndPrune(receiverAddress) +
+                ", parentHash=" + defaultNullAndPrune(parentHash) +
                 ", timestamp=" + timestamp +
                 ", number=" + number +
-                ", difficulty=" + defaultNull(difficulty) + "]";
+                ", difficulty=" + defaultNullAndPrune(difficulty) + "]";
     }
 
-    private String defaultNull(byte[] bytes) {
-        return (bytes != null ? Hex.toHexString(bytes) : null);
+    private String defaultNullAndPrune(byte[] bytes) {
+        String result = (bytes != null ? Hex.toHexString(bytes) : null);
+
+        if (result != null && result.length() > 64) {
+            result = result.substring(0, 48) + "..." + result.substring(result.length() - 16);
+        }
+
+        return result;
     }
 }

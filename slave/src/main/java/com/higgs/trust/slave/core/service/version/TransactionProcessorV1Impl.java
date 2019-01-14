@@ -38,6 +38,8 @@ import com.higgs.trust.slave.model.bo.contract.ContractCreationV2Action;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeV2Action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -225,23 +227,28 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
     private void processEvmContractResult(long blockHeight, CoreTransaction tx, Action action) {
         ContractExecutionResult executionResult = ContractExecutionResult.getCurrentResult();
         if (executionResult != null) {
+            ContractExecutionResult.clearCurrentResult();
             if (executionResult.getException() != null) {
                 log.warn(executionResult.getException().getMessage());
             }
 
             TransactionResultInfo resultInfo = new TransactionResultInfo(blockHeight, tx.getTxId().getBytes(), 1,
-                    executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult(),
-                    String.valueOf(System.currentTimeMillis()));
+                    executionResult.getBloomFilter(), executionResult.getLogInfoList(), executionResult.getResult());
             if (action instanceof ContractCreationV2Action) {
                 resultInfo.setCreatedAddress(executionResult.getReceiverAddress());
             }
-            resultInfo.setError(executionResult.getErrorMessage());
             resultInfo.setInvokeMethod(executionResult.getMethod());
-            blockchain.putResultInfo(resultInfo);
+            String errorMessage = executionResult.getErrorMessage();
             if (executionResult.getRevert()) {
-                throw new ContractExecutionException(String.format("Contract Revert at %s: %s", executionResult.getReceiverAddress(), executionResult.getErrorMessage()));
+                resultInfo.setError(StringUtils.isNotEmpty(errorMessage) ? errorMessage : "reverted");
+                blockchain.putResultInfo(resultInfo);
+                throw new ContractExecutionException(String.format("Contract revert at %s{%s}: %s",
+                        Hex.toHexString(executionResult.getReceiverAddress()), executionResult.getMethod(), executionResult.getErrorMessage()));
             } else if (executionResult.getException() != null) {
-                throw executionResult.getException();
+                resultInfo.setError(StringUtils.isNotEmpty(errorMessage) ? errorMessage : "exception");
+                blockchain.putResultInfo(resultInfo);
+                throw new ContractExecutionException(String.format("Contract exception occurred at %s{%s}: %s",
+                        Hex.toHexString(executionResult.getReceiverAddress()), executionResult.getMethod(), executionResult.getException().getMessage()));
             }
         }
     }
