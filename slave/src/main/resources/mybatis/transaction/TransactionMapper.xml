@@ -88,27 +88,27 @@
     </select>
 
     <!--batch insert-->
-    <insert id ="batchInsert" parameterType="java.util.List" >
+    <insert id="batchInsert" parameterType="java.util.List">
         insert into transaction
         (tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,sign_datas,action_datas,execute_result,error_code)
         values
-         <foreach collection ="list" item="item" index= "index" separator =",">
-         (#{item.txId},#{item.bizModel},#{item.policyId},#{item.lockTime},#{item.version},#{item.blockHeight},#{item.blockTime},#{item.sendTime},#{item.sender},#{item.signDatas},#{item.actionDatas},#{item.executeResult},#{item.errorCode})
-         </foreach>
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.txId},#{item.bizModel},#{item.policyId},#{item.lockTime},#{item.version},#{item.blockHeight},#{item.blockTime},#{item.sendTime},#{item.sender},#{item.signDatas},#{item.actionDatas},#{item.executeResult},#{item.errorCode})
+        </foreach>
     </insert>
     <!--query by block height-->
     <select id="queryByBlockHeight" resultType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
         select
         <include refid="baseColumnList"/>
         from transaction
-       where block_height=#{blockHeight}
+        where block_height=#{blockHeight}
     </select>
     <!--query by tx ids-->
     <select id="queryByTxIds" resultType="com.higgs.trust.slave.dao.po.transaction.TransactionPO">
-      select
-      <include refid="baseColumnList"/>
-      from transaction
-      where tx_id in
+        select
+        <include refid="baseColumnList"/>
+        from transaction
+        where tx_id in
         <foreach collection="txIds" index="index" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
@@ -129,9 +129,7 @@
             and sender=#{sender}
         </if>
         order by block_height desc
-        <if test="(txId == null or txId =='') and height == null">
-            limit #{start}, #{end}
-        </if>
+        limit #{start}, #{end}
     </select>
     <select id="countTxWithCondition" resultType="java.lang.Long">
         select
