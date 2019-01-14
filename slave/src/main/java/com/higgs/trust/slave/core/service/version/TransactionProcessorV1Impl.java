@@ -250,6 +250,7 @@ public class TransactionProcessorV1Impl implements TransactionProcessor, Initial
                 throw new ContractExecutionException(String.format("Contract exception occurred at %s{%s}: %s",
                         Hex.toHexString(executionResult.getReceiverAddress()), executionResult.getMethod(), executionResult.getException().getMessage()));
             }
+            blockchain.putResultInfo(resultInfo);
         }
     }
 
