@@ -46,6 +46,7 @@ public interface Repository extends com.higgs.trust.evmcontract.facade.Repositor
      * @return - true if account exist,
      * false otherwise
      */
+    @Override
     boolean isExist(byte[] addr);
 
     /**
@@ -86,6 +87,7 @@ public interface Repository extends com.higgs.trust.evmcontract.facade.Repositor
      * @param addr of the account
      * @return value of the nonce
      */
+    @Override
     BigInteger getNonce(byte[] addr);
 
     /**
@@ -140,6 +142,7 @@ public interface Repository extends com.higgs.trust.evmcontract.facade.Repositor
      * @param key  associated with this value
      * @return data in the form of a <code>DataWord</code>
      */
+    @Override
     DataWord getStorageValue(byte[] addr, DataWord key);
 
 
