@@ -51,8 +51,8 @@ public class TransactionResultInfo {
         BigInteger integer = RLP.decodeBigInteger(rlpList.get(0).getRLPData(), 0);
         blockHeight = integer.longValue();
         txHash = rlpList.get(1).getRLPData();
-        BigInteger index_integer = RLP.decodeBigInteger(rlpList.get(2).getRLPData(), 0);
-        index = index_integer.intValue();
+        BigInteger indexInteger = RLP.decodeBigInteger(rlpList.get(2).getRLPData(), 0);
+        index = indexInteger.intValue();
         bloomFilter = new Bloom(rlpList.get(3).getRLPData());
 
         List<LogInfo> logInfos = new ArrayList<>();

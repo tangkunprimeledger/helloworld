@@ -87,7 +87,7 @@ public class VM {
         put(RETURNDATASIZE, BlockChainConfig::eip211);
         put(STATICCALL, BlockChainConfig::eip214);
     }};
-    private static BigInteger _32_ = BigInteger.valueOf(32);
+    private static BigInteger MAX_SIZE_OF_DATA_WORD = BigInteger.valueOf(32);
 
     /**max mem size which couldn't be paid for ever
     *used to reduce expensive BigInt arithmetic
@@ -371,7 +371,7 @@ public class VM {
                 DataWord word1 = program.stackPop();
                 BigInteger k = word1.value();
 
-                if (k.compareTo(_32_) < 0) {
+                if (k.compareTo(MAX_SIZE_OF_DATA_WORD) < 0) {
                     DataWord word2 = program.stackPop();
                     if ( logger.isInfoEnabled()) {
                         hint = word1 + "  " + word2.value();
@@ -551,7 +551,7 @@ public class VM {
                 DataWord word1 = program.stackPop();
                 DataWord word2 = program.stackPop();
                 final DataWord result;
-                if (word1.value().compareTo(_32_) == -1) {
+                if (word1.value().compareTo(MAX_SIZE_OF_DATA_WORD) == -1) {
                     byte tmp = word2.getData()[word1.intValue()];
                     word2.and(DataWord.ZERO);
                     word2.getData()[31] = tmp;
