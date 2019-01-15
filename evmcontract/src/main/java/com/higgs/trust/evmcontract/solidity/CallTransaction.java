@@ -118,7 +118,9 @@ public class CallTransaction {
             return ByteUtil.merge(encodeSignature(), encodeArguments(args));
         }
         public byte[] encodeArguments(Object ... args) {
-            if (args.length > inputs.length) throw new RuntimeException("Too many arguments: " + args.length + " > " + inputs.length);
+            if (args.length > inputs.length) {
+                throw new RuntimeException("Too many arguments: " + args.length + " > " + inputs.length);
+            }
 
             int staticSize = 0;
             int dynamicCnt = 0;
@@ -281,9 +283,13 @@ public class CallTransaction {
          * Parses function and its arguments from transaction invocation binary data
          */
         public Invocation parseInvocation(byte[] data) {
-            if (data.length < 4) throw new RuntimeException("Invalid data length: " + data.length);
+            if (data.length < 4) {
+                throw new RuntimeException("Invalid data length: " + data.length);
+            }
             Function function = getBySignatureHash(Arrays.copyOfRange(data, 0, 4));
-            if (function == null) throw new RuntimeException("Can't find function/event by it signature");
+            if (function == null) {
+                throw new RuntimeException("Can't find function/event by it signature");
+            }
             Object[] args = function.decode(data);
             return new Invocation(this, function, args);
         }
@@ -294,7 +300,9 @@ public class CallTransaction {
         public Invocation parseEvent(LogInfo eventLog) {
             CallTransaction.Function event = getBySignatureHash(eventLog.getTopics().get(0).getData());
             int indexedArg = 1;
-            if (event == null) return null;
+            if (event == null) {
+                return null;
+            }
             List<Object> indexedArgs = new ArrayList<>();
             List<Param> unindexed = new ArrayList<>();
             for (Param input : event.inputs) {
