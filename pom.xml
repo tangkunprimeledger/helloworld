@@ -379,6 +379,7 @@
                 <groupId>com.higgs.trust</groupId>
                 <artifactId>test-framwork</artifactId>
                 <version>1.0-SNAPSHOT</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.h2database</groupId>

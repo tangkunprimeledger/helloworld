@@ -26,6 +26,12 @@ public class TrustMetrics {
     private final TransactionsMetricSet transactionsMetricSet;
     private final BlockMetricSet blockMetricSet;
 
+    private static long startTime;
+
+    static {
+        startTime = System.currentTimeMillis();
+    }
+
     private static TrustMetrics defaultTrustMetrics = new TrustMetrics();
 
     public static TrustMetrics getDefault() {
@@ -93,6 +99,7 @@ public class TrustMetrics {
     private void report() {
         Map map = new TreeMap<>();
         map.put("timestamp", System.currentTimeMillis());
+        map.put("instance.uptime", System.currentTimeMillis() - startTime);
         report(map, register.getMetrics());
         report(map, blockMetricSet.getMetrics());
         report(map, transactionsMetricSet.getMetrics());

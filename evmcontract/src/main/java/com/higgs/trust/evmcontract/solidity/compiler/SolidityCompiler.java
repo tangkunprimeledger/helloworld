@@ -215,6 +215,7 @@ public class SolidityCompiler {
             return content.toString();
         }
 
+        @Override
         public void run() {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
                 String line;

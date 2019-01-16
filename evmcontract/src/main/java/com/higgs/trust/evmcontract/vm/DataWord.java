@@ -116,13 +116,17 @@ public class DataWord implements Comparable<DataWord> {
         int leadingZeroBits = numberOfLeadingZeros(data);
         int valueBits = 8 * data.length - leadingZeroBits;
         if (valueBits <= 8) {
-            if (data[data.length - 1] == 0) return DataWord.ZERO;
-            if (data[data.length - 1] == 1) return DataWord.ONE;
+            if (data[data.length - 1] == 0) {
+                return DataWord.ZERO;
+            }
+            if (data[data.length - 1] == 1) {
+                return DataWord.ONE;
+            }
         }
 
-        if (data.length == 32)
+        if (data.length == 32) {
             return new DataWord(java.util.Arrays.copyOf(data, data.length));
-        else if (data.length <= 32) {
+        } else if (data.length <= 32) {
             byte[] bytes = new byte[32];
             System.arraycopy(data, 0, bytes, 32 - data.length, data.length);
             return new DataWord(bytes);

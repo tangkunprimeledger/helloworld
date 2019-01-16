@@ -553,9 +553,12 @@ import java.util.stream.Collectors;
             TransactionReceipt receipt = txReceiptMap.get(txId);
             if (null != receipt && !receipt.isResult()) {
                 respData.setCode(receipt.getErrorCode());
-                SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
-                if (slaveErrorEnum != null) {
-                    respData.setMsg(slaveErrorEnum.getDescription());
+                respData.setMsg(receipt.getErrorMessage());
+                if (StringUtils.isEmpty(receipt.getErrorMessage())) {
+                    SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
+                    if (slaveErrorEnum != null) {
+                        respData.setMsg(slaveErrorEnum.getDescription());
+                    }
                 }
             }
 

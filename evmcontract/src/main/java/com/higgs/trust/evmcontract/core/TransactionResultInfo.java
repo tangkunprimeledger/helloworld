@@ -29,19 +29,17 @@ public class TransactionResultInfo {
     private String error = "";
     private byte[] createdAddress = ByteUtil.EMPTY_BYTE_ARRAY;
     private String invokeMethod = "";
-    private String time;
     private byte[] rlpEncoded;
 
 
     public TransactionResultInfo(long blockHeight, byte[] txHash, int index, Bloom bloomFilter,
-                                 List<LogInfo> logInfoList, byte[] result, String time) {
+                                 List<LogInfo> logInfoList, byte[] result) {
         this.blockHeight = blockHeight;
         this.txHash = txHash;
         this.index = index;
         this.bloomFilter = bloomFilter;
         this.logInfoList = logInfoList;
         this.result = result == null ? ByteUtil.EMPTY_BYTE_ARRAY : result;
-        this.time = time;
     }
 
     public TransactionResultInfo(final byte[] rlp) {
@@ -53,8 +51,8 @@ public class TransactionResultInfo {
         BigInteger integer = RLP.decodeBigInteger(rlpList.get(0).getRLPData(), 0);
         blockHeight = integer.longValue();
         txHash = rlpList.get(1).getRLPData();
-        BigInteger index_integer = RLP.decodeBigInteger(rlpList.get(2).getRLPData(), 0);
-        index = index_integer.intValue();
+        BigInteger indexInteger = RLP.decodeBigInteger(rlpList.get(2).getRLPData(), 0);
+        index = indexInteger.intValue();
         bloomFilter = new Bloom(rlpList.get(3).getRLPData());
 
         List<LogInfo> logInfos = new ArrayList<>();
@@ -68,7 +66,6 @@ public class TransactionResultInfo {
         createdAddress = rlpList.get(6).getRLPData();
         error = decodeString(rlpList.get(7).getRLPData());
         invokeMethod = decodeString(rlpList.get(8).getRLPData());
-        time = decodeString(rlpList.get(9).getRLPData());
         rlpEncoded = rlp;
     }
 
@@ -192,7 +189,7 @@ public class TransactionResultInfo {
         map.put("success", StringUtils.isEmpty(error) ? true : false);
         map.put("error", error);
         map.put("logInfoList", logInfoList);
-        if (result != null) {
+        if (result != null && result.length > 0) {
             if(StringUtils.isNotEmpty(invokeMethod)) {
                 Abi.Function func = Abi.Function.of(invokeMethod);
                 map.put("result", func.decodeResult(result));

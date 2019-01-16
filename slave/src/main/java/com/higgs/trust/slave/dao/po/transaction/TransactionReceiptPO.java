@@ -24,6 +24,11 @@ public class TransactionReceiptPO extends BaseEntity<TransactionReceiptPO> {
     private String errorCode;
 
     /**
+     * error message for transaction execution
+     */
+    private String errorMessage;
+
+    /**
      * block height
      */
     private Long blockHeight;
