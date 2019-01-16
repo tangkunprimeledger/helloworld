@@ -21,4 +21,9 @@ import lombok.Setter;
      * error code for transaction execution
      */
     private String errorCode;
+
+    /**
+     * error message for transaction execution
+     */
+    private String errorMessage;
 }

@@ -60,11 +60,13 @@ import java.util.Map;
             txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
+            receipt.setErrorMessage(e.getMessage());
         } catch (ContractExecutionException e) {
             log.error("[TransactionExecutorImpl.persist] has ContractExecutionException", e);
             txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
+            receipt.setErrorMessage(e.getMessage());
         } catch (SnapshotException e) {
             log.error("[TransactionExecutorImpl.persist] has SnapshotException");
             //should retry package process
@@ -79,12 +81,14 @@ import java.util.Map;
             txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(e.getCode().getCode());
+            receipt.setErrorMessage(e.getMessage());
         } catch (Throwable e) {
             log.error("[TransactionExecutorImpl.persist] has error", e);
             //snapshot transactions should be rollback
             txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
+            receipt.setErrorMessage(e.getMessage());
         }
 
         log.debug("[TransactionExecutorImpl.persist] is end");

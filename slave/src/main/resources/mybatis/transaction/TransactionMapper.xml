@@ -21,7 +21,7 @@
 
     <!-- transaction table all fields -->
     <sql id="baseColumnList">
-        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,execute_result,error_code,sign_datas,action_datas,tx_type
+        tx_id,biz_model,policy_id,lock_time,version,block_height,block_time,send_time,sender,execute_result,error_code,error_message,sign_datas,action_datas,tx_type
     </sql>
     <!-- query  conditions -->
     <sql id="baseWhereClause">

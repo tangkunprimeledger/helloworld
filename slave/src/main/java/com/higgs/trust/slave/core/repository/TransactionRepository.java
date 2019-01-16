@@ -73,6 +73,7 @@ import java.util.*;
             receipt.setTxId(transactionPO.getTxId());
             receipt.setResult(StringUtils.equals(transactionPO.getExecuteResult(), "1") ? true : false);
             receipt.setErrorCode(transactionPO.getErrorCode());
+            receipt.setErrorMessage(transactionPO.getErrorMessage());
             receiptMap.put(transactionPO.getTxId(), receipt);
         }
         objs[1] = receiptMap;
@@ -100,6 +101,7 @@ import java.util.*;
             receipt.setTxId(po.getTxId());
             receipt.setResult(po.isResult());
             receipt.setErrorCode(po.getErrorCode());
+            receipt.setErrorMessage(po.getErrorMessage());
             receiptMap.put(po.getTxId(), receipt);
         }
         return receiptMap;
@@ -190,6 +192,7 @@ import java.util.*;
                 TransactionReceiptPO po = new TransactionReceiptPO();
                 po.setBlockHeight(blockHeight);
                 po.setErrorCode(receipt.getErrorCode());
+                po.setErrorMessage(receipt.getErrorMessage());
                 po.setResult(receipt.isResult());
                 po.setTxId(receipt.getTxId());
                 receiptPOS.add(po);
@@ -216,6 +219,7 @@ import java.util.*;
             if (receipt != null) {
                 po.setExecuteResult(receipt.isResult() ? "1" : "0");
                 po.setErrorCode(receipt.getErrorCode());
+                po.setErrorMessage(receipt.getErrorMessage());
             }
             txPOs.add(po);
         }
