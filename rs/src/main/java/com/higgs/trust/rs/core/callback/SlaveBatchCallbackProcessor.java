@@ -216,7 +216,10 @@ import java.util.Map;
                 SlaveErrorEnum slaveErrorEnum = SlaveErrorEnum.getByCode(receipt.getErrorCode());
                 if (slaveErrorEnum != null) {
                     vo.setErrorCode(receipt.getErrorCode());
-                    vo.setErrorMsg(slaveErrorEnum.getDescription());
+                    vo.setErrorMsg(receipt.getErrorMessage());
+                    if (org.apache.commons.lang3.StringUtils.isEmpty(receipt.getErrorMessage())) {
+                        vo.setErrorMsg(slaveErrorEnum.getDescription());
+                    }
                 }
                 vo.setExecuteResult(receipt.isResult() ? CoreTxResultEnum.SUCCESS : CoreTxResultEnum.FAIL);
             }
