@@ -96,7 +96,7 @@ public class ExecutorTest {
     /**
      * 部署成功。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_ContractCreation_001() {
         ContractTypeEnum contractType = ContractTypeEnum.CONTRACT_CREATION;
         byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
@@ -172,7 +172,7 @@ public class ExecutorTest {
     /**
      * 部署失败：value不为0。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_ContractCreation_002() {
         ContractTypeEnum contractType = ContractTypeEnum.CONTRACT_CREATION;
         byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
@@ -231,7 +231,7 @@ public class ExecutorTest {
     /**
      * 部署成功: 字节码乱写。这是可以接受的，因为Solidity应用的逻辑是VM控制不了的。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_ContractCreation_003() {
         ContractTypeEnum contractType = ContractTypeEnum.CONTRACT_CREATION;
         byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
@@ -337,7 +337,7 @@ public class ExecutorTest {
     /**
      * 部署成功：含非默认构造方法，传参18。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_ContractCreation_005() {
         ContractTypeEnum contractType = ContractTypeEnum.CONTRACT_CREATION;
         byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
@@ -420,7 +420,7 @@ public class ExecutorTest {
     /**
      * 合约调用：调用get方法，返回字段18。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_CustomerContractInvocation_006() {
         testExecute_ContractCreation_005();
 
@@ -480,7 +480,7 @@ public class ExecutorTest {
     /**
      * 预编译合约调用。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_PrecompiledContractInvocation_007() {
         ContractTypeEnum contractType = ContractTypeEnum.PRECOMPILED_CONTRACT_INVOCATION;
         byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
@@ -527,7 +527,7 @@ public class ExecutorTest {
     /**
      * 转账。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_AssetTransfer_008() {
         ContractTypeEnum contractType = ContractTypeEnum.ASSET_TRANSFER;
         byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
@@ -617,7 +617,7 @@ public class ExecutorTest {
     /**
      * 事件日志。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_Logs_009() throws IOException {
         ContractTypeEnum contractType = ContractTypeEnum.CONTRACT_CREATION;
         byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
@@ -772,7 +772,7 @@ public class ExecutorTest {
     /**
      * 合约内调用合约。
      */
-    @Test(timeout = 1000L)
+    @Test//(timeout = 1000L)
     public void testExecute_InvokeContract_010() throws IOException {
         deployTargetContract();
         deployCallerContract();
@@ -983,5 +983,103 @@ public class ExecutorTest {
 
         List<?> parameters = event.decode(logInfo.getData(), topics);
         assertEquals(3, parameters.size());
+    }
+
+
+    //    pragma solidity ^0.4.24;
+    //
+    //    contract DataStorage {
+    //        uint256 data;
+    //
+    //        constructor(uint256 x) public {
+    //            data = x;
+    //        }
+    //
+    //        function set(uint256 x) public {
+    //            data = x;
+    //        }
+    //
+    //        function get() public view returns (uint256) {
+    //            return data;
+    //        }
+    //    }
+    @Test
+    public void testCreateAndInvoke() {
+        create();
+        invokeSet();
+        invokeGet();
+    }
+
+    private void create() {
+        ContractTypeEnum contractType = ContractTypeEnum.CONTRACT_CREATION;
+        byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
+        byte[] nonce = new DataWord(0).getData();
+        byte[] senderAddress = Hex.decode("05792f204d45f061a5b68847534b428a127ae583");
+        byte[] receiverAddress = Hex.decode("00a615668486da40f31fd050854fb137b317e056");
+        byte[] value = new DataWord(0).getData();
+        byte[] data = Hex.decode("608060405234801561001057600080fd5b506040516020806100f2833981016040525160005560bf806" +
+                "100336000396000f30060806040526004361060485763ffffffff7c010000000000000000000000000000000000000000000" +
+                "000000000000060003504166360fe47b18114604d5780636d4ce63c146064575b600080fd5b348015605857600080fd5b506" +
+                "0626004356088565b005b348015606f57600080fd5b506076608d565b60408051918252519081900360200190f35b6000555" +
+                "65b600054905600a165627a7a7230582055fd4d9de0b005454a3fbfa36b6f5c866c639eea1e1d5de3668a929c1545c8c8002" +
+                "9" + "000000000000000000000000000000000000000000000000000000000000001d");
+        byte[] parentHash = Hex.decode("098765467d45f061a5b68847534b428a1277652677b6467f2d1f3381ae683910");
+        byte[] minerAddress = Hex.decode("5f061a5b68847534b428a1277652677b6467f2d1");
+        long timestamp = 3785872384L;
+        long number = 12;
+
+        blockRepository.createAccount(senderAddress);
+        blockRepository.addBalance(senderAddress, ContractUtil.toBigInteger(value));
+        blockRepository.commit();
+        assertEquals(Hex.toHexString(receiverAddress), Hex.toHexString(HashUtil.calcNewAddr(senderAddress, nonce)));
+
+        ContractExecutionContext context = buildContractExecutionContext(contractType, transactionHash,
+                nonce, senderAddress, receiverAddress, value, data, parentHash, minerAddress, timestamp, number);
+        Executor<ContractExecutionResult> executor = factory.createExecutor(context);
+        executor.execute();
+    }
+
+    private void invokeSet() {
+        ContractTypeEnum contractType = ContractTypeEnum.CUSTOMER_CONTRACT_INVOCATION;
+        byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
+        byte[] nonce = new DataWord(1).getData();
+        byte[] senderAddress = Hex.decode("05792f204d45f061a5b68847534b428a127ae583");
+        byte[] receiverAddress = Hex.decode("00a615668486da40f31fd050854fb137b317e056");
+        byte[] value = new DataWord(0).getData();
+        byte[] data = Hex.decode("60fe47b1" + "000000000000000000000000000000000000000000000000000000000000002e");
+        byte[] parentHash = Hex.decode("098765467d45f061a5b68847534b428a1277652677b6467f2d1f3381ae683910");
+        byte[] minerAddress = Hex.decode("5f061a5b68847534b428a1277652677b6467f2d1");
+        long timestamp = 3785872384L;
+        long number = 12;
+
+        blockRepository.addBalance(senderAddress, ContractUtil.toBigInteger(value));
+        blockRepository.commit();
+
+        ContractExecutionContext context = buildContractExecutionContext(contractType, transactionHash,
+                nonce, senderAddress, receiverAddress, value, data, parentHash, minerAddress, timestamp, number);
+        Executor<ContractExecutionResult> executor = factory.createExecutor(context);
+        executor.execute();
+    }
+
+    private void invokeGet() {
+        ContractTypeEnum contractType = ContractTypeEnum.CUSTOMER_CONTRACT_INVOCATION;
+        byte[] transactionHash = Hex.decode("03e22f204d45f061a5b68847534b428a1277652677b6467f2d1f3381bbc4115c");
+        byte[] nonce = new DataWord(2).getData();
+        byte[] senderAddress = Hex.decode("05792f204d45f061a5b68847534b428a127ae583");
+        byte[] receiverAddress = Hex.decode("00a615668486da40f31fd050854fb137b317e056");
+        byte[] value = new DataWord(0).getData();
+        byte[] data = Hex.decode("6d4ce63c");
+        byte[] parentHash = Hex.decode("098765467d45f061a5b68847534b428a1277652677b6467f2d1f3381ae683910");
+        byte[] minerAddress = Hex.decode("5f061a5b68847534b428a1277652677b6467f2d1");
+        long timestamp = 3785872384L;
+        long number = 12;
+
+        blockRepository.addBalance(senderAddress, ContractUtil.toBigInteger(value));
+        blockRepository.commit();
+
+        ContractExecutionContext context = buildContractExecutionContext(contractType, transactionHash,
+                nonce, senderAddress, receiverAddress, value, data, parentHash, minerAddress, timestamp, number);
+        Executor<ContractExecutionResult> executor = factory.createExecutor(context);
+        executor.execute();
     }
 }
