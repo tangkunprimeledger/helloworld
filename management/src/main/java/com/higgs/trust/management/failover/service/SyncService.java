@@ -75,16 +75,12 @@ import java.util.concurrent.Executors;
         log.info("auto sync starting ...");
         try {
             Long currentHeight = blockRepository.getMaxHeight();
-            Long failoverHeight = null;
-            if (receivedFistHeight != null) {
-                failoverHeight = receivedFistHeight - 1;
-            } else {
-                Long clusterHeight = blockSyncService.getSafeHeight(properties.getTryTimes());
-                if (clusterHeight == null) {
-                    throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
-                }
-                failoverHeight = clusterHeight;
+            Long clusterHeight = blockSyncService.getSafeHeight(properties.getTryTimes());
+            if (clusterHeight == null) {
+                throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
             }
+            Long failoverHeight = clusterHeight;
+            receivedFistHeight = null;
             while (currentHeight.compareTo(failoverHeight) < 0) {
                 sync(currentHeight + 1, properties.getHeaderStep());
                 currentHeight = blockRepository.getMaxHeight();
