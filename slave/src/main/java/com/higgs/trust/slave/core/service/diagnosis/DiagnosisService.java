@@ -22,6 +22,14 @@ public class DiagnosisService {
 
     private static final Pattern CONTRACT_ADDRESS = Pattern.compile("^[0-9a-fA-F]{40}$");
 
+    /**
+     * Query contract code with the specified address and the block height.
+     *
+     * @param address contract address, a hex string with 40 characters
+     * @param height  height of block in which contract exists, if
+     *                null, query is on the latest block
+     * @return the contract code
+     */
     public ContractCodeVO queryContractCode(String address, Long height) {
         if (!CONTRACT_ADDRESS.matcher(address).matches()) {
             throw new IllegalArgumentException("Given contract address must be a hex string, 40 characters in length");

@@ -19,6 +19,14 @@ public class DiagnosisController {
     @Autowired
     private DiagnosisService diagnosisService;
 
+    /**
+     * Query contract code with the specified address and the block height.
+     *
+     * @param address contract address, a hex string with 40 characters
+     * @param height  height of block in which contract exists, if
+     *                not given, query is on the latest block
+     * @return the contract code
+     */
     @GetMapping(path = "/contract/code")
     public RespData<ContractCodeVO> queryContractCode(
             @RequestParam("address") String address, @RequestParam(name = "height", required = false) Long height) {

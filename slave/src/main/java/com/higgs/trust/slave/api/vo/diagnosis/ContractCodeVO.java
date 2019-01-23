@@ -12,11 +12,11 @@ import lombok.Setter;
 @Setter
 public class ContractCodeVO extends BaseBO {
     /**
-     * Contract address, hex string with 40 characters.
+     * Contract address, a hex string with 40 characters.
      */
     private String address;
     /**
-     * Block height in which contract exists.
+     * Height of block in which contract exists.
      */
     private Long height;
     /**
