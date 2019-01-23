@@ -138,7 +138,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
 
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
-        log.info("change master verify");
+        log.debug("change master verify");
         ClusterView currentView = viewManager.getCurrentView();
         List<String> nodeNames = currentView.getNodeNames();
         Map<String, ChangeMasterVerifyResponse> heightMap = new HashMap<>();
