@@ -373,20 +373,22 @@ public class ECKey implements Serializable {
      * @deprecated per-point compression property will be removed in Bouncy Castle
      */
     public ECKey decompress() {
-        if (!pub.isCompressed())
+        if (!pub.isCompressed()) {
             return this;
-        else
+        } else {
             return new ECKey(this.provider, this.privKey, decompressPoint(pub));
+        }
     }
 
     /**
      * @deprecated per-point compression property will be removed in Bouncy Castle
      */
     public ECKey compress() {
-        if (pub.isCompressed())
+        if (pub.isCompressed()) {
             return this;
-        else
+        } else {
             return new ECKey(this.provider, this.privKey, compressPoint(pub));
+        }
     }
 
     /**
@@ -613,13 +615,23 @@ public class ECKey implements Serializable {
 
         public static boolean validateComponents(BigInteger r, BigInteger s, byte v) {
 
-            if (v != 27 && v != 28) return false;
+            if (v != 27 && v != 28) {
+                return false;
+            }
 
-            if (isLessThan(r, BigInteger.ONE)) return false;
-            if (isLessThan(s, BigInteger.ONE)) return false;
+            if (isLessThan(r, BigInteger.ONE)) {
+                return false;
+            }
+            if (isLessThan(s, BigInteger.ONE)) {
+                return false;
+            }
 
-            if (!isLessThan(r, Constants.getSECP256K1N())) return false;
-            if (!isLessThan(s, Constants.getSECP256K1N())) return false;
+            if (!isLessThan(r, Constants.getSECP256K1N())) {
+                return false;
+            }
+            if (!isLessThan(s, Constants.getSECP256K1N())) {
+                return false;
+            }
 
             return true;
         }
@@ -629,8 +641,9 @@ public class ECKey implements Serializable {
             try {
                 decoder = new ASN1InputStream(bytes);
                 DLSequence seq = (DLSequence) decoder.readObject();
-                if (seq == null)
+                if (seq == null) {
                     throw new RuntimeException("Reached past end of ASN.1 stream.");
+                }
                 ASN1Integer r, s;
                 try {
                     r = (ASN1Integer) seq.getObjectAt(0);
@@ -644,11 +657,12 @@ public class ECKey implements Serializable {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } finally {
-                if (decoder != null)
+                if (decoder != null) {
                     try {
                         decoder.close();
                     } catch (IOException x) {
                     }
+                }
             }
         }
 
@@ -703,13 +717,21 @@ public class ECKey implements Serializable {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             ECDSASignature signature = (ECDSASignature) o;
 
-            if (!r.equals(signature.r)) return false;
-            if (!s.equals(signature.s)) return false;
+            if (!r.equals(signature.r)) {
+                return false;
+            }
+            if (!s.equals(signature.s)) {
+                return false;
+            }
 
             return true;
         }
@@ -734,8 +756,9 @@ public class ECKey implements Serializable {
             throw new IllegalArgumentException("Expected 32 byte input to ECDSA signature, not " + input.length);
         }
         // No decryption of private key required.
-        if (privKey == null)
+        if (privKey == null) {
             throw new MissingPrivateKeyException();
+        }
         if (privKey instanceof BCECPrivateKey) {
             ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
             ECPrivateKeyParameters privKeyParams = new ECPrivateKeyParameters(((BCECPrivateKey) privKey).getD(), CURVE);
@@ -775,8 +798,9 @@ public class ECKey implements Serializable {
                 break;
             }
         }
-        if (recId == -1)
+        if (recId == -1) {
             throw new RuntimeException("Could not construct a recoverable key. This should never happen.");
+        }
         sig.v = (byte) (recId + 27);
         return sig;
     }
@@ -802,8 +826,9 @@ public class ECKey implements Serializable {
             throw new SignatureException("Could not decode base64", e);
         }
         // Parse the signature bytes into r/s and the selector value.
-        if (signatureEncoded.length < 65)
+        if (signatureEncoded.length < 65) {
             throw new SignatureException("Signature truncated, expected 65 bytes and got " + signatureEncoded.length);
+        }
 
         return signatureToKeyBytes(
                 messageHash,
@@ -818,15 +843,17 @@ public class ECKey implements Serializable {
         int header = sig.v;
         // The header byte: 0x1B = first key with even y, 0x1C = first key with odd y,
         //                  0x1D = second key with even y, 0x1E = second key with odd y
-        if (header < 27 || header > 34)
+        if (header < 27 || header > 34) {
             throw new SignatureException("Header byte out of range: " + header);
+        }
         if (header >= 31) {
             header -= 4;
         }
         int recId = header - 27;
         byte[] key = ECKey.recoverPubBytesFromSignature(recId, sig, messageHash);
-        if (key == null)
+        if (key == null) {
             throw new SignatureException("Could not recover public key from signature");
+        }
         return key;
     }
 
@@ -929,8 +956,9 @@ public class ECKey implements Serializable {
         while (i < cipher.length) {
             ctrEngine.processBlock(cipher, i, out, i);
             i += engine.getBlockSize();
-            if (cipher.length - i < engine.getBlockSize())
+            if (cipher.length - i < engine.getBlockSize()) {
                 break;
+            }
         }
 
         // process left bytes
@@ -1026,14 +1054,17 @@ public class ECKey implements Serializable {
     public static boolean isPubKeyCanonical(byte[] pubkey) {
         if (pubkey[0] == 0x04) {
             // Uncompressed pubkey
-            if (pubkey.length != 65)
+            if (pubkey.length != 65) {
                 return false;
+            }
         } else if (pubkey[0] == 0x02 || pubkey[0] == 0x03) {
             // Compressed pubkey
-            if (pubkey.length != 33)
+            if (pubkey.length != 33) {
                 return false;
-        } else
+            }
+        } else {
             return false;
+        }
         return true;
     }
 
@@ -1083,8 +1114,9 @@ public class ECKey implements Serializable {
         // So it's encoded in the recId.
         ECPoint R = decompressKey(x, (recId & 1) == 1);
         //   1.4. If nR != point at infinity, then do another iteration of Step 1 (callers responsibility).
-        if (!R.multiply(n).isInfinity())
+        if (!R.multiply(n).isInfinity()) {
             return null;
+        }
         //   1.5. Compute e from M using Steps 2 and 3 of ECDSA signature verification.
         BigInteger e = new BigInteger(1, messageHash);
         //   1.6. For k from 1 to 2 do the following.   (loop is outside this function via iterating recId)
@@ -1104,8 +1136,9 @@ public class ECKey implements Serializable {
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
         ECPoint.Fp q = (ECPoint.Fp) ECAlgorithms.sumOfTwoMultiplies(CURVE.getG(), eInvrInv, R, srInv);
         // result sanity check: point must not be at infinity
-        if (q.isInfinity())
+        if (q.isInfinity()) {
             return null;
+        }
         return q.getEncoded(/* compressed */ false);
     }
 
@@ -1173,13 +1206,21 @@ public class ECKey implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || !(o instanceof ECKey)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || !(o instanceof ECKey)) {
+            return false;
+        }
 
         ECKey ecKey = (ECKey) o;
 
-        if (privKey != null && !privKey.equals(ecKey.privKey)) return false;
-        if (pub != null && !pub.equals(ecKey.pub)) return false;
+        if (privKey != null && !privKey.equals(ecKey.privKey)) {
+            return false;
+        }
+        if (pub != null && !pub.equals(ecKey.pub)) {
+            return false;
+        }
 
         return true;
     }
@@ -1195,7 +1236,9 @@ public class ECKey implements Serializable {
     }
 
     private static void check(boolean test, String message) {
-        if (!test) throw new IllegalArgumentException(message);
+        if (!test) {
+            throw new IllegalArgumentException(message);
+        }
     }
 
 }
