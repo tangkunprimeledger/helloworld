@@ -547,8 +547,9 @@ public class RLP {
                         RLPList newLevelList = new RLPList();
                         newLevelList.setRLPData(rlpData);
 
-                        if (length > 0)
+                        if (length > 0) {
                             fullTraverse(msgData, level + 1, pos + 1, pos + length + 1, newLevelList, depth);
+                        }
                         rlpList.add(newLevelList);
                     } else {
                         rlpList.add(new RLPItem(rlpData));
