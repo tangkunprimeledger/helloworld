@@ -45,7 +45,9 @@ public class LogFilter {
     }
 
     private void initBlooms() {
-        if (filterBlooms != null) return;
+        if (filterBlooms != null) {
+            return;
+        }
 
         List<byte[][]> addrAndTopics = new ArrayList<>(topics);
         addrAndTopics.add(contractAddresses);
@@ -74,7 +76,9 @@ public class LogFilter {
                     break;
                 }
             }
-            if (!orMatches) return false;
+            if (!orMatches) {
+                return false;
+            }
         }
         return true;
     }
@@ -82,17 +86,23 @@ public class LogFilter {
     public boolean matchesContractAddress(byte[] toAddr) {
         initBlooms();
         for (byte[] address : contractAddresses) {
-            if (Arrays.equals(address, toAddr)) return true;
+            if (Arrays.equals(address, toAddr)) {
+                return true;
+            }
         }
         return contractAddresses.length == 0;
     }
 
     public boolean matchesExactly(LogInfo logInfo) {
         initBlooms();
-        if (!matchesContractAddress(logInfo.getAddress())) return false;
+        if (!matchesContractAddress(logInfo.getAddress())) {
+            return false;
+        }
         List<DataWord> logTopics = logInfo.getTopics();
         for (int i = 0; i < this.topics.size(); i++) {
-            if (i >= logTopics.size()) return false;
+            if (i >= logTopics.size()) {
+                return false;
+            }
             byte[][] orTopics = topics.get(i);
             if (orTopics != null && orTopics.length > 0) {
                 boolean orMatches = false;
@@ -103,7 +113,9 @@ public class LogFilter {
                         break;
                     }
                 }
-                if (!orMatches) return false;
+                if (!orMatches) {
+                    return false;
+                }
             }
         }
         return true;
