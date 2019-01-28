@@ -93,8 +93,9 @@ public class ExecutorPipeline<In, Out> {
                         while (true) {
                             nextOutTaskNumber++;
                             Out out = orderMap.remove(nextOutTaskNumber);
-                            if (out == null) break;
-                            {
+                            if (out == null) {
+                                break;
+                            }else {
                                 next.push(out);
                             }
                         }
