@@ -155,21 +155,32 @@ public class Transaction {
 
 
     private Integer extractChainIdFromRawSignature(BigInteger bv, byte[] r, byte[] s) {
-        if (r == null && s == null) return bv.intValue();  // EIP 86
-        if (bv.bitLength() > 31)
+        if (r == null && s == null) {
+            return bv.intValue();  // EIP 86
+        }
+        if (bv.bitLength() > 31) {
             return Integer.MAX_VALUE; // chainId is limited to 31 bits, longer are not valid for now
+        }
         long v = bv.longValue();
-        if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) return null;
+        if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) {
+            return null;
+        }
         return (int) ((v - CHAIN_ID_INC) / 2);
     }
 
     private byte getRealV(BigInteger bv) {
-        if (bv.bitLength() > 31) return 0; // chainId is limited to 31 bits, longer are not valid for now
+        if (bv.bitLength() > 31) {
+            return 0; // chainId is limited to 31 bits, longer are not valid for now
+        }
         long v = bv.longValue();
-        if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) return (byte) v;
+        if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) {
+            return (byte) v;
+        }
         byte realV = LOWER_REAL_V;
         int inc = 0;
-        if ((int) v % 2 == 0) inc = 1;
+        if ((int) v % 2 == 0) {
+            inc = 1;
+        }
         return (byte) (realV + inc);
     }
 
@@ -180,16 +191,21 @@ public class Transaction {
     }
 
     public synchronized void rlpParse() {
-        if (parsed) return;
+        if (parsed) {
+            return;
+        }
         try {
             RLPList decodedTxList = RLP.decode2(rlpEncoded);
             RLPList transaction = (RLPList) decodedTxList.get(0);
 
             // Basic verification
-            if (transaction.size() > 9) throw new RuntimeException("Too many RLP elements");
+            if (transaction.size() > 9) {
+                throw new RuntimeException("Too many RLP elements");
+            }
             for (RLPElement rlpElement : transaction) {
-                if (!(rlpElement instanceof RLPItem))
+                if (!(rlpElement instanceof RLPItem)) {
                     throw new RuntimeException("Transaction RLP elements shouldn't be lists");
+                }
             }
 
             this.nonce = transaction.get(0).getRLPData();
@@ -219,22 +235,31 @@ public class Transaction {
     }
 
     private void validate() {
-        if (getNonce().length > HASH_LENGTH) throw new RuntimeException("Nonce is not valid");
-        if (receiveAddress != null && receiveAddress.length != 0 && receiveAddress.length != ADDRESS_LENGTH)
+        if (getNonce().length > HASH_LENGTH) {
+            throw new RuntimeException("Nonce is not valid");
+        }
+        if (receiveAddress != null && receiveAddress.length != 0 && receiveAddress.length != ADDRESS_LENGTH) {
             throw new RuntimeException("Receive address is not valid");
-        if (gasLimit.length > HASH_LENGTH)
+        }
+        if (gasLimit.length > HASH_LENGTH) {
             throw new RuntimeException("Gas Limit is not valid");
-        if (gasPrice != null && gasPrice.length > HASH_LENGTH)
+        }
+        if (gasPrice != null && gasPrice.length > HASH_LENGTH) {
             throw new RuntimeException("Gas Price is not valid");
-        if (value != null && value.length > HASH_LENGTH)
+        }
+        if (value != null && value.length > HASH_LENGTH) {
             throw new RuntimeException("Value is not valid");
+        }
         if (getSignature() != null) {
-            if (BigIntegers.asUnsignedByteArray(signature.r).length > HASH_LENGTH)
+            if (BigIntegers.asUnsignedByteArray(signature.r).length > HASH_LENGTH) {
                 throw new RuntimeException("Signature R is not valid");
-            if (BigIntegers.asUnsignedByteArray(signature.s).length > HASH_LENGTH)
+            }
+            if (BigIntegers.asUnsignedByteArray(signature.s).length > HASH_LENGTH) {
                 throw new RuntimeException("Signature S is not valid");
-            if (getSender() != null && getSender().length != ADDRESS_LENGTH)
+            }
+            if (getSender() != null && getSender().length != ADDRESS_LENGTH) {
                 throw new RuntimeException("Sender is not valid");
+            }
         }
     }
 
@@ -247,7 +272,9 @@ public class Transaction {
     }
 
     public byte[] getHash() {
-        if (!isEmpty(hash)) return hash;
+        if (!isEmpty(hash)) {
+            return hash;
+        }
         rlpParse();
         getEncoded();
         return hash;
@@ -255,7 +282,9 @@ public class Transaction {
 
     public byte[] getRawHash() {
         rlpParse();
-        if (rawHash != null) return rawHash;
+        if (rawHash != null) {
+            return rawHash;
+        }
         byte[] plainMsg = this.getEncodedRaw();
         return rawHash = HashUtil.sha3(plainMsg);
     }
@@ -318,19 +347,27 @@ public class Transaction {
     }
 
     public long nonZeroDataBytes() {
-        if (data == null) return 0;
+        if (data == null) {
+            return 0;
+        }
         int counter = 0;
         for (final byte aData : data) {
-            if (aData != 0) ++counter;
+            if (aData != 0) {
+                ++counter;
+            }
         }
         return counter;
     }
 
     public long zeroDataBytes() {
-        if (data == null) return 0;
+        if (data == null) {
+            return 0;
+        }
         int counter = 0;
         for (final byte aData : data) {
-            if (aData == 0) ++counter;
+            if (aData == 0) {
+                ++counter;
+            }
         }
         return counter;
     }
@@ -352,7 +389,9 @@ public class Transaction {
     }
 
     public byte[] getContractAddress() {
-        if (!isContractCreation()) return null;
+        if (!isContractCreation()) {
+            return null;
+        }
         return HashUtil.calcNewAddr(this.getSender(), this.getNonce());
     }
 
@@ -468,7 +507,9 @@ public class Transaction {
 
     public byte[] getEncoded() {
 
-        if (rlpEncoded != null) return rlpEncoded;
+        if (rlpEncoded != null) {
+            return rlpEncoded;
+        }
 
         // parse null as 0 for nonce
         byte[] nonce = null;
@@ -527,7 +568,9 @@ public class Transaction {
     @Override
     public boolean equals(Object obj) {
 
-        if (!(obj instanceof Transaction)) return false;
+        if (!(obj instanceof Transaction)) {
+            return false;
+        }
         Transaction tx = (Transaction) obj;
 
         return tx.hashCode() == this.hashCode();
