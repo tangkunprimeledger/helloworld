@@ -1494,7 +1494,7 @@ public class VM {
                     gasBefore, gasCost, memWords)
      */
     private void dumpLine(OpCode op, long gasBefore, long gasCost, long memWords, Program program) {
-        if (config.dumpStyle().equals("standard+")) {
+        if ("standard+".equals(config.dumpStyle())) {
             switch (op) {
                 case STOP:
                 case RETURN:
@@ -1519,7 +1519,7 @@ public class VM {
             String gasString = toHexString(program.getGas().getNoLeadZeroesData());
 
             DUMP_LOGGER.trace("{} {} {} {}", addressString, pcString, opString, gasString);
-        } else if (config.dumpStyle().equals("pretty")) {
+        } else if ("pretty".equals(config.dumpStyle())) {
             DUMP_LOGGER.trace("    STACK");
             for (DataWord item : program.getStack()) {
                 DUMP_LOGGER.trace("{}", item);
