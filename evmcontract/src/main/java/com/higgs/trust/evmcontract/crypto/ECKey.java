@@ -114,7 +114,7 @@ public class ECKey implements Serializable {
 
     public static final ECKey DUMMY;
 
-    private static final SecureRandom secureRandom;
+    private static final SecureRandom SECURE_RANDOM;
     private static final long serialVersionUID = -728224901792295832L;
 
     static {
@@ -123,7 +123,7 @@ public class ECKey implements Serializable {
         CURVE = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH());
         CURVE_SPEC = new ECParameterSpec(params.getCurve(), params.getG(), params.getN(), params.getH());
         HALF_CURVE_ORDER = params.getN().shiftRight(1);
-        secureRandom = new SecureRandom();
+        SECURE_RANDOM = new SecureRandom();
         DUMMY = fromPrivate(BigInteger.ONE);
     }
 
@@ -149,7 +149,7 @@ public class ECKey implements Serializable {
      * BouncyCastle will be used as the Java Security Provider
      */
     public ECKey() {
-        this(secureRandom);
+        this(SECURE_RANDOM);
     }
 
     /* Convert a Java JCE ECPublicKey into a BouncyCastle ECPoint

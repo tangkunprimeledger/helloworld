@@ -26,7 +26,7 @@ public final class ECKeyFactory {
 
     public static final String ALGORITHM = "EC";
 
-    private static final String algorithmAssertionMsg =
+    private static final String ALGORITHM_ASSERTION_MSG =
             "Assumed the JRE supports EC key factories";
 
     private ECKeyFactory() {
@@ -39,7 +39,7 @@ public final class ECKeyFactory {
             try {
                 INSTANCE = KeyFactory.getInstance(ALGORITHM);
             } catch (NoSuchAlgorithmException ex) {
-                throw new AssertionError(algorithmAssertionMsg, ex);
+                throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
             }
         }
     }
@@ -52,7 +52,7 @@ public final class ECKeyFactory {
         try {
             return KeyFactory.getInstance(ALGORITHM, provider);
         } catch (NoSuchAlgorithmException ex) {
-            throw new AssertionError(algorithmAssertionMsg, ex);
+            throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
         }
     }
 
@@ -60,7 +60,7 @@ public final class ECKeyFactory {
         try {
             return KeyFactory.getInstance(ALGORITHM, provider);
         } catch (NoSuchAlgorithmException ex) {
-            throw new AssertionError(algorithmAssertionMsg, ex);
+            throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
         }
     }
 }

@@ -25,10 +25,10 @@ public final class ECKeyPairGenerator {
     public static final String ALGORITHM = "EC";
     public static final String CURVE_NAME = "secp256k1";
 
-    private static final String algorithmAssertionMsg =
+    private static final String ALGORITHM_ASSERTION_MSG =
             "Assumed JRE supports EC key pair generation";
 
-    private static final String keySpecAssertionMsg =
+    private static final String KEY_SPEC_ASSERTION_MSG =
             "Assumed correct key spec statically";
 
     private static final ECGenParameterSpec SECP256K1_CURVE
@@ -45,9 +45,9 @@ public final class ECKeyPairGenerator {
                 INSTANCE = KeyPairGenerator.getInstance(ALGORITHM);
                 INSTANCE.initialize(SECP256K1_CURVE);
             } catch (NoSuchAlgorithmException ex) {
-                throw new AssertionError(algorithmAssertionMsg, ex);
+                throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
             } catch (InvalidAlgorithmParameterException ex) {
-                throw new AssertionError(keySpecAssertionMsg, ex);
+                throw new AssertionError(KEY_SPEC_ASSERTION_MSG, ex);
             }
         }
     }
@@ -62,9 +62,9 @@ public final class ECKeyPairGenerator {
             gen.initialize(SECP256K1_CURVE, random);
             return gen;
         } catch (NoSuchAlgorithmException ex) {
-            throw new AssertionError(algorithmAssertionMsg, ex);
+            throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
         } catch (InvalidAlgorithmParameterException ex) {
-            throw new AssertionError(keySpecAssertionMsg, ex);
+            throw new AssertionError(KEY_SPEC_ASSERTION_MSG, ex);
         }
     }
 
@@ -74,9 +74,9 @@ public final class ECKeyPairGenerator {
             gen.initialize(SECP256K1_CURVE, random);
             return gen;
         } catch (NoSuchAlgorithmException ex) {
-            throw new AssertionError(algorithmAssertionMsg, ex);
+            throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
         } catch (InvalidAlgorithmParameterException ex) {
-            throw new AssertionError(keySpecAssertionMsg, ex);
+            throw new AssertionError(KEY_SPEC_ASSERTION_MSG, ex);
         }
     }
 }

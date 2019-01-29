@@ -200,6 +200,8 @@ public class Abi extends ArrayList<Abi.Entry> {
                 case event:
                     result = new Event(anonymous, name, inputs, outputs);
                     break;
+                default:
+                    break;
             }
 
             return result;

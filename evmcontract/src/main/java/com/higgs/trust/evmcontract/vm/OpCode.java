@@ -624,13 +624,13 @@ public enum OpCode {
     private final int ret;
     private final EnumSet<CallFlags> callFlags;
 
-    private static final OpCode[] intToTypeMap = new OpCode[256];
-    private static final Map<String, Byte> stringToByteMap = new HashMap<>();
+    private static final OpCode[] INT_TO_TYPE_MAP = new OpCode[256];
+    private static final Map<String, Byte> STRING_TO_BYTE_MAP = new HashMap<>();
 
     static {
         for (OpCode type : OpCode.values()) {
-            intToTypeMap[type.opcode & 0xFF] = type;
-            stringToByteMap.put(type.name(), type.opcode);
+            INT_TO_TYPE_MAP[type.opcode & 0xFF] = type;
+            STRING_TO_BYTE_MAP.put(type.name(), type.opcode);
         }
     }
 
@@ -668,15 +668,15 @@ public enum OpCode {
     }
 
     public static boolean contains(String code) {
-        return stringToByteMap.containsKey(code.trim());
+        return STRING_TO_BYTE_MAP.containsKey(code.trim());
     }
 
     public static byte byteVal(String code) {
-        return stringToByteMap.get(code);
+        return STRING_TO_BYTE_MAP.get(code);
     }
 
     public static OpCode code(byte code) {
-        return intToTypeMap[code & 0xFF];
+        return INT_TO_TYPE_MAP[code & 0xFF];
     }
 
     private EnumSet<CallFlags> getCallFlags() {

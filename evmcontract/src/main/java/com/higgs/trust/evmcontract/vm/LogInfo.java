@@ -19,7 +19,6 @@ package com.higgs.trust.evmcontract.vm;
 
 import com.higgs.trust.evmcontract.core.Bloom;
 import com.higgs.trust.evmcontract.crypto.HashUtil;
-import com.higgs.trust.evmcontract.datasource.MemSizeEstimator;
 import com.higgs.trust.evmcontract.util.RLP;
 import com.higgs.trust.evmcontract.util.RLPElement;
 import com.higgs.trust.evmcontract.util.RLPItem;
@@ -28,7 +27,6 @@ import com.higgs.trust.evmcontract.util.RLPList;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.higgs.trust.evmcontract.datasource.MemSizeEstimator.ByteArrayEstimator;
 import static com.higgs.trust.evmcontract.util.ByteUtil.toHexString;
 
 /**
@@ -37,10 +35,6 @@ import static com.higgs.trust.evmcontract.util.ByteUtil.toHexString;
  */
 public class LogInfo {
 
-    public static final MemSizeEstimator<LogInfo> MemEstimator = log ->
-            ByteArrayEstimator.estimateSize(log.address) +
-                    ByteArrayEstimator.estimateSize(log.data) +
-                    log.topics.size() * DataWord.MEM_SIZE + 16;
     byte[] address = new byte[]{};
     List<DataWord> topics = new ArrayList<>();
     byte[] data = new byte[]{};

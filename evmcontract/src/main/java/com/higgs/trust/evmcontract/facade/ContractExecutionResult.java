@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class ContractExecutionResult {
 
-    private static final ThreadLocal<ContractExecutionResult> currentResult = new ThreadLocal<>();
+    private static final ThreadLocal<ContractExecutionResult> CURRENT_RESULT = new ThreadLocal<>();
 
     @Getter
     @Setter
@@ -141,7 +141,7 @@ public class ContractExecutionResult {
      * @param result
      */
     public static void setCurrentResult(ContractExecutionResult result) {
-        currentResult.set(result);
+        CURRENT_RESULT.set(result);
     }
 
     /**
@@ -149,13 +149,13 @@ public class ContractExecutionResult {
      * @return
      */
     public static ContractExecutionResult getCurrentResult() {
-        return currentResult.get();
+        return CURRENT_RESULT.get();
     }
 
     /**
      * Clear result on ThreadLocal
      */
     public static void clearCurrentResult() {
-        currentResult.remove();
+        CURRENT_RESULT.remove();
     }
 }

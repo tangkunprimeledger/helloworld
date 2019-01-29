@@ -26,7 +26,7 @@ public final class ECKeyAgreement {
 
     public static final String ALGORITHM = "ECDH";
 
-    private static final String algorithmAssertionMsg =
+    private static final String ALGORITHM_ASSERTION_MSG =
             "Assumed the JRE supports EC key agreement";
 
     private ECKeyAgreement() {
@@ -36,7 +36,7 @@ public final class ECKeyAgreement {
         try {
             return KeyAgreement.getInstance(ALGORITHM);
         } catch (NoSuchAlgorithmException ex) {
-            throw new AssertionError(algorithmAssertionMsg, ex);
+            throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
         }
     }
 
@@ -44,7 +44,7 @@ public final class ECKeyAgreement {
         try {
             return KeyAgreement.getInstance(ALGORITHM, provider);
         } catch (NoSuchAlgorithmException ex) {
-            throw new AssertionError(algorithmAssertionMsg, ex);
+            throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
         }
     }
 
@@ -52,7 +52,7 @@ public final class ECKeyAgreement {
         try {
             return KeyAgreement.getInstance(ALGORITHM, provider);
         } catch (NoSuchAlgorithmException ex) {
-            throw new AssertionError(algorithmAssertionMsg, ex);
+            throw new AssertionError(ALGORITHM_ASSERTION_MSG, ex);
         }
     }
 }
