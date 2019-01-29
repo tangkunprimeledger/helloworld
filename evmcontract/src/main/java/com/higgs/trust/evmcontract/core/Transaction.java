@@ -156,10 +156,12 @@ public class Transaction {
 
     private Integer extractChainIdFromRawSignature(BigInteger bv, byte[] r, byte[] s) {
         if (r == null && s == null) {
-            return bv.intValue();  // EIP 86
+            // EIP 86
+            return bv.intValue();
         }
         if (bv.bitLength() > 31) {
-            return Integer.MAX_VALUE; // chainId is limited to 31 bits, longer are not valid for now
+            // chainId is limited to 31 bits, longer are not valid for now
+            return Integer.MAX_VALUE;
         }
         long v = bv.longValue();
         if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) {
@@ -170,7 +172,8 @@ public class Transaction {
 
     private byte getRealV(BigInteger bv) {
         if (bv.bitLength() > 31) {
-            return 0; // chainId is limited to 31 bits, longer are not valid for now
+            // chainId is limited to 31 bits, longer are not valid for now
+            return 0;
         }
         long v = bv.longValue();
         if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) {

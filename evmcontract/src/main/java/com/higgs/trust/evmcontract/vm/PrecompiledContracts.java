@@ -250,7 +250,10 @@ public class PrecompiledContracts {
 
         private static final BigInteger GQUAD_DIVISOR = BigInteger.valueOf(20);
 
-        private static final int ARGS_OFFSET = 32 * 3; // addresses length part
+        /**
+         *  addresses length part
+         */
+        private static final int ARGS_OFFSET = 32 * 3;
 
         @Override
         public long getGasForData(byte[] data) {

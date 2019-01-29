@@ -322,7 +322,9 @@ public abstract class SolidityType {
             } else {
                 throw new RuntimeException("byte[] or String value is expected for type 'bytes'");
             }
-            byte[] ret = new byte[((bb.length - 1) / 32 + 1) * 32]; // padding 32 bytes
+
+            // padding 32 bytes
+            byte[] ret = new byte[((bb.length - 1) / 32 + 1) * 32];
             System.arraycopy(bb, 0, ret, 0, bb.length);
 
             return ByteUtil.merge(IntType.encodeInt(bb.length), ret);

@@ -30,7 +30,8 @@ import java.util.List;
  * Created by Anton Nashatyrev on 12.04.2016.
  */
 public class LogFilter {
-    private List<byte[][]> topics = new ArrayList<>();  //  [[addr1, addr2], null, [A, B], [C]]
+    //  [[addr1, addr2], null, [A, B], [C]]
+    private List<byte[][]> topics = new ArrayList<>();
     private byte[][] contractAddresses = new byte[0][];
     private Bloom[][] filterBlooms;
 
@@ -56,7 +57,8 @@ public class LogFilter {
         for (int i = 0; i < addrAndTopics.size(); i++) {
             byte[][] orTopics = addrAndTopics.get(i);
             if (orTopics == null || orTopics.length == 0) {
-                filterBlooms[i] = new Bloom[]{new Bloom()}; // always matches
+                // always matches
+                filterBlooms[i] = new Bloom[]{new Bloom()};
             } else {
                 filterBlooms[i] = new Bloom[orTopics.length];
                 for (int j = 0; j < orTopics.length; j++) {

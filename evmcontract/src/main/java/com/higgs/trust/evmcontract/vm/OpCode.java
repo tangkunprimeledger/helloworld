@@ -189,8 +189,9 @@ public enum OpCode {
     /**
      * (0x39) Copy code running in current
      * environment to memory
+     * [len code_start mem_start CODECOPY]
      */
-    CODECOPY(0x39, 3, 0, VeryLowTier), // [len code_start mem_start CODECOPY]
+    CODECOPY(0x39, 3, 0, VeryLowTier),
 
     RETURNDATASIZE(0x3d, 0, 1, BaseTier),
 
@@ -569,8 +570,9 @@ public enum OpCode {
 
     /**
      * (0xf0) Create a new account with associated code
+     * [in_size] [in_offs] [gas_val] CREATE
      */
-    CREATE(0xf0, 3, 1, SpecialTier),   //       [in_size] [in_offs] [gas_val] CREATE
+    CREATE(0xf0, 3, 1, SpecialTier),
     /**
      * (cxf1) Message-call into an account
      */
@@ -740,7 +742,8 @@ public enum OpCode {
         MidTier(8),
         HighTier(10),
         ExtTier(20),
-        SpecialTier(1), //TODO #POC9 is this correct?? "multiparam" from cpp
+        //TODO #POC9 is this correct?? "multiparam" from cpp
+        SpecialTier(1),
         InvalidTier(0);
 
 

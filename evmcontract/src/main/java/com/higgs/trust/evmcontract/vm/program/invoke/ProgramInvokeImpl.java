@@ -189,8 +189,12 @@ public class ProgramInvokeImpl implements ProgramInvoke {
     public DataWord getDataValue(DataWord indexData) {
 
         BigInteger tempIndex = indexData.value();
-        int index = tempIndex.intValue(); // possible overflow is caught below
-        int size = 32; // maximum datavalue size
+
+        // possible overflow is caught below
+        int index = tempIndex.intValue();
+
+        // maximum datavalue size
+        int size = 32;
 
         if (msgData == null || index >= msgData.length
                 || tempIndex.compareTo(MAX_MSG_DATA) == 1) {

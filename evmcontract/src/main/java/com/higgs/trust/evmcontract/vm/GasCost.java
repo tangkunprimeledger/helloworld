@@ -57,8 +57,15 @@ public class GasCost {
     private final int CREATE_DATA_BYTE = 5;
     private final int CALL = 40;
     private final int STIPEND_CALL = 2300;
-    private final int VT_CALL = 9000;  //value transfer call
-    private final int NEW_ACCT_CALL = 25000;  //new account call
+    /**
+     * value transfer call
+     */
+    private final int VT_CALL = 9000;
+
+    /**
+     * new account call
+     */
+    private final int NEW_ACCT_CALL = 25000;
     private final int MEMORY = 3;
     private final int SUICIDE_REFUND = 24000;
     private final int QUAD_COEFF_DIV = 512;

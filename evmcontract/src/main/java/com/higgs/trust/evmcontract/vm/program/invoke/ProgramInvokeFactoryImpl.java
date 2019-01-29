@@ -75,23 +75,23 @@ public class ProgramInvokeFactoryImpl implements ProgramInvokeFactory {
         /***     CALLDATASIZE  op   ***/
         byte[] data = tx.isContractCreation() ? ByteUtil.EMPTY_BYTE_ARRAY : nullToEmpty(tx.getData());
 
-        /***    PREVHASH  op  ***/
-        byte[] lastHash = null;//block.getParentHash();
+        /***    PREVHASH  op  block.getParentHash() ***/
+        byte[] lastHash = null;
 
-        /***   COINBASE  op ***/
-        byte[] coinbase = null;//block.getCoinbase();
+        /***   COINBASE  op block.getCoinbase()***/
+        byte[] coinbase = null;;
 
-        /*** TIMESTAMP  op  ***/
-        long timestamp = 0;//block.getTimestamp();
+        /*** TIMESTAMP  op block.getTimestamp() ***/
+        long timestamp = 0;
 
-        /*** NUMBER  op  ***/
-        long number = 0;//block.getNumber();
+        /*** NUMBER  op block.getNumber() ***/
+        long number = 0;
 
-        /*** DIFFICULTY  op  ***/
-        byte[] difficulty = null;// block.getDifficulty();
+        /*** DIFFICULTY  op block.getDifficulty() ***/
+        byte[] difficulty = null; ;
 
-        /*** GASLIMIT op ***/
-        byte[] gaslimit = null;//block.getGasLimit();
+        /*** GASLIMIT op block.getGasLimit()***/
+        byte[] gaslimit = null;;
 
         if ( logger.isInfoEnabled()) {
             logger.info("Top level call: \n" +

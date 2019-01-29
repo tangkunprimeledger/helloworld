@@ -680,7 +680,8 @@ public class ByteUtil {
         try {
             bytesIp = InetAddress.getByName(ip).getAddress();
         } catch (UnknownHostException e) {
-            bytesIp = new byte[4];  // fall back to invalid 0.0.0.0 address
+            // fall back to invalid 0.0.0.0 address
+            bytesIp = new byte[4];
         }
 
         return bytesIp;

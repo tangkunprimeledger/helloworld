@@ -58,22 +58,7 @@ public class BloomedSource extends AbstractChainedSource<byte[], byte[], byte[],
                 getSource().put(filterKey, new byte[0]);
             }
         }
-//
-//        new Thread() {
-//            @Override
-//            public void executeContract() {
-//                while(true) {
-//                    synchronized (BloomedSource.this) {
-//                        logger.debug("BloomedSource: hits: " + hits + ", misses: " + misses + ", false: " + falseMisses);
-//                        hits = misses = falseMisses = 0;
-//                    }
-//
-//                    try {
-//                        Thread.sleep(5000);
-//                    } catch (InterruptedException e) {}
-//                }
-//            }
-//        }.start();
+
     }
 
     public void startBlooming(QuotientFilter filter) {

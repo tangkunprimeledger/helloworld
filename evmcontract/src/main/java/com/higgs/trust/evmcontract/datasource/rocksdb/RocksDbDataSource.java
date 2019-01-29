@@ -31,8 +31,11 @@ public class RocksDbDataSource implements DbSource<byte[]> {
 
     private static final Logger logger = LoggerFactory.getLogger("db");
 
+    /**
+     * initialized for standalone test
+     */
     @Autowired
-    SystemProperties config  = SystemProperties.getDefault(); // initialized for standalone test
+    SystemProperties config  = SystemProperties.getDefault();
 
     String name;
     RocksDB db;

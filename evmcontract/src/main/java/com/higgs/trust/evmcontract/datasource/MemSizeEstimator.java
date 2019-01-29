@@ -30,7 +30,8 @@ public interface MemSizeEstimator<E> {
      * byte[] type size estimator
      */
     MemSizeEstimator<byte[]> BYTE_ARRAY_ESTIMATOR = bytes -> {
-        return bytes == null ? 0 : bytes.length + 16; // 4 - compressed ref size, 12 - Object header
+        // 4 - compressed ref size, 12 - Object header
+        return bytes == null ? 0 : bytes.length + 16;
     };
 
 

@@ -87,9 +87,14 @@ public class SetAdapter<E> implements Set<E> {
         return ret;
     }
 
+    /**
+     * TODO add later if required
+     * @param c
+     * @return
+     */
     @Override
     public boolean retainAll(Collection<?> c) {
-        throw new RuntimeException("Not implemented"); // TODO add later if required
+        throw new RuntimeException("Not implemented");
     }
 
     @Override

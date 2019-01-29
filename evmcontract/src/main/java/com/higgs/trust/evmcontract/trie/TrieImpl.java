@@ -244,27 +244,33 @@ public class TrieImpl implements Trie<byte[]> {
                 int idx = k.getHex(0);
                 Node child = n.branchNodeGetChild(idx);
                 if (child == null) {
-                    return n; // no key found
+                    // no key found
+                    return n;
                 }
 
                 Node newNode = delete(child, k.shift(1));
                 n.branchNodeSetChild(idx, newNode);
                 if (newNode != null) {
-                    return n; // newNode != null thus number of children didn't decrease
+                    // newNode != null thus number of children didn't decrease
+                    return n;
                 }
             }
 
             // child node or value was deleted and the branch node may need to be compacted
             int compactIdx = n.branchNodeCompactIdx();
             if (compactIdx < 0) {
-                return n; // no compaction is required
+                // no compaction is required
+                return n;
             }
 
             // only value or a single child left - compact branch node to kvNode
             n.dispose();
-            if (compactIdx == 16) { // only value left
+
+            // only value left
+            if (compactIdx == 16) {
                 return new Node(TrieKey.empty(true), n.branchNodeGetValue());
-            } else { // only single child left
+            // only single child left
+            } else {
                 newKvNode = new Node(TrieKey.singleHex(compactIdx), n.branchNodeGetChild(compactIdx));
             }
         } else { // n - kvNode

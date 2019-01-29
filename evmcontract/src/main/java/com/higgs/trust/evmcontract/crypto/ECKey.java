@@ -442,7 +442,7 @@ public class ECKey implements Serializable {
      * @return 20-byte address
      */
     public static byte[] computeAddress(ECPoint pubPoint) {
-        return computeAddress(pubPoint.getEncoded(/* uncompressed */ false));
+        return computeAddress(pubPoint.getEncoded(false));
     }
 
     /**
@@ -466,7 +466,7 @@ public class ECKey implements Serializable {
      * @return 64-byte X,Y point pair
      */
     public static byte[] pubBytesWithoutFormat(ECPoint pubPoint) {
-        final byte[] pubBytes = pubPoint.getEncoded(/* uncompressed */ false);
+        final byte[] pubBytes = pubPoint.getEncoded(false);
         return Arrays.copyOfRange(pubBytes, 1, pubBytes.length);
     }
 
@@ -489,7 +489,8 @@ public class ECKey implements Serializable {
         check(nodeId.length == 64, "Expected a 64 byte node id");
         byte[] pubBytes = new byte[65];
         System.arraycopy(nodeId, 0, pubBytes, 1, nodeId.length);
-        pubBytes[0] = 0x04; // uncompressed
+        // uncompressed
+        pubBytes[0] = 0x04;
         return ECKey.fromPublicOnly(pubBytes);
     }
 
@@ -499,7 +500,7 @@ public class ECKey implements Serializable {
      * @return 65-byte encoded public key
      */
     public byte[] getPubKey() {
-        return pub.getEncoded(/* compressed */ false);
+        return pub.getEncoded(false);
     }
 
     /**
@@ -693,7 +694,8 @@ public class ECKey implements Serializable {
          * @return -
          */
         public String toBase64() {
-            byte[] sigData = new byte[65];  // 1 header + 32 bytes for R + 32 bytes for S
+            // 1 header + 32 bytes for R + 32 bytes for S
+            byte[] sigData = new byte[65];
             sigData[0] = v;
             System.arraycopy(bigIntegerToBytes(this.r, 32), 0, sigData, 1, 32);
             System.arraycopy(bigIntegerToBytes(this.s, 32), 0, sigData, 33, 32);
@@ -790,7 +792,7 @@ public class ECKey implements Serializable {
         ECDSASignature sig = doSign(messageHash);
         // Now we have to work backwards to figure out the recId needed to recover the signature.
         int recId = -1;
-        byte[] thisKey = this.pub.getEncoded(/* compressed */ false);
+        byte[] thisKey = this.pub.getEncoded(false);
         for (int i = 0; i < 4; i++) {
             byte[] k = ECKey.recoverPubBytesFromSignature(i, sig, messageHash);
             if (k != null && Arrays.equals(k, thisKey)) {
@@ -1042,7 +1044,7 @@ public class ECKey implements Serializable {
      * @return -
      */
     public boolean isPubKeyCanonical() {
-        return isPubKeyCanonical(pub.getEncoded(/* uncompressed */ false));
+        return isPubKeyCanonical(pub.getEncoded( false));
     }
 
 
@@ -1094,7 +1096,8 @@ public class ECKey implements Serializable {
         check(messageHash != null, "messageHash must not be null");
         // 1.0 For j from 0 to h   (h == recId here and the loop is outside this function)
         //   1.1 Let x = r + jn
-        BigInteger n = CURVE.getN();  // Curve order.
+        // Curve order.
+        BigInteger n = CURVE.getN();
         BigInteger i = BigInteger.valueOf((long) recId / 2);
         BigInteger x = sig.r.add(i.multiply(n));
         //   1.2. Convert the integer x to an octet string X of length mlen using the conversion routine
@@ -1105,7 +1108,8 @@ public class ECKey implements Serializable {
         //
         // More concisely, what these points mean is to use X as a compressed public key.
         ECCurve.Fp curve = (ECCurve.Fp) CURVE.getCurve();
-        BigInteger prime = curve.getQ();  // Bouncy Castle is not consistent about the letter it uses for the prime.
+        // Bouncy Castle is not consistent about the letter it uses for the prime.
+        BigInteger prime = curve.getQ();
         if (x.compareTo(prime) >= 0) {
             // Cannot have point co-ordinates larger than this as everything takes place modulo Q.
             return null;
@@ -1139,7 +1143,7 @@ public class ECKey implements Serializable {
         if (q.isInfinity()) {
             return null;
         }
-        return q.getEncoded(/* compressed */ false);
+        return q.getEncoded( false);
     }
 
     /**

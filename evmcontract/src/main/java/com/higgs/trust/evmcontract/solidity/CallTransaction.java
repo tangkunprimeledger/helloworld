@@ -35,12 +35,6 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.ArrayUtils.subarray;
 import static org.apache.commons.lang3.StringUtils.stripEnd;
 
-//import org.ethereum.util.ByteUtil;
-//import org.ethereum.util.FastByteComparisons;
-//import org.ethereum.vm.LogInfo;
-//import static org.ethereum.crypto.HashUtil.sha3;
-//import static org.ethereum.solidity.SolidityType.IntType;
-//import static org.ethereum.util.ByteUtil.longToBytesNoLeadZeroes;
 
 /**
  * Creates a contract function call transaction.

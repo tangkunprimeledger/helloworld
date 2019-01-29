@@ -32,6 +32,7 @@ public abstract class AbstractCachedSource<Key, Value>
     /**
      * Like the Optional interface represents either the value cached
      * or null cached (i.e. cache knows that underlying storage contain null)
+     * @param <V>
      */
     public interface Entry<V> {
         V value();
