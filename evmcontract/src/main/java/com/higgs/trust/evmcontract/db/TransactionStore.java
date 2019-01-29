@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class TransactionStore extends ObjectDataSource<TransactionResultInfo> {
     private static final Logger logger = LoggerFactory.getLogger("db");
 
-    private final static Serializer<TransactionResultInfo, byte[]> serializer =
+    private final static Serializer<TransactionResultInfo, byte[]> SERIALIZER =
             new Serializer<TransactionResultInfo, byte[]>() {
                 @Override
                 public byte[] serialize(TransactionResultInfo txResultInfo) {
@@ -37,7 +37,7 @@ public class TransactionStore extends ObjectDataSource<TransactionResultInfo> {
             };
 
     public TransactionStore(Source<byte[], byte[]> db) {
-        super(db, serializer, 256);
+        super(db, SERIALIZER, 256);
     }
 }
 

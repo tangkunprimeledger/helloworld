@@ -29,14 +29,14 @@ import java.util.Set;
  * Created by Anton Nashatyrev on 06.02.2017.
  */
 public class ProgramPrecompile {
-    private static final int version = 1;
+    private static final int VERSION = 1;
 
     private Set<Integer> jumpdest = new HashSet<>();
 
     public byte[] serialize() {
         byte[][] jdBytes = new byte[jumpdest.size() + 1][];
         int cnt = 0;
-        jdBytes[cnt++] = RLP.encodeInt(version);
+        jdBytes[cnt++] = RLP.encodeInt(VERSION);
         for (Integer dst : jumpdest) {
             jdBytes[cnt++] = RLP.encodeInt(dst);
         }
@@ -47,7 +47,7 @@ public class ProgramPrecompile {
     public static ProgramPrecompile deserialize(byte[] stream) {
         RLPList l = (RLPList) RLP.decode2(stream).get(0);
         int ver = ByteUtil.byteArrayToInt(l.get(0).getRLPData());
-        if (ver != version) {
+        if (ver != VERSION) {
             return null;
         }
         ProgramPrecompile ret = new ProgramPrecompile();

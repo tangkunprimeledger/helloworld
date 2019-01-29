@@ -610,17 +610,4 @@ public class Transaction {
                 chainId);
     }
 
-    public static final MemSizeEstimator<Transaction> MemEstimator = tx ->
-            MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.hash) +
-                    MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.nonce) +
-                    MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.value) +
-                    MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.gasPrice) +
-                    MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.gasLimit) +
-                    MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.data) +
-                    MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.sendAddress) +
-                    MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.rlpEncoded) +
-                    MemSizeEstimator.BYTE_ARRAY_ESTIMATOR.estimateSize(tx.rawHash) +
-                    (tx.chainId != null ? 24 : 0) +
-                    (tx.signature != null ? 208 : 0) + // approximate size of signature
-                    16; // Object header + ref
 }

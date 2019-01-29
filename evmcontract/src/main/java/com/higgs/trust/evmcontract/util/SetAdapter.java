@@ -26,7 +26,7 @@ import java.util.Set;
  * Created by Anton Nashatyrev on 06.10.2016.
  */
 public class SetAdapter<E> implements Set<E> {
-    private static final Object DummyValue = new Object();
+    private static final Object DUMMY_VALUE = new Object();
     Map<E, Object> delegate;
 
     public SetAdapter(Map<E, ?> delegate) {
@@ -65,7 +65,7 @@ public class SetAdapter<E> implements Set<E> {
 
     @Override
     public boolean add(E e) {
-        return delegate.put(e, DummyValue) == null;
+        return delegate.put(e, DUMMY_VALUE) == null;
     }
 
     @Override

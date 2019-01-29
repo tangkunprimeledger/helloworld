@@ -34,7 +34,7 @@ public class RepositoryRoot extends RepositoryImpl {
         Trie<byte[]> trie;
 
         public StorageCache(Trie<byte[]> trie) {
-            super(new SourceCodec<>(trie, Serializers.StorageKeySerializer, Serializers.StorageValueSerializer), WriteCache.CacheType.SIMPLE);
+            super(new SourceCodec<>(trie, Serializers.STORAGE_KEY_SERIALIZER, Serializers.STORAGE_VALUE_SERIALIZER), WriteCache.CacheType.SIMPLE);
             this.trie = trie;
         }
     }
@@ -99,7 +99,7 @@ public class RepositoryRoot extends RepositoryImpl {
         trieCache = new WriteCache.BytesKey<>(stateDS, WriteCache.CacheType.COUNTING);
         stateTrie = new SecureTrie(trieCache, root);
 
-        SourceCodec.BytesKey<AccountState, byte[]> accountStateCodec = new SourceCodec.BytesKey<>(stateTrie, Serializers.AccountStateSerializer);
+        SourceCodec.BytesKey<AccountState, byte[]> accountStateCodec = new SourceCodec.BytesKey<>(stateTrie, Serializers.ACCOUNT_STATE_SERIALIZER);
         final ReadWriteCache.BytesKey<AccountState> accountStateCache = new ReadWriteCache.BytesKey<>(accountStateCodec, WriteCache.CacheType.SIMPLE);
 
         final MultiCache<StorageCache> storageCache = new MultiStorageCache();

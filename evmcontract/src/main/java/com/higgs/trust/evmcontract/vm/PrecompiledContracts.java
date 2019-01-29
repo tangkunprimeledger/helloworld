@@ -35,35 +35,32 @@ import static com.higgs.trust.evmcontract.util.ByteUtil.*;
  */
 public class PrecompiledContracts {
 
-    private static final ECRecover ecRecover = new ECRecover();
-    private static final Sha256 sha256 = new Sha256();
-    private static final Ripempd160 ripempd160 = new Ripempd160();
-    private static final Identity identity = new Identity();
-    private static final ModExp modExp = new ModExp();
-    // private static final BN128Addition altBN128Add = new BN128Addition();
-    // private static final BN128Multiplication altBN128Mul = new BN128Multiplication();
-    // private static final BN128Pairing altBN128Pairing = new BN128Pairing();
+    private static final ECRecover EC_RECOVER = new ECRecover();
+    private static final Sha256 SHA_256 = new Sha256();
+    private static final Ripempd160 RIPEMPD_160 = new Ripempd160();
+    private static final Identity IDENTITY = new Identity();
+    private static final ModExp MOD_EXP = new ModExp();
 
-    private static final DataWord ecRecoverAddr = new DataWord("0000000000000000000000000000000000000000000000000000000000000001");
-    private static final DataWord sha256Addr = new DataWord("0000000000000000000000000000000000000000000000000000000000000002");
-    private static final DataWord ripempd160Addr = new DataWord("0000000000000000000000000000000000000000000000000000000000000003");
-    private static final DataWord identityAddr = new DataWord("0000000000000000000000000000000000000000000000000000000000000004");
-    private static final DataWord modExpAddr = new DataWord("0000000000000000000000000000000000000000000000000000000000000005");
-    private static final DataWord altBN128AddAddr = new DataWord("0000000000000000000000000000000000000000000000000000000000000006");
-    private static final DataWord altBN128MulAddr = new DataWord("0000000000000000000000000000000000000000000000000000000000000007");
-    private static final DataWord altBN128PairingAddr = new DataWord("0000000000000000000000000000000000000000000000000000000000000008");
+    private static final DataWord EC_RECOVER_ADDR = new DataWord("0000000000000000000000000000000000000000000000000000000000000001");
+    private static final DataWord SHA_256_ADDR = new DataWord("0000000000000000000000000000000000000000000000000000000000000002");
+    private static final DataWord RIPEMPD_160_ADDR = new DataWord("0000000000000000000000000000000000000000000000000000000000000003");
+    private static final DataWord IDENTITY_ADDR = new DataWord("0000000000000000000000000000000000000000000000000000000000000004");
+    private static final DataWord MOD_EXP_ADDR = new DataWord("0000000000000000000000000000000000000000000000000000000000000005");
+    private static final DataWord ALT_BN_128_ADD_ADDR = new DataWord("0000000000000000000000000000000000000000000000000000000000000006");
+    private static final DataWord ALT_BN_128_MUL_ADDR = new DataWord("0000000000000000000000000000000000000000000000000000000000000007");
+    private static final DataWord ALT_BN_128_PAIRING_ADDR = new DataWord("0000000000000000000000000000000000000000000000000000000000000008");
 
     public static List<DataWord> listAddresses() {
         List<DataWord> addressList = new ArrayList<>();
 
-        addressList.add(ecRecoverAddr);
-        addressList.add(sha256Addr);
-        addressList.add(ripempd160Addr);
-        addressList.add(identityAddr);
-        addressList.add(modExpAddr);
-        addressList.add(altBN128AddAddr);
-        addressList.add(altBN128MulAddr);
-        addressList.add(altBN128PairingAddr);
+        addressList.add(EC_RECOVER_ADDR);
+        addressList.add(SHA_256_ADDR);
+        addressList.add(RIPEMPD_160_ADDR);
+        addressList.add(IDENTITY_ADDR);
+        addressList.add(MOD_EXP_ADDR);
+        addressList.add(ALT_BN_128_ADD_ADDR);
+        addressList.add(ALT_BN_128_MUL_ADDR);
+        addressList.add(ALT_BN_128_PAIRING_ADDR);
 
         return addressList;
     }
@@ -71,28 +68,25 @@ public class PrecompiledContracts {
     public static PrecompiledContract getContractForAddress(DataWord address, BlockChainConfig config) {
 
         if (address == null) {
-            return identity;
+            return IDENTITY;
         }
-        if (address.equals(ecRecoverAddr)) {
-            return ecRecover;
+        if (address.equals(EC_RECOVER_ADDR)) {
+            return EC_RECOVER;
         }
-        if (address.equals(sha256Addr)) {
-            return sha256;
+        if (address.equals(SHA_256_ADDR)) {
+            return SHA_256;
         }
-        if (address.equals(ripempd160Addr)) {
-            return ripempd160;
+        if (address.equals(RIPEMPD_160_ADDR)) {
+            return RIPEMPD_160;
         }
-        if (address.equals(identityAddr)) {
-            return identity;
+        if (address.equals(IDENTITY_ADDR)) {
+            return IDENTITY;
         }
 
         // Byzantium precompiles
-        if (address.equals(modExpAddr) && config.eip198()) {
-            return modExp;
+        if (address.equals(MOD_EXP_ADDR) && config.eip198()) {
+            return MOD_EXP;
         }
-        //    if (address.equals(altBN128AddAddr) && config.eip213()) return altBN128Add;
-        // if (address.equals(altBN128MulAddr) && config.eip213()) return altBN128Mul;
-        //  if (address.equals(altBN128PairingAddr) && config.eip212()) return altBN128Pairing;
 
         return null;
     }

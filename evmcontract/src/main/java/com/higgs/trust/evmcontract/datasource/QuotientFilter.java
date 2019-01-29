@@ -386,7 +386,7 @@ public class QuotientFilter implements Iterable<Long> {
             //Can't safely process an after overflow
             //Only a buggy program would attempt it
             if (overflowed) {
-                throw new OverflowedError();
+                throw new OverflowedException();
             }
 
             //Can still resize if we have enough remainder bits
@@ -395,7 +395,7 @@ public class QuotientFilter implements Iterable<Long> {
             } else {
                 //The filter can't accept more inserts and is effectively broken
                 overflowed = true;
-                throw new OverflowedError();
+                throw new OverflowedException();
             }
         }
 
@@ -473,7 +473,7 @@ public class QuotientFilter implements Iterable<Long> {
         if (overflowed) {
             //Can't check for existence after overflow occurred
             //and things are missing
-            throw new OverflowedError();
+            throw new OverflowedException();
         }
 
         long fq = hashToQuotient(hash);
@@ -504,7 +504,7 @@ public class QuotientFilter implements Iterable<Long> {
         if (overflowed) {
             //Can't check for existence after overflow occurred
             //and things are missing
-            throw new OverflowedError();
+            throw new OverflowedException();
         }
 
         long fq = hashToQuotient(hash);
@@ -584,7 +584,7 @@ public class QuotientFilter implements Iterable<Long> {
         //Can't safely process a remove after overflow
         //Only a buggy program would attempt it
         if (overflowed) {
-            throw new OverflowedError();
+            throw new OverflowedException();
         }
 
         long fq = hashToQuotient(hash);
@@ -594,7 +594,7 @@ public class QuotientFilter implements Iterable<Long> {
         if (!isElementOccupied(T_fq) | entries == 0) {
             //If you remove things that don't exist it's possible you will clobber
             //somethign on a collision, your program is buggy
-            throw new NoSuchElementError();
+            throw new NoSuchElementException();
         }
 
         long start = findRunIndex(fq);
@@ -614,7 +614,7 @@ public class QuotientFilter implements Iterable<Long> {
         if (rem != fr) {
             //If you remove things that don't exist it's possible you will clobber
             //somethign on a collision, your program is buggy
-            throw new NoSuchElementError();
+            throw new NoSuchElementException();
         }
 
         long kill = (s == fq) ? T_fq : getElement(s);
@@ -826,11 +826,11 @@ public class QuotientFilter implements Iterable<Long> {
 //        return sb.toString();
 //    }
 
-    public class OverflowedError extends AssertionError {
+    public class OverflowedException extends AssertionError {
 
     }
 
-    public class NoSuchElementError extends AssertionError {
+    public class NoSuchElementException extends AssertionError {
 
     }
 
