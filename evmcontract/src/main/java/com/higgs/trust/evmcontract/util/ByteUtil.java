@@ -36,6 +36,28 @@ public class ByteUtil {
     public static final byte[] ZERO_BYTE_ARRAY = new byte[]{0};
 
     /**
+     * number regular expression
+     */
+    public static final String REGULAR_OF_NUMBER = "-?\\d+(\\.\\d+)?";
+
+    /**
+     * hex regular expression
+     */
+    public static final String REGULAR_OF_HEX = "0[xX][0-9a-fA-F]+";
+
+    /**
+     * hex prefix
+     */
+    public static final String HEX_PREFIX = "0x";
+
+    /**
+     * max size byte
+     */
+    public static final int MAX_SIZE_BYTE = 32 ;
+
+
+
+    /**
      * Creates a copy of bytes and appends b to the end of it
      */
     public static byte[] appendByte(byte[] bytes, byte b) {
@@ -324,18 +346,18 @@ public class ByteUtil {
         byte[] data;
 
         // check if the string is numeric
-        if (arg.toString().trim().matches("-?\\d+(\\.\\d+)?")) {
+        if (arg.toString().trim().matches(REGULAR_OF_NUMBER)) {
             data = new BigInteger(arg.toString().trim()).toByteArray();
         }
         // check if it's hex number
-        else if (arg.toString().trim().matches("0[xX][0-9a-fA-F]+")) {
+        else if (arg.toString().trim().matches(REGULAR_OF_HEX)) {
             data = new BigInteger(arg.toString().trim().substring(2), 16).toByteArray();
         } else {
             data = arg.toString().trim().getBytes();
         }
 
 
-        if (data.length > 32) {
+        if (data.length > MAX_SIZE_BYTE) {
             throw new RuntimeException("values can't be more than 32 byte");
         }
 
@@ -663,7 +685,7 @@ public class ByteUtil {
         if (data == null) {
             return EMPTY_BYTE_ARRAY;
         }
-        if (data.startsWith("0x")) {
+        if (data.startsWith(HEX_PREFIX)) {
             data = data.substring(2);
         }
         if (data.length() % 2 == 1) {

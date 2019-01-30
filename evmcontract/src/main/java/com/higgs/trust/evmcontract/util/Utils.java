@@ -36,6 +36,11 @@ public class Utils {
     private static SecureRandom random = new SecureRandom();
 
     /**
+     * on android this property equals to 0
+     */
+    public static final String JAVA_VERSION_OF_ANDROID= "0";
+
+    /**
      * @param number should be in form '0x34fabd34....'
      * @return String
      */
@@ -72,13 +77,16 @@ public class Utils {
         return image;
     }
 
-    static BigInteger _1000_ = new BigInteger("1000");
+    /**
+     * 10^3 = 1000
+     */
+    static BigInteger CUBE_OF_10 = new BigInteger("1000");
 
     public static String getValueShortString(BigInteger number) {
         BigInteger result = number;
         int pow = 0;
-        while (result.compareTo(_1000_) == 1 || result.compareTo(_1000_) == 0) {
-            result = result.divide(_1000_);
+        while (result.compareTo(CUBE_OF_10) == 1 || result.compareTo(CUBE_OF_10) == 0) {
+            result = result.divide(CUBE_OF_10);
             pow += 3;
         }
         return result.toString() + "\u00b7(" + "10^" + pow + ")";
@@ -100,17 +108,15 @@ public class Utils {
         String version = System.getProperty("java.version");
 
         // on android this property equals to 0
-        if ("0".equals(version)) {
+        if (JAVA_VERSION_OF_ANDROID.equals(version)) {
             return 0;
         }
 
-        int pos = 0, count = 0;
-        for (; pos < version.length() && count < 2; pos++) {
-            if (version.charAt(pos) == '.') {
-                count++;
-            }
-        }
-        return Double.parseDouble(version.substring(0, pos - 1));
+        //twice search point index
+        int first = version.indexOf(".");
+        int second = version.indexOf(".", first + 1);
+
+        return Double.parseDouble(version.substring(0,second));
     }
 
 

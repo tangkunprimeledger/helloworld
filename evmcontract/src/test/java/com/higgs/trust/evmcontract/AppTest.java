@@ -72,4 +72,12 @@ public class AppTest
         pool.execute(() -> System.out.print(Thread.currentThread().getName()));
         pool.shutdown();
     }
+
+    @Test
+    public void testSubString(){
+        String str = "1.8.0_111";
+        int first = str.indexOf(".");
+        int second = str.indexOf(".", first + 1);
+        System.out.println(str.substring(0,second));
+    }
 }

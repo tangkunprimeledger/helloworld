@@ -105,6 +105,16 @@ public class VM {
     private boolean vmTrace;
     private long dumpBlock;
 
+    /**
+     * standard style
+     */
+    private static final String DUMP_STYLE_STANDARD = "standard+";
+
+    /**
+     * pretty style
+     */
+    private static final String DUMP_STYLE_PRETTY = "pretty";
+
     public VM(SystemProperties config) {
         ((ch.qos.logback.classic.Logger) LOGGER).setLevel(Level.INFO);
         this.config = config;
@@ -1494,7 +1504,7 @@ public class VM {
                     gasBefore, gasCost, memWords)
      */
     private void dumpLine(OpCode op, long gasBefore, long gasCost, long memWords, Program program) {
-        if ("standard+".equals(config.dumpStyle())) {
+        if (DUMP_STYLE_STANDARD.equals(config.dumpStyle())) {
             switch (op) {
                 case STOP:
                 case RETURN:
@@ -1519,7 +1529,7 @@ public class VM {
             String gasString = toHexString(program.getGas().getNoLeadZeroesData());
 
             DUMP_LOGGER.trace("{} {} {} {}", addressString, pcString, opString, gasString);
-        } else if ("pretty".equals(config.dumpStyle())) {
+        } else if (DUMP_STYLE_PRETTY.equals(config.dumpStyle())) {
             DUMP_LOGGER.trace("    STACK");
             for (DataWord item : program.getStack()) {
                 DUMP_LOGGER.trace("{}", item);
