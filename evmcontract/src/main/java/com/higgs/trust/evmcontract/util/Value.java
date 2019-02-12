@@ -186,13 +186,7 @@ public class Value {
         return sha3;
     }
 
-//    public boolean cmp(Value o) {
-//        return DeepEquals.deepEquals(this, o);
-//    }
 
-    /* *****************
-     *      Checks
-     * *****************/
 
     public boolean isList() {
         decode();

@@ -80,4 +80,12 @@ public class AppTest
         int second = str.indexOf(".", first + 1);
         System.out.println(str.substring(0,second));
     }
+
+    @Test
+    public void test(){
+        {
+            System.out.println("11111111111");
+            System.out.println("222222222");
+        }
+    }
 }

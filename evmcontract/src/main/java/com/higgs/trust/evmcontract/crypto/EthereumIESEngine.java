@@ -167,13 +167,6 @@ public class EthereumIESEngine {
             K = new byte[K1.length + K2.length];
 
             kdf.generateBytes(K, 0, K.length);
-
-//            if (V.length != 0)
-//            {
-//                System.arraycopy(K, 0, K2, 0, K2.length);
-//                System.arraycopy(K, K2.length, K1, 0, K1.length);
-//            }
-//            else
             {
                 System.arraycopy(K, 0, K1, 0, K1.length);
                 System.arraycopy(K, inLen, K2, 0, K2.length);
@@ -271,16 +264,8 @@ public class EthereumIESEngine {
 
             kdf.generateBytes(K, 0, K.length);
 
-//            if (V.length != 0)
-//            {
-//                System.arraycopy(K, 0, K2, 0, K2.length);
-//                System.arraycopy(K, K2.length, K1, 0, K1.length);
-//            }
-//            else
-            {
-                System.arraycopy(K, 0, K1, 0, K1.length);
-                System.arraycopy(K, K1.length, K2, 0, K2.length);
-            }
+            System.arraycopy(K, 0, K1, 0, K1.length);
+            System.arraycopy(K, K1.length, K2, 0, K2.length);
 
             M = new byte[K1.length];
 

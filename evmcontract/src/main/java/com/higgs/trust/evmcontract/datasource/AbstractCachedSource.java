@@ -35,6 +35,10 @@ public abstract class AbstractCachedSource<Key, Value>
      * @param <V>
      */
     public interface Entry<V> {
+        /**
+         * entry value interface
+         * @return val
+         */
         V value();
     }
 
@@ -62,7 +66,7 @@ public abstract class AbstractCachedSource<Key, Value>
     /**
      * Returns the cached value if exist.
      * Method doesn't look into the underlying storage
-     *
+     *@param key get cache value by key
      * @return The value Entry if it cached (Entry may has null value if null value is cached),
      * or null if no information in the cache for this key
      */
