@@ -1,20 +1,19 @@
 /*
  * Copyright (c) 2013-2017, suimi
  */
-package com.higgs.trust.consensus.atomix.core;
+package com.higgs.trust.consensus.core;
 
-import com.higgs.trust.consensus.core.ConsensusCommit;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 
 /**
  * @author suimi
  * @date 2018/8/14
  */
-public class AtomixCommitAdapter<T extends AbstractConsensusCommand> implements ConsensusCommit<T> {
+public class DefaultCommitAdapter<T extends AbstractConsensusCommand> implements ConsensusCommit<T> {
     private T command;
     private boolean isClosed;
 
-    public AtomixCommitAdapter(Object object) {
+    public DefaultCommitAdapter(Object object) {
         if (object instanceof AbstractConsensusCommand) {
             this.command = (T)object;
         } else {

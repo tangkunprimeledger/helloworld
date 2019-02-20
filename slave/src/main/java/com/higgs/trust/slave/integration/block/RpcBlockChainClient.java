@@ -3,6 +3,7 @@ package com.higgs.trust.slave.integration.block;
 import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.network.HttpClient;
 import com.higgs.trust.network.NetworkManage;
+import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.rpc.request.BlockRequest;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.api.vo.TransactionVO;
@@ -36,6 +37,9 @@ public class RpcBlockChainClient implements BlockChainClient {
     @Autowired
     private NetworkManage networkManage;
 
+    @Autowired
+    private BlockChainService blockChainService;
+
     private static Type respDataListType;
 
     static {
@@ -56,6 +60,9 @@ public class RpcBlockChainClient implements BlockChainClient {
     public List<BlockHeader> getBlockHeaders(String nodeNameReg, long startHeight, int size) {
         BlockRequest request = new BlockRequest(startHeight, size);
         List<String> names = viewManager.getCurrentView().getNodeNames();
+        if (names.size() == 1) {
+            return blockChainService.listBlockHeaders(startHeight, size);
+        }
         return networkManage.rpcClient().randomSendAndReceive(names, ACTION_TYPE_BLOCK_HEADER_GET, request);
     }
 
@@ -69,6 +76,9 @@ public class RpcBlockChainClient implements BlockChainClient {
     public List<Block> getBlocks(String nodeNameReg, long startHeight, int size) {
         BlockRequest request = new BlockRequest(startHeight, size);
         List<String> names = viewManager.getCurrentView().getNodeNames();
+        if (names.size() == 1) {
+            return blockChainService.listBlocks(startHeight, size);
+        }
         return networkManage.rpcClient().randomSendAndReceive(names, ACTION_TYPE_BLOCK_GET, request);
     }
 

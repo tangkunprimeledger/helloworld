@@ -43,7 +43,7 @@
         "consensusPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4CkXxDiD147k9vzZ0c9SU6gamK5hEQUXPTmZJsvvsEd81obOdcVys3MC879R28pKX+ccWU50Rf9YfwECnRkMBUQz7byuwfCk2fjrZpJLQ77uyQmEW08Y3RAb5iTYvHGVB3cPP+ZMSBRrW0apKec3atOGM1bYWkhud30MOvirGwf2swu7mEQNn4eFKHeK2hhIcannozFfJL0rRtk0Zlv7m6hIWdQ2CztV8PVfj+yA8IjoLb2x64r8UQYrYmjxM2ZbEITfXvjpJrrFM8tus3Mtcl+m6NH8X/k1pLPGi6VPBsFwh5g3M4szYn01QffPSL+gMI8YvoaycgWutSlRNzXkuwIDAQAB",
         "consensusPrivateKey": "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDgKRfEOIPXjuT2/NnRz1JTqBqYrmERBRc9OZkmy++wR3zWhs51xXKzcwLzv1Hbykpf5xxZTnRF/1h/AQKdGQwFRDPtvK7B8KTZ+OtmkktDvu7JCYRbTxjdEBvmJNi8cZUHdw8/5kxIFGtbRqkp5zdq04YzVthaSG53fQw6+KsbB/azC7uYRA2fh4Uod4raGEhxqeejMV8kvStG2TRmW/ubqEhZ1DYLO1Xw9V+P7IDwiOgtvbHrivxRBitiaPEzZlsQhN9e+OkmusUzy26zcy1yX6bo0fxf+TWks8aLpU8GwXCHmDczizNifTVB989Iv6Awjxi+hrJyBa61KVE3NeS7AgMBAAECggEBAJWpWgDcaspE0YJGF3gJn8HS/s7pvk0KxRVPm31Xs9RSJntkzfu7tHUzWMk8935zdWzKdRb7Vo5VidRh7EjPLENn4fPcgiFide5CT4jQLAgzNmJrRD9idAtEchwahcprW0D8sOXM8Sk+2N68Mr2TbmCYkYU9en3s1jRY/Q1ycWs9idpGiRosIUBOGUQSZ9do2mK5omsRpGdnDOpxDLL/fgGh0nJauUkySaTVB0fCwgECwINj23hZjfbqTQipSF1/g8V7zPwdXW7/49JJrretkRpd447wZQX/JR9VC68qleo/VbhG6JcAp/Ks2jrKZezXJKwaOpW0CnpR/JvwaeU3wCECgYEA+ABV2wTS9El2YVCn7Qw1Yx/uE7M+6GVGhfRM6W0TKfb2WQkhDD8eoOzfpsXSnZdtgXx7TglqcoNiO9KUrYgxNYplg6z2vAomomi9I9Rhk1CCzicYHEwuFVaKt8Fsc+Rwip4gwCakZc15ezYKF6a5uSXjmhg0CHXu/qYFIV+uEFUCgYEA52PpdcNE8RrQzB4jL/E4U+wGu4w6i/HIM5/VwiOYVbJ07I1+IqL5GGNdPT42YcsMpg3KaYWoZlKEq5tmXDOlGMOCgAo44djYFI09szcVe3myu/1/EKWdDUO7zBdv5HGAtaiFYmvujjBJFiM13PDiHHlYxkkAcy+GTPAyf5yL8M8CgYB8pVaBhTQt2bppAOvVxZwTnRnAxwdoMHa4nugFLnBCWEDK0T7N8++F/GgQXz8TO+eq/BDRUQQyV/yIird1XI03Fr8c5lMAga2XVUMy/eyo6P9Fc/q3RkanLN79qnbC7N7vnLhjO0jHbfWPysJZzs9r0jJJ4b5NPlEHphPQCVHoHQKBgET8abc9b4l+mC+y8ISzozqKDPvPdAkTHcAecCmAWUN7gBainK+Q7TkTLtI6gRYo5m1/gRBy0+Elyv4qx5rHnvpCF986rPjQoKOH9JRA4Pu+LcaUblS1O5yfzBauCiMOn/QI+TN9wFLOHIwoFT/45UDeANSlISg2TBEWL8gSETrLAoGAZc3rdHbXjxveqgMLfWjGdL5GJw+LlXQMbv6ucbDrlDt6MtJFmFmyycaGcEb+8RwWRJF0+N53uIGUW5BHf2EFR2Wdjm9ZxWoHfIe4CIMWxfCJsDzWc7ksAOTnHJNeWpe/1dnC73WJMHWTzwpm+NJkUYQu6Ag7nN8a7q3RisnUlkw="
       },
-      "geniusPath": "D:/workspace_idea/DL/trust/slave/src/main/resources/geniusBlock.json"
+      "geniusPath": "E:\\workspace\\trust\\slave\\src\\main\\resources\\geniusBlock.json"
     }
   },
   "management": {
@@ -83,9 +83,9 @@
         "maxWait": 60000,
         "min-evictable-idle-time-millis": 300000,
         "minIdle": 1,
-        "password": "920125",
+        "password": "root",
         "time-between-eviction-runs-millis": 60000,
-        "url": "jdbc:mysql://localhost:3306/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
+        "url": "jdbc:mysql://192.168.99.100:3306/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
       },
       "type": "com.alibaba.druid.pool.DruidDataSource"
@@ -115,80 +115,80 @@
         "masterName": ""
       },
       "password": "",
-      "address": "redis://127.0.0.1:6379",
+      "address": "redis://192.168.99.100:6379",
       "single": true,
       "key": {
         "mode": "manual"
       }
+    }
+  },
+  "logging": {
+    "config": "classpath:logback.xml",
+    "path": "/tmp/log"
+  },
+  "hystrix": {
+    "command": {
+      "default": {
+        "circuitBreaker.enabled": false,
+        "fallback.enabled": false
+      }
     },
-    "logging": {
-      "config": "classpath:logback.xml",
-      "path": "/tmp/log"
-    },
-    "hystrix": {
-      "command": {
-        "default": {
-          "circuitBreaker.enabled": false,
-          "fallback.enabled": false
-        }
+    "threadpool": {
+      "default": {
+        "coreSize": 40,
+        "maximumSize": 200
+      }
+    }
+  },
+  "bftSmart": {
+    "systemConfigs": {
+      "myId": "0",
+      "myClientId": "1100",
+      "configs": {
+        "system.communication.useSenderThread": true,
+        "system.communication.defaultkeys": true,
+        "system.servers.num": "4",
+        "system.servers.f": "1",
+        "system.totalordermulticast.timeout": "2000",
+        "system.totalordermulticast.maxbatchsize": "400",
+        "system.totalordermulticast.nonces": "10",
+        "system.totalordermulticast.verifyTimestamps": false,
+        "system.communication.inQueueSize": "500000",
+        "system.communication.outQueueSize": "500000",
+        "system.communication.useSignatures": "0",
+        "system.communication.useMACs": "0",
+        "system.debug": "1",
+        "system.shutdownhook": true,
+        "system.totalordermulticast.state_transfer": true,
+        "system.totalordermulticast.highMark": "10000",
+        "system.totalordermulticast.revival_highMark": "10",
+        "system.totalordermulticast.timeout_highMark": "200",
+        "system.totalordermulticast.log": true,
+        "system.totalordermulticast.log_parallel": false,
+        "system.totalordermulticast.log_to_disk": true,
+        "system.totalordermulticast.sync_log": false,
+        "system.totalordermulticast.checkpoint_period": "1000",
+        "system.totalordermulticast.global_checkpoint_period": "120000",
+        "system.totalordermulticast.checkpoint_to_disk": false,
+        "system.totalordermulticast.sync_ckp": false,
+        "system.bft": true,
+        "system.ttp.id": "7001"
       },
-      "threadpool": {
-        "default": {
-          "coreSize": 40,
-          "maximumSize": 200
-        }
-      }
-    },
-    "bftSmart": {
-      "systemConfigs": {
-        "myId": "0",
-        "myClientId": "1100",
-        "configs": {
-          "system.communication.useSenderThread": true,
-          "system.communication.defaultkeys": true,
-          "system.servers.num": "4",
-          "system.servers.f": "1",
-          "system.totalordermulticast.timeout": "2000",
-          "system.totalordermulticast.maxbatchsize": "400",
-          "system.totalordermulticast.nonces": "10",
-          "system.totalordermulticast.verifyTimestamps": false,
-          "system.communication.inQueueSize": "500000",
-          "system.communication.outQueueSize": "500000",
-          "system.communication.useSignatures": "0",
-          "system.communication.useMACs": "0",
-          "system.debug": "1",
-          "system.shutdownhook": true,
-          "system.totalordermulticast.state_transfer": true,
-          "system.totalordermulticast.highMark": "10000",
-          "system.totalordermulticast.revival_highMark": "10",
-          "system.totalordermulticast.timeout_highMark": "200",
-          "system.totalordermulticast.log": true,
-          "system.totalordermulticast.log_parallel": false,
-          "system.totalordermulticast.log_to_disk": true,
-          "system.totalordermulticast.sync_log": false,
-          "system.totalordermulticast.checkpoint_period": "1000",
-          "system.totalordermulticast.global_checkpoint_period": "120000",
-          "system.totalordermulticast.checkpoint_to_disk": false,
-          "system.totalordermulticast.sync_ckp": false,
-          "system.bft": true,
-          "system.ttp.id": "7001"
-        },
-        "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030,7001 127.0.0.1 11100",
-        "ttpPubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwuoTWbSFDnVjohwdZftoAwv3oCxUPnUiiNNH9pXryEW8kSFRGVJ7zJCwxJnt3YZGnpPGxnC3hAI4XkG26hO7+TxkgaYmv5GbamL946uZISxv0aNX3YbaOf//MC6F8tShFfCnpWlj68FYulM5dC2OOOHaUJfofQhmXfsaEWU251wIDAQAB",
-        "idNodeNameMap": {
-          "0": "TRUST-TEST0",
-          "1": "TRUST-TEST1",
-          "2": "TRUST-TEST2",
-          "3": "TRUST-TEST3"
-        },
-        "defaultDir": "C:/tmp/files0"
-      }
+      "hostsConfig": "0 127.0.0.1 11000,1 127.0.0.1 11010,2 127.0.0.1 11020,3 127.0.0.1 11030,7001 127.0.0.1 11100",
+      "ttpPubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwuoTWbSFDnVjohwdZftoAwv3oCxUPnUiiNNH9pXryEW8kSFRGVJ7zJCwxJnt3YZGnpPGxnC3hAI4XkG26hO7+TxkgaYmv5GbamL946uZISxv0aNX3YbaOf//MC6F8tShFfCnpWlj68FYulM5dC2OOOHaUJfofQhmXfsaEWU251wIDAQAB",
+      "idNodeNameMap": {
+        "0": "TRUST-TEST0",
+        "1": "TRUST-TEST1",
+        "2": "TRUST-TEST2",
+        "3": "TRUST-TEST3"
+      },
+      "defaultDir": "C:/tmp/files0"
     }
   },
   "network": {
     "host": "127.0.0.1",
     "port": 9001,
-    "peers": "127.0.0.1:9001,127.0.0.1:9002",
+    "peers": "127.0.0.1:9001",
     "rpc": "netty",
     "timeout": 5,
     "clientThreadNum": 0

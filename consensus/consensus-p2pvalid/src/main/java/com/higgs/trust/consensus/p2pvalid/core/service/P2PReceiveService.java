@@ -91,15 +91,13 @@ import java.util.concurrent.ConcurrentHashMap;
         ConcurrentHashMap<String, ValidCommandWrap> _new = new ConcurrentHashMap<>();
         ConcurrentHashMap<String, ValidCommandWrap> _old = receivedCommand.putIfAbsent(messageDigest, _new);
         //add command to memory for first
-        if (_old == null) {
-            _new.put(fromNode, validCommandWrap);
-            return;
+        if (_old != null) {
+            _new = _old;
         }
-        //add command to memory
-        _old.put(fromNode, validCommandWrap);
+        _new.put(fromNode, validCommandWrap);
         //check threshold
         int applyThreshold = Math.min(view.getAppliedQuorum(), view.getNodeNames().size());
-        if (_old.size() < applyThreshold) {
+        if (_new.size() < applyThreshold) {
             if (log.isDebugEnabled()) {
                 log.debug("command.size is less than applyThreshold:{}", applyThreshold);
             }

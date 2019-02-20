@@ -44,6 +44,10 @@
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
+            <artifactId>consensus-solo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
             <artifactId>management</artifactId>
         </dependency>
         <dependency>

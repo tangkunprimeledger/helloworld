@@ -21,9 +21,13 @@ import java.util.function.Function;
 
     private ApplicationContext applicationContext;
 
-    @Autowired private CompositeCommandFilter filter;
+    private CompositeCommandFilter filter;
 
     private Map<Class<?>, Function<ConsensusCommit<?>, ?>> classFunctionMap = new HashMap<>();
+
+    public AbstractCommitReplicateComposite(CompositeCommandFilter filter) {
+        this.filter = filter;
+    }
 
     /**
      * Registers operations for the class.
