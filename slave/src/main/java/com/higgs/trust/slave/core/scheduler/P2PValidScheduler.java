@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ import java.util.List;
  */
 @ConditionalOnProperty(name = "higgs.trust.isSlave", havingValue = "true", matchIfMissing = true) @Component
 @Slf4j public class P2PValidScheduler {
+    @Autowired private TransactionTemplate txRequired;
 
     @Autowired private PackageRepository packageRepository;
 
@@ -135,14 +137,27 @@ import java.util.List;
         if(maxPersistedHeight == null || maxPersistedHeight.equals(0L)){
             return;
         }
-        int r = packageRepository.deleteLessThanHeightAndStatus(maxPersistedHeight,PackageStatusEnum.PERSISTED);
-        if(r != 0){
-            log.info("deleted package less than height:{},size:{}",maxPersistedHeight,r);
-        }
-        r = pendingTxRepository.deleteLessThanHeight(maxPersistedHeight);
-        if(r != 0){
-            log.info("deleted pendingTx less than height:{},size:{}",maxPersistedHeight,r);
-        }
+        //start
+        boolean result = txRequired.execute(transactionStatus -> {
+            //get heights by status=PERSISTED
+            List<Long> heights = packageRepository.getBlockHeightsByStatus(PackageStatusEnum.PERSISTED);
+            if(CollectionUtils.isEmpty(heights)){
+                log.info("package.PERSISTED.heights is empty ");
+                return false;
+            }
+            //delete pending tx by height
+            heights.forEach(height->{
+                pendingTxRepository.deleteByHeight(height);
+            });
+            //detete package
+            int r = packageRepository.deleteLessThanHeightAndStatus(maxPersistedHeight,PackageStatusEnum.PERSISTED);
+            if(r != 0){
+                log.info("deleted package less than height:{},size:{}",maxPersistedHeight,r);
+            }else{
+                throw new RuntimeException("delete package less than height:"+maxPersistedHeight+" and status:PERSISTED is fail");
+            }
+            return true;
+        });
     }
     /**
      * thread sleep

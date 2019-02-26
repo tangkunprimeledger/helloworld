@@ -307,4 +307,16 @@ import java.util.Set;
 
         pendingTxRepository.batchDelete(po.getSignedTxList());
     }
+
+    /**
+     * get height list by status
+     * @param status
+     * @return
+     */
+    public List<Long> getBlockHeightsByStatus(PackageStatusEnum status) {
+        if (initConfig.isUseMySQL()) {
+            return packageDao.getBlockHeightsByStatus(status.getCode());
+        }
+        return packStatusRocksDao.getBlockHeightsByStatus(status.getIndex());
+    }
 }

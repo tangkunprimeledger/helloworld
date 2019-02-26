@@ -119,4 +119,9 @@ public class PackStatusRocksDao extends RocksBaseDao<Long> {
         String position = index + Constant.SPLIT_SLASH + df.format(height);
         return queryLessThanByPrefixAndPosition(index, position);
     }
+
+    public List<Long> getBlockHeightsByStatus(String status){
+        return queryByPrefix(status);
+    }
+
 }

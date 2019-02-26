@@ -108,4 +108,8 @@
           height <= #{height}
         ]]>
     </delete>
+
+    <delete id="deleteByHeight" parameterType="object">
+        delete from pending_transaction where height = #{height}
+    </delete>
 </mapper>

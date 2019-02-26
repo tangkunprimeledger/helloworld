@@ -44,4 +44,11 @@ import java.util.List;
      * @return
      */
     int deleteLessThanHeight(@Param("height")Long height);
+
+    /**
+     * delete by height
+     * @param height
+     * @return
+     */
+    int deleteByHeight(@Param("height")Long height);
 }
