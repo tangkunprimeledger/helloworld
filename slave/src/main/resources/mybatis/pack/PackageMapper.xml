@@ -135,7 +135,7 @@
         ]]>
     </delete>
 
-    <select id="getBlockHeightsByStatus" resultType="java.lang.Long" parameterType="java.lang.Long">
+    <select id="getBlockHeightsByStatus" resultType="java.lang.Long" parameterType="java.lang.String">
         select height
         from package where status=#{status}
     </select>
