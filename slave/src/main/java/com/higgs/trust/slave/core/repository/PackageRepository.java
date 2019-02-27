@@ -229,13 +229,22 @@ import java.util.Set;
      * @return
      */
     public boolean isPackageStatus(Long height, PackageStatusEnum packageStatusEnum) {
-        Package pack = load(height);
-        if (pack == null) {
+        PackagePO packagePO = null;
+        if (initConfig.isUseMySQL()) {
+            packagePO = packageDao.queryByHeight(height);
+        } else {
+            packagePO = packRocksDao.get(String.valueOf(height));
+            if (null != packagePO) {
+                packagePO.setStatus(packStatusRocksDao.getStatusByHeight(height));
+            }
+        }
+        if (packagePO == null) {
             log.warn("[isPackageStatus] package is null height:{}", height);
             return false;
         }
-        log.debug("package of DB status:{}, blockHeight:{}", pack.getStatus(), height);
-        return pack.getStatus() == packageStatusEnum;
+        PackageStatusEnum status = PackageStatusEnum.getByCode(packagePO.getStatus());
+        log.debug("package of DB status:{}, blockHeight:{}", status, height);
+        return status == packageStatusEnum;
     }
 
     /**
