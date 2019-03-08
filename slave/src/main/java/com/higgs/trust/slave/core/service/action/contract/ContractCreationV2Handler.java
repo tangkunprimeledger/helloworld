@@ -78,6 +78,7 @@ public class ContractCreationV2Handler implements ActionHandler {
 
         String parentBlockHash = blockchain.getLastBlockHeader().getBlockHash();
         String txId = actionData.getCurrentTransaction().getCoreTx().getTxId();
+        log.info("create contract transaction txId:{}", txId);
         long timestamp = actionData.getCurrentBlock().getBlockHeader().getBlockTime() / 1000;
         long number = actionData.getCurrentBlock().getBlockHeader().getHeight();
         byte[] senderAddress = Hex.decode(creationAction.getFrom());
