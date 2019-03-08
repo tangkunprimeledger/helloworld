@@ -203,4 +203,12 @@ import java.util.List;
             pendingTxRocksDao.batchDelete(signedTx.getCoreTx().getTxId());
         }
     }
+
+    public int deleteByHeight(Long height){
+        if (initConfig.isUseMySQL()) {
+            return pendingTransactionDao.deleteByHeight(height);
+        }
+        //rocks db delete with package
+        return 1;
+    }
 }

@@ -134,4 +134,9 @@
           height <= #{height} AND status = #{status}
         ]]>
     </delete>
+
+    <select id="getBlockHeightsByStatus" resultType="java.lang.Long" parameterType="java.lang.String">
+        select height
+        from package where status=#{status}
+    </select>
 </mapper>

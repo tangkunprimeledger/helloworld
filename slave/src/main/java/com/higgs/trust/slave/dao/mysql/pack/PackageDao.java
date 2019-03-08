@@ -102,4 +102,11 @@ import java.util.Set;
      * @return
      */
     int deleteLessThanHeightAndStatus(@Param("height")Long height,@Param("status")String status);
+
+    /**
+     * get height list by status
+     * @param status
+     * @return
+     */
+    List<Long> getBlockHeightsByStatus(@Param("status")String status);
 }
