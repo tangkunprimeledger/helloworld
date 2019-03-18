@@ -1,7 +1,6 @@
 package commands
 
 import com.higgs.trust.rs.core.api.CaService
-import com.higgs.trust.slave.core.service.ca.CaInitService
 import lombok.extern.slf4j.Slf4j
 import org.crsh.cli.Argument
 import org.crsh.cli.Command
@@ -64,14 +63,4 @@ class ca {
         caService.cancelKeyPair(user)
         out.println("send CA cancel tx successful, user= $user")
     }
-
-    @Usage('init CA')
-    @Command
-    def initCA(InvocationContext context) {
-        BeanFactory beans = context.attributes['spring.beanfactory']
-        def caInitService = beans.getBean(CaInitService.class)
-        caInitService.initStart()
-        out.println("send CA init tx successful")
-    }
-
 }

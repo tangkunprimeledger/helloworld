@@ -1,5 +1,6 @@
 package com.higgs.trust.rs.core.api;
 
+import com.higgs.trust.rs.core.bo.ContractCreateV2Request;
 import com.higgs.trust.rs.core.bo.ContractMigrationRequest;
 import com.higgs.trust.rs.core.bo.ContractQueryRequest;
 import com.higgs.trust.slave.api.vo.ContractVO;
@@ -7,6 +8,7 @@ import com.higgs.trust.slave.api.vo.PageVO;
 import com.higgs.trust.slave.api.vo.QueryContractVO;
 import com.higgs.trust.slave.api.vo.RespData;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -22,6 +24,13 @@ public interface ContractService {
      * @return
      */
     RespData deploy(String txId, String code, Object... initArgs);
+
+    /**
+     * deploy contract
+     *
+     * @return
+     */
+    RespData deployV2(ContractCreateV2Request request);
 
     /**
      * query contract list
@@ -54,6 +63,18 @@ public interface ContractService {
     RespData invoke(String txId, String address, Object... args);
 
     /**
+     * invoke v2 contract
+     * @param txId
+     * @param from
+     * @param to
+     * @param value
+     * @param methodSignature
+     * @param args
+     * @return
+     */
+    RespData invokeV2(String txId, String from, String to, BigDecimal value, String methodSignature, Object... args);
+
+    /**
      * migration contract state
      *
      * @param migrationRequest
@@ -68,4 +89,12 @@ public interface ContractService {
      * @return
      */
     Object query(ContractQueryRequest request);
+    /**
+     * query by txId and action index
+     *
+     * @param txId
+     * @param actionIndex
+     * @return
+     */
+    ContractVO queryByTxId(String txId,int actionIndex);
 }

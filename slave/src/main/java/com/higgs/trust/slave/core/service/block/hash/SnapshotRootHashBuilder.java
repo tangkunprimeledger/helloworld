@@ -3,16 +3,18 @@ package com.higgs.trust.slave.core.service.block.hash;
 import com.higgs.trust.slave.api.enums.MerkleTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.snapshot.agent.MerkleTreeSnapshotAgent;
 import com.higgs.trust.slave.model.bo.StateRootHash;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.context.PackageData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.spongycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuyu
@@ -22,15 +24,16 @@ import java.util.List;
 @Component @Slf4j public class SnapshotRootHashBuilder {
     @Autowired MerkleTreeSnapshotAgent merkleTreeSnapshotAgent;
     @Autowired TxRootHashBuilder txRootHashBuilder;
+    @Autowired Blockchain blockchain;
 
     /**
      * build root hash for block header
      *
      * @param packageData
-     * @param txReceipts
+     * @param txReceiptMap
      * @return
      */
-    public StateRootHash build(PackageData packageData, List<TransactionReceipt> txReceipts) {
+    public StateRootHash build(PackageData packageData, Map<String, TransactionReceipt> txReceiptMap) {
         //hash for transactions
         String txRootHash = txRootHashBuilder.buildTxs(packageData.getCurrentBlock().getSignedTxList());
         if (StringUtils.isEmpty(txRootHash)) {
@@ -38,7 +41,7 @@ import java.util.List;
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BUILD_TX_ROOT_HASH_ERROR);
         }
         //hash for transaction execute results
-        String txReceiptHash = txRootHashBuilder.buildReceipts(txReceipts);
+        String txReceiptHash = txRootHashBuilder.buildReceipts(txReceiptMap);
         if (StringUtils.isEmpty(txReceiptHash)) {
             log.error("[SnapshotRootHash.buildHeader]the txReceiptHash is empty");
             throw new SlaveException(SlaveErrorEnum.SLAVE_PACKAGE_BUILD_TX_RECEIPT_ROOT_HASH_ERROR);
@@ -56,6 +59,7 @@ import java.util.List;
         stateRootHash.setPolicyRootHash(policyRootHash);
         stateRootHash.setRsRootHash(rsRootHash);
         stateRootHash.setCaRootHash(caRootHash);
+        stateRootHash.setStateRoot(Hex.toHexString(blockchain.getRepositorySnapshot().getRoot()));
         return stateRootHash;
     }
 }

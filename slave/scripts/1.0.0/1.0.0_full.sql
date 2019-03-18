@@ -9,6 +9,8 @@ IF NOT EXISTS `currency_info` (
 	`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT 'id',
 	`currency` VARCHAR (24) NOT NULL COMMENT 'currency',
 	`remark` VARCHAR (64) DEFAULT NULL COMMENT 'remark',
+	`homomorphicPk` TEXT DEFAULT NULL COMMENT 'homomorphicPk',
+	`contract_address` VARCHAR (64) DEFAULT NULL COMMENT 'contract address',
 	`create_time` datetime (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_currency` (`currency`)
@@ -139,6 +141,7 @@ IF NOT EXISTS `block` (
 	`rs_root_hash` VARCHAR (64) NOT NULL COMMENT 'rs merkle tree root hash',
 	`tx_receipt_root_hash` VARCHAR (64) NOT NULL COMMENT 'tx receipt merkel tree root hash',
 	`ca_root_hash` VARCHAR (64) NOT NULL COMMENT 'ca merkel tree root hash',
+	`state_root_hash` VARCHAR (64)  COMMENT 'state root hash',
 	`block_time` datetime (3) NOT NULL COMMENT 'block time',
 	`tx_num` INT NOT NULL DEFAULT 0 COMMENT 'transaction num',
 	`total_tx_num` BIGINT (20) DEFAULT 0 COMMENT 'total transaction num',
@@ -172,7 +175,7 @@ IF NOT EXISTS `contract` (
 	`action_index` INT NOT NULL COMMENT 'the index create action',
 	`language` VARCHAR (32) NOT NULL COMMENT 'contract code language',
   `version` VARCHAR(5) NOT NULL COMMENT  '',
-	`code` NVARCHAR (8192) NOT NULL COMMENT 'contract code',
+	`code` TEXT NOT NULL COMMENT 'contract code',
 	`create_time` DATETIME (3) NOT NULL COMMENT 'create time',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_address` (`address`),
@@ -185,6 +188,7 @@ IF NOT EXISTS `contract_state` (
 	`address` VARCHAR (64) NOT NULL COMMENT 'contract address',
 	`update_time` datetime (3) DEFAULT NULL COMMENT 'update time',
 	`state` NVARCHAR (4096) NOT NULL COMMENT 'contract state',
+	`key_desc` VARCHAR (256) DEFAULT NULL COMMENT 'the key description',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_address` (`address`)
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'contract state';
@@ -246,6 +250,8 @@ IF NOT EXISTS `transaction` (
 	`sign_datas` varchar(4096) DEFAULT NULL COMMENT 'the signatures by json',
 	`execute_result` varchar(24) DEFAULT NULL COMMENT 'tx execute result,0:fail,1:success',
 	`error_code` varchar(128) DEFAULT NULL COMMENT 'tx execute error code',
+	`error_message` varchar(512) DEFAULT NULL COMMENT 'tx execute error message',
+	`tx_type` varchar(16) NOT NULL DEFAULT 'DEFAULT' COMMENT 'the type of transaction',
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `uniq_tx_id` (`tx_id`),
 	INDEX `idx_block_height` (`block_height`)
@@ -270,133 +276,12 @@ IF NOT EXISTS `tx_out` (
 ) ENGINE = INNODB DEFAULT CHARSET = utf8mb4 COMMENT = 'the table create tx out';
 
 
-CREATE TABLE IF NOT EXISTS `queued_apply` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  PRIMARY KEY (`id`),
-  KEY `idx_message_digest` (`message_digest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table apply_queue';
-
-
-CREATE TABLE IF NOT EXISTS `queued_apply_delay` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `apply_time` bigint(20) NOT NULL,
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  PRIMARY KEY (`id`),
-  KEY `idx_message_digest` (`message_digest`),
-  KEY `index_apply_time` (`apply_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table apply_delay_queue';
-
-
-CREATE TABLE IF NOT EXISTS `queued_receive_gc` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `gc_time` bigint(1) unsigned NOT NULL DEFAULT '0' COMMENT 'gc time',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  PRIMARY KEY (`id`),
-  KEY `idx_message_digest` (`message_digest`),
-  KEY `index_gc_time` (`gc_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_gc_queue';
-
-
-CREATE TABLE IF NOT EXISTS `queued_send` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  PRIMARY KEY (`id`),
-  KEY `idx_message_digest` (`message_digest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_queue';
-
-
-CREATE TABLE IF NOT EXISTS `queued_send_delay` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `send_time` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'requeued to send',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  PRIMARY KEY (`id`),
-  KEY `idx_message_digest` (`message_digest`),
-  KEY `index_send_time` (`send_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_delay_queue';
-
-
-CREATE TABLE IF NOT EXISTS `queued_send_gc` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `gc_time` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'gc time',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  PRIMARY KEY (`id`),
-  KEY `idx_message_digest` (`message_digest`),
-  KEY `index_gc_time` (`gc_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_gc_queue';
-
-
-CREATE TABLE IF NOT EXISTS `receive_command` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `valid_command` varchar(3072) NOT NULL COMMENT 'valid command',
-  `command_class` varchar(255) NOT NULL DEFAULT '' COMMENT 'command class',
-  `node_name` varchar(255) NOT NULL DEFAULT '' COMMENT 'node name',
-  `receive_node_num` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'num of receive node',
-  `apply_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to apply',
-  `gc_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to gc',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-normal，1-add to apply queue，2-add to gc queue',
-  `retry_apply_num` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT 'count of retry apply',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  `update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_message_digest` (`message_digest`),
-  KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_command';
-
-
-CREATE TABLE IF NOT EXISTS `receive_node` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `from_node_name` varchar(64) NOT NULL COMMENT 'from node name',
-  `command_sign` varchar(512) NOT NULL DEFAULT '' COMMENT 'command sign',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`from_node_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
-
-
-CREATE TABLE IF NOT EXISTS `send_command` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `valid_command` varchar(3072) NOT NULL COMMENT 'valid command',
-  `node_name` varchar(255) NOT NULL DEFAULT '' COMMENT 'node name',
-  `command_sign` varchar(512) NOT NULL DEFAULT '' COMMENT 'command sign',
-  `command_class` varchar(255) NOT NULL DEFAULT '' COMMENT 'command class',
-  `ack_node_num` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'num of  ack node',
-  `gc_threshold` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'threshold to gc',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-add to send queue，1-add to gc queue',
-  `retry_send_num` mediumint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'count of retry',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  `update_time` datetime(3) DEFAULT NULL COMMENT 'update time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_message_digest` (`message_digest`),
-  KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table send_command';
-
-
-CREATE TABLE IF NOT EXISTS `send_node` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `message_digest` varchar(128) NOT NULL COMMENT 'message digest',
-  `to_node_name` varchar(64) NOT NULL DEFAULT '' COMMENT 'from node name',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0-wait to send , 1- ack',
-  `create_time` datetime(3) NOT NULL COMMENT 'create time',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_message_digest_to_node_name` (`message_digest`,`to_node_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='the table receive_node';
-
 CREATE TABLE IF NOT EXISTS `ca` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `version` varchar(32) NOT NULL COMMENT 'version',
   `period` datetime(3) NOT NULL COMMENT 'period',
   `valid` TINYINT (1) NOT NULL COMMENT 'valid flag TRUE/FALSE',
-  `pub_key` varchar(255) NOT NULL COMMENT 'pub key',
+  `pub_key` varchar(1024) NOT NULL COMMENT 'pub key',
   `user` varchar(32) NOT NULL COMMENT 'CA user',
   `usage` varchar(64) COMMENT 'CA usage',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
@@ -410,11 +295,11 @@ CREATE TABLE IF NOT EXISTS `config` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `version` varchar(32) NOT NULL COMMENT 'version',
   `valid` TINYINT (1) NOT NULL COMMENT 'valid flag TRUE/FALSE',
-  `pub_key` varchar(255) NOT NULL COMMENT 'pub key',
-  `pri_key` varchar(1024) NOT NULL COMMENT 'pri key',
+  `pub_key` varchar(1024) NOT NULL COMMENT 'pub key',
+  `pri_key` varchar(2048) NOT NULL COMMENT 'pri key',
   `usage` varchar(30) NOT NULL COMMENT 'usage of pub/priKey',
-  `tmp_pub_key` varchar(255) COMMENT 'temp pub key',
-  `tmp_pri_key` varchar(1024) COMMENT 'temp pri key',
+  `tmp_pub_key` varchar(1024) COMMENT 'temp pub key',
+  `tmp_pri_key` varchar(2048) COMMENT 'temp pri key',
   `node_name` varchar(32) NOT NULL COMMENT 'node name',
   `create_time` datetime(3) NOT NULL COMMENT 'create time',
   `update_time` datetime(3) NOT NULL COMMENT 'update time',

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.higgs.trust.slave.dao.config.SystemPropertyDao">
+<mapper namespace="com.higgs.trust.slave.dao.mysql.config.SystemPropertyDao">
 	<!-- Result Map -->
 	<resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.config.SystemPropertyPO">
 		<result column="id" property="id" />
@@ -30,7 +30,11 @@
 	<!-- update -->
 	<update id="update">
 		UPDATE `system_property`
-		SET `value` = #{value},`update_time`= now(3)
+		SET `value` = #{value},
+		<if test="desc != null and desc!=''">
+			`desc`=#{desc},
+		</if>
+		`update_time`= now(3)
 		WHERE
 		`key` = #{key} and `value`!=  #{value}
 	</update>

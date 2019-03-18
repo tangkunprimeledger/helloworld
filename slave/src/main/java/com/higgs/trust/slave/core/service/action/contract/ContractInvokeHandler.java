@@ -1,12 +1,13 @@
 package com.higgs.trust.slave.core.service.action.contract;
 
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.contract.StandardExecuteContextData;
 import com.higgs.trust.slave.core.service.contract.StandardSmartContract;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +21,7 @@ import org.springframework.util.StringUtils;
  */
 @Slf4j @Component public class ContractInvokeHandler implements ActionHandler {
 
-    @Autowired
-    private StandardSmartContract smartContract;
+    @Autowired private StandardSmartContract smartContract;
 
     private void check(ContractInvokeAction action) {
         if (StringUtils.isEmpty(action.getAddress())) {
@@ -38,14 +38,18 @@ import org.springframework.util.StringUtils;
         if (!(actionData.getCurrentAction() instanceof ContractInvokeAction)) {
             throw new IllegalArgumentException("action need a type of ContractInvokeAction");
         }
-        ContractInvokeAction invokeAction = (ContractInvokeAction) actionData.getCurrentAction();
+        ContractInvokeAction invokeAction = (ContractInvokeAction)actionData.getCurrentAction();
         this.check(invokeAction);
-        ExecuteContextData data = new StandardExecuteContextData().put("ActionData", actionData);
+        ExecuteContextData data = new StandardExecuteContextData().setAction(actionData);
         smartContract.execute(invokeAction.getAddress(), data, invokeAction.getArgs());
     }
 
-    @Override
-    public void process(ActionData actionData) {
+    @Override public void verifyParams(Action action) throws SlaveException {
+        ContractInvokeAction invokeAction = (ContractInvokeAction)action;
+        check(invokeAction);
+    }
+
+    @Override public void process(ActionData actionData) {
         log.debug("contract invoke start");
         Profiler.enter("contract invoke");
         try {

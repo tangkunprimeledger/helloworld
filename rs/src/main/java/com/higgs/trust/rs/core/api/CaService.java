@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * @author WangQuanzhou
- * @desc TODO
  * @date 2018/6/5 15:40
  */
 public interface CaService {
@@ -72,8 +71,6 @@ public interface CaService {
     /**
      * @param user
      * @return
-     * @desc TODO
      */
     Ca getCa(String user);
-
 }

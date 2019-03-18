@@ -1,11 +1,11 @@
 package com.higgs.trust.management.failover.service;
 
+import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -27,14 +27,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.mockito.Matchers.any;
 import static org.testng.Assert.assertEquals;
 
 @RunWith(PowerMockRunner.class) public class SyncServiceTest {
 
     @InjectMocks @Autowired SyncService syncService;
     @Mock FailoverProperties properties;
-    @Mock SyncPackageCache cache;
     @Mock BlockService blockService;
     @Mock BlockRepository blockRepository;
     @Mock BlockSyncService blockSyncService;
@@ -70,17 +68,6 @@ import static org.testng.Assert.assertEquals;
         }
     }
 
-    @Test public void testSyncInThreshold() {
-        Mockito.when(blockSyncService.getClusterHeight(Matchers.anyInt())).thenReturn(101L);
-        Mockito.when(properties.getThreshold()).thenReturn(100);
-        syncService.autoSync();
-    }
-
-    @Test public void testSyncOutThreshold() {
-        Mockito.when(blockSyncService.getClusterHeight(Matchers.anyInt())).thenReturn(102L);
-        Mockito.when(properties.getThreshold()).thenReturn(100);
-        syncService.autoSync();
-    }
 
     @Test public void testSyncWithParamNotState() {
         long startHeight = currentHeight + 1;
@@ -222,7 +209,7 @@ import static org.testng.Assert.assertEquals;
         try {
             syncService.sync(startHeight, size);
         } catch (SlaveException e) {
-            assertEquals(e.getCode(), ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_PERSIST_RESULT_INVALID);
+            assertEquals(e.getCode(), ManagementError.MANAGEMENT_FAILOVER_SYNC_BLOCK_VALIDATING_FAILED);
         }
         Mockito.verify(blockService, Mockito.times(1)).compareBlockHeader(Matchers.any(), Matchers.any());
     }
@@ -325,9 +312,7 @@ import static org.testng.Assert.assertEquals;
         Mockito.when(blockRepository.getMaxHeight()).thenReturn(blockHeight.longValue()).thenAnswer(invocation -> {
             return blockHeight.addAndGet(getHeaderTime.incrementAndGet() % 2 == 0 ? headerStep : 0);
         });
-        Mockito.when(properties.getThreshold()).thenReturn(50);
         Mockito.when(blockSyncService.getClusterHeight(Matchers.anyInt())).thenReturn(clusterHeight);
-        Mockito.when(cache.getMinHeight()).thenReturn(clusterHeight, cacheMinHeight);
         Mockito.when(properties.getTryTimes()).thenReturn(times);
         Mockito.when(properties.getBlockStep()).thenReturn(blockStep);
         Mockito.when(properties.getHeaderStep()).thenReturn(headerStep);

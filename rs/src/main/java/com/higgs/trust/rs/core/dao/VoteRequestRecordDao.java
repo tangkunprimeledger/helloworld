@@ -5,6 +5,8 @@ import com.higgs.trust.rs.core.dao.po.VoteRequestRecordPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 @Mapper public interface VoteRequestRecordDao extends BaseDao<VoteRequestRecordPO> {
 
     /**
@@ -24,4 +26,12 @@ import org.apache.ibatis.annotations.Param;
      * @return
      */
     int setVoteResult(@Param("txId") String txId,@Param("sign")String sign,@Param("voteResult") String voteResult);
+
+    /**
+     * query all init request
+     * @param row
+     * @param count
+     * @return
+     */
+    List<VoteRequestRecordPO> queryAllInitRequest(@Param("row") int row,@Param("count") int count);
 }

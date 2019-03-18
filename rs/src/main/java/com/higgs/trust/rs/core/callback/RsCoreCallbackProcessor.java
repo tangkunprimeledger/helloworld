@@ -4,42 +4,53 @@ import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.rs.common.enums.RequestEnum;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.dao.RequestDao;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.VotingRequest;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
+import com.higgs.trust.slave.model.bo.node.NodeAction;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author liuyu
  * @description
  * @date 2018-06-07
  */
-@Component @Slf4j public class RsCoreCallbackProcessor implements TxCallbackHandler {
-    @Autowired private TxCallbackRegistor txCallbackRegistor;
-    @Autowired private VoteRuleRepository voteRuleRepository;
-    @Autowired private ConfigRepository configRepository;
-    @Autowired private NodeState nodeState;
-    @Autowired private RequestDao requestDao;
-    @Autowired AbstractClusterInfo clusterInfo;
+@Component
+@Slf4j
+public class RsCoreCallbackProcessor implements TxCallbackHandler {
+    @Autowired
+    private TxCallbackRegistor txCallbackRegistor;
+    @Autowired
+    private VoteRuleRepository voteRuleRepository;
+    @Autowired
+    private ConfigRepository configRepository;
+    @Autowired
+    private NodeState nodeState;
+    @Autowired
+    private ConsensusStateMachine consensusStateMachine;
 
     private TxCallbackHandler getCallbackHandler() {
         TxCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxCallback();
@@ -50,12 +61,14 @@ import org.springframework.stereotype.Component;
         return txCallbackHandler;
     }
 
-    @Override public void onVote(VotingRequest votingRequest) {
+    @Override
+    public void onVote(VotingRequest votingRequest) {
         TxCallbackHandler callbackHandler = getCallbackHandler();
         callbackHandler.onVote(votingRequest);
     }
 
-    @Override public void onPersisted(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
+    @Override
+    public void onPersisted(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -67,9 +80,10 @@ import org.springframework.stereotype.Component;
                     processRegisterPolicy(respData);
                     return;
                 case REGISTER_RS:
-                    processRegisterRS(respData);
                     return;
                 case CONTRACT_ISSUE:
+                    return;
+                case CONTRACT_INVOKE:
                     return;
                 case CONTRACT_DESTROY:
                     return;
@@ -83,7 +97,6 @@ import org.springframework.stereotype.Component;
                     processCaAuth(respData);
                     return;
                 case CANCEL_RS:
-                    processCancelRS(respData);
                     return;
                 case NODE_JOIN:
                     processNodeJoin(respData);
@@ -104,7 +117,8 @@ import org.springframework.stereotype.Component;
         }
     }
 
-    @Override public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
+    @Override
+    public void onEnd(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -117,6 +131,8 @@ import org.springframework.stereotype.Component;
                 case REGISTER_RS:
                     return;
                 case CONTRACT_ISSUE:
+                    return;
+                case CONTRACT_INVOKE:
                     return;
                 case CONTRACT_DESTROY:
                     return;
@@ -131,6 +147,7 @@ import org.springframework.stereotype.Component;
                 case NODE_JOIN:
                     return;
                 case NODE_LEAVE:
+                    processNodeLeave(respData);
                     return;
                 default:
                     break;
@@ -145,7 +162,8 @@ import org.springframework.stereotype.Component;
         }
     }
 
-    @Override public void onFailover(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
+    @Override
+    public void onFailover(RespData<CoreTransaction> respData, BlockHeader blockHeader) {
         CoreTransaction coreTransaction = respData.getData();
         String policyId = coreTransaction.getPolicyId();
         InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
@@ -155,6 +173,7 @@ import org.springframework.stereotype.Component;
                 case REGISTER_RS:
                 case CONTRACT_ISSUE:
                 case CONTRACT_DESTROY:
+                case CONTRACT_INVOKE:
                 case CA_UPDATE:
                 case CA_CANCEL:
                 case CA_AUTH:
@@ -185,12 +204,11 @@ import org.springframework.stereotype.Component;
         }
         CoreTransaction coreTransaction = respData.getData();
         //get register policy action
-        RegisterPolicy registerPolicy = (RegisterPolicy)coreTransaction.getActionList().get(0);
+        RegisterPolicy registerPolicy = (RegisterPolicy) coreTransaction.getActionList().get(0);
         //check
         VoteRule voteRule = voteRuleRepository.queryByPolicyId(registerPolicy.getPolicyId());
         if (voteRule != null) {
-            log.info("[processRegisterPolicy]voteRule already exist policyId:{},txId:{}", registerPolicy.getPolicyId(),
-                coreTransaction.getTxId());
+            log.info("[processRegisterPolicy]voteRule already exist policyId:{},txId:{}", registerPolicy.getPolicyId(), coreTransaction.getTxId());
             return;
         }
         JSONObject jsonObject = coreTransaction.getBizModel();
@@ -200,21 +218,8 @@ import org.springframework.stereotype.Component;
         voteRule.setVotePattern(VotePatternEnum.fromCode(jsonObject.getString("votePattern")));
         voteRule.setCallbackType(CallbackTypeEnum.fromCode(jsonObject.getString("callbackType")));
         voteRuleRepository.add(voteRule);
-
-        //update request status
-        requestDao.updateStatusByRequestId(coreTransaction.getTxId(), RequestEnum.PROCESS.getCode(),
-            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
     }
 
-    private void processRegisterRS(RespData<CoreTransaction> respData) {
-        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(),
-            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
-    }
-
-    private void processCancelRS(RespData<CoreTransaction> respData) {
-        requestDao.updateStatusByRequestId(respData.getData().getTxId(), RequestEnum.PROCESS.getCode(),
-            RequestEnum.DONE.getCode(), respData.getRespCode(), respData.getMsg());
-    }
 
     private void processCaUpdate(RespData<CoreTransaction> respData) {
         if (!respData.isSuccess()) {
@@ -223,14 +228,10 @@ import org.springframework.stereotype.Component;
             return;
         }
 
-        clusterInfo.setRefresh();
-        log.info("[processCaUpdate] set cluster info refresh");
-
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
-            log.info("[processCaUpdate] current node ={}, is not ca updated user={}, end update pubKey/priKey",
-                nodeState.getNodeName(), user);
+            log.info("[processCaUpdate] current node ={}, is not ca updated user={}, end update pubKey/priKey", nodeState.getNodeName(), user);
             return;
         }
 
@@ -254,25 +255,19 @@ import org.springframework.stereotype.Component;
             return;
         }
 
-        clusterInfo.setRefresh();
-        log.info("[processCaCancel] set cluster info refresh");
-
         CoreTransaction coreTransaction = respData.getData();
         String user = coreTransaction.getSender();
         if (!StringUtils.equals(user, nodeState.getNodeName())) {
-            log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey",
-                nodeState.getNodeName(), user);
+            log.info("[processCaCancel] current node ={}, is not ca cancel user={}, end cancel pubKey/priKey", nodeState.getNodeName(), user);
             return;
         }
-
-        /*if (nodeState.isState(NodeStateEnum.Running)) {
-            nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
-        }*/
-
-        log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodeState.getNodeName());
-        //set pubKey and priKey to invalid
-        Config config = new Config();
-        config.setNodeName(user);
+        
+        log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodeState.getNodeName());
+        //set pubKeyForConsensus and priKey to invalid
+        Config config = configRepository.getBizConfig(user);
+        if (null == config) {
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_UPDATE_ERROR, "ca update error");
+        }
         config.setValid(false);
         configRepository.updateConfig(config);
 
@@ -285,9 +280,6 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_AUTH_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processCaAuth] set cluster info refresh");
     }
 
     private void processNodeJoin(RespData<CoreTransaction> respData) {
@@ -296,9 +288,6 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_JOIN_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeJoin] set cluster info refresh");
     }
 
     private void processNodeLeave(RespData<CoreTransaction> respData) {
@@ -307,8 +296,17 @@ import org.springframework.stereotype.Component;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_LEAVE_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeLeave] set cluster info refresh");
+        List<Action> actionList = respData.getData().getActionList();
+        if (CollectionUtils.isNotEmpty(actionList)) {
+            Action action = actionList.get(0);
+            if (action instanceof NodeAction) {
+                NodeAction nodeAction = (NodeAction) action;
+                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName()) && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
+                    log.info("leave consensus layer, user={}", nodeAction.getNodeName());
+                    consensusStateMachine.leaveConsensus();
+                    nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
+                }
+            }
+        }
     }
 }

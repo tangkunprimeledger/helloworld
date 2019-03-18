@@ -4,6 +4,8 @@ import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.PackageRepository;
 import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.core.service.pack.PackageService;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -24,8 +27,9 @@ import java.util.List;
  * @author tangfashuang
  * @date 2018/04/09 15:30
  */
-@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true) @Component
+@ConditionalOnProperty(name = "higgs.trust.isSlave", havingValue = "true", matchIfMissing = true) @Component
 @Slf4j public class P2PValidScheduler {
+    @Autowired private TransactionTemplate txRequired;
 
     @Autowired private PackageRepository packageRepository;
 
@@ -106,16 +110,19 @@ import java.util.List;
                 packageService.persisted(header,isCompare);
                 isSuccess = true;
                 break;
+            } catch (SlaveException e) {
+                if(e.getCode() == SlaveErrorEnum.SLAVE_PACKAGE_TWO_HEADER_UNEQUAL_ERROR){
+                    nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
+                    log.warn("doPersisted height:{} is fail so change status to offline", header.getHeight());
+                    MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
+                    throw new RuntimeException("doPersisted is fail retry:" + exeRetryNum);
+                }
             } catch (Throwable t) {
                 log.error("doPersisted has error", t);
             }
             sleep(100L + 100 * i);
         } while (++i < exeRetryNum);
-
         if (!isSuccess) {
-            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
-            log.warn("doPersisted height:{} is fail so change status to offline", header.getHeight());
-            MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SLAVE_PACKAGE_PROCESS_ERROR.getMonitorTarget(), 1);
             throw new RuntimeException("doPersisted is fail retry:" + exeRetryNum);
         }
     }
@@ -130,14 +137,27 @@ import java.util.List;
         if(maxPersistedHeight == null || maxPersistedHeight.equals(0L)){
             return;
         }
-        int r = packageRepository.deleteLessThanHeightAndStatus(maxPersistedHeight,PackageStatusEnum.PERSISTED);
-        if(r != 0){
-            log.info("deleted package less than height:{},size:{}",maxPersistedHeight,r);
-        }
-        r = pendingTxRepository.deleteLessThanHeight(maxPersistedHeight);
-        if(r != 0){
-            log.info("deleted pendingTx less than height:{},size:{}",maxPersistedHeight,r);
-        }
+        //start
+        boolean result = txRequired.execute(transactionStatus -> {
+            //get heights by status=PERSISTED
+            List<Long> heights = packageRepository.getBlockHeightsByStatus(PackageStatusEnum.PERSISTED);
+            if(CollectionUtils.isEmpty(heights)){
+                log.info("package.PERSISTED.heights is empty ");
+                return false;
+            }
+            //delete pending tx by height
+            heights.forEach(height->{
+                pendingTxRepository.deleteByHeight(height);
+            });
+            //detete package
+            int r = packageRepository.deleteLessThanHeightAndStatus(maxPersistedHeight,PackageStatusEnum.PERSISTED);
+            if(r != 0){
+                log.info("deleted package less than height:{},size:{}",maxPersistedHeight,r);
+            }else{
+                throw new RuntimeException("delete package less than height:"+maxPersistedHeight+" and status:PERSISTED is fail");
+            }
+            return true;
+        });
     }
     /**
      * thread sleep

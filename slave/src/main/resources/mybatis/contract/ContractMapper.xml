@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.higgs.trust.slave.dao.contract.ContractDao">
+<mapper namespace="com.higgs.trust.slave.dao.mysql.contract.ContractDao">
     <!-- Result Map -->
     <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.contract.ContractPO">
         <result column="id" property="id"/>
@@ -73,6 +73,15 @@
         </if>
         ORDER BY id DESC
         LIMIT #{startIndex}, #{endIndex}
+    </select>
+
+
+    <!-- query by txId -->
+    <select id="queryByTxId" resultMap="baseResultMap">
+        SELECT
+        <include refid="baseColumnList"/>
+        FROM contract
+        WHERE action_index = #{actionIndex} and tx_id = #{txId}
     </select>
 
 

@@ -1,11 +1,14 @@
 package commands
 
+import com.higgs.trust.common.utils.LogLevelChanger
+import com.higgs.trust.config.view.ClusterViewManager
 import com.higgs.trust.consensus.config.NodeState
 import com.higgs.trust.consensus.config.NodeStateEnum
 import com.higgs.trust.consensus.core.ConsensusStateMachine
 import com.higgs.trust.slave.core.repository.PackageRepository
 import com.higgs.trust.slave.core.service.block.BlockService
 import com.higgs.trust.slave.core.service.consensus.cluster.IClusterService
+import com.higgs.trust.slave.core.service.consensus.view.ClusterViewService
 import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.time.DateFormatUtils
 import org.crsh.cli.*
@@ -52,10 +55,16 @@ class node {
 
     @Usage('show the current state of node')
     @Command
-    def state(InvocationContext context) {
+    def state(InvocationContext context,@Option(names = ["a", "all"]) Boolean isAll) {
         BeanFactory beans = context.attributes['spring.beanfactory']
-        def nodeState = beans.getBean(NodeState.class)
-        out.println("Node is $nodeState.state")
+        if(isAll){
+            def clusterService = beans.getBean(IClusterService.class)
+            def map = clusterService.getAllClusterState()
+            map.entrySet().forEach({ entry -> context.provide([name: entry.key, value: entry.value]) })
+        }else{
+            def nodeState = beans.getBean(NodeState.class)
+            out.println("Node is $nodeState.state")
+        }
     }
 
 
@@ -106,6 +115,37 @@ class node {
         def consensusStateMachine = beans.getBean(ConsensusStateMachine.class)
         consensusStateMachine.start()
         out.println("start consensus successful")
+    }
+
+    @Usage('show the views of cluster')
+    @Command
+    def views(InvocationContext context) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def viewManager = beans.getBean(ClusterViewManager.class)
+        viewManager.getViews().forEach({ v -> context.provide(View: v.id, FaultNum: v.faultNum, StartHeight: v.startHeight, EndHeight: v.endHeight, NodeNames: v.nodeNames) })
+        out.println("")
+    }
+
+    @Usage('refresh the cluster view')
+    @Command
+    def refreshView(InvocationContext context,
+                    @Usage("init from cluster") @Option(names = ["c"]) Boolean isCluster,@Usage("use db.height + 1") @Option(names = ["h"]) Boolean height) {
+        BeanFactory beans = context.attributes['spring.beanfactory']
+        def clusterInfoService = beans.getBean(ClusterViewService.class)
+        if (isCluster) {
+            clusterInfoService.initClusterViewFromCluster()
+        } else {
+            clusterInfoService.initClusterViewFromDB(height)
+        }
+        out.println("refresh cluster view successful")
+    }
+
+    @Usage('change log level, log <logName> <[OFF|ERROR|WARN|INFO|DEBUG|TRACE|ALL]>')
+    @Command
+    def log(InvocationContext context,
+                       @Usage("log name") @Required @Argument String logName,
+                       @Usage("level") @Required @Argument String level) {
+        LogLevelChanger.change(logName, level);
     }
 
 }

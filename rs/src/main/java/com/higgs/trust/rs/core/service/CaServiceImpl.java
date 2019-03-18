@@ -2,8 +2,8 @@ package com.higgs.trust.rs.core.service;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
-import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.common.utils.HashUtil;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.rs.common.enums.RespCodeEnum;
@@ -13,6 +13,7 @@ import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.integration.CaClient;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.CaVO;
@@ -26,10 +27,8 @@ import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.manage.RsNode;
-import com.higgs.trust.slave.model.bo.node.NodeAction;
 import com.higgs.trust.slave.model.enums.UsageEnum;
 import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
-import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -70,41 +69,37 @@ import java.util.*;
         log.info("[authKeyPair] start to auth CA pubKey/priKey, nodeName={}", user);
         // CA existence check
         Ca ca = caRepository.getCaForBiz(user);
-        if (null != ca && ca.isValid()) {
+        if (null != ca && ca.isValid()&&nodeState.isState(NodeStateEnum.Running)) {
             log.error("[authKeyPair] ca information for node={} already exist, pubKey={}", ca.getUser(),
                 ca.getPubKey());
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_CA_ALREADY_EXIST_ERROR,
                 "[authKeyPair] ca information already exist");
         }
 
-        // build pubKey and priKey
-        List<CaVO> list = generateKeyPair();
-
+        List<CaVO> list = null;
         try {
             // send CA auth request
             RespData respData = null;
-            if (nodeState.isState(NodeStateEnum.Offline)) {
+            if (!nodeState.isState(NodeStateEnum.Running)) {
+                list = loadKeyPair(user);
                 log.info("current node is Offline, send tx by other node");
                 respData = caClient.caAuth(nodeState.notMeNodeNameReg(), list);
             }
             if (nodeState.isState(NodeStateEnum.Running)) {
+                list = generateKeyPair();
                 log.info("current node is Running, send tx by self");
                 respData = authCaTx(list);
             }
             if (!respData.isSuccess()) {
-                log.error("send tx error");
+                log.error("send tx error, resp = {}", respData);
                 return FAIL;
             }
-        } catch (HystrixRuntimeException e1) {
-            log.error("wait timeOut", e1);
-            return FAIL;
         } catch (Throwable e2) {
             log.error("send ca auth error", e2);
             return FAIL;
         }
 
-        // insert ca into db (for consensus layer)
-        //   协议层的公私钥不更新   即非首次加入时，判断公私钥是否已经存在，存在就不做任何操作
+        // insert ca into db (for consensus layer) if not exist
         if (null != caRepository.getCaForConsensus(nodeState.getNodeName())) {
             log.info("not the first time for ca auth, ca for consensus layer already exist");
             return SUCCESS;
@@ -115,8 +110,7 @@ import java.util.*;
                 BeanUtils.copyProperties(caVO, ca);
             }
         }
-        if (nodeState.isState(NodeStateEnum.Offline)) {
-            //            ca.setValid(true);
+        if (!nodeState.isState(NodeStateEnum.Running)) {
             caRepository.insertCa(ca);
             log.info("insert ca end (for consensus layer)");
         }
@@ -277,6 +271,7 @@ import java.util.*;
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.CA_AUTH.getPolicyId());
         coreTx.setActionList(buildAuthActionList(list));
+        coreTx.setTxType(TxTypeEnum.CA.getCode());
         return coreTx;
     }
 
@@ -294,18 +289,17 @@ import java.util.*;
             caAction.setUsage(caVO.getUsage());
             caAction.setVersion(VersionEnum.V1.getCode());
             caAction.setUser(caVO.getUser());
-            caAction.setValid(true);
+            if ((!caVO.getUser().equals(nodeState.getNodeName())) && caVO.getUsage()
+                .equals(UsageEnum.CONSENSUS.getCode())) {
+                caAction.setValid(false);
+            } else {
+                caAction.setValid(true);
+            }
             caAction.setType(ActionTypeEnum.CA_AUTH);
             caAction.setIndex(index);
             actions.add(caAction);
             index++;
         }
-
-        NodeAction nodeAction = new NodeAction();
-        nodeAction.setNodeName(list.get(0).getUser());
-        nodeAction.setType(ActionTypeEnum.NODE_JOIN);
-        nodeAction.setIndex(index);
-        actions.add(nodeAction);
 
         return actions;
     }
@@ -317,6 +311,7 @@ import java.util.*;
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.CA_UPDATE.getPolicyId());
         coreTx.setActionList(buildUpdateActionList(caVO));
+        coreTx.setTxType(TxTypeEnum.CA.getCode());
         return coreTx;
     }
 
@@ -341,6 +336,7 @@ import java.util.*;
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.CA_CANCEL.getPolicyId());
         coreTx.setActionList(buildCancelActionList(caVO));
+        coreTx.setTxType(TxTypeEnum.CA.getCode());
         return coreTx;
     }
 
@@ -362,7 +358,7 @@ import java.util.*;
 
         // generate temp pubKey and priKey and insert into db
         log.info("[generateTmpKeyPair] start to generate tempKeyPairs");
-        Crypto crypto = CryptoUtil.getBizCrypto();
+        Crypto crypto = CryptoUtil.getBizCrypto(null);
         KeyPair keyPair = crypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();
@@ -416,10 +412,9 @@ import java.util.*;
     private List<CaVO> generateKeyPair() {
 
         List<CaVO> list = new LinkedList<>();
-        String reqNo;
 
-        // generate KeyPair for consensus layer
-        Crypto consensusCrypto = CryptoUtil.getProtocolCrypto();
+        // generate KeyPair for BIZ layer
+        Crypto consensusCrypto = CryptoUtil.getBizCrypto(null);
         KeyPair keyPair = consensusCrypto.generateKeyPair();
         String pubKey = keyPair.getPubKey();
         String priKey = keyPair.getPriKey();
@@ -430,50 +425,34 @@ import java.util.*;
         config.setPriKey(priKey);
         config.setValid(true);
         config.setVersion(VersionEnum.V1.getCode());
-        config.setUsage(UsageEnum.CONSENSUS.getCode());
-        if (nodeState.isState(NodeStateEnum.Offline)) {
-            configRepository.insertConfig(config);
-        }
+        config.setUsage(UsageEnum.BIZ.getCode());
+        configRepository.insertConfig(config);
         //construct caVO for consensus layer
         CaVO caVO1 = new CaVO();
         caVO1.setVersion(VersionEnum.V1.getCode());
         caVO1.setPeriod(calculatePeriod());
         caVO1.setPubKey(pubKey);
-        caVO1.setUsage(UsageEnum.CONSENSUS.getCode());
+        caVO1.setUsage(UsageEnum.BIZ.getCode());
         caVO1.setUser(nodeState.getNodeName());
+        caVO1.setReqNo(HashUtil.getSHA256S(caVO1.getPubKey() + caVO1.getUser()));
 
-        // generate KeyPair for biz layer
-        Crypto bizCrypto = CryptoUtil.getBizCrypto();
-        keyPair = bizCrypto.generateKeyPair();
-        pubKey = keyPair.getPubKey();
-        priKey = keyPair.getPriKey();
-        //store pubKey and priKey
-        config = new Config();
-        config.setNodeName(nodeState.getNodeName());
-        config.setPubKey(pubKey);
-        config.setPriKey(priKey);
-        config.setValid(true);
-        config.setVersion(VersionEnum.V1.getCode());
-        config.setUsage(UsageEnum.BIZ.getCode());
-        configRepository.insertConfig(config);
-        //construct caVO for biz layer
-        CaVO caVO2 = new CaVO();
-        caVO2.setVersion(VersionEnum.V1.getCode());
-        caVO2.setPeriod(calculatePeriod());
-        caVO2.setPubKey(pubKey);
-        caVO2.setUsage(UsageEnum.BIZ.getCode());
-        caVO2.setUser(nodeState.getNodeName());
+        list.add(caVO1);
+        return list;
+    }
 
-        if (nodeState.isState(NodeStateEnum.Offline)) {
-            reqNo = HashUtil.getSHA256S(caVO1.getPubKey() + caVO2.getPubKey() + caVO2.getUser());
-            list.add(caVO1);
-        } else {
-            reqNo = HashUtil.getSHA256S(caVO2.getPubKey() + caVO2.getUser());
+    private List<CaVO> loadKeyPair(String user) {
+        List<CaVO> list = new LinkedList<>();
+        List<Config> configList = configRepository.getConfig(new Config(user));
+        for (Config config : configList) {
+            CaVO caVO = new CaVO();
+            caVO.setVersion(VersionEnum.V1.getCode());
+            caVO.setPeriod(calculatePeriod());
+            caVO.setPubKey(config.getPubKey());
+            caVO.setUsage(config.getUsage());
+            caVO.setUser(user);
+            caVO.setReqNo(HashUtil.getSHA256S(caVO.getPubKey() + caVO.getUser()));
+            list.add(caVO);
         }
-        caVO1.setReqNo(reqNo);
-        caVO2.setReqNo(reqNo);
-
-        list.add(caVO2);
         return list;
     }
 

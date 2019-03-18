@@ -1,25 +1,31 @@
 package com.higgs.trust.slave.core.service.action;
 
+import com.higgs.trust.common.constant.Constant;
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.repository.ca.CaRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterConfigRepository;
 import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
-import com.higgs.trust.slave.core.service.action.ca.CaInitHandler;
+import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
+import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 import com.higgs.trust.slave.model.bo.action.Action;
-import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.config.ClusterConfig;
 import com.higgs.trust.slave.model.bo.config.ClusterNode;
 import lombok.extern.slf4j.Slf4j;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -35,34 +41,54 @@ import java.util.*;
     @Autowired BlockRepository blockRepository;
     @Autowired TransactionTemplate txRequired;
     @Autowired CaRepository caRepository;
-    @Autowired CaInitHandler caInitHandler;
+    @Autowired SystemPropertyRepository systemPropertyRepository;
+    @Autowired InitConfig initConfig;
 
     public void generateGeniusBlock(Block block) {
         try {
+            Map<String, TransactionReceipt> txReceiptMap = new HashMap<>(1);
+            TransactionReceipt transactionReceipt = new TransactionReceipt();
+            transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
+            transactionReceipt.setResult(true);
+            txReceiptMap.put(transactionReceipt.getTxId(), transactionReceipt);
 
-            txRequired.execute(new TransactionCallbackWithoutResult() {
-                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+            if (initConfig.isUseMySQL()) {
+                txRequired.execute(new TransactionCallbackWithoutResult() {
+                    @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
 
-                    log.info("[process] transaction start, insert genius block into db");
+                        log.info("[process] transaction start, insert genius block into db");
+                        blockRepository.saveBlock(block, txReceiptMap);
+                        log.info("[process]insert clusterNode information into db");
+                        saveClusterNode(block);
+                        log.info("[process]insert clusterConfig information into db");
+                        saveClusterConfig(block);
+                        log.info("[process]insert ca information into db");
+                        saveCa(block);
+                    }
+                });
+            } else {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                try {
+                    ThreadLocalUtils.putRocksTx(tx);
 
-                    List<TransactionReceipt> txReceipts = new LinkedList();
-                    TransactionReceipt transactionReceipt = new TransactionReceipt();
-                    transactionReceipt.setTxId(block.getSignedTxList().get(0).getCoreTx().getTxId());
-                    transactionReceipt.setResult(true);
-                    txReceipts.add(transactionReceipt);
-
-                    blockRepository.saveBlock(block, txReceipts);
-
-                    log.info("[process]insert clusterNode information into db");
+                    log.info("[process] transaction start, insert genius block into rocks db");
+                    blockRepository.saveBlock(block, txReceiptMap);
+                    log.info("[process]insert clusterNode information into rocks db");
                     saveClusterNode(block);
-
-                    log.info("[process]insert clusterConfig information into db");
+                    log.info("[process]insert clusterConfig information into rocks db");
                     saveClusterConfig(block);
-
-                    log.info("[process]insert ca information into db");
+                    log.info("[process]insert ca information into rocks db");
                     saveCa(block);
+
+                    //save block height in system_property
+                    systemPropertyRepository.saveWithTransaction(
+                        Constant.MAX_BLOCK_HEIGHT, String.valueOf(block.getBlockHeader().getHeight()), "max block height");
+
+                    RocksUtils.txCommit(tx);
+                } finally {
+                    ThreadLocalUtils.clearRocksTx();;
                 }
-            });
+            }
         } catch (Throwable e) {
             log.error("[process] store ca init data error", e);
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_GENERATE_GENIUS_BLOCK_ERROR, 1);
@@ -102,7 +128,7 @@ import java.util.*;
         List list = new LinkedList();
         List<Action> caList = acquireAction(block);
         caList.forEach((caAction) -> {
-            Ca ca = new Ca();
+            CaPO ca = new CaPO();
             ca.setPeriod(calculatePeriod());
             ca.setPubKey(((CaAction)caAction).getPubKey());
             ca.setValid(true);

@@ -1,32 +1,39 @@
 package com.higgs.trust.slave.core.repository.contract;
 
 import com.higgs.trust.common.utils.BeanConvertor;
-import com.higgs.trust.slave.dao.contract.AccountContractBindingDao;
+import com.higgs.trust.slave.common.config.InitConfig;
+import com.higgs.trust.slave.dao.mysql.contract.AccountContractBindingDao;
 import com.higgs.trust.slave.dao.po.contract.AccountContractBindingPO;
+import com.higgs.trust.slave.dao.rocks.contract.AccountContractBindingRocksDao;
 import com.higgs.trust.slave.model.bo.contract.AccountContractBinding;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
  * the repository of AccountContractBinding
  * @author duhongming
  * @date 2018-04-19
+ * //TODO 此表可删除，暂时不考虑rocksdb的实现
  */
 @Repository @Slf4j public class AccountContractBindingRepository {
 
     @Autowired private AccountContractBindingDao dao;
 
-    public void add(AccountContractBinding accountContractBinding) {
-        AccountContractBindingPO po = BeanConvertor.convertBean(accountContractBinding, AccountContractBindingPO.class);
-        dao.add(po);
-    }
+    @Autowired private AccountContractBindingRocksDao rocksDao;
 
-    public boolean batchInsert(Collection<AccountContractBindingPO> list) {
-        int result = dao.batchInsert(list);
+    @Autowired private InitConfig initConfig;
+
+    public boolean batchInsert(List<AccountContractBindingPO> list) {
+        int result;
+        if (initConfig.isUseMySQL()) {
+            result = dao.batchInsert(list);
+        } else {
+            result = rocksDao.batchInsert(list);
+            //TODO account_no_bind_hash不再使用
+        }
         return result == list.size();
     }
 

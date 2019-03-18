@@ -2,14 +2,22 @@ package com.higgs.trust.contract.mock;
 
 import com.higgs.trust.contract.ContractApiService;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Calendar;
 
 public class ShareContextSerivce extends ContractApiService {
 
     private ShareBlockSerivce blockSerivce;
+    private Object ctxObj;
 
     public ShareContextSerivce() {
         blockSerivce = new ShareBlockSerivce();
+    }
+
+    public BigDecimal add(String x, String y) {
+        System.out.println(y);
+        return new BigDecimal(x).add(new BigDecimal(y));
     }
 
     public BigInteger bigInteger = new BigInteger("199999999999999999999999999999999999999");
@@ -24,5 +32,23 @@ public class ShareContextSerivce extends ContractApiService {
 
     public String sayHello(String name) {
         return "Hello " + name + "  " + Thread.currentThread().getName();
+    }
+
+    public Object getCtxObj() {
+        return ctxObj;
+    }
+
+    public void setCtxObj(Object ctxObj) {
+        this.ctxObj = ctxObj;
+    }
+
+    public Long getMaxBlockHeight(){
+        return 122344L;
+    }
+
+    public Long getPackageTime(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR,-1);
+        return calendar.getTimeInMillis();
     }
 }

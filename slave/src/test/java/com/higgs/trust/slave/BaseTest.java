@@ -6,14 +6,12 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
 
 @SpringBootTest
-@EnableFeignClients
 public abstract class BaseTest extends AbstractTestNGSpringContextTests {
 
     @Autowired
@@ -38,8 +36,6 @@ public abstract class BaseTest extends AbstractTestNGSpringContextTests {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.SortField.getMask();
         //toJSONString的时候对嵌套结果进行按照字母排序
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
-        //toJSONString的时候记录Class的name
-        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
     }
 
     @AfterClass

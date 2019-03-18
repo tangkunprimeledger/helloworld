@@ -1,0 +1,20 @@
+{
+    "height": 1,
+    "version": 1,
+    "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "numberOfTransactions": 1,
+    "transactions": [
+        {
+            "actions": [
+                {
+                    "nodeName": "TRUST-TEST0",
+                    "keys": [
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqZ8Q2W2xl+Dc9i6HzHieRqfzUlSYzIOSCXUTkDBWO4jLI7JlZdq6K4y27m41q3Mls6IHlRdaUI/hxLZYYLdoORQGlrGB+aza0WR5phFamxlf+kd+PY1XNYeCb3KB1Ep+w7N8iSycHPk70m8D7SMl7DKGXDKEY6Ald2cTqvfcqqSfFi4qvCI3El7IfEiOv/3EuDGbKYem7Zo8XV/+uJlK3O+4LXaQy0nBajUlj7TjPYNP/9PYAjCeNzNOix8AEkwk3y6DIPpgIItlk6qTqSn+pBjaeSfRefMezO4l75K9J/3g/N/Oi+7v6Th+Xi2sQTaqv6sJNU3Qav+/DX+tfDXbAQIDAQAB", "type": "biz" },
+                        { "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4CkXxDiD147k9vzZ0c9SU6gamK5hEQUXPTmZJsvvsEd81obOdcVys3MC879R28pKX+ccWU50Rf9YfwECnRkMBUQz7byuwfCk2fjrZpJLQ77uyQmEW08Y3RAb5iTYvHGVB3cPP+ZMSBRrW0apKec3atOGM1bYWkhud30MOvirGwf2swu7mEQNn4eFKHeK2hhIcannozFfJL0rRtk0Zlv7m6hIWdQ2CztV8PVfj+yA8IjoLb2x64r8UQYrYmjxM2ZbEITfXvjpJrrFM8tus3Mtcl+m6NH8X/k1pLPGi6VPBsFwh5g3M4szYn01QffPSL+gMI8YvoaycgWutSlRNzXkuwIDAQAB", "type": "consensus" }
+                    ]
+
+                }
+            ]
+        }
+    ]
+}

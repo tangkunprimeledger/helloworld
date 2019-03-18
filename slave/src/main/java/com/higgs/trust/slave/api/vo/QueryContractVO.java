@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * @author tangfashuang
@@ -18,21 +19,23 @@ public class QueryContractVO extends BaseBO {
     /**
      * block height
      */
-    @NotNull
     private Long height;
 
     /**
      * tx Id
      */
+    @Size(max = 64)
     private String txId;
 
     /**
      * page number
      */
+    @NotNull
     private Integer pageNo;
 
     /**
      * page size
      */
+    @NotNull
     private Integer pageSize;
 }

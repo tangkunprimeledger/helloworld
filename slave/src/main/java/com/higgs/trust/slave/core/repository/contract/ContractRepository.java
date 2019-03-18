@@ -1,14 +1,16 @@
 package com.higgs.trust.slave.core.repository.contract;
 
 import com.higgs.trust.common.utils.BeanConvertor;
-import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
-import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.dao.contract.ContractDao;
+import com.higgs.trust.slave.api.vo.ContractVO;
+import com.higgs.trust.slave.common.config.InitConfig;
+import com.higgs.trust.slave.dao.mysql.contract.ContractDao;
 import com.higgs.trust.slave.dao.po.contract.ContractPO;
+import com.higgs.trust.slave.dao.rocks.contract.ContractRocksDao;
 import com.higgs.trust.slave.model.bo.contract.Contract;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,25 +25,20 @@ import java.util.List;
 public class ContractRepository {
 
     @Autowired private ContractDao contractDao;
-
-    /**
-     * deploy contract
-     * @param contract
-     */
-    public void deploy(Contract contract) {
-        ContractPO contractPO = BeanConvertor.convertBean(contract, ContractPO.class);
-
-        try {
-            contractDao.add(contractPO);
-        } catch (DuplicateKeyException e) {
-            log.error("Insert contract fail, because there is DuplicateKeyException for dataidentity:",
-                    contract);
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT, e);
-        }
-    }
+    @Autowired private ContractRocksDao contractRocksDao;
+    @Autowired private InitConfig initConfig;
 
     public boolean batchInsert(List<ContractPO> list) {
-        int result = contractDao.batchInsert(list);
+        if (CollectionUtils.isEmpty(list)) {
+            return true;
+        }
+
+        int result;
+        if (initConfig.isUseMySQL()) {
+            result = contractDao.batchInsert(list);
+        } else {
+            result = contractRocksDao.batchInsert(list);
+        }
         return result == list.size();
     }
 
@@ -56,11 +53,36 @@ public class ContractRepository {
     }
 
     public Contract queryByAddress(String address) {
-        ContractPO po = contractDao.queryByAddress(address);
-        if (null == po) {
-            return null;
+
+        ContractPO po;
+        if (initConfig.isUseMySQL()) {
+            po = contractDao.queryByAddress(address);
+        } else {
+            po = contractRocksDao.get(address);
         }
-        Contract contract = BeanConvertor.convertBean(po, Contract.class);
-        return contract;
+        return BeanConvertor.convertBean(po, Contract.class);
+    }
+
+    public boolean isExistedAddress(String address){
+        if (StringUtils.isBlank(address)) {
+            return false;
+        }
+        Contract contract = queryByAddress(address);
+        if (null == contract) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * query by txId and action index
+     *
+     * @param txId
+     * @param actionIndex
+     * @return
+     */
+    public ContractVO queryByTxId(String txId,int actionIndex){
+        ContractPO po = contractDao.queryByTxId(txId,actionIndex);
+        return BeanConvertor.convertBean(po, ContractVO.class);
     }
 }

@@ -14,7 +14,13 @@ import java.util.Date;
 @Getter @Setter public class ClusterNodePO extends BaseEntity {
 
     private String nodeName;
+    /**
+     * node whether join in p2p
+     */
     private boolean p2pStatus;
+    /**
+     * node whether registered as rs
+     */
     private boolean rsStatus;
 
     private Date createTime;

@@ -8,8 +8,6 @@ import com.higgs.trust.slave.api.vo.QueryAccountVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import java.util.List;
-
 public class AccountInfoServiceImplTest extends BaseTest{
 
     @Autowired

@@ -1,11 +1,16 @@
 package com.higgs.trust.slave.core.repository.config;
 
-import com.higgs.trust.slave.dao.config.SystemPropertyDao;
+import com.higgs.trust.common.utils.BeanConvertor;
+import com.higgs.trust.slave.common.config.InitConfig;
+import com.higgs.trust.slave.dao.mysql.config.SystemPropertyDao;
 import com.higgs.trust.slave.dao.po.config.SystemPropertyPO;
+import com.higgs.trust.slave.dao.rocks.config.SystemPropertyRocksDao;
 import com.higgs.trust.slave.model.bo.config.SystemProperty;
-import org.springframework.beans.BeanUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
  * System  Property  repository
@@ -14,9 +19,16 @@ import org.springframework.stereotype.Service;
  * @create 2018年06月27日15:58
  */
 @Service
+@Slf4j
 public class SystemPropertyRepository {
     @Autowired
     private SystemPropertyDao systemPropertyDao;
+
+    @Autowired
+    private SystemPropertyRocksDao systemPropertyRocksDao;
+
+    @Autowired
+    private InitConfig initConfig;
 
     /**
      * query system property by key
@@ -25,13 +37,13 @@ public class SystemPropertyRepository {
      * @return
      */
     public SystemProperty queryByKey(String key) {
-        SystemProperty systemProperty = null;
-        SystemPropertyPO systemPropertyPO = systemPropertyDao.queryByKey(key);
-        if (null != systemPropertyPO) {
-            systemProperty = new SystemProperty();
-            BeanUtils.copyProperties(systemPropertyPO, systemProperty);
+        SystemPropertyPO systemPropertyPO;
+        if (initConfig.isUseMySQL()) {
+            systemPropertyPO = systemPropertyDao.queryByKey(key);
+        } else {
+            systemPropertyPO = systemPropertyRocksDao.get(key);
         }
-        return systemProperty;
+        return BeanConvertor.convertBean(systemPropertyPO, SystemProperty.class);
     }
 
     /**
@@ -46,7 +58,13 @@ public class SystemPropertyRepository {
         systemPropertyPO.setKey(key);
         systemPropertyPO.setValue(value);
         systemPropertyPO.setDesc(desc);
-        systemPropertyDao.add(systemPropertyPO);
+
+        if (initConfig.isUseMySQL()) {
+            systemPropertyDao.add(systemPropertyPO);
+        } else {
+            systemPropertyPO.setCreateTime(new Date());
+            systemPropertyRocksDao.put(key, systemPropertyPO);
+        }
     }
 
     /**
@@ -55,8 +73,23 @@ public class SystemPropertyRepository {
      * @param value
      * @return
      */
-    public int update(String key, String value){
-        return systemPropertyDao.update(key, value);
+    public int update(String key, String value, String desc){
+        if (initConfig.isUseMySQL()) {
+            return systemPropertyDao.update(key, value , desc);
+        } else {
+            SystemPropertyPO po = systemPropertyRocksDao.get(key);
+            if (null != po) {
+                po.setValue(value);
+                po.setDesc(desc);
+                po.setUpdateTime(new Date());
+                systemPropertyRocksDao.put(key, po);
+                return 1;
+            }
+            return 0;
+        }
     }
 
+    public void saveWithTransaction(String key, String value, String desc) {
+        systemPropertyRocksDao.saveWithTransaction(key, value, desc);
+    }
 }

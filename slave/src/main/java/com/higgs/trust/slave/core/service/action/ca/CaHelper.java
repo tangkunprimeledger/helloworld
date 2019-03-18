@@ -1,6 +1,8 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
+import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
 import com.higgs.trust.slave.dao.po.ca.CaPO;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
@@ -42,5 +44,26 @@ import org.springframework.stereotype.Component;
             }
         }
         return false;
+    }
+
+    /**
+     * param verify
+     *
+     * @param caAction
+     * @throws SlaveException
+     */
+    public void verifyParams(CaAction caAction) throws SlaveException {
+        if(StringUtils.isEmpty(caAction.getUser())){
+            log.error("[verifyParams] user is null or illegal param:{}",caAction);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(caAction.getPubKey())){
+            log.error("[verifyParams] pubKey is null or illegal param:{}",caAction);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(caAction.getUsage())){
+            log.error("[verifyParams] usage is null or illegal param:{}",caAction);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
     }
 }

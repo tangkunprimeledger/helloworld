@@ -3,11 +3,12 @@
  */
 package com.higgs.trust.consensus.atomix.config;
 
-import com.higgs.trust.consensus.atomix.core.AtomixCommitReplicateComposite;
+import com.higgs.trust.consensus.core.DefaultCommitReplicateComposite;
 import com.higgs.trust.consensus.atomix.core.primitive.CommandPrimitiveType;
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
-import com.higgs.trust.consensus.core.IConsensusSnapshot;
 import com.higgs.trust.consensus.core.DefaultConsensusSnapshot;
+import com.higgs.trust.consensus.core.IConsensusSnapshot;
+import com.higgs.trust.consensus.core.filter.CompositeCommandFilter;
 import io.atomix.cluster.discovery.NodeDiscoveryConfig;
 import io.atomix.cluster.discovery.NodeDiscoveryProvider;
 import io.atomix.core.AtomixConfig;
@@ -24,6 +25,7 @@ import io.atomix.primitive.protocol.PrimitiveProtocol;
 import io.atomix.primitive.protocol.PrimitiveProtocolConfig;
 import io.atomix.utils.config.ConfigMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,8 +38,8 @@ import java.util.Arrays;
  */
 @Configuration @Slf4j public class AtomixBeanConfig {
 
-    @Bean public AbstractCommitReplicateComposite replicateComposite() {
-        return new AtomixCommitReplicateComposite();
+    @Autowired @Bean public AbstractCommitReplicateComposite replicateComposite(CompositeCommandFilter filter) {
+        return new DefaultCommitReplicateComposite(filter);
     }
 
     @Bean @ConditionalOnMissingBean(IConsensusSnapshot.class) public IConsensusSnapshot snapshot() {

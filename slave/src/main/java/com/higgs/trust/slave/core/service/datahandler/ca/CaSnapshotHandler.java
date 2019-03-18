@@ -37,24 +37,6 @@ import org.springframework.stereotype.Service;
             log.info("snapshot and db do not have ca, insert ca ...");
             caSnapshotAgent.saveCa(ca);
         }
-
-        /*ClusterNode clusterNode = new ClusterNode();
-        clusterNode.setNodeName(ca.getUser());
-        clusterNode.setP2pStatus(true);
-        clusterNode.setRsStatus(false);
-        if (null == caSnapshotAgent.getClusterNode(ca.getUser())) {
-            caSnapshotAgent.saveClusterNode(clusterNode);
-        } else {
-            caSnapshotAgent.updateClusterNode(clusterNode);
-        }
-
-        ClusterConfigPO clusterConfigPO = caSnapshotAgent.getClusterConfig(nodeState.getClusterName());
-        ClusterConfig clusterConfig = new ClusterConfig();
-        clusterConfig.setClusterName(clusterConfigPO.getClusterName());
-        clusterConfig.setNodeNum(clusterConfigPO.getNodeNum() + 1);
-        clusterConfig.setFaultNum(clusterConfigPO.getNodeNum() / 3);
-        caSnapshotAgent.updateClusterConfig(clusterConfig);*/
-
     }
 
     /**

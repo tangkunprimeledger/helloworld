@@ -32,7 +32,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;

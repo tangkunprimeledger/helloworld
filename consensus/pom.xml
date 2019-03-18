@@ -5,7 +5,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>com.higgs.trust</groupId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +16,8 @@
         <module>consensus-smart</module>
         <module>consensus-p2pvalid</module>
         <module>consensus-atomix</module>
+        <module>consensus-zk</module>
+        <module>consensus-solo</module>
     </modules>
 
 </project>

@@ -3,6 +3,7 @@ package com.higgs.trust.config.properties.master;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
  * @create 2018年07月12日17:19
  */
 @Service
+@StateListener
 public class DefaultMasterService {
 
     @Autowired

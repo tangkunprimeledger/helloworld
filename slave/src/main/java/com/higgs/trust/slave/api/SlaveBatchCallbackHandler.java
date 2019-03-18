@@ -5,6 +5,7 @@ import com.higgs.trust.slave.model.bo.SignedTransaction;
 import com.higgs.trust.slave.model.bo.TransactionReceipt;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author liuyu
@@ -19,7 +20,7 @@ public interface SlaveBatchCallbackHandler {
      * @param txReceipts
      * @param blockHeader
      */
-    void onPersisted(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,BlockHeader blockHeader);
+    void onPersisted(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceipts,BlockHeader blockHeader);
 
     /**
      * when the cluster persisted of tx
@@ -28,7 +29,7 @@ public interface SlaveBatchCallbackHandler {
      * @param txReceipts
      * @param blockHeader
      */
-    void onClusterPersisted(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,BlockHeader blockHeader);
+    void onClusterPersisted(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceipts,BlockHeader blockHeader);
 
     /**
      * on failover
@@ -37,5 +38,5 @@ public interface SlaveBatchCallbackHandler {
      * @param txReceipts
      * @param blockHeader
      */
-    void onFailover(List<SignedTransaction> txs, List<TransactionReceipt> txReceipts,BlockHeader blockHeader);
+    void onFailover(List<SignedTransaction> txs, Map<String, TransactionReceipt> txReceipts,BlockHeader blockHeader);
 }

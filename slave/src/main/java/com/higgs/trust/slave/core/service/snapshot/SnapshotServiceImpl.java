@@ -164,7 +164,6 @@ import java.util.concurrent.locks.ReentrantLock;
      * start the snapshot transaction.Tag isOpenTransaction to be true.
      */
     @Override public void startTransaction() {
-        Profiler.enter("[Snapshot.startTransaction]");
         log.debug("Start to start snapshot transaction, and get lock for it");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -187,14 +186,13 @@ import java.util.concurrent.locks.ReentrantLock;
             lock.unlock();
         }
         log.debug("End of start snapshot transaction");
-        Profiler.release();
     }
 
     /**
      * clear packageCache and txCache
      */
     @Override public void clear() {
-        Profiler.enter("[Snapshot.destroy]");
+//        Profiler.enter("[Snapshot.destroy]");
         log.debug("Start to destroy snapshot");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -216,14 +214,14 @@ import java.util.concurrent.locks.ReentrantLock;
             lock.unlock();
         }
         log.debug("End of destroy snapshot");
-        Profiler.release();
+//        Profiler.release();
     }
 
     /**
      * clear globalCache and packageCache and txCache
      */
     @Override public void destroy() {
-        Profiler.enter("[Snapshot.destroy]");
+//        Profiler.enter("[Snapshot.destroy]");
         log.debug("Start to destroy snapshot");
         boolean isLocked = lock.tryLock();
         if (!isLocked) {
@@ -259,7 +257,7 @@ import java.util.concurrent.locks.ReentrantLock;
             lock.unlock();
         }
         log.debug("End of destroy snapshot");
-        Profiler.release();
+//        Profiler.release();
     }
 
     /**
@@ -273,7 +271,7 @@ import java.util.concurrent.locks.ReentrantLock;
      * @return
      */
     @Override public Object get(SnapshotBizKeyEnum key1, Object key2) {
-        Profiler.enter("[Snapshot.get]");
+//        Profiler.enter("[Snapshot.get]");
         try {
             log.debug("Start to get data for snapshotBizKeyEnum:{}, bizKey:{}", key1, key2);
             //Check null
@@ -311,7 +309,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
             return transferValue(object);
         } finally {
-            Profiler.release();
+//            Profiler.release();
         }
     }
 
@@ -638,14 +636,12 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private Value getDataFromTxCache(SnapshotBizKeyEnum key1, Object key2) {
         String innerKey = serializeJsonString(key2);
-        //check where there is key1 in txCache
-        if (!txCache.containsKey(key1)) {
-            log.debug("There is no  snapshotBizKeyEnum: {} in the txCache ", key1);
-            return null;
-        }
         //get data from txCacheInnerMap
         ConcurrentHashMap<String, Value> txCacheInnerMap = txCache.get(key1);
-        return txCacheInnerMap.get(innerKey);
+        if (null != txCacheInnerMap) {
+            return txCacheInnerMap.get(innerKey);
+        }
+        return null;
     }
 
     /**
@@ -658,14 +654,12 @@ import java.util.concurrent.locks.ReentrantLock;
     private Value getDataFromPackageCache(SnapshotBizKeyEnum key1, Object key2) {
 
         String innerKey = serializeJsonString(key2);
-        //check where there is key1 in packageCache
-        if (!packageCache.containsKey(key1)) {
-            log.debug("There is no  snapshotBizKeyEnum: {} in the packageCache ", key1);
-            return null;
-        }
         //get data from packageCacheInnerMap
         ConcurrentHashMap<String, Value> packageCacheInnerMap = packageCache.get(key1);
-        return packageCacheInnerMap.get(innerKey);
+        if (null != packageCacheInnerMap) {
+            return packageCacheInnerMap.get(innerKey);
+        }
+        return null;
     }
 
     /**
@@ -677,13 +671,6 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private Object getDataFromGlobalCache(SnapshotBizKeyEnum key1, Object key2) {
 
-        //check whether there is snapshotBizKeyEnum in globalCache
-        if (!globalCache.containsKey(key1)) {
-            log.error("There is no key:{} for bizCache in globalCache!", key1);
-            MonitorLogUtils
-                .logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
-            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
-        }
         //1.Get data from globalCache.It will return data when there is data in the globalCache
         //2.else it will get data from db .
         //3.If there is no data in db ,it will return null
@@ -691,6 +678,13 @@ import java.util.concurrent.locks.ReentrantLock;
         Object value = null;
         String innerKey = serializeJsonString(key2);
         LoadingCache<String, Object> innerMap = globalCache.get(key1);
+        if (null == innerMap) {
+            log.error("There is no key:{} for bizCache in globalCache!", key1);
+            MonitorLogUtils
+                .logIntMonitorInfo(MonitorTargetEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXIST_EXCEPTION.getMonitorTarget(), 1);
+            throw new SnapshotException(SlaveErrorEnum.SLAVE_SNAPSHOT_BIZ_KEY_NOT_EXISTED_EXCEPTION);
+        }
+
         try {
             value = innerMap.get(innerKey);
             log.debug(
@@ -972,8 +966,7 @@ import java.util.concurrent.locks.ReentrantLock;
      */
     private Object transferValue(Object object) {
         //TODO find a way make the object const
-        String valueTemp = serializeJsonString(object);
-        return JSON.parseObject(valueTemp, object.getClass());
+        return object;
     }
 
     /**

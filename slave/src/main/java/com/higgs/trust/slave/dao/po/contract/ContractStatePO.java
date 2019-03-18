@@ -12,4 +12,5 @@ public class ContractStatePO {
     private String address;
     private Date updateTime;
     private String state;
+    private String keyDesc;
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.higgs.trust.slave.dao.pack.PackageDao">
+<mapper namespace="com.higgs.trust.slave.dao.mysql.pack.PackageDao">
     <!-- Result Map -->
     <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.pack.PackagePO">
         <result column="height" property="height"/>
@@ -87,29 +87,6 @@
         from package where status=#{status} order by height asc
     </select>
 
-    <select id="queryHeightListByStatus" resultType="java.lang.Long" parameterType="string">
-        select
-          height
-        from package where status=#{status} order by height asc
-    </select>
-
-    <select id="queryHeightsByStatusAndLimit" resultType="java.lang.Long" parameterType="object">
-        select
-        height
-        from package where status=#{status} limit #{limit}
-    </select>
-
-    <select id="getMinHeightWithStatus" resultType="java.lang.Long" parameterType="object">
-        select min(height) from package
-        where status in
-          <foreach collection="statusSet" index="index" item="item" open="(" separator="," close=")">
-              #{item}
-          </foreach>
-        <if test="maxBlockHeight != null">
-            and height > #{maxBlockHeight}
-        </if>
-    </select>
-
     <select id="getMinHeightWithHeightAndStatus" resultType="java.lang.Long" parameterType="object">
         select min(height) from package
         where status in
@@ -157,4 +134,9 @@
           height <= #{height} AND status = #{status}
         ]]>
     </delete>
+
+    <select id="getBlockHeightsByStatus" resultType="java.lang.Long" parameterType="java.lang.String">
+        select height
+        from package where status=#{status}
+    </select>
 </mapper>

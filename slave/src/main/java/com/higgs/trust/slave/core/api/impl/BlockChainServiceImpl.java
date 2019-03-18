@@ -1,33 +1,39 @@
 package com.higgs.trust.slave.core.api.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.higgs.trust.common.constant.Constant;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.contract.StateManager;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.common.context.AppContext;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.*;
 import com.higgs.trust.slave.core.repository.account.CurrencyRepository;
-import com.higgs.trust.slave.core.repository.config.SystemPropertyRepository;
+import com.higgs.trust.slave.core.repository.contract.ContractRepository;
+import com.higgs.trust.slave.core.repository.contract.ContractStateRepository;
 import com.higgs.trust.slave.core.service.datahandler.manage.SystemPropertyHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.core.service.pending.PendingStateImpl;
+import com.higgs.trust.slave.core.service.pending.TransactionValidator;
+import com.higgs.trust.slave.core.service.snapshot.agent.ContractStateSnapshotAgent;
 import com.higgs.trust.slave.integration.block.BlockChainClient;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
+import com.higgs.trust.slave.model.bo.account.CurrencyInfo;
+import com.higgs.trust.slave.model.bo.contract.ContractInvokeAction;
+import com.higgs.trust.slave.model.bo.contract.ContractState;
 import com.higgs.trust.slave.model.bo.utxo.TxIn;
 import com.higgs.trust.slave.model.bo.utxo.UTXO;
 import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -43,48 +49,70 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
  * @date 2918/04/14 16:52
  * @desc block chain service
  */
-@Slf4j @Service public class BlockChainServiceImpl implements BlockChainService, InitializingBean {
+@Slf4j
+@Service
+public class BlockChainServiceImpl implements BlockChainService {
 
-    @Autowired private PendingStateImpl pendingState;
+    @Autowired
+    private PendingStateImpl pendingState;
 
-    @Autowired private NodeState nodeState;
+    @Autowired
+    private NodeState nodeState;
 
-    @Autowired private BlockChainClient blockChainClient;
+    @Autowired
+    private BlockChainClient blockChainClient;
 
-    @Autowired private BlockRepository blockRepository;
+    @Autowired
+    private BlockRepository blockRepository;
 
-    @Autowired private TransactionRepository transactionRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
 
-    @Autowired private TxOutRepository txOutRepository;
+    @Autowired
+    private TxOutRepository txOutRepository;
 
-    @Autowired private DataIdentityRepository dataIdentityRepository;
+    @Autowired
+    private DataIdentityRepository dataIdentityRepository;
 
-    @Autowired private CurrencyRepository currencyRepository;
+    @Autowired
+    private CurrencyRepository currencyRepository;
 
-    @Autowired private SystemPropertyRepository systemPropertyRepository;
+    @Autowired
+    private UTXOSnapshotHandler utxoSnapshotHandler;
 
-    @Autowired private UTXOSnapshotHandler utxoSnapshotHandler;
+    @Autowired
+    private SystemPropertyHandler systemPropertyHandler;
 
-    @Autowired private SystemPropertyHandler systemPropertyHandler;
+    @Autowired
+    private PendingTxRepository pendingTxRepository;
 
-    @Autowired private PendingTxRepository pendingTxRepository;
+    @Autowired
+    private TransactionValidator transactionValidator;
 
-    @Autowired private Executor txConsumerExecutor;
+    @Autowired
+    private Executor txConsumerExecutor;
 
-    @Value("${trust.batch.tx.limit:200}") private int TX_PENDING_COUNT;
+    @Autowired
+    private ContractRepository contractRepository;
 
-    @Value("${trust.sleep.submitToMaster:50}") private int SLEEP_FOR_SUBMIT_TO_MASTER;
+    @Autowired
+    private ContractStateRepository contractStateRepository;
 
-    @Override public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
+
+    @Value("${trust.batch.tx.limit:200}")
+    private int TX_PENDING_COUNT;
+
+    @Override
+    public RespData<List<TransactionVO>> submitTransactions(List<SignedTransaction> transactions) {
         RespData<List<TransactionVO>> respData = new RespData();
-
+        if (!nodeState.isState(NodeStateEnum.Running)) {
+            log.warn("the node status:{} is not Running please wait a later..", nodeState.getState());
+            return respData;
+        }
         if (CollectionUtils.isEmpty(transactions)) {
             log.error("received transaction list is empty");
             return new RespData(RespCodeEnum.PARAM_NOT_VALID);
         }
-
-        List<TransactionVO> transactionVOList = new ArrayList<>();
-        List<SignedTransaction> newSignedTxList = new ArrayList<>();
 
         if (StringUtils.equals(nodeState.getMasterName(), MASTER_NA)) {
             log.warn("cluster master is N/A");
@@ -93,46 +121,37 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             return respData;
         }
 
+        List<TransactionVO> transactionVOList = new ArrayList<>();
+        List<SignedTransaction> newSignedTxList = new ArrayList<>();
+
         for (SignedTransaction signedTx : transactions) {
             TransactionVO transactionVO = new TransactionVO();
             String txId = signedTx.getCoreTx().getTxId();
             transactionVO.setTxId(txId);
 
-            // params check
-            BeanValidateResult validateResult = BeanValidator.validate(signedTx);
-            if (!validateResult.isSuccess()) {
-                log.error("transaction invalid. errMsg={}, txId={}", validateResult.getFirstMsg(), txId);
-                transactionVO.setErrCode(TxSubmitResultEnum.PARAM_INVALID.getCode());
-                transactionVO.setErrMsg(TxSubmitResultEnum.PARAM_INVALID.getDesc());
+            //verify params for transaction
+            try {
+                transactionValidator.verify(signedTx);
+            } catch (SlaveException e) {
+                transactionVO.setErrCode(e.getCode().getCode());
+                transactionVO.setErrMsg(e.getCode().getDescription());
                 transactionVO.setRetry(false);
                 transactionVOList.add(transactionVO);
+                continue;
             }
-            else {
-                newSignedTxList.add(signedTx);
-            }
+            newSignedTxList.add(signedTx);
         }
 
-        Profiler.start("submit transactions");
-
-        Profiler.enter("check db idempotent start");
         newSignedTxList = checkDbIdempotent(newSignedTxList, transactionVOList);
-        Profiler.release();
         if (CollectionUtils.isEmpty(newSignedTxList)) {
             log.warn("all transactions idempotent");
             respData.setData(transactionVOList.size() > 0 ? transactionVOList : null);
             return respData;
         }
 
-        Profiler.enter("submit to master");
         RespData<List<TransactionVO>> masterResp = submitToMaster(newSignedTxList);
         if (null != masterResp.getData()) {
             transactionVOList.addAll(masterResp.getData());
-        }
-        Profiler.release();
-        Profiler.release();
-
-        if (Profiler.getDuration() > 0) {
-            Profiler.logDump();
         }
 
         respData.setData(transactionVOList);
@@ -140,7 +159,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
     }
 
     private List<SignedTransaction> checkDbIdempotent(List<SignedTransaction> transactions,
-        List<TransactionVO> transactionVOList) {
+                                                      List<TransactionVO> transactionVOList) {
 
         List<SignedTransaction> signedTransactions = new ArrayList<>();
 
@@ -150,7 +169,6 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             signedTxIds.add(signedTx.getCoreTx().getTxId());
         }
 
-        Profiler.enter("transaction idempotent");
         //check transaction db
         List<String> txIds = transactionRepository.queryTxIdsByIds(signedTxIds);
         if (!CollectionUtils.isEmpty(txIds)) {
@@ -168,9 +186,6 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             }
         }
 
-        Profiler.release();
-
-        Profiler.enter("pending transaction idempotent");
         //check pending_transaction db
         List<String> pTxIds = pendingTxRepository.queryTxIds(signedTxIds);
         if (!CollectionUtils.isEmpty(pTxIds)) {
@@ -188,27 +203,24 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             }
         }
 
-        Profiler.release();
-
-        Profiler.enter("build signedTx");
         for (SignedTransaction signedTx : transactions) {
-            if (signedTxIds.contains(signedTx.getCoreTx().getTxId())) {
+            String txId = signedTx.getCoreTx().getTxId();
+            if (signedTxIds.contains(txId)) {
                 signedTransactions.add(signedTx);
+                signedTxIds.remove(txId);
             }
         }
-        Profiler.release();
         return signedTransactions;
     }
 
     /**
      * for performance test
+     *
      * @param tx
      * @return
      */
-    @Override public RespData<List<TransactionVO>> submitTransaction(SignedTransaction tx) {
-        //TODO for load test
-        log.info("accept tx with thread: " + Thread.currentThread().getName());
-
+    @Override
+    public RespData<List<TransactionVO>> submitTransaction(SignedTransaction tx) {
         RespData<List<TransactionVO>> respData;
         //TODO 放到消费队列里面
         if (AppContext.PENDING_TO_SUBMIT_QUEUE.size() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
@@ -217,26 +229,16 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         }
 
         AppContext.PENDING_TO_SUBMIT_QUEUE.offer(tx);
-        try {
-            respData = AppContext.TX_HANDLE_RESULT_MAP.poll(tx.getCoreTx().getTxId(), 1000);
-        } catch (InterruptedException e) {
-            log.error("tx handle exception. ", e);
-            respData = new RespData();
-            respData.setCode(RespCodeEnum.SYS_FAIL.getRespCode());
-            respData.setMsg("handle transaction exception.");
-        }
 
-        if (null == respData) {
-            respData = new RespData();
-            respData.setCode(RespCodeEnum.SYS_HANDLE_TIMEOUT.getRespCode());
-            respData.setMsg("tx handle timeout");
-        }
+        respData = new RespData();
+        respData.setCode(RespCodeEnum.SUCCESS.getRespCode());
+        respData.setMsg("submitted, have " + AppContext.PENDING_TO_SUBMIT_QUEUE.size() + " transactions waiting to process ..." );
         return respData;
     }
 
-    @Override public RespData<List<TransactionVO>> submitToMaster(List<SignedTransaction> transactions) {
+    @Override
+    public RespData<List<TransactionVO>> submitToMaster(List<SignedTransaction> transactions) {
 
-        Profiler.start("submit to master");
         RespData<List<TransactionVO>> respData = new RespData();
 
         if (CollectionUtils.isEmpty(transactions)) {
@@ -246,9 +248,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
 
         List<TransactionVO> transactionVOList;
 
-                // when master is running , then add txs into local pending txs
+        // when master is running , then add txs into local pending txs
         if (nodeState.isMaster()) {
-            Profiler.enter("submit transactions to self");
             if (nodeState.isState(NodeStateEnum.Running)) {
                 log.debug("The node is master and it is running , add txs:{} into pending txs", transactions);
                 transactionVOList = pendingState.addPendingTransactions(transactions);
@@ -257,16 +258,13 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
                 transactionVOList = buildTxVOList(transactions);
             }
             respData.setData(transactionVOList);
-            Profiler.release();
         } else {
             if (log.isDebugEnabled()) {
                 //when it is not master ,then send txs to master node
                 log.debug("this node is not  master, send txs:{} to master node={}", transactions,
-                    nodeState.getMasterName());
+                        nodeState.getMasterName());
             }
-            Profiler.enter("submit transactions to master node");
             respData = blockChainClient.submitToMaster(nodeState.getMasterName(), transactions);
-            Profiler.release();
         }
 
         return respData;
@@ -287,15 +285,18 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         return transactionVOList;
     }
 
-    @Override public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
+    @Override
+    public List<BlockHeader> listBlockHeaders(long startHeight, int size) {
         return blockRepository.listBlockHeaders(startHeight, size);
     }
 
-    @Override public List<Block> listBlocks(long startHeight, int size) {
+    @Override
+    public List<Block> listBlocks(long startHeight, int size) {
         return blockRepository.listBlocks(startHeight, size);
     }
 
-    @Override public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
+    @Override
+    public PageVO<BlockVO> queryBlocks(QueryBlockVO req) {
         if (null == req) {
             return null;
         }
@@ -315,7 +316,7 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             pageVO.setData(null);
         } else {
             List<BlockVO> list = blockRepository
-                .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+                    .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -323,7 +324,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         return pageVO;
     }
 
-    @Override public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
+    @Override
+    public PageVO<CoreTransactionVO> queryTransactions(QueryTransactionVO req) {
 
         if (null == req) {
             return null;
@@ -346,8 +348,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             pageVO.setData(null);
         } else {
             List<CoreTransactionVO> list = transactionRepository
-                .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
-                    req.getPageSize());
+                    .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
+                            req.getPageSize());
             pageVO.setData(list);
         }
 
@@ -355,7 +357,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
         return pageVO;
     }
 
-    @Override public List<UTXOVO> queryUTXOByTxId(String txId) {
+    @Override
+    public List<UTXOVO> queryUTXOByTxId(String txId) {
         if (StringUtils.isBlank(txId)) {
             return null;
         }
@@ -371,7 +374,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param identity
      * @return
      */
-    @Override public boolean isExistedIdentity(String identity) {
+    @Override
+    public boolean isExistedIdentity(String identity) {
         if (StringUtils.isBlank(identity)) {
             return false;
         }
@@ -384,8 +388,35 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param currency
      * @return
      */
-    @Override public boolean isExistedCurrency(String currency) {
+    @Override
+    public boolean isExistedCurrency(String currency) {
         return currencyRepository.isExits(currency);
+    }
+
+    /**
+     * query contract address by currency
+     *
+     * @return
+     */
+    @Override
+    public String queryContractAddressByCurrency(String currency) {
+        CurrencyInfo currencyInfo = currencyRepository.queryByCurrency(currency);
+        if (null != currencyInfo) {
+            return currencyInfo.getContractAddress();
+        }
+        return null;
+    }
+
+
+    /**
+     * check whether the contract address is existed
+     *
+     * @param address
+     * @return
+     */
+    @Override
+    public boolean isExistedContractAddress(String address) {
+        return contractRepository.isExistedAddress(address);
     }
 
     /**
@@ -394,7 +425,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param key
      * @return
      */
-    @Override public SystemPropertyVO querySystemPropertyByKey(String key) {
+    @Override
+    public SystemPropertyVO querySystemPropertyByKey(String key) {
         return systemPropertyHandler.querySystemPropertyByKey(key);
     }
 
@@ -404,7 +436,8 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param inputList
      * @return
      */
-    @Override public List<UTXO> queryUTXOList(List<TxIn> inputList) {
+    @Override
+    public List<UTXO> queryUTXOList(List<TxIn> inputList) {
         log.info("When process UTXO contract  querying queryTxOutList by inputList:{}", inputList);
         return utxoSnapshotHandler.queryUTXOList(inputList);
     }
@@ -415,75 +448,28 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
      * @param name
      * @return
      */
-    @Override public UTXOActionTypeEnum getUTXOActionType(String name) {
+    @Override
+    public UTXOActionTypeEnum getUTXOActionType(String name) {
         return UTXOActionTypeEnum.getUTXOActionTypeEnumByName(name);
     }
 
-    @Override public BlockHeader getBlockHeader(Long blockHeight) {
+    @Override
+    public BlockHeader getBlockHeader(Long blockHeight) {
         return blockRepository.getBlockHeader(blockHeight);
     }
 
-    @Override public BlockHeader getMaxBlockHeader() {
+    @Override
+    public BlockHeader getMaxBlockHeader() {
         return blockRepository.getBlockHeader(blockRepository.getMaxHeight());
     }
 
-    @Override public void afterPropertiesSet() throws Exception {
-        txConsumerExecutor.execute(new ConsumerTx());
-    }
-
-    /**
-     * for test
-     */
-    private class ConsumerTx implements Runnable {
-
-        @Override public void run() {
-            while (true) {
-                try {
-                    Thread.sleep(SLEEP_FOR_SUBMIT_TO_MASTER);
-
-                    if (null == AppContext.PENDING_TO_SUBMIT_QUEUE.peek()) {
-                        log.trace("queue is empty");
-                        continue;
-                    } else {
-                        submit();
-                    }
-                } catch (InterruptedException e) {
-                    log.error("Consumer tx thread InterruptedException");
-                } catch (Throwable e) {
-                    log.error("Consumer tx thread handle exception, ", e);
-                }
-            }
-        }
-
-        private void submit() {
-            int i = 0;
-            List<SignedTransaction> signedTxList = new ArrayList<>();
-            log.info("pending transaction to submit, size={}", AppContext.PENDING_TO_SUBMIT_QUEUE.size());
-            Profiler.start("start submit transactions");
-            Profiler.enter("build transactionList");
-            while (i++ < TX_PENDING_COUNT && (null != AppContext.PENDING_TO_SUBMIT_QUEUE.peek())) {
-                signedTxList.add(AppContext.PENDING_TO_SUBMIT_QUEUE.poll());
-            }
-            Profiler.release();
-
-            log.info("submit transactions, size={}", signedTxList.size());
-            Profiler.enter("submit transactions");
-            submitTransactions(signedTxList);
-            Profiler.release();
-
-            Profiler.release();
-
-            if (Profiler.getDuration() > Constant.PERF_LOG_THRESHOLD) {
-                Profiler.logDump();
-            }
-        }
-    }
-
-    @Override public Long getMaxBlockHeight() {
+    @Override
+    public Long getMaxBlockHeight() {
         return blockRepository.getMaxHeight();
     }
 
-    @Override public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
+    @Override
+    public List<BlockVO> queryBlocksByPage(QueryBlockVO req) {
         if (null == req) {
             return null;
         }
@@ -498,10 +484,11 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             req.setPageSize(20);
         }
         return blockRepository
-            .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
+                .queryBlocksWithCondition(req.getHeight(), req.getBlockHash(), req.getPageNo(), req.getPageSize());
     }
 
-    @Override public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
+    @Override
+    public List<CoreTransactionVO> queryTxsByPage(QueryTransactionVO req) {
         if (null == req) {
             return null;
         }
@@ -516,19 +503,82 @@ import static com.higgs.trust.consensus.config.NodeState.MASTER_NA;
             req.setPageSize(20);
         }
         return transactionRepository
-            .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
-                req.getPageSize());
+                .queryTxsWithCondition(req.getBlockHeight(), req.getTxId(), req.getSender(), req.getPageNo(),
+                        req.getPageSize());
     }
 
-    @Override public BlockVO queryBlockByHeight(Long height) {
+    @Override
+    public BlockVO queryBlockByHeight(Long height) {
         return blockRepository.queryBlockByHeight(height);
     }
 
-    @Override public CoreTransactionVO queryTxById(String txId) {
-        return transactionRepository.queryTxById(txId);
+    @Override
+    public CoreTransactionVO queryTxById(String txId) {
+        CoreTransactionVO vo = transactionRepository.queryTxById(txId);
+        if (vo != null) {
+            Object contractState = getContractState(txId, vo);
+            vo.setContractState(contractState);
+        }
+        return vo;
     }
 
-    @Override public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
+    @Override
+    public List<CoreTransactionVO> queryTxByIds(List<String> txIds) {
         return transactionRepository.queryTxs(txIds);
+    }
+
+    /**
+     * get contract state
+     *
+     * @param txId
+     * @param vo
+     * @return
+     */
+    private Object getContractState(String txId, CoreTransactionVO vo) {
+        InitPolicyEnum initPolicyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(vo.getPolicyId());
+        if (initPolicyEnum != InitPolicyEnum.CONTRACT_ISSUE && initPolicyEnum != InitPolicyEnum.CONTRACT_INVOKE) {
+            return null;
+        }
+        String address = null;
+        if (initPolicyEnum == InitPolicyEnum.CONTRACT_ISSUE) {
+            //query contract by txId and action index
+            ContractVO contractVO = contractRepository.queryByTxId(txId, 0);
+            if (contractVO == null) {
+                log.info("[getContractState] get contract by txId:{} is null", txId);
+                return null;
+            }
+            address = contractVO.getAddress();
+        } else {
+            String actionDatas = vo.getActionDatas();
+            if (StringUtils.isEmpty(actionDatas)) {
+                log.info("[getContractState] vo.getActionDatas is empty txId:{} ", txId);
+                return null;
+            }
+            List<ContractInvokeAction> actions = JSON.parseArray(actionDatas, ContractInvokeAction.class);
+            if (CollectionUtils.isEmpty(actions)) {
+                log.info("[getContractState] parse actionDatas is empty txId:{} ", txId);
+                return null;
+            }
+            ContractInvokeAction action = actions.get(0);
+            if (action == null) {
+                log.info("[getContractState] get ContractInvokeAction is null txId:{} ", txId);
+                return null;
+            }
+            address = action.getAddress();
+        }
+        if (StringUtils.isEmpty(address)) {
+            log.info("[getContractState] get contract address is null");
+            return null;
+        }
+        //make new key
+        String key = StateManager.makeStateKey(address, txId);
+        //by md5
+        key = ContractStateSnapshotAgent.makeNewKey(key);
+        //query state by key
+        ContractState contractState = contractStateRepository.getState(key);
+        if (contractState == null) {
+            return null;
+        }
+        return contractState.getState();
     }
 }

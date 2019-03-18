@@ -13,6 +13,11 @@
       "3": "127.0.0.1:8803"
     }
   },
+  "config": {
+    "term": {
+      "maxTermsSize": 8
+    }
+  },
   "eureka": {
     "client": {
       "enabled": true,
@@ -31,23 +36,13 @@
         "consensus": "RSA",
         "biz": "RSA"
       },
-      "privateKey": "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAKF72oPKpeBr68PVFk4l/b9DfcrC0WPgBnqPkVAoEmIbuHJs3qRvLNROg5pOGLzYadbdxuBAWrk2XGUrxXOTDkpC92xzk8Hq0utj46f5/uKQ9G6fAennK2d8MIbeHClzoFZgVKn6Ct7NoSiMTffkggK3uU5H/rBFbEClPDIGWZ9zAgMBAAECgYBwOSuV1XpLqZSSZv72Vm6uwg+knpl4CFNYT3fUNdT4u30GgGSF8AE+lkXdMZL9goSjX0L7y52BA6dYY//3nuYZVe9BkvsU5I/Zz8TYqclHWtMPNQipYm5m0vjwC2MR1fxIejpn4Z+fGGfP/VwiXaRUNnEdM/6cQ7bwV/FsEz8O6QJBAOyc3wLSOkCwrFo9zwY83Tkt3a0btX3IaLrAd4Iy3b013XgAJq2EugtKr3OiLOG/xrSxa1d96AYcPYchyccEqN8CQQCutxiqrL6wUW++gr44vhMDGfNneeaI5e+q0LcmVrQiwDWoQOVH4k3V/RmQZMrcOtGODd/ow6VeSxf4sqzLitftAkEA2xo8jHE9zg+L2hioLz+HH16wio9BFdPR3zVAtUkC+iX6ChghuMZSPQiQxcQkSXt7tnEgVClcBOR7uTl5jphrAwJABfgNaK9UKHPvzGNtGkUsIxv829knTiAE6yIMT8wAhXtpmeD1tFn/7MKj3/IBmDqONDs3Hh2pBaqtG/sGukF5FQJAfiOzJw5E+1X2m0ZJyw9lm96qpZo3X0wfHdP87K+vvkVo4O6xrYP8hKHgj9DylMMJxKkO9RKOWDGe8jpP5YXeBw==",
-      "publicKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-      "p2p": {
-        "faultNodeNum": 1,
-        "clusters": {
-          "TRUST-TEST0": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST1": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST2": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST3": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB"
-        },
-        "clusterNodeNames": [
-          "TRUST-TEST0",
-          "TRUST-TEST1",
-          "TRUST-TEST2",
-          "TRUST-TEST3"
-        ]
-      }
+      "keys":{
+        "bizPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjo08TH9FE2pms/x+BzKY+BxLqnjH6GIkfI3OO1bRES6Nj44R2K7qZkSwxJoeuehtRHmLbP+l5QWoivbDeFR3cJgZLfj9IE+RjqbD/esbIG2AHcU2Pan0dJr3G1m/TGlRdfmfPKKfvalF26wR+pNua3P7Brxrn7io41OLFruQlAznlXvK/kydONYRqaAzlGWxbqmlBgWuETBxzhtXQciMO8qJ2xGnc4ptvONrEGtQJ0ZXU1zOYKoOGsD9dF4OBg1yH1odTaljozbZGUX3vNAdUTidk+mqRFeJD97a9W+cLpnYCMMRMml6J1TIUvjZ3iUUguaYZXaQ/di9m2qzXh4dVwIDAQAB",
+        "bizPrivateKey": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCOjTxMf0UTamaz/H4HMpj4HEuqeMfoYiR8jc47VtERLo2PjhHYrupmRLDEmh656G1EeYts/6XlBaiK9sN4VHdwmBkt+P0gT5GOpsP96xsgbYAdxTY9qfR0mvcbWb9MaVF1+Z88op+9qUXbrBH6k25rc/sGvGufuKjjU4sWu5CUDOeVe8r+TJ041hGpoDOUZbFuqaUGBa4RMHHOG1dByIw7yonbEadzim2842sQa1AnRldTXM5gqg4awP10Xg4GDXIfWh1NqWOjNtkZRfe80B1ROJ2T6apEV4kP3tr1b5wumdgIwxEyaXonVMhS+NneJRSC5phldpD92L2barNeHh1XAgMBAAECggEAPao/EWBkwzdd4jIxWm+62Gl1GfNRlucNnYvCUM0Hd4VJ23W7pp5T65V/WizJaeZvjhV+CNK2MtI1zJdei2kOmfhRvB9fcGC7OJhPZEIV4/s6VqZ/BkHE68Q1bPFv3WAZyw0GozY+H89f1t0ikeDA/V6Ykptjex5ogJ4dJuJQcppTaEb5pYQFYHVaR7a2Zg+d1SJ5LAIZGHTZC0wTWPtZwRb6z6Jx22jTfTzfj9Sr8bk04FDKgvW/IihmtmnWSm4f96TeMJRifaraeB4ciJsH9KrRZuqPvfniChcV2NzWMOGpI/0HN+u71kEZoQLKr5Zp1+cLl3YXfmMEnaISJtBV4QKBgQDdYuqdisRyjECQaWVOp3atoyb+Hlqp86wS2Q2Ah1ADM0i5jRnDxPzXsDvXFBYa1rzY5JJcJrX/gmXxDQHPLhKF2ilt212bIIJfI1nOHUYhi0K6crD082Fj/5h5OusrmwEDtFSTScmeYXgX6bdfUhXbKMviq60id15L1Um3w0B0OQKBgQCk1u1pFLO4Ii8UhTEtTYlItHssIQPX08dcHtpO0U911N303tWB/y9E1UwrW6IXcJnnrClcpZ/g8L7NyFG/DIfp2jIF9WybSbayUSf9R44GGzbwR6Ko/pfoYeC0aFacsxhL49OCJOsGuDfkmnvCzTW7ptnlsDxpMXvFlZhzkb2+DwKBgQDUlU561yyKXhkFUt9/5pi0ZY1kyRsARUc/lgM8HzL6z70Ox+osrbSpHMZpYhVT0k3m652LNXTgFIP1MytAmZoZxAKyRcod0tq9poFuxXd5cHMz/DvmCurDDkWIa8Y0yhPwTbJE+L7NAgVC2R9HPdhU6VjWoUmQZhU7NmUiOzBiKQKBgCllOBWtdzyEiSI0GJdx40n42P3KBLcMngIKVXR5p+TFYj/+Pcv5k5tLnWc+CcStKFk/qNt1VGMe0ivHZI//y5n0i59ndLDCoDjDnLFEaOwrpW5N7xFVbjyTZ+SmVyne5/kW66TBNKxpUs/745yWACpxykKeMW2RWa3S1YggT3ANAoGBAIijhNIAcqFdqkAFTp8CGUrOWDSjVUFJ9SaZ0VdERonNpOdIz0XcBVEio5FBQo6pSdSOAmKBMPxbRe+AyPpk1AyaeT7aEtanaQG6cecRZAITqrc+aQRFOx5z+4M5qUcHaiMpnBpMR8BydARpv4+/UoaCQwi00Wyog5tBn8Ti9jpj",
+        "consensusPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl26CKTqV/KmO8OmD0wSNiMysDKFOvKKDX/FOQEOpuBC/dffFaturWtQHaTUfje9vSwi3gFCL0k5kJQvnlIrscCVmx+j+I0x6O2G4LM7mQovCaxjRmBtIJHvurUMgVJLibazhVFbPvVn6UMv2I58PTDqdekXJ0Urz9vmr5yrHZEpw20MBFO7Ve0J+TXVQ0pamX9zVnVSgeSgBu9w+ex/8t0lJkeQJrauJ47MnHYobVVKgwktwIPQMZVhiFlp1fkwr+xuI1OAfaqfPyLAnWTT60L8AhpxEfo3LiLG7UdLlZMgpjadEEiS6NZONb8hXi9mbQAYfORokkwXdVOuHlJcdRQIDAQAB",
+        "consensusPrivateKey": "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCXboIpOpX8qY7w6YPTBI2IzKwMoU68ooNf8U5AQ6m4EL9198Vq26ta1AdpNR+N729LCLeAUIvSTmQlC+eUiuxwJWbH6P4jTHo7YbgszuZCi8JrGNGYG0gke+6tQyBUkuJtrOFUVs+9WfpQy/Yjnw9MOp16RcnRSvP2+avnKsdkSnDbQwEU7tV7Qn5NdVDSlqZf3NWdVKB5KAG73D57H/y3SUmR5Amtq4njsycdihtVUqDCS3Ag9AxlWGIWWnV+TCv7G4jU4B9qp8/IsCdZNPrQvwCGnER+jcuIsbtR0uVkyCmNp0QSJLo1k41vyFeL2ZtABh85GiSTBd1U64eUlx1FAgMBAAECggEAIL1CpNlGviaGge1qk7/DPdVKSTzCwiO8lYydJ2W5ltMAIegcpXqytGNs6sESfmRKwoUy7yn64NAT9LJ7MfFLJv/fFc94ynbpYldBM2bT/4Up1m+6ONGFKmYk9w6xObe7/oxG9y4BoeWHKdq+73qfGxL9Iwddl8NFtZrLIKJuE29zbOJN/8n8WQmpmtYW49m0MPXOtRz/e9G0iSao8/k3wyRiQQkSnTjvlYbeZC+TCbH8fePI5Q2hL6elhK7ufi+Ye//XOo2o8MjIv+DOSw8DFZ1VTd1Fi7An2+T2DJPZZ3dwW1f/8+pg9zV1Fe8B6qHJWsRcCw8DybDy9AKuEozFYQKBgQDQBjr0H2iyYQOkRd3R3UAdCC+URdt8P3trurI76VmS5i2QRPOyQdJnsiWbGppInrFz6b/22XLtf453q6Zm02IRviNyVImzm/Oas0Td3XObZkyS8gUDa9Uadb6pJ9gmsi+UTk9aHKq2fSux6MW3JJixmU7R+hUBbMZou41YR5Cy6QKBgQC6Wws27a7SqkMj4YwChx1n7GjNlXyQRd3LtD8qUyZNjXXkYlxyQ7EnR7/1AFqQAL4UeZOSag7pNq4yZGhebxvrvUwnAgwHIG3AiR0yGzuPt5/Qu18g97vcmRYyBohb89Ksbp6yjAvN4uSgjDGoxnBppnfeqjIzYSKNv/wqngHF/QKBgCUUlzmgx6bUSDPmCE46ZA1IwkJp2V/iaPuhAdhQFhlrUj/fKplhxkGZrb5iFZJQR01kI0W7KRNQo3KNdFHr6BVFkUf17b3IVLoErofly4+twoSHA4HCnO/kgSHh6lOre3OyKc7kQUHaOgmydlvY+CbgLv6a11ezrgJJPD66Mv7RAoGAPWWxlC9K4e1moXO2BT8u2QZyoQkXORFLuclw5iju/a4VoWEmxB65Rw/Elpu/OqKD/Yrwq9R1hTCWw9OA71v7/vcnF9L803xDrKOAEvoV7Yu6A7M37EyygEOPpHuygVkbl+P6NSke2n5ehOarlceLUcOeyqWYVIU0NS+DjSbxvqECgYB5y2cNZ2Ux5Lo1AG992RjxfX+TQW57vCNPyFB63doUGNRuXYGDz732lTJ6asoy5WDUxi1QcOKWsS/BaOkT5iFXIoNsDbjnf7c/IfdTglor6qvQQ2Wg/WqSS1NGxAJrIsgpEtuOA3MWTIYHDDJTeope6hnM+1xXXZpXOItV1eYcvg=="
+      },
+      "geniusPath":"D:/workspace_idea/DL/trust/slave/src/main/resources/geniusBlock.json"
     }
   },
   "management": {
@@ -87,7 +82,7 @@
         "maxWait": 60000,
         "min-evictable-idle-time-millis": 300000,
         "minIdle": 1,
-        "password": "root",
+        "password": "920125",
         "time-between-eviction-runs-millis": 60000,
         "url": "jdbc:mysql://localhost:3306/trust3?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
@@ -113,6 +108,14 @@
     },
     "key": {
       "mode": "manual"
+    },
+    "redisson": {
+      "sentinel": {
+        "masterName": ""
+      },
+      "password": "",
+      "address": "redis://127.0.0.1:6379",
+      "single": true
     }
   },
   "logging": {
@@ -175,7 +178,15 @@
         "2": "TRUST-TEST2",
         "3": "TRUST-TEST3"
       },
-      "defaultDir": "D:/tmp/files3"
+      "defaultDir": "C:/tmp/files3"
     }
+  },
+  "network": {
+    "host": "127.0.0.1",
+    "port": 9004,
+    "peers": "127.0.0.1:9001,127.0.0.1:9002",
+    "rpc": "netty",
+    "timeout": 5,
+    "clientThreadNum": 0
   }
 }

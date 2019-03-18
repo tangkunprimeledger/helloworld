@@ -4,12 +4,19 @@
       "NFLoadBalancerRuleClassName": "com.higgs.trust.common.feign.RequestHeaderRoundRobinRule"
     }
   },
-  "copycat": {
-    "server": {
-      "address": "127.0.0.1:8804",
-      "cluster": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803,127.0.0.1:8804",
-      "client": "127.0.0.1:8800,127.0.0.1:8801,127.0.0.1:8802,127.0.0.1:8803,127.0.0.1:8804",
-      "logDir": "/tmp/higgs/trust/copycat/log4"
+  "atomix": {
+    "address": "127.0.0.1:8804",
+    "cluster": {
+      "0": "127.0.0.1:8800",
+      "1": "127.0.0.1:8801",
+      "2": "127.0.0.1:8802",
+      "3": "127.0.0.1:8803",
+      "4": "127.0.0.1:8804"
+    }
+  },
+  "config": {
+    "term": {
+      "maxTermsSize": 8
     }
   },
   "eureka": {
@@ -22,32 +29,21 @@
   },
   "higgs": {
     "trust": {
-      "electionMaster": false,
+      "electionMaster": true,
       "masterName": "TRUST-TEST0",
       "nodeName": "TRUST-TEST4",
       "prefix": "TRUST",
       "crypto": {
         "consensus": "RSA",
-        "biz": "SM"
+        "biz": "RSA"
       },
-      "privateKey": "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAKF72oPKpeBr68PVFk4l/b9DfcrC0WPgBnqPkVAoEmIbuHJs3qRvLNROg5pOGLzYadbdxuBAWrk2XGUrxXOTDkpC92xzk8Hq0utj46f5/uKQ9G6fAennK2d8MIbeHClzoFZgVKn6Ct7NoSiMTffkggK3uU5H/rBFbEClPDIGWZ9zAgMBAAECgYBwOSuV1XpLqZSSZv72Vm6uwg+knpl4CFNYT3fUNdT4u30GgGSF8AE+lkXdMZL9goSjX0L7y52BA6dYY//3nuYZVe9BkvsU5I/Zz8TYqclHWtMPNQipYm5m0vjwC2MR1fxIejpn4Z+fGGfP/VwiXaRUNnEdM/6cQ7bwV/FsEz8O6QJBAOyc3wLSOkCwrFo9zwY83Tkt3a0btX3IaLrAd4Iy3b013XgAJq2EugtKr3OiLOG/xrSxa1d96AYcPYchyccEqN8CQQCutxiqrL6wUW++gr44vhMDGfNneeaI5e+q0LcmVrQiwDWoQOVH4k3V/RmQZMrcOtGODd/ow6VeSxf4sqzLitftAkEA2xo8jHE9zg+L2hioLz+HH16wio9BFdPR3zVAtUkC+iX6ChghuMZSPQiQxcQkSXt7tnEgVClcBOR7uTl5jphrAwJABfgNaK9UKHPvzGNtGkUsIxv829knTiAE6yIMT8wAhXtpmeD1tFn/7MKj3/IBmDqONDs3Hh2pBaqtG/sGukF5FQJAfiOzJw5E+1X2m0ZJyw9lm96qpZo3X0wfHdP87K+vvkVo4O6xrYP8hKHgj9DylMMJxKkO9RKOWDGe8jpP5YXeBw==",
-      "p2p": {
-        "faultNodeNum": 1,
-        "clusters": {
-          "TRUST-TEST0": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST1": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST2": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST3": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB",
-          "TRUST-TEST4": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChe9qDyqXga+vD1RZOJf2/Q33KwtFj4AZ6j5FQKBJiG7hybN6kbyzUToOaThi82GnW3cbgQFq5NlxlK8Vzkw5KQvdsc5PB6tLrY+On+f7ikPRunwHp5ytnfDCG3hwpc6BWYFSp+grezaEojE335IICt7lOR/6wRWxApTwyBlmfcwIDAQAB"
-        },
-        "clusterNodeNames": [
-          "TRUST-TEST0",
-          "TRUST-TEST1",
-          "TRUST-TEST2",
-          "TRUST-TEST3",
-          "TRUST-TEST4"
-        ]
-      }
+      "keys":{
+        "bizPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoLolfWrgC0wtIDS7gMuKZpmKTce0daRsCuzkiVH8cDSOYuiOqiu48+VvGKDZ5CKcfODDEmOYavNJRoLx2xExMTxJ0MP+HdS7/pV2jUavL9bSsVYHmty0hq030VGhf6EtL36sXq8fj4vhp/eh7dx48JPAg1aOibvbbrbfRbXy4D/iSrvd4VIvKGL7YYjq6iv3+qIDLXJJ1CjYeVMCsOTgiGls9Km+sLX1p9VSGOm9KNyuLECKnsFWubRCAmJLiODc0SqPLq48ABVpqnMfSjsZ1s5NiyMst8U6dwOctfaa6IMltoRhEsIgUWmVMc9tHvBefn/aufD/FTORRS4U0Q2aTwIDAQAB",
+        "bizPrivateKey": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCguiV9auALTC0gNLuAy4pmmYpNx7R1pGwK7OSJUfxwNI5i6I6qK7jz5W8YoNnkIpx84MMSY5hq80lGgvHbETExPEnQw/4d1Lv+lXaNRq8v1tKxVgea3LSGrTfRUaF/oS0vfqxerx+Pi+Gn96Ht3Hjwk8CDVo6Ju9tutt9FtfLgP+JKu93hUi8oYvthiOrqK/f6ogMtcknUKNh5UwKw5OCIaWz0qb6wtfWn1VIY6b0o3K4sQIqewVa5tEICYkuI4NzRKo8urjwAFWmqcx9KOxnWzk2LIyy3xTp3A5y19progyW2hGESwiBRaZUxz20e8F5+f9q58P8VM5FFLhTRDZpPAgMBAAECggEARWKWtKHivn3QLUsWdu9nfAtkjVddLDwi+ER0FGP0WmwV29URYZ0mZwPxBezKo5XdgHt3OwUL03/bbjkxN6UgW2TvaNRza2VfEvRrDWoqTriqlCvTdKM6u7kjk5Vt5q8p1osU1ns7YLi+Xcilew3ml9TxEsHXHtaeUBlaIbn+c5ftstIyb2jpTTjdtgFBCrhc6yEk4oJj0Sn1zMdYWPYTi8unjePnv3bvyVw0aX/JtQVjADa+yYHwyI3Z2mM8mS87/IFzbRWIdeqt1MVs2150QA/Yi7a3B9itR2xiGkXSAErPmB7R9vdghi3+RyczTt4oj4uWf52GjUH5aqM7gEI1AQKBgQD5XET+yQREHY11zJrSQzXc62ceVrjaNTXRrR5ZsPfDGvPwMHE78T2d6w4XxYq/Dj8FZ7TuhawuXCHjmUYzYPdvocsoDaZp39IG7HH6VpiNGbO0ZV7Y17TCZ31oIsIe4DPUyKlcXRXMz2RkdXuDTph6GFykitxxpoeOryAENSimrwKBgQClAbhxjrNmTLlDkvwl74R+/uNN6buWK+il9DnTYU1i5y+/WXQSOf+kgI0xXs56K2sGD7RWRwrbnJkK+zcIJ4PkTUGB2nrUzzJN74ZJiWAsZ1wIDMN4aHIldw9nJnFcPCsfiLUtRFZxSA0KUs8Yabhas6CkOIbVXFpeVRS0iT0uYQKBgQCC/pHQNtFi5xN1GrMKWfxlvdRB/9TD7MgFCiizfV/qwrH7L7eMgcKYvu58Vm34yAcbU8ucseQtxoCXC+HxA7N4lUogFGujmsy+jl+h3vPsy9+3mLkmuMpghfU/S2MmzSjtUyyFNPFK0nguvfjQle1L1ph0Z+4+VflIX382NqbQSQKBgQCCHO8yLFJukoVsMZU+3LXf5mGa6HoRGqKjagfHFO0O1joiawlJ7g4Vy4CKs7WhRGdqKiwL9I0tSzirHhjxByfLeNf06zD8aj3CkuOTTQ5XNVGuz1G7urB3toCg2AF/t7pRbV1gSojXXvdZcp73IzZJ32cG18QKrn5b8D8ZdTaXQQKBgAuoFYo1y1OE+pAWKfqLsJNUORDLOmI/zRFZaPzoo8TDcAzsrZskWfNmP20qux3oJGSmE6Obh8R6FykmbRNEEgMDDtfOvj4mywj3T6Y1GBvpubJnAamTkEvH1Y2FKklVHihqkNQOKhs1q3XowHGCXCAV6Hcspr5XGTSgoLir8UwP",
+        "consensusPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhoNFrKud86xgKFYSjlRoRybGq8Xbp55d8TOixHpg8WBn5evDpCjprJv77VxeGY06Y7YZyBKlP5lVX5uXvWFMR6iv1zqY1wZOds9wXyCxGJ+HoHBJR8m4+yiqDCo/unmJVuUwbuiJ7zngAhMbm9lovw/nCEkIulvf7Issv/dImj0i+KOnnmBSo01JLyXRqjiZlxX0EZV/OVYPkio7lRI93s0owGTB457QKoWLvZPLfS3wgPYj26wktTVCUvAgKU+VbqMP0WncSG1Cvb5w5g199H2mP10n+whY3gG19qo5g0omSGA4LQ1fDNlkEhNkLiqR6qFakreMCCKWKcggX+X02wIDAQAB",
+        "consensusPrivateKey": "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCGg0Wsq53zrGAoVhKOVGhHJsarxdunnl3xM6LEemDxYGfl68OkKOmsm/vtXF4ZjTpjthnIEqU/mVVfm5e9YUxHqK/XOpjXBk52z3BfILEYn4egcElHybj7KKoMKj+6eYlW5TBu6InvOeACExub2Wi/D+cISQi6W9/siyy/90iaPSL4o6eeYFKjTUkvJdGqOJmXFfQRlX85Vg+SKjuVEj3ezSjAZMHjntAqhYu9k8t9LfCA9iPbrCS1NUJS8CApT5Vuow/RadxIbUK9vnDmDX30faY/XSf7CFjeAbX2qjmDSiZIYDgtDV8M2WQSE2QuKpHqoVqSt4wIIpYpyCBf5fTbAgMBAAECggEARnSFzx6I+jQknZwP1hsiD3qg/yIAnnhV7lvEerM7CdMcOJLYA6kmVDHTsAz8gNe3aLjeIiyZ/4j57b0aqqhHAxW5HLvliGMWQCcBTeJawHH24TNPPtnLGUrAXuTWQn8cT7Z2OvF0JiijS5LkmCo1MjZLJczTVIGA9W4kf1wv3BE8ZMKiy06XLsRClcnB/yb/eOlyXdhYKHfs7BPnQ7lg0+4P8haob9LFdmVVUrSA3O206BMUgO5zfGzH/saE8I9GSeHTGt2lLfouM1yw+VMzuPPpqWkElG62GWwuV1DtQNrmqrqeFHDlgGMgT0PZnTg1B5I7czY6an0Ue3sDjUiIaQKBgQDMvt6GZRr9mFNAb7Is9D/82D3bVR67HNnLhSbJZ9eU50m1/szl0SSlfkeSOW+JTkV+l7+oB75rqYHDB7xOHMmdu9miu7897x9ODq7yTaULnof2UQF84tYkE5K6sT6g7jDUZlR97B9/f38ydjlk7sGxJrvMyIyF5DVSiKzJCAtfzwKBgQCoL4fJQr8mXNBlMWcSQ9D+DdYn0ictd6euer1dEv7j183gfMyLVtFh1/IWXLqjdy0aBhbOfR8Y2Rsxd/l7LHpXmHmqj4blWU1Es2TtYRAtVgtib5RtyfpMp4O5HidREJjXp35PEkJYzffu/mspbYeDJomdh5LFSG+aNXlJESOxNQKBgFl3Kcs2EMYxMmecpxGnpPI6F0Vo+2WtpKmexCULwBLrwbTJ4wSlD8tU07dca5Vm40z+yBuHTrjCt9Xd4nWLdLn85IuMWHOasmYsWlu8e9sI6cZC/VBx2jqnZt03J/OwQRv+nvrrG5RdxNnq+QdWoMJk93jzRRwYbQhkeoPZhQbXAoGAJJj7LkN0/u8RdgOzDxlsv+vY3x9u4Qj5lxEkZb19c60BIsllZSjGNUldZ5pUDsAfM1uB2PsHKkwMC860niYGlUsbpo7G5t9w3fM/khwd/g+MOKZZIS7jZYzKMB0spwo6iCrtZF1vzI09V2dLgF9SLqrTJVFcEcv6ZQ8fzlOJdcUCgYEApLdOHsOMbJo0ORzp4hcA9OWf/boH07z/EXspJGEI2by0MlB2xQoUmrzkHbfvYiRaXMk+0jgr4DJ6JKyWfnUX4t5nUX4NQpMLEeBqHPblqp2cOfjj8h5LtG7hVvWlNc4VEoF3rPs68VWrgv8rxO9eGZXWf/+pRwff6fGztPNZrHM="
+      },
+      "geniusPath":"D:/workspace_idea/DL/trust/slave/src/main/resources/geniusBlock.json"
     }
   },
   "management": {
@@ -110,16 +106,19 @@
     },
     "start": {
       "mode": "single"
+    },
+    "redisson": {
+      "sentinel": {
+        "masterName": ""
+      },
+      "password": "",
+      "address": "redis://127.0.0.1:6379",
+      "single": true
     }
   },
   "logging": {
     "config": "classpath:logback.xml",
     "path": "/tmp/log4"
-  },
-  "bftSmart": {
-    "systemConfigs": {
-      "myId": "TRUST-TEST4"
-    }
   },
   "hystrix": {
     "command": {
@@ -142,7 +141,7 @@
       "configs": {
         "system.communication.useSenderThread": true,
         "system.communication.defaultkeys": true,
-        "system.servers.num": "4",
+        "system.servers.num": "5",
         "system.servers.f": "1",
         "system.totalordermulticast.timeout": "2000",
         "system.totalordermulticast.maxbatchsize": "400",
@@ -178,7 +177,15 @@
         "3": "TRUST-TEST3",
         "4": "TRUST-TEST4"
       },
-      "defaultDir": "D:/tmp/files4"
+      "defaultDir": "C:/tmp/files4"
     }
+  },
+  "network": {
+    "host": "127.0.0.1",
+    "port": 9005,
+    "peers": "127.0.0.1:9001,127.0.0.1:9002",
+    "rpc": "netty",
+    "timeout": 5,
+    "clientThreadNum": 0
   }
 }

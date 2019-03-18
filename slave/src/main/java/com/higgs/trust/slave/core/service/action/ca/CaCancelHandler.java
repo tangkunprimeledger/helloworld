@@ -1,14 +1,12 @@
 package com.higgs.trust.slave.core.service.action.ca;
 
 import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.ca.CaSnapshotHandler;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.ca.Ca;
 import com.higgs.trust.slave.model.bo.ca.CaAction;
 import com.higgs.trust.slave.model.bo.context.ActionData;
@@ -26,9 +24,11 @@ import org.springframework.stereotype.Component;
 
     @Autowired CaSnapshotHandler caSnapshotHandler;
     @Autowired CaHelper caHelper;
-    @Autowired private ClusterInfo clusterInfo;
-    @Autowired private ConsensusStateMachine consensusStateMachine;
-    @Autowired private NodeState nodeState;
+
+    @Override public void verifyParams(Action action) throws SlaveException {
+        CaAction caAction = (CaAction)action;
+        caHelper.verifyParams(caAction);
+    }
 
     /**
      * @param
@@ -39,8 +39,8 @@ import org.springframework.stereotype.Component;
 
         // convert action and validate it
         CaAction caAction = (CaAction)actionData.getCurrentAction();
-        log.info("[CaCancelHandler.process] start to process ca cancel action, user={}, pubKey={}, usage={}", caAction.getUser(),
-            caAction.getPubKey(),caAction.getUsage());
+        log.info("[CaCancelHandler.process] start to process ca cancel action, user={}, pubKey={}, usage={}",
+            caAction.getUser(), caAction.getPubKey(), caAction.getUsage());
 
         if (!caHelper.validate(caAction, ActionTypeEnum.CA_CANCEL)) {
             log.error("[CaCancelHandler.process] actionData validate error, user={}, pubKey={}", caAction.getUser(),

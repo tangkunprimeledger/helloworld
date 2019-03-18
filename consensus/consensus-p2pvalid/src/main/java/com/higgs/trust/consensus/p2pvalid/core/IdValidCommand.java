@@ -3,8 +3,6 @@
  */
 package com.higgs.trust.consensus.p2pvalid.core;
 
-import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
-import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

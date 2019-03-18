@@ -1,14 +1,10 @@
 package com.higgs.trust.slave.core.service.pending;
 
-import com.higgs.trust.common.utils.Profiler;
-import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.common.constant.Constant;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidateResult;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
+import com.higgs.trust.slave.api.vo.TransactionVO;
+import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.managment.master.MasterPackageCache;
-import com.higgs.trust.slave.core.repository.PendingTxRepository;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 import com.higgs.trust.slave.model.enums.biz.TxSubmitResultEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -24,9 +20,9 @@ import java.util.List;
  **/
 @Service @Slf4j public class PendingStateImpl implements PendingState {
 
-    @Autowired private PendingTxRepository pendingTxRepository;
-
     @Autowired private MasterPackageCache packageCache;
+
+    @Autowired private TransactionValidator transactionValidator;
 
     /**
      * add pending transaction to db
@@ -40,14 +36,22 @@ import java.util.List;
             log.error("received transaction list is empty");
             return null;
         }
-        Profiler.start("add pending transaction");
 
         List<TransactionVO> transactionVOList = new ArrayList<>();
         transactions.forEach(signedTransaction -> {
             TransactionVO transactionVO = new TransactionVO();
             String txId = signedTransaction.getCoreTx().getTxId();
             transactionVO.setTxId(txId);
-
+            //verify params for transaction
+            try {
+                transactionValidator.verify(signedTransaction);
+            } catch (SlaveException e){
+                transactionVO.setErrCode(e.getCode().getCode());
+                transactionVO.setErrMsg(e.getCode().getDescription());
+                transactionVO.setRetry(false);
+                transactionVOList.add(transactionVO);
+                return;
+            }
             //limit queue size
             if (packageCache.getPendingTxQueueSize() > Constant.MAX_PENDING_TX_QUEUE_SIZE) {
                 log.warn("pending transaction queue size is too large , txId={}", txId);
@@ -59,7 +63,6 @@ import java.util.List;
             }
 
             try {
-                Profiler.enter("append deque last");
                 //insert memory
                 boolean result = packageCache.appendDequeLast(signedTransaction);
                 if (!result) {
@@ -69,19 +72,10 @@ import java.util.List;
                     transactionVO.setRetry(true);
                     transactionVOList.add(transactionVO);
                 }
-                Profiler.release();
             } catch (Throwable e) {
                 log.error("transaction insert into memory exception. txId={}, ", txId, e);
             }
-            //TODO check args
-
         });
-
-        Profiler.release();
-
-        if (Profiler.getDuration() > 0) {
-            Profiler.logDump();
-        }
 
         // if all transaction received success, RespData will set data 'null'
         if (CollectionUtils.isEmpty(transactionVOList)) {
@@ -90,17 +84,8 @@ import java.util.List;
         return transactionVOList;
     }
 
-    @Override public List<SignedTransaction> getPendingTransactions(int count) {
+    @Override public Object[] getPendingTransactions(int count) {
         return packageCache.getPendingTxQueue(count);
-    }
-
-    @Override public int packagePendingTransactions(List<SignedTransaction> signedTransactions, Long height) {
-        return pendingTxRepository
-            .batchUpdateStatus(signedTransactions, PendingTxStatusEnum.INIT, PendingTxStatusEnum.PACKAGED, height);
-    }
-
-    @Override public List<SignedTransaction> getPackagedTransactions(Long height) {
-        return pendingTxRepository.getTransactionsByHeight(height);
     }
 
     @Override public void addPendingTxsToQueueFirst(List<SignedTransaction> signedTransactions) {

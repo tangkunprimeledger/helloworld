@@ -27,3 +27,4 @@ slave/*.log
 /data
 .nb-gradle/
 /slave/scripts/1.0.0/slave_1.0.0_full.sql
+**/db/trust/

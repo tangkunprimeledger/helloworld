@@ -4,76 +4,211 @@
       "NFLoadBalancerRuleClassName": "com.higgs.trust.common.feign.RequestHeaderRoundRobinRule"
     }
   },
-  "consensus": {
-    "p2p": {
-      "data": {
-        "dir": "./data/p2p"
-      },
-      "cluster": "{\"TRUST-TEST1\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLDDNiZKp0AAjfkVKkReFJFufF546YwPkT+JpwOLg/Sgo5SXk8b2NMhw6rLyGol6+xntEAdVQCqtMYrdgVh31VP15Ttbaivnmu2MaKHqIJbzpHXYiYmE2VDYyjOQIbbRvedD6c65nlHJfWBhGfw8CinnvvLamg1nSBBwZ6ZTuplQIDAQAB\"}",
-      "faultNodeNum": 0
-    }
-  },
-  "copycat": {
-    "client": {
-      "server": "127.0.0.1:8800"
+  "atomix": {
+    "address": "10.200.172.225:8800",
+    "cluster": {
+      "0": "10.200.172.225:8800",
+      "1": "10.200.172.226:8800",
+      "2": "10.200.172.227:8800",
+      "3": "10.200.172.228:8800"
     },
-    "server": {
-      "address": "127.0.0.1:8800",
-      "cluster": "127.0.0.1:8800",
-      "stateMachineClass": "com.higgs.trust.slave.core.service.consensus.log.LogReplicateHandlerImpl",
-      "logDir" : "./data/copycat"
+    "dataPath": "/data/home/admin/trust/data/atomix",
+    "group": "raft-group",
+    "maxEntrySize": 1048576,
+    "numPartitions": 1,
+    "partitionSize": 5,
+    "segmentSize": 33554432,
+    "systemGroup": "sys-group"
+  },
+  "bftSmart": {
+    "systemConfigs": {
+      "configs": {
+        "system": {
+          "bft": true,
+          "communication": {
+            "defaultkeys": true,
+            "inQueueSize": 5000,
+            "outQueueSize": 2000,
+            "useMACs": 0,
+            "useSenderThread": true,
+            "useSignatures": 0
+          },
+          "debug": 1,
+          "servers": {
+            "f": 1,
+            "num": 5
+          },
+          "shutdownhook": true,
+          "totalordermulticast": {
+            "checkpoint_period": 6000,
+            "checkpoint_to_disk": true,
+            "global_checkpoint_period": 120000,
+            "highMark": 1000,
+            "log": true,
+            "log_parallel": false,
+            "log_to_disk": true,
+            "maxbatchsize": 400,
+            "nonces": 10,
+            "revival_highMark": 10,
+            "state_transfer": true,
+            "sync_ckp": false,
+            "sync_log": false,
+            "timeout": 2000,
+            "timeout_highMark": 200,
+            "verifyTimestamps": false
+          },
+          "ttp": {
+            "id": 7001
+          }
+        }
+      },
+      "defaultDir": "/data/home/admin/trust/snapshotDir",
+      "hostsConfig": "0 10.200.172.97 11000,1 10.200.172.98 11000,2 10.200.172.99 11000,3 10.200.172.100 11000,4 10.200.172.101 11000",
+      "idNodeNameMap": {
+        "0": "TRUST-NODEA",
+        "1": "TRUST-NODEB",
+        "2": "TRUST-NODEC",
+        "3": "TRUST-NODED"
+      },
+      "myClientId": 1100,
+      "myId": 0,
+      "ttpPubKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwuoTWbSFDnVjohwdZftoAwv3oCxUPnUiiNNH9pXryEW8kSFRGVJ7zJCwxJnt3YZGnpPGxnC3hAI4XkG26hO7+TxkgaYmv5GbamL946uZISxv0aNX3YbaOf//MC6F8tShFfCnpWlj68FYulM5dC2OOOHaUJfofQhmXfsaEWU251wIDAQAB"
     }
   },
   "eureka": {
     "client": {
       "enabled": false,
       "serviceUrl": {
-        "defaultZone": "http://localhost:8761/eureka/"
+        "defaultZone": "http://10.200.172.96:8761/eureka/"
       }
+    },
+    "instance": {
+      "preferIpAddress": true
     }
   },
   "higgs": {
     "trust": {
-      "masterName": "TRUST-TEST1",
-      "nodeName": "TRUST-TEST1",
+      "consensusWaitTime": 20000,
+      "electionMaster": true,
+      "failover": {
+        "blockStep": 50,
+        "failoverStep": 10000,
+        "headerStep": 200,
+        "keepSize": 10,
+        "threshold": 100,
+        "tryTimes": 10
+      },
+      "geniusPath": "/data/home/admin/trust-integration/geniusBlock.json",
+      "isSlave": true,
+      "isStandby": false,
+      "keys": {
+        "bizPublicKey":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC1Tos7UppFSndWL9giXebNOPjQvrFu4ugpZyjf1szXBy+R7lElgR/uPqKc8sd+ss8GNxSuCfkkDhdIjJwaitZVRCgST+t2vzTuDXa2brzb8YCdkwCG6ucKp5NQ3+YS9vh0GUtL3MTAIXMYYnwFDAg/va82L0mqOoPSF13SnRzI4wIDAQAB",
+
+        "bizPrivateKey":"MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBALVOiztSmkVKd1Yv2CJd5s04+NC+sW7i6ClnKN/WzNcHL5HuUSWBH+4+opzyx36yzwY3FK4J+SQOF0iMnBqK1lVEKBJP63a/NO4NdrZuvNvxgJ2TAIbq5wqnk1Df5hL2+HQZS0vcxMAhcxhifAUMCD+9rzYvSao6g9IXXdKdHMjjAgMBAAECgYAWB4wdUiUShEDJxRhy3Iv9pY19952hhoqE9VbfE79h5SqfhaBweScDELM7dLhOqbVD4Q9vMiEGg3vKweL5yqLOFpBWdPudaLJ0Pm2A9wGIBYE144LcJMdtg1Iucdbt+Yr5DgABCGxZYcgw6DhFvXnrtxnsQB6rJ8pI1kJaPpAxOQJBAPgeM7uTN16Y/XvMbcPuwJrxnJmox3O3ZDiHyGtcGI+mEeVnW9r+GdgL1C75mWo/o4WEvwpxaGTwiNW8BMYRdY0CQQC7EQF7jkbj4GsXaW1lkrH0HKNl6r4ouZc8SsbrYXHSHxZVKZIOAyje2B5I4e97WD6RztzL9Mvdsd8dt0Ng2gQvAkApqvjJIXoE+vBm3/f3FZtm6fiAnaWRO1UrYTI5RWgih6MtwWPdrRqt+56QnP40p6dQfvCOUmlTuklgi4jJspjpAkAuNk9FdKpylPgfun25//lSMtjyzoDXkrGXxWlKsLHrlJ5xv2lDaOhp1L32h0ogEHa0koPdJsZOKCjUMHfGr1UlAkBpbPauXSlfM/QKgQsTVskp/jGOCpUTFMiVdCLk9TlUuSXLmOx/0f6jJrf+zynjSQ+jyvks2x6Iph347Erua3uo",
+
+        "consensusPublicKey":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLz389Edk2X7mR3Lp1l9e1NKQro/eowvobzNZrJWXIQps+Aisu0/UVYrKZaYOpGB5eErXqhvvrxB2vJd5QAxGros5oF2Y7D0+JLNvnLg5KsiU5/sHXMjAWWZVOX+HrRgYuQO/pJdyWeJjfzksrDDjphvtR7z3LOp32mezjoItaRQIDAQAB",
+
+        "consensusPrivateKey":"MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAIvPfz0R2TZfuZHcunWX17U0pCuj96jC+hvM1mslZchCmz4CKy7T9RVisplpg6kYHl4SteqG++vEHa8l3lADEauizmgXZjsPT4ks2+cuDkqyJTn+wdcyMBZZlU5f4etGBi5A7+kl3JZ4mN/OSysMOOmG+1HvPcs6nfaZ7OOgi1pFAgMBAAECgYB+7fwbipfEeLW2CkoyNo+80LT3dd6DlbiSAq7sCcDVRjtA2aEw23fXWYrCIvxISUBQsfX8nV4blypH+D5UL+UasTL9Q7NrnuAlnKgLSuvZid/PrFDM1dntYMimMLY1W7nXvoVvF6QYph5UtAs4XAnZbLVgH94hu/34bcC21PJSxQJBAMc8CojEne44Yrgcf6QvgvQfMmmV3N7fsWRpX4wrOWA4mCsYYVTmOOPWvHIMPic2p3YF2AMEEx4XstLeiYDD5O8CQQCzpSGhyJOh1Wim/HnF6Y1NJL06onQRnmdYzWaXqjnHNNrnWx5P4j23FImxDNzq/RAW12XFzV1IfD8bK9BOD7wLAkEAqEQHSZd1ItqwVXqMOuh9mxw2AYK2de1K7tkn/0QKQz/JFKyUl5WQ+qxDn7bDT28TY9RvqaxpUQMG3p1gWEYaNQJAB2MoAeYkpAgJmKxTOZ9ED0MOgQXDLiJMb6tqp5v5akazJcZqdbCBBzFSBDTaNNOZQMc0yTCLwHpTggOIOl2NRwJAddCvICLW0kKy01oyY1yhngQ0tSNBfaBeUIMQ/xNooCjf0jM1YMN3dliKapHiqT3bpgUIXfugdwJH2CXBZVtxPA=="
+      },
+      "masterName": "TRUST-NODEC",
+      "nodeName": "TRUST-NODEA",
+      "p2p": {
+        "clusterNodeNames": [
+          "TRUST-NODEA",
+          "TRUST-NODEB",
+          "TRUST-NODEC",
+          "TRUST-NODED"
+        ],
+        "faultNodeNum": 1
+      },
+      "path": "/data/home/admin/trust/",
       "prefix": "TRUST",
-        "privateKey": "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAIsMM2JkqnQACN+RUqRF4UkW58XnjpjA+RP4mnA4uD9KCjlJeTxvY0yHDqsvIaiXr7Ge0QB1VAKq0xit2BWHfVU/XlO1tqK+ea7YxooeoglvOkddiJiYTZUNjKM5AhttG950PpzrmeUcl9YGEZ/DwKKee+8tqaDWdIEHBnplO6mVAgMBAAECgYBtrWwCmoDRCw30uv5C0VQIgObE9gdGekB9/kRjbHn4ggBae5gDkaDzxjxNztlv0GYnZqxY/jML/46PEuE06jBzGcOlBuobQJJ38pTg0pnNVHbkTckxfUIr1MYUDhtO18tJZUZuMbYMwwgZ9K9E0N8kjKXk+rRx+BDjlbxNPds6KQJBAMLS/HCXjAfJlzSEWqkBavAKoW+bBhZlkTH+DoNk/KidASgdFBqtPUf5w3U+j8dK4nvt8R9X7zGxRAYXpDGHUucCQQC2tZlmL858suIA/+XfQVGoKOEvLlI5tGNDLXlDaKldY8UZGqxcyKaOsqEWMQnJCUy/0zTariN7kNssptYm04wjAkB3qVlt2lcizVn24rhAh+NjzlO7le8WQIn+t7m4UIWzFsQIHFwlynQSSkEYOTXcRY14avwnsT30Opm6WDj8Rs7PAkBytzqFSmbfLIFyFzmBH0Xhyyj3sqG10WixeQ+2HzSXiljqFjE6YFETL1yszkVSkCA8IKQC2Ws13hF+y5GR9yj5AkBAeUJj/a8wpdxJCufDpoaVUsB/XGK9XCqlGZvSy2TrjWLLBjZ3jiyjTlqIssfqI/IiJ4H2peocDaHXjFT0m+Av"
+      "privateKey": "TODO",
+      "publicKey": "TODO",
+      "runMode": "Normal",
+      "startupRetryTime": 300
     }
+  },
+  "logging": {
+    "config": "classpath:logback-prod.xml"
   },
   "management": {
     "security": {
       "enabled": false
+    },
+    "shell": {
+      "auth": {
+        "simple": {
+          "user": {
+            "name": "user",
+            "password": "pwd"
+          }
+        }
+      },
+      "ssh": {
+        "port": 2000
+      }
     }
   },
   "mybatis": {
     "configLocation": "classpath:mybatis-config.xml",
     "mapper-locations": "classpath*:mybatis/**/*Mapper.xml"
   },
+  "network": {
+    "clientThreadNum": 0,
+    "host": "10.200.172.225",
+    "peers": "10.200.172.227:9001,10.200.172.228:9001",
+    "port": 9001,
+    "rpc": "netty",
+    "timeout": 5
+  },
   "primeJob": {
     "scheduler": {
       "instanceName": "slave"
     }
   },
+  "rs": {
+    "core": {
+      "batchCallback": true,
+      "schedule": {
+        "processInit": 3000,
+        "processNeedVote": 50000,
+        "submitSlave": 50,
+        "taskInitSize": 10,
+        "taskWaitSize": 5
+      },
+      "syncRequestTimeout": 2000,
+      "useHttpChannel": false
+    },
+    "custom": {
+      "aeskey": "cbs+jcajndcwje-9",
+      "contractAddress": 1234567,
+      "id": "bankchain-rsid",
+      "prikey": "f37a12485f23960ddd922b9ced5467806cbb393ef24660305ddd0abfdf987c72",
+      "pubkey": "0299ab5170051e5d8568543709348e7804110f126c45b305042c1e964c327d728e"
+    }
+  },
   "server": {
-    "port": 7070
+    "port": 7070,
+    "tomcat": {
+      "maxThreads": 1000
+    }
   },
   "spring": {
     "application": {
-      "name": "TRUST-TEST1"
-    },
-    "profiles": {
-      "active": "PRO"
+      "name": "TRUST-NODEA"
     },
     "datasource": {
       "druid": {
         "driver-class-name": "com.mysql.jdbc.Driver",
         "initialSize": 1,
         "maxActive": 20,
-        "maxWait": 60000,
+        "maxWait": 5000,
         "min-evictable-idle-time-millis": 300000,
         "minIdle": 1,
         "password": "root",
         "time-between-eviction-runs-millis": 60000,
+        "url": "jdbc:mysql://localhost:3306/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "url": "jdbc:mysql://localhost:3306/trust?useUnicode=true&characterEncoding=UTF8&allowMultiQueries=true&useAffectedRows=true",
         "username": "root"
       },
@@ -86,22 +221,59 @@
         "limit": 200
       }
     },
+    "mockRS": false,
     "package": {
-      "pending" : 3
+      "pending": 1000
     },
-    "utxo": {
-      "display": 1
+    "redisson": {
+      "address": "redis://127.0.0.1:6379",
+      "password": "",
+      "sentinel": {
+        "masterName": ""
+      },
+      "single": true
+    },
+    "rocksdb": {
+      "extra": {
+        "name": "trust-extra.db",
+        "size": 99999999999
+      },
+      "file": {
+        "root": "/data/home/admin/trust-integration/rocks/"
+      },
+      "flash": {
+        "name": "trust.db",
+        "size": 10000000000
+      },
+      "transaction": {
+        "lockTimeout": 10000
+      }
     },
     "schedule": {
+      "failover": 10000,
       "package": {
-        "create": 50,
+        "create": 200,
         "process": 100,
-        "submit": 1000
+        "submit": 50
       }
+    },
+    "start": {
+      "mode": "cluster"
+    },
+    "useMySQL": true,
+    "utxo": {
+      "display": 2
     }
   },
-  "runMode": "MOCK",
-  "logging": {
-    "config": "classpath:logback.xml"
+  "integration": {
+    "schedule": {
+      "issueCurrency": 1000
+    },
+    "request": {
+      "processing": {
+        "max": 200,
+        "threadNum": 50
+      }
+    }
   }
 }

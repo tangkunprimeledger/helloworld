@@ -2,7 +2,7 @@ package com.higgs.trust.rs.core.scheduler;
 
 import com.higgs.trust.rs.core.api.CoreTransactionService;
 import com.higgs.trust.rs.core.api.enums.CoreTxStatusEnum;
-import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
+import com.higgs.trust.rs.core.dao.po.CoreTransactionProcessPO;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -13,28 +13,36 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@ConditionalOnProperty(name = "higgs.trust.joinConsensus", havingValue = "true", matchIfMissing = true)
-@Service @Slf4j public class TxProcessNeedVoteSchedule {
+@ConditionalOnProperty(name = "higgs.trust.isSlave", havingValue = "true", matchIfMissing = true)
+@Service
+@Slf4j
+public class TxProcessNeedVoteSchedule {
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private CoreTxRepository coreTxRepository;
 
     private int pageNo = 1;
     private int pageSize = 100;
+    /**
+     * rocks db seek key:01-tx_id
+     */
+    private String lastPreKey = null;
 
     @Scheduled(fixedDelayString = "${rs.core.schedule.processNeedVote:3000}") public void exe() {
-        List<CoreTransactionPO> list =
-            coreTxRepository.queryByStatus(CoreTxStatusEnum.NEED_VOTE, (pageNo - 1) * pageSize, pageSize);
+        List<CoreTransactionProcessPO> list =
+            coreTxRepository.queryByStatus(CoreTxStatusEnum.NEED_VOTE, (pageNo - 1) * pageSize, pageSize, lastPreKey);
         if (CollectionUtils.isEmpty(list)) {
             pageNo = 1;
+            lastPreKey = null;
             return;
         }
-        for (CoreTransactionPO po : list) {
+        for (CoreTransactionProcessPO po : list) {
             try {
                 coreTransactionService.processNeedVoteTx(po.getTxId());
             } catch (Throwable e) {
                 log.error("has error", e);
             }
         }
+        lastPreKey = list.get(list.size() - 1).getTxId();
         pageNo++;
     }
 }

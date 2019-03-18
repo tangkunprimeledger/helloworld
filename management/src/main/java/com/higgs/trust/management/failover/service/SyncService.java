@@ -1,21 +1,24 @@
 package com.higgs.trust.management.failover.service;
 
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
-import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoService;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.management.exception.FailoverExecption;
 import com.higgs.trust.management.exception.ManagementError;
 import com.higgs.trust.management.failover.config.FailoverProperties;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.core.repository.BlockRepository;
 import com.higgs.trust.slave.core.service.action.GeniusBlockService;
 import com.higgs.trust.slave.core.service.block.BlockService;
 import com.higgs.trust.slave.core.service.consensus.log.PackageListener;
+import com.higgs.trust.slave.core.service.pack.PackageProcess;
 import com.higgs.trust.slave.core.service.pack.PackageService;
 import com.higgs.trust.slave.model.bo.Block;
 import com.higgs.trust.slave.model.bo.BlockHeader;
@@ -23,7 +26,9 @@ import com.higgs.trust.slave.model.bo.Package;
 import com.higgs.trust.slave.model.bo.context.PackContext;
 import com.higgs.trust.slave.model.enums.biz.PackageStatusEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
@@ -35,25 +40,26 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-@Order(2) @Service @Slf4j public class SyncService implements PackageListener {
+@StateListener @Order(2) @Service @Slf4j public class SyncService implements PackageListener {
 
     @Autowired private FailoverProperties properties;
-    @Autowired private SyncPackageCache cache;
     @Autowired private BlockRepository blockRepository;
     @Autowired private BlockService blockService;
     @Autowired private BlockSyncService blockSyncService;
     @Autowired private PackageService packageService;
     @Autowired private NodeState nodeState;
-    @Autowired private ClusterInfo clusterInfo;
-    @Autowired private ClusterInfoService clusterInfoService;
     @Autowired private TransactionTemplate txNested;
     @Autowired private GeniusBlockService geniusBlockService;
+    @Autowired private InitConfig initConfig;
+    @Autowired private PackageProcess packageProcess;
+    private Long receivedFistHeight = null;
+    private Long currentPackageHeight = null;
 
     public void asyncAutoSync() {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 autoSync();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("auto sync block failed!", e);
             }
         });
@@ -63,46 +69,28 @@ import java.util.concurrent.Executors;
      * 自动同步区块
      */
     @StateChangeListener(NodeStateEnum.AutoSync) public void autoSync() {
-        if (!nodeState.isState(NodeStateEnum.AutoSync)) {
+        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync, NodeStateEnum.Standby)) {
             return;
         }
         log.info("auto sync starting ...");
         try {
-            clusterInfoService.initWithCluster();
             Long currentHeight = blockRepository.getMaxHeight();
-            if (currentHeight == null || currentHeight == 0) {
-                syncGenesis();
-                currentHeight = 1L;
-            }
-            Long clusterHeight = null;
-            clusterHeight = getClusterHeight();
+            Long clusterHeight = blockSyncService.getSafeHeight(properties.getTryTimes());
             if (clusterHeight == null) {
                 throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
             }
-            if (clusterHeight <= currentHeight + properties.getThreshold()) {
-                return;
-            }
-            cache.reset(clusterHeight);
-            do {
+            Long failoverHeight = clusterHeight;
+            receivedFistHeight = null;
+            while (currentHeight.compareTo(failoverHeight) < 0) {
                 sync(currentHeight + 1, properties.getHeaderStep());
                 currentHeight = blockRepository.getMaxHeight();
-                if (currentHeight >= clusterHeight && cache.getMinHeight() <= clusterHeight) {
-                    Long newHeight = getClusterHeight();
-                    if (newHeight != null) {
-                        clusterHeight = newHeight;
-                        cache.reset(clusterHeight);
-                    } else {
-                        throw new SlaveException(SlaveErrorEnum.SLAVE_CONSENSUS_GET_RESULT_FAILED);
-                    }
+                if (receivedFistHeight != null) {
+                    failoverHeight = receivedFistHeight - 1;
                 }
-                //如果没有package接收，根据latestHeight判断是否在阈值内，否则，根据cache判断
-            } while (cache.getMinHeight() <= clusterHeight ? clusterHeight > currentHeight + properties.getThreshold() :
-                currentHeight + 1 < cache.getMinHeight());
-        } catch (Exception e) {
+            }
+        } catch (Throwable e) {
             MonitorLogUtils.logIntMonitorInfo(MonitorTargetEnum.SYNC_BLOCKS_FAILED, 1);
             throw new FailoverExecption(ManagementError.MANAGEMENT_STARTUP_AUTO_SYNC_FAILED, e);
-        } finally {
-            clusterInfo.refresh();
         }
     }
 
@@ -133,7 +121,7 @@ import java.util.concurrent.Executors;
      * @param size        同步数量
      */
     public synchronized void sync(long startHeight, int size) {
-        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync)) {
+        if (!nodeState.isState(NodeStateEnum.AutoSync, NodeStateEnum.ArtificialSync, NodeStateEnum.Standby)) {
             throw new FailoverExecption(ManagementError.MANAGEMENT_FAILOVER_STATE_NOT_ALLOWED);
         }
         log.info("starting to sync the block, start height:{}, size:{}", startHeight, size);
@@ -185,6 +173,9 @@ import java.util.concurrent.Executors;
         do {
             if (blockStartHeight + properties.getBlockStep() > blockEndHeight) {
                 blockSize = new Long(blockEndHeight - blockStartHeight + 1).intValue();
+            }
+            if (blockSize <= 0) {
+                break;
             }
             List<Block> blocks = getAndValidatingBlock(preHeader, blockStartHeight, blockSize);
             blockSize = blocks.size();
@@ -301,8 +292,19 @@ import java.util.concurrent.Executors;
      * receive package height
      */
     @Override public void received(Package pack) {
-        if (nodeState.isState(NodeStateEnum.AutoSync)) {
-            cache.receivePackHeight(pack.getHeight());
+        Long height = pack.getHeight();
+        if (receivedFistHeight == null) {
+            receivedFistHeight = height;
+            currentPackageHeight = height;
+            return;
+        }
+        if (height == currentPackageHeight + 1) {
+            currentPackageHeight = height;
+        } else if (height > currentPackageHeight + 1) {
+            log.warn("received discontinuous height, current height:{}, package height:{}", currentPackageHeight,
+                height);
+            currentPackageHeight = height;
+            receivedFistHeight = currentPackageHeight;
         }
     }
 
@@ -389,11 +391,25 @@ import java.util.concurrent.Executors;
         pack.setStatus(PackageStatusEnum.FAILOVER);
         pack.setSignedTxList(block.getSignedTxList());
         PackContext packContext = packageService.createPackContext(pack);
-        txNested.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+        if (initConfig.isUseMySQL()) {
+            txNested.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    packageService.process(packContext, true, true);
+                }
+            });
+        } else {
+            try {
+                Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+                ThreadLocalUtils.putRocksTx(tx);
                 packageService.process(packContext, true, true);
+                RocksUtils.txCommit(tx);
+            } finally {
+                ThreadLocalUtils.clearRocksTx();
             }
-        });
+        }
+        //update block height in memory
+        packageProcess.updateProcessedHeight(blockHeader.getHeight());
+
         boolean persistValid =
             blockService.compareBlockHeader(packContext.getCurrentBlock().getBlockHeader(), block.getBlockHeader());
         if (!persistValid) {

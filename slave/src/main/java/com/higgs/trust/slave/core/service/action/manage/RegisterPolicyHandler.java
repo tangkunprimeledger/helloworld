@@ -3,15 +3,16 @@ package com.higgs.trust.slave.core.service.action.manage;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.slave.common.util.beanvalidator.BeanValidator;
 import com.higgs.trust.slave.core.service.action.ActionHandler;
 import com.higgs.trust.slave.core.service.datahandler.manage.PolicySnapshotHandler;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,11 +29,33 @@ import java.util.Set;
     @Autowired
     private PolicySnapshotHandler policySnapshotHandler;
 
+    @Override public void verifyParams(Action action) throws SlaveException {
+        RegisterPolicy bo = (RegisterPolicy)action;
+        if(StringUtils.isEmpty(bo.getPolicyId()) || bo.getPolicyId().length() > 32){
+            log.error("[verifyParams] policyId is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(StringUtils.isEmpty(bo.getPolicyName()) || bo.getPolicyName().length() > 64){
+            log.error("[verifyParams] policyName is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(bo.getDecisionType() == null){
+            log.error("[verifyParams] DecisionType is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+        if(CollectionUtils.isEmpty(bo.getRsIds())){
+            log.error("[verifyParams] rsIds is null or illegal param:{}",bo);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+    }
+
     @Override
     public void process(ActionData actionData) {
         RegisterPolicy bo = (RegisterPolicy)actionData.getCurrentAction();
 
-        log.info("[RegisterPolicyHandler.process] start, actionData:{}", bo);
+        if (log.isDebugEnabled()) {
+            log.debug("[RegisterPolicyHandler.process] start, actionData:{}", bo);
+        }
 
         if (null == bo) {
             log.error("[RegisterPolicyHandler.process] convert to RegisterPolicy error");
@@ -75,7 +98,9 @@ import java.util.Set;
         }
         policySnapshotHandler.registerPolicy(bo);
 
-        log.info("[RegisterPolicyHandler.process] finish");
+        if (log.isDebugEnabled()) {
+            log.debug("[RegisterPolicyHandler.process] finish");
+        }
     }
 
 }

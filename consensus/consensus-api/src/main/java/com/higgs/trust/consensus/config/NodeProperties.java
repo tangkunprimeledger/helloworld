@@ -12,8 +12,6 @@ import org.springframework.context.annotation.Configuration;
      */
     private static final String DEFAULT_NODE_NAME = "DefaultNode";
 
-    private String runMode = "Normal";
-
     /**
      * the name of current node
      */
@@ -25,11 +23,6 @@ import org.springframework.context.annotation.Configuration;
     private int startupRetryTime = 100;
 
     /**
-     * the private key of node
-     */
-    private String privateKey;
-
-    /**
      * the node name prefix
      */
     private String prefix;
@@ -39,8 +32,19 @@ import org.springframework.context.annotation.Configuration;
      */
     private long consensusWaitTime = 1000L;
 
-    public boolean isMock() {
-        return "Mock".equalsIgnoreCase(runMode);
-    }
+    /**
+     * mark whether the trust is standby
+     */
+    private boolean standby = false;
+
+    /**
+     * mark whether the trust is slave or rs
+     */
+    private boolean slave = true;
+
+    /**
+     * trust path
+     */
+    private String path;
 
 }

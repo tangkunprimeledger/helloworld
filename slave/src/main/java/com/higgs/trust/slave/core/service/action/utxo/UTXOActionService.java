@@ -3,13 +3,13 @@ package com.higgs.trust.slave.core.service.action.utxo;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.enums.utxo.UTXOStatusEnum;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
-import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.slave.core.repository.PolicyRepository;
 import com.higgs.trust.slave.core.service.action.dataidentity.DataIdentityService;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
@@ -22,6 +22,7 @@ import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOHandler;
 import com.higgs.trust.slave.core.service.datahandler.utxo.UTXOSnapshotHandler;
 import com.higgs.trust.slave.dao.po.utxo.TxOutPO;
 import com.higgs.trust.slave.model.bo.DataIdentity;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.action.UTXOAction;
 import com.higgs.trust.slave.model.bo.context.ActionData;
 import com.higgs.trust.slave.model.bo.manage.Policy;
@@ -62,6 +63,90 @@ public class UTXOActionService {
     @Autowired
     private UTXOSmartContract utxoSmartContract;
 
+    /**
+     * verify UTXO action
+     * @param action
+     */
+    public void verifyUTXOAction(Action action) {
+        UTXOAction utxoAction = (UTXOAction) action;
+        //check StateClass
+        if (StringUtils.isEmpty(utxoAction.getStateClass()) || utxoAction.getStateClass().length() > 255) {
+            log.error("[verifyParams] StateClass is null or illegal param:{}", utxoAction);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        //check ContractAddress
+        if (StringUtils.isEmpty(utxoAction.getContractAddress()) || utxoAction.getContractAddress().length() > 64) {
+            log.error("[verifyParams] ContractAddress is null or illegal param:{}", utxoAction);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        //check UTXOActionType
+        if (utxoAction.getUtxoActionType() == null) {
+            log.error("[verifyParams] UtxoActionType is null or illegal param:{}", utxoAction);
+            throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+        }
+
+        //check InputList
+        checkInputList(utxoAction.getInputList());
+
+        //check OutputList
+        checkOutputList(utxoAction.getOutputList());
+    }
+
+    /**
+     * check inputList
+     *
+     * @param inputList
+     */
+    private void checkInputList(List<TxIn> inputList) {
+        if (CollectionUtils.isEmpty(inputList)) {
+            return;
+        }
+        for (TxIn txIn : inputList) {
+            //check  TxId  for Input
+            if (StringUtils.isEmpty(txIn.getTxId()) || txIn.getTxId().length() > 64) {
+                log.error("[verifyParams] txIn.TxId is null or illegal ");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
+
+            //check  ActionIndex and index  for Input
+            if (txIn.getActionIndex() == null || txIn.getIndex() == null) {
+                log.error("[verifyParams] in.Index|ActionIndex is null or illegal param");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
+        }
+    }
+
+    /**
+     * check outputList
+     * @param outputList
+     */
+    private void checkOutputList(List<TxOut> outputList) {
+        if (CollectionUtils.isEmpty(outputList)) {
+            return;
+        }
+        for (TxOut out : outputList) {
+
+            //check Identity  for Output
+            if (StringUtils.isEmpty(out.getIdentity()) || out.getIdentity().length() > 64) {
+                log.error("[verifyParams] out.Identity is null or illegal param");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
+
+            //check ActionIndex and Index  for Output
+            if (out.getActionIndex() == null || out.getIndex() == null) {
+                log.error("[verifyParams] out.Index|ActionIndex is null or illegal param");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
+
+            //check State for Output
+            if (out.getState() == null) {
+                log.error("[verifyParams] out.State is null or illegal param");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
+            }
+        }
+    }
 
     /**
      * deal action with different TxProcessTypeEnum (data from db of snapshot)

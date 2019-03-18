@@ -1,8 +1,5 @@
 package com.higgs.trust.contract;
 
-import java.util.Map;
-import java.util.function.Function;
-
 /**
  * contract state key-value db store interface
  *
@@ -16,7 +13,7 @@ public interface ContractStateStore {
      * @param key
      * @param state
      */
-    void put(String key, StateManager state);
+    void put(String key, Object state);
 
     /**
      * get by key
@@ -24,7 +21,7 @@ public interface ContractStateStore {
      * @param key
      * @return value
      */
-    StateManager get(String key);
+    Object get(String key);
 
     /**
      * remove by key

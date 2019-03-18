@@ -15,8 +15,8 @@ import lombok.Setter;
 public class ValidateCommand extends ValidCommand<BlockHeader> {
     private static final long serialVersionUID = -1L;
 
-    public ValidateCommand(Long seqNum, BlockHeader header) {
-        super(header);
+    public ValidateCommand(Long seqNum, BlockHeader header, long view) {
+        super(header, view);
     }
 
     @Override

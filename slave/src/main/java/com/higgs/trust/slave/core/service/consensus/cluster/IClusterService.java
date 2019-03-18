@@ -18,6 +18,13 @@ public interface IClusterService {
     Long getClusterHeight(int size);
 
     /**
+     * get the safe block height of cluster
+     *
+     * @return
+    */
+    Long getSafeHeight();
+
+    /**
      * get the block height of cluster
      *
      * @param requestId the id of request
@@ -39,4 +46,10 @@ public interface IClusterService {
      */
     Map<String, Long> getAllClusterHeight();
 
+    /**
+     * Get the status of all node
+     *
+     * @return
+     */
+    Map<String, String> getAllClusterState();
 }

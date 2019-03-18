@@ -28,7 +28,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import static org.testng.Assert.*;
 
@@ -74,8 +73,7 @@ import static org.testng.Assert.*;
         long height = 1L;
         Mockito.when(nodeState.isState(NodeStateEnum.Running)).thenReturn(true);
         Mockito.when(blockService.getMaxHeight()).thenReturn(height);
-        Mockito.when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
-            .thenReturn(null, height + 2);
+
         failoverSchedule.failover();
         Mockito.verify(blockRepository, Mockito.times(0)).getBlockHeader(Matchers.anyLong());
         Mockito.verify(packageRepository, Mockito.times(0)).load(Matchers.anyLong());
@@ -99,8 +97,7 @@ import static org.testng.Assert.*;
         long height = 1L;
         Mockito.when(nodeState.isState(NodeStateEnum.Running)).thenReturn(true);
         Mockito.when(blockService.getMaxHeight()).thenReturn(height);
-        Mockito.when(packageRepository.getMinHeight(height + 1, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
-            .thenReturn(height + 2);
+
         Mockito.when(packageRepository.load(height + 1)).thenReturn(null);
 
         failoverSchedule.failover();
@@ -116,8 +113,7 @@ import static org.testng.Assert.*;
         Mockito.when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
         Mockito.when(blockService.getMaxHeight()).thenReturn(height - 1);
 
-        Mockito.when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
-            .thenReturn(height + 1);
+
         Mockito.when(packageRepository.load(height)).thenReturn(null);
         Mockito.when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
 
@@ -148,8 +144,7 @@ import static org.testng.Assert.*;
         Mockito.when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
         Mockito.when(blockService.getMaxHeight()).thenReturn(height - 1);
 
-        Mockito.when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
-            .thenReturn(height + 1);
+
         Mockito.when(packageRepository.load(height)).thenReturn(null);
         Mockito.when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
 
@@ -192,8 +187,6 @@ import static org.testng.Assert.*;
 
         //不存在比较高的初始package
         Mockito.when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        Mockito.when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
-            .thenReturn(null, height + 1);
 
         assertFalse(failoverSchedule.failover(height));
 
@@ -211,8 +204,7 @@ import static org.testng.Assert.*;
     @Test public void testFailoverHeight() {
         long height = 2L;
         Mockito.when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        Mockito.when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
-            .thenReturn(height + 1);
+
         Mockito.when(packageRepository.load(height)).thenReturn(null);
         Mockito.when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
         Mockito.when(blockSyncService.getBlocks(height, 1)).thenReturn(null, new ArrayList<>());
@@ -230,8 +222,6 @@ import static org.testng.Assert.*;
     @Test public void testFailoverBlock() {
         long height = 2L;
         Mockito.when(nodeState.isState(NodeStateEnum.Running, NodeStateEnum.ArtificialSync)).thenReturn(true);
-        Mockito.when(packageRepository.getMinHeight(height, Collections.singleton(PackageStatusEnum.RECEIVED.getCode())))
-            .thenReturn(height + 1);
         Mockito.when(packageRepository.load(height)).thenReturn(null);
         Mockito.when(blockRepository.getBlockHeader(height - 1)).thenReturn(currentHeader);
 

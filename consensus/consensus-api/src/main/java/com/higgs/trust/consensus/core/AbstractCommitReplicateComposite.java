@@ -1,7 +1,7 @@
 package com.higgs.trust.consensus.core;
 
-import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.common.utils.TraceUtils;
+import com.higgs.trust.consensus.annotation.Replicator;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.filter.CompositeCommandFilter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,23 +21,29 @@ import java.util.function.Function;
 
     private ApplicationContext applicationContext;
 
-    @Autowired private CompositeCommandFilter filter;
+    private CompositeCommandFilter filter;
 
     private Map<Class<?>, Function<ConsensusCommit<?>, ?>> classFunctionMap = new HashMap<>();
+
+    public AbstractCommitReplicateComposite(CompositeCommandFilter filter) {
+        this.filter = filter;
+    }
 
     /**
      * Registers operations for the class.
      */
     public Map<Class<?>, Function<ConsensusCommit<?>, ?>> registerCommit() {
-        Map<String, Object> withAnnotation = applicationContext.getBeansWithAnnotation(Replicator.class);
-        withAnnotation.values().stream().forEach(object -> {
-            Class<?> type = object.getClass();
-            for (Method method : type.getMethods()) {
-                if (isOperationMethod(method)) {
-                    registerMethod(object, method);
+        if(classFunctionMap.isEmpty()) {
+            Map<String, Object> withAnnotation = applicationContext.getBeansWithAnnotation(Replicator.class);
+            withAnnotation.values().stream().forEach(object -> {
+                Class<?> type = object.getClass();
+                for (Method method : type.getMethods()) {
+                    if (isOperationMethod(method)) {
+                        registerMethod(object, method);
+                    }
                 }
-            }
-        });
+            });
+        }
         return classFunctionMap;
     }
 

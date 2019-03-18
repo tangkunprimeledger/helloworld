@@ -1,13 +1,13 @@
 package com.higgs.trust.rs.core.service;
 
-import com.higgs.trust.config.p2p.ClusterInfo;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.contract.ExecuteContextData;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.RsBlockChainService;
-import com.higgs.trust.rs.core.contract.RsUTXOSmartContract;
 import com.higgs.trust.slave.api.AccountInfoService;
 import com.higgs.trust.slave.api.BlockChainService;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
@@ -15,6 +15,7 @@ import com.higgs.trust.slave.api.enums.utxo.UTXOActionTypeEnum;
 import com.higgs.trust.slave.api.vo.*;
 import com.higgs.trust.slave.core.service.consensus.cluster.ClusterService;
 import com.higgs.trust.slave.core.service.contract.UTXOExecuteContextData;
+import com.higgs.trust.slave.core.service.contract.UTXOSmartContract;
 import com.higgs.trust.slave.model.bo.BlockHeader;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
 import com.higgs.trust.slave.model.bo.action.Action;
@@ -47,12 +48,12 @@ public class RsChainServiceImpl implements RsBlockChainService {
     private AccountInfoService accountInfoService;
 
     @Autowired
-    private RsUTXOSmartContract rsUTXOSmartContract;
+    private UTXOSmartContract rsUTXOSmartContract;
 
     @Autowired
     private NodeState nodeState;
     @Autowired
-    private ClusterInfo clusterInfo;
+    private IClusterViewManager viewManager;
     @Autowired
     private ClusterService clusterService;
 
@@ -102,6 +103,28 @@ public class RsChainServiceImpl implements RsBlockChainService {
     @Override
     public boolean isExistedCurrency(String currency) {
         return blockChainService.isExistedCurrency(currency);
+    }
+
+    /**
+     * query contract address by currency
+     *
+     * @return
+     */
+    @Override
+    public String queryContractAddressByCurrency(String currency) {
+        return blockChainService.queryContractAddressByCurrency(currency);
+    }
+
+
+    /**
+     * check whether the contract address is existed
+     *
+     * @param address
+     * @return
+     */
+    @Override
+    public boolean isExistedContractAddress(String address) {
+        return blockChainService.isExistedContractAddress(address);
     }
 
     /**
@@ -261,9 +284,10 @@ public class RsChainServiceImpl implements RsBlockChainService {
         Map<String, Long> mapHeight = null;
         String masterName = null;
 
+        ClusterView clusterView = viewManager.getCurrentView();
         //query peers info
         try {
-            nodeNames = clusterInfo.clusterNodeNames();
+            nodeNames = clusterView.getNodeNames();
             mapHeight = clusterService.getAllClusterHeight();
             masterName = nodeState.getMasterName();
         } catch (Throwable e) {

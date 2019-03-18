@@ -3,23 +3,25 @@ package com.higgs.trust.rs.core.callback;
 import com.alibaba.fastjson.JSONObject;
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
-import com.higgs.trust.config.p2p.AbstractClusterInfo;
 import com.higgs.trust.consensus.config.NodeState;
-import com.higgs.trust.rs.common.enums.RequestEnum;
+import com.higgs.trust.consensus.config.NodeStateEnum;
+import com.higgs.trust.consensus.core.ConsensusStateMachine;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
 import com.higgs.trust.rs.core.api.TxCallbackRegistor;
 import com.higgs.trust.rs.core.api.enums.CallbackTypeEnum;
 import com.higgs.trust.rs.core.api.enums.CoreTxResultEnum;
 import com.higgs.trust.rs.core.bo.VoteRule;
-import com.higgs.trust.rs.core.dao.RequestJDBCDao;
 import com.higgs.trust.rs.core.repository.VoteRuleRepository;
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
+import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
-import com.higgs.trust.slave.dao.config.ConfigJDBCDao;
+import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.BlockHeader;
+import com.higgs.trust.slave.model.bo.action.Action;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
+import com.higgs.trust.slave.model.bo.node.NodeAction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,13 +35,19 @@ import java.util.*;
  * @description
  * @date 2018-06-07
  */
-@Component @Slf4j public class RsCoreBatchCallbackProcessor {
-    @Autowired private TxCallbackRegistor txCallbackRegistor;
-    @Autowired private VoteRuleRepository voteRuleRepository;
-    @Autowired private ConfigJDBCDao configJDBCDao;
-    @Autowired private NodeState nodeState;
-    @Autowired private RequestJDBCDao requestJDBCDao;
-    @Autowired AbstractClusterInfo clusterInfo;
+@Component
+@Slf4j
+public class RsCoreBatchCallbackProcessor {
+    @Autowired
+    private TxCallbackRegistor txCallbackRegistor;
+    @Autowired
+    private VoteRuleRepository voteRuleRepository;
+    @Autowired
+    private ConfigRepository configRepository;
+    @Autowired
+    private NodeState nodeState;
+    @Autowired
+    private ConsensusStateMachine consensusStateMachine;
 
     private TxBatchCallbackHandler getCallbackHandler() {
         TxBatchCallbackHandler txCallbackHandler = txCallbackRegistor.getCoreTxBatchCallback();
@@ -64,9 +72,10 @@ import java.util.*;
                         processRegisterPolicy(rsCoreTxVOS);
                         return;
                     case REGISTER_RS:
-                        processRegisterRS(rsCoreTxVOS);
                         return;
                     case CONTRACT_ISSUE:
+                        return;
+                    case CONTRACT_INVOKE:
                         return;
                     case CONTRACT_DESTROY:
                         return;
@@ -80,13 +89,11 @@ import java.util.*;
                         processCaAuth(rsCoreTxVOS);
                         return;
                     case CANCEL_RS:
-                        processCancelRS(rsCoreTxVOS);
                         return;
                     case NODE_JOIN:
                         processNodeJoin(rsCoreTxVOS);
                         return;
                     case NODE_LEAVE:
-                        processNodeLeave(rsCoreTxVOS);
                         return;
                     default:
                         break;
@@ -101,6 +108,7 @@ import java.util.*;
     public void onEnd(List<RsCoreTxVO> txs, BlockHeader blockHeader) {
         Map<String, List<RsCoreTxVO>> map = parseTx(txs);
         for (String policyId : map.keySet()) {
+            List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             InitPolicyEnum policyEnum = InitPolicyEnum.getInitPolicyEnumByPolicyId(policyId);
             if (policyEnum != null) {
                 switch (policyEnum) {
@@ -111,6 +119,8 @@ import java.util.*;
                     case REGISTER_RS:
                         return;
                     case CONTRACT_ISSUE:
+                        return;
+                    case CONTRACT_INVOKE:
                         return;
                     case CONTRACT_DESTROY:
                         return;
@@ -125,12 +135,12 @@ import java.util.*;
                     case NODE_JOIN:
                         return;
                     case NODE_LEAVE:
+                        processNodeLeave(rsCoreTxVOS);
                         return;
                     default:
                         break;
                 }
             }
-            List<RsCoreTxVO> rsCoreTxVOS = map.get(policyId);
             //callback custom
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
             txBatchCallbackHandler.onEnd(policyId, rsCoreTxVOS, blockHeader);
@@ -147,6 +157,7 @@ import java.util.*;
                     case NA:
                     case REGISTER_RS:
                     case CONTRACT_ISSUE:
+                    case CONTRACT_INVOKE:
                     case CONTRACT_DESTROY:
                     case CA_UPDATE:
                     case CA_CANCEL:
@@ -162,6 +173,7 @@ import java.util.*;
                         break;
                 }
             }
+
             //callback custom
             TxBatchCallbackHandler txBatchCallbackHandler = getCallbackHandler();
             txBatchCallbackHandler.onFailover(policyId, rsCoreTxVOS, blockHeader);
@@ -202,7 +214,7 @@ import java.util.*;
         List<VoteRule> voteRules = new ArrayList<>();
         for (RsCoreTxVO tx : rsCoreTxVOS) {
             if (tx.getExecuteResult() == CoreTxResultEnum.SUCCESS) {
-                RegisterPolicy registerPolicy = (RegisterPolicy)tx.getActionList().get(0);
+                RegisterPolicy registerPolicy = (RegisterPolicy) tx.getActionList().get(0);
                 JSONObject jsonObject = tx.getBizModel();
                 VoteRule voteRule = new VoteRule();
                 voteRule.setPolicyId(registerPolicy.getPolicyId());
@@ -215,16 +227,6 @@ import java.util.*;
         if (!CollectionUtils.isEmpty(voteRules)) {
             voteRuleRepository.batchInsert(voteRules);
         }
-        //update request status
-        requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
-    }
-
-    private void processRegisterRS(List<RsCoreTxVO> rsCoreTxVOS) {
-        requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
-    }
-
-    private void processCancelRS(List<RsCoreTxVO> rsCoreTxVOS) {
-        requestJDBCDao.batchUpdateStatus(rsCoreTxVOS, RequestEnum.PROCESS, RequestEnum.DONE);
     }
 
     /**
@@ -266,8 +268,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_UPDATE_ERROR, 1);
             return;
         }
-        clusterInfo.setRefresh();
-        log.info("[processCaUpdate] set cluster info refresh");
 
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
@@ -277,7 +277,7 @@ import java.util.*;
         }
         log.info("[processCaUpdate] start to update pubKey/priKey");
         // update table config, set tmpKey to key
-        configJDBCDao.batchEnable(nodes);
+        configRepository.batchEnable(nodes);
         log.info("[processCaUpdate] end update pubKey/priKey, nodeName={}", nodes);
     }
 
@@ -289,20 +289,16 @@ import java.util.*;
             return;
         }
 
-        clusterInfo.setRefresh();
-        log.info("[processCaCancel] set cluster info refresh");
-
         List<String> nodes = getSelfCANodes(rsCoreTxVOS);
 
         if (CollectionUtils.isEmpty(nodes)) {
-            log.info("[processCaCancel] current node ={}, is not ca cancel, end cancel pubKey/priKey",
-                nodeState.getNodeName());
+            log.info("[processCaCancel] current node ={}, is not ca cancel, end cancel pubKey/priKey", nodeState.getNodeName());
             return;
         }
-        log.info("[processCaCancel] start to invalid pubKey/priKey, nodeName={}", nodes);
-        //set pubKey and priKey to invalid
-        configJDBCDao.batchCancel(nodes);
-        log.info("[processCaCancel] end invalid pubKey/priKey, nodeName={}", nodes);
+        log.info("[processCaCancel] start to invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
+        //set pubKeyForConsensus and priKey to invalid
+        configRepository.batchCancel(nodes);
+        log.info("[processCaCancel] end invalid pubKeyForConsensus/priKey, nodeName={}", nodes);
     }
 
     private void processCaAuth(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -312,9 +308,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_CA_AUTH_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processCaAuth] set cluster info refresh");
     }
 
     private void processNodeJoin(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -324,9 +317,6 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_JOIN_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeJoin] set cluster info refresh");
     }
 
     private void processNodeLeave(List<RsCoreTxVO> rsCoreTxVOS) {
@@ -336,8 +326,18 @@ import java.util.*;
             MonitorLogUtils.logTextMonitorInfo(MonitorTargetEnum.SLAVE_NODE_LEAVE_ERROR, 1);
             return;
         }
-
-        clusterInfo.setRefresh();
-        log.info("[processNodeLeave] set cluster info refresh");
+        log.debug("rsCoreTxVOS.size={}", rsCoreTxVOS.size());
+        List<Action> actionList = rsCoreTxVOS.get(0).getActionList();
+        if (CollectionUtils.isNotEmpty(actionList)) {
+            Action action = actionList.get(0);
+            if (action instanceof NodeAction) {
+                NodeAction nodeAction = (NodeAction) action;
+                if (StringUtils.equals(nodeState.getNodeName(), nodeAction.getNodeName()) && action.getType() == ActionTypeEnum.NODE_LEAVE && nodeState.isState(NodeStateEnum.Running)) {
+                    log.info("leave consensus layer, user={}", nodeAction.getNodeName());
+                    consensusStateMachine.leaveConsensus();
+                    nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
+                }
+            }
+        }
     }
 }

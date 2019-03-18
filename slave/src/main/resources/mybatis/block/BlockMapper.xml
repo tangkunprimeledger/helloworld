@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.higgs.trust.slave.dao.block.BlockDao">
+<mapper namespace="com.higgs.trust.slave.dao.mysql.block.BlockDao">
     <!-- Result Map -->
     <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.block.BlockPO">
         <result column="height" property="height"/>
@@ -14,6 +14,7 @@
         <result column="rs_root_hash" property="rsRootHash"/>
         <result column="tx_receipt_root_hash" property="txReceiptRootHash"/>
         <result column="ca_root_hash" property="caRootHash"/>
+        <result column="state_root_hash" property="stateRootHash" />
         <result column="block_time" property="blockTime"/>
         <result column="tx_num" property="txNum"/>
         <result column="total_tx_num" property="totalTxNum"/>
@@ -23,7 +24,7 @@
 
     <!-- block table all fields -->
     <sql id="baseColumnList">
-		height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,ca_root_hash,block_time,tx_num,total_tx_num,total_block_size,create_time
+		height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,ca_root_hash,state_root_hash,block_time,tx_num,total_tx_num,total_block_size,create_time
 	</sql>
     <!-- 查询条件 -->
     <sql id="baseWhereClause">
@@ -62,6 +63,9 @@
             <if test="caRootHash != null and caRootHash != ''">
                 and ca_root_hash=#{caRootHash}
             </if>
+            <if test="stateRootHash != null and stateRootHash!=''">
+                and state_root_hash=#{stateRootHash}
+            </if>
             <if test="blockTime != null">
                 and block_time=#{blockTime}
             </if>
@@ -73,8 +77,8 @@
     <!-- 插入记录 -->
     <insert id="add" parameterType="object">
 		insert into
-		block(height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,ca_root_hash,block_time,tx_num,total_tx_num,total_block_size,create_time)
-		values(#{height},#{version},#{previousHash},#{blockHash},#{txRootHash},#{accountRootHash},#{contractRootHash},#{policyRootHash},#{rsRootHash},#{txReceiptRootHash},#{caRootHash},#{blockTime},#{txNum},#{totalTxNum},#{totalBlockSize},now(3))
+		block(height,version,previous_hash,block_hash,tx_root_hash,account_root_hash,contract_root_hash,policy_root_hash,rs_root_hash,tx_receipt_root_hash,ca_root_hash,state_root_hash,block_time,tx_num,total_tx_num,total_block_size,create_time)
+		values(#{height},#{version},#{previousHash},#{blockHash},#{txRootHash},#{accountRootHash},#{contractRootHash},#{policyRootHash},#{rsRootHash},#{txReceiptRootHash},#{caRootHash},#{stateRootHash},#{blockTime},#{txNum},#{totalTxNum},#{totalBlockSize},now(3))
 	</insert>
     <!-- 删除记录 -->
     <delete id="delete" parameterType="object">

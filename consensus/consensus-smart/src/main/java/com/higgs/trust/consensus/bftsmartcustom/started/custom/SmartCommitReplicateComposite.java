@@ -3,6 +3,7 @@ package com.higgs.trust.consensus.bftsmartcustom.started.custom;
 import com.higgs.trust.consensus.bftsmartcustom.started.custom.adapter.SmartCommitAdapter;
 import com.higgs.trust.consensus.core.AbstractCommitReplicateComposite;
 import com.higgs.trust.consensus.core.ConsensusCommit;
+import com.higgs.trust.consensus.core.filter.CompositeCommandFilter;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,6 +12,11 @@ import org.springframework.stereotype.Component;
  * @description:
  */
 @Component public class SmartCommitReplicateComposite extends AbstractCommitReplicateComposite {
+
+    public SmartCommitReplicateComposite(CompositeCommandFilter filter) {
+        super(filter);
+    }
+
     @Override public ConsensusCommit commitAdapter(Object request) {
         return new SmartCommitAdapter(request);
     }

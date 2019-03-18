@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.service.action.account;
 
 import com.higgs.trust.slave._interface.InterfaceCommonTest;
 import com.higgs.trust.slave.model.bo.account.OpenAccount;
-import com.higgs.trust.tester.dbunit.DataBaseManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;

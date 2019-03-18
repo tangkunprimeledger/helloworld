@@ -5,7 +5,7 @@ import com.higgs.trust.slave.IntegrateBaseTest;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.account.FundDirectionEnum;
 import com.higgs.trust.slave.core.repository.account.AccountRepository;
-import com.higgs.trust.slave.dao.account.AccountInfoDao;
+import com.higgs.trust.slave.dao.mysql.account.AccountInfoDao;
 import com.higgs.trust.slave.dao.po.account.AccountInfoPO;
 import com.higgs.trust.slave.model.bo.account.AccountInfo;
 import com.higgs.trust.slave.model.bo.account.OpenAccount;
@@ -51,7 +51,7 @@ public class SpringTransactionTest extends IntegrateBaseTest{
         txNested.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
                 try {
-                    process(openAccount);
+//                    process(openAccount);
                 }catch (Throwable e){
                     System.out.println("has error:" + e);
                 }
@@ -66,7 +66,7 @@ public class SpringTransactionTest extends IntegrateBaseTest{
     private void process(OpenAccount openAccount){
         txNested.execute(new TransactionCallbackWithoutResult() {
             @Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-               accountRepository.openAccount(openAccount);
+//               accountRepository.openAccount(openAccount);
 //               throw new RuntimeException("TEST EXCEPTION_0");
             }
         });

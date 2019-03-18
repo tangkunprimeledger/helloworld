@@ -46,4 +46,6 @@ import lombok.Setter;
      * calculate merkle tree root hash by action with type of CA_AUTH
      */
     private String caRootHash;
+
+    private String stateRoot;
 }

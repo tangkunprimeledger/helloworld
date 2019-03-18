@@ -1,8 +1,10 @@
 package com.higgs.trust.rs.core.service;
 
 import com.alibaba.fastjson.JSON;
+import com.higgs.trust.common.dao.RocksUtils;
 import com.higgs.trust.common.utils.BeanConvertor;
 import com.higgs.trust.common.utils.OkHttpClientManager;
+import com.higgs.trust.common.utils.ThreadLocalUtils;
 import com.higgs.trust.rs.common.config.RsConfig;
 import com.higgs.trust.rs.common.enums.RsCoreErrorEnum;
 import com.higgs.trust.rs.common.exception.RsCoreException;
@@ -13,7 +15,6 @@ import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.CoreTxBO;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.bo.VoteRequestRecord;
-import com.higgs.trust.rs.core.callback.RsCoreBatchCallbackProcessor;
 import com.higgs.trust.rs.core.dao.po.CoreTransactionPO;
 import com.higgs.trust.rs.core.integration.ServiceProviderClient;
 import com.higgs.trust.rs.core.repository.CoreTxRepository;
@@ -21,6 +22,7 @@ import com.higgs.trust.rs.core.repository.VoteReceiptRepository;
 import com.higgs.trust.rs.core.repository.VoteReqRecordRepository;
 import com.higgs.trust.rs.core.vo.ReceiptRequest;
 import com.higgs.trust.rs.core.vo.VotingRequest;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.DecisionTypeEnum;
 import com.higgs.trust.slave.api.enums.manage.VotePatternEnum;
 import com.higgs.trust.slave.api.vo.RespData;
@@ -34,10 +36,13 @@ import com.higgs.trust.slave.model.enums.biz.RsNodeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.rocksdb.Transaction;
+import org.rocksdb.WriteOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -92,9 +97,15 @@ import java.util.concurrent.Future;
         for (Future<VoteReceipt> future : futureList) {
             try {
                 VoteReceipt receipt = future.get();
-                if (receipt != null) {
-                    receipts.add(receipt);
+                if (receipt == null) {
+                    log.error("[requestVoting]receipt is null {}",receipt);
+                    continue;
                 }
+                if (StringUtils.isEmpty(receipt.getTxId()) || StringUtils.isEmpty(receipt.getVoter())) {
+                    log.error("[requestVoting]receipt.txId is null or voter is null {}",receipt);
+                    continue;
+                }
+                receipts.add(receipt);
             } catch (Throwable e) {
                 log.error("[requestVoting]has error", e);
             }
@@ -103,64 +114,83 @@ import java.util.concurrent.Future;
     }
 
     @Override public VoteReceipt acceptVoting(VotingRequest votingRequest) {
-        log.info("[acceptVoting]param:{}", votingRequest);
+        if (log.isDebugEnabled()) {
+            log.debug("[acceptVoting]param:{}", votingRequest);
+        }
         CoreTransaction coreTx = votingRequest.getCoreTransaction();
         VoteRequestRecord voteRequestRecord = voteReqRecordRepository.queryByTxId(coreTx.getTxId());
         if (voteRequestRecord != null) {
-            log.info("[acceptVoting]voteRequestRecord is already exist txId:{}", coreTx.getTxId());
+            log.warn("[acceptVoting]voteRequestRecord is already exist txId:{}", coreTx.getTxId());
             return makeVoteReceipt(coreTx.getTxId(), voteRequestRecord.getSign(), voteRequestRecord.getVoteResult());
         }
-        final VoteReceipt[] receipts = {null};
-        txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+
+        if (rsConfig.isUseMySQL()) {
+            return txRequired.execute(new TransactionCallback<VoteReceipt>() {
+                @Override public VoteReceipt doInTransaction(TransactionStatus transactionStatus) {
+                    return processAcceptVoting(votingRequest, coreTx);
+                }
+            });
+        } else {
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            try {
+                ThreadLocalUtils.putRocksTx(tx);
+                VoteReceipt voteReceipt = processAcceptVoting(votingRequest, coreTx);
+                RocksUtils.txCommit(tx);
+                return voteReceipt;
+            } finally {
+                ThreadLocalUtils.clearRocksTx();
+            }
+        }
+    }
+
+    private VoteReceipt processAcceptVoting(VotingRequest votingRequest, CoreTransaction coreTx) {
+        try {
+            String sign = null;
+            VoteResultEnum voteResultEnum = VoteResultEnum.INIT;
+            //process SYNC
+            if (StringUtils.equals(votingRequest.getVotePattern(), VotePatternEnum.SYNC.getCode())) {
+                voteResultEnum = VoteResultEnum.AGREE;
                 try {
-                    //save record
-                    voteReqRecordRepository.add(makeVoteRequestRecord(votingRequest));
-                    //process SYNC
-                    if (StringUtils.equals(votingRequest.getVotePattern(), VotePatternEnum.SYNC.getCode())) {
-                        VoteResultEnum voteResult = VoteResultEnum.AGREE;
-                        try {
-                            //check self node status
-                            boolean r = checkSelfNodeStatus();
-                            if(r){
-                                //callback custom rs
-                                txCallbackRegistor.onVote(votingRequest);
-                            }else {
-                                log.info("[acceptVoting]self.rs status is not COMMON");
-                                voteResult = VoteResultEnum.DISAGREE;
-                            }
-                        } catch (Throwable e) {
-                            log.error("[acceptVoting]callback custom has error", e);
-                            voteResult = VoteResultEnum.DISAGREE;
-                        }
-                        log.info("[acceptVoting]txId:{},voteResult:{}", coreTx.getTxId(), voteResult);
-                        String sign = null;
-                        if (voteResult == VoteResultEnum.AGREE) {
-                            //get sign info
-                            SignInfo signInfo = signService.signTx(coreTx);
-                            sign = signInfo.getSign();
-                        }
-                        //update sign info vote result
-                        voteReqRecordRepository.setVoteResult(coreTx.getTxId(), sign, voteResult);
-                        receipts[0] = makeVoteReceipt(coreTx.getTxId(), sign, voteResult);
+                    //check self node status
+                    boolean r = checkSelfNodeStatus();
+                    if (r) {
+                        //callback custom rs
+                        txCallbackRegistor.onVote(votingRequest);
                     } else {
-                        //for ASYNC
-                        receipts[0] = makeVoteReceipt(coreTx.getTxId(), null, VoteResultEnum.INIT);
+                        log.warn("[acceptVoting]self.rs status is not COMMON");
+                        voteResultEnum = VoteResultEnum.DISAGREE;
                     }
-                } catch (SlaveException e) {
-                    if (e.getCode() == SlaveErrorEnum.SLAVE_IDEMPOTENT) {
-                        log.info("[acceptVoting]voteRequestRecord is already exist txId:{}", coreTx.getTxId());
-                        VoteRequestRecord voteRequestRecord = voteReqRecordRepository.queryByTxId(coreTx.getTxId());
-                        receipts[0] = makeVoteReceipt(coreTx.getTxId(), voteRequestRecord.getSign(),
-                            voteRequestRecord.getVoteResult());
-                    } else {
-                        log.error("[acceptVoting]has error", e);
-                        throw e;
-                    }
+                } catch (Throwable e) {
+                    log.error("[acceptVoting]callback custom has error", e);
+                    voteResultEnum = VoteResultEnum.DISAGREE;
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("[acceptVoting]txId:{},voteResult:{}", coreTx.getTxId(), voteResultEnum);
+                }
+                if (voteResultEnum == VoteResultEnum.AGREE) {
+                    //get sign info
+                    SignInfo signInfo = signService.signTx(coreTx);
+                    sign = signInfo.getSign();
                 }
             }
-        });
-        return receipts[0];
+            //save record
+            VoteRequestRecord requestRecord = makeVoteRequestRecord(votingRequest);
+            requestRecord.setSign(sign);
+            requestRecord.setVoteResult(voteResultEnum);
+            voteReqRecordRepository.add(requestRecord);
+            //return receipt
+            return makeVoteReceipt(coreTx.getTxId(), sign, voteResultEnum);
+        } catch (SlaveException e) {
+            if (e.getCode() == SlaveErrorEnum.SLAVE_IDEMPOTENT) {
+                log.warn("[acceptVoting]voteRequestRecord is already exist txId:{}", coreTx.getTxId());
+                VoteRequestRecord voteRequestRecord = voteReqRecordRepository.queryByTxId(coreTx.getTxId());
+                return makeVoteReceipt(coreTx.getTxId(), voteRequestRecord.getSign(),
+                    voteRequestRecord.getVoteResult());
+            } else {
+                log.error("[acceptVoting]has error", e);
+                throw e;
+            }
+        }
     }
 
     @Override public void receiptVote(String txId, boolean agree) {
@@ -174,35 +204,55 @@ import java.util.concurrent.Future;
             log.info("[receiptVote]voteRequestRecord is already has result txId:{}", txId);
             throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_ALREADY_HAS_RESULT_ERROR);
         }
+        CoreTransaction coreTx = JSON.parseObject(voteRequestRecord.getTxData(), CoreTransaction.class);
         //check self node status
-        boolean r = checkSelfNodeStatus();
-        if(!r){
-            log.info("[receiptVote]self.rs status is not COMMON txId:{}", txId);
-            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_RS_STATUS_NOT_COMMON_ERROR);
+        if (!TxTypeEnum.isTargetType(coreTx.getTxType(), TxTypeEnum.NODE)) {
+            boolean r = checkSelfNodeStatus();
+            if (!r) {
+                log.info("[receiptVote]self.rs status is not COMMON txId:{}", txId);
+                throw new RsCoreException(RsCoreErrorEnum.RS_CORE_RS_STATUS_NOT_COMMON_ERROR);
+            }
         }
         VoteResultEnum voteResult = agree ? VoteResultEnum.AGREE : VoteResultEnum.DISAGREE;
-        txRequired.execute(new TransactionCallbackWithoutResult() {
-            @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                String sign = null;
-                if (agree) {
-                    //get sign info
-                    CoreTransaction coreTx = JSON.parseObject(voteRequestRecord.getTxData(), CoreTransaction.class);
-                    SignInfo signInfo = signService.signTx(coreTx);
-                    sign = signInfo.getSign();
+        if (rsConfig.isUseMySQL()) {
+            txRequired.execute(new TransactionCallbackWithoutResult() {
+                @Override protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    processReceiptVote(voteRequestRecord, txId, voteResult, agree);
                 }
-                //update result
-                voteReqRecordRepository.setVoteResult(txId, sign, voteResult);
-                try {
-                    RespData<String> respData = receipting(voteRequestRecord.getSender(), makeVoteReceipt(txId, sign, voteResult));
-                    if(!respData.isSuccess()){
-                        throw new RsCoreException(RsCoreErrorEnum.getByCode(respData.getRespCode()));
-                    }
-                } catch (Throwable e) {
-                    log.error("[receipting]has error", e);
-                    throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_RECEIPTING_HAS_ERROR);
-                }
+            });
+        } else {
+            Transaction tx = RocksUtils.beginTransaction(new WriteOptions());
+            try {
+                ThreadLocalUtils.putRocksTx(tx);
+                processReceiptVote(voteRequestRecord, txId, voteResult, agree);
+                RocksUtils.txCommit(tx);
+            } finally {
+                ThreadLocalUtils.clearRocksTx();
             }
-        });
+        }
+    }
+
+    private void processReceiptVote(VoteRequestRecord voteRequestRecord, String txId, VoteResultEnum voteResult,
+        boolean agree) {
+        String sign = null;
+        if (agree) {
+            //get sign info
+            CoreTransaction coreTx = JSON.parseObject(voteRequestRecord.getTxData(), CoreTransaction.class);
+            SignInfo signInfo = signService.signTx(coreTx);
+            sign = signInfo.getSign();
+        }
+        //update result
+        voteReqRecordRepository.setVoteResult(txId, sign, voteResult);
+        try {
+            RespData<String> respData =
+                receipting(voteRequestRecord.getSender(), makeVoteReceipt(txId, sign, voteResult));
+            if (!respData.isSuccess()) {
+                throw new RsCoreException(RsCoreErrorEnum.getByCode(respData.getRespCode()));
+            }
+        } catch (Throwable e) {
+            log.error("[receipting]has error", e);
+            throw new RsCoreException(RsCoreErrorEnum.RS_CORE_VOTE_RECEIPTING_HAS_ERROR);
+        }
     }
 
     @Override public RespData<String> acceptReceipt(ReceiptRequest receiptRequest) {
@@ -248,19 +298,22 @@ import java.util.concurrent.Future;
         return respData;
     }
 
-    @Override public List<SignInfo> getSignInfos(List<VoteReceipt> receipts) {
+    @Override public List<SignInfo> getSignInfos(List<VoteReceipt> receipts, SignInfo.SignTypeEnum signType) {
         List<SignInfo> signInfos = new ArrayList<>(receipts.size());
         for (VoteReceipt receipt : receipts) {
             SignInfo signInfo = new SignInfo();
             signInfo.setOwner(receipt.getVoter());
             signInfo.setSign(receipt.getSign());
+            signInfo.setSignType(signType);
             signInfos.add(signInfo);
         }
         return signInfos;
     }
 
     @Override public boolean getDecision(List<VoteReceipt> receipts, DecisionTypeEnum decisionType) {
-        log.info("[getDecision]decisionType:{},receipts:{}", decisionType, receipts);
+        if(log.isDebugEnabled()){
+            log.debug("[getDecision]decisionType:{},receipts:{}", decisionType, receipts);
+        }
         if (decisionType == DecisionTypeEnum.FULL_VOTE) {
             //require all RS voting
             for (VoteReceipt receipt : receipts) {
@@ -282,12 +335,25 @@ import java.util.concurrent.Future;
         return false;
     }
 
+    @Override public List<VoteRequestRecord> queryAllInitRequest(int row, int count) {
+        if (row < 0) {
+            row = 0;
+        }
+        if (count <= 0) {
+            count = 10;
+        }
+        return voteReqRecordRepository.queryAllInitRequest(row, count);
+    }
+
     @Override public List<String> getVoters(List<SignInfo> signInfos, List<String> rsIds) {
         if (CollectionUtils.isEmpty(rsIds)) {
             return null;
         }
+        if (CollectionUtils.isEmpty(signInfos)) {
+            return rsIds;
+        }
         //make sign map,key:rsId,value:sign
-        Map<String, String> signInfoMap = SignInfo.makeSignMap(signInfos);
+        Map<String, SignInfo> signInfoMap = SignInfo.makeSignMap(signInfos);
         List<String> voters = new ArrayList<>(rsIds.size());
         for (String rs : rsIds) {
             //filter already voting
@@ -323,10 +389,12 @@ import java.util.concurrent.Future;
          * @return
          */
         private VoteReceipt requestVoting() throws Exception {
-            log.info("[requestVoting]voter:{}", voter);
-            log.info("[requestVoting]coreTx:{}", coreTx);
             boolean useHttpChannel = rsConfig.isUseHttpChannel();
-            log.info("[requestVoting]useHttpChannel:{}", useHttpChannel);
+            if (log.isDebugEnabled()) {
+                log.debug("[requestVoting]voter:{}", voter);
+                log.debug("[requestVoting]coreTx:{}", coreTx);
+                log.debug("[requestVoting]useHttpChannel:{}", useHttpChannel);
+            }
             VotingRequest request = new VotingRequest(rsConfig.getRsName(), coreTx, votePattern.getCode());
             if (useHttpChannel) {
                 return byHttp(voter, request);
@@ -343,11 +411,11 @@ import java.util.concurrent.Future;
          */
         private VoteReceipt byHttp(String voter, VotingRequest request) throws Exception {
             String url = "http://" + voter + ":" + rsConfig.getServerPort() + "/voting";
-            log.info("[byHttp]url:" + url);
+            log.debug("[byHttp]url:" + url);
             String paramJSON = JSON.toJSONString(request);
-            log.info("[byHttp]paramJSON:" + paramJSON);
+            log.debug("[byHttp]paramJSON:" + paramJSON);
             String resultJSON = OkHttpClientManager.postAsString(url, paramJSON, rsConfig.getSyncRequestTimeout() / 2);
-            log.info("[byHttp]resultJSON:" + resultJSON);
+            log.debug("[byHttp]resultJSON:" + resultJSON);
             return JSON.parseObject(resultJSON, VoteReceipt.class);
         }
     }
@@ -359,30 +427,31 @@ import java.util.concurrent.Future;
      * @param voteReceipt
      */
     private RespData<String> receipting(String sender, VoteReceipt voteReceipt) throws Exception {
-        log.info("[receipting]voteReceipt:{}", voteReceipt);
+        log.debug("[receipting]voteReceipt:{}", voteReceipt);
         boolean useHttpChannel = rsConfig.isUseHttpChannel();
-        log.info("[receipting]useHttpChannel:{}", useHttpChannel);
+        log.debug("[receipting]useHttpChannel:{}", useHttpChannel);
         ReceiptRequest request = BeanConvertor.convertBean(voteReceipt, ReceiptRequest.class);
         request.setVoteResult(voteReceipt.getVoteResult().getCode());
         if (!useHttpChannel) {
-           return serviceProviderClient.receipting(sender, request);
+            return serviceProviderClient.receipting(sender, request);
         }
         String url = "http://" + sender + ":" + rsConfig.getServerPort() + "/receipting";
-        log.info("[receipting.byHttp]url:" + url);
+        log.debug("[receipting.byHttp]url:" + url);
         String paramJSON = JSON.toJSONString(request);
-        log.info("[receipting.byHttp]paramJSON:" + paramJSON);
+        log.debug("[receipting.byHttp]paramJSON:" + paramJSON);
         String resultJSON = OkHttpClientManager.postAsString(url, paramJSON, rsConfig.getSyncRequestTimeout() / 2);
-        log.info("[receipting.byHttp]resultJSON:" + resultJSON);
-        return JSON.parseObject(resultJSON,RespData.class);
+        log.debug("[receipting.byHttp]resultJSON:" + resultJSON);
+        return JSON.parseObject(resultJSON, RespData.class);
     }
 
     /**
      * check rs status for self
+     *
      * @return
      */
-    private boolean checkSelfNodeStatus(){
+    private boolean checkSelfNodeStatus() {
         RsNode rsNode = rsNodeRepository.queryByRsId(rsConfig.getRsName());
-        if(rsNode == null){
+        if (rsNode == null) {
             return false;
         }
         return rsNode.getStatus() == RsNodeStatusEnum.COMMON;

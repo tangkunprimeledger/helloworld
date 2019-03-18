@@ -13,7 +13,8 @@ import com.higgs.trust.tester.dbunit.DataBaseManager;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -74,7 +75,7 @@ public class UTXOSmartContractInterfaceTest extends BaseTest {
         contract.setVersion("0.1");
         contract.setCreateTime(new Date());
 
-        contractRepository.deploy(contract);
+//        contractRepository.deploy(contract);
         return contract.getAddress();
     }
 

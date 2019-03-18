@@ -3,8 +3,8 @@
  */
 package com.higgs.trust.consensus.core.filter;
 
-import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.ConsensusCommit;
+import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -5,13 +5,26 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>com.higgs.trust</groupId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>rs</artifactId>
 
     <dependencies>
+        <!-- http communication -->
+        <dependency>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>retrofit</artifactId>
+            <version>2.3.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ligboy.retrofit2</groupId>
+            <artifactId>converter-fastjson</artifactId>
+            <version>2.1.0</version>
+            <scope>test</scope>
+        </dependency>
         <!-- internal begin -->
         <dependency>
             <groupId>com.higgs.trust</groupId>
@@ -23,7 +36,15 @@
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
+            <artifactId>evmcontract</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
             <artifactId>slave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.higgs.trust</groupId>
+            <artifactId>consensus-solo</artifactId>
         </dependency>
         <dependency>
             <groupId>com.higgs.trust</groupId>
@@ -58,27 +79,6 @@
             <artifactId>druid-spring-boot-starter</artifactId>
         </dependency>
         <!-- spring boot end -->
-
-        <!--spring cloud-->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-feign</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-sleuth</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-hystrix</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-ribbon</artifactId>
-        </dependency>
 
         <!-- mybatis begin -->
         <dependency>
@@ -159,6 +159,7 @@
             <groupId>com.higgs.trust</groupId>
             <artifactId>test-framwork</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
@@ -185,8 +186,7 @@
             <artifactId>consensus-api</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
+   <!-- <build>
          <finalName>rs</finalName>
          <plugins>
              <plugin>
@@ -220,21 +220,5 @@
                  </executions>
              </plugin>
          </plugins>
-     </build>
-
-
-    <distributionManagement>
-        <repository>
-            <id>nexus-releases</id>
-            <name>nexus-releases</name>
-            <url>http://svn.primeledger.cn:8081/repository/maven-releases/</url>
-        </repository>
-
-        <snapshotRepository>
-            <id>nexus-snapshots</id>
-            <name>nexus-snapshots</name>
-            <url>http://svn.primeledger.cn:8081/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
+     </build>-->
 </project>

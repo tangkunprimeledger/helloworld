@@ -2,6 +2,7 @@ package com.higgs.trust.contract.rhino;
 
 import com.higgs.trust.contract.ExecuteConfig;
 import com.higgs.trust.contract.StateManager;
+import com.higgs.trust.contract.rhino.function.DateFuncs;
 import com.higgs.trust.contract.rhino.function.MathFuncs;
 import com.higgs.trust.contract.rhino.types.BigDecimalWrap;
 import org.mozilla.javascript.ClassShutter;
@@ -20,6 +21,7 @@ public class SafeClassShutter implements ClassShutter {
 
     static {
         buildInClasses = new HashSet<>();
+        buildInClasses.add("java.lang.Object");
         buildInClasses.add("java.lang.Long");
         buildInClasses.add("java.lang.Integer");
         buildInClasses.add("java.math.BigDecimal");
@@ -29,7 +31,6 @@ public class SafeClassShutter implements ClassShutter {
         buildInClasses.add("java.util.ArrayList");
         buildInClasses.add("java.util.HashMap");
         buildInClasses.add("java.util.LinkedList");
-        buildInClasses.add("java.util.LinkedList");
         buildInClasses.add("java.util.TreeSet");
 
         buildInClasses.add("com.alibaba.fastjson.JSONArray");
@@ -38,6 +39,7 @@ public class SafeClassShutter implements ClassShutter {
         buildInClasses.add(StateManager.class.getName());
         buildInClasses.add(MathFuncs.class.getName());
         buildInClasses.add(BigDecimalWrap.class.getName());
+        buildInClasses.add(DateFuncs.class.getName());
 
     }
 

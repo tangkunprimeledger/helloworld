@@ -1,5 +1,7 @@
 package com.higgs.trust.slave.model.convert;
 
+import com.alibaba.fastjson.JSON;
+import com.higgs.trust.consensus.util.DeflateUtil;
 import com.higgs.trust.slave.api.vo.PackageVO;
 import com.higgs.trust.slave.model.bo.Package;
 
@@ -23,5 +25,10 @@ public class PackageConvert {
         packVO.setHeight(pack.getHeight());
         packVO.setSignedTxList(pack.getSignedTxList());
         return packVO;
+    }
+
+    public static byte[] convertPackToPackVOToBytes(Package pack){
+        String result = JSON.toJSONString(pack);
+        return DeflateUtil.compress(result.getBytes());
     }
 }

@@ -2,11 +2,16 @@ package com.higgs.trust.slave.core.service.transaction;
 
 import com.higgs.trust.common.utils.Profiler;
 import com.higgs.trust.contract.SmartContractException;
+import com.higgs.trust.evmcontract.core.Repository;
+import com.higgs.trust.evmcontract.facade.ContractExecutionResult;
+import com.higgs.trust.evmcontract.facade.exception.ContractExecutionException;
 import com.higgs.trust.slave.api.enums.VersionEnum;
+import com.higgs.trust.slave.common.config.InitConfig;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.MerkleException;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import com.higgs.trust.slave.common.exception.SnapshotException;
+import com.higgs.trust.slave.core.Blockchain;
 import com.higgs.trust.slave.core.service.snapshot.SnapshotService;
 import com.higgs.trust.slave.core.service.version.TransactionProcessor;
 import com.higgs.trust.slave.core.service.version.TxProcessorHolder;
@@ -26,13 +31,17 @@ import java.util.Map;
  * @date 2018/3/27 14:54
  */
 @Slf4j @Component public class TransactionExecutorImpl implements TransactionExecutor {
+
     @Autowired TxProcessorHolder processorHolder;
     @Autowired TxCheckHandler txCheckHandler;
     @Autowired SnapshotService snapshot;
+    @Autowired InitConfig initConfig;
+    @Autowired private Blockchain blockchain;
 
     @Override public TransactionReceipt process(TransactionData transactionData, Map<String, String> rsPubKeyMap) {
         log.debug("[TransactionExecutorImpl.persist] is start");
         SignedTransaction tx = transactionData.getCurrentTransaction();
+        Repository txTrack = blockchain.getRepositorySnapshot().startTracking();
 
         TransactionReceipt receipt = new TransactionReceipt();
         receipt.setTxId(tx.getCoreTx().getTxId());
@@ -42,13 +51,22 @@ import java.util.Map;
             //execute persist
             execute(transactionData, rsPubKeyMap);
             //snapshot transactions should be commit
+            txTrack.commit();
             snapshot.commit();
             receipt.setResult(true);
         } catch (SmartContractException e) {
-            log.error("[TransactionExecutorImpl.persist] has SmartContractException",e);
+            log.error("[TransactionExecutorImpl.persist] has SmartContractException", e);
             //snapshot transactions should be rollback
+            txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
+            receipt.setErrorMessage(e.getMessage());
+        } catch (ContractExecutionException e) {
+            log.error("[TransactionExecutorImpl.persist] has ContractExecutionException", e);
+            txTrack.rollback();
+            snapshot.rollback();
+            receipt.setErrorCode(SlaveErrorEnum.SLAVE_SMART_CONTRACT_ERROR.getCode());
+            receipt.setErrorMessage(e.getMessage());
         } catch (SnapshotException e) {
             log.error("[TransactionExecutorImpl.persist] has SnapshotException");
             //should retry package process
@@ -60,13 +78,17 @@ import java.util.Map;
         } catch (SlaveException e) {
             log.error("[TransactionExecutorImpl.persist] has error", e);
             //snapshot transactions should be rollback
+            txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(e.getCode().getCode());
+            receipt.setErrorMessage(e.getMessage());
         } catch (Throwable e) {
             log.error("[TransactionExecutorImpl.persist] has error", e);
             //snapshot transactions should be rollback
+            txTrack.rollback();
             snapshot.rollback();
             receipt.setErrorCode(SlaveErrorEnum.SLAVE_UNKNOWN_EXCEPTION.getCode());
+            receipt.setErrorMessage(e.getMessage());
         }
 
         log.debug("[TransactionExecutorImpl.persist] is end");
@@ -75,7 +97,7 @@ import java.util.Map;
 
     private void execute(TransactionData transactionData, Map<String, String> rsPubKeyMap) {
         SignedTransaction signedTransaction = transactionData.getCurrentTransaction();
-        CoreTransaction coreTx = null;
+        CoreTransaction coreTx = signedTransaction.getCoreTx();
         try {
             Profiler.enter("[tx.verifySignatures]");
             //verify signatures
@@ -84,16 +106,12 @@ import java.util.Map;
                     signedTransaction.toString(), rsPubKeyMap.toString());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_TX_VERIFY_SIGNATURE_FAILED);
             }
-
-            //  start to handle CoreTransaction, first step, get CoreTransaction from SignedTransaction
-            coreTx = signedTransaction.getCoreTx();
-
             // check action, if action type equals REGISTER_POLICY or REGISTER_RS, current transaction can have only one action.
             if (!txCheckHandler.checkActions(coreTx)) {
                 log.error("core transaction is invalid, txId={}", coreTx.getTxId());
                 throw new SlaveException(SlaveErrorEnum.SLAVE_PARAM_VALIDATE_ERROR);
             }
-        }finally {
+        } finally {
             Profiler.release();
         }
         // acquire version information

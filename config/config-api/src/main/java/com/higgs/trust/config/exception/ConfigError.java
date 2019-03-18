@@ -23,6 +23,8 @@ public enum ConfigError implements ErrorInfo {
     CONFIG_NODE_MASTER_TERM_PACKAGE_HEIGHT_INCORRECT("112","the package height is incorrect",false),
     CONFIG_NODE_MASTER_NODE_INCORRECT("113","the master node is incorrect",false),
     CONFIG_NODE_STATE_CHANGE_INVOKE_FAILED("114","the state change listener invoke failed",false),
+    CONFIG_VIEW_PACKAGE_HEIGHT_INCORRECT("115","the package height is incorrect at view",false),
+    CONFIG_VIEW_UNSUPPORTED_OPERATION("116","unsupported view operation",false),
     ;
 
     //@formatter:on

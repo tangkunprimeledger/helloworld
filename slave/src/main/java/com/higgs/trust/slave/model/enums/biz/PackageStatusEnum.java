@@ -1,5 +1,10 @@
 package com.higgs.trust.slave.model.enums.biz;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author tangfashuang
  * @date 2018/04/09 17:48
@@ -7,22 +12,19 @@ package com.higgs.trust.slave.model.enums.biz;
  */
 public enum PackageStatusEnum {
     //@formatter:off
-    INIT("INIT", "init"),
-    SUBMIT_CONSENSUS_SUCCESS("SUBMIT_CONSENSUS_SUCCESS","submit consensus success"),
-    RECEIVED("RECEIVED", "package received from consensus"),
-    VALIDATING("VALIDATING", "package do validating"),
-    VALIDATED("VALIDATED", "package complete validate"),
-    PERSISTING("PERSISTING", "package do persisting"),
-    PERSISTED("PERSISTED", "package complete persist"),
-    WAIT_VALIDATE_CONSENSUS("WAIT_VALIDATE_CONSENSUS","self validating end"),
-    WAIT_PERSIST_CONSENSUS("WAIT_PERSIST_CONSENSUS","self persisting end"),
-    FAILOVER("FAILOVER","failover package");
+    RECEIVED("01", "RECEIVED", "package received from consensus"),
+    WAIT_PERSIST_CONSENSUS("02", "WAIT_PERSIST_CONSENSUS","self persisting end"),
+    PERSISTED("03", "PERSISTED", "package complete persist"),
+    FAILOVER("04", "FAILOVER","failover package");
     //@formatter:on
 
-    PackageStatusEnum(String code, String desc) {
+    PackageStatusEnum(String index, String code, String desc) {
+        this.index = index;
         this.code = code;
         this.desc = desc;
     }
+
+    private String index;
 
     private String code;
 
@@ -51,5 +53,38 @@ public enum PackageStatusEnum {
             }
         }
         return null;
+    }
+
+    public static PackageStatusEnum getByIndex(String index) {
+        for (PackageStatusEnum enumeration : values()) {
+            if (enumeration.getIndex().equals(index)) {
+                return enumeration;
+            }
+        }
+        return null;
+    }
+
+    public static List<String> getIndexs(String index) {
+        List<String> indexList = new ArrayList<>();
+        if (StringUtils.isEmpty(index)) {
+            for (PackageStatusEnum enumeration : values()) {
+                indexList.add(enumeration.getIndex());
+            }
+        } else {
+            for (PackageStatusEnum enumeration : values()) {
+                if (enumeration.getIndex().compareTo(index) > 0) {
+                    indexList.add(enumeration.getIndex());
+                }
+            }
+        }
+        return indexList;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
     }
 }

@@ -5,7 +5,6 @@ import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -18,7 +17,6 @@ import org.testng.annotations.BeforeSuite;
 
 //@RunWith(SpringRunner.class)
 @SpringBootTest
-@EnableFeignClients
 public class IntegrateBaseTest extends AbstractTestNGSpringContextTests {
 
     public static String DB_URL = "jdbc:mysql://localhost:3306/trust?user=root&password=root";
@@ -34,8 +32,6 @@ public class IntegrateBaseTest extends AbstractTestNGSpringContextTests {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.SortField.getMask();
         //toJSONString的时候对嵌套结果进行按照字母排序
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.MapSortField.getMask();
-        //toJSONString的时候记录Class的name
-        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteClassName.getMask();
     }
 
     @BeforeClass public void runBefore() {

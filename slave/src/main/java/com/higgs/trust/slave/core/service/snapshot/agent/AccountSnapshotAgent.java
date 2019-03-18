@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author liuyu
@@ -107,7 +106,7 @@ public class AccountSnapshotAgent implements CacheLoader {
      * @param bo
      */
     public void issueCurrency(IssueCurrency bo) {
-        CurrencyInfo currencyInfo = currencyRepository.buildCurrencyInfo(bo.getCurrencyName(), bo.getRemark());
+        CurrencyInfo currencyInfo = currencyRepository.buildCurrencyInfo(bo.getCurrencyName(), bo.getRemark(),bo.getHomomorphicPk(), bo.getContractAddress());
         insert(new CurrencyInfoCacheKey(bo.getCurrencyName()), currencyInfo);
     }
 

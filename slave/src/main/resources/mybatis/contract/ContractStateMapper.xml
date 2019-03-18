@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.higgs.trust.slave.dao.contract.ContractStateDao">
+<mapper namespace="com.higgs.trust.slave.dao.mysql.contract.ContractStateDao">
     <!-- Result Map -->
     <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.contract.ContractStatePO">
         <result column="id" property="id"/>
         <result column="address" property="address"/>
         <result column="state" property="state" />
+        <result column="key_desc" property="keyDesc" />
     </resultMap>
 
     <!-- contract table all fields -->
     <sql id="baseColumnList">
-        id,address,update_time,state
+        id,address,update_time,state,key_desc
     </sql>
 
     <!-- batch insert -->
     <insert id ="batchInsert" parameterType="java.util.Collection" >
-        INSERT INTO contract_state (address, update_time, state)
+        INSERT INTO contract_state (address, update_time, state,key_desc)
         VALUES
         <foreach collection ="list" item="item" index= "index" separator =",">
-            (#{item.address}, now(3), #{item.state})
+            (#{item.address}, now(3), #{item.state},#{item.keyDesc})
         </foreach>
     </insert>
 
@@ -50,12 +51,12 @@
 
     <!-- add -->
     <insert id="add" parameterType="com.higgs.trust.slave.dao.po.contract.ContractStatePO">
-        INSERT INTO contract_state (address, update_time, state)
-        VALUES (#{address}, now(3), #{state})
+        INSERT INTO contract_state (address, update_time, state,key_desc)
+        VALUES (#{address}, now(3), #{state},#{keyDesc})
     </insert>
 
     <insert id="save"  parameterType="com.higgs.trust.slave.dao.po.contract.ContractStatePO">
-        INSERT INTO contract_state (address, update_time, state) VALUES (#{address}, now(3), #{state})
+        INSERT INTO contract_state (address, update_time, state,key_desc) VALUES (#{address}, now(3), #{state},#{keyDesc})
         ON DUPLICATE KEY UPDATE state=#{state}
     </insert>
 

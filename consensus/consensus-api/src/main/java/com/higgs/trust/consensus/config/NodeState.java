@@ -3,6 +3,7 @@ package com.higgs.trust.consensus.config;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
 import com.higgs.trust.consensus.config.listener.StateChangeListenerAdaptor;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.consensus.exception.ConsensusError;
 import com.higgs.trust.consensus.exception.ConsensusException;
 import lombok.Getter;
@@ -26,61 +27,75 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.higgs.trust.consensus.config.NodeStateEnum.*;
 
-@Component @Scope("singleton") @Slf4j public class NodeState implements InitializingBean {
+@Component
+@Scope("singleton")
+@Slf4j
+public class NodeState implements InitializingBean {
 
     public static final String MASTER_NA = "N/A";
 
-    @Autowired private NodeProperties properties;
+    @Autowired
+    private NodeProperties properties;
 
-    @Autowired private ApplicationContext applicationContext;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     private Set<MasterChangeListener> masterListeners = new LinkedHashSet<>();
 
     private Map<NodeStateEnum, LinkedHashSet<StateChangeListenerAdaptor>> stateListeners = new ConcurrentHashMap<>();
 
-    @Getter private NodeStateEnum state = Starting;
+    @Getter
+    private NodeStateEnum state = Starting;
 
     /**
      * 当前节点是否为master
      */
-    @Getter private boolean master;
+    @Getter
+    private boolean master;
 
     /**
      * 节点名
      */
-    @Getter private String nodeName;
+    @Getter
+    private String nodeName;
 
     /**
      * master名
      */
-    @Getter private String masterName = MASTER_NA;
+    @Getter
+    private String masterName = MASTER_NA;
 
     /**
      * private key for biz
      */
-    @Getter @Setter private String privateKey;
+    @Getter
+    @Setter
+    private String privateKey;
 
     /**
      * private key for consensus
      */
-    @Getter @Setter private String consensusPrivateKey;
-
-
+    @Getter
+    @Setter
+    private String consensusPrivateKey;
 
     /**
      * cluster name, as the prefix of cluster nodes
      */
-    @Getter private String clusterName;
+    @Getter
+    private String clusterName;
 
-    @Getter @Setter private long currentTerm = 0;
+    @Getter
+    @Setter
+    private long currentTerm = 0;
 
     private static final Object masterLock = new Object();
 
     private static final Object stateLock = new Object();
 
-    @Override public void afterPropertiesSet() {
+    @Override
+    public void afterPropertiesSet() {
         this.nodeName = properties.getNodeName();
-        this.privateKey = properties.getPrivateKey();
         this.clusterName = properties.getPrefix();
 
         registerStateListener();
@@ -89,6 +104,18 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
         masterChangeListeners.addAll(applicationContext.getBeansOfType(MasterChangeListener.class).values());
         AnnotationAwareOrderComparator.sort(masterChangeListeners);
         masterListeners.addAll(masterChangeListeners);
+        initStateful();
+
+
+    }
+
+    /**
+     * init stateful
+     */
+    private void initStateful() {
+        for (NodeStatefulService statefulService : applicationContext.getBeansOfType(NodeStatefulService.class).values()) {
+            statefulService.init();
+        }
     }
 
     /**
@@ -96,20 +123,16 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
      */
     private void registerStateListener() {
         Map<NodeStateEnum, List<StateChangeListenerAdaptor>> stateListeners = new ConcurrentHashMap<>();
-        Arrays.stream(applicationContext.getBeanDefinitionNames()).forEach(beanName -> {
-            Object bean = applicationContext.getBean(beanName);
+        applicationContext.getBeansWithAnnotation(StateListener.class).forEach((beanName,bean) -> {
             Class<?> targetClass = AopProxyUtils.ultimateTargetClass(bean);
-            Map<Method, StateChangeListener> methods = MethodIntrospector.selectMethods(targetClass,
-                (MethodIntrospector.MetadataLookup<StateChangeListener>)method -> AnnotatedElementUtils
-                    .findMergedAnnotation(method, StateChangeListener.class));
+            Map<Method, StateChangeListener> methods = MethodIntrospector.selectMethods(targetClass, (MethodIntrospector.MetadataLookup<StateChangeListener>) method -> AnnotatedElementUtils.findMergedAnnotation(method, StateChangeListener.class));
             if (methods == null || methods.isEmpty()) {
                 return;
             }
             methods.forEach((method, value) -> {
                 NodeStateEnum[] stateEnums = value.value();
                 Arrays.stream(stateEnums).forEach(state -> {
-                    List<StateChangeListenerAdaptor> stateChangeListenerAdaptors =
-                        stateListeners.computeIfAbsent(state, e -> new ArrayList<>());
+                    List<StateChangeListenerAdaptor> stateChangeListenerAdaptors = stateListeners.computeIfAbsent(state, e -> new ArrayList<>());
                     stateChangeListenerAdaptors.add(new StateChangeListenerAdaptor(bean, method));
                 });
             });
@@ -145,14 +168,12 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
                 }
                 LinkedHashSet<StateChangeListenerAdaptor> stateChangeListenerAdaptors = stateListeners.get(to);
                 if (stateChangeListenerAdaptors != null) {
-                    stateChangeListenerAdaptors.stream().filter(StateChangeListenerAdaptor::isBefore)
-                        .forEach(StateChangeListenerAdaptor::invoke);
+                    stateChangeListenerAdaptors.stream().filter(StateChangeListenerAdaptor::isBefore).forEach(StateChangeListenerAdaptor::invoke);
                 }
                 state = to;
                 log.info("Node state changed from:{} to:{}", from, to);
                 if (stateChangeListenerAdaptors != null) {
-                    stateChangeListenerAdaptors.stream().filter(adaptor -> !adaptor.isBefore())
-                        .forEach(StateChangeListenerAdaptor::invoke);
+                    stateChangeListenerAdaptors.stream().filter(adaptor -> !adaptor.isBefore()).forEach(StateChangeListenerAdaptor::invoke);
                 }
             }
         } catch (Exception e) {
@@ -172,22 +193,30 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
         boolean result = false;
         switch (from) {
             case Starting:
-                result = SelfChecking == to;
+                result = Initialize == to || Offline == to;
+                break;
+            case Initialize:
+                result = StartingConsensus == to || SelfChecking == to || Offline == to;
+                break;
+            case StartingConsensus:
+                result = SelfChecking == to || Offline == to;
                 break;
             case SelfChecking:
-                result = AutoSync == to || ArtificialSync == to || Running == to || Offline == to;
+                result = AutoSync == to || ArtificialSync == to || Running == to && !properties.isStandby() || Standby == to && properties.isStandby() || Offline == to;
                 break;
             case AutoSync:
             case ArtificialSync:
-                result = Running == to || SelfChecking == to || Offline == to;
+                result = Running == to && !properties.isStandby() || SelfChecking == to || Offline == to || Standby == to && properties.isStandby();
+                break;
+            case Standby:
+                result = AutoSync == to || ArtificialSync == to || Offline == to || SelfChecking == to;
                 break;
             case Running:
                 result = SelfChecking == to || Offline == to;
                 break;
             case Offline:
-                result = SelfChecking == to;
+                result = SelfChecking == to || Initialize == to;
                 break;
-
         }
         return result;
     }
@@ -233,7 +262,6 @@ import static com.higgs.trust.consensus.config.NodeStateEnum.*;
      * @return
      */
     public String notMeNodeNameReg() {
-        return "(?!" + this.nodeName.toUpperCase(Locale.ROOT) + ")" + this.clusterName.toUpperCase(Locale.ROOT)
-            + "(\\S)*";
+        return "(?!" + this.nodeName.toUpperCase(Locale.ROOT) + ")" + this.clusterName.toUpperCase(Locale.ROOT) + "(\\S)*";
     }
 }

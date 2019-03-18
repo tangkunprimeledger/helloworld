@@ -1,7 +1,6 @@
 package com.higgs.trust.slave.core.service.snapshot;
 
 import com.alibaba.fastjson.JSONArray;
-import com.higgs.trust.slave.BaseTest;
 import com.higgs.trust.slave.model.bo.snapshot.Value;
 import org.apache.commons.lang3.tuple.Pair;
 import org.testng.annotations.Test;

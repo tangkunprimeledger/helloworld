@@ -2,7 +2,6 @@ package com.higgs.trust.slave.core.service.pending;
 
 import com.higgs.trust.slave.api.vo.TransactionVO;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.slave.model.enums.biz.PendingTxStatusEnum;
 
 import java.util.List;
 
@@ -25,24 +24,7 @@ public interface PendingState {
      * @param count
      * @return
      */
-    List<SignedTransaction> getPendingTransactions(int count);
-
-    /**
-     * Mark the transactions as packaged
-     *
-     * @param signedTransactions
-     * @param height
-     * @return
-     */
-    int packagePendingTransactions(List<SignedTransaction> signedTransactions, Long height);
-
-    /**
-     * Get packaged transactions based on block height
-     *
-     * @param height
-     * @return
-     */
-    List<SignedTransaction> getPackagedTransactions(Long height);
+    Object[] getPendingTransactions(int count);
 
     void addPendingTxsToQueueFirst(List<SignedTransaction> signedTransactions);
 }

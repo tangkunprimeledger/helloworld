@@ -27,8 +27,8 @@ public class ManageController {
 
     @Autowired
     private RsManageService rsManageService;
+
     /**
-     *
      * @param registerRsVO
      * @return
      */
@@ -45,7 +45,6 @@ public class ManageController {
     }
 
     /**
-     *
      * @param cancelRsVO
      * @return
      */

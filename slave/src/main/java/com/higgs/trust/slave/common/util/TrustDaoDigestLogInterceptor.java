@@ -1,10 +1,13 @@
 package com.higgs.trust.slave.common.util;
 
+import com.higgs.trust.common.constant.LoggerName;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -24,6 +27,8 @@ import org.springframework.stereotype.Repository;
  * @date
  */
 @Slf4j @Aspect @Repository public class TrustDaoDigestLogInterceptor {
+
+    private static final Logger DAO_DIGEST_LOGGER = LoggerFactory.getLogger(LoggerName.DAO_DIGEST_LOGGER);
     /**
      * 日志默认值
      */
@@ -79,7 +84,7 @@ import org.springframework.stereotype.Repository;
      * @return
      * @throws Throwable
      */
-    @Around("execution(* com.higgs.trust.slave.dao.*.*Dao.*(..)))") public Object invoke(ProceedingJoinPoint pj)
+    @Around("execution(* com.higgs.trust.slave.dao.*.*.*Dao.*(..)))") public Object invoke(ProceedingJoinPoint pj)
         throws Throwable {
 
         //日志开始时间
@@ -104,7 +109,7 @@ import org.springframework.stereotype.Repository;
                 long elapseTime = System.currentTimeMillis() - startTime;
 
                 // 打印DAO摘要日志
-                log.info(constructLogString(methodName, isSuccess, elapseTime));
+                DAO_DIGEST_LOGGER.info(constructLogString(methodName, isSuccess, elapseTime));
             } catch (Exception e) {
 
                 log.error("记录income调用DAO摘要日志出错!", e);

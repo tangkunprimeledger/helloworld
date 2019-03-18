@@ -3,18 +3,24 @@ package com.higgs.trust.rs.core.service;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.core.ConsensusStateMachine;
+import com.higgs.trust.rs.core.api.CaService;
 import com.higgs.trust.rs.core.api.CoreTransactionService;
+import com.higgs.trust.rs.core.api.SignService;
 import com.higgs.trust.rs.core.integration.NodeClient;
+import com.higgs.trust.rs.core.vo.NodeOptVO;
 import com.higgs.trust.slave.api.enums.ActionTypeEnum;
 import com.higgs.trust.slave.api.enums.RespCodeEnum;
+import com.higgs.trust.slave.api.enums.TxTypeEnum;
 import com.higgs.trust.slave.api.enums.VersionEnum;
 import com.higgs.trust.slave.api.enums.manage.InitPolicyEnum;
 import com.higgs.trust.slave.api.vo.RespData;
-import com.higgs.trust.slave.core.repository.config.ClusterNodeRepository;
+import com.higgs.trust.slave.core.repository.config.ConfigRepository;
 import com.higgs.trust.slave.model.bo.CoreTransaction;
+import com.higgs.trust.slave.model.bo.SignInfo;
 import com.higgs.trust.slave.model.bo.action.Action;
-import com.higgs.trust.slave.model.bo.config.ClusterNode;
+import com.higgs.trust.slave.model.bo.config.Config;
 import com.higgs.trust.slave.model.bo.node.NodeAction;
+import com.higgs.trust.slave.model.enums.UsageEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,12 +39,39 @@ import java.util.UUID;
     @Autowired private NodeState nodeState;
     @Autowired private CoreTransactionService coreTransactionService;
     @Autowired private NodeClient nodeClient;
-    @Autowired private ClusterNodeRepository clusterNodeRepository;
-
     @Autowired private ConsensusStateMachine consensusStateMachine;
+    @Autowired private SignService signService;
+    @Autowired private ConfigRepository configRepository;
+    @Autowired private CaService caService;
 
     private static final String SUCCESS = "sucess";
     private static final String FAIL = "fail";
+
+    public String joinRequest() {
+        log.info("[joinRequest] send ca auth request");
+        caService.authKeyPair(nodeState.getNodeName());
+        log.info("[joinRequest] end send ca auth request");
+
+        log.info("[joinRequest] send join consensus request");
+        String nodeName = nodeState.getNodeName();
+        NodeOptVO vo = new NodeOptVO();
+        vo.setNodeName(nodeName);
+        //add pubKey
+        Config config = configRepository.getConfig(nodeName, UsageEnum.CONSENSUS);
+        String pubKey = config.getPubKey();
+        String signValue = nodeName + "-" + pubKey;
+        String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
+        vo.setPubKey(pubKey);
+        vo.setSign(sign);
+        vo.setSignValue(signValue);
+        RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), vo);
+        if (!respData.isSuccess()) {
+            log.error("resp = {}", respData);
+            return FAIL;
+        }
+        log.info("[joinRequest] end send join consensus request");
+        return SUCCESS;
+    }
 
     /**
      * @param
@@ -46,55 +79,29 @@ import java.util.UUID;
      * @desc join consensus layer
      */
     public String joinConsensus() {
-
         log.info("[joinConsensus] start to join consensus layer");
-
-        ClusterNode clusterNode = clusterNodeRepository.getClusterNode(nodeState.getNodeName());
-        if (log.isDebugEnabled()) {
-            log.debug("clusterNode={}", clusterNode);
-        }
-
-        if (null != clusterNode && clusterNode.isP2pStatus() == false) {
-            log.info("[joinConsensus] join consensus layer again");
-            RespData respData = nodeClient.nodeJoin(nodeState.notMeNodeNameReg(), nodeState.getNodeName());
-            if (!respData.isSuccess()) {
-                return FAIL;
-            }
-        }
-
-        new Thread(new Runnable() {
-            @Override public void run() {
-                log.info("[joinConsensus] start to transform node status from offline to running");
-                nodeState.changeState(NodeStateEnum.Offline, NodeStateEnum.SelfChecking);
-                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
-                nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
-                log.info("[joinConsensus] end transform node status from offline to running");
-            }
-        }).start();
-
-        /*try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            log.error("[joinConsensus] error occured while thread sleep", e);
-            return FAIL;
-        }*/
 
         try {
             consensusStateMachine.joinConsensus();
         } catch (Throwable e) {
-            log.error("join consensus error, ", e);
+            log.error("[joinConsensus] join consensus error", e);
+            nodeState.changeState(nodeState.getState(), NodeStateEnum.Offline);
             return FAIL;
         }
         log.info("[joinConsensus] end join consensus layer");
-
         return SUCCESS;
     }
 
-    public RespData joinConsensusTx(String user) {
-
+    /**
+     * process join request
+     *
+     * @param vo
+     * @return
+     */
+    public RespData joinConsensusTx(NodeOptVO vo) {
         //send and get callback result
         try {
-            coreTransactionService.submitTx(constructJoinCoreTx(user));
+            coreTransactionService.submitTx(constructJoinCoreTx(vo));
         } catch (Throwable e) {
             log.error("send node join transaction error", e);
             return new RespData(RespCodeEnum.SYS_FAIL.getRespCode());
@@ -103,22 +110,39 @@ import java.util.UUID;
         return new RespData();
     }
 
-    private CoreTransaction constructJoinCoreTx(String user) {
+    /**
+     * make core transaction
+     *
+     * @param vo
+     * @return
+     */
+    private CoreTransaction constructJoinCoreTx(NodeOptVO vo) {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId(UUID.randomUUID().toString());
         coreTx.setSender(nodeState.getNodeName());
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.NODE_JOIN.getPolicyId());
-        coreTx.setActionList(buildJoinActionList(user));
+        coreTx.setActionList(buildJoinActionList(vo));
+        //set transaction type
+        coreTx.setTxType(TxTypeEnum.NODE.getCode());
         return coreTx;
     }
 
-    private List<Action> buildJoinActionList(String user) {
+    /**
+     * make action
+     *
+     * @param vo
+     * @return
+     */
+    private List<Action> buildJoinActionList(NodeOptVO vo) {
         List<Action> actions = new ArrayList<>();
         NodeAction nodeAction = new NodeAction();
-        nodeAction.setNodeName(user);
         nodeAction.setType(ActionTypeEnum.NODE_JOIN);
         nodeAction.setIndex(0);
+        nodeAction.setNodeName(vo.getNodeName());
+        nodeAction.setSelfSign(vo.getSign());
+        nodeAction.setSignValue(vo.getSignValue());
+        nodeAction.setPubKey(vo.getPubKey());
         actions.add(nodeAction);
         return actions;
     }
@@ -126,7 +150,7 @@ import java.util.UUID;
     /**
      * @param
      * @return
-     * @desc leave consensus layer
+     * @desc process leave consensus layer
      */
     public String leaveConsensus() {
 
@@ -145,31 +169,49 @@ import java.util.UUID;
             log.error("[leaveConsensus] error occured while thread sleep", e);
             return FAIL;
         }
-
-        log.info("[leaveConsensus] start to transform node status from running to offline");
-        nodeState.changeState(NodeStateEnum.Running, NodeStateEnum.Offline);
-
         log.info("[leaveConsensus] end leave consensus layer and transform node status");
         return SUCCESS;
 
     }
 
-    private CoreTransaction constructLeaveCoreTx(String user) {
+    /**
+     * make core transaction
+     *
+     * @param nodeName
+     * @return
+     */
+    private CoreTransaction constructLeaveCoreTx(String nodeName) {
         CoreTransaction coreTx = new CoreTransaction();
         coreTx.setTxId(UUID.randomUUID().toString());
-        coreTx.setSender(user);
+        coreTx.setSender(nodeName);
         coreTx.setVersion(VersionEnum.V1.getCode());
         coreTx.setPolicyId(InitPolicyEnum.NODE_LEAVE.getPolicyId());
-        coreTx.setActionList(buildLeaveActionList(user));
+        coreTx.setActionList(buildLeaveActionList(nodeName));
+        //set transaction type
+        coreTx.setTxType(TxTypeEnum.NODE.getCode());
         return coreTx;
     }
 
-    private List<Action> buildLeaveActionList(String user) {
+    /**
+     * make action
+     *
+     * @param nodeName
+     * @return
+     */
+    private List<Action> buildLeaveActionList(String nodeName) {
         List<Action> actions = new ArrayList<>();
         NodeAction nodeAction = new NodeAction();
-        nodeAction.setNodeName(user);
         nodeAction.setType(ActionTypeEnum.NODE_LEAVE);
         nodeAction.setIndex(0);
+        nodeAction.setNodeName(nodeName);
+        //add pubKey
+        Config config = configRepository.getConfig(nodeName, UsageEnum.CONSENSUS);
+        String pubKey = config.getPubKey();
+        String signValue = nodeName + "-" + pubKey;
+        String sign = signService.sign(signValue, SignInfo.SignTypeEnum.CONSENSUS);
+        nodeAction.setPubKey(pubKey);
+        nodeAction.setSelfSign(sign);
+        nodeAction.setSignValue(signValue);
         actions.add(nodeAction);
         return actions;
     }

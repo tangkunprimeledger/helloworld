@@ -1,8 +1,8 @@
 package com.higgs.trust.slave.common.util;
 
-import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.common.constant.LoggerName;
+import com.higgs.trust.common.utils.MonitorLogUtils;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import org.aspectj.lang.ProceedingJoinPoint;

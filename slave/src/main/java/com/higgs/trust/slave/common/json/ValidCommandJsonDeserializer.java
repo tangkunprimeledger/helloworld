@@ -4,9 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-//import com.higgs.trust.config.master.command.ChangeMasterVerifyCmd;
-import com.higgs.trust.consensus.p2pvalid.config.ClusterInfoCmd;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommand;
+import com.higgs.trust.slave.core.service.consensus.view.ClusterViewCmd;
 import com.higgs.trust.slave.model.bo.consensus.BlockHeaderCmd;
 import com.higgs.trust.slave.model.bo.consensus.ClusterHeightCmd;
 import com.higgs.trust.slave.model.bo.consensus.PersistCommand;
@@ -16,6 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+
+//import com.higgs.trust.config.master.command.ChangeMasterVerifyCmd;
 
 /**
  * @author duhongming
@@ -30,7 +31,7 @@ public class ValidCommandJsonDeserializer implements ObjectDeserializer {
         typeMap.put(BlockHeaderCmd.class.getSimpleName(), BlockHeaderCmd.class);
 //        typeMap.put(ChangeMasterVerifyCmd.class.getSimpleName(), ChangeMasterVerifyCmd.class);
         typeMap.put(ClusterHeightCmd.class.getSimpleName(), ClusterHeightCmd.class);
-        typeMap.put(ClusterInfoCmd.class.getSimpleName(), ClusterInfoCmd.class);
+        typeMap.put(ClusterViewCmd.class.getSimpleName(), ClusterViewCmd.class);
         typeMap.put(PersistCommand.class.getSimpleName(), PersistCommand.class);
     }
 

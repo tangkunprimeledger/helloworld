@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mappers.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.higgs.trust.slave.dao.pack.PendingTransactionDao">
+<mapper namespace="com.higgs.trust.slave.dao.mysql.pack.PendingTransactionDao">
     <!-- Result Map -->
     <resultMap id="baseResultMap" type="com.higgs.trust.slave.dao.po.pack.PendingTransactionPO">
         <result column="tx_id" property="txId"/>
@@ -70,12 +70,6 @@
         <include refid="baseWhereClause"/>
     </select>
 
-    <select id="queryByStatus" resultType="com.higgs.trust.slave.dao.po.pack.PendingTransactionPO">
-        select
-        <include refid="baseColumnList"/>
-        from pending_transaction
-        where status=#{status} limit #{limit}
-    </select>
     <!-- 以上为工具自动生成 -->
 
     <select id="queryByTxId" resultMap="baseResultMap" parameterType="object">
@@ -83,15 +77,6 @@
         <include refid="baseColumnList"/>
         from pending_transaction where tx_id=#{txId}
     </select>
-
-    <update id="updateStatus" parameterType="com.higgs.trust.slave.dao.po.pack.PendingTransactionPO">
-        update pending_transaction
-        set status=#{toStatus}, height=#{height}, update_time=now(3)
-        where
-        tx_id=#{txId}
-        and status=#{fromStatus}
-        and (height is null or height=null)
-    </update>
 
     <select id="queryByHeight" resultMap="baseResultMap" parameterType="object">
         select
@@ -122,5 +107,9 @@
         <![CDATA[
           height <= #{height}
         ]]>
+    </delete>
+
+    <delete id="deleteByHeight" parameterType="object">
+        delete from pending_transaction where height = #{height}
     </delete>
 </mapper>

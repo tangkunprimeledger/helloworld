@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * @author liuyu
@@ -13,5 +14,6 @@ import javax.validation.constraints.NotNull;
  */
 @Getter @Setter public class QueryTxVO extends BaseBO {
     @NotNull
+    @Size(max = 64)
     private String txId;
 }

@@ -173,7 +173,7 @@ public class ActionDataMockBuilder {
         this.packContext.setCurrentPackage(this.currentPackage);
         this.currentPackage.setPackageTime(new Date().getTime());
         this.currentPackage.setSignedTxList(this.transList);
-        this.currentPackage.setStatus(PackageStatusEnum.INIT);
+        this.currentPackage.setStatus(PackageStatusEnum.RECEIVED);
         this.packContext.setCurrentBlock(this.block);
         this.packContext.setCurrentTransaction(currentSignedTransaction);
         return packContext;

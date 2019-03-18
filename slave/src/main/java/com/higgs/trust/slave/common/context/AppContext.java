@@ -1,9 +1,9 @@
 package com.higgs.trust.slave.common.context;
 
+import com.higgs.trust.common.constant.Constant;
 import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.common.util.asynctosync.HashBlockingMap;
 import com.higgs.trust.slave.model.bo.SignedTransaction;
-import com.higgs.trust.common.constant.Constant;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

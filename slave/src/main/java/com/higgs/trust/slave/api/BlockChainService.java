@@ -80,6 +80,20 @@ public interface BlockChainService {
     boolean isExistedCurrency(String currency);
 
     /**
+     * query contract address by currency
+     * @return
+     */
+    String queryContractAddressByCurrency(String currency);
+
+    /**
+     * check whether the contract address is existed
+     *
+     * @param address
+     * @return
+     */
+    boolean isExistedContractAddress(String address);
+
+    /**
      * query System Property by key
      *
      * @param key

@@ -19,14 +19,17 @@ import java.util.concurrent.ConcurrentHashMap;
     private static ConcurrentHashMap cmdTypeMap = new ConcurrentHashMap();
 
     private T t;
+
+    private long view;
+
     private String cmdName;
 
     public ValidCommand() {
-
     }
 
-    public ValidCommand(T t) {
+    public ValidCommand(T t, long view) {
         this.t = t;
+        this.view = view;
     }
 
     public T get() {

@@ -13,7 +13,9 @@ import org.springframework.stereotype.Repository;
  * @description
  * @date 2018-05-12
  */
-@Repository @Slf4j public class TxCallbackRegistor {
+@Repository
+@Slf4j
+public class TxCallbackRegistor {
     private TxCallbackHandler coreTxCallback;
     private TxBatchCallbackHandler txBatchCallbackHandler;
 

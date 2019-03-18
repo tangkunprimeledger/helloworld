@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -35,8 +36,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryBlocksByPage", method = RequestMethod.POST)
-    @ResponseBody
-    public RespData<List<BlockVO>> queryBlocksByPage(@RequestBody QueryBlockVO req) {
+    public RespData<List<BlockVO>> queryBlocksByPage(@RequestBody @Valid QueryBlockVO req) {
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryBlocksByPage", req);
 
         RespData<List<BlockVO>> respData = explorerCache.get(key, RespData.class);
@@ -59,8 +59,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryTxsByPage", method = RequestMethod.POST)
-    @ResponseBody
-    public RespData<List<CoreTransactionVO>> queryTxsByPage(@RequestBody QueryTransactionVO req) {
+    public RespData<List<CoreTransactionVO>> queryTxsByPage(@RequestBody @Valid QueryTransactionVO req) {
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryTxsByPage", req);
         RespData<List<CoreTransactionVO>> respData = explorerCache.get(key, RespData.class);
         if (respData != null) {
@@ -84,8 +83,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryBlockByHeight", method = RequestMethod.POST)
-    @ResponseBody
-    public RespData<BlockVO> queryBlockByHeight(@RequestBody QueryBlockByHeightVO vo) {
+    public RespData<BlockVO> queryBlockByHeight(@RequestBody @Valid QueryBlockByHeightVO vo) {
         Long height = vo.getHeight();
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryBlockByHeight", height);
         RespData<BlockVO> respData = explorerCache.get(key, RespData.class);
@@ -109,8 +107,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryTxById", method = RequestMethod.POST)
-    @ResponseBody
-    public RespData<CoreTransactionVO> queryTxById(@RequestBody QueryTxVO vo) {
+    public RespData<CoreTransactionVO> queryTxById(@RequestBody @Valid  QueryTxVO vo) {
         String txId = vo.getTxId();
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryTxById", txId);
         RespData<CoreTransactionVO> respData = explorerCache.get(key, RespData.class);
@@ -134,8 +131,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryUTXO", method = RequestMethod.POST)
-    @ResponseBody
-    public RespData<List<UTXOVO>> queryUTXO(@RequestBody QueryTxVO vo) {
+    public RespData<List<UTXOVO>> queryUTXO(@RequestBody @Valid QueryTxVO vo) {
         String txId = vo.getTxId();
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryUTXO", txId);
         RespData<List<UTXOVO>> respData = explorerCache.get(key, RespData.class);
@@ -159,8 +155,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryAccountsByPage", method = RequestMethod.POST)
-    @ResponseBody
-    public RespData<List<AccountInfoVO>> queryAccountsByPage(@RequestBody QueryAccountVO req) {
+    public RespData<List<AccountInfoVO>> queryAccountsByPage(@RequestBody @Valid QueryAccountVO req) {
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryAccountsByPage", req);
         RespData<List<AccountInfoVO>> respData = explorerCache.get(key, RespData.class);
         if (respData != null) {
@@ -184,8 +179,7 @@ public class ExplorerController {
      * @return
      */
     @RequestMapping(value = "/queryContractsByPage", method = RequestMethod.POST)
-    @ResponseBody
-    public RespData<List<ContractVO>> queryContractsByPage(@RequestBody QueryContractVO req) {
+    public RespData<List<ContractVO>> queryContractsByPage(@RequestBody @Valid QueryContractVO req) {
         ExplorerCache.CacheKey key = new ExplorerCache.CacheKey("queryContractsByPage", req);
         RespData<List<ContractVO>> respData = explorerCache.get(key, RespData.class);
         if (respData != null) {

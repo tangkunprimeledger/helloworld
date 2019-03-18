@@ -6,6 +6,7 @@ import com.higgs.trust.rs.core.api.enums.VoteResultEnum;
 import com.higgs.trust.rs.core.bo.VoteReceipt;
 import com.higgs.trust.rs.core.dao.VoteReceiptDao;
 import com.higgs.trust.rs.core.dao.po.VoteReceiptPO;
+import com.higgs.trust.rs.core.dao.rocks.VoteReceiptRocksDao;
 import com.higgs.trust.slave.common.enums.SlaveErrorEnum;
 import com.higgs.trust.slave.common.exception.SlaveException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,6 +26,7 @@ import java.util.List;
 @Slf4j @Repository public class VoteReceiptRepository {
     @Autowired private RsConfig rsConfig;
     @Autowired private VoteReceiptDao voteReceiptDao;
+    @Autowired private VoteReceiptRocksDao voteReceiptRocksDao;
 
     /**
      * create new vote-receipt
@@ -33,18 +34,17 @@ import java.util.List;
      * @param voteReceipt
      */
     public void add(VoteReceipt voteReceipt) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return;
-        }
         VoteReceiptPO voteReceiptPO = BeanConvertor.convertBean(voteReceipt, VoteReceiptPO.class);
         voteReceiptPO.setVoteResult(voteReceipt.getVoteResult().getCode());
-        voteReceiptPO.setCreateTime(new Date());
-        try {
-            voteReceiptDao.add(voteReceiptPO);
-        } catch (DuplicateKeyException e) {
-            log.error("[add.vote-receipt] is idempotent by txId:{}", voteReceiptPO.getTxId());
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        if (rsConfig.isUseMySQL()) {
+            try {
+                voteReceiptDao.add(voteReceiptPO);
+            } catch (DuplicateKeyException e) {
+                log.error("[add.vote-receipt] is idempotent by txId:{}", voteReceiptPO.getTxId());
+                throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+            }
+        } else {
+            voteReceiptRocksDao.save(voteReceiptPO);
         }
     }
 
@@ -57,10 +57,7 @@ import java.util.List;
         if(CollectionUtils.isEmpty(voteReceipts)){
             return;
         }
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return;
-        }
+
         List<VoteReceiptPO> list = new ArrayList<>(voteReceipts.size());
         for(VoteReceipt voteReceipt : voteReceipts){
             VoteReceiptPO po = new VoteReceiptPO();
@@ -68,14 +65,17 @@ import java.util.List;
             po.setVoter(voteReceipt.getVoter());
             po.setSign(voteReceipt.getSign());
             po.setVoteResult(voteReceipt.getVoteResult().getCode());
-            po.setCreateTime(new Date());
             list.add(po);
         }
-        try {
-            voteReceiptDao.batchAdd(list);
-        } catch (DuplicateKeyException e) {
-            log.error("[add.vote-receipt] is idempotent ");
-            throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+        if (rsConfig.isUseMySQL()) {
+            try {
+                voteReceiptDao.batchAdd(list);
+            } catch (DuplicateKeyException e) {
+                log.error("[add.vote-receipt] is idempotent ");
+                throw new SlaveException(SlaveErrorEnum.SLAVE_IDEMPOTENT);
+            }
+        } else {
+            voteReceiptRocksDao.batchInsert(list);
         }
     }
 
@@ -86,11 +86,13 @@ import java.util.List;
      * @return
      */
     public List<VoteReceipt> queryByTxId(String txId) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
-            return null;
+        List<VoteReceiptPO> list;
+        if (rsConfig.isUseMySQL()) {
+            list = voteReceiptDao.queryByTxId(txId);
+        } else {
+            list = voteReceiptRocksDao.queryByTxId(txId);
         }
-        List<VoteReceiptPO> list = voteReceiptDao.queryByTxId(txId);
+
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
@@ -110,14 +112,17 @@ import java.util.List;
      * @return
      */
     public VoteReceipt queryForVoter(String txId, String voter) {
-        if (!rsConfig.isUseMySQL()) {
-            //TODO: liuyu for rocksdb handler
+        VoteReceiptPO po;
+        if (rsConfig.isUseMySQL()) {
+            po = voteReceiptDao.queryForVoter(txId, voter);
+        } else {
+            po = voteReceiptRocksDao.get(txId + "_" + voter);
+        }
+
+        if (null == po) {
             return null;
         }
-        VoteReceiptPO po = voteReceiptDao.queryForVoter(txId, voter);
-        if (po == null) {
-            return null;
-        }
+
         VoteReceipt voteReceipt = BeanConvertor.convertBean(po, VoteReceipt.class);
         voteReceipt.setVoteResult(VoteResultEnum.fromCode(po.getVoteResult()));
         return voteReceipt;

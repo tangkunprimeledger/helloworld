@@ -6,7 +6,6 @@ import com.higgs.trust.slave.dao.po.manage.PolicyPO;
 import com.higgs.trust.slave.model.bo.manage.Policy;
 import com.higgs.trust.slave.model.bo.manage.RegisterPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -46,10 +45,6 @@ public class PolicyRepositoryTest extends BaseTest {
         Policy policy = policyRepository.getPolicyById("policy-test-1");
 //        assertEquals(null, policy);
         System.out.println(policy);
-    }
-
-    @Test public void save() {
-        policyRepository.save(policy);
     }
 
     @Test public void convertActionToPolicy() {

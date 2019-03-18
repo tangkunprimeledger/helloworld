@@ -8,7 +8,9 @@ import lombok.Setter;
  * @author duhongming
  * @date 2018/5/18
  */
-@Getter @Setter public class ContractInvokeRequest extends BaseBO {
+@Getter
+@Setter
+public class ContractInvokeRequest extends BaseBO {
     private String address;
     private Object[] bizArgs;
 }

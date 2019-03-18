@@ -5,6 +5,7 @@ package com.higgs.trust.config.node;
 
 import com.higgs.trust.common.enums.MonitorTargetEnum;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -18,15 +19,37 @@ import org.springframework.stereotype.Component;
  * @author suimi
  * @date 2018/6/13
  */
-@ConditionalOnProperty(prefix = "higgs.trust", name = {"joinConsensus", "autoRunning"}, havingValue = "true", matchIfMissing = true)
-@Order @Component @Slf4j public class StartupRunner
-    implements CommandLineRunner {
+@ConditionalOnProperty(prefix = "higgs.trust", name = {"autoRunning"}, havingValue = "true", matchIfMissing = true)
+@Order
+@Component
+@Slf4j
+public class StartupRunner implements CommandLineRunner {
 
-    @Autowired NodeState nodeState;
 
-    @Override public void run(String... args) {
+    @Autowired
+    NodeState nodeState;
+
+    @Autowired
+    private NodeProperties nodeProperties;
+
+    @Override
+    public void run(String... args) {
         try {
-            nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.SelfChecking);
+            nodeState.changeState(NodeStateEnum.Starting, NodeStateEnum.Initialize);
+            //RS node just need to Initialize
+            if (!nodeProperties.isSlave()){
+                return;
+            }
+            //standby need to do
+            if (nodeProperties.isStandby()) {
+                nodeState.changeState(NodeStateEnum.Initialize, NodeStateEnum.SelfChecking);
+                nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
+                nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Standby);
+                 return;
+            }
+            //slave
+            nodeState.changeState(NodeStateEnum.Initialize, NodeStateEnum.StartingConsensus);
+            nodeState.changeState(NodeStateEnum.StartingConsensus, NodeStateEnum.SelfChecking);
             nodeState.changeState(NodeStateEnum.SelfChecking, NodeStateEnum.AutoSync);
             nodeState.changeState(NodeStateEnum.AutoSync, NodeStateEnum.Running);
         } catch (Exception e) {

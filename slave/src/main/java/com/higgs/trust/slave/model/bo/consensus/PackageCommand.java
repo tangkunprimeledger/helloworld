@@ -5,9 +5,11 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.higgs.trust.config.node.command.TermCommand;
+import com.higgs.trust.config.node.command.ViewCommand;
+import com.higgs.trust.config.view.ClusterOptTx;
 import com.higgs.trust.consensus.core.command.AbstractConsensusCommand;
 import com.higgs.trust.consensus.core.command.SignatureCommand;
-import com.higgs.trust.slave.api.vo.PackageVO;
+import com.higgs.trust.slave.model.bo.Package;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,12 +20,17 @@ import org.hibernate.validator.constraints.NotEmpty;
  * @author: pengdi
  **/
 @ToString(callSuper = true, exclude = {"sign"}) @Getter @Setter public class PackageCommand
-    extends AbstractConsensusCommand<PackageVO> implements SignatureCommand, TermCommand {
+    extends AbstractConsensusCommand<Package> implements SignatureCommand, TermCommand, ViewCommand {
 
     /**
      * term
      */
-    private Long term;
+    private long term;
+
+    /**
+     * the cluster view
+     */
+    private long view;
 
     /**
      * master name
@@ -31,18 +38,44 @@ import org.hibernate.validator.constraints.NotEmpty;
     private String masterName;
 
     /**
+     * the cluster operation tx
+     */
+    private ClusterOptTx clusterOptTx;
+    /**
+     * the height of package
+     */
+    private long height;
+
+    /**
+     * the time of package
+     */
+    private long time;
+
+    /**
      * signature
      */
     @NotEmpty @JSONField(label = "sign") private String sign;
 
-    public PackageCommand(Long term, String masterName, PackageVO value) {
+    public PackageCommand(String masterName, Package value) {
         super(value);
-        this.term = term;
         this.masterName = masterName;
+        this.height = value.getHeight();
+        this.time = value.getPackageTime();
     }
 
-    @Override public Long[] getPackageHeight() {
-        return new Long[]{ get().getHeight() };
+    public PackageCommand(String masterName,byte[] value,long height, long time){
+        super(value);
+        this.masterName = masterName;
+        this.height = height;
+        this.time = time;
+    }
+
+    @Override public long getPackageHeight() {
+        return this.height;
+    }
+
+    @Override public long getPackageTime() {
+        return this.time;
     }
 
     @Override public String getNodeName() {
@@ -50,7 +83,8 @@ import org.hibernate.validator.constraints.NotEmpty;
     }
 
     @Override public String getSignValue() {
-        String join = String.join(",", JSON.toJSONString(get()), "" + term, masterName);
+        String join = String
+            .join(",", JSON.toJSONString(getValueBytes()), "" + term, "" + view, masterName, JSON.toJSONString(clusterOptTx));
         return Hashing.sha256().hashString(join, Charsets.UTF_8).toString();
     }
 

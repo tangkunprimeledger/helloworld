@@ -61,6 +61,7 @@ public enum SlaveErrorEnum implements ErrorInfo {
     SLAVE_SNAPSHOT_FLUSH_DATA_EXCEPTION("524", "snapshot flush data exception", false),
     SLAVE_RS_NOT_EXISTS_ERROR("525", "RS is not exist", false),
     SLAVE_RS_ALREADY_CANCELED_ERROR("526", "RS is already canceled exception", false),
+    SLAVE_TX_NOT_ONLY_ONE_CONTRACT_ACTION_EXCEPTION("527", "tx not only one contract action", false),
 
 
     SLAVE_MERKLE_PARAM_NOT_VALID_EXCEPTION("600", "slave merkle param not valid exception", false),
@@ -116,6 +117,10 @@ public enum SlaveErrorEnum implements ErrorInfo {
     SLAVE_BATCH_INSERT_ROWS_DIFFERENT_ERROR("838", "slave batch insert rows different error", false),
     SLAVE_PACKAGE_RECEIVED_INVALID_NODE_STATE("839", "the node state is not running", false),
     SLAVE_ACCOUNT_FREEZE_RECORD_IS_ALREADY_EXISTS_ERROR("840", "account freeze record is already exists error", false),
+    SLAVE_ROCKS_KEY_ALREADY_EXIST("841", "rocks key is exist", false),
+    SLAVE_ROCKS_KEY_IS_NOT_EXIST("842", "rocks key is not exist", false),
+    SLAVE_ROCKS_TRANSACTION_IS_NULL("843", "rocks transaction is null", false),
+    SLAVE_BLOCK_IS_NOT_EXIST("844", "the block is not exist", false),
 
 
     SLAVE_CA_INIT_ERROR("900", "slave ca init error", false),

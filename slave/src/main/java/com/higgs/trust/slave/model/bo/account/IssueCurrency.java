@@ -16,4 +16,10 @@ import javax.validation.constraints.NotNull;
 
     @NotNull @Length(min = 1, max = 24) private String currencyName;
     private String remark;
+
+    private String HomomorphicPk;
+    /**
+     * contract address
+     */
+    private String contractAddress;
 }

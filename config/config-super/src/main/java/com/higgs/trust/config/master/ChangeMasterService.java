@@ -4,22 +4,25 @@
 package com.higgs.trust.config.master;
 
 import com.higgs.trust.common.enums.MonitorTargetEnum;
-import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.common.utils.MonitorLogUtils;
+import com.higgs.trust.config.crypto.CryptoUtil;
 import com.higgs.trust.config.master.command.*;
-import com.higgs.trust.config.p2p.ClusterInfo;
-import com.higgs.trust.config.term.TermManager;
+import com.higgs.trust.config.view.ClusterView;
+import com.higgs.trust.config.view.IClusterViewManager;
 import com.higgs.trust.consensus.config.NodeProperties;
 import com.higgs.trust.consensus.config.NodeState;
 import com.higgs.trust.consensus.config.NodeStateEnum;
 import com.higgs.trust.consensus.config.listener.MasterChangeListener;
 import com.higgs.trust.consensus.config.listener.StateChangeListener;
+import com.higgs.trust.consensus.config.listener.StateListener;
 import com.higgs.trust.consensus.core.ConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.api.P2pConsensusClient;
 import com.higgs.trust.consensus.p2pvalid.core.ResponseCommand;
 import com.higgs.trust.consensus.p2pvalid.core.ValidCommandWrap;
 import com.higgs.trust.consensus.p2pvalid.core.ValidResponseWrap;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,18 +31,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author suimi
  * @date 2018/6/4
  */
+@StateListener
 @Slf4j @Service public class ChangeMasterService implements MasterChangeListener {
+
+    /**
+     * has the master heartbeat
+     */
+    @Getter private AtomicBoolean masterHeartbeat = new AtomicBoolean(false);
 
     @Autowired private NodeProperties nodeProperties;
 
     @Autowired private ChangeMasterProperties properties;
-
-    @Autowired private ClusterInfo clusterInfo;
 
     @Autowired private P2pConsensusClient p2pConsensusClient;
 
@@ -47,9 +55,9 @@ import java.util.concurrent.*;
 
     @Autowired private NodeState nodeState;
 
-    @Autowired private TermManager termManager;
-
     @Autowired private INodeInfoService nodeInfoService;
+
+    @Autowired private IClusterViewManager viewManager;
 
     private ScheduledFuture heartbeatTimer;
 
@@ -70,7 +78,7 @@ import java.util.concurrent.*;
      */
     public void renewHeartbeatTimeout() {
         log.trace("renew change master heartbeat timeout");
-        termManager.setMasterHeartbeat(true);
+        masterHeartbeat.getAndSet(true);
         resetHeartbeatTimeout();
     }
 
@@ -94,7 +102,7 @@ import java.util.concurrent.*;
         if (log.isDebugEnabled()) {
             log.debug("start change master verify");
         }
-        termManager.setMasterHeartbeat(false);
+        masterHeartbeat.getAndSet(false);
         if (!nodeState.isState(NodeStateEnum.Running)) {
             return;
         }
@@ -103,18 +111,21 @@ import java.util.concurrent.*;
             resetHeartbeatTimeout();
             return;
         }
+        ClusterView currentView = viewManager.getCurrentView();
         Map<String, ChangeMasterVerifyResponse> responseMap = changeMasterVerify();
-        if (responseMap == null || responseMap.size() < (2 * clusterInfo.faultNodeNum() + 1)) {
+        //appliedQuorum numbers of nodes respond to changeMaster, here appliedQuorum is (f+n)/2+1
+        if (responseMap == null || responseMap.size() < currentView.getAppliedQuorum()) {
             resetHeartbeatTimeout();
             return;
         }
-        consensusChangeMaster(nodeState.getCurrentTerm() + 1, responseMap);
+        consensusChangeMaster(nodeState.getCurrentTerm() + 1, viewManager.getCurrentViewId(), responseMap);
         resetHeartbeatTimeout();
     }
 
     public void artificialChangeMaster(int term, long startHeight) {
         ArtificialChangeMasterCommand command =
-            new ArtificialChangeMasterCommand(term, nodeState.getNodeName(), startHeight);
+            new ArtificialChangeMasterCommand(term, viewManager.getCurrentViewId(), nodeState.getNodeName(),
+                startHeight);
         command
             .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));
         CompletableFuture<?> future = consensusClient.submit(command);
@@ -127,19 +138,21 @@ import java.util.concurrent.*;
     }
 
     private Map<String, ChangeMasterVerifyResponse> changeMasterVerify() {
-        log.info("change master verify");
-        List<String> nodeNames = clusterInfo.clusterNodeNames();
+        log.debug("change master verify");
+        ClusterView currentView = viewManager.getCurrentView();
+        List<String> nodeNames = currentView.getNodeNames();
         Map<String, ChangeMasterVerifyResponse> heightMap = new HashMap<>();
         Long maxHeight = nodeInfoService.blockHeight();
         long packageHeight = maxHeight == null ? 0 : maxHeight;
         ChangeMasterVerify verify =
-            new ChangeMasterVerify(nodeState.getCurrentTerm() + 1, nodeState.getNodeName(), packageHeight);
+            new ChangeMasterVerify(nodeState.getCurrentTerm() + 1, viewManager.getCurrentViewId(),
+                nodeState.getNodeName(), packageHeight);
         ChangeMasterVerifyCmd cmd = new ChangeMasterVerifyCmd(verify);
         ValidCommandWrap validCommandWrap = new ValidCommandWrap();
         validCommandWrap.setCommandClass(cmd.getClass());
-        validCommandWrap.setFromNode(clusterInfo.nodeName());
+        validCommandWrap.setFromNode(nodeState.getNodeName());
         validCommandWrap
-            .setSign(CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), clusterInfo.priKeyForConsensus()));
+            .setSign(CryptoUtil.getProtocolCrypto().sign(cmd.getMessageDigestHash(), nodeState.getConsensusPrivateKey()));
         validCommandWrap.setValidCommand(cmd);
         nodeNames.forEach((nodeName) -> {
             try {
@@ -165,13 +178,17 @@ import java.util.concurrent.*;
 
     private boolean verifyResponse(ChangeMasterVerifyResponseCmd cmd) {
         ChangeMasterVerifyResponse response = cmd.get();
-        String pubKey = clusterInfo.pubKeyForConsensus(response.getVoter());
+        ClusterView currentView = viewManager.getCurrentView();
+        String pubKey = currentView.getPubKey(response.getVoter());
+        if(StringUtils.isBlank(pubKey)){
+            return false;
+        }
         return CryptoUtil.getProtocolCrypto().verify(response.getSignValue(), response.getSign(), pubKey);
     }
 
-    private void consensusChangeMaster(long term, Map<String, ChangeMasterVerifyResponse> verifies) {
+    private void consensusChangeMaster(long term, long view, Map<String, ChangeMasterVerifyResponse> verifies) {
         log.info("change master, term:{}", term);
-        ChangeMasterCommand command = new ChangeMasterCommand(term, nodeState.getNodeName(), verifies);
+        ChangeMasterCommand command = new ChangeMasterCommand(term, view, nodeState.getNodeName(), verifies);
         command
             .setSign(CryptoUtil.getProtocolCrypto().sign(command.getSignValue(), nodeState.getConsensusPrivateKey()));
         try {
@@ -189,7 +206,7 @@ import java.util.concurrent.*;
 
     @Override public void masterChanged(String masterName) {
         if (NodeState.MASTER_NA.equalsIgnoreCase(masterName)) {
-            termManager.setMasterHeartbeat(false);
+            masterHeartbeat.getAndSet(false);
         }
         resetHeartbeatTimeout();
     }

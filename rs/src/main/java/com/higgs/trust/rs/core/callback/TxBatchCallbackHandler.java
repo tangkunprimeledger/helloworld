@@ -2,12 +2,9 @@ package com.higgs.trust.rs.core.callback;
 
 import com.higgs.trust.rs.core.vo.RsCoreTxVO;
 import com.higgs.trust.rs.core.vo.VotingRequest;
-import com.higgs.trust.slave.api.vo.RespData;
 import com.higgs.trust.slave.model.bo.BlockHeader;
-import com.higgs.trust.slave.model.bo.CoreTransaction;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author liuyu

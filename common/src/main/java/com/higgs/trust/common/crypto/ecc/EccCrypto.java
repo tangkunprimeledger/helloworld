@@ -2,10 +2,8 @@ package com.higgs.trust.common.crypto.ecc;
 
 import com.higgs.trust.common.crypto.Crypto;
 import com.higgs.trust.common.crypto.KeyPair;
-import com.higgs.trust.common.utils.Base64Util;
 import lombok.extern.slf4j.Slf4j;
-
-import java.math.BigInteger;
+import org.spongycastle.util.encoders.Hex;
 
 /**  
  * @desc class for ecc crypto and sign
@@ -67,13 +65,7 @@ import java.math.BigInteger;
      * @desc sign message   Base64 Encoded
      */
     @Override public String sign(String message, String privateKey) {
-        BigInteger priKey = null;
-        try {
-            priKey = new BigInteger(Base64Util.decryptBASE64(privateKey));
-        } catch (Exception e) {
-            throw new RuntimeException("ECC sign, decode privateKey error", e);
-        }
-        ECKey newEcKey = ECKey.fromPrivate(priKey, false);
+        ECKey newEcKey = ECKey.fromPrivate(Hex.decode(privateKey));
         return newEcKey.signMessage(message);
     }
 
