@@ -41,17 +41,17 @@ public class NetworkResponse extends NetworkMessage {
         /**
          * Response status signifying no registered handler.
          */
-        ERROR_NO_HANDLER(1),
+        ERROR_NO_HANDLER(2),
 
         /**
          * Response status signifying an exception handling the message.
          */
-        ERROR_HANDLER_EXCEPTION(2),
+        ERROR_HANDLER_EXCEPTION(3),
 
         /**
          * Response status signifying invalid message structure.
          */
-        PROTOCOL_EXCEPTION(3);
+        PROTOCOL_EXCEPTION(4);
 
         private final int id;
 
@@ -77,12 +77,14 @@ public class NetworkResponse extends NetworkMessage {
         public static Status forId(int id) {
             switch (id) {
                 case 0:
-                    return OK;
+                    return UNAUTHORIZED;
                 case 1:
-                    return ERROR_NO_HANDLER;
+                    return OK;
                 case 2:
-                    return ERROR_HANDLER_EXCEPTION;
+                    return ERROR_NO_HANDLER;
                 case 3:
+                    return ERROR_HANDLER_EXCEPTION;
+                case 4:
                     return PROTOCOL_EXCEPTION;
                 default:
                     throw new IllegalArgumentException("Unknown status ID " + id);
