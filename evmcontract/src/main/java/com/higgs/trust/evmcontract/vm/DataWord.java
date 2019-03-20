@@ -120,7 +120,10 @@ public class DataWord implements Comparable<DataWord> {
                 return DataWord.ZERO;
             }
             if (data[data.length - 1] == 1) {
-                return DataWord.ONE;
+                //hotfix dataWord one is not init
+                byte[] bytes = new byte[8 * data.length];
+                bytes[bytes.length - 1] = 1;
+                return new DataWord(bytes);
             }
         }
 
