@@ -33,10 +33,12 @@
 
 
     <dependencies>
-        <dependency>
+           <dependency>
             <groupId>org.ethereum</groupId>
             <artifactId>solcJ-all</artifactId>
             <version>0.4.24</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/solcJ-all-0.4.24.jar</systemPath>
         </dependency>
 
         <!-- logger -->
