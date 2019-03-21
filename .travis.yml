@@ -14,6 +14,6 @@ addons:
 install:
   - mvn clean package --batch-mode -V -DskipTests=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
 
-after_success:
-  - mvn jacoco:report  sonar:sonar
+#after_success:
+ # - mvn jacoco:report  sonar:sonar
   
