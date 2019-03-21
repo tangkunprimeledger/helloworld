@@ -11,7 +11,6 @@ import org.testng.annotations.Test;
 
 import java.sql.Connection;
 @Log
-@
 public class AssertToolTest extends Assert{
 
     @Test
