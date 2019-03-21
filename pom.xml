@@ -538,5 +538,5 @@
             </plugin>
         </plugins>
     </build>
-    </distributionManagement>
+ 
 </project>
