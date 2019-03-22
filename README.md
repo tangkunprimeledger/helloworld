@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/tangkunprimeledger/helloworld.svg?branch=master)](https://travis-ci.org/tangkunprimeledger/helloworld)
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.higgs.trust%3Aparent&metric=alert_status)](https://sonarcloud.io/dashboard?id=id=com.higgs.trust%3Aparent)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.higgs.trust%3Aparent&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.higgs.trust%3Aparent)
 
 服务
 不部署到MAVEN仓库
